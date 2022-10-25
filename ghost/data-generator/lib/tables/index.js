@@ -19,6 +19,7 @@ const StripePricesImporter = require('./stripe-prices');
 const SubscriptionsImporter = require('./subscriptions');
 const MembersStripeCustomersImporter = require('./members-stripe-customers');
 const MembersStripeCustomersSubscriptionsImporter = require('./members-stripe-customers-subscriptions');
+const MembersPaidSubscriptionEventsImporter = require('./members-paid-subscription-events');
 
 module.exports = {
     PostsImporter,
@@ -41,5 +42,6 @@ module.exports = {
     StripePricesImporter,
     SubscriptionsImporter,
     MembersStripeCustomersImporter,
-    MembersStripeCustomersSubscriptionsImporter
+    MembersStripeCustomersSubscriptionsImporter,
+    MembersPaidSubscriptionEventsImporter
 };

@@ -19,7 +19,8 @@ const {
     StripePricesImporter,
     SubscriptionsImporter,
     MembersStripeCustomersImporter,
-    MembersStripeCustomersSubscriptionsImporter
+    MembersStripeCustomersSubscriptionsImporter,
+    MembersPaidSubscriptionEventsImporter
 } = require('./tables');
 const {faker} = require('@faker-js/faker');
 
@@ -157,7 +158,7 @@ class DataGenerator {
             const subscriptionsImporter = new SubscriptionsImporter(transaction, {members, stripeProducts, stripePrices});
             const subscriptions = await subscriptionsImporter.importForEach(membersProducts, {
                 amount: 1,
-                rows: ['cadence', 'tier_id', 'expires_at', 'created_at', 'member_id']
+                rows: ['cadence', 'tier_id', 'expires_at', 'created_at', 'member_id', 'currency']
             });
 
             const membersStripeCustomersImporter = new MembersStripeCustomersImporter(transaction);
@@ -172,7 +173,15 @@ class DataGenerator {
                 stripeProducts,
                 stripePrices
             });
-            await membersStripeCustomersSubscriptionsImporter.importForEach(subscriptions, {amount: 1});
+            const membersStripeCustomersSubscriptions = await membersStripeCustomersSubscriptionsImporter.importForEach(subscriptions, {
+                amount: 1,
+                rows: ['mrr', 'plan_id', 'subscription_id']
+            });
+
+            const membersPaidSubscriptionEventsImporter = new MembersPaidSubscriptionEventsImporter(transaction, {
+                membersStripeCustomersSubscriptions
+            });
+            await membersPaidSubscriptionEventsImporter.importForEach(subscriptions, {amount: 1});
 
             // TODO: Emails! (relies on posts & newsletters)
 
