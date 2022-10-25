@@ -4,7 +4,7 @@ import {inject as service} from '@ember/service';
 export default class SettingsDesignNoThemeRoute extends AuthenticatedRoute {
     @service store;
 
-    themes = this.store.findAll('theme');
+    themes = this.store.peekAll('theme');
 
     afterModel() {
         super.afterModel(...arguments);

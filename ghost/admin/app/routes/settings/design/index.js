@@ -11,7 +11,7 @@ export default class SettingsDesignIndexRoute extends AuthenticatedRoute {
 
     confirmModal = null;
     hasConfirmed = false;
-    themes = this.store.findAll('theme');
+    themes = this.store.peekAll('theme');
 
     afterModel() {
         super.afterModel(...arguments);
