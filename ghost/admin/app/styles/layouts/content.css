@@ -854,12 +854,6 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     gap: 24px;
 }
 
-.gh-post-analytics-split {
-    display: flex;
-    gap: 2.4rem;
-    min-height: 445px;
-}
-
 .gh-newsletter-clicks-header {
     align-items: center;
     font-size: 1.55rem;
@@ -1643,6 +1637,9 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     grid-template-columns: 40% 40% 20%;
 }
 
+.gh-tabs-analytics .gh-dashboard-list-four-cols .gh-dashboard-list-item {
+    grid-template-columns: 35% 25% 20% 20%;
+}
 
 @media (max-width: 1200px) {
     .gh-tabs-analytics .tab{
@@ -1663,11 +1660,6 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
 
     .gh-tabs-analytics p {
         font-size: 1.6rem;
-    }
-
-    .gh-post-analytics-split {
-        flex-direction: column;
-        gap: 0;
     }
 }
 

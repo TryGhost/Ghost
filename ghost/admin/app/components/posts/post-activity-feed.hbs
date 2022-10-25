@@ -40,7 +40,7 @@
                 </div>
             </div>
         {{else}}
-            <div class="gh-dashboard-list-body">
+            <div class="gh-dashboard-list-body {{if (eq this.eventType "conversion") "gh-dashboard-list-four-cols" }}">
                 {{#each eventsFetcher.data as |event|}}
                     {{#let (parse-member-event event) as |parsedEvent|}}
                         <div class="gh-dashboard-list-item">
@@ -56,6 +56,11 @@
                                     </span>
                                 </span>
                             </div>
+                            {{#if (eq this.eventType "conversion")}}
+                                <div class="gh-dashboard-list-item-sub">
+                                    Source
+                                </div>
+                            {{/if}}
                             <div class="gh-dashboard-list-item-sub">
                                 <span class="gh-dashboard-list-subtext">{{moment-from-now parsedEvent.timestamp}}</span>
                             </div>
