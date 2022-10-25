@@ -14,7 +14,7 @@ class SubscriptionsImporter extends TableImporter {
     }
 
     generate() {
-        const status = this.members.find(member => member.id === this.model.member_id);
+        const status = this.members.find(member => member.id === this.model.member_id).status;
         const billingInfo = {};
         const isMonthly = faker.datatype.boolean();
         if (status === 'paid') {
@@ -23,11 +23,9 @@ class SubscriptionsImporter extends TableImporter {
                 return price.stripe_product_id === stripeProduct.stripe_product_id &&
                     (isMonthly ? price.interval === 'monthly' : price.interval === 'yearly');
             });
-            Object.assign(billingInfo, {
-                cadence: isMonthly ? 'month' : 'year',
-                currency: stripePrice.currency,
-                amount: stripePrice.amount
-            });
+            billingInfo.cadence = isMonthly ? 'month' : 'year';
+            billingInfo.currency = stripePrice.currency;
+            billingInfo.amount = stripePrice.amount;
         }
         const yearAgo = new Date();
         yearAgo.setDate(yearAgo.getDate() - 365);

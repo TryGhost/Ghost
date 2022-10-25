@@ -20,6 +20,7 @@ const SubscriptionsImporter = require('./subscriptions');
 const MembersStripeCustomersImporter = require('./members-stripe-customers');
 const MembersStripeCustomersSubscriptionsImporter = require('./members-stripe-customers-subscriptions');
 const MembersPaidSubscriptionEventsImporter = require('./members-paid-subscription-events');
+const MembersSubscriptionCreatedEventsImporter = require('./members-subscription-created-events');
 
 module.exports = {
     PostsImporter,
@@ -43,5 +44,6 @@ module.exports = {
     SubscriptionsImporter,
     MembersStripeCustomersImporter,
     MembersStripeCustomersSubscriptionsImporter,
-    MembersPaidSubscriptionEventsImporter
+    MembersPaidSubscriptionEventsImporter,
+    MembersSubscriptionCreatedEventsImporter
 };

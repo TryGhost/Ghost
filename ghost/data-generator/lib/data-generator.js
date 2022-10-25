@@ -20,7 +20,8 @@ const {
     SubscriptionsImporter,
     MembersStripeCustomersImporter,
     MembersStripeCustomersSubscriptionsImporter,
-    MembersPaidSubscriptionEventsImporter
+    MembersPaidSubscriptionEventsImporter,
+    MembersSubscriptionCreatedEventsImporter
 } = require('./tables');
 const {faker} = require('@faker-js/faker');
 
@@ -182,6 +183,9 @@ class DataGenerator {
                 membersStripeCustomersSubscriptions
             });
             await membersPaidSubscriptionEventsImporter.importForEach(subscriptions, {amount: 1});
+
+            const membersSubscriptionCreatedEventsImporter = new MembersSubscriptionCreatedEventsImporter(transaction, {subscriptions});
+            await membersSubscriptionCreatedEventsImporter.importForEach(membersStripeCustomersSubscriptions, {amount: 1});
 
             // TODO: Emails! (relies on posts & newsletters)
 

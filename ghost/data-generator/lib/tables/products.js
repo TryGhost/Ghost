@@ -24,13 +24,11 @@ class ProductsImporter extends TableImporter {
             description: 'A free sample of content'
         };
         if (count !== 0) {
-            Object.assign(tierInfo, {
-                type: 'paid',
-                description: `${name} star member`,
-                currency: 'usd',
-                monthly_price: count * 500,
-                yearly_price: count * 5000
-            });
+            tierInfo.type = 'paid';
+            tierInfo.description = `${name} star member`;
+            tierInfo.currency = 'USD';
+            tierInfo.monthly_price = count * 500;
+            tierInfo.yearly_price = count * 5000;
         }
         return Object.assign({}, {
             id: faker.database.mongodbObjectId(),

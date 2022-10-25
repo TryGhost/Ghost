@@ -36,22 +36,21 @@ class StripePricesImporter extends TableImporter {
             amount: relatedProduct.monthly_price
         };
         if (count === 1) {
-            Object.assign(billingCycle, {
-                nickname: 'Yearly',
-                interval: 'yearly',
-                amount: relatedProduct.yearly_price
-            });
+            billingCycle.nickname = 'Yearly';
+            billingCycle.interval = 'yearly';
+            billingCycle.amount = relatedProduct.yearly_price;
         } else if (relatedProduct.monthly_price === null) {
-            Object.assign(billingCycle, {
-                nickname: 'Complimentary',
-                interval: 'yearly',
-                amount: 0
-            });
+            billingCycle.nickname = 'Complimentary';
+            billingCycle.interval = 'yearly';
+            billingCycle.amount = 0;
         }
 
         return Object.assign({}, {
             id: faker.database.mongodbObjectId(),
-            stripe_price_id: faker.datatype.hexadecimal({length: 64}),
+            stripe_price_id: faker.datatype.hexadecimal({
+                length: 64,
+                prefix: ''
+            }),
             stripe_product_id: this.model.stripe_product_id,
             active: true,
             created_at: faker.date.between(blogStartDate, sixWeeksLater)

@@ -22,6 +22,8 @@ class MembersPaidSubscriptionEventsImporter extends TableImporter {
         });
         return {
             id: faker.database.mongodbObjectId(),
+            // TODO: Support expired / updated / cancelled events too
+            type: 'created',
             member_id: this.model.member_id,
             subscription_id: this.model.id,
             from_plan: null,
