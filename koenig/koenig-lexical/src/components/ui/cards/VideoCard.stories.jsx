@@ -1,0 +1,28 @@
+import React from 'react';
+import {VideoCard} from './VideoCard';
+import {CardWrapper} from './../CardWrapper';
+
+const story = {
+    title: 'Cards/Video Card',
+    component: VideoCard,
+    subcomponent: {CardWrapper},
+    argTypes: {
+        isSelected: {control: 'boolean'}
+    }
+};
+export default story;
+
+const Template = args => (
+    <div className="w-[740px]">
+        <CardWrapper {...args}>
+            <VideoCard {...args} />
+        </CardWrapper>
+    </div>
+);
+
+export const Default = Template.bind({});
+Default.args = {
+    isSelected: true,
+    caption: ''
+};
+

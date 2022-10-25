@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
   <g stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" stroke-linejoin="round" class="nc-icon-wrapper">
-    <path d="M3 9h42v36H3zm7-6h28"/>
-    <path d="m10 38 7-10 5 4 8-11 9 17H10z"/>
-    <circle cx="17" cy="19" r="3"/>
+    <rect x="2" y="18" width="31" height="26" rx="4"/>
+    <circle cx="8.5" cy="7.5" r="5.5"/>
+    <circle cx="25.5" cy="9.5" r="3.5"/>
+    <path data-cap="butt" d="m33 27 13-6v20l-13-6"/>
   </g>
 </svg>
