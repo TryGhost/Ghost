@@ -1,6 +1,20 @@
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header break tablet members-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
+        <div class="flex flex-column">
+            {{#if this.fromAnalytics}}
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="posts">
+                        Posts
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}}
+                    <LinkTo @route="posts.analytics" @models={{this.fromAnalytics}}>
+                        Analytics
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}}Members
+                </div>
+            {{/if}}
+            <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
+        </div>
         {{#if (not-eq this.settings.membersSignupAccess "none")}}
             <section class="view-actions">
                 <div class="view-actions-bottom-row {{if this.hideSearchBar "hidden"}}">
