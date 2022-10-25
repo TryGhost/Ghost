@@ -21,7 +21,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
         const stripeProduct = this.stripeProducts.find(product => product.product_id === this.model.tier_id);
         const stripePrice = this.stripePrices.find((price) => {
             return price.stripe_product_id === stripeProduct.stripe_product_id &&
-                (isMonthly ? price.interval === 'monthly' : price.interval === 'yearly');
+                (isMonthly ? price.interval === 'month' : price.interval === 'year');
         });
         const mrr = isMonthly ? stripePrice.amount : Math.floor(stripePrice.amount / 12);
         return {

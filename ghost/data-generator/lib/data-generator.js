@@ -156,6 +156,12 @@ class DataGenerator {
                 rows: ['stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname']
             });
 
+            await productImporter.addStripePrices({
+                products,
+                stripeProducts,
+                stripePrices
+            });
+
             const subscriptionsImporter = new SubscriptionsImporter(transaction, {members, stripeProducts, stripePrices});
             const subscriptions = await subscriptionsImporter.importForEach(membersProducts, {
                 amount: 1,

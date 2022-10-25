@@ -11,17 +11,17 @@ class MembersLoginEventsImporter extends TableImporter {
     setImportOptions({model}) {
         this.model = model;
         const endDate = new Date();
-        const daysBetween = Math.ceil((endDate.valueOf() - model.created_at.valueOf()) / (1000 * 60 * 60 * 24));
+        const daysBetween = Math.ceil((endDate.valueOf() - new Date(model.created_at).valueOf()) / (1000 * 60 * 60 * 24));
 
         // Assuming most people either subscribe and lose interest, or maintain steady readership
-        const shape = luck(40) ? 'ease-in' : 'flat';
+        const shape = luck(40) ? 'ease-out' : 'flat';
         this.timestamps = generateEvents({
             shape,
             trend: 'negative',
             // Steady readers login more, readers who lose interest read less overall.
             // ceil because members will all have logged in at least once
             total: shape === 'flat' ? Math.ceil(daysBetween / 3) : Math.ceil(daysBetween / 7),
-            startTime: model.created_at,
+            startTime: new Date(model.created_at),
             endTime: endDate
         });
     }
@@ -34,7 +34,7 @@ class MembersLoginEventsImporter extends TableImporter {
         }
         return {
             id: faker.database.mongodbObjectId(),
-            created_at: timestamp,
+            created_at: timestamp.toISOString(),
             member_id: this.model.id
         };
     }

@@ -20,7 +20,7 @@ class MembersStatusEventsImporter extends TableImporter {
                 member_id: model.id,
                 from_status: 'free',
                 to_status: model.status,
-                created_at: faker.date.between(model.created_at, new Date())
+                created_at: faker.date.between(new Date(model.created_at), new Date()).toISOString()
             });
         }
     }

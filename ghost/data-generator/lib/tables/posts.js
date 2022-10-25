@@ -22,10 +22,10 @@ class PostsImporter extends TableImporter {
         const timestamp = faker.date.between(twoYearsAgo, twoWeeksAgo);
         return {
             id: faker.database.mongodbObjectId(),
-            created_at: timestamp,
+            created_at: timestamp.toISOString(),
             created_by: 'unused',
-            updated_at: timestamp,
-            published_at: faker.date.soon(5, timestamp),
+            updated_at: timestamp.toISOString(),
+            published_at: faker.date.soon(5, timestamp).toISOString(),
             uuid: faker.datatype.uuid(),
             title: title,
             slug: `${slugify(title)}-${faker.random.numeric(3)}`,

@@ -13,6 +13,34 @@ class ProductsImporter extends TableImporter {
         this.count = 0;
     }
 
+    async addStripePrices({products, stripeProducts, stripePrices}) {
+        for (const {id} of products) {
+            const stripeProduct = stripeProducts.find(p => id === p.product_id);
+            const monthlyPrice = stripePrices.find((p) => {
+                return p.stripe_product_id === stripeProduct.stripe_product_id &&
+                    p.interval === 'monthly';
+            });
+            const yearlyPrice = stripePrices.find((p) => {
+                return p.stripe_product_id === stripeProduct.stripe_product_id &&
+                    p.interval === 'yearly';
+            });
+
+            const update = {};
+            if (monthlyPrice) {
+                update.monthly_price_id = monthlyPrice.id;
+            }
+            if (yearlyPrice) {
+                update.yearly_price_id = yearlyPrice.id;
+            }
+
+            if (Object.keys(update).length > 0) {
+                await this.knex('products').update(update).where({
+                    id
+                });
+            }
+        }
+    }
+
     generate() {
         const name = this.names.shift();
         const count = this.count;

@@ -30,18 +30,18 @@ class StripePricesImporter extends TableImporter {
 
         const billingCycle = {
             nickname: 'Monthly',
-            interval: 'monthly',
+            interval: 'month',
             type: 'recurring',
             currency: 'usd',
             amount: relatedProduct.monthly_price
         };
         if (count === 1) {
             billingCycle.nickname = 'Yearly';
-            billingCycle.interval = 'yearly';
+            billingCycle.interval = 'year';
             billingCycle.amount = relatedProduct.yearly_price;
         } else if (relatedProduct.monthly_price === null) {
             billingCycle.nickname = 'Complimentary';
-            billingCycle.interval = 'yearly';
+            billingCycle.interval = 'year';
             billingCycle.amount = 0;
         }
 

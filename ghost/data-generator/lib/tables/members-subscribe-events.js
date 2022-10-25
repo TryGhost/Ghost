@@ -16,7 +16,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
             member_id: this.model.member_id,
             newsletter_id: this.model.newsletter_id,
             subscribed: true,
-            created_at: faker.date.between(this.model.created_at, new Date()),
+            created_at: faker.date.between(new Date(this.model.created_at), new Date()).toISOString(),
             source: 'member'
         };
     }
