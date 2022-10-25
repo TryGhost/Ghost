@@ -45,12 +45,14 @@ function useSlashCardMenu(editor) {
         cachedRange.current = null;
     }, [setIsShowingMenu]);
 
-    const insert = React.useCallback((insertCommand) => {
+    const insert = React.useCallback((insertCommand, {insertParams = {}} = {}) => {
+        const commandParams = {...insertParams};
+
         editor.update(() => {
             const selection = $getSelection();
             selection.modify('extend', true, 'lineboundary');
             selection.deleteCharacter(true);
-            editor.dispatchCommand(insertCommand);
+            editor.dispatchCommand(insertCommand, commandParams);
         });
         closeMenu();
     }, [editor, closeMenu]);

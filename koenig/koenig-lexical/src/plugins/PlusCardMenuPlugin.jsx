@@ -97,8 +97,9 @@ function usePlusCardMenu(editor) {
         });
     }, [editor, showButton, hideButton]);
 
-    const insert = React.useCallback((insertCommand) => {
-        editor.dispatchCommand(insertCommand);
+    const insert = React.useCallback((insertCommand, {insertParams = {}} = {}) => {
+        const commandParams = {...insertParams};
+        editor.dispatchCommand(insertCommand, commandParams);
         closeMenu();
     }, [editor, closeMenu]);
 

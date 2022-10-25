@@ -12,8 +12,14 @@ function PopulatedImageCard({src, alt}) {
     );
 }
 
-function EmptyImageCard({onFileChange}) {
+function EmptyImageCard({onFileChange, setFileInputRef}) {
     const fileInputRef = React.useRef(null);
+
+    const onFileInputRef = (element) => {
+        fileInputRef.current = element;
+        setFileInputRef(fileInputRef);
+    };
+
     return (
         <>
             <MediaPlaceholder
@@ -24,7 +30,7 @@ function EmptyImageCard({onFileChange}) {
             <ImageUploadForm
                 filePicker={() => openFileSelection({fileInputRef})}
                 onFileChange={onFileChange}
-                fileInputRef={fileInputRef}
+                fileInputRef={onFileInputRef}
             />
         </>
     );
@@ -38,7 +44,8 @@ export function ImageCard({
     setCaption,
     altText,
     setAltText,
-    setFigureRef
+    setFigureRef,
+    fileInputRef
 }) {
     const figureRef = React.useRef(null);
 
@@ -47,13 +54,19 @@ export function ImageCard({
             setFigureRef(figureRef);
         }
     }, [figureRef, setFigureRef]);
-    
+
+    const setFileInputRef = (ref) => {
+        if (fileInputRef) {
+            fileInputRef.current = ref.current;
+        }
+    };
+
     return (
         <>
             <figure ref={figureRef}>
                 {src
                     ? <PopulatedImageCard src={src} alt={altText} />
-                    : <EmptyImageCard onFileChange={onFileChange} />
+                    : <EmptyImageCard onFileChange={onFileChange} setFileInputRef={setFileInputRef} />
                 }
                 <CardCaptionEditor
                     altText={altText || ''}

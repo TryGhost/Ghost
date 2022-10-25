@@ -285,4 +285,17 @@ describe('Image card', async () => {
 
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
     });
+
+    test('file input opens immediately when added via card menu', async function () {
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            page.click('[data-kg-card-menu-item="Image"]')
+        ]);
+
+        expect(fileChooser).not.toBeNull();
+
+        await fileChooser.cancel();
+    });
 });

@@ -9,10 +9,11 @@ import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {openFileSelection} from '../utils/openFileSelection';
 
-export function ImageNodeComponent({nodeKey, src, altText, caption}) {
+export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog}) {
     const [editor] = useLexicalComposerContext();
     const {editorContainerRef, imageUploader} = React.useContext(KoenigComposerContext);
     const {cardContainerRef, isSelected} = React.useContext(CardContext);
+    const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
 
     const onFileChange = async (e) => {
@@ -41,10 +42,34 @@ export function ImageNodeComponent({nodeKey, src, altText, caption}) {
         });
     };
 
+    // when card is inserted from the card menu or slash command we want to show the file picker immediately
+    // uses a setTimeout to avoid issues with React rendering the component twice in dev mode 🙈
+    React.useEffect(() => {
+        if (!triggerFileDialog) {
+            return;
+        }
+
+        const renderTimeout = setTimeout(() => {
+            // trigger dialog
+            openFileSelection({fileInputRef});
+
+            // clear the property on the node so we don't accidentally trigger anything with a re-render
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.setTriggerFileDialog(false);
+            });
+        });
+
+        return (() => {
+            clearTimeout(renderTimeout);
+        });
+    });
+
     return (
         <>
             <ImageCard
                 isSelected={isSelected}
+                fileInputRef={fileInputRef}
                 onFileChange={onFileChange}
                 src={src}
                 altText={altText}

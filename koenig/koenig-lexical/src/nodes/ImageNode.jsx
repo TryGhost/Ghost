@@ -16,13 +16,21 @@ function convertImageElement(domNode) {
 }
 
 export class ImageNode extends DecoratorNode {
+    // payload properties
     __src;
     __caption;
     __altText;
+    // TODO:
+    // __width;
+    // __height;
+
     // TODO: does this belong on the node? If we're storing progress here because
     // the node might be re-created whilst uploading then wouldn't we need file
     // refs too?
     __uploadProgress;
+
+    // transient properties used to control node behaviour
+    __triggerFileDialog = false;
 
     static getType() {
         return 'image';
@@ -33,15 +41,20 @@ export class ImageNode extends DecoratorNode {
         desc: 'Upload, or embed with /image [url]',
         Icon: ImageCardIcon,
         insertCommand: INSERT_IMAGE_COMMAND,
+        insertParams: {
+            triggerFileDialog: true
+        },
         matches: ['image', 'img']
     };
 
     static clone(node) {
         return new ImageNode(
-            node.__src,
-            node.__caption,
-            node.__altText,
-            node.__uploadProgress,
+            {
+                src: node.__src,
+                caption: node.__caption,
+                altText: node.__altText,
+                uploadProgress: node.__uploadProgress
+            },
             node.__key
         );
     }
@@ -76,11 +89,13 @@ export class ImageNode extends DecoratorNode {
         };
     }
 
-    constructor(src, caption, altText, key) {
+    constructor({src, caption, altText, uploadProgress, triggerFileDialog} = {}, key) {
         super(key);
         this.__caption = caption || '';
         this.__altText = altText || '';
         this.__src = src || '';
+        this.__uploadProgress = uploadProgress;
+        this.__triggerFileDialog = triggerFileDialog || false;
     }
 
     exportJSON() {
@@ -138,7 +153,12 @@ export class ImageNode extends DecoratorNode {
 
     setUploadProgress(progress) {
         const writable = this.getWritable();
-        return writable.__uploadProgress;
+        return writable.__uploadProgress = progress;
+    }
+
+    setTriggerFileDialog(shouldTrigger) {
+        const writable = this.getWritable();
+        return writable.__triggerFileDialog = shouldTrigger;
     }
 
     decorate() {
@@ -150,14 +170,15 @@ export class ImageNode extends DecoratorNode {
                     altText={this.__altText}
                     caption={this.__caption}
                     uploadProgress={this.__uploadProgress}
+                    triggerFileDialog={this.__triggerFileDialog}
                 />
             </KoenigCardWrapper>
         );
     }
 }
 
-export const $createImageNode = ({src, caption, altText} = {}) => {
-    return new ImageNode(src, caption, altText);
+export const $createImageNode = (dataset) => {
+    return new ImageNode(dataset);
 };
 
 export function $isImageNode(node) {
