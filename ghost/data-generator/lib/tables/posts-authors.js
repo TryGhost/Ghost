@@ -8,8 +8,7 @@ class PostsAuthorsImporter extends TableImporter {
         this.sortOrder = 0;
     }
 
-    // eslint-disable-next-line no-unused-vars
-    setImportOptions({amount: _amount, model}) {
+    setImportOptions({model}) {
         this.model = model;
     }
 

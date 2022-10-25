@@ -41,10 +41,10 @@ class TableImporter {
             return;
         }
 
-        this.setImportOptions(options);
-
         // Use dynamic amount if faker function given
         const amount = (typeof options.amount === 'function') ? options.amount() : options.amount;
+
+        this.setImportOptions(Object.assign({}, options, {amount}));
 
         const data = [];
         for (let i = 0; i < amount; i++) {

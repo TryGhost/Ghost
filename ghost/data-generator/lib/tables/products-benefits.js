@@ -8,8 +8,7 @@ class ProductsBenefitsImporter extends TableImporter {
         this.sortOrder = 0;
     }
 
-    // eslint-disable-next-line no-unused-vars
-    setImportOptions({amount: _amount, model}) {
+    setImportOptions({model}) {
         this.model = model;
         this.sortOrder = 0;
         switch (this.model.name) {
@@ -21,6 +20,9 @@ class ProductsBenefitsImporter extends TableImporter {
             break;
         case 'Gold':
             this.benefitCount = 5;
+            break;
+        case 'Free Preview':
+            this.benefitCount = 0;
             break;
         }
     }

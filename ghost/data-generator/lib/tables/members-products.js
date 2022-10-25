@@ -8,18 +8,25 @@ class MembersProductsImporter extends TableImporter {
         this.products = products;
     }
 
-    // eslint-disable-next-line no-unused-vars
-    setImportOptions({amount: _amount, model}) {
+    setImportOptions({model}) {
         this.model = model;
+    }
+
+    getProduct() {
+        if (this.products.length > 1) {
+            return luck(10) ? this.products[2]
+                : luck(50) ? this.products[1]
+                    : this.products[0];
+        } else {
+            return this.products[0];
+        }
     }
 
     generate() {
         return {
             id: faker.database.mongodbObjectId(),
             member_id: this.model.id,
-            product_id: luck(10) ? this.products[2].id // Gold
-                : luck(50) ? this.products[1].id // Silver
-                    : this.products[0].id, // Bronze
+            product_id: this.getProduct().id,
             sort_order: 0
         };
     }

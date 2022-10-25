@@ -8,8 +8,7 @@ class MembersNewslettersImporter extends TableImporter {
         this.newsletters = newsletters;
     }
 
-    // eslint-disable-next-line no-unused-vars
-    setImportOptions({amount: _amount, model}) {
+    setImportOptions({model}) {
         this.model = model;
     }
 

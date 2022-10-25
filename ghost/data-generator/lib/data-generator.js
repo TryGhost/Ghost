@@ -11,7 +11,15 @@ const {
     ProductsBenefitsImporter,
     MembersProductsImporter,
     PostsProductsImporter,
-    MembersNewslettersImporter
+    MembersNewslettersImporter,
+    MembersCreatedEventsImporter,
+    MembersLoginEventsImporter,
+    MembersStatusEventsImporter,
+    StripeProductsImporter,
+    StripePricesImporter,
+    SubscriptionsImporter,
+    MembersStripeCustomersImporter,
+    MembersStripeCustomersSubscriptionsImporter
 } = require('./tables');
 const {faker} = require('@faker-js/faker');
 
@@ -52,7 +60,10 @@ class DataGenerator {
                 newsletters
             });
             const posts = await postImporter.import({
-                amount: 100,
+                amount: faker.datatype.number({
+                    min: 80,
+                    max: 120
+                }),
                 rows: ['newsletter_id']
             });
 
@@ -67,7 +78,10 @@ class DataGenerator {
             const tagImporter = new TagsImporter(transaction, {
                 users
             });
-            const tags = await tagImporter.import({amount: 20});
+            const tags = await tagImporter.import({amount: faker.datatype.number({
+                min: 16,
+                max: 24
+            })});
 
             const postTagImporter = new PostsTagsImporter(transaction, {
                 tags
@@ -80,13 +94,13 @@ class DataGenerator {
             });
 
             const productImporter = new ProductsImporter(transaction);
-            const products = await productImporter.import({amount: 3, rows: ['name']});
+            const products = await productImporter.import({amount: 4, rows: ['name', 'monthly_price', 'yearly_price']});
 
             const memberImporter = new MembersImporter(transaction);
             const members = await memberImporter.import({amount: () => faker.datatype.number({
                 min: 7000,
                 max: 8000
-            }), rows: ['status']});
+            }), rows: ['status', 'created_at', 'name', 'email']});
 
             const benefitImporter = new BenefitsImporter(transaction);
             const benefits = await benefitImporter.import({amount: 5});
@@ -95,8 +109,17 @@ class DataGenerator {
             // Up to 5 benefits for each product
             await productBenefitImporter.importForEach(products, {amount: 5});
 
-            const memberProductImporter = new MembersProductsImporter(transaction, {products});
-            await memberProductImporter.importForEach(members.filter(member => member.status !== 'free'), {amount: 1});
+            // TODO: Use subscriptions to generate members_products table?
+            const memberProductImporter = new MembersProductsImporter(transaction, {products: products.slice(1)});
+            const membersProducts = await memberProductImporter.importForEach(members.filter(member => member.status !== 'free'), {
+                amount: 1,
+                rows: ['product_id', 'member_id']
+            });
+            const memberFreeProductImporter = new MembersProductsImporter(transaction, {products: [products[0]]});
+            await memberFreeProductImporter.importForEach(members.filter(member => member.status === 'free'), {
+                amount: 1,
+                rows: ['product_id', 'member_id']
+            });
 
             const postProductImporter = new PostsProductsImporter(transaction, {products});
             // Paid newsletters
@@ -107,6 +130,55 @@ class DataGenerator {
 
             const memberNewsletterImporter = new MembersNewslettersImporter(transaction, {newsletters});
             await memberNewsletterImporter.importForEach(members, {amount: 1});
+
+            const membersCreatedEventsImporter = new MembersCreatedEventsImporter(transaction);
+            await membersCreatedEventsImporter.importForEach(members, {amount: 1});
+
+            const membersLoginEventsImporter = new MembersLoginEventsImporter(transaction);
+            // Will create roughly 1 login event for every 3 days, up to a maximum of 100.
+            await membersLoginEventsImporter.importForEach(members, {amount: 100});
+
+            const membersStatusEventsImporter = new MembersStatusEventsImporter(transaction);
+            // Up to 2 events per member - 1 from null -> free, 1 from free -> {paid, comped}
+            await membersStatusEventsImporter.importForEach(members, {amount: 2});
+
+            const stripeProductsImporter = new StripeProductsImporter(transaction);
+            const stripeProducts = await stripeProductsImporter.importForEach(products, {
+                amount: 1,
+                rows: ['product_id', 'stripe_product_id']
+            });
+
+            const stripePricesImporter = new StripePricesImporter(transaction, {products});
+            const stripePrices = await stripePricesImporter.importForEach(stripeProducts, {
+                amount: 2,
+                rows: ['stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname']
+            });
+
+            const subscriptionsImporter = new SubscriptionsImporter(transaction, {members, stripeProducts, stripePrices});
+            const subscriptions = await subscriptionsImporter.importForEach(membersProducts, {
+                amount: 1,
+                rows: ['cadence', 'tier_id', 'expires_at', 'created_at', 'member_id']
+            });
+
+            const membersStripeCustomersImporter = new MembersStripeCustomersImporter(transaction);
+            const membersStripeCustomers = await membersStripeCustomersImporter.importForEach(members, {
+                amount: 1,
+                rows: ['customer_id', 'member_id']
+            });
+
+            const membersStripeCustomersSubscriptionsImporter = new MembersStripeCustomersSubscriptionsImporter(transaction, {
+                membersStripeCustomers,
+                products,
+                stripeProducts,
+                stripePrices
+            });
+            await membersStripeCustomersSubscriptionsImporter.importForEach(subscriptions, {amount: 1});
+
+            // TODO: Emails! (relies on posts & newsletters)
+
+            // TODO: Email clicks - redirect, members_click_events (relies on emails)
+
+            // TODO: Feedback - members_feedback (relies on members and posts)
         }
 
         await transaction.commit();

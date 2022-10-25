@@ -7,8 +7,7 @@ class PostsProductsImporter extends TableImporter {
         this.products = products;
     }
 
-    // eslint-disable-next-line no-unused-vars
-    setImportOptions({amount: _amount, model, paid}) {
+    setImportOptions({model}) {
         this.sortOrder = 0;
         this.model = model;
     }

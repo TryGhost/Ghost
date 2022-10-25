@@ -11,6 +11,14 @@ const ProductsBenefitsImporter = require('./products-benefits');
 const MembersProductsImporter = require('./members-products');
 const PostsProductsImporter = require('./posts-products');
 const MembersNewslettersImporter = require('./members-newsletters');
+const MembersCreatedEventsImporter = require('./members-created-events');
+const MembersLoginEventsImporter = require('./members-login-events');
+const MembersStatusEventsImporter = require('./members-status-events');
+const StripeProductsImporter = require('./stripe-products');
+const StripePricesImporter = require('./stripe-prices');
+const SubscriptionsImporter = require('./subscriptions');
+const MembersStripeCustomersImporter = require('./members-stripe-customers');
+const MembersStripeCustomersSubscriptionsImporter = require('./members-stripe-customers-subscriptions');
 
 module.exports = {
     PostsImporter,
@@ -25,5 +33,13 @@ module.exports = {
     ProductsBenefitsImporter,
     MembersProductsImporter,
     PostsProductsImporter,
-    MembersNewslettersImporter
+    MembersNewslettersImporter,
+    MembersCreatedEventsImporter,
+    MembersLoginEventsImporter,
+    MembersStatusEventsImporter,
+    StripeProductsImporter,
+    StripePricesImporter,
+    SubscriptionsImporter,
+    MembersStripeCustomersImporter,
+    MembersStripeCustomersSubscriptionsImporter
 };
