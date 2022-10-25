@@ -12,8 +12,7 @@ const {
     anyISODateTime,
     anyObjectId,
     anyContentVersion,
-    anyNumber,
-    anyString
+    anyNumber
 } = matchers;
 
 const tierSnapshot = {
@@ -24,13 +23,7 @@ const tierSnapshot = {
 
 const roleSnapshot = tierSnapshot;
 
-const tagSnapshot = {
-    ...tierSnapshot,
-    name: anyString,
-    slug: anyString,
-    url: anyLocalURL,
-    visibility: anyString
-};
+const tagSnapshot = tierSnapshot;
 
 const buildAuthorSnapshot = (roles = false) => {
     const authorSnapshot = {
@@ -78,15 +71,10 @@ const buildPreviousPageSnapshotWithTiers = (tiersCount) => {
 };
 
 const buildPreviousPageSnapshotWithTiersAndTags = ({ tiersCount, tags }) => {
-    const prevSnap = {
+    return {
+        tiers: new Array(tiersCount).fill(tierSnapshot),
         tags: tags ? new Array(1).fill(tagSnapshot) : []
     };
-
-    if (tiersCount > 0) {
-        prevSnap.tiers = new Array(tiersCount).fill(tierSnapshot);
-    }
-
-    return prevSnap;
 };
 
 describe('page.* events', function () {
@@ -301,4 +289,61 @@ describe('page.* events', function () {
                 }
             });
     });
+
+    it('page.tag.attached event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-tag-attached/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.tag.attached',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.tag.attached webhook',
+                        status: 'draft'
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const pageTagAttached = res.body.pages[0];
+        pageTagAttached.status = 'draft';
+        pageTagAttached.tags = ['Blogs'];
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [pageTagAttached]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: false,
+                        tiersCount: 2,
+                        tags: true,
+                        roles: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiersAndTags({
+                        tiersCount: 2,
+                        tags: false
+                    })
+                }
+            });
+    });
+
 });
