@@ -914,11 +914,16 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-post-analytics-resource .gh-btn-link {
-    color: #30cf43;
+    color: var(--green);
 }
 
 .gh-post-analytics-resource:hover .gh-btn-link {
-    color: #2bba3c;
+    color: var(--green-d1);
+}
+
+.feature-audienceFeedback .gh-post-analytics-resource .gh-btn-link {
+    font-size: 1.3rem;
+    font-weight: 400;
 }
 
 .gh-post-analytics-title {
@@ -1313,6 +1318,31 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     stroke: var(--green-d2);
 }
 
+.feature-audienceFeedback .gh-links-list-item {
+    border-color: rgba(235,238,240,.5);
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
+}
+
+.feature-audienceFeedback .gh-links-list-item.gh-links-list-item-edit-mode {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+}
+
+.feature-audienceFeedback .gh-links-info {
+    font-size: 1.3rem;
+}
+
+.feature-audienceFeedback .gh-links-info svg {
+    width: 13px;
+    margin-bottom: 2px;
+}
+
+.feature-audienceFeedback .gh-links-list-item:hover {
+    background: none;
+}
+
+
 /* Post list – LABS
 /* ---------------------------------------------------------- */
 
@@ -1596,6 +1626,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     /* help to hide shadow from selected tab */
     opacity: 0.99999;
     background-color: #ffffff;
+    border-radius: 0 0 4px 4px;
 }
 
 .gh-tabs-analytics h3 {
@@ -1731,7 +1762,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
 
 .gh-post-activity-feed-footer {
     display: flex;
-    min-height: 50px;
+    min-height: 65px;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
@@ -1770,11 +1801,11 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     font-size: 1.3rem;
     font-weight: 500;
     line-height: 1.3;
-    color: #2BBA3C;
+    color: var(--green);
 }
 
 .gh-post-activity-feed-pagination-link:hover {
-    filter: brightness(0.8);
+    color: var(--green-d1);
 }
 
 .gh-post-activity-feed-pagination-link svg {
@@ -1861,7 +1892,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
 
 .gh-feedback-events-feed {
     position: relative;
-    padding: 0 40px 16px;
+    padding: 24px 34px 16px 56px;
 }
 
 .gh-feedback-events-feed-container {

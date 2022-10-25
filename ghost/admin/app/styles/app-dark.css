@@ -1447,10 +1447,8 @@ kbd {
     opacity: 0.2;
 }
 
-.gh-post-activity-feed .gh-dashboard-list-item + .gh-dashboard-list-item {
-    border-color: #17191c;
-}
-
+.gh-post-activity-feed .gh-dashboard-list-item + .gh-dashboard-list-item,
+.feature-audienceFeedback .gh-links-list-item,
 .gh-post-activity-feed-footer {
     border-color: #17191c;
 }
