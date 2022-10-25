@@ -1,6 +1,5 @@
 const url = require('url');
 const debug = require('@tryghost/debug')('headers');
-const Promise = require('bluebird');
 const INVALIDATE_ALL = '/*';
 
 const cacheInvalidate = (result, options = {}) => {
