@@ -198,7 +198,7 @@
     "cli-progress": "3.11.2",
     "cssnano": "5.1.13",
     "eslint": "8.26.0",
-    "html-validate": "7.7.0",
+    "html-validate": "7.7.1",
     "inquirer": "8.2.5",
     "jwks-rsa": "2.1.5",
     "mocha": "10.1.0",
