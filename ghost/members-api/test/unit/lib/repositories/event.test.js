@@ -56,15 +56,13 @@ describe('EventRepository', function () {
             res.should.have.lengthOf(2);
 
             res[0].should.eql({
-                $and: [{
-                    type: {
-                        $nin: [
-                            'email_delivered_event',
-                            'email_opened_event',
-                            'email_failed_event'
-                        ]
-                    }
-                }]
+                type: {
+                    $nin: [
+                        'email_delivered_event',
+                        'email_opened_event',
+                        'email_failed_event'
+                    ]
+                }
             });
             res[1].should.eql({
                 $and: [{
