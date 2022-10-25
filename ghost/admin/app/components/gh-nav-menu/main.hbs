@@ -33,11 +33,9 @@
                         </a>
                     </li>
                     {{#if (gh-user-can-admin this.session.user)}}
-                        {{#if (feature "exploreApp")}}
-                        <li class="relative">
-                            <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe-simple"}} Explore</LinkTo>
-                        </li>
-                        {{/if}}
+                    <li class="relative">
+                        <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe-simple"}} Explore</LinkTo>
+                    </li>
                     {{/if}}
                 </ul>
                 <ul class="gh-nav-list gh-nav-manage">

@@ -35,7 +35,6 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'lexicalEditor',
-    'exploreApp',
     'audienceFeedback'
 ];
 

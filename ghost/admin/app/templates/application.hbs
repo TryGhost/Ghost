@@ -14,9 +14,8 @@
             {{#if this.showBilling}}
                 <GhBillingModal @billingWindowOpen={{this.billing.billingWindowOpen}} />
             {{/if}}
-            {{#if (feature "exploreApp")}}
-                <GhExploreModal />
-            {{/if}}
+
+            <GhExploreModal />
 
         </main>
 
