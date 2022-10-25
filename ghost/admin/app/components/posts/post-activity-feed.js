@@ -69,7 +69,12 @@ export default class PostActivityFeed extends Component {
     }
 
     @action
-    isPaginationNeeded({totalEvents}) {
+    isPaginationNotNeeded({totalEvents}) {
         return (totalEvents <= this._pageSize);
+    }
+
+    @action
+    areStubsNeeded({totalEvents}) {
+        return totalEvents > this._pageSize || this.args.eventType === 'feedback';
     }
 }
