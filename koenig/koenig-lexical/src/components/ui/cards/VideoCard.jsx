@@ -26,7 +26,6 @@ function EmptyVideoCard({onFileChange}) {
 
 export function VideoCard({
     isSelected,
-    src,
     onFileChange,
     caption,
     setCaption,

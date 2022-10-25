@@ -20,8 +20,8 @@ const Template = args => (
     </div>
 );
 
-export const Default = Template.bind({});
-Default.args = {
+export const Placeholder = Template.bind({});
+Placeholder.args = {
     isSelected: true,
     setAltText: true,
     caption: '',

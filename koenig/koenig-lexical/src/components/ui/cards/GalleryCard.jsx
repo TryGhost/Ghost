@@ -34,7 +34,6 @@ function EmptyGalleryCard({onFileChange}) {
 
 export function GalleryCard({
     isSelected,
-    src,
     onFileChange,
     caption,
     setCaption
