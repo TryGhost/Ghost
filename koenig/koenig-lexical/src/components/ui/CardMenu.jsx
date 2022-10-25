@@ -73,7 +73,7 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
             const isSelected = itemIndex === selectedItemIndex;
             const onClick = (event) => {
                 event.preventDefault();
-                insert?.(item.insertCommand, {insertParams: item.insertParams});
+                insert?.(item.insertCommand, {insertParams: item.insertParams, queryParams: item.queryParams});
             };
 
             if (!item.type || item.type === 'card') {

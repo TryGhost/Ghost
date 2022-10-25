@@ -282,5 +282,22 @@ describe('Slash menu', async () => {
                 <p dir="ltr"><br /></p>
             `, {ignoreCardContents: true});
         });
+
+        it('uses query params', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/image https://example.com/image.jpg');
+            await page.keyboard.press('Enter');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="image"></div>
+                </div>
+                <p dir="ltr"><br /></p>
+            `, {ignoreCardContents: true});
+
+            expect(await page.evaluate(() => {
+                return document.querySelector('[data-kg-card="image"] img').src;
+            })).to.equal('https://example.com/image.jpg');
+        });
     });
 });

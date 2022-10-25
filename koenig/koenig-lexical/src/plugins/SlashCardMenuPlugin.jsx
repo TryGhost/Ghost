@@ -12,6 +12,7 @@ function useSlashCardMenu(editor) {
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
     const [query, setQuery] = React.useState('');
+    const [commandParams, setCommandParams] = React.useState([]);
     const [cardMenu, setCardMenu] = React.useState({});
     const [selectedItemIndex, setSelectedItemIndex] = React.useState(0);
     const cachedRange = React.useRef(null);
@@ -42,20 +43,30 @@ function useSlashCardMenu(editor) {
         }
         setIsShowingMenu(false);
         setQuery('');
+        setCommandParams([]);
         cachedRange.current = null;
     }, [setIsShowingMenu]);
 
-    const insert = React.useCallback((insertCommand, {insertParams = {}} = {}) => {
-        const commandParams = {...insertParams};
+    const insert = React.useCallback((insertCommand, {insertParams = {}, queryParams = {}} = {}) => {
+        const dataset = {...insertParams};
+
+        for (let i = 0; i < queryParams.length; i++) {
+            if (commandParams[i]) {
+                const key = queryParams[i];
+                const value = commandParams[i];
+                dataset[key] = value;
+            }
+        }
 
         editor.update(() => {
             const selection = $getSelection();
             selection.modify('extend', true, 'lineboundary');
             selection.deleteCharacter(true);
-            editor.dispatchCommand(insertCommand, commandParams);
+            editor.dispatchCommand(insertCommand, dataset);
         });
+
         closeMenu();
-    }, [editor, closeMenu]);
+    }, [editor, commandParams, closeMenu]);
 
     // close menu if selection moves out of the slash command
     // update the search query when typing
@@ -95,10 +106,13 @@ function useSlashCardMenu(editor) {
                 cachedRange.current = nativeSelection.getRangeAt(0);
 
                 // capture text after the / as a query for filtering cards
-                setQuery(node.getTextContent().slice(1));
+                const command = node.getTextContent().slice(1);
+                const [q, ...cps] = command.split(' ');
+                setQuery(q);
+                setCommandParams(cps);
             });
         });
-    }, [editor, closeMenu, setQuery]);
+    }, [editor, closeMenu, setQuery, setCommandParams]);
 
     // open the menu when / is pressed on a blank paragraph
     React.useEffect(() => {

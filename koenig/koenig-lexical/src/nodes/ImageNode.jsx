@@ -44,7 +44,8 @@ export class ImageNode extends DecoratorNode {
         insertParams: {
             triggerFileDialog: true
         },
-        matches: ['image', 'img']
+        matches: ['image', 'img'],
+        queryParams: ['src']
     };
 
     static clone(node) {
@@ -178,6 +179,11 @@ export class ImageNode extends DecoratorNode {
 }
 
 export const $createImageNode = (dataset) => {
+    // don't trigger the file dialog when rendering if we've already been given a url
+    if (dataset.src) {
+        delete dataset.triggerFileDialog;
+    }
+
     return new ImageNode(dataset);
 };
 
