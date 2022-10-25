@@ -95,7 +95,7 @@ describe('page.* events', function () {
             .body({
                 pages: [
                     {
-                        title: 'testing page.published webhook',
+                        title: 'page.published',
                         status: 'draft'
                     }
                 ]
