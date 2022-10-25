@@ -15,13 +15,13 @@ export default class ExploreIndexRoute extends AuthenticatedRoute {
         // older versions of Ghost where the `connect` part lives in the
         // explore route directly. By using the query param, we avoid causing
         // a 404 and handle the redirect here.
-        if (transition.to?.queryParams?.new === 'true' || !this.feature.exploreApp) {
+        if (transition.to?.queryParams?.new === 'true') {
             this.explore.isIframeTransition = false;
             return this.router.transitionTo('explore.connect');
         }
 
         // Ensure the explore window is set to open
-        if (this.feature.get('exploreApp') && transition.to?.localName === 'index' && !this.explore.exploreWindowOpen) {
+        if (transition.to?.localName === 'index' && !this.explore.exploreWindowOpen) {
             this.explore.openExploreWindow(this.router.currentURL);
         }
     }
