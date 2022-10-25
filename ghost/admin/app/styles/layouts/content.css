@@ -1627,6 +1627,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     opacity: 0.99999;
     background-color: #ffffff;
     border-radius: 0 0 4px 4px;
+    min-height: 121px;
 }
 
 .gh-tabs-analytics h3 {
