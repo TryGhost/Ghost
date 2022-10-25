@@ -1,5 +1,6 @@
 const debug = require('@tryghost/debug')('validators:input:all');
 const _ = require('lodash');
+const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const {BadRequestError, ValidationError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
