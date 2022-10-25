@@ -1,12 +1,29 @@
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header sticky gh-member-header">
         <div class="flex flex-column">
-            <div class="gh-canvas-breadcrumb">
-                <LinkTo @route="members" data-test-link="members-back">
-                    Members
-                </LinkTo>
-                {{svg-jar "arrow-right-small"}} {{if this.member.isNew "New member" "Edit member"}}
-            </div>
+            {{#if this.fromAnalytics}}
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="posts">
+                        Posts
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}}
+                    <LinkTo @route="posts.analytics" @models={{this.fromAnalytics}}>
+                        Analytics
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}}
+                    <LinkTo @route="members" data-test-link="members-back">
+                        Members
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}} {{if this.member.isNew "New member" "Edit member"}}
+                </div>
+            {{else}}
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="members" data-test-link="members-back">
+                        Members
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}} {{if this.member.isNew "New member" "Edit member"}}
+                </div>
+            {{/if}}
             <h2 class="gh-canvas-title" data-test-screen-title>
                 {{#if this.member.isNew}}
                     New<span class="gh-canvas-title-hide-for-mobile">&nbsp;member</span>
