@@ -21,15 +21,16 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     created_at: 'created_at',
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
-    labels: 'labels',
-    products: 'products'
+    labels: 'labels'
 };
+
 module.exports = class MembersCSVImporter {
     /**
      * @param {Object} options
      * @param {string} options.storagePath - The path to store CSV's in before importing
      * @param {Function} options.getTimezone - function returning currently configured timezone
-     * @param {() => Object} options.getMembersApi
+     * @param {() => Object} options.getMembersRepository - member model access instance for data access and manipulation
+     * @param {() => Object} options.getDefaultTier - async function returning default Member Tier
      * @param {Function} options.sendEmail - function sending an email
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
      * @param {({job, offloaded}) => void} options.addJob - Method registering an async job
@@ -37,10 +38,11 @@ module.exports = class MembersCSVImporter {
      * @param {Function} options.urlFor - function generating urls
      * @param {Object} options.context
      */
-    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor, context}) {
+    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, sendEmail, isSet, addJob, knex, urlFor, context}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
-        this._getMembersApi = getMembersApi;
+        this._getMembersRepository = getMembersRepository;
+        this._getDefaultTier = getDefaultTier;
         this._sendEmail = sendEmail;
         this._isSet = isSet;
         this._addJob = addJob;
@@ -107,9 +109,8 @@ module.exports = class MembersCSVImporter {
     async perform(filePath) {
         const rows = membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
 
-        const membersApi = await this._getMembersApi();
-
-        const defaultProduct = await membersApi.productRepository.getDefaultProduct();
+        const defaultTier = await this._getDefaultTier();
+        const membersRepository = await this._getMembersRepository();
 
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
@@ -131,14 +132,14 @@ module.exports = class MembersCSVImporter {
                     created_at: row.created_at,
                     labels: row.labels
                 };
-                const existingMember = await membersApi.members.get({email: memberValues.email}, {
+                const existingMember = await membersRepository.get({email: memberValues.email}, {
                     ...options,
                     withRelated: ['labels']
                 });
                 let member;
                 if (existingMember) {
                     const existingLabels = existingMember.related('labels') ? existingMember.related('labels').toJSON() : [];
-                    member = await membersApi.members.update({
+                    member = await membersRepository.update({
                         ...memberValues,
                         labels: existingLabels.concat(memberValues.labels)
                     }, {
@@ -146,7 +147,7 @@ module.exports = class MembersCSVImporter {
                         id: existingMember.id
                     });
                 } else {
-                    member = await membersApi.members.create(memberValues, Object.assign({}, options, {
+                    member = await membersRepository.create(memberValues, Object.assign({}, options, {
                         context: {
                             import: true
                         }
@@ -154,24 +155,13 @@ module.exports = class MembersCSVImporter {
                 }
 
                 if (row.stripe_customer_id && typeof row.stripe_customer_id === 'string') {
-                    await membersApi.members.linkStripeCustomer({
+                    await membersRepository.linkStripeCustomer({
                         customer_id: row.stripe_customer_id,
                         member_id: member.id
                     }, options);
                 } else if (row.complimentary_plan) {
-                    if (!row.products) {
-                        await membersApi.members.update({
-                            products: [{id: defaultProduct.id}]
-                        }, {
-                            ...options,
-                            id: member.id
-                        });
-                    }
-                }
-
-                if (row.products) {
-                    await membersApi.members.update({
-                        products: row.products
+                    await membersRepository.update({
+                        products: [{id: defaultTier.id}]
                     }, {
                         ...options,
                         id: member.id

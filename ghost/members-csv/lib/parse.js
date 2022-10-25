@@ -29,12 +29,6 @@ module.exports = (path, headerMapping, defaultLabels = []) => {
                     }
                 }
 
-                if (header === 'products') {
-                    if (value && typeof value === 'string') {
-                        return value.split(',').map(name => ({name}));
-                    }
-                }
-
                 if (header === 'subscribed') {
                     return value.toLowerCase() !== 'false';
                 }

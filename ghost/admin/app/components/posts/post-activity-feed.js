@@ -6,6 +6,7 @@ const allEvents = [
     'click_event',
     'signup_event',
     'subscription_event',
+    'email_sent_event',
     'email_delivered_event',
     'email_opened_event',
     'email_failed_event',
@@ -13,7 +14,7 @@ const allEvents = [
 ];
 
 const eventTypes = {
-    sent: ['email_delivered_event'],
+    sent: ['email_sent_event'],
     opened: ['email_opened_event'],
     clicked: ['click_event'],
     feedback: ['feedback_event'],
@@ -65,5 +66,10 @@ export default class PostActivityFeed extends Component {
     @action
     isNextButtonDisabled({hasReachedEnd, isLoading}) {
         return hasReachedEnd || isLoading;
+    }
+
+    @action
+    isPaginationNeeded({totalEvents}) {
+        return (totalEvents <= this._pageSize);
     }
 }

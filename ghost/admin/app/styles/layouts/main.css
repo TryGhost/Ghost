@@ -484,17 +484,8 @@
     fill: var(--black);
 }
 
-.gh-nav-list a svg g,
-.gh-nav-list button.main-menu-item svg g {
-    stroke: var(--midgrey);
-}
-
-.gh-nav-list a:not(.active):hover svg g {
-    stroke: var(--darkgrey);
-}
-
-.gh-nav-list .active svg g {
-    stroke: #8FD200;
+.gh-nav-list svg circle {
+    fill: none !important;
 }
 
 .gh-nav-button-expand {

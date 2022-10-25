@@ -53,7 +53,6 @@
                     @postId={{this.post.id}}
                     @eventType="sent"
                     @linkQuery={{hash filterParam=(concat "emails.post_id:" this.post.id) }}
-                    @linkText="See filtered members for sent"
                 />
             </tabs.tabPanel>
 
@@ -68,7 +67,6 @@
                         @postId={{this.post.id}}
                         @eventType="opened"
                         @linkQuery={{hash filterParam=(concat "opened_emails.post_id:" this.post.id) }}
-                        @linkText="See filtered members for opened"
                     />
                 </tabs.tabPanel>
             {{/if}}
@@ -84,7 +82,6 @@
                         @postId={{this.post.id}}
                         @eventType="clicked"
                         @linkQuery={{hash filterParam=(concat "clicked_links.post_id:" this.post.id) }}
-                        @linkText="See filtered members for clicked"
                     />
                 </tabs.tabPanel>
             {{/if}}
@@ -123,35 +120,13 @@
     </Tabs::Tabs>
 
     {{#if this.isLoaded }}
-        <div class="gh-post-analytics-split">
-            {{#if this.showSources }}
-                <div class="gh-post-analytics-box column gh-post-analytics-source-attribution">
-                    <h3 class="gh-dashboard-metric-label">Post growth</h3>
-                    {{#if (is-empty this.sources) }}
-                        <div class="attribution-list-empty">
-                            {{svg-jar "members-outline"}}
-                            <h4>No new members for this post</h4>
-                            <p>Once someone signs up, you'll be able to see where they came from here.</p>
-                        </div>
-                    {{else}}
-                        <MemberAttribution::SourceAttributionTable
-                            @sources={{this.sources}}
-                            @sortColumn={{this.sortColumn}}
-                            @setSortColumn={{this.setSortColumn}}
-                            class="gh-dashboard-attribution-list gh-dashboard-list"
-                        />
-                    {{/if}}
-                </div>
+        {{#if this.showLinks }}
+            {{#if (is-empty this.links) }}
+            {{!-- Empty state --}}
+            {{else}}
+                <Posts::LinksTable @links={{this.links}} @updateLink={{this.updateLink}} />
             {{/if}}
-
-            {{#if this.showLinks }}
-                {{#if (is-empty this.links) }}
-                {{!-- Empty state --}}
-                {{else}}
-                    <Posts::LinksTable @links={{this.links}} @updateLink={{this.updateLink}} />
-                {{/if}}
-            {{/if}}
-        </div>
+        {{/if}}
 
         <div class="gh-post-analytics-box resources">
             <a href="https://ghost.org/help/post-analytics/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">

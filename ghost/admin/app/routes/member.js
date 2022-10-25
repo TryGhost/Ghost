@@ -9,6 +9,7 @@ export default class MembersRoute extends AdminRoute {
     @service router;
 
     _requiresBackgroundRefresh = true;
+    fromAnalytics = null;
 
     constructor() {
         super(...arguments);
@@ -27,10 +28,19 @@ export default class MembersRoute extends AdminRoute {
         }
     }
 
-    setupController(controller, member) {
+    setupController(controller, member, transition) {
         super.setupController(...arguments);
         if (this._requiresBackgroundRefresh) {
             controller.fetchMemberTask.perform(member.id);
+        }
+
+        if (transition.from?.name === 'members.index' && transition.from?.parent?.name === 'members') {
+            const fromAnalytics = transition.from?.parent?.metadata.fromAnalytics ?? null;
+            controller.fromAnalytics = fromAnalytics;
+            this.fromAnalytics = fromAnalytics;
+        } else {
+            controller.fromAnalytics = null;
+            this.fromAnalytics = null;
         }
     }
 
@@ -95,5 +105,11 @@ export default class MembersRoute extends AdminRoute {
 
     titleToken() {
         return this.controller.member.name;
+    }
+
+    buildRouteInfoMetadata() {
+        return {
+            fromAnalytics: this.fromAnalytics
+        };
     }
 }

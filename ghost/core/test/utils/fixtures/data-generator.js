@@ -588,7 +588,7 @@ DataGenerator.Content = {
             active: true,
             nickname: 'Monthly',
             currency: 'USD',
-            amount: 5000,
+            amount: 500,
             type: 'recurring',
             interval: 'month'
         },
@@ -622,6 +622,17 @@ DataGenerator.Content = {
             nickname: 'Yearly',
             currency: 'GBP',
             amount: 15000,
+            type: 'recurring',
+            interval: 'year'
+        },
+        {
+            id: ObjectId().toHexString(),
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b13',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+            active: true,
+            nickname: 'Yearly',
+            currency: 'USD',
+            amount: 5000,
             type: 'recurring',
             interval: 'year'
         }
@@ -1674,7 +1685,8 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.stripe_prices[0]),
         createBasic(DataGenerator.Content.stripe_prices[1]),
         createBasic(DataGenerator.Content.stripe_prices[2]),
-        createBasic(DataGenerator.Content.stripe_prices[3])
+        createBasic(DataGenerator.Content.stripe_prices[3]),
+        createBasic(DataGenerator.Content.stripe_prices[4])
     ];
 
     const stripe_customer_subscriptions = [
