@@ -1296,7 +1296,7 @@ kbd {
     background: #1c1e21;
 }
 
-.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover {
+.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover, .gh-links-list-item:hover {
     background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 
@@ -1415,4 +1415,42 @@ kbd {
 
 .ember-power-select-option[aria-current="true"] .kg-settings-link-url::after {
     background: linear-gradient(90deg, rgba(19,20,22,0) 0%, rgba(19,20,22,1) 100%);
+}
+
+
+/* Post Analytics */
+
+.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
+.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution {
+    background: #101114;
+    border-color: #26282b;
+}
+
+.gh-tabs-analytics {
+    background: #101114;
+    border-color: #26282b;
+}
+
+.gh-tabs-analytics .tab-panel-selected,
+.gh-tabs-analytics .tab-selected {
+    background: #101114;
+    border-color: transparent;
+}
+
+.gh-tabs-analytics .tab-list {
+    background: #17191C;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.gh-post-activity-feed-dummy {
+    opacity: 0.2;
+}
+
+.gh-post-activity-feed .gh-dashboard-list-item + .gh-dashboard-list-item {
+    border-color: #17191c;
+}
+
+.gh-post-activity-feed-footer {
+    border-color: #17191c;
 }

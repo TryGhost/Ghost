@@ -3,29 +3,27 @@ const pump = require('pump');
 const papaparse = require('papaparse');
 const fs = require('fs-extra');
 
-module.exports = (path, mapping, defaultLabels = []) => {
+/**
+ * 
+ * @param {string} path - The path to the CSV to prepare
+ * @param {Object.<string, string>} headerMapping - An object whose keys are headers in the input CSV and values are the header to replace it with
+ * @param {Array<string>} [defaultLabels] - A list of labels to apply to every parsed member row
+ * @returns 
+ */
+module.exports = (path, headerMapping, defaultLabels = []) => {
     return new Promise(function (resolve, reject) {
         const csvFileStream = fs.createReadStream(path);
         const csvParserStream = papaparse.parse(papaparse.NODE_STREAM_INPUT, {
             header: true,
             transformHeader(_header) {
-                let header = _header;
-                if (mapping && Reflect.has(mapping, _header)) {
-                    header = mapping[_header];
+                if (!headerMapping || !Reflect.has(headerMapping, _header)) {
+                    return undefined;
                 }
-                if (header === 'subscribed_to_emails') {
-                    return 'subscribed';
-                }
-                return header;
+
+                return headerMapping[_header];
             },
             transform(value, header) {
                 if (header === 'labels') {
-                    if (value && typeof value === 'string') {
-                        return value.split(',').map(name => ({name}));
-                    }
-                }
-
-                if (header === 'products') {
                     if (value && typeof value === 'string') {
                         return value.split(',').map(name => ({name}));
                     }
@@ -68,11 +66,23 @@ module.exports = (path, mapping, defaultLabels = []) => {
         });
 
         parsedCSVStream.on('data', (row) => {
+            // unmapped columns end up being assigned to 'undefined' property
+            // in the transformHeader stage, those should be removed completely
+            if (Reflect.has(row, 'undefined')) {
+                delete row.undefined;
+            }
+
+            // skip a rows with no data
+            if (!Object.keys(row).length){
+                return;
+            }
+
             if (row.labels) {
                 row.labels = row.labels.concat(defaultLabels);
             } else {
                 row.labels = defaultLabels;
             }
+
             rows.push(row);
         });
     });

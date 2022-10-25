@@ -76,11 +76,12 @@ function bulkAction(bulkActionResult, _apiConfig, frame) {
 
 /**
  *
- * @returns {{events: any[]}}
+ * @returns {{events: any[], meta: any}}
  */
 function activityFeed(data, _apiConfig, frame) {
     return {
-        events: data.events.map(e => mappers.activityFeedEvents(e, frame))
+        events: data.events.map(e => mappers.activityFeedEvents(e, frame)),
+        meta: data.meta
     };
 }
 
@@ -216,15 +217,15 @@ function createSerializer(debugString, serialize) {
  * @prop {string} id
  * @prop {string} uuid
  * @prop {string} email
- * @prop {string=} name
- * @prop {string=} note
+ * @prop {string} [name]
+ * @prop {string} [note]
  * @prop {null|string} geolocation
  * @prop {boolean} subscribed
  * @prop {string} created_at
  * @prop {string} updated_at
  * @prop {string[]} labels
  * @prop {SerializedMemberStripeSubscription[]} subscriptions
- * @prop {SerializedMemberProduct[]=} products
+ * @prop {SerializedMemberProduct[]} [products]
  * @prop {string} avatar_image
  * @prop {boolean} comped
  * @prop {number} email_count

@@ -3,7 +3,7 @@ import classic from 'ember-classic-decorator';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
-export const EMAIL_EVENTS = ['email_delivered_event','email_opened_event','email_failed_event'];
+export const EMAIL_EVENTS = ['email_sent_event', 'email_delivered_event', 'email_opened_event','email_failed_event'];
 export const NEWSLETTER_EVENTS = ['newsletter_event'];
 
 @classic
@@ -13,7 +13,7 @@ export default class MembersEventFilter extends Helper {
 
     compute(
         positionalParams,
-        {excludedEvents = [], member = '', excludeEmailEvents = false}
+        {excludedEvents = [], member = '', post = '', excludeEmailEvents = false}
     ) {
         const excludedEventsSet = new Set();
 
@@ -41,6 +41,10 @@ export default class MembersEventFilter extends Helper {
 
         if (member) {
             filterParts.push(`data.member_id:${member}`);
+        }
+
+        if (post) {
+            filterParts.push(`data.post_id:${post}`);
         }
 
         return filterParts.join('+');

@@ -72,7 +72,7 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'opened-email';
         }
 
-        if (event.type === 'email_delivered_event') {
+        if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
             icon = 'received-email';
         }
 
@@ -86,6 +86,14 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'click_event') {
             icon = 'click';
+        }
+
+        if (event.type === 'feedback_event') {
+            if (event.data.score === 1) {
+                icon = 'more-like-this';
+            } else {
+                icon = 'less-like-this';
+            }
         }
 
         return 'event-' + icon + (this.feature.get('memberAttribution') ? '--feature-attribution' : '');
@@ -141,7 +149,7 @@ export default class ParseMemberEventHelper extends Helper {
             return 'opened email';
         }
 
-        if (event.type === 'email_delivered_event') {
+        if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
             return 'received email';
         }
 
@@ -158,6 +166,13 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'click_event') {
             return 'clicked link in email';
+        }
+
+        if (event.type === 'feedback_event') {
+            if (event.data.score === 1) {
+                return 'more like this';
+            }
+            return 'less like this';
         }
     }
 
@@ -202,7 +217,7 @@ export default class ParseMemberEventHelper extends Helper {
             }
         }
 
-        if (event.type === 'click_event') {
+        if (event.type === 'click_event' || event.type === 'feedback_event') {
             if (event.data.post) {
                 return event.data.post.title;
             }
@@ -241,13 +256,7 @@ export default class ParseMemberEventHelper extends Helper {
      * Make the object clickable
      */
     getURL(event) {
-        if (event.type === 'comment_event') {
-            if (event.data.post) {
-                return event.data.post.url;
-            }
-        }
-
-        if (event.type === 'click_event') {
+        if (event.type === 'comment_event' || event.type === 'click_event' || event.type === 'feedback_event') {
             if (event.data.post) {
                 return event.data.post.url;
             }

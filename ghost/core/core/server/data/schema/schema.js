@@ -435,12 +435,24 @@ module.exports = {
             validations: {isIn: [['public', 'none']]}
         },
         trial_days: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
-        monthly_price_id: {type: 'string', maxlength: 24, nullable: true},
-        yearly_price_id: {type: 'string', maxlength: 24, nullable: true},
         description: {type: 'string', maxlength: 191, nullable: true},
-        type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'paid', validations: {isIn: [['paid', 'free']]}},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'paid',
+            validations: {
+                isIn: [['paid', 'free']]
+            }
+        },
+        currency: {type: 'string', maxlength: 50, nullable: true},
+        monthly_price: {type: 'integer', unsigned: true, nullable: true},
+        yearly_price: {type: 'integer', unsigned: true, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        // To be removed in future
+        monthly_price_id: {type: 'string', maxlength: 24, nullable: true},
+        yearly_price_id: {type: 'string', maxlength: 24, nullable: true}
     },
     offers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -618,7 +630,7 @@ module.exports = {
             }
         },
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
-        tier_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'products.id'},
+        tier_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'products.id'},
 
         // These are null if type !== 'paid'
         cadence: {
@@ -645,6 +657,7 @@ module.exports = {
     members_stripe_customers_subscriptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'members_stripe_customers.customer_id', cascadeDelete: true},
+        ghost_subscription_id: {type: 'string', maxlength: 24, nullable: true, references: 'subscriptions.id', constraintName: 'mscs_ghost_subscription_id_foreign', cascadeDelete: true},
         subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         stripe_price_id: {type: 'string', maxlength: 255, nullable: false, unique: false, index: true, defaultTo: ''},
         status: {type: 'string', maxlength: 50, nullable: false},

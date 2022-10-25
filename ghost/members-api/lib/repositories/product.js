@@ -1,4 +1,4 @@
-const {UpdateCollisionError, NotFoundError, MethodNotAllowedError, ValidationError} = require('@tryghost/errors');
+const {UpdateCollisionError, NotFoundError, MethodNotAllowedError, ValidationError, BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -129,6 +129,21 @@ class ProductRepository {
     }
 
     /**
+     * Fetches the default product
+     * @param {Object} options
+     * @returns {Promise<ProductModel>}
+     */
+    async getDefaultProduct(options = {}) {
+        const defaultProductPage = await this.list({
+            filter: 'type:paid+active:true',
+            limit: 1,
+            ...options
+        });
+
+        return defaultProductPage.data[0];
+    }
+
+    /**
      * Creates a product from a name
      *
      * @param {object} data
@@ -173,6 +188,12 @@ class ProductRepository {
             validatePrice(data.monthly_price);
         }
 
+        if (data.yearly_price && data.monthly_price && data.yearly_price.currency !== data.monthly_price.currency) {
+            throw new BadRequestError({
+                message: 'The monthly and yearly price must use the same currency'
+            });
+        }
+
         if (data.stripe_prices) {
             data.stripe_prices.forEach(validatePrice);
         }
@@ -186,6 +207,16 @@ class ProductRepository {
             benefits: data.benefits,
             welcome_page_url: data.welcome_page_url
         };
+
+        if (data.monthly_price) {
+            productData.monthly_price = data.monthly_price.amount;
+            productData.currency = data.monthly_price.currency;
+        }
+
+        if (data.yearly_price) {
+            productData.yearly_price = data.yearly_price.amount;
+            productData.currency = data.yearly_price.currency;
+        }
 
         if (Reflect.has(data, 'trial_days')) {
             productData.trial_days = data.trial_days;
@@ -298,7 +329,7 @@ class ProductRepository {
      * @param {string} data.welcome_page_url
      * @param {BenefitInput[]} data.benefits
      *
-     * @param {StripePriceInput[]=} data.stripe_prices
+     * @param {StripePriceInput[]} [data.stripe_prices]
      * @param {StripePriceInput|null} data.monthly_price
      * @param {StripePriceInput|null} data.yearly_price
      *
@@ -335,6 +366,12 @@ class ProductRepository {
             data.stripe_prices.forEach(validatePrice);
         }
 
+        if (data.yearly_price && data.monthly_price && data.yearly_price.currency !== data.monthly_price.currency) {
+            throw new BadRequestError({
+                message: 'The monthly and yearly price must use the same currency'
+            });
+        }
+
         const productId = data.id || options.id;
 
         const existingProduct = await this._Product.findOne({id: productId}, options);
@@ -346,6 +383,16 @@ class ProductRepository {
             benefits: data.benefits,
             welcome_page_url: data.welcome_page_url
         };
+
+        if (data.monthly_price) {
+            productData.monthly_price = data.monthly_price.amount;
+            productData.currency = data.monthly_price.currency;
+        }
+
+        if (data.yearly_price) {
+            productData.yearly_price = data.yearly_price.amount;
+            productData.currency = data.yearly_price.currency;
+        }
 
         if (Reflect.has(data, 'active')) {
             productData.active = data.active;

@@ -1,5 +1,6 @@
 const LinkClickTrackingService = require('../lib/LinkClickTrackingService');
 const sinon = require('sinon');
+const should = require('should');
 const assert = require('assert');
 const ObjectID = require('bson-objectid').default;
 const PostLink = require('../lib/PostLink');
@@ -34,10 +35,10 @@ describe('LinkClickTrackingService', function () {
                 }
             });
             const links = await service.getLinks({filter: 'post_id:1'});
-            
+
             // Check called with filter
             assert.ok(getAll.calledOnceWithExactly({filter: 'post_id:1'}));
-            
+
             // Check returned value
             assert.deepStrictEqual(links, ['test']);
         });
@@ -66,7 +67,7 @@ describe('LinkClickTrackingService', function () {
 
             // Check getSlugUrl called
             assert(getSlugUrl.calledOnce);
-            
+
             // Check save called
             assert(
                 save.calledOnceWithExactly(
@@ -102,7 +103,7 @@ describe('LinkClickTrackingService', function () {
 
             // Check getSlugUrl called
             assert(getSlugUrl.calledOnce);
-            
+
             // Check save called
             assert(
                 save.calledOnceWithExactly(
@@ -166,6 +167,46 @@ describe('LinkClickTrackingService', function () {
 
             assert.equal(save.firstCall.args[0].member_uuid, 'memberId');
             assert.equal(save.firstCall.args[0].link_id, linkId);
+        });
+    });
+
+    describe('bulkEdit', function () {
+        it('returns the result of updating links', async function () {
+            const service = new LinkClickTrackingService({
+                urlUtils: {
+                    absoluteToTransformReady: (d) => {
+                        return d;
+                    },
+                    isSiteUrl: sinon.stub().returns(true)
+                },
+                postLinkRepository: {
+                    updateLinks: sinon.stub().resolves({
+                        successful: 0,
+                        unsuccessful: 0,
+                        errors: [],
+                        unsuccessfulData: []
+                    })
+                },
+                linkRedirectService: {
+                    getFilteredIds: sinon.stub().resolves([])
+                }
+            });
+            const options = {
+                filter: `post_id:1+to:'https://test.com'`
+            };
+
+            const result = await service.bulkEdit({
+                action: 'updateLink',
+                meta: {
+                    link: {to: 'https://example.com'}
+                }
+            }, options);
+            should(result).eql({
+                successful: 0,
+                unsuccessful: 0,
+                errors: [],
+                unsuccessfulData: []
+            });
         });
     });
 });

@@ -70,7 +70,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.14/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.18/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;
@@ -490,7 +490,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.14/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.18/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;
@@ -605,7 +605,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.14/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.18/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;
@@ -771,7 +771,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.14/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.18/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;

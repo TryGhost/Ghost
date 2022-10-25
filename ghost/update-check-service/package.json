@@ -17,16 +17,16 @@
   ],
   "devDependencies": {
     "c8": "7.12.0",
-    "mocha": "10.0.0",
+    "mocha": "10.1.0",
     "should": "13.2.3",
     "sinon": "14.0.1",
     "uuid": "9.0.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.18",
+    "@tryghost/debug": "0.1.19",
     "@tryghost/errors": "1.2.18",
     "@tryghost/logging": "2.3.2",
-    "@tryghost/tpl": "0.1.18",
+    "@tryghost/tpl": "0.1.19",
     "bluebird": "3.7.2",
     "lodash": "4.17.21",
     "moment": "2.24.0"

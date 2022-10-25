@@ -8,7 +8,10 @@
                     "slug":             "default-product",
                     "type":             "paid",
                     "active":           true,
-                    "visibility":       "public"
+                    "visibility":       "public",
+                    "currency":         "usd",
+                    "monthly_price":    500,
+                    "yearly_price":     5000
                 },
                 {
                     "name":             "Free",
@@ -615,6 +618,16 @@
                     "name": "Report comments",
                     "action_type": "report",
                     "object_type": "comment"
+                },
+                {
+                    "name": "Browse links",
+                    "action_type": "browse",
+                    "object_type": "link"
+                },
+                {
+                    "name": "Edit links",
+                    "action_type": "edit",
+                    "object_type": "link"
                 }
             ]
         },
@@ -920,7 +933,8 @@
                     "members_stripe_connect": "auth",
                     "newsletter": "all",
                     "explore": "read",
-                    "comment": "all"
+                    "comment": "all",
+                    "link": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -954,7 +968,8 @@
                     "offer": ["browse", "read", "add", "edit"],
                     "newsletter": ["browse", "read", "add", "edit"],
                     "explore": "read",
-                    "comment": "all"
+                    "comment": "all",
+                    "link": "all"
                 },
                 "Editor": {
                     "notification": "all",

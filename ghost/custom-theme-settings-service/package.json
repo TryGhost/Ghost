@@ -18,14 +18,14 @@
   "devDependencies": {
     "@tryghost/nql-lang": "0.3.2",
     "c8": "7.12.0",
-    "mocha": "10.0.0",
+    "mocha": "10.1.0",
     "should": "13.2.3",
     "sinon": "14.0.1"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.18",
+    "@tryghost/debug": "0.1.19",
     "@tryghost/errors": "1.2.18",
-    "@tryghost/tpl": "0.1.18",
+    "@tryghost/tpl": "0.1.19",
     "lodash": "4.17.21"
   }
 }

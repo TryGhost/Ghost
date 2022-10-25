@@ -236,6 +236,17 @@ Post = ghostBookshelf.Model.extend({
     },
 
     orderRawQuery: function orderRawQuery(field, direction, withRelated) {
+        if (field === 'sentiment') {
+            if (withRelated.includes('count.sentiment')) {
+                // Internally sentiment can be included via the count.sentiment relation. We can do a quick optimisation of the query in that case.
+                return {
+                    orderByRaw: `count__sentiment ${direction}`
+                };
+            }
+            return {
+                orderByRaw: `(select AVG(score) from \`members_feedback\` where posts.id = members_feedback.post_id) ${direction}`
+            };
+        }
         if (field === 'email.open_rate' && withRelated && withRelated.indexOf('email') > -1) {
             return {
                 // *1.0 is needed on one of the columns to prevent sqlite from
@@ -1346,6 +1357,26 @@ Post = ghostBookshelf.Model.extend({
                         .as('count__paid_conversions');
                 });
             },
+            /**
+             * Combination of sigups and paid conversions, but unique per member
+             */
+            conversions(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.count('*')
+                        .from('k')
+                        .with('k', (q) => {
+                            q.select('member_id')
+                                .from('members_subscription_created_events')
+                                .whereRaw('posts.id = members_subscription_created_events.attribution_id')
+                                .union(function () {
+                                    this.select('member_id')
+                                        .from('members_created_events')
+                                        .whereRaw('posts.id = members_created_events.attribution_id');
+                                });
+                        })
+                        .as('count__conversions');
+                });
+            },
             clicks(modelOrCollection) {
                 modelOrCollection.query('columns', 'posts.*', (qb) => {
                     qb.countDistinct('members_click_events.member_id')
@@ -1357,7 +1388,7 @@ Post = ghostBookshelf.Model.extend({
             },
             sentiment(modelOrCollection) {
                 modelOrCollection.query('columns', 'posts.*', (qb) => {
-                    qb.select(qb.client.raw('ROUND(AVG(score) * 100)'))
+                    qb.select(qb.client.raw('COALESCE(ROUND(AVG(score) * 100), 0)'))
                         .from('members_feedback')
                         .whereRaw('posts.id = members_feedback.post_id')
                         .as('count__sentiment');
@@ -1368,7 +1399,7 @@ Post = ghostBookshelf.Model.extend({
                     qb.count('*')
                         .from('members_feedback')
                         .whereRaw('posts.id = members_feedback.post_id AND members_feedback.score = 0')
-                        .as('count__positive_feedback');
+                        .as('count__negative_feedback');
                 });
             },
             positive_feedback(modelOrCollection) {

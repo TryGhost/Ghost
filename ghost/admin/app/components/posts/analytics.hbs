@@ -1,5 +1,4 @@
-<section class="gh-canvas" {{did-insert this.loadData}}>
-
+<section class="gh-canvas {{if (feature "audienceFeedback") "feature-audienceFeedback"}}" {{did-insert this.loadData}}>
     <GhCanvasHeader class="gh-canvas-header gh-post-analytics-header">
         <div class="flex flex-column flex-grow-1">
             <div class="gh-canvas-breadcrumb">
@@ -42,103 +41,127 @@
         </div>
     </GhCanvasHeader>
 
-    <h4 class="gh-main-section-header small bn">
-        Engagement
-    </h4>
-    <div class="gh-post-analytics-box">
+    <Tabs::Tabs class="gh-tabs-analytics" as |tabs|>
         {{#if this.post.hasBeenEmailed}}
-            <div class="gh-post-analytics-item">
-                <LinkTo @route="members" @query={{hash filterParam=(concat "emails.post_id:[" this.post.id "]") }}>
-                    <h3>{{format-number this.post.email.emailCount}}</h3>
-                    <p>Sent</p>
-                </LinkTo>
-            </div>
+            <tabs.tab>
+                <h3>Sent</h3>
+                <p>{{format-number this.post.email.emailCount}}</p>
+            </tabs.tab>
+
+            <tabs.tabPanel>
+                <Posts::PostActivityFeed
+                    @postId={{this.post.id}}
+                    @eventType="sent"
+                    @linkQuery={{hash filterParam=(concat "emails.post_id:" this.post.id) }}
+                />
+            </tabs.tabPanel>
 
             {{#if this.post.showEmailOpenAnalytics }}
-                <div class="gh-post-analytics-item">
-                    <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" this.post.id "]") }}>
-                        <h3>{{format-number this.post.email.openedCount}}</h3>
-                        <p>Opened &mdash; <strong>{{this.post.email.openRate}}%</strong></p>
-                    </LinkTo>
-                </div>
+                <tabs.tab>
+                    <h3>Opened</h3>
+                    <p>{{format-number this.post.email.openedCount}} <strong>{{this.post.email.openRate}}%</strong></p>
+                </tabs.tab>
+
+                <tabs.tabPanel>
+                    <Posts::PostActivityFeed
+                        @postId={{this.post.id}}
+                        @eventType="opened"
+                        @linkQuery={{hash filterParam=(concat "opened_emails.post_id:" this.post.id) }}
+                    />
+                </tabs.tabPanel>
             {{/if}}
 
             {{#if this.post.showEmailClickAnalytics }}
-                <div class="gh-post-analytics-item">
-                    <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" this.post.id "]") }}>
-                        <h3>{{format-number this.post.count.clicks}}</h3>
-                        <p>Clicked &mdash; <strong>{{this.post.clickRate}}%</strong></p>
-                    </LinkTo>
-                </div>
-            {{/if}}
-        {{/if}}
+                <tabs.tab>
+                    <h3>Clicked</h3>
+                    <p>{{format-number this.post.count.clicks}} <strong>{{this.post.clickRate}}%</strong></p>
+                </tabs.tab>
 
-        {{#if this.post.showAttributionAnalytics }}
-            <div class="gh-post-analytics-item">
-                <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" this.post.id "]") }}>
-                    <h3>{{format-number this.post.count.signups}}</h3>
-                    <p>{{gh-pluralize this.post.count.signups "signup" without-count=true}}</p>
-                </LinkTo>
-            </div>
-
-            {{#if this.post.showPaidAttributionAnalytics }}
-                <div class="gh-post-analytics-item">
-                    <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" this.post.id "]") }}>
-                        <h3>{{format-number this.post.count.paid_conversions}}</h3>
-                        <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.paid_conversions "conversion" without-count=true}}</p>
-                    </LinkTo>
-                </div>
+                <tabs.tabPanel>
+                    <Posts::PostActivityFeed
+                        @postId={{this.post.id}}
+                        @eventType="clicked"
+                        @linkQuery={{hash filterParam=(concat "clicked_links.post_id:" this.post.id) }}
+                    />
+                </tabs.tabPanel>
             {{/if}}
         {{/if}}
 
         {{#if this.post.showAudienceFeedback }}
-            <div class="gh-post-analytics-item">
-                <h3>{{format-number this.post.count.positive_feedback}}</h3>
-                <p>More like this &mdash; <strong>{{this.post.count.sentiment}}%</strong></p>
-            </div>
+            <tabs.tab>
+                <h3>Positive feedback</h3>
+                <p>
+                    {{format-number this.post.count.positive_feedback}}
+                    {{!-- <strong>{{this.post.sentiment}}%</strong> --}}
+                </p>
+            </tabs.tab>
+
+            <tabs.tabPanel>
+                <Posts::PostActivityFeed
+                    @postId={{this.post.id}}
+                    @eventType="feedback"
+                    @data={{array this.post.count.positive_feedback this.post.count.negative_feedback}}
+                    @positiveLink={{hash filterParam=(concat "(feedback.post_id:" this.post.id "+feedback.score:1)")}}
+                    @negativeLink={{hash filterParam=(concat "(feedback.post_id:" this.post.id "+feedback.score:0)")}}
+                />
+            </tabs.tabPanel>
         {{/if}}
-    </div>
+
+        {{#if this.post.showAttributionAnalytics }}
+            <tabs.tab>
+                <h3>{{gh-pluralize this.post.count.conversions "Conversions" without-count=true}}</h3>
+                <p>{{format-number this.post.count.conversions}}</p>
+            </tabs.tab>
+
+            <tabs.tabPanel>
+                <Posts::PostActivityFeed @postId={{this.post.id}} @eventType="conversion" />
+            </tabs.tabPanel>
+        {{/if}}
+    </Tabs::Tabs>
 
     {{#if this.isLoaded }}
-        {{#if this.showLinks }}
-            {{#if (is-empty this.links) }}
-                {{!-- Empty state --}}
-            {{else}}
-                <Posts::LinksTable @links={{this.links}} />
-            {{/if}}
-        {{/if}}
-
-        {{#if this.showSources }}
-            {{#if (is-empty this.sources) }}
-                {{!-- Empty state --}}
-            {{else}}
-                <h4 class="gh-main-section-header small bn">
-                    Growth from this post
-                </h4>
-                <div class="gh-post-analytics-box column">
-                    <div class="gh-attribution-box">
-                        <div class="gh-attribution-table-column">
-                            <MemberAttribution::SourceAttributionTable
-                                @sources={{this.sources}}
-                                @sortColumn={{this.sortColumn}}
-                                @setSortColumn={{this.setSortColumn}}
-                            />
+        <div class="gh-post-analytics-split">
+            {{#if this.showSources }}
+                <div class="gh-post-analytics-box column gh-post-analytics-source-attribution">
+                    <h3 class="gh-dashboard-metric-label">Post growth</h3>
+                    {{#if (is-empty this.sources) }}
+                        <div class="attribution-list-empty">
+                            {{svg-jar "members-outline"}}
+                            <h4>No new members for this post</h4>
+                            <p>Once someone signs up, you'll be able to see where they came from here.</p>
                         </div>
-                    </div>
+                    {{else}}
+                        <MemberAttribution::SourceAttributionTable
+                            @sources={{this.sources}}
+                            @sortColumn={{this.sortColumn}}
+                            @setSortColumn={{this.setSortColumn}}
+                            class="gh-dashboard-attribution-list gh-dashboard-list"
+                        />
+                    {{/if}}
                 </div>
             {{/if}}
-        {{/if}}
 
-        <h4 class="gh-main-section-header small bn">
-            Get started with analytics
-        </h4>
+            {{#if this.showLinks }}
+                {{#if (is-empty this.links) }}
+                {{!-- Empty state --}}
+                {{else}}
+                    <Posts::LinksTable @links={{this.links}} @updateLink={{this.updateLink}} />
+                {{/if}}
+            {{/if}}
+        </div>
+
         <div class="gh-post-analytics-box resources">
             <a href="https://ghost.org/help/post-analytics/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
                 <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-1.jpg);"></div>
                 <div class="flex flex-column justify-between">
                     <div>
-                        <h3>Understanding analytics in Ghost</h3>
-                        <p>Find out how to review the performance of your content and get the most out of post analytics in Ghost.</p>
+                        <h4 class="gh-main-section-header small bn">
+                            Ghost help
+                        </h4>
+                        <div>
+                            <h3>Understanding analytics in Ghost</h3>
+                            <p>Find out how to review the performance of your content and get the most out of post analytics in Ghost.</p>
+                        </div>
                     </div>
                     <div class="gh-btn gh-btn-link">Read more &rarr;</div>
                 </div>
@@ -147,8 +170,13 @@
                 <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-2.jpg);"></div>
                 <div class="flex flex-column justify-between">
                     <div>
-                        <h3>How to get your content seen online</h3>
-                        <p>Use these content distribution tactics to get more people to discover your work and increase engagement.</p>
+                        <h4 class="gh-main-section-header small bn">
+                            Ghost resources
+                        </h4>
+                        <div>
+                            <h3>How to get your content seen online</h3>
+                            <p>Use these content distribution tactics to get more people to discover your work and increase engagement.</p>
+                        </div>
                     </div>
                     <div class="gh-btn gh-btn-link">Read more &rarr;</div>
                 </div>

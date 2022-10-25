@@ -1,0 +1,750 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Activity Feed API Can filter events by post id 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "20",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 15,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can filter events by post id 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "23031",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can limit events 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "2",
+      "next": null,
+      "page": null,
+      "pages": 8,
+      "prev": null,
+      "total": 15,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can limit events 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1240",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Returns click events in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/0",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "member1@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Mr Egg",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "HTML Ipsum",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/1",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "member2@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": null,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Ghostly Kitchen Sink",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/2",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "paid@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Egon Spengler",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Short and Sweet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/3",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "trialing@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Ray Stantz",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not finished yet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/4",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "comped@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Vinz Clortho",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not so short, bit complex",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/5",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "vip@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Winston Zeddemore",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a static page",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/6",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "vip-paid@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Peter Venkman",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a draft static page",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/7",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "with-product@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Dana Barrett",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a scheduled post!!",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 8,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns click events in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3722",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Returns comments in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns comments in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1238",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Returns email delivered events in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns email delivered events in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1246",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Returns email opened events in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns email opened events in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1243",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Returns email sent events in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns email sent events in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "5774",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Returns feedback events in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "member1@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Mr Egg",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "HTML Ipsum",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "member2@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": null,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Ghostly Kitchen Sink",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "paid@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Egon Spengler",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Short and Sweet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "trialing@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Ray Stantz",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not finished yet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "comped@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Vinz Clortho",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not so short, bit complex",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "vip@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Winston Zeddemore",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a static page",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "vip-paid@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Peter Venkman",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a draft static page",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "with-product@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Dana Barrett",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a scheduled post!!",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 8,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns feedback events in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3690",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Returns signup events in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 8,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns signup events in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "23027",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

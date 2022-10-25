@@ -1,1 +1,5 @@
-<Posts::Analytics @post={{this.post}} />
+{{#if (feature 'audienceFeedback') }}
+    <Posts::Analytics @post={{this.post}} />
+{{else}}
+    <Posts::OldAnalytics @post={{this.post}} />
+{{/if}}

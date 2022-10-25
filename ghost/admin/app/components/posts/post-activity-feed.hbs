@@ -1,0 +1,148 @@
+<div class="gh-post-activity-feed">
+    {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId excludedEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
+        {{#if eventsFetcher.isError}}
+            <div class="gh-dashboard-list-body">
+                <div class="gh-dashboard-list-error">
+                    <p>There was an error loading events</p>
+                    {{#if eventsFetcher.errorMessage}}
+                        <code>{{eventsFetcher.errorMessage}}</code>
+                    {{/if}}
+                </div>
+            </div>
+        {{/if}}
+
+        {{#if (and (not eventsFetcher.data) (not eventsFetcher.isLoading))}}
+            <div class="gh-dashboard-list-body">
+                <div class="gh-post-activity-feed-empty">
+                    <div class="attribution-list-empty">
+                        {{#if (eq this.eventType "sent")}}
+                            {{svg-jar "empty-sent"}}
+                            <h4>No members have received your email yet</h4>
+                            <p>Once someone receives your email, you'll be able to see the member activity here.</p>
+                        {{else if (eq this.eventType "opened")}}
+                            {{svg-jar "empty-opened"}}
+                            <h4>No members have opened your email yet</h4>
+                            <p>Once someone opens your email, you'll be able to see the member activity here.</p>
+                        {{else if (eq this.eventType "clicked")}}
+                            {{svg-jar "empty-clicked"}}
+                            <h4>No members have clicked in your email yet</h4>
+                            <p>Once someone clicks in your email, you'll be able to see the member activity here.</p>
+                        {{else if (eq this.eventType "feedback")}}
+                            {{svg-jar "empty-feedback"}}
+                            <h4>No members have responded with feedback yet</h4>
+                            <p>Once someone has responded with feedback, you'll be able to see the member activity here.</p>
+                        {{else if (eq this.eventType "conversion")}}
+                            {{svg-jar "empty-conversion"}}
+                            <h4>No members have signed up or upgraded yet</h4>
+                            <p>Once someone has signed up or upgraded, you'll be able to see the member activity here.</p>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        {{else}}
+            <div class="gh-dashboard-list-body">
+                {{#each eventsFetcher.data as |event|}}
+                    {{#let (parse-member-event event) as |parsedEvent|}}
+                        <div class="gh-dashboard-list-item">
+                            <div class="gh-dashboard-list-item-sub">
+                                <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}">{{parsedEvent.subject}}</LinkTo>
+                            </div>
+                            <div class="gh-dashboard-list-item-sub">
+                                {{svg-jar parsedEvent.icon }}
+                                <span class="gh-dashboard-list-subtext">
+                                    <span class="gh-members-activity-description">
+                                        <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="gh-dashboard-list-item-sub">
+                                <span class="gh-dashboard-list-subtext">{{moment-from-now parsedEvent.timestamp}}</span>
+                            </div>
+                        </div>
+                    {{/let}}
+                {{/each}}
+
+                {{#let (compute (fn this.getAmountOfStubs eventsFetcher)) as |stubs|}}
+                    {{#each stubs}}
+                        <div class="gh-dashboard-list-item">
+                            <div class="gh-post-activity-feed-dummy"></div>
+                            <div class="gh-post-activity-feed-dummy"></div>
+                            <div class="gh-post-activity-feed-dummy"></div>
+                        </div>
+                    {{/each}}
+                {{/let}}
+
+                <div class="gh-post-activity-feed-footer">
+                    <div class="gh-post-activity-feed-pagination">
+                        <div class="gh-post-activity-feed-pagination-group">
+                            <button
+                                class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
+                                type="button"
+                                title="Previous page"
+                                disabled={{compute (fn this.isPreviousButtonDisabled eventsFetcher)}}
+                                {{on "click" eventsFetcher.loadPreviousPage}}
+                            >
+                                {{svg-jar "arrow-left-pagination"}}
+                            </button>
+
+                            <button
+                                class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
+                                type="button"
+                                title="Next page"
+                                disabled={{compute (fn this.isNextButtonDisabled eventsFetcher)}}
+                                {{on "click" eventsFetcher.loadNextPage}}
+                            >
+                                {{svg-jar "arrow-right-pagination"}}
+                            </button>
+                        </div>
+
+                        Showing {{eventsFetcher.previousEvents}}-{{eventsFetcher.shownEvents}} of {{eventsFetcher.totalEvents}}
+                    </div>
+
+                    {{#if @linkQuery}}
+                        <LinkTo
+                            class="gh-post-activity-feed-pagination-link"
+                            @route="members"
+                            @query={{@linkQuery}}
+                        >
+                            {{svg-jar "filter"}}
+                            See members
+                        </LinkTo>
+                    {{/if}}
+                </div>
+            </div>
+
+            {{#if (eq @eventType 'feedback')}}
+                <div
+                    class="gh-feedback-events-feed"
+                    id="gh-feedback-events-feed"
+                    {{on "mouseleave" this.onMouseleave}}
+                >
+                    <div class="gh-feedback-events-feed-container">
+                        <Posts::FeedbackEventsChart
+                            @data={{@data}}
+                        />
+                    </div>
+
+                    <div
+                        class="gh-feedback-events-tooltip"
+                        id="gh-feedback-events-tooltip"
+                        {{did-insert this.onTooltipInsert}}
+                    >
+                        <div id="gh-feedback-events-tooltip-body">
+
+                        </div>
+
+                        <div class="gh-feedback-events-tooltip-footer" id="gh-feedback-events-tooltip-footer">
+                            <Posts::FeedbackEventsTooltipTemplate
+                                @positiveLink={{@positiveLink}}
+                                @negativeLink={{@negativeLink}}
+                            />
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+        {{/if}}
+    {{/let}}
+</div>

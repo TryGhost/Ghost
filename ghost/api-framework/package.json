@@ -20,15 +20,15 @@
   "devDependencies": {
     "bluebird": "3.7.2",
     "c8": "7.12.0",
-    "mocha": "10.0.0",
+    "mocha": "10.1.0",
     "should": "13.2.3",
     "sinon": "14.0.1"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.18",
+    "@tryghost/debug": "0.1.19",
     "@tryghost/errors": "1.2.18",
     "@tryghost/promise": "0.1.22",
-    "@tryghost/tpl": "0.1.18",
+    "@tryghost/tpl": "0.1.19",
     "@tryghost/validator": "0.1.29",
     "jsonpath": "1.1.1",
     "lodash": "4.17.21"

@@ -16,11 +16,13 @@ const urlService = require('../../services/url');
 const linkReplacer = require('@tryghost/link-replacer');
 const linkTracking = require('../link-tracking');
 const memberAttribution = require('../member-attribution');
+const feedbackButtons = require('./feedback-buttons');
+const labs = require('../../../shared/labs');
 
 const ALLOWED_REPLACEMENTS = ['first_name', 'uuid'];
 
 const PostEmailSerializer = {
-    
+
     // Format a full html document ready for email by inlining CSS, adjusting links,
     // and performing any client-specific fixes
     formatHtmlForEmail(html) {
@@ -107,6 +109,19 @@ const PostEmailSerializer = {
         return signupUrl.href;
     },
 
+    /**
+     * replaceFeedbackLinks
+     *
+     * Replace the button template links with real links
+     *
+     * @param {string} html
+     * @param {string} postId (will be url encoded)
+     * @param {string} memberUuid member uuid to use in the URL (will be url encoded)
+     */
+    replaceFeedbackLinks(html, postId, memberUuid) {
+        return feedbackButtons.generateLinks(postId, memberUuid, html);
+    },
+
     // NOTE: serialization is needed to make sure we do post transformations such as image URL transformation from relative to absolute
     async serializePostModel(model) {
         // fetch mobiledoc rather than html and plaintext so we can render email-specific contents
@@ -163,12 +178,21 @@ const PostEmailSerializer = {
         const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
         const REPLACEMENT_STRING_REGEX = /\{(?<recipientProperty>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
 
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
         const replacements = [];
 
         ['html', 'plaintext'].forEach((format) => {
             let result;
             while ((result = EMAIL_REPLACEMENT_REGEX.exec(email[format])) !== null) {
                 const [replacementMatch, replacementStr] = result;
+
+                // Did we already found this match and added it to the replacements array?
+                if (replacements.find(r => r.match === replacementMatch && r.format === format)) {
+                    continue;
+                }
                 const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
 
                 if (match) {
@@ -181,6 +205,7 @@ const PostEmailSerializer = {
                             format,
                             id,
                             match: replacementMatch,
+                            regexp: new RegExp(escapeRegExp(replacementMatch), 'g'),
                             recipientProperty: `member_${recipientProperty}`,
                             fallback
                         });
@@ -206,6 +231,7 @@ const PostEmailSerializer = {
             titleAlignment: newsletter.get('title_alignment'),
             bodyFontCategory: newsletter.get('body_font_category'),
             showBadge: newsletter.get('show_badge'),
+            feedbackEnabled: newsletter.get('feedback_enabled') && labs.isSet('audienceFeedback'),
             footerContent: newsletter.get('footer_content'),
             showHeaderName: newsletter.get('show_header_name'),
             accentColor,
@@ -335,7 +361,7 @@ const PostEmailSerializer = {
             plaintext: post.plaintext
         };
 
-        /** 
+        /**
          *  If a part of the email is members-only and the post is paid-only, add a paywall:
          *  - Just before sending the email, we'll hide the paywall or paid content depending on the member segment it is sent to.
          *  - We already need to do URL-replacement on the HTML here
@@ -369,11 +395,19 @@ const PostEmailSerializer = {
 
                 // Add link click tracking
                 url = await linkTracking.service.addTrackingToUrl(url, post, '--uuid--');
-                
+
                 // We need to convert to a string at this point, because we need invalid string characters in the URL
                 const str = url.toString().replace(/--uuid--/g, '%%{uuid}%%');
                 return str;
             });
+        }
+
+        // Add buttons
+        if (labs.isSet('audienceFeedback')) {
+            // create unique urls for every recipient (for example, for feedback buttons)
+            // Note, we need to use a different member uuid in the links because `%%{uuid}%%` would get escaped by the URL object when set as a search param
+            const urlSafeToken = '--' + new Date().getTime() + 'url-safe-uuid--';
+            result.html = this.replaceFeedbackLinks(result.html, post.id, urlSafeToken).replace(new RegExp(urlSafeToken, 'g'), '%%{uuid}%%');
         }
 
         // Clean up any unknown replacements strings to get our final content
@@ -490,7 +524,7 @@ const PostEmailSerializer = {
         });
 
         result.html = this.formatHtmlForEmail($.html());
-        result.plaintext = htmlToPlaintext.email(result.html); 
+        result.plaintext = htmlToPlaintext.email(result.html);
         delete result.post;
 
         return result;

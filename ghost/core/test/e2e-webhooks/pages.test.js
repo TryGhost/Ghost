@@ -27,7 +27,8 @@ const buildAuthorSnapshot = (roles = false) => {
     const authorSnapshot = {
         last_seen: anyISODateTime,
         created_at: anyISODateTime,
-        updated_at: anyISODateTime
+        updated_at: anyISODateTime,
+        url: anyLocalURL
     };
 
     if (roles) {
@@ -120,6 +121,59 @@ describe('page.* events', function () {
             });
     });
 
+    it('page.edited event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-edited/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.edited',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.edited webhook',
+                        status: 'draft',
+                        slug: 'testing-page-edited-webhook'
+                    }
+                ]
+            })
+            .expectStatus(201);
+        
+        const id = res.body.pages[0].id;
+        const updatedPage = res.body.pages[0];
+        updatedPage.title = 'updated test page';
+        updatedPage.slug = 'updated-test-page';
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [updatedPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: false,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiers(2)
+                }
+            });
+    });
+
     it('page.scheduled event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/page-scheduled/';
         await webhookMockReceiver.mock(webhookURL);
@@ -161,6 +215,57 @@ describe('page.* events', function () {
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiers(2)
+                }
+            });
+    });
+
+    it('page.unpublished event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-unpublished/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.unpublished',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.unpublished webhook',
+                        status: 'published'
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const previouslyPublishedPage = res.body.pages[0];
+        previouslyPublishedPage.status = 'draft';
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [previouslyPublishedPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({               
                 page: {
                     current: buildPageSnapshotWithTiers({
                         published: true,

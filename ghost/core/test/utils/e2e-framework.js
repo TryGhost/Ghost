@@ -158,7 +158,7 @@ const resetData = async () => {
  * Creates a ContentAPITestAgent which is a drop-in substitution for supertest.
  * It is automatically hooked up to the Content API so you can make requests to e.g.
  * agent.get('/posts/') without having to worry about URL paths
- * @returns {Promise<ContentAPITestAgent>} agent
+ * @returns {Promise<InstanceType<ContentAPITestAgent>>} agent
  */
 const getContentAPIAgent = async () => {
     try {
@@ -182,7 +182,7 @@ const getContentAPIAgent = async () => {
  *
  * @param {Object} [options={}]
  * @param {Boolean} [options.members] Include members in the boot process
- * @returns {Promise<AdminAPITestAgent>} agent
+ * @returns {Promise<InstanceType<AdminAPITestAgent>>} agent
  */
 const getAdminAPIAgent = async (options = {}) => {
     const bootOptions = {};
@@ -210,7 +210,7 @@ const getAdminAPIAgent = async (options = {}) => {
  * It is automatically hooked up to the Members API so you can make requests to e.g.
  * agent.get('/webhooks/stripe/') without having to worry about URL paths
  *
- * @returns {Promise<MembersAPITestAgent>} agent
+ * @returns {Promise<InstanceType<MembersAPITestAgent>>} agent
  */
 const getMembersAPIAgent = async () => {
     const bootOptions = {
@@ -235,7 +235,7 @@ const getMembersAPIAgent = async () => {
  * It is automatically hooked up to the Ghost API so you can make requests to e.g.
  * agent.get('/well-known/jwks.json') without having to worry about URL paths
  *
- * @returns {Promise<GhostAPITestAgent>} agent
+ * @returns {Promise<InstanceType<GhostAPITestAgent>>} agent
  */
 const getGhostAPIAgent = async () => {
     const bootOptions = {
@@ -258,7 +258,7 @@ const getGhostAPIAgent = async () => {
 
 /**
  *
- * @returns {Promise<{adminAgent: AdminAPITestAgent, membersAgent: MembersAPITestAgent}>} agents
+ * @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>}>} agents
  */
 const getAgentsForMembers = async () => {
     let membersAgent;
@@ -384,7 +384,7 @@ module.exports = {
         // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
         //        this matcher should be removed once the issue is solved - routing is redesigned
         //        An ideal solution would be removal of this matcher altogether.
-        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:2369\/\w+\//),
+        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:2369\/[A-Za-z0-9_-]+\//),
         stringMatching
     },
 

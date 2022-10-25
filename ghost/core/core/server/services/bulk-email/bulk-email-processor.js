@@ -221,6 +221,10 @@ module.exports = {
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients`);
 
+        // Update email content for this segment before searching replacements
+        emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
+
+        // Check all the used replacements in this email
         const replacements = postEmailSerializer.parseReplacements(emailData);
 
         // collate static and dynamic data for each recipient ready for provider
@@ -243,8 +247,6 @@ module.exports = {
 
             recipientData[recipient.member_email] = data;
         });
-
-        emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
 
         try {
             const response = await mailgunClient.send(emailData, recipientData, replacements);
