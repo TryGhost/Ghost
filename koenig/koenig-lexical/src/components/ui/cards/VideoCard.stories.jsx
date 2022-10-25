@@ -20,8 +20,8 @@ const Template = args => (
     </div>
 );
 
-export const Placeholder = Template.bind({});
-Placeholder.args = {
+export const Empty = Template.bind({});
+Empty.args = {
     isSelected: true,
     caption: ''
 };

@@ -29,8 +29,8 @@ Empty.args = {
     contentPlaceholder: 'Collapsible content'
 };
 
-export const WithText = Template.bind({});
-WithText.args = {
+export const Populated = Template.bind({});
+Populated.args = {
     isSelected: true,
     header: 'When should I use Toggles?',
     headerPlaceholder: 'Toggle header',

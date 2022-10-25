@@ -28,8 +28,8 @@ Empty.args = {
     backgroundColor: 'grey'
 };
 
-export const WithText = Template.bind({});
-WithText.args = {
+export const Populated = Template.bind({});
+Populated.args = {
     isSelected: true,
     value: 'Something to pay attention to.',
     valuePlaceholder: 'Callout text...',
