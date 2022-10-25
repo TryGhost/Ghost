@@ -484,6 +484,10 @@
     fill: var(--black);
 }
 
+.gh-nav-list svg circle {
+    fill: none !important;
+}
+
 .gh-nav-button-expand {
     display: flex;
     align-items: center;
