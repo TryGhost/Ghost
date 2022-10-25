@@ -40,7 +40,7 @@
                 </div>
             </div>
         {{else}}
-            <div class="gh-dashboard-list-body {{if (eq this.eventType "conversion") "gh-dashboard-list-four-cols" }}">
+            <div class="gh-dashboard-list-body {{if (eq this.eventType "clicked") "gh-dashboard-list-larger-cols" }} {{if (eq this.eventType "conversion") "gh-dashboard-list-four-cols" }}">
                 {{#each eventsFetcher.data as |event|}}
                     {{#let (parse-member-event event) as |parsedEvent|}}
                         <div class="gh-dashboard-list-item">
@@ -53,6 +53,10 @@
                                 <span class="gh-dashboard-list-subtext">
                                     <span class="gh-members-activity-description">
                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
+                                        {{#if parsedEvent.url}}
+                                            <span class="gh-members-activity-event-dash">–</span>
+                                            <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.description}}</a>
+                                        {{/if}}
                                     </span>
                                 </span>
                             </div>
