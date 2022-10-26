@@ -1,5 +1,6 @@
 const TableImporter = require('./base');
 const {faker} = require('@faker-js/faker');
+const {faker: americanFaker} = require('@faker-js/faker/locale/en_US');
 const {blogStartDate: startTime} = require('../utils/blog-info');
 const generateEvents = require('../utils/event-generator');
 const {luck} = require('../utils/random');
@@ -21,13 +22,14 @@ class MembersImporter extends TableImporter {
 
     generate() {
         const id = faker.database.mongodbObjectId();
-        const name = `${faker.name.firstName()} ${faker.name.lastName()}`;
+        // Use name from American locale to reflect an English-speaking audience
+        const name = `${americanFaker.name.firstName()} ${americanFaker.name.lastName()}`;
         const timestamp = this.timestamps.shift();
 
         return {
             id,
             uuid: faker.datatype.uuid(),
-            email: faker.internet.exampleEmail(name, faker.random.numeric(7)).toLowerCase(),
+            email: faker.internet.email(name, faker.date.birthdate().getFullYear().toString(), 'examplemail.com').toLowerCase(),
             status: luck(5) ? 'comped' : luck(25) ? 'paid' : 'free',
             name: name,
             expertise: luck(30) ? faker.name.jobTitle() : undefined,
