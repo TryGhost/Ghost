@@ -1,11 +1,9 @@
 const {faker} = require('@faker-js/faker');
 const TableImporter = require('./base');
-const {luck} = require('../utils/random');
 
 class MembersNewslettersImporter extends TableImporter {
-    constructor(knex, {newsletters}) {
+    constructor(knex) {
         super('members_newsletters', knex);
-        this.newsletters = newsletters;
     }
 
     setImportOptions({model}) {
@@ -13,24 +11,10 @@ class MembersNewslettersImporter extends TableImporter {
     }
 
     generate() {
-        let newsletterId;
-        if (this.model.status === 'free') {
-            if (luck(90)) {
-                newsletterId = this.newsletters[0].id;
-            } else {
-                return null;
-            }
-        } else {
-            if (luck(95)) {
-                newsletterId = this.newsletters[1].id;
-            } else {
-                return null;
-            }
-        }
         return {
             id: faker.database.mongodbObjectId(),
-            member_id: this.model.id,
-            newsletter_id: newsletterId
+            member_id: this.model.member_id,
+            newsletter_id: this.model.newsletter_id
         };
     }
 }
