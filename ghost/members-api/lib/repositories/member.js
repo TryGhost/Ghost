@@ -227,6 +227,11 @@ module.exports = class MemberRepository {
             options = {};
         }
 
+        if (!options.request_id) {
+            // We'll use this to link related events
+            options.request_id = ObjectId().toHexString();
+        }
+
         const {labels, stripeCustomer, offerId, attribution} = data;
 
         if (labels) {
@@ -339,7 +344,7 @@ module.exports = class MemberRepository {
                         subscription,
                         offerId,
                         attribution
-                    });
+                    }, {request_id: options.request_id});
                 } catch (err) {
                     if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                         throw err;
@@ -352,6 +357,7 @@ module.exports = class MemberRepository {
         }
         this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
+            requestId: options.request_id,
             attribution: data.attribution,
             source
         }, eventData.created_at), options);
@@ -807,6 +813,11 @@ module.exports = class MemberRepository {
                 });
             });
         }
+
+        if (!options.request_id) {
+            options.request_id = ObjectId().toHexString();
+        }
+
         const member = await this._Member.findOne({
             id: data.id
         }, {...options, forUpdate: true});
@@ -1010,7 +1021,8 @@ module.exports = class MemberRepository {
                 memberId: member.id,
                 subscriptionId: subscriptionModel.get('id'),
                 offerId: data.offerId,
-                attribution: data.attribution
+                attribution: data.attribution,
+                requestId: options.request_id
             });
             this.dispatchEvent(event, options);
         }
