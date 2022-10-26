@@ -22,6 +22,18 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true
+    isSelected: true,
+    isPopulated: false,
+    audioTitle: '',
+    audioTitlePlaceholder: 'Add a title...',
+    totalDuration: ''
 };
 
+export const Populated = Template.bind({});
+Populated.args = {
+    isSelected: true,
+    isPopulated: true,
+    audioTitle: 'Audio file title',
+    audioTitlePlaceholder: 'Add a title...',
+    totalDuration: '0:27'
+};
