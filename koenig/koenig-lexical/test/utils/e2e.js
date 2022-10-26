@@ -47,7 +47,8 @@ export async function assertHTML(
         ignoreInlineStyles = true,
         ignoreInnerSVG = true,
         getBase64FileFormat = true,
-        ignoreCardContents = false
+        ignoreCardContents = false,
+        ignoreCardToolbarContents = false
     } = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
@@ -56,14 +57,16 @@ export async function assertHTML(
         ignoreInlineStyles,
         ignoreInnerSVG,
         getBase64FileFormat,
-        ignoreCardContents
+        ignoreCardContents,
+        ignoreCardToolbarContents
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
         ignoreInnerSVG,
         getBase64FileFormat,
-        ignoreCardContents
+        ignoreCardContents,
+        ignoreCardToolbarContents
     });
     expect(actual).toEqual(expected);
 }
@@ -86,9 +89,18 @@ export function prettifyHTML(string, options = {}) {
         output = output.replace(/(^|[\s">])data:([^;]*);([^"]*),([^"]*)/g, '$1data:$2;$3,BASE64DATA');
     }
 
-    if (options.ignoreCardContents) {
+    if (options.ignoreCardContents || options.ignoreCardToolbarContents) {
         const {document} = parseHTML(output);
-        document.querySelectorAll('[data-kg-card]').forEach((element) => {
+
+        const querySelectors = [];
+        if (options.ignoreCardContents) {
+            querySelectors.push('[data-kg-card]');
+        }
+        if (options.ignoreCardToolbarContents) {
+            querySelectors.push('[data-kg-card-toolbar]');
+        }
+
+        document.querySelectorAll(querySelectors.join(', ')).forEach((element) => {
             for (const child of element.childNodes) {
                 child.remove();
             }

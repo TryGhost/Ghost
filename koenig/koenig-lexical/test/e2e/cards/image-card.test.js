@@ -63,9 +63,10 @@ describe('Image card', async () => {
                             <button name="alt-toggle-button">Alt</button>
                         </figcaption>
                     </figure>
+                    <div data-kg-card-toolbar="image"></div>
                 </div>
             </div>
-        `);
+        `, {ignoreCardToolbarContents: true});
     });
 
     test('can toggle to alt text', async function () {
@@ -92,9 +93,10 @@ describe('Image card', async () => {
                             <button name="alt-toggle-button">Alt</button>
                         </figcaption>
                     </figure>
+                    <div data-kg-card-toolbar="image"></div>
                 </div>
             </div>
-        `);
+        `, {ignoreCardToolbarContents: true});
     });
 
     test('renders caption if present', async function () {
@@ -122,9 +124,10 @@ describe('Image card', async () => {
                             <button name="alt-toggle-button">Alt</button>
                         </figcaption>
                     </figure>
+                    <div data-kg-card-toolbar="image"></div>
                 </div>
             </div>
-        `);
+        `, {ignoreCardToolbarContents: true});
     });
 
     test('renders image card toolbar', async function () {
@@ -262,9 +265,10 @@ describe('Image card', async () => {
                             <button name="alt-toggle-button">Alt</button>
                         </figcaption>
                     </figure>
+                    <div data-kg-card-toolbar="image"></div>
                 </div>
             </div>
-        `);
+        `, {ignoreCardToolbarContents: true});
     });
 
     test('toolbar does not disappear on click', async function () {
