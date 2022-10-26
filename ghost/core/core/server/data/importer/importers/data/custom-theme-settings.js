@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('importer:roles');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
-const {activate} = require('../../../../services/themes/activate');
+const themeService = require('../../../../services/themes');
 
 class CustomThemeSettingsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -29,7 +29,6 @@ class CustomThemeSettingsImporter extends BaseImporter {
                     if (_.isObject(item.value)) {
                         item.value = JSON.stringify(item.value);
                     }
-                    
                     if (setting) {
                         setting.set('value', item.value);
                         if (setting.hasChanged()) {
@@ -61,7 +60,7 @@ class CustomThemeSettingsImporter extends BaseImporter {
                 })
                 .reflect());
         });
-        
+
         const opsPromise = Promise.all(ops);
 
         // activate function is called to refresh cache when importing custom theme settings for active theme
@@ -70,7 +69,7 @@ class CustomThemeSettingsImporter extends BaseImporter {
                 .then((theme) => {
                     const currentTheme = theme.get('value');
                     if (this.dataToImport.some(themeSetting => themeSetting.theme === currentTheme)) {
-                        activate(currentTheme);
+                        themeService.api.activate(currentTheme);
                     }
                 });
         });
