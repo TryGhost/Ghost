@@ -405,26 +405,29 @@ export default class App extends React.Component {
                 }
             };
         }
-
-        if (qParams.get('uuid') && qParams.get('action') === 'feedback' && qParams.get('score') && qParams.get('post')) {
-            const score = parseInt(qParams.get('score'));
+        const [path, hashQueryString] = window.location.hash.substr(1).split('?');
+        const hashQuery = new URLSearchParams(hashQueryString ?? '');
+        const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
+        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
+        const offersRegex = /^offers\/(\w+?)\/?$/;
+        const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+        const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
+        
+        if (path && feedbackRegex.test(path) && hashQuery.get('uuid')) {
+            const [, postId, scoreString] = path.match(feedbackRegex);
+            const score = parseInt(scoreString);
             if (score === 1 || score === 0) {
                 return {
                     showPopup: true,
                     page: 'feedback',
                     pageData: {
-                        uuid: qParams.get('uuid'),
-                        postId: qParams.get('post'),
+                        uuid: hashQuery.get('uuid'),
+                        postId,
                         score
                     }
                 };
             }
         }
-        const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
-        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
-        const offersRegex = /^offers\/(\w+?)\/?$/;
-        const [path] = window.location.hash.substr(1).split('?');
-        const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
             const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
