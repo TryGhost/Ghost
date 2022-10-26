@@ -72,4 +72,10 @@ describe('TiersAPI', function () {
         assert(page.data.length === 2);
         assert(page.meta.pagination.total === 2);
     });
+
+    it('Can read a default tier', async function () {
+        const defaultTier = await api.readDefaultTier();
+
+        assert.equal(defaultTier?.name, 'My testing Tier');
+    });
 });
