@@ -40,7 +40,7 @@
                 </div>
             </div>
         {{else}}
-            <div class="gh-dashboard-list-body {{if (eq this.eventType "conversion") "gh-dashboard-list-four-cols" }}">
+            <div class="gh-dashboard-list-body {{if (eq this.eventType "clicked") "gh-dashboard-list-larger-cols" }} {{if (eq this.eventType "conversion") "gh-dashboard-list-four-cols" }}">
                 {{#each eventsFetcher.data as |event|}}
                     {{#let (parse-member-event event) as |parsedEvent|}}
                         <div class="gh-dashboard-list-item">
@@ -53,6 +53,10 @@
                                 <span class="gh-dashboard-list-subtext">
                                     <span class="gh-members-activity-description">
                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
+                                        {{#if parsedEvent.url}}
+                                            <span class="gh-members-activity-event-dash">–</span>
+                                            <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.description}}</a>
+                                        {{/if}}
                                     </span>
                                 </span>
                             </div>
@@ -76,7 +80,7 @@
                     {{/let}}
                 {{/each}}
 
-                {{#if (not (compute (fn this.isPaginationNeeded eventsFetcher)))}}
+                {{#if (compute (fn this.areStubsNeeded eventsFetcher))}}
                     {{#let (compute (fn this.getAmountOfStubs eventsFetcher)) as |stubs|}}
                         {{#each stubs}}
                             <div class="gh-dashboard-list-item"></div>
@@ -94,36 +98,38 @@
                             {{svg-jar "filter"}}
                             See members
                         </LinkTo>
+                    {{else}}
+                        <div></div>
                     {{/if}}
 
                     <div class="gh-post-activity-feed-pagination">
-                        {{#if (compute (fn this.isPaginationNeeded eventsFetcher))}}
+                        {{#if (compute (fn this.isPaginationNotNeeded eventsFetcher))}}
                             Showing {{eventsFetcher.totalEvents}} in total
                         {{else}}
                             Showing {{eventsFetcher.previousEvents}}-{{eventsFetcher.shownEvents}} of {{eventsFetcher.totalEvents}}
+
+                            <div class="gh-post-activity-feed-pagination-group">
+                                <button
+                                    class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
+                                    type="button"
+                                    title="Previous page"
+                                    disabled={{compute (fn this.isPreviousButtonDisabled eventsFetcher)}}
+                                    {{on "click" eventsFetcher.loadPreviousPage}}
+                                >
+                                    {{svg-jar "arrow-left-pagination"}}
+                                </button>
+
+                                <button
+                                    class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
+                                    type="button"
+                                    title="Next page"
+                                    disabled={{compute (fn this.isNextButtonDisabled eventsFetcher)}}
+                                    {{on "click" eventsFetcher.loadNextPage}}
+                                >
+                                    {{svg-jar "arrow-right-pagination"}}
+                                </button>
+                            </div>
                         {{/if}}
-
-                        <div class="gh-post-activity-feed-pagination-group">
-                            <button
-                                class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
-                                type="button"
-                                title="Previous page"
-                                disabled={{compute (fn this.isPreviousButtonDisabled eventsFetcher)}}
-                                {{on "click" eventsFetcher.loadPreviousPage}}
-                            >
-                                {{svg-jar "arrow-left-pagination"}}
-                            </button>
-
-                            <button
-                                class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
-                                type="button"
-                                title="Next page"
-                                disabled={{compute (fn this.isNextButtonDisabled eventsFetcher)}}
-                                {{on "click" eventsFetcher.loadNextPage}}
-                            >
-                                {{svg-jar "arrow-right-pagination"}}
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
