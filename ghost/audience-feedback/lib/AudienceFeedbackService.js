@@ -25,11 +25,7 @@ class AudienceFeedbackService {
             postUrl = this.#baseURL;
         }
         const url = new URL(postUrl);
-        url.searchParams.set('action', 'feedback');
-        url.searchParams.set('post', postId);
-        url.searchParams.set('uuid', uuid);
-        url.searchParams.set('score', `${score}`);
-
+        url.hash = `#/feedback/${postId}/${score}/?uuid=${encodeURIComponent(uuid)}`;
         return url;
     }
 }

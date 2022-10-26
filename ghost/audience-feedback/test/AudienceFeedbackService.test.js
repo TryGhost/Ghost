@@ -24,7 +24,7 @@ describe('audienceFeedbackService', function () {
                 }
             });
             const link = instance.buildLink(mockData.uuid, mockData.postId, mockData.score);
-            const expectedLink = `https://localhost:2368/${mockData.postTitle}/?action=feedback&post=${mockData.postId}&uuid=${mockData.uuid}&score=${mockData.score}`;
+            const expectedLink = `https://localhost:2368/${mockData.postTitle}/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}`;
             assert.equal(link.href, expectedLink);
         });
 
@@ -38,7 +38,7 @@ describe('audienceFeedbackService', function () {
                 }
             });
             const link = instance.buildLink(mockData.uuid, mockData.postId, mockData.score);
-            const expectedLink = `https://localhost:2368/?action=feedback&post=${mockData.postId}&uuid=${mockData.uuid}&score=${mockData.score}`;
+            const expectedLink = `https://localhost:2368/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}`;
             assert.equal(link.href, expectedLink);
         });
     });
