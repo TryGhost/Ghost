@@ -83,7 +83,7 @@
                 {{#if (compute (fn this.areStubsNeeded eventsFetcher))}}
                     {{#let (compute (fn this.getAmountOfStubs eventsFetcher)) as |stubs|}}
                         {{#each stubs}}
-                            <div class="gh-dashboard-list-item"></div>
+                            <div class="gh-dashboard-list-item gh-dashboard-list-item-stub"></div>
                         {{/each}}
                     {{/let}}
                 {{/if}}
