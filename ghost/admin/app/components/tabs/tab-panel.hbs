@@ -5,7 +5,7 @@
     aria-labelledby="{{this.tabId}}"
     class="tab-panel {{if this.isSelectedTab "tab-panel-selected" }}"
 >
-    {{#if this.isSelectedTab}}
+    {{#if (or this.isSelectedTab @forceRender)}}
         {{yield}}
     {{/if}}
 </div>
