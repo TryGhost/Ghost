@@ -17,6 +17,8 @@ class InMemoryTierRepository {
     toPrimitive(tier) {
         return {
             ...tier,
+            active: (tier.status === 'active'),
+            type: tier.type,
             id: tier.id.toHexString()
         };
     }
