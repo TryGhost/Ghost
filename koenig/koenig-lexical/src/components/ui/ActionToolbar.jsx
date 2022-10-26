@@ -1,8 +1,7 @@
 import React from 'react';
-import {createPortal} from 'react-dom';
 
-export function ActionToolbar({containerRef, parentContainerRef, isVisible, children, ...props}) {
-    const element = parentContainerRef?.current || document.body;
+export function ActionToolbar({isVisible, children, ...props}) {
+    const toolbarRef = React.useRef(null);
 
     const [rect, setRect] = React.useState({
         top: 0,
@@ -10,17 +9,16 @@ export function ActionToolbar({containerRef, parentContainerRef, isVisible, chil
         right: 0
     });
 
-    React.useEffect(() => {
-        if (containerRef && isVisible) {
-            const containerRect = containerRef.current.getBoundingClientRect();
-            const top = containerRect.top - element.getBoundingClientRect().top;
+    React.useLayoutEffect(() => {
+        if (isVisible) {
+            const containerRect = toolbarRef.current.parentElement.getBoundingClientRect();
             setRect({
-                top: top,
+                top: 0,
                 left: containerRect.left,
                 right: containerRect.right
             });
         }
-    }, [isVisible, containerRef, element]);
+    }, [isVisible]);
 
     const toolbarStyle = {
         position: 'absolute',
@@ -31,11 +29,10 @@ export function ActionToolbar({containerRef, parentContainerRef, isVisible, chil
     };
 
     if (isVisible) {
-        return createPortal(
-            <div style={toolbarStyle} {...props}>
+        return (
+            <div ref={toolbarRef} className="not-kg-prose" style={toolbarStyle} {...props}>
                 {children}
-            </div>,
-            element
+            </div>
         );
     }
 }

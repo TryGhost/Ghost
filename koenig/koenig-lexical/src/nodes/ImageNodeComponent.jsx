@@ -11,8 +11,8 @@ import {openFileSelection} from '../utils/openFileSelection';
 
 export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog}) {
     const [editor] = useLexicalComposerContext();
-    const {editorContainerRef, imageUploader} = React.useContext(KoenigComposerContext);
-    const {cardContainerRef, isSelected} = React.useContext(CardContext);
+    const {imageUploader} = React.useContext(KoenigComposerContext);
+    const {isSelected} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
 
@@ -79,8 +79,6 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
             />
             <ActionToolbar
                 isVisible={src && isSelected}
-                containerRef={cardContainerRef}
-                parentContainerRef={editorContainerRef}
                 data-kg-card-toolbar="image"
             >
                 <ImageUploadForm
