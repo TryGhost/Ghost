@@ -55,7 +55,6 @@ export const FeedbackPageStyles = `
     }
 
     .gh-portal-confirm-buttons {
-        line-height: inherit;
         font-size: 1.5rem;
         text-align: left;
         box-sizing: border-box;
@@ -68,10 +67,8 @@ export const FeedbackPageStyles = `
     }
 
     .gh-portal-confirm-button-secundary {
-        -webkit-text-size-adjust: 100%;
         tab-size: 4;
         box-sizing: border-box;
-        border: 0 solid #e5e7eb;
         line-height: inherit;
         margin: 0;
         padding: 0;
@@ -122,7 +119,7 @@ const ConfirmDialog = ({onConfirm, loading, positive}) => {
         event.stopPropagation();
     };
 
-    const close = (event) => {
+    const close = () => {
         onAction('closePopup');
     };
 
@@ -147,7 +144,6 @@ const ConfirmDialog = ({onConfirm, loading, positive}) => {
                     label={'Yes!'}
                     isRunning={loading}
                     tabindex='3'
-                    classes={'sticky bottom'}
                 />
 
                 <button type="button" onClick={close} className="gh-portal-confirm-button-secundary">Cancel</button>
