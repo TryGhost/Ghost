@@ -1621,7 +1621,12 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     box-shadow: inset 0 -1px 0 #eceef0;
 }
 
+.gh-tabs-analytics .tab-panel {
+    display: none;
+}
+
 .gh-tabs-analytics .tab-panel-selected {
+    display: block;
     padding: 12px 26px 0;
     /* help to hide shadow from selected tab */
     opacity: 0.99999;
