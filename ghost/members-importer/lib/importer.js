@@ -30,7 +30,7 @@ module.exports = class MembersCSVImporter {
      * @param {string} options.storagePath - The path to store CSV's in before importing
      * @param {Function} options.getTimezone - function returning currently configured timezone
      * @param {() => Object} options.getMembersRepository - member model access instance for data access and manipulation
-     * @param {() => Object} options.getDefaultTier - async function returning default Member Tier
+     * @param {() => Promise<import('@tryghost/tiers/lib/Tier')>} options.getDefaultTier - async function returning default Member Tier
      * @param {Function} options.sendEmail - function sending an email
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
      * @param {({job, offloaded}) => void} options.addJob - Method registering an async job

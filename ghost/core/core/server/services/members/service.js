@@ -16,6 +16,7 @@ const config = require('../../../shared/config');
 const models = require('../../models');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
+const tiersService = require('../tiers');
 const VerificationTrigger = require('@tryghost/verification-trigger');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
@@ -51,9 +52,8 @@ const membersImporter = new MembersCSVImporter({
         const api = await module.exports.api;
         return api.members;
     },
-    getDefaultTier: async () => {
-        const api = await module.exports.api;
-        return api.productRepository.getDefaultProduct;
+    getDefaultTier: () => {
+        return tiersService.api.readDefaultTier();
     },
     sendEmail: ghostMailer.send.bind(ghostMailer),
     isSet: labsService.isSet.bind(labsService),

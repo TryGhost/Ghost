@@ -77,6 +77,21 @@ module.exports = class TiersAPI {
     }
 
     /**
+     * Fetches the default tier
+     * @param {object} [options]
+     * @returns {Promise<Tier>}
+     */
+    async readDefaultTier(options = {}) {
+        const [defaultTier] = await this.#repository.getAll({
+            filter: 'type:paid+active:true',
+            limit: 1,
+            ...options
+        });
+
+        return defaultTier;
+    }
+
+    /**
      * @param {string} id
      * @param {object} data
      * @returns {Promise<Tier>}
