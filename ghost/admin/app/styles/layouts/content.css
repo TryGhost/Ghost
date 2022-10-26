@@ -1941,6 +1941,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
 }
 
 .gh-feedback-events-feed-container {
+    width: 220px;
     max-width: 220px;
     margin: auto;
 }
