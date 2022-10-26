@@ -20,7 +20,8 @@ export default class GhBillingIframe extends Component {
         this.billing.getBillingIframe().src = this.billing.getIframeURL();
 
         window.addEventListener('message', (event) => {
-            if (event?.data) {
+            // only process messages coming from the billing iframe
+            if (event?.data && this.billing.getIframeURL().includes(event?.origin)) {
                 if (event.data?.request === 'token') {
                     this._handleTokenRequest();
                 }
