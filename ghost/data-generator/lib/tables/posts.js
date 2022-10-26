@@ -9,6 +9,14 @@ class PostsImporter extends TableImporter {
         this.newsletters = newsletters;
     }
 
+    async addNewsletters({posts}) {
+        for (const {id} of posts) {
+            await this.knex('posts').update({
+                newsletter_id: luck(10) ? this.newsletters[0].id : this.newsletters[1].id
+            }).where({id});
+        }
+    }
+
     generate() {
         const title = faker.lorem.sentence();
         const content = faker.lorem.paragraphs(faker.datatype.number({

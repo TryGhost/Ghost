@@ -5,6 +5,8 @@ module.exports = class REPL extends Command {
     setup() {
         this.help('Generates random data to populate the database for development & testing');
         this.argument('--events-only', {type: 'boolean', defaultValue: false, desc: 'Only generate events, skip other datatypes'});
+        this.argument('--use-existing-posts', {type: 'boolean', defaultValue: false, desc: 'Generate data referencing the set of existing posts'});
+        this.argument('--use-existing-tags', {type: 'boolean', defaultValue: false, desc: 'Generate data referencing the set of existing tags'});
     }
 
     initializeContext(context) {
@@ -23,7 +25,8 @@ module.exports = class REPL extends Command {
         const knex = require('../server/data/db/connection');
         const {tables: schema} = require('../server/data/schema/index');
         const dataGenerator = new DataGenerator({
-            eventsOnly: argv['events-only'],
+            useExistingPosts: argv['use-existing-posts'],
+            useExistingTags: argv['use-existing-tags'],
             knex,
             schema,
             logger: {
@@ -34,7 +37,8 @@ module.exports = class REPL extends Command {
                 error: this.error,
                 fatal: this.fatal,
                 debug: this.debug
-            }
+            },
+            modelQuantities: {}
         });
         try {
             await dataGenerator.importData();

@@ -77,12 +77,14 @@ class DataGenerator {
         const newsletters = await newslettersImporter.import({amount: 2});
 
         let posts = [];
+        const postsImporter = new PostsImporter(transaction, {
+            newsletters
+        });
         if (this.useExistingPosts) {
+            posts = await transaction.select('id').from('posts');
+            postsImporter.addNewsletters({posts});
             posts = await transaction.select('id', 'newsletter_id').from('posts');
         } else {
-            const postsImporter = new PostsImporter(transaction, {
-                newsletters
-            });
             posts = await postsImporter.import({
                 amount: this.modelQuantities.posts,
                 rows: ['newsletter_id']
