@@ -18,6 +18,7 @@ const command = require('./core/cli/command');
 switch (mode) {
 case 'repl':
 case 'timetravel':
+case 'generate-data':
     command.run(mode);
     break;
 default:
