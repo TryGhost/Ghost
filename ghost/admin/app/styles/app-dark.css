@@ -1431,6 +1431,10 @@ kbd {
     border-color: #26282b;
 }
 
+.gh-tabs-analytics .tab-list h3 svg path {
+    stroke: #fff !important;
+}
+
 .gh-tabs-analytics .tab-panel-selected,
 .gh-tabs-analytics .tab-selected {
     background: #101114;
