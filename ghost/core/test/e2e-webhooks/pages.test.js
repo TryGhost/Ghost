@@ -58,10 +58,9 @@ const buildPageSnapshotWithTiers = ({
         primary_author: buildAuthorSnapshot(roles),
         authors: new Array(1).fill(buildAuthorSnapshot(roles)),
         primary_tag: tags ? tagSnapshot : null,
-        tags: tags ? new Array(1).fill(tagSnapshot) : []  
+        tags: tags ? new Array(1).fill(tagSnapshot) : []
     };
 };
-
 
 const buildPreviousPageSnapshotWithTiers = (tiersCount) => {
     return {
@@ -70,7 +69,7 @@ const buildPreviousPageSnapshotWithTiers = (tiersCount) => {
     };
 };
 
-const buildPreviousPageSnapshotWithTiersAndTags = ({ tiersCount, tags }) => {
+const buildPreviousPageSnapshotWithTiersAndTags = ({tiersCount, tags}) => {
     return {
         tiers: new Array(tiersCount).fill(tierSnapshot),
         tags: tags ? new Array(1).fill(tagSnapshot) : []
@@ -345,5 +344,4 @@ describe('page.* events', function () {
                 }
             });
     });
-
 });
