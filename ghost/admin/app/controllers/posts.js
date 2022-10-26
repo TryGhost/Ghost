@@ -76,13 +76,6 @@ export default class PostsController extends Controller {
         super(...arguments);
 
         Object.assign(this, DEFAULT_QUERY_PARAMS.posts);
-
-        if (this.feature.emailAnalytics && !this.availableOrders.findBy('name', 'Open rate')) {
-            this.availableOrders.push({
-                name: 'Open rate',
-                value: 'email.open_rate desc'
-            });
-        }
     }
 
     get postsInfinityModel() {
