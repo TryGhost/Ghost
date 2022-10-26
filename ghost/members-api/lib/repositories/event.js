@@ -173,7 +173,16 @@ module.exports = class EventRepository {
 
         options = {
             ...options,
-            withRelated: ['member', 'subscriptionCreatedEvent.postAttribution', 'subscriptionCreatedEvent.userAttribution', 'subscriptionCreatedEvent.tagAttribution'],
+            withRelated: [
+                'member', 
+                'subscriptionCreatedEvent.postAttribution', 
+                'subscriptionCreatedEvent.userAttribution', 
+                'subscriptionCreatedEvent.tagAttribution', 
+                'subscriptionCreatedEvent.memberCreatedEvent',
+
+                // This is rediculous, but we need the tier name 😬
+                'stripeSubscription.stripePrice.stripeProduct.product'
+            ],
             filter: []
         };
         if (filters['data.created_at']) {
@@ -195,7 +204,9 @@ module.exports = class EventRepository {
                 type: 'subscription_event',
                 data: {
                     ...model.toJSON(options),
-                    attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null
+                    attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null,
+                    onSignup: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id && model.related('subscriptionCreatedEvent').related('memberCreatedEvent') && model.related('subscriptionCreatedEvent').related('memberCreatedEvent').id ? true : false,
+                    tierName: model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null
                 }
             };
         });
@@ -300,8 +311,14 @@ module.exports = class EventRepository {
     async getCreatedEvents(options = {}, filters = {}) {
         options = {
             ...options,
-            withRelated: ['member', 'postAttribution', 'userAttribution', 'tagAttribution'],
-            filter: []
+            withRelated: [
+                'member', 
+                'postAttribution', 
+                'userAttribution', 
+                'tagAttribution',
+                'subscriptionCreatedEvent'
+            ],
+            filter: ['subscriptionCreatedEvent.id:null']
         };
         if (filters['data.created_at']) {
             options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));

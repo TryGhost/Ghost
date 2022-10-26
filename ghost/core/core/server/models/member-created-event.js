@@ -8,6 +8,13 @@ const MemberCreatedEvent = ghostBookshelf.Model.extend({
         return this.belongsTo('Member', 'member_id', 'id');
     },
 
+    /**
+     * The subscription created event that happend at the same time (if any)
+     */
+    subscriptionCreatedEvent() {
+        return this.belongsTo('SubscriptionCreatedEvent', 'request_id', 'request_id');
+    },
+
     postAttribution() {
         return this.belongsTo('Post', 'attribution_id', 'id');   
     },
@@ -18,6 +25,22 @@ const MemberCreatedEvent = ghostBookshelf.Model.extend({
 
     tagAttribution() {
         return this.belongsTo('Tag', 'attribution_id', 'id');   
+    },
+    
+    filterRelations() {
+        return {
+            subscriptionCreatedEvent: {
+                // Mongo-knex doesn't support belongsTo relations
+                tableName: 'members_subscription_created_events',
+                tableNameAs: 'subscriptionCreatedEvent',
+                type: 'manyToMany',
+                joinTable: 'members_created_events',
+                joinFrom: 'id',
+                joinToForeign: 'request_id',
+                joinTo: 'request_id',
+                joinType: 'leftJoin'
+            }
+        };
     }
 }, {
     async edit() {

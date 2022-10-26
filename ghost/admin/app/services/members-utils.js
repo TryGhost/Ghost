@@ -6,6 +6,8 @@ export default class MembersUtilsService extends Service {
     @service feature;
     @service store;
 
+    paidTiers = null;
+
     get isMembersEnabled() {
         return this.settings.membersEnabled;
     }
@@ -16,6 +18,26 @@ export default class MembersUtilsService extends Service {
 
     get isMembersInviteOnly() {
         return this.settings.membersInviteOnly;
+    }
+
+    get hasMultipleTiers() {
+        return this.paidMembersEnabled && this.paidTiers && this.paidTiers.length > 1;
+    }
+
+    async fetch() {
+        if (this.paidTiers !== null) {
+            return;
+        }
+
+        return this.store.query('tier', {filter: 'type:paid+active:true', limit: 'all'}).then((tiers) => {
+            this.paidTiers = tiers;
+        });
+    }
+
+    async reload() {
+        return this.store.query('tier', {filter: 'type:paid+active:true', limit: 'all'}).then((tiers) => {
+            this.paidTiers = tiers;
+        });
     }
 
     /**

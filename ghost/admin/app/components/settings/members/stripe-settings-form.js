@@ -277,6 +277,9 @@ export default class StripeSettingsForm extends Component {
 
                 try {
                     const updatedTier = yield tier.save();
+
+                    // Reload in the background (no await here)
+                    this.membersUtils.reload();
                     return updatedTier;
                 } catch (error) {
                     if (error.payload?.errors && error.payload.errors[0].code === 'STRIPE_NOT_CONFIGURED') {
