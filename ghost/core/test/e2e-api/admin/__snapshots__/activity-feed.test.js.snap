@@ -106,9 +106,9 @@ Object {
       "limit": "2",
       "next": null,
       "page": null,
-      "pages": 8,
+      "pages": 6,
       "prev": null,
-      "total": 15,
+      "total": 12,
     },
   },
 }
@@ -741,7 +741,7 @@ exports[`Activity Feed API Returns signup events in activity feed 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23171",
+  "content-length": "23155",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",

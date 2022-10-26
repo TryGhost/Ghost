@@ -12,7 +12,7 @@ const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
      * The member created event that happend at the same time (if any)
      */
     memberCreatedEvent() {
-        return this.belongsTo('MemberCreatedEvent', 'request_id', 'request_id');
+        return this.belongsTo('MemberCreatedEvent', 'batch_id', 'batch_id');
     },
 
     subscription() {

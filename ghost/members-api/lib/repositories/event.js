@@ -180,7 +180,7 @@ module.exports = class EventRepository {
                 'subscriptionCreatedEvent.tagAttribution', 
                 'subscriptionCreatedEvent.memberCreatedEvent',
 
-                // This is rediculous, but we need the tier name 😬
+                // This is rediculous, but we need the tier name (we'll be able to shorten this later when we switch to the subscriptions table)
                 'stripeSubscription.stripePrice.stripeProduct.product'
             ],
             filter: []
@@ -200,14 +200,16 @@ module.exports = class EventRepository {
         const {data: models, meta} = await this._MemberPaidSubscriptionEvent.findPage(options);
 
         const data = models.map((model) => {
+            const d = {
+                ...model.toJSON(options),
+                attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null,
+                signup: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id && model.related('subscriptionCreatedEvent').related('memberCreatedEvent') && model.related('subscriptionCreatedEvent').related('memberCreatedEvent').id ? true : false,
+                tierName: model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null
+            };
+            delete d.stripeSubscription;
             return {
                 type: 'subscription_event',
-                data: {
-                    ...model.toJSON(options),
-                    attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null,
-                    onSignup: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id && model.related('subscriptionCreatedEvent').related('memberCreatedEvent') && model.related('subscriptionCreatedEvent').related('memberCreatedEvent').id ? true : false,
-                    tierName: model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null
-                }
+                data: d
             };
         });
 
@@ -315,8 +317,7 @@ module.exports = class EventRepository {
                 'member', 
                 'postAttribution', 
                 'userAttribution', 
-                'tagAttribution',
-                'subscriptionCreatedEvent'
+                'tagAttribution'
             ],
             filter: ['subscriptionCreatedEvent.id:null']
         };

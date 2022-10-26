@@ -35,7 +35,7 @@ class EventStorage {
                 referrer_source: attribution?.referrerSource ?? null,
                 referrer_medium: attribution?.referrerMedium ?? null,
                 referrer_url: attribution?.referrerUrl ?? null,
-                request_id: event.data.requestId ?? null
+                batch_id: event.data.batchId ?? null
             });
         });
 
@@ -52,7 +52,7 @@ class EventStorage {
                 referrer_source: attribution?.referrerSource ?? null,
                 referrer_medium: attribution?.referrerMedium ?? null,
                 referrer_url: attribution?.referrerUrl ?? null,
-                request_id: event.data.requestId ?? null
+                batch_id: event.data.batchId ?? null
             });
         });
     }

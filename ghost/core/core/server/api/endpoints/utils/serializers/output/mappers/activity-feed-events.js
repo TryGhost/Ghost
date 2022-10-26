@@ -118,8 +118,8 @@ const activityFeedMapper = (event, frame) => {
         event.data.attribution = serializeAttribution(event.data.attribution);
     }
     // TODO: add dedicated mappers for other event types
-    if (event.data?.request_id) {
-        delete event.data.request_id;
+    if (event.data?.batch_id) {
+        delete event.data.batch_id;
     }
     if (event.data?.subscriptionCreatedEvent) {
         delete event.data.subscriptionCreatedEvent;

@@ -12,7 +12,7 @@ const MemberCreatedEvent = ghostBookshelf.Model.extend({
      * The subscription created event that happend at the same time (if any)
      */
     subscriptionCreatedEvent() {
-        return this.belongsTo('SubscriptionCreatedEvent', 'request_id', 'request_id');
+        return this.belongsTo('SubscriptionCreatedEvent', 'batch_id', 'batch_id');
     },
 
     postAttribution() {
@@ -36,8 +36,8 @@ const MemberCreatedEvent = ghostBookshelf.Model.extend({
                 type: 'manyToMany',
                 joinTable: 'members_created_events',
                 joinFrom: 'id',
-                joinToForeign: 'request_id',
-                joinTo: 'request_id',
+                joinToForeign: 'batch_id',
+                joinTo: 'batch_id',
                 joinType: 'leftJoin'
             }
         };

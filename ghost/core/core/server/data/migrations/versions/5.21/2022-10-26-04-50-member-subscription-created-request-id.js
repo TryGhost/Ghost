@@ -25,7 +25,7 @@ module.exports = createTransactionalMigration(
 
         // Attach a unique id to each row
         for (const row of rows) { // eslint-disable-line no-restricted-syntax
-            row.request_id = ObjectId().toHexString();
+            row.batch_id = ObjectId().toHexString();
         }
 
         // Create batches (insertBatch doesn't support the onConflict option)
@@ -38,12 +38,12 @@ module.exports = createTransactionalMigration(
             const response1 = await knex('members_created_events').insert(batch.map((r) => {
                 return {
                     id: r.m_id,
-                    request_id: r.request_id,
-                    member_id: r.member_id,
-                    source: '',
-                    created_at: knex.raw('NOW()')
+                    batch_id: r.batch_id,
+                    member_id: r.member_id, // added to make the insert work
+                    source: '', // added to make the insert work
+                    created_at: knex.raw('NOW()') // added to make the insert work
                 };
-            })).onConflict('id').merge(['request_id']);
+            })).onConflict('id').merge(['batch_id']);
 
             if (response1[0] !== 0) {
                 logging.error(`Inserted ${response1[0]} members_created_events, expected 0`);
@@ -53,12 +53,12 @@ module.exports = createTransactionalMigration(
             const response2 = await knex('members_subscription_created_events').insert(batch.map((r) => {
                 return {
                     id: r.s_id,
-                    request_id: r.request_id,
-                    member_id: r.member_id,
-                    subscription_id: r.subscription_id,
-                    created_at: knex.raw('NOW()')
+                    batch_id: r.batch_id,
+                    member_id: r.member_id, // added to make the insert work
+                    subscription_id: r.subscription_id, // added to make the insert work
+                    created_at: knex.raw('NOW()') // added to make the insert work
                 };
-            })).onConflict('id').merge(['request_id']);
+            })).onConflict('id').merge(['batch_id']);
 
             if (response2[0] !== 0) {
                 logging.error(`Inserted ${response1[0]} members_subscription_created_events, expected 0`);

@@ -67,7 +67,7 @@ export default class ParseMemberEventHelper extends Helper {
             }
         }
 
-        if (event.type === 'signup_event' || (event.type === 'subscription_event' && event.data.type === 'created' && event.data.onSignup)) {
+        if (event.type === 'signup_event' || (event.type === 'subscription_event' && event.data.type === 'created' && event.data.signup)) {
             icon = 'signed-up';
         }
 
@@ -103,7 +103,7 @@ export default class ParseMemberEventHelper extends Helper {
     }
 
     getAction(event, hasMultipleNewsletters) {
-        if (event.type === 'signup_event' || (event.type === 'subscription_event' && event.data.type === 'created' && event.data.onSignup)) {
+        if (event.type === 'signup_event' || (event.type === 'subscription_event' && event.data.type === 'created' && event.data.signup)) {
             return 'signed up';
         }
 
