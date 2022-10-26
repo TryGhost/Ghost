@@ -92,7 +92,6 @@ export default function FeedbackPage() {
 
     const positive = score === 1;
     const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
-    const text = positive ? 'It has been noted that you want to see more posts like this.' : 'It has been noted that you want to see less posts like this.';
 
     return (
         <div className='gh-portal-content gh-portal-feedback'>
@@ -102,7 +101,7 @@ export default function FeedbackPage() {
                 {icon}
             </div>
             <h1 className="gh-portal-main-title">Thanks for the feedback!</h1>
-            <p className="gh-portal-text-center">{text}</p>
+            <p className="gh-portal-text-center">Your input helps shape what gets published.</p>
             <ActionButton
                 style={{width: '100%'}}
                 retry={false}
