@@ -12,7 +12,8 @@ export default class GhExploreIframe extends Component {
         this.explore.getExploreIframe().src = this.explore.getIframeURL();
 
         window.addEventListener('message', async (event) => {
-            if (event?.data) {
+            // only process messages coming from the explore iframe
+            if (event?.data && this.explore.getIframeURL().includes(event?.origin)) {
                 if (event.data?.request === 'apiUrl') {
                     this._handleUrlRequest();
                 }
