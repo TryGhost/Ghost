@@ -1,11 +1,17 @@
 const logging = require('@tryghost/logging');
 const ObjectId = require('bson-objectid').default;
 const {createTransactionalMigration} = require('../../utils');
+const DatabaseInfo = require('@tryghost/database-info');
 
 // This migration links together members_created_events and members_subscription_created_events
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
+        if (DatabaseInfo.isSQLite(knex)) {
+            logging.info('Skipped linking members_created_events and members_subscription_created_events on SQLite');
+            return;
+        }
+
         // All events that happened within 15 minutes of each other will be linked
         const rows = await knex('members_created_events as m')
             .select('m.id as m_id', 's.id as s_id', 'm.member_id as member_id', 's.subscription_id as subscription_id')
