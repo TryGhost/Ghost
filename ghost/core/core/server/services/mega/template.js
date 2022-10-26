@@ -37,6 +37,7 @@ module.exports = ({post, site, newsletter, templateSettings}) => {
 <head>
 <meta name="viewport" content="width=device-width" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
 <title>${cleanPost.title}</title>
 <style>
 /* -------------------------------------
@@ -1160,6 +1161,8 @@ ${ templateSettings.showBadge ? `
     height: 30px;
 }
 ` : ''}
+
+${iff(templateSettings.feedbackEnabled, feedbackButtons.getButtonsHeadStyles(templateSettings.accentColor), '')}
 
 </style>
 </head>
