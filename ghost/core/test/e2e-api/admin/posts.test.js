@@ -4,6 +4,12 @@ const {agentProvider, fixtureManager, mockManager, matchers} = require('../../ut
 const {anyArray, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 
+const tierSnapshot = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
+
 const matchPostShallowIncludes = {
     id: anyObjectId,
     uuid: anyUuid,
@@ -13,7 +19,7 @@ const matchPostShallowIncludes = {
     primary_author: anyObject,
     tags: anyArray,
     primary_tag: anyObject,
-    tiers: anyArray,
+    tiers: Array(2).fill(tierSnapshot),
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     published_at: anyISODateTime
