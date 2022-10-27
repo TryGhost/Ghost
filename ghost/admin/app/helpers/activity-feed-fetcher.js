@@ -11,7 +11,7 @@ const actions = {
     showNext: 'showNext'
 };
 
-export default class MembersEventsFetcher extends Resource {
+export default class ActivityFeedFetcher extends Resource {
     @service ajax;
     @service ghostPaths;
     @service store;
@@ -27,7 +27,7 @@ export default class MembersEventsFetcher extends Resource {
     @tracked shownEvents = 0;
     @tracked totalEvents = 0;
 
-    // save last event's date of each page for easy navigation to previous page
+    // Save the pagination filter for each page so we can return easily
     @tracked eventsBookmarks = [];
 
     get value() {
@@ -53,12 +53,12 @@ export default class MembersEventsFetcher extends Resource {
     async setup() {
         const currentTime = moment.utc().format('YYYY-MM-DD HH:mm:ss');
         let filter = `data.created_at:<'${currentTime}'`;
+        this.eventsBookmarks.push(filter);
 
         if (this.args.named.filter) {
             filter += `+${this.args.named.filter}`;
         }
 
-        this.eventsBookmarks.push(currentTime);
         await this.loadEventsTask.perform({filter}, actions.showNext);
     }
 
@@ -66,20 +66,22 @@ export default class MembersEventsFetcher extends Resource {
     loadNextPage() {
         const lastEvent = this.data[this.data.length - 1];
         const lastEventDate = moment.utc(lastEvent.data.created_at).format('YYYY-MM-DD HH:mm:ss');
-        let filter = `data.created_at:<'${lastEventDate}'`;
+        const lastEventId = lastEvent.data.id;
+        
+        let filter = `(data.created_at:<'${lastEventDate}',(data.created_at:'${lastEventDate}'+id:<'${lastEventId}'))`;
+        this.eventsBookmarks.push(filter);
 
         if (this.args.named.filter) {
             filter += `+${this.args.named.filter}`;
         }
 
-        this.eventsBookmarks.push(lastEventDate);
         this.loadEventsTask.perform({filter}, actions.showNext);
     }
 
     @action
     loadPreviousPage() {
         this.eventsBookmarks.pop();
-        let filter = `data.created_at:<'${this.eventsBookmarks[this.eventsBookmarks.length - 1]}'`;
+        let filter = this.eventsBookmarks[this.eventsBookmarks.length - 1];
 
         if (this.args.named.filter) {
             filter += `+${this.args.named.filter}`;
