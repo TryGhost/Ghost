@@ -1,4 +1,5 @@
 const linkTrackingService = require('../../services/link-tracking');
+const INVALIDATE_ALL_REDIRECTS = '/r/*';
 
 module.exports = {
     docName: 'links',
@@ -25,7 +26,7 @@ module.exports = {
     bulkEdit: {
         statusCode: 200,
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: INVALIDATE_ALL_REDIRECTS
         },
         options: [
             'filter'
