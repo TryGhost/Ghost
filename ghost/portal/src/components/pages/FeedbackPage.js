@@ -45,8 +45,6 @@ export const FeedbackPageStyles = `
 
     .gh-portal-confirm-button {
         width: 100%;
-        font-size: 1.3rem;
-        line-height: 1.2;
         margin-top: 3.6rem;
     }
 
