@@ -251,6 +251,8 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.get('ghostPaths.url').join(blogUrl, previewKeyword, uuid);
     }),
 
+    isFeedbackEnabledForEmail: computed.reads('email.feedbackEnabled'),
+
     isPublic: computed('visibility', function () {
         return this.visibility === 'public' ? true : false;
     }),

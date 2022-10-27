@@ -21,6 +21,8 @@ export default Model.extend({
     trackOpens: attr('boolean'),
     trackClicks: attr('boolean'),
 
+    feedbackEnabled: attr('boolean'),
+
     createdAtUTC: attr('moment-utc'),
     createdBy: attr('string'),
     updatedAtUTC: attr('moment-utc'),
