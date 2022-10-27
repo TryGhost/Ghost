@@ -88,7 +88,7 @@
 
             {{#if this.post.isFeedbackEnabledForEmail }}
                 <tabs.tab>
-                    <h3>{{svg-jar "analytics-tab-feedback-large"}}{{format-number this.post.count.positive_feedback}}</h3>
+                    <h3>{{svg-jar "analytics-tab-feedback-large"}}{{format-number this.totalFeedback}}</h3>
                     <p>{{svg-jar "analytics-tab-feedback"}}<span class="analytics-tab-label">Feedback<span class="analytics-tab-percentage">&nbsp;— {{this.post.sentiment}}%</span></span></p>
                 </tabs.tab>
 

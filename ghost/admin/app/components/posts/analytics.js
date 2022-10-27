@@ -84,6 +84,10 @@ export default class Analytics extends Component {
         return this.sources.some(sourceData => sourceData.signups > 0);
     }
 
+    get totalFeedback() {
+        return this.post.count.positive_feedback + this.post.count.negative_feedback;
+    }
+
     @action
     onDisplayChange(selected) {
         this.sortColumn = selected.value;
