@@ -8,6 +8,13 @@ const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
         return this.belongsTo('Member', 'member_id', 'id');
     },
 
+    /**
+     * The member created event that happend at the same time (if any)
+     */
+    memberCreatedEvent() {
+        return this.belongsTo('MemberCreatedEvent', 'batch_id', 'batch_id');
+    },
+
     subscription() {
         return this.belongsTo('StripeCustomerSubscription', 'subscription_id', 'id');
     },

@@ -2,6 +2,7 @@
  * @typedef {object} SubscriptionCreatedEventData
  * @prop {string} source
  * @prop {string} memberId
+ * @prop {string} batchId
  * @prop {string} tierId
  * @prop {string} subscriptionId
  * @prop {string} offerId

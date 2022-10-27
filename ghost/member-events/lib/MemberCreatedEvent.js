@@ -1,6 +1,7 @@
 /**
  * @typedef {object} MemberCreatedEventData
  * @prop {string} memberId
+ * @prop {string} batchId
  * @prop {'import' | 'system' | 'api' | 'admin' | 'member'} source
  * @prop {import('@tryghost/member-attribution/lib/attribution').Attribution} [attribution] Attribution
  */

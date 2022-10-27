@@ -18,6 +18,7 @@ export default class SessionService extends ESASessionService {
     @service ui;
     @service upgradeStatus;
     @service whatsNew;
+    @service membersUtils;
 
     @tracked user = null;
 
@@ -37,7 +38,8 @@ export default class SessionService extends ESASessionService {
         await RSVP.all([
             this.config.fetchAuthenticated(),
             this.feature.fetch(),
-            this.settings.fetch()
+            this.settings.fetch(),
+            this.membersUtils.fetch()
         ]);
 
         await this.frontend.loginIfNeeded();
