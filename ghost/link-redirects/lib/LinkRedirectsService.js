@@ -96,6 +96,7 @@ class LinkRedirectsService {
 
         DomainEvents.dispatch(event);
 
+        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
         return res.redirect(link.to.href);
     }
 }

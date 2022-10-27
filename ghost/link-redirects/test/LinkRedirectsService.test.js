@@ -91,11 +91,13 @@ describe('LinkRedirectsService', function () {
                 originalUrl: '/a'
             };
             const res = {
-                redirect: sinon.fake()
+                redirect: sinon.fake(),
+                setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
             assert.equal(res.redirect.callCount, 1);
             assert.equal(res.redirect.getCall(0).args[0], 'https://localhost:2368/b');
+            assert(res.setHeader.calledWith('X-Robots-Tag', 'noindex, nofollow'));
         });
 
         it('does not redirect if not found', async function () {
