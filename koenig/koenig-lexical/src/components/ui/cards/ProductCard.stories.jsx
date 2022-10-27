@@ -31,7 +31,8 @@ Empty.args = {
     desc: '',
     descPlaceholder: 'Description',
     button: false,
-    buttonText: ''
+    buttonText: '',
+    rating: false
 };
 
 export const Populated = Template.bind({});
@@ -43,6 +44,7 @@ Populated.args = {
     desc: 'Simple actions that lead to making everyday moments remarkable. Rediscover photography in a new and exciting way with FUJIFILM X100V mirrorless digital camera.',
     descPlaceholder: 'Description',
     button: true,
-    buttonText: 'Get it now'
+    buttonText: 'Get it now',
+    rating: true
 };
 
