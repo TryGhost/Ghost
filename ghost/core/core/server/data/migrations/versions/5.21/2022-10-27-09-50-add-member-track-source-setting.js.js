@@ -1,8 +1,8 @@
 const {addSetting} = require('../../utils');
 
 module.exports = addSetting({
-    key: 'members_track_sources',
+    key: 'email_track_clicks',
     value: 'true',
     type: 'boolean',
-    group: 'members'
+    group: 'email'
 });
