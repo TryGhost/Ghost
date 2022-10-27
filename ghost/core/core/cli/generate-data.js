@@ -19,6 +19,10 @@ module.exports = class REPL extends Command {
         context.k = knex;
     }
 
+    permittedEnvironments() {
+        return ['development', 'local', 'staging', 'production'];
+    }
+
     async handle(argv = {}) {
         const knex = require('../server/data/db/connection');
         const {tables: schema} = require('../server/data/schema/index');
