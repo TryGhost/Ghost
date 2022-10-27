@@ -1394,10 +1394,11 @@ module.exports = class MemberRepository {
         const activeSubscriptions = subscriptions.models.filter((subscription) => {
             return this.isActiveSubscriptionStatus(subscription.get('status'));
         });
+        const sharedOptions = _.pick(options, ['context', 'transacting']);
 
         const ghostProductModel = await this._productRepository.getDefaultProduct({
             withRelated: ['stripePrices'],
-            ...options
+            ...sharedOptions
         });
 
         const defaultProduct = ghostProductModel?.toJSON();
@@ -1454,7 +1455,7 @@ module.exports = class MemberRepository {
                 await this.linkSubscription({
                     id: member.id,
                     subscription: updatedSubscription
-                }, options);
+                }, sharedOptions);
             }
         } else {
             const stripeCustomer = await this._stripeAPIService.createCustomer({
@@ -1466,7 +1467,7 @@ module.exports = class MemberRepository {
                 member_id: data.id,
                 email: stripeCustomer.email,
                 name: stripeCustomer.name
-            }, options);
+            }, sharedOptions);
 
             let zeroValuePrice = zeroValuePrices[0];
 
@@ -1482,7 +1483,7 @@ module.exports = class MemberRepository {
                         interval: 'year',
                         amount: 0
                     }]
-                }, options)).toJSON();
+                }, sharedOptions)).toJSON();
                 zeroValuePrice = product.stripePrices.find((price) => {
                     return price.currency.toLowerCase() === 'usd' && price.amount === 0;
                 });
@@ -1497,7 +1498,7 @@ module.exports = class MemberRepository {
             await this.linkSubscription({
                 id: member.id,
                 subscription
-            }, options);
+            }, sharedOptions);
         }
     }
 
