@@ -197,9 +197,9 @@ async function sendFeedback({siteUrl, uuid, postId, score}) {
     await ghostApi.feedback.add({uuid, postId, score});
 }
 
-const LoadingFeedbackView = ({action}) => {
+const LoadingFeedbackView = ({action, score}) => {
     useEffect(() => {
-        action();
+        action(score);
     });
 
     return <LoadingPage/>;
@@ -272,7 +272,7 @@ export default function FeedbackPage() {
         return (<ConfirmDialog onConfirm={onConfirm} loading={loading} initialScore={score} />);
     } else {
         if (loading) {
-            return <LoadingFeedbackView action={doSendFeedback} />;
+            return <LoadingFeedbackView action={doSendFeedback} score={score} />;
         }
     }
 
