@@ -5,13 +5,15 @@ class MemberAttributionService {
      *
      * @param {Object} deps
      * @param {Object} deps.attributionBuilder
+     * @param {boolean} deps.isTrackingEnabled
      * @param {Object} deps.models
      * @param {Object} deps.models.MemberCreatedEvent
      * @param {Object} deps.models.SubscriptionCreatedEvent
      */
-    constructor({attributionBuilder, models}) {
+    constructor({attributionBuilder, models, isTrackingEnabled}) {
         this.models = models;
         this.attributionBuilder = attributionBuilder;
+        this.isTrackingEnabled = isTrackingEnabled;
     }
 
     /**
@@ -20,7 +22,7 @@ class MemberAttributionService {
      * @returns {Promise<import('./attribution').AttributionResource|null>}
      */
     async getAttributionFromContext(context) {
-        if (!context) {
+        if (!context || !this.isTrackingEnabled) {
             return null;
         }
 
@@ -68,7 +70,10 @@ class MemberAttributionService {
      * @returns {Promise<import('./attribution').Attribution>}
      */
     async getAttribution(historyArray) {
-        const history = UrlHistory.create(historyArray);
+        let history = UrlHistory.create(historyArray);
+        if (!this.isTrackingEnabled) {
+            history = UrlHistory.create([]);
+        }
         return await this.attributionBuilder.getAttribution(history);
     }
 

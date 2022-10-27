@@ -1,5 +1,6 @@
 const urlService = require('../url');
 const urlUtils = require('../../../shared/url-utils');
+const settingsCache = require('../../../shared/settings-cache');
 
 class MemberAttributionServiceWrapper {
     init() {
@@ -38,7 +39,8 @@ class MemberAttributionServiceWrapper {
                 SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
                 Integration: models.Integration
             },
-            attributionBuilder: this.attributionBuilder
+            attributionBuilder: this.attributionBuilder,
+            isTrackingEnabled: !!settingsCache.get('members_track_sources')
         });
     }
 }
