@@ -1,9 +1,9 @@
 const mappers = require('./mappers');
-const membersService = require('../../../../../services/members');
+const tiersService = require('../../../../../services/tiers');
 
 module.exports = {
     async all(model, apiConfig, frame) {
-        const tiersModels = await membersService.api.productRepository.list({
+        const tiersModels = await tiersService.api.browse({
             withRelated: ['monthlyPrice', 'yearlyPrice']
         });
         const tiers = tiersModels.data ? tiersModels.data.map(tierModel => tierModel.toJSON()) : [];

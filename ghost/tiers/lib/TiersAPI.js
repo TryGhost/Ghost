@@ -6,7 +6,7 @@ const Tier = require('./Tier');
  * @typedef {object} ITierRepository
  * @prop {(id: ObjectID) => Promise<Tier>} getById
  * @prop {(tier: Tier) => Promise<void>} save
- * @prop {(options?: {filter?: string}) => Promise<Tier[]>} getAll
+ * @prop {(options?: {filter?: string, withRelated?: string[]}) => Promise<Tier[]>} getAll
  */
 
 /**
@@ -43,7 +43,7 @@ module.exports = class TiersAPI {
     /**
      * @param {object} [options]
      * @param {string} [options.filter] - An NQL filter string
-     *
+     * @param {string[]} [options.withRelated] - additional relations to fetch
      * @returns {Promise<Page<Tier>>}
      */
     async browse(options = {}) {

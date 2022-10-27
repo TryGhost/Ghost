@@ -87,13 +87,15 @@ function serializeTier(tier, options) {
  * @param {string} debugString
  * @param {(data: Data, apiConfig: APIConfig, frame: Frame) => Response} serialize - A function to serialize the data into an object suitable for API response
  *
- * @returns {(data: Data, apiConfig: APIConfig, frame: Frame) => void}
+ * @returns {(data: Data, apiConfig: APIConfig, frame: Frame) => Object[]}
  */
 function createSerializer(debugString, serialize) {
     return function serializer(data, apiConfig, frame) {
         debug(debugString);
         const response = serialize(data, apiConfig, frame);
         frame.response = response;
+
+        return response[apiConfig.docName];
     };
 }
 

@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:posts');
 const mappers = require('./mappers');
-const membersService = require('../../../../../services/members');
+const tiersService = require('../../../../../services/tiers');
+const tiersSerializers = require('./tiers');
 
 module.exports = {
     async all(models, apiConfig, frame) {
@@ -12,10 +13,15 @@ module.exports = {
         }
         let posts = [];
 
-        const tiersModels = await membersService.api.productRepository.list({
+        const tiersModels = await tiersService.api.browse({
             withRelated: ['monthlyPrice', 'yearlyPrice']
         });
-        const tiers = tiersModels.data ? tiersModels.data.map(tierModel => tierModel.toJSON()) : [];
+
+        const tiers = tiersSerializers.browse(tiersModels, {
+            docName: 'tiers',
+            method: 'browse'
+        }, {});
+
         if (models.meta) {
             for (let model of models.data) {
                 let post = await mappers.posts(model, frame, {tiers});
