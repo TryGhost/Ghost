@@ -4181,14 +4181,14 @@
     "@tryghost/debug" "^0.1.19"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-filter@^0.4.15":
-  version "0.4.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.4.15.tgz#1291e1754d4bc704457f791972450d303cc9855d"
-  integrity sha512-rpB5yR2XR3QDgbRtYzXrKlYuyHQvT5J6bZ0YSjsMieRKKNP/WigyhH/M6zKCSvtU4jHYEcv7SqldFtmf+htCyQ==
+"@tryghost/bookshelf-filter@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.5.0.tgz#ed9535eebec0e8362fdcc4653c54d6a3f8bc127d"
+  integrity sha512-OiKIuzMXFFbUo6pra+HV02wSilBC0P6ymDcx/QAN0z7rboZwEEZJsF6cULihs5YQmaKHWPNyMi3kOM3jyQLJcw==
   dependencies:
     "@tryghost/debug" "^0.1.19"
     "@tryghost/errors" "^1.2.18"
-    "@tryghost/nql" "^0.9.0"
+    "@tryghost/nql" "^0.11.0"
     "@tryghost/tpl" "^0.1.19"
 
 "@tryghost/bookshelf-has-posts@^0.1.19":
@@ -4223,15 +4223,15 @@
     "@tryghost/tpl" "^0.1.19"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-plugins@0.5.4":
-  version "0.5.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.5.4.tgz#f75c7099f4219eb73778aa8c6b8486d979edd3c4"
-  integrity sha512-p8Gi6E4JSg+wqtaats13BmTe6Z+CjQ/2OV3u0E+BDGvOX/Z7sifUZfBQpaQAj6G9z5WDj9DesmGXTzDBnq3BsA==
+"@tryghost/bookshelf-plugins@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.6.0.tgz#6f037714cd381e90192bd8436a020f3299fce1e5"
+  integrity sha512-WK0+Ap/cSImDbka2sksNcTZ3EGgB1g7YVGhSn6wblBu8p8JEEa7rIj6XiyOWKTaINoVmdX4mbUCMiZrGoHqW6g==
   dependencies:
     "@tryghost/bookshelf-collision" "^0.1.28"
     "@tryghost/bookshelf-custom-query" "^0.1.15"
     "@tryghost/bookshelf-eager-load" "^0.1.18"
-    "@tryghost/bookshelf-filter" "^0.4.15"
+    "@tryghost/bookshelf-filter" "^0.5.0"
     "@tryghost/bookshelf-has-posts" "^0.1.19"
     "@tryghost/bookshelf-include-count" "^0.3.1"
     "@tryghost/bookshelf-order" "^0.1.15"
@@ -4545,18 +4545,18 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mongo-knex@^0.6.4":
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.6.4.tgz#760d91d794cf3bf65336a00f6329fe26849f863b"
-  integrity sha512-249oNobgZvf2e3SI2x8F9AuaPsydgt003HbtKaMtLEGfobU9RsNlmaZNDJGXyaecukO4swymtt3aeHFTjWekyg==
+"@tryghost/mongo-knex@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.8.0.tgz#089a4948bf915a108baf62ead9f2d25d945a756c"
+  integrity sha512-WTsLW7Q6L/mmX9jB7DDHDIR3k7SADjdXTP0dsJAiEwevMFByEQZmGba5bc1FhkTrbNWaVgk0wEnzE/r4SwhXvw==
   dependencies:
     debug "^4.3.3"
     lodash "^4.17.21"
 
-"@tryghost/mongo-utils@0.3.5", "@tryghost/mongo-utils@^0.3.5":
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-utils/-/mongo-utils-0.3.5.tgz#85167cbdefaaa4924261a3a9cd6cbe94a8e5875d"
-  integrity sha512-ycxWoC5D1t3Us5qFK8jN7cCKPfxEwmqhbK2T1hcb7fMXOv2WBZNfbQ3MAU3uICeT8QfyM6dWHPM18QLxycIhrw==
+"@tryghost/mongo-utils@0.5.0", "@tryghost/mongo-utils@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/mongo-utils/-/mongo-utils-0.5.0.tgz#4d697b3374ec8dd3ebe206a269907aff661fa3fb"
+  integrity sha512-7eRb+pQdTe+NK+wQ44WUNQxC8DIPdCYg8jTp8Mk0G6BqlvaYdRtbrZU/uqeR7Z6efLiG4uPfLG7BNkNx5MjvMg==
   dependencies:
     lodash "^4.17.11"
 
@@ -4572,21 +4572,21 @@
     nodemailer-mailgun-transport "^2.1.5"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/nql-lang@0.3.2", "@tryghost/nql-lang@^0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.3.2.tgz#618bff56963d58b211873a4d3f86d9ff04ceb26a"
-  integrity sha512-KlO+x32nTi7q7HAinF1e2XyH0zeDBQOPL6TCDjV+bjDGaJ4h0GzR406/79MosoYbPE3kiMGVIrIdMeQcysGoyg==
+"@tryghost/nql-lang@0.5.0", "@tryghost/nql-lang@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.5.0.tgz#e34082997eca361a71b9d2de6ea6f7dd5a0654b6"
+  integrity sha512-Nxmz82Zm0uRXy0GL+Bd7G2mvjakoYbT6QDiyj6W1v90zXyzMedRfb9289lMzYX8tUG4VkoVOj9rWzFm5iSdpbw==
   dependencies:
     date-fns "^2.28.0"
 
-"@tryghost/nql@0.9.2", "@tryghost/nql@^0.9.0":
-  version "0.9.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.9.2.tgz#76e645ecf5927b84f4c1ef60953811e8324d404d"
-  integrity sha512-XFpZ/1bBGpYtoDA1bTgtjxmq//aimhngeYnKu3anKQ9Ri/UxzHP7ML9NnRhvIPAfrGKaSSb+epv6Zi41LA/d9Q==
+"@tryghost/nql@0.11.0", "@tryghost/nql@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.11.0.tgz#137a05aa3e3c733c8f646afc59dcb9eeb2c6269a"
+  integrity sha512-B8AZUC97NVp6atZ2Jg6mL+03AbQf5gzCkqhCgVjhHeeyQh5xvU1uIMyvuio2wq9MFWxHPD8w8cSltidpY9wTuA==
   dependencies:
-    "@tryghost/mongo-knex" "^0.6.4"
-    "@tryghost/mongo-utils" "^0.3.5"
-    "@tryghost/nql-lang" "^0.3.2"
+    "@tryghost/mongo-knex" "^0.8.0"
+    "@tryghost/mongo-utils" "^0.5.0"
+    "@tryghost/nql-lang" "^0.5.0"
     mingo "^2.2.2"
 
 "@tryghost/pretty-cli@1.2.29":
