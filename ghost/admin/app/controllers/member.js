@@ -27,6 +27,9 @@ export default class MemberController extends Controller {
     _previousLabels = null;
     _previousNewsletters = null;
 
+    directlyFromAnalytics = false;
+    fromAnalytics = null;
+
     constructor() {
         super(...arguments);
         this._availableLabels = this.store.peekAll('label');

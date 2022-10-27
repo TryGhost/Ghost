@@ -10,10 +10,14 @@
                     <LinkTo @route="posts.analytics" @models={{this.fromAnalytics}}>
                         Analytics
                     </LinkTo>
-                    {{svg-jar "arrow-right-small"}}
-                    <LinkTo @route="members" data-test-link="members-back">
-                        Members
-                    </LinkTo>
+
+                    {{#unless this.directlyFromAnalytics}}
+                        {{svg-jar "arrow-right-small"}}
+                        <LinkTo @route="members" data-test-link="members-back">
+                            Members
+                        </LinkTo>
+                    {{/unless}}
+
                     {{svg-jar "arrow-right-small"}} {{if this.member.isNew "New member" "Edit member"}}
                 </div>
             {{else}}
