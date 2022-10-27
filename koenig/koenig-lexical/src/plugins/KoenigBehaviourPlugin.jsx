@@ -82,7 +82,6 @@ function useKoenigBehaviour({editor, containerElem}) {
                         if (selection.isCollapsed) {
                             const topLevelElement = selection.anchor.getNode().getTopLevelElement();
                             const nativeSelection = window.getSelection();
-                            const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection.anchorNode);
 
                             // empty paragraphs are odd because the native range won't
                             // have a rect to compare positioning
@@ -91,10 +90,8 @@ function useKoenigBehaviour({editor, containerElem}) {
                                 selection.anchor.offset === 0;
 
                             const atStartOfElement =
-                                nativeSelection.rangeCount !== 0 &&
-                                nativeSelection.anchorNode === nativeTopLevelElement &&
-                                nativeSelection.anchorOffset === 0 &&
-                                nativeSelection.focusOffset === 0;
+                                selection.anchor.offset === 0 &&
+                                selection.focus.offset === 0;
 
                             if (onEmptyNode || atStartOfElement) {
                                 const previousSibling = topLevelElement.getPreviousSibling();
@@ -107,10 +104,16 @@ function useKoenigBehaviour({editor, containerElem}) {
                                 const rects = range.getClientRects();
 
                                 if (rects.length > 0) {
-                                    const rangeRect = rects[0];
+                                    // try second rect first because when the caret is at the beginning
+                                    // of a line the first rect will be positioned on line above breaking
+                                    // the top position check
+                                    const rangeRect = rects[1] || rects[0];
+                                    const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection.anchorNode);
                                     const elemRect = nativeTopLevelElement.getBoundingClientRect();
 
-                                    if (Math.abs(rangeRect.top - elemRect.top) <= RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX) {
+                                    const atTopOfNode = Math.abs(rangeRect.top - elemRect.top) <= RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX;
+
+                                    if (atTopOfNode) {
                                         const previousSibling = topLevelElement.getPreviousSibling();
                                         if ($isDecoratorNode(previousSibling)) {
                                             $selectDecoratorNode(previousSibling);

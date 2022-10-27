@@ -269,6 +269,63 @@ describe('Card behaviour', async () => {
         test('moving through paragraph to card', async function () {
             await focusEditor(page);
             await page.keyboard.type('--- ');
+            // three lines of text
+            await page.keyboard.type('Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.');
+
+            // place cursor at beginning of third line
+            const pHandle = await page.$('[data-lexical-editor] > p');
+            const pRect = await page.evaluate((el) => {
+                const {x, y, height} = el.getBoundingClientRect();
+                return {x, y, height};
+            }, pHandle);
+            await page.mouse.click(pRect.x + 1, pRect.y + pRect.height - 5);
+
+            await assertSelection(page, {
+                anchorOffset: 160,
+                anchorPath: [1, 0, 0],
+                focusOffset: 160,
+                focusPath: [1, 0, 0]
+            });
+
+            await page.keyboard.press('ArrowUp');
+
+            await assertSelection(page, {
+                anchorOffset: 81,
+                anchorPath: [1, 0, 0],
+                focusOffset: 81,
+                focusPath: [1, 0, 0]
+            });
+
+            await page.keyboard.press('ArrowUp');
+
+            expect(await page.$('[data-kg-card-selected="true"]')).toBeNull();
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1, 0, 0],
+                focusOffset: 0,
+                focusPath: [1, 0, 0]
+            });
+
+            await page.keyboard.press('ArrowUp');
+
+            // card is selected
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p dir="ltr">
+                    <span data-lexical-text="true">
+                        Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef
+                        sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone
+                        alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.
+                    </span>
+                </p>
+            `);
+        });
+
+        test('moving through paragraph with breaks to card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
             await page.keyboard.type('First line');
             await page.keyboard.down('Shift');
             await page.keyboard.press('Enter');
