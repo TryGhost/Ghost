@@ -122,38 +122,6 @@ describe('Acceptance: Settings - Newsletters', function () {
         expect(currentURL()).to.equal('/settings/newsletters');
     });
 
-    it('can manage open rate tracking', async function () {
-        this.server.db.settings.update({key: 'email_track_opens'}, {value: 'true'});
-
-        await visit('/settings/newsletters');
-
-        await click('[data-test-toggle-analytics]');
-        expect(find('[data-test-checkbox="email-track-opens"]')).to.be.checked;
-
-        await click('[data-test-label="email-track-opens"]');
-        expect(find('[data-test-checkbox="email-track-opens"]')).to.not.be.checked;
-
-        await click('[data-test-button="save-members-settings"]');
-
-        expect(this.server.db.settings.findBy({key: 'email_track_opens'}).value).to.equal(false);
-    });
-
-    it('can manage click tracking', async function () {
-        this.server.db.settings.update({key: 'email_track_clicks'}, {value: 'true'});
-
-        await visit('/settings/newsletters');
-
-        await click('[data-test-toggle-analytics]');
-        expect(find('[data-test-checkbox="email-track-clicks"]')).to.be.checked;
-
-        await click('[data-test-label="email-track-clicks"]');
-        expect(find('[data-test-checkbox="email-track-clicks"]')).to.not.be.checked;
-
-        await click('[data-test-button="save-members-settings"]');
-
-        expect(this.server.db.settings.findBy({key: 'email_track_clicks'}).value).to.equal(false);
-    });
-
     describe('Creating newsletters', function () {
         it('can create new newsletter', async function () {
             await visit('/settings/newsletters');
