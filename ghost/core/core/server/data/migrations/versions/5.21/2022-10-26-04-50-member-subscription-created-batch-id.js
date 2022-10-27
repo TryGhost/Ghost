@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const ObjectId = require('bson-objectid').default;
 const {createTransactionalMigration} = require('../../utils');
@@ -29,11 +30,9 @@ module.exports = createTransactionalMigration(
         }
 
         // Create batches (insertBatch doesn't support the onConflict option)
-        const batchSize = 1000;
+        const batches = _.chunk(rows, 1000);
     
-        for (let i = 0; i < rows.length; i += batchSize) { // eslint-disable-line no-restricted-syntax
-            const batch = rows.slice(i, i + batchSize);
-
+        for (const batch of batches) { // eslint-disable-line no-restricted-syntax
             // Update the members_created_events table using INSERT ON DUPLICATE KEY UPDATE trick
             const response1 = await knex('members_created_events').insert(batch.map((r) => {
                 return {
