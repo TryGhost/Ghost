@@ -1,6 +1,34 @@
 import React from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {$getSelection, $isNodeSelection, $setSelection} from 'lexical';
+import {
+    $createNodeSelection,
+    $getSelection,
+    $isDecoratorNode,
+    $isNodeSelection,
+    $isRangeSelection,
+    $setSelection,
+    COMMAND_PRIORITY_HIGH,
+    KEY_ARROW_DOWN_COMMAND,
+    KEY_ARROW_UP_COMMAND
+} from 'lexical';
+import {mergeRegister} from '@lexical/utils';
+
+const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
+
+function $selectDecoratorNode(node) {
+    const nodeSelection = $createNodeSelection();
+    nodeSelection.add(node.getKey());
+    $setSelection(nodeSelection);
+}
+
+function getTopLevelNativeElement(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+        node = node.parentNode;
+    }
+
+    const selector = '[data-lexical-editor] > *';
+    return node.closest(selector);
+}
 
 function useKoenigBehaviour({editor, containerElem}) {
     // deselect cards on mousedown outside of the editor container
@@ -23,6 +51,146 @@ function useKoenigBehaviour({editor, containerElem}) {
             window.removeEventListener('mousedown', onMousedown);
         };
     }, [editor, containerElem]);
+
+    // override built-in keyboard movement around card (DecoratorNode) boundaries,
+    // cards should be selected on up/down and when deleting content around them
+    React.useEffect(() => {
+        return mergeRegister(
+            editor.registerCommand(
+                KEY_ARROW_UP_COMMAND,
+                () => {
+                    const selection = $getSelection();
+
+                    if ($isNodeSelection(selection)) {
+                        const currentNode = selection.getNodes()[0];
+                        const previousSibling = currentNode.getPreviousSibling();
+
+                        // do nothing if decorator node is top of document and selected
+                        // TODO: handle exposing this in some way so consuming app can
+                        //   can control this behaviour
+                        if (!previousSibling) {
+                            return true;
+                        }
+
+                        if ($isDecoratorNode(previousSibling)) {
+                            $selectDecoratorNode(previousSibling);
+                            return true;
+                        }
+                    }
+
+                    if ($isRangeSelection(selection)) {
+                        if (selection.isCollapsed) {
+                            const topLevelElement = selection.anchor.getNode().getTopLevelElement();
+                            const nativeSelection = window.getSelection();
+                            const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection.anchorNode);
+
+                            // empty paragraphs are odd because the native range won't
+                            // have a rect to compare positioning
+                            const onEmptyNode =
+                                topLevelElement?.getTextContent().trim() === '' &&
+                                selection.anchor.offset === 0;
+
+                            const atStartOfElement =
+                                nativeSelection.rangeCount !== 0 &&
+                                nativeSelection.anchorNode === nativeTopLevelElement &&
+                                nativeSelection.anchorOffset === 0 &&
+                                nativeSelection.focusOffset === 0;
+
+                            if (onEmptyNode || atStartOfElement) {
+                                const previousSibling = topLevelElement.getPreviousSibling();
+                                if ($isDecoratorNode(previousSibling)) {
+                                    $selectDecoratorNode(previousSibling);
+                                    return true;
+                                }
+                            } else {
+                                const range = nativeSelection.getRangeAt(0).cloneRange();
+                                const rects = range.getClientRects();
+
+                                if (rects.length > 0) {
+                                    const rangeRect = rects[0];
+                                    const elemRect = nativeTopLevelElement.getBoundingClientRect();
+
+                                    if (Math.abs(rangeRect.top - elemRect.top) <= RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX) {
+                                        const previousSibling = topLevelElement.getPreviousSibling();
+                                        if ($isDecoratorNode(previousSibling)) {
+                                            $selectDecoratorNode(previousSibling);
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_ARROW_DOWN_COMMAND,
+                () => {
+                    const selection = $getSelection();
+
+                    if ($isNodeSelection(selection)) {
+                        const currentNode = selection.getNodes()[0];
+                        const nextSibling = currentNode.getNextSibling();
+
+                        if ($isDecoratorNode(nextSibling)) {
+                            $selectDecoratorNode(nextSibling);
+                            return true;
+                        }
+                    }
+
+                    if ($isRangeSelection(selection)) {
+                        if (selection.isCollapsed) {
+                            const topLevelElement = selection.anchor.getNode().getTopLevelElement();
+                            const nativeSelection = window.getSelection();
+                            const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection.anchorNode);
+
+                            // empty paragraphs are odd because the native range won't
+                            // have a rect to compare positioning
+                            const onEmptyNode =
+                                topLevelElement?.getTextContent().trim() === '' &&
+                                selection.anchor.offset === 0;
+
+                            const atEndOfElement =
+                                nativeSelection.rangeCount !== 0 &&
+                                nativeSelection.anchorNode === nativeTopLevelElement &&
+                                nativeSelection.anchorOffset === nativeTopLevelElement.children.length - 1 &&
+                                nativeSelection.focusOffset === nativeTopLevelElement.children.length - 1;
+
+                            if (onEmptyNode || atEndOfElement) {
+                                const nextSibling = topLevelElement.getNextSibling();
+                                if ($isDecoratorNode(nextSibling)) {
+                                    $selectDecoratorNode(nextSibling);
+                                    return true;
+                                }
+                            } else {
+                                const range = nativeSelection.getRangeAt(0).cloneRange();
+                                const rects = range.getClientRects();
+
+                                if (rects.length > 0) {
+                                    const rangeRect = rects[0];
+                                    const elemRect = nativeTopLevelElement.getBoundingClientRect();
+
+                                    if (Math.abs(rangeRect.bottom - elemRect.bottom) < RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX) {
+                                        const nextSibling = topLevelElement.getNextSibling();
+                                        if ($isDecoratorNode(nextSibling)) {
+                                            $selectDecoratorNode(nextSibling);
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            )
+        );
+    });
 
     return null;
 }

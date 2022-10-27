@@ -148,6 +148,7 @@ describe('Card behaviour', async () => {
 
         // moves selection to previous card
         test.todo('when selected card after card');
+
         // triggers "caret left at top" prop fn
         test.todo('when selected card is first section');
     });
@@ -184,6 +185,278 @@ describe('Card behaviour', async () => {
                 focusOffset: 0,
                 focusPath: [1]
             });
+        });
+    });
+
+    describe('UP', function () {
+        // moves caret to end of paragraph
+        // TODO: there's an upstream bug that skips last line of paragraph,
+        // see https://github.com/facebook/lexical/issues/3270
+        test.skip('with selected card after paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First line');
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('Enter');
+            await page.keyboard.up('Shift');
+            await page.keyboard.type('Second line');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('/hr');
+            await page.keyboard.press('Enter');
+
+            // sanity check
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">First line</span>
+                    <br />
+                    <span data-lexical-text="true">Second line</span>
+                </p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p dir="ltr"><br /></p>
+            `);
+
+            await page.click('[data-kg-card="horizontalrule"]');
+            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+
+            await page.keyboard.press('ArrowUp');
+
+            // caret is at end of second line of paragraph
+            await assertSelection(page, {
+                anchorOffset: 11,
+                anchorPath: [0, 0, 0],
+                focusOffset: 11,
+                focusPath: [0, 0, 0]
+            });
+
+            // card is no longer selected
+            expect(await page.$('[data-kg-card-selected="true"]')).toBeNull();
+        });
+
+        // selects the previous card
+        test('with selected card after card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('--- ');
+            await page.click('[data-lexical-decorator]:nth-of-type(2)');
+
+            // sanity check, second card is selected
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p><br /></p>
+            `);
+
+            await page.keyboard.press('ArrowUp');
+
+            // first card is now selected
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p><br /></p>
+            `);
+        });
+
+        // selects the card once caret reaches top of paragraph
+        test('moving through paragraph to card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('First line');
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.up('Shift');
+            await page.keyboard.type('Second line after break');
+
+            // sanity check, caret is at end of second line after break
+            await assertSelection(page, {
+                anchorOffset: 23,
+                anchorPath: [1, 3, 0],
+                focusOffset: 23,
+                focusPath: [1, 3, 0]
+            });
+
+            await page.keyboard.press('ArrowUp');
+
+            // caret moved to empty line
+            await assertSelection(page, {
+                anchorOffset: 2,
+                anchorPath: [1],
+                focusOffset: 2,
+                focusPath: [1]
+            });
+
+            await page.keyboard.press('ArrowUp');
+
+            // caret moved to end of first line
+            await assertSelection(page, {
+                anchorOffset: 10,
+                anchorPath: [1, 0, 0],
+                focusOffset: 10,
+                focusPath: [1, 0, 0]
+            });
+
+            await page.keyboard.press('ArrowUp');
+
+            // card is selected
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p dir="ltr">
+                    <span data-lexical-text="true">First line</span>
+                    <br>
+                    <br>
+                    <span data-lexical-text="true">Second line after break</span>
+                </p>
+            `);
+        });
+    });
+
+    describe('DOWN', function () {
+        // moves caret to beginning of paragraph
+        // TODO: there's an upstream bug that skips last line of paragraph,
+        // see https://github.com/facebook/lexical/issues/3270
+        test.skip('with selected card before paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('First line');
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('Enter');
+            await page.keyboard.up('Shift');
+            await page.keyboard.type('Second line');
+
+            await page.click('[data-lexical-decorator]');
+
+            // sanity check
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p dir="ltr">
+                    <span data-lexical-text="true">First line</span>
+                    <br />
+                    <span data-lexical-text="true">Second line</span>
+                </p>
+            `);
+
+            await page.keyboard.press('ArrowDown');
+
+            // caret is at beginning of paragraph
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0, 0, 0],
+                focusOffset: 0,
+                focusPath: [0, 0, 0]
+            });
+
+            // card is no longer selected
+            expect(await page.$('[data-kg-card-selected="true"]')).toBeNull();
+        });
+
+        // selects the next card
+        test('with selected card before card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('--- ');
+            await page.click('[data-lexical-decorator]');
+
+            // sanity check, first card is selected
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p><br /></p>
+            `);
+
+            await page.keyboard.press('ArrowDown');
+
+            // first card is now selected
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p><br /></p>
+            `);
+        });
+
+        // selects the card once caret reaches bottom of paragraph
+        test('moving through paragraph to card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First line');
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.up('Shift');
+            await page.keyboard.type('Second line after break');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+
+            // place cursor at beginning of first line
+            const pHandle = await page.$('[data-lexical-editor] > p');
+            const pRect = await page.evaluate((el) => {
+                const {x, y} = el.getBoundingClientRect();
+                return {x, y};
+            }, pHandle);
+            await page.mouse.click(pRect.x + 5, pRect.y + 5);
+
+            // sanity check
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0, 0, 0],
+                focusOffset: 0,
+                focusPath: [0, 0, 0]
+            });
+
+            await page.keyboard.press('ArrowDown');
+
+            // caret on blank break line
+            await assertSelection(page, {
+                anchorOffset: 2,
+                anchorPath: [0],
+                focusOffset: 2,
+                focusPath: [0]
+            });
+
+            await page.keyboard.press('ArrowDown');
+
+            // caret on second line after break
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0, 3 ,0],
+                focusOffset: 0,
+                focusPath: [0, 3 ,0]
+            });
+
+            await page.keyboard.press('ArrowDown');
+
+            // card is selected
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">First line</span>
+                    <br>
+                    <br>
+                    <span data-lexical-text="true">Second line after break</span>
+                </p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p><br /></p>
+            `);
         });
     });
 
