@@ -61,6 +61,7 @@ module.exports = class EventRepository {
         const pageActions = [
             {type: 'comment_event', action: 'getCommentEvents'},
             {type: 'click_event', action: 'getClickEvents'},
+            {type: 'aggregated_click_event', action: 'getAggregatedClickEvents'},
             {type: 'signup_event', action: 'getSignupEvents'},
             {type: 'subscription_event', action: 'getSubscriptionEvents'}
         ];
@@ -238,11 +239,15 @@ module.exports = class EventRepository {
         const {data: models, meta} = await this._MemberPaidSubscriptionEvent.findPage(options);
 
         const data = models.map((model) => {
+            const tierName = model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null;
+            
+            // Prevent toJSON on stripeSubscription (we don't have everything loaded)
+            delete model.relations.stripeSubscription;
             const d = {
                 ...model.toJSON(options),
                 attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null,
                 signup: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id && model.related('subscriptionCreatedEvent').related('memberCreatedEvent') && model.related('subscriptionCreatedEvent').related('memberCreatedEvent').id ? true : false,
-                tierName: model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null
+                tierName
             };
             delete d.stripeSubscription;
             return {
@@ -463,6 +468,61 @@ module.exports = class EventRepository {
         const data = models.map((model) => {
             return {
                 type: 'click_event',
+                data: model.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    /**
+     * This groups click events per member for the same post, and only returns the first actual event, and includes the total clicks per event (for the same member and post)
+     */
+    async getAggregatedClickEvents(options = {}, filter) {
+        // This counts all clicks for a member for the same post
+        const postClickQuery = `SELECT count(distinct A.redirect_id) 
+            FROM members_click_events A 
+            LEFT JOIN redirects A_r on A_r.id = A.redirect_id
+            LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
+            WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id`;
+
+        // Counts all clicks for the same member, for the same post, but only preceding events. This should be zero to include the event (so we only include the first events)
+        const postClickQueryPreceding = `SELECT count(distinct A.redirect_id) 
+            FROM members_click_events A 
+            LEFT JOIN redirects A_r on A_r.id = A.redirect_id
+            LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
+            WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id AND (A.created_at < members_click_events.created_at OR (A.created_at = members_click_events.created_at AND A.id < members_click_events.id))`;
+
+        options = {
+            ...options,
+            withRelated: ['member'],
+            filter: 'custom:true',
+            mongoTransformer: chainTransformers(
+                // First set the filter manually
+                replaceCustomFilterTransformer(filter),
+
+                // Map the used keys in that filter
+                ...mapKeys({
+                    'data.created_at': 'created_at',
+                    'data.member_id': 'member_id',
+                    'data.post_id': 'post_id'
+                })
+            ),
+            // We need to use MIN to make pagination work correctly
+            // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
+            // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
+            selectRaw: `id, member_id, created_at, (${postClickQuery}) as count__clicks`,
+            whereRaw: `(${postClickQueryPreceding}) = 0`
+        };
+
+        const {data: models, meta} = await this._MemberLinkClickEvent.findPage(options);
+
+        const data = models.map((model) => {
+            return {
+                type: 'aggregated_click_event',
                 data: model.toJSON(options)
             };
         });

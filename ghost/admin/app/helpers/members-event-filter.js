@@ -13,7 +13,7 @@ export default class MembersEventFilter extends Helper {
 
     compute(
         positionalParams,
-        {excludedEvents = [], member = '', post = '', excludeEmailEvents = false}
+        {excludedEvents = [], includeEvents = null, member = '', post = '', excludeEmailEvents = false}
     ) {
         const excludedEventsSet = new Set();
 
@@ -35,8 +35,13 @@ export default class MembersEventFilter extends Helper {
         let filterParts = [];
 
         const excludedEventsArray = Array.from(excludedEventsSet).reject(isBlank);
-        if (excludedEventsArray.length > 0) {
-            filterParts.push(`type:-[${excludedEventsArray.join(',')}]`);
+
+        if (includeEvents !== null) {
+            filterParts.push(`type:[${includeEvents.join(',')}]`);
+        } else {
+            if (excludedEventsArray.length > 0) {
+                filterParts.push(`type:-[${excludedEventsArray.join(',')}]`);
+            }
         }
 
         if (member) {
