@@ -21,20 +21,20 @@
                             <p>Once someone receives your email, you'll be able to see the member activity here.</p>
                         {{else if (eq this.eventType "opened")}}
                             {{svg-jar "empty-opened"}}
-                            <h4>No members have opened your email yet</h4>
-                            <p>Once someone opens your email, you'll be able to see the member activity here.</p>
+                            <h4>No members have opened your newsletter</h4>
+                            <p>Once someone opens, you'll see them listed here.</p>
                         {{else if (eq this.eventType "clicked")}}
                             {{svg-jar "empty-clicked"}}
-                            <h4>No members have clicked in your email yet</h4>
-                            <p>Once someone clicks in your email, you'll be able to see the member activity here.</p>
+                            <h4>No links have been clicked in your newsletter</h4>
+                            <p>Once a member clicks a link, you'll see them listed here.</p>
                         {{else if (eq this.eventType "feedback")}}
                             {{svg-jar "empty-feedback"}}
-                            <h4>No members have responded with feedback yet</h4>
-                            <p>Once someone has responded with feedback, you'll be able to see the member activity here.</p>
+                            <h4>No members have given feedback yet</h4>
+                            <p>When someone does, you'll see their response here.</p>
                         {{else if (eq this.eventType "conversion")}}
                             {{svg-jar "empty-conversion"}}
-                            <h4>No members have signed up or upgraded yet</h4>
-                            <p>Once someone has signed up or upgraded, you'll be able to see the member activity here.</p>
+                            <h4>No members have signed up on this post</h4>
+                            <p>When someone new signs up, you'll see them here.</p>
                         {{/if}}
                     </div>
                 </div>
