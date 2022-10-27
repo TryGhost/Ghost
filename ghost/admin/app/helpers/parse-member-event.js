@@ -262,14 +262,14 @@ export default class ParseMemberEventHelper extends Helper {
             if (event.data.type === 'created') {
                 const sign = mrrDelta > 0 ? '' : '-';
                 const tierName = this.membersUtils.hasMultipleTiers ? (event.data.tierName ?? 'paid') : 'paid';
-                return `(${tierName} - ${sign}${symbol}${Math.abs(mrrDelta)}/month)`;
+                return `${tierName} - ${sign}${symbol}${Math.abs(mrrDelta)}/month`;
             }
             const sign = mrrDelta > 0 ? '+' : '-';
-            return `(MRR - ${sign}${symbol}${Math.abs(mrrDelta)})`;
+            return `MRR - ${sign}${symbol}${Math.abs(mrrDelta)}`;
         }
 
         if (event.type === 'signup_event' && this.membersUtils.paidMembersEnabled) {
-            return '(free)';
+            return 'Free';
         }
 
         return;
