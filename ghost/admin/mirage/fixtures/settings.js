@@ -71,6 +71,7 @@ export default [
     setting('members', 'stripe_connect_account_id', null),
     setting('members', 'members_monthly_price_id', null),
     setting('members', 'members_yearly_price_id', null),
+    setting('members', 'members_track_sources', null),
 
     // PORTAL
     setting('portal', 'portal_name', 'true'),

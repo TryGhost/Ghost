@@ -1,0 +1,78 @@
+<div class="gh-main-section">
+    <h4 class="gh-main-section-header small bn">Newsletters</h4>
+    <section class="gh-expandable">
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Track newsletter opens</h4>
+                    <p class="gh-expandable-description">
+                        Record when member opens a newsletter email
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch" for="email-track-opens">
+                        <input
+                            id="email-track-opens"
+                            type="checkbox"
+                            checked={{this.settings.emailTrackOpens}}
+                            {{on "change" this.toggleEmailTrackOpens}}
+                            data-test-checkbox="email-track-opens"
+                        >
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Track newsletter clicks</h4>
+                    <p class="gh-expandable-description">
+                        Record when a member clicks on any link in a newsletter email
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch" for="email-track-clicks">
+                        <input
+                            id="email-track-clicks"
+                            type="checkbox"
+                            {{on "change" this.toggleEmailTrackClicks}}
+                            checked={{this.settings.emailTrackClicks}}
+                            data-test-checkbox="email-track-clicks"
+                        >
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="gh-main-section">
+    <h4 class="gh-main-section-header small bn">Sources</h4>
+    <section class="gh-expandable">
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Track member sources</h4>
+                    <p class="gh-expandable-description">
+                        Record the post/page and referring domain for signups and subscriptions
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch" for="members-track-sources">
+                        <input
+                            id="members-track-sources"
+                            type="checkbox"
+                            checked={{this.settings.membersTrackSources}}
+                            data-test-checkbox="members-track-sources"
+                            {{on "change" this.toggleMembersTrackSources}}
+                        >
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
