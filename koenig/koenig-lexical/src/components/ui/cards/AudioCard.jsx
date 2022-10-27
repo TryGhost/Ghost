@@ -12,7 +12,7 @@ function EmptyAudioCard() {
         <MediaPlaceholder
             desc="Click to upload an audio file"
             Icon={AudioPlaceholderIcon}
-            size='small'
+            size='xsmall'
         />
     );
 }

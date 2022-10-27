@@ -9,7 +9,7 @@ function EmptyFileCard() {
         <MediaPlaceholder
             desc="Click to upload a file"
             Icon={FilePlaceholderIcon}
-            size='small'
+            size='xsmall'
         />
     );
 }

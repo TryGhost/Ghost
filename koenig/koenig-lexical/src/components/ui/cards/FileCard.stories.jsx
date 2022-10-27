@@ -23,7 +23,13 @@ const Template = args => (
 export const Empty = Template.bind({});
 Empty.args = {
     isSelected: true,
-    isPopulated: false
+    isPopulated: false,
+    fileTitle: 'Example file',
+    fileTitlePlaceholder: 'File title',
+    fileDesc: '',
+    fileDescPlaceholder: 'Add optional file description',
+    fileName: 'Example-file.pdf',
+    fileSize: '165 KB'
 };
 
 export const Populated = Template.bind({});
