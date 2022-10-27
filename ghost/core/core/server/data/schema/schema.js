@@ -783,6 +783,7 @@ module.exports = {
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         track_opens: {type: 'boolean', nullable: false, defaultTo: false},
         track_clicks: {type: 'boolean', nullable: false, defaultTo: false},
+        feedback_enabled: {type: 'boolean', nullable: false, defaultTo: false},
         submitted_at: {type: 'dateTime', nullable: false},
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id'},
         created_at: {type: 'dateTime', nullable: false},
