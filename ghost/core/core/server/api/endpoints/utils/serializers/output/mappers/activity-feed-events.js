@@ -53,6 +53,10 @@ const clickEventMapper = (json, frame) => {
         response.created_at = data.created_at;
     }
 
+    if (data.id) {
+        response.id = data.id;
+    }
+
     return {
         ...json,
         data: response
