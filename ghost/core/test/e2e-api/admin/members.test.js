@@ -15,6 +15,18 @@ const memberAttributionService = require('../../../core/server/services/member-a
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 
+/**
+ * Assert that haystack and needles match, ignoring the order. 
+ */
+function matchArrayWithoutOrder(haystack, needles) {
+    // Order shouldn't matter here
+    for (const a of needles) {
+        haystack.should.matchAny(a);
+    }
+
+    assert.equal(haystack.length, needles.length, `Expected ${needles.length} items, but got ${haystack.length}`);
+}
+
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
     const eventsJSON = events.map(e => e.toJSON());
@@ -1303,7 +1315,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
-                    tiers: anyArray,
+                    tiers: new Array(1).fill(tierMatcher),
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
             })
@@ -1728,7 +1740,9 @@ describe('Members API', function () {
             });
 
         const events = eventsBody.events;
-        events.should.match([
+
+        // The order will be different in each test because two newsletter_events have the same created_at timestamp. And events are ordered by created_at desc, id desc (id will be different each time).
+        matchArrayWithoutOrder(events, [
             {
                 type: 'newsletter_event',
                 data: {

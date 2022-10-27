@@ -23,6 +23,7 @@ export default class ModalTierPrice extends ModalBase {
     @service feature;
     @service settings;
     @service config;
+    @service membersUtils;
     @tracked model;
     @tracked tier;
     @tracked periodVal;
@@ -185,6 +186,9 @@ export default class ModalTierPrice extends ModalBase {
             this.hasSaved = true;
             yield this.confirm();
             this.send('closeModal');
+
+            // Reload in the background (no await here)
+            this.membersUtils.reload();
         } catch (error) {
             if (error === undefined) {
                 // Validation error
