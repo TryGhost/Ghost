@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const Promise = require('bluebird');
 const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
@@ -279,7 +280,7 @@ User = ghostBookshelf.Model.extend({
             })();
         }
 
-        return Promise.all(tasks);
+        return Promise.props(tasks);
     },
 
     toJSON: function toJSON(unfilteredOptions) {
