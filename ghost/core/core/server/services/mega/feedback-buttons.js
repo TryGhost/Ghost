@@ -18,15 +18,27 @@ const generateLinks = (postId, uuid, html) => {
         0
     );
 
-    html = html.replace(templateStrings.like, positiveLink.href);
-    html = html.replace(templateStrings.dislike, negativeLink.href);
+    html = html.replace(new RegExp(templateStrings.like, 'g'), positiveLink.href);
+    html = html.replace(new RegExp(templateStrings.dislike, 'g'), negativeLink.href);
 
     return html;
 };
 
 const getTemplate = (accentColor) => {
-    const likeButtonHtml = getButtonHtml(templateStrings.like, 'More like this', accentColor);
-    const dislikeButtonHtml = getButtonHtml(templateStrings.dislike, 'Less like this', accentColor);
+    const likeButtonHtml = getButtonHtml(
+        templateStrings.like,
+        'More like this',
+        accentColor,
+        'like-icon',
+        'https://static.ghost.org/v5.0.0/images/thumbs-up.png'
+    );
+    const dislikeButtonHtml = getButtonHtml(
+        templateStrings.dislike,
+        'Less like this',
+        accentColor,
+        'dislike-icon',
+        'https://static.ghost.org/v5.0.0/images/thumbs-down.png'
+    );
 
     return (`
         <tr>
@@ -43,19 +55,44 @@ const getTemplate = (accentColor) => {
     `);
 };
 
-function getButtonHtml(href, buttonText, accentColor) {
-    const color = new Color(accentColor);
-    const bgColor = `${accentColor}10`;
-    const textColor = color.darken(0.6).hex();
+function getButtonHtml(href, buttonText, accentColor, className, iconUrl) {
+    const bgColor = getButtonLightTheme(accentColor).backgroundColor;
+    const textColor = getButtonLightTheme(accentColor).color;
 
     return (`
-        <td dir="ltr" valign="top" align="center" style="font-family: inherit; font-size: 14px; text-align: center;" nowrap>
-            <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: auto !important;">
+         <td dir="ltr" valign="top" align="center" style="vertical-align: top; color: ${textColor}; font-family: inherit; font-size: 14px; text-align: center; padding: 0 8px;" nowrap>
+            <table class="feedback-buttons" align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: ${bgColor}; overflow: hidden; border-radius: 22px;border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
                 <tr>
-                    <td style="padding: 0 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';">
-                        <a href=${href} style="background-color: ${bgColor}; color: ${textColor}; border-radius: 22px; font-family: inherit; padding: 12px 20px; border: none; font-size: 14px; font-weight: bold; line-height: 100%; text-decoration: none; display: block;">
-                            ${buttonText}
-                        </a>
+                    <td width="16" height="38" style="paddig-left:10px;"></td>
+                    <td class=${className} background=${iconUrl} bgcolor="${textColor}" width="24" height="38" valign="top" style="vertical-align: middle; text-align: center;background-size: cover; background-position: 0 50%; background-repeat:no-repeat;">
+                        <!--[if gte mso 9]>
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:24px;height:38px;">
+                            <v:fill origin="0.5, 0.5" position="0.5, 0.5" type="tile" src=${iconUrl} color="${textColor}" size="1,1" aspect="atleast" />
+                            <v:textbox inset="0,0,0,0">
+                        <![endif]-->
+                        <div>
+                            <a style="background-color: ${bgColor};border: none; width: 24px; height: 38px; display: block" href=${href} target="_blank"></a>
+                        </div>
+                        <!--[if gte mso 9]>
+                        </v:textbox>
+                        </v:rect>
+                        <![endif]-->
+                    </td>
+                    <td style="text-align: right;font-size: 18px; vertical-align: middle; color: ${textColor}!important; background-position: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';">
+                        <div style="color: ${textColor}"><!--[if mso]>
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href=${href} style="height:38px;v-text-anchor:middle;width:120px;" stroke="f">
+                                <w:anchorlock/>
+                                <center>
+                            <![endif]-->
+                            <a
+                              href=${href}
+                              target="_blank"
+                              style="padding: 0 8px 0 8px;border-radius: 0 22px 22px 0;color:${textColor}!important;display:inline-block;font-family: inherit;font-size:14px;font-weight:bold;line-height:38px;text-align:left;text-decoration:none;width:100px;-webkit-text-size-adjust:none;">
+                              ${buttonText}</a>
+                            <!--[if mso]>
+                            </center>
+                            </v:rect>
+                            <![endif]--></div>
                     </td>
                 </tr>
             </table>
@@ -63,7 +100,41 @@ function getButtonHtml(href, buttonText, accentColor) {
     `);
 }
 
+function getButtonLightTheme(accentColor) {
+    const color = new Color(accentColor);
+    const backgroundColor = `${accentColor}10`;
+    const textColor = color.darken(0.6).hex();
+
+    return {
+        color: textColor,
+        backgroundColor
+    };
+}
+
+function getButtonsHeadStyles() {
+    return (`
+        .like-icon {
+            mix-blend-mode: darken;
+        }
+
+        .dislike-icon {
+            mix-blend-mode: darken;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .like-icon {
+                mix-blend-mode: initial !important;
+            }
+
+            .dislike-icon {
+                mix-blend-mode: initial !important;
+            }
+        }
+`);
+}
+
 module.exports = {
     generateLinks,
-    getTemplate
+    getTemplate,
+    getButtonsHeadStyles
 };

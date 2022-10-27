@@ -53,7 +53,7 @@
                                 <span class="gh-dashboard-list-subtext">
                                     <span class="gh-members-activity-description">
                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
-                                        {{#if parsedEvent.url}}
+                                        {{#if parsedEvent.description}}
                                             <span class="gh-members-activity-event-dash">–</span>
                                             <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.description}}</a>
                                         {{/if}}
@@ -83,7 +83,7 @@
                 {{#if (compute (fn this.areStubsNeeded eventsFetcher))}}
                     {{#let (compute (fn this.getAmountOfStubs eventsFetcher)) as |stubs|}}
                         {{#each stubs}}
-                            <div class="gh-dashboard-list-item"></div>
+                            <div class="gh-dashboard-list-item gh-dashboard-list-item-stub"></div>
                         {{/each}}
                     {{/let}}
                 {{/if}}
