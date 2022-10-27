@@ -64,7 +64,7 @@ function getButtonHtml(href, buttonText, accentColor, className, iconUrl) {
             <table class="feedback-buttons" align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: ${bgColor}; overflow: hidden; border-radius: 22px;border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
                 <tr>
                     <td width="16" height="38" style="paddig-left:10px;"></td>
-                    <td class=${className} background=${iconUrl} bgcolor="${textColor}" width="24" height="38" valign="top" style="vertical-align: middle; text-align: center;background-size: cover; background-position: 0 50%; background-repeat:no-repeat;">
+                    <td class=${className} background=${iconUrl} bgcolor="${textColor}" width="24" height="38" valign="top" style="background-image: url(${iconUrl});vertical-align: middle; text-align: center;background-size: cover; background-position: 0 50%; background-repeat:no-repeat;">
                         <!--[if gte mso 9]>
                         <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:24px;height:38px;">
                             <v:fill origin="0.5, 0.5" position="0.5, 0.5" type="tile" src=${iconUrl} color="${textColor}" size="1,1" aspect="atleast" />
