@@ -259,6 +259,7 @@ module.exports = class RouterController {
 
         options.successUrl = req.body.successUrl;
         options.cancelUrl = req.body.cancelUrl;
+        options.email = req.body.customerEmail;
 
         if (!member && req.body.customerEmail && !req.body.successUrl) {
             options.successUrl = await this._magicLinkService.getMagicLink({
