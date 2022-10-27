@@ -1,5 +1,5 @@
 import {beforeAll, afterAll, beforeEach, describe, test} from 'vitest';
-import {startApp, initialize, focusEditor, assertHTML, html, assertSelection} from '../utils/e2e';
+import {startApp, initialize, focusEditor, assertHTML, html, assertSelection, pasteText} from '../utils/e2e';
 
 describe('Card behaviour', async () => {
     let app;
@@ -269,8 +269,8 @@ describe('Card behaviour', async () => {
         test('moving through paragraph to card', async function () {
             await focusEditor(page);
             await page.keyboard.type('--- ');
-            // three lines of text
-            await page.keyboard.type('Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.');
+            // three lines of text - paste it because keyboard.type is slow for long text
+            await pasteText(page, 'Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.');
 
             // place cursor at beginning of third line
             const pHandle = await page.$('[data-lexical-editor] > p');

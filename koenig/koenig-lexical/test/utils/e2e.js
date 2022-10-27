@@ -192,3 +192,21 @@ export async function assertPosition(page, selector, expectedBox, {threshold = 0
         }
     });
 }
+
+export async function pasteText(page, text) {
+    const pasteCommand = `
+        const text = ${JSON.stringify(text)};
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', text);
+
+        document.activeElement.dispatchEvent(new ClipboardEvent('paste', {
+            clipboardData: dataTransfer,
+            bubbles: true,
+            cancelable: true
+        }));
+
+        dataTransfer.clearData();
+    `;
+
+    await page.evaluate(pasteCommand);
+}
