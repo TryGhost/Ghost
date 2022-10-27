@@ -99,6 +99,38 @@ describe('MemberRepository', function () {
                 assert.equal(err.message, 'Could not find Product "default"');
             }
         });
+
+        it('uses the right options for fetching default product', async function () {
+            productRepository = {
+                getDefaultProduct: sinon.stub().resolves({
+                    toJSON: () => {
+                        return null;
+                    }
+                })
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                stripeAPIService: {
+                    configured: true
+                },
+                productRepository
+            });
+
+            try {
+                await repo.setComplimentarySubscription({
+                    id: 'member_id_123'
+                }, {
+                    transacting: true,
+                    withRelated: ['labels']
+                });
+
+                assert.fail('setComplimentarySubscription should have thrown');
+            } catch (err) {
+                productRepository.getDefaultProduct.calledWith({withRelated: ['stripePrices'], transacting: true}).should.be.true();
+                assert.equal(err.message, 'Could not find Product "default"');
+            }
+        });
     });
 
     describe('linkSubscription', function (){
