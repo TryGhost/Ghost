@@ -299,7 +299,20 @@ describe('Image card', async () => {
         ]);
 
         expect(fileChooser).not.toBeNull();
-
         await fileChooser.cancel();
     });
+
+    test('can handle drag over', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+        const imageCard = await page.$('[data-kg-card="image"]');
+        expect(imageCard).not.toBeNull();
+        await imageCard.dragEnter(this, {dataTransfer: {
+            files: []
+        }});
+        expect(await page.$('[data-kg-card-drag-text="true"]')).not.toBeNull();
+    });
+    
+    test.todo('can handle drag leave');
+    test.todo('can handle image drop');
 });

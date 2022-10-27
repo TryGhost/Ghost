@@ -25,6 +25,7 @@ Empty.args = {
     isSelected: true,
     setAltText: true,
     caption: '',
-    altText: ''
+    altText: '',
+    isDraggedOver: false
 };
 
