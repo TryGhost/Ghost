@@ -385,7 +385,15 @@ describe('Activity Feed API', function () {
             });
     });
 
-    it('Can do filter based pagination', async function () {
+    it('Can do filter based pagination for all posts', async function () {
+        // There is an annoying restriction in the pagination. It doesn't work for mutliple email events at the same time because they have the same id (causes issues as we use id to deduplicate the created_at timestamp)
+        // If that is ever fixed (it is difficult) we can update this test to not use a filter
+        // Same for click_event and aggregated_click_event (use same id)
+        const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
+        await testPagination(skippedTypes, null, 37);
+    });
+
+    it('Can do filter based pagination for one post', async function () {
         const postId = fixtureManager.get('posts', 0).id;
 
         // There is an annoying restriction in the pagination. It doesn't work for mutliple email events at the same time because they have the same id (causes issues as we use id to deduplicate the created_at timestamp)
@@ -394,15 +402,19 @@ describe('Activity Feed API', function () {
         const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
 
         await testPagination(skippedTypes, postId, 13);
-        await testPagination(skippedTypes, null, 37);
     });
 
-    it('Can do filter based pagination for aggregated clicks', async function () {
-        // Same as previosu but with aggregated clicks instead of normal click events + email_delivered_events instead of sent events
+    it('Can do filter based pagination for aggregated clicks for one post', async function () {
+        // Same as previous but with aggregated clicks instead of normal click events + email_delivered_events instead of sent events
         const postId = fixtureManager.get('posts', 0).id;
         const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_sent_event', 'click_event'];
 
         await testPagination(skippedTypes, postId, 9);
+    });
+
+    it('Can do filter based pagination for aggregated clicks for all posts', async function () {
+        // Same as previous but with aggregated clicks instead of normal click events + email_delivered_events instead of sent events
+        const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_sent_event', 'click_event'];
         await testPagination(skippedTypes, null, 33);
     });
 
