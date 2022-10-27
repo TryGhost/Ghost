@@ -220,10 +220,10 @@ export default Model.extend(Comparable, ValidationEngine, {
             && this.settings.emailTrackClicks;
     }),
 
-    showAttributionAnalytics: computed('isPage', 'emailOnly', 'isPublished', 'membersUtils.isMembersInviteOnly', function () {
+    showAttributionAnalytics: computed('isPage', 'emailOnly', 'isPublished', 'membersUtils.isMembersInviteOnly', 'settings.membersTrackSources', function () {
         return (this.isPage || !this.emailOnly)
                 && this.isPublished
-                && this.feature.get('memberAttribution')
+                && this.settings.membersTrackSources
                 && !this.membersUtils.isMembersInviteOnly
                 && !this.session.user.isContributor;
     }),
