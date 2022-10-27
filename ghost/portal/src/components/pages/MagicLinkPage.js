@@ -27,12 +27,12 @@ export default class MagicLinkPage extends React.Component {
     static contextType = AppContext;
 
     renderFormHeader() {
-        let popupTitle = `We've sent you a login link!`;
-        let popupDescription = `If the email doesn't arrive in 3 minutes, be sure to check your spam folder!`;
+        let popupTitle = `Now check your email!`;
+        let popupDescription = `A login link has been sent to your inbox. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`;
 
         if (this.context.lastPage === 'signup') {
             popupTitle = `Now check your email!`;
-            popupDescription = `To complete signup, click the confirmation link in your inbox. If it doesn’t arrive within 3 minutes, check your spam folder!`;
+            popupDescription = `To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`;
         }
 
         return (
