@@ -34,7 +34,7 @@ export const FeedbackPageStyles = `
 
     .gh-portal-confirm-title {
         line-height: inherit;
-        text-align: left;
+        text-align: center;
         box-sizing: border-box;
         margin: 0;
         margin-bottom: .4rem;
@@ -43,44 +43,59 @@ export const FeedbackPageStyles = `
         letter-spacing: -.018em;
     }
 
-    .gh-portal-confirm-description {
-        font-size: 1.5rem;
-        text-align: left;
-        box-sizing: border-box;
-        margin: 0;
-        line-height: 2.25rem;
-        padding-right: 1.6rem;
-        padding-left: 0;
-        color: rgb(115, 115, 115);
+    .gh-portal-confirm-button {
+        width: 100%;
+        margin-top: 3.6rem;
     }
 
-    .gh-portal-confirm-buttons {
-        font-size: 1.5rem;
-        text-align: left;
-        box-sizing: border-box;
-        margin-top: 4rem;
+    .gh-feedback-buttons-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 3.6rem;
+    }
+
+    .gh-feedback-button {
+        position: relative;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        gap: 1.6rem;
-        flex-direction: row;
+        justify-content: center;
+        gap: 8px;
+        font-size: 1.4rem;
+        line-height: 1.2;
+        font-weight: 700;
+        border: none;
+        border-radius: 22px;
+        padding: 12px 8px;
+        color: #505050;
+        background: none;
+        cursor: pointer;
     }
 
-    .gh-portal-confirm-button-secundary {
-        tab-size: 4;
-        box-sizing: border-box;
-        line-height: inherit;
-        margin: 0;
-        padding: 0;
-        text-transform: none;
-        cursor: pointer;
-        -webkit-appearance: button;
-        background-color: initial;
-        background-image: none;
-        font-size: 1.4rem;
-        font-weight: 500;
-        color: rgb(115, 115, 115);
-        border: 0;
+    .gh-feedback-button::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        border-radius: inherit;
+        background: currentColor;
+        opacity: 0.10;
+    }
+
+    .gh-feedback-button-selected {
+        box-shadow: inset 0 0 0 2px currentColor;
+    }
+
+    .gh-feedback-button svg {
+        width: 24px;
+        height: 24px;
+        color: inherit;
+    }
+
+    .gh-feedback-button svg path {
+        stroke-width: 4px;
     }
 `;
 
@@ -112,8 +127,9 @@ function ErrorPage({error}) {
     );
 }
 
-const ConfirmDialog = ({onConfirm, loading, positive}) => {
+const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
     const {onAction, brandColor} = useContext(AppContext);
+    const [score, setScore] = useState(initialScore);
 
     const stopPropagation = (event) => {
         event.stopPropagation();
@@ -125,29 +141,52 @@ const ConfirmDialog = ({onConfirm, loading, positive}) => {
 
     const submit = async (event) => {
         event.stopPropagation();
-
-        await onConfirm();
+        await onConfirm(score);
     };
 
-    const title = positive ? 'You want more posts like this?' : 'You want less posts like this?';
+    const getButtonClassNames = (value) => {
+        const baseClassName = 'gh-feedback-button';
+        return value === score ? `${baseClassName} gh-feedback-button-selected` : baseClassName;
+    };
+
+    const getInlineStyles = (value) => {
+        return value === score ? {color: brandColor} : {};
+    };
 
     return (
         <div className="gh-portal-confirm-dialog" onMouseDown={stopPropagation}>
-            <h1 className="gh-portal-confirm-title">{title}</h1>
-            <p className="gh-portal-confirm-description">Your feedback will be sent to the owner of this site.</p>
-            <div className="gh-portal-confirm-buttons">
-                <ActionButton
-                    retry={false}
-                    onClick = {submit}
-                    disabled={false}
-                    brandColor={brandColor}
-                    label={'Yes!'}
-                    isRunning={loading}
-                    tabindex='3'
-                />
+            <h1 className="gh-portal-confirm-title">Give feedback on this post</h1>
 
-                <button type="button" onClick={close} className="gh-portal-confirm-button-secundary">Cancel</button>
+            <div className="gh-feedback-buttons-group">
+                <button
+                    className={getButtonClassNames(1)}
+                    style={getInlineStyles(1)}
+                    onClick={() => setScore(1)}
+                >
+                    <ThumbUpIcon />
+                    More like this
+                </button>
+
+                <button
+                    className={getButtonClassNames(0)}
+                    style={getInlineStyles(0)}
+                    onClick={() => setScore(0)}
+                >
+                    <ThumbDownIcon />
+                    Less like this
+                </button>
             </div>
+
+            <ActionButton
+                classes="gh-portal-confirm-button"
+                retry={false}
+                onClick={submit}
+                disabled={false}
+                brandColor={brandColor}
+                label="Submit feedback"
+                isRunning={loading}
+                tabindex="3"
+            />
             <CloseButton close={() => close(false)} />
         </div>
     );
@@ -162,7 +201,7 @@ const LoadingFeedbackView = ({action}) => {
     useEffect(() => {
         action();
     });
-    
+
     return <LoadingPage/>;
 };
 
@@ -174,8 +213,8 @@ const ConfirmFeedback = ({positive}) => {
     return (
         <div className='gh-portal-content gh-portal-feedback'>
             <CloseButton />
-        
-            <div class="gh-feedback-icon">
+
+            <div className="gh-feedback-icon">
                 {icon}
             </div>
             <h1 className="gh-portal-main-title">Thanks for the feedback!</h1>
@@ -197,7 +236,8 @@ const ConfirmFeedback = ({positive}) => {
 
 export default function FeedbackPage() {
     const {site, pageData, member} = useContext(AppContext);
-    const {uuid, postId, score} = pageData;
+    const {uuid, postId, score: initialScore} = pageData;
+    const [score, setScore] = useState(initialScore);
     const positive = score === 1;
 
     const isLoggedIn = !!member;
@@ -206,19 +246,20 @@ export default function FeedbackPage() {
     const [loading, setLoading] = useState(isLoggedIn);
     const [error, setError] = useState(null);
 
-    const doSendFeedback = async () => {
+    const doSendFeedback = async (selectedScore) => {
         setLoading(true);
         try {
-            await sendFeedback({siteUrl: site.url, uuid, postId, score});
+            await sendFeedback({siteUrl: site.url, uuid, postId, score: selectedScore});
+            setScore(selectedScore);
         } catch (e) {
             const text = HumanReadableError.getMessageFromError(e, 'There was a problem submitting your feedback. Please try again or contact the site owner.');
             setError(text);
         }
         setLoading(false);
     };
-    
-    const onConfirm = async (event) => {
-        await doSendFeedback();
+
+    const onConfirm = async (selectedScore) => {
+        await doSendFeedback(selectedScore);
         setConfirmed(true);
     };
 
@@ -228,7 +269,7 @@ export default function FeedbackPage() {
     }
 
     if (!confirmed) {
-        return (<ConfirmDialog onConfirm={onConfirm} loading={loading} positive={positive} />);
+        return (<ConfirmDialog onConfirm={onConfirm} loading={loading} initialScore={score} />);
     } else {
         if (loading) {
             return <LoadingFeedbackView action={doSendFeedback} />;
