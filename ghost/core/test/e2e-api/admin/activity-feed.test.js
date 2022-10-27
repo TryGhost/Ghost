@@ -8,11 +8,6 @@ const moment = require('moment');
 let agent;
 
 async function testPagination(skippedTypes, postId, totalExpected) {
-    // There is an annoying restriction in the pagination. It doesn't work for mutliple email events at the same time because they have the same id (causes issues as we use id to deduplicate the created_at timestamp)
-    // If that is ever fixed (it is difficult) we can update this test to not use a filter
-    // Same for click_event and aggregated_click_event (use same id)
-    //const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
-
     const postFilter = postId ? `+data.post_id:${postId}` : '';
 
     // To make the test cover more edge cases, we test different limit configurations
