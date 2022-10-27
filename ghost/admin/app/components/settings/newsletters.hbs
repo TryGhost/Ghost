@@ -140,62 +140,6 @@
                     </div>
                 </div>
             {{/unless}}
-
-            <div class="gh-expandable-block">
-                <div class="gh-expandable-header">
-                    <div>
-                        <h4 class="gh-expandable-title">Newsletter analytics</h4>
-                        <p class="gh-expandable-description">Track how many members are opening emails and clicking links</p>
-                    </div>
-                    <button type="button" class="gh-btn" {{on "click" (toggle-action "newsletterTrackingOpen" this)}} data-test-toggle-analytics>
-                        <span>{{if this.newsletterTrackingOpen "Close" "Expand"}}</span>
-                    </button>
-                </div>
-                <div class="gh-expandable-content">
-                    {{#liquid-if this.newsletterTrackingOpen}}
-                        <div class="mb6">
-                            <div class="gh-newsletter-tracking">
-                                <div class="gh-newsletter-tracking-row">
-                                    <div>
-                                        <h4 class="gh-newsletter-tracking-title">Track newsletter opens</h4>
-                                    </div>
-                                    <div class="for-switch">
-                                        <label class="switch" data-test-label="email-track-opens">
-                                            <input
-                                                id="email-track-opens"
-                                                type="checkbox"
-                                                checked={{this.settings.emailTrackOpens}}
-                                                class="gh-input"
-                                                {{on "change" this.toggleEmailTrackOpens}}
-                                                data-test-checkbox="email-track-opens"
-                                            >
-                                            <span class="input-toggle-component mt1"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="gh-newsletter-tracking-row">
-                                    <div>
-                                        <h4 class="gh-newsletter-tracking-title">Track newsletter link clicks</h4>
-                                    </div>
-                                    <div class="for-switch">
-                                        <label class="switch" data-test-label="email-track-clicks">
-                                            <input
-                                                id="email-track-clicks"
-                                                type="checkbox"
-                                                checked={{this.settings.emailTrackClicks}}
-                                                class="gh-input"
-                                                {{on "change" this.toggleEmailTrackClicks}}
-                                                data-test-checkbox="email-track-clicks"
-                                            >
-                                            <span class="input-toggle-component mt1"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {{/liquid-if}}
-                </div>
-            </div>
         </div>
     </section>
 {{/if}}
