@@ -1456,3 +1456,7 @@ kbd {
 .gh-post-activity-feed-footer {
     border-color: #17191c;
 }
+
+.gh-post-activity-feed .gh-dashboard-list-item:hover {
+    background: transparent;
+}
