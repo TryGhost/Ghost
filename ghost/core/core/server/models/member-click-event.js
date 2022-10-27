@@ -42,6 +42,19 @@ const MemberClickEvent = ghostBookshelf.Model.extend({
 
     async destroy() {
         throw new errors.IncorrectUsageError({message: 'Cannot destroy MemberClickEvent'});
+    },
+
+    permittedOptions(methodName) {
+        let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+        const validOptions = {
+            findPage: ['selectRaw', 'whereRaw']
+        };
+
+        if (validOptions[methodName]) {
+            options = options.concat(validOptions[methodName]);
+        }
+
+        return options;
     }
 });
 

@@ -30,6 +30,7 @@ export default class MembersActivityController extends Controller {
             // Always hide sent event
             hiddenEvents.push('email_sent_event');
         }
+        hiddenEvents.push('aggregated_click_event');
 
         if (this.settings.editorDefaultEmailRecipients === 'disabled') {
             hiddenEvents.push(...EMAIL_EVENTS, ...NEWSLETTER_EVENTS);

@@ -1,5 +1,5 @@
 <div class="gh-post-activity-feed">
-    {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId excludedEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
+    {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId includeEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
         {{#if eventsFetcher.isError}}
             <div class="gh-dashboard-list-body">
                 <div class="gh-dashboard-list-error">
@@ -40,7 +40,7 @@
                 </div>
             </div>
         {{else}}
-            <div class="gh-dashboard-list-body {{if (eq this.eventType "clicked") "gh-dashboard-list-larger-cols" }} {{if (eq this.eventType "conversion") "gh-dashboard-list-four-cols" }}">
+            <div class="gh-dashboard-list-body {{if (eq this.eventType "conversion") "gh-dashboard-list-four-cols" }}">
                 {{#each eventsFetcher.data as |event|}}
                     {{#let (parse-member-event event) as |parsedEvent|}}
                         <div class="gh-dashboard-list-item">
@@ -55,12 +55,6 @@
                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
                                         {{#if parsedEvent.info}}
                                             <span class="highlight">{{parsedEvent.info}}</span>
-                                        {{/if}}
-                                        {{#if (eq this.eventType "clicked")}}
-                                            {{#if (and parsedEvent.description parsedEvent.url) }}
-                                                <span class="gh-members-activity-event-dash">–</span>
-                                                <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.description}}</a>
-                                            {{/if}}
                                         {{/if}}
                                     </span>
                                 </span>

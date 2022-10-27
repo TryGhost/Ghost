@@ -108,6 +108,18 @@ module.exports = function (Bookshelf) {
                 options.order = this.orderDefaultOptions();
             }
 
+            if (options.selectRaw) {
+                itemCollection.query((qb) => {
+                    qb.select(qb.client.raw(options.selectRaw));
+                });
+            }
+
+            if (options.whereRaw) {
+                itemCollection.query((qb) => {
+                    qb.whereRaw(options.whereRaw);
+                });
+            }
+
             const response = await itemCollection.fetchPage(options);
             // Attributes are being filtered here, so they are not leaked into calling layer
             // where models are serialized to json and do not do more filtering.
