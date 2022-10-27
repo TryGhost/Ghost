@@ -184,7 +184,7 @@ describe('Tier', function () {
                 yearlyPrice: 6000
             });
 
-            assert(tier.currency === 'EUR');
+            assert(tier.currency === 'eur');
             assert(tier.monthlyPrice === 1000);
             assert(tier.yearlyPrice === 6000);
             assert(tier.events.find((event) => {

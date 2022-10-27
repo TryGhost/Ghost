@@ -31,7 +31,7 @@ Object {
       "active": true,
       "benefits": Array [],
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-      "currency": "USD",
+      "currency": "usd",
       "description": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "monthly_price": 500,

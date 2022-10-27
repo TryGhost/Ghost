@@ -406,7 +406,7 @@ function validateCurrency(value, type) {
             message: 'Tier currency must be a 3 letter ISO currency code'
         });
     }
-    return value.toUpperCase();
+    return value;
 }
 
 function validateMonthlyPrice(value, type) {
