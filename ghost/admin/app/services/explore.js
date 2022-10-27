@@ -67,7 +67,7 @@ export default class ExploreService extends Service {
             }
         }
 
-        return url += '/';
+        return url;
     }
 
     // Sends a route update to a child route in the BMA, because we can't control

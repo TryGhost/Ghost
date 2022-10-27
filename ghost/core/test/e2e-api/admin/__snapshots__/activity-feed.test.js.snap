@@ -1,5 +1,2073 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Activity Feed API Can do filter based pagination 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 13,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1164",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 3: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 12,
+      "prev": null,
+      "total": 12,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3291",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 5: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 11,
+      "prev": null,
+      "total": 11,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 6: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3244",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 7: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 10,
+      "prev": null,
+      "total": 10,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 8: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3283",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 9: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 9,
+      "prev": null,
+      "total": 9,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 10: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "753",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 11: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 8,
+      "prev": null,
+      "total": 8,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 12: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "590",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 13: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 7,
+      "prev": null,
+      "total": 7,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 14: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "523",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 15: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 6,
+      "prev": null,
+      "total": 6,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 16: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "559",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 17: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 5,
+      "prev": null,
+      "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 18: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1299",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 19: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 4,
+      "prev": null,
+      "total": 4,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 20: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1299",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 21: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 3,
+      "prev": null,
+      "total": 3,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 22: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1296",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 23: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 2,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 24: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1288",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 25: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "1",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 26: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1294",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 27: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "2",
+      "next": null,
+      "page": null,
+      "pages": 7,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 28: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4348",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 29: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "2",
+      "next": null,
+      "page": null,
+      "pages": 6,
+      "prev": null,
+      "total": 11,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 30: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "6420",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 31: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "2",
+      "next": null,
+      "page": null,
+      "pages": 5,
+      "prev": null,
+      "total": 9,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 32: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1239",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 33: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "2",
+      "next": null,
+      "page": null,
+      "pages": 4,
+      "prev": null,
+      "total": 7,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 34: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "978",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 35: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "2",
+      "next": null,
+      "page": null,
+      "pages": 3,
+      "prev": null,
+      "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 36: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2494",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 37: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "2",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 3,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 38: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2480",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 39: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "2",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 40: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1294",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 41: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "3",
+      "next": null,
+      "page": null,
+      "pages": 5,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 42: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "7486",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 43: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "3",
+      "next": null,
+      "page": null,
+      "pages": 4,
+      "prev": null,
+      "total": 10,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 44: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4417",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 45: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "3",
+      "next": null,
+      "page": null,
+      "pages": 3,
+      "prev": null,
+      "total": 7,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 46: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2173",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 47: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "3",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 4,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 48: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3675",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 49: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "3",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 50: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1294",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 51: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "4",
+      "next": null,
+      "page": null,
+      "pages": 4,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 52: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "10663",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 53: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "4",
+      "next": null,
+      "page": null,
+      "pages": 3,
+      "prev": null,
+      "total": 9,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 54: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2113",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 55: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "4",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 56: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4870",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 57: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "4",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 58: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1294",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 59: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "5",
+      "next": null,
+      "page": null,
+      "pages": 3,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 60: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "11312",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 61: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "5",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 8,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 62: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3854",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 63: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "5",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 3,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 64: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3670",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 65: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "6",
+      "next": null,
+      "page": null,
+      "pages": 3,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 66: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "11798",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 67: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "6",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 7,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 68: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "5744",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 69: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "6",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 70: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1294",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 71: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "7",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 72: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "12217",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 73: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "7",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 6,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 74: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "6515",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 75: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "8",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 76: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "12672",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 77: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "8",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 78: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "6060",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 79: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "9",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 80: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "13867",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 81: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "9",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 4,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 82: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4865",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 83: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "10",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 84: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "15063",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 85: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "10",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 3,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 86: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3671",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 87: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "11",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 88: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "16255",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 89: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "11",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 90: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2479",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 91: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "12",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 92: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "17439",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 93: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "12",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 94: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1295",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 95: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "13",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can do filter based pagination 96: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "18629",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Activity Feed API Can filter events by post id 1: [body] 1`] = `
 Object {
   "events": Array [
@@ -81,7 +2149,7 @@ exports[`Activity Feed API Can filter events by post id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23031",
+  "content-length": "21026",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -118,7 +2186,523 @@ exports[`Activity Feed API Can limit events 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1240",
+  "content-length": "4348",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can only combine type and other filters at the root level 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "This filter is not supported because you cannot combine type filters with other filters except at the root level in an AND.",
+      "property": null,
+      "type": "IncorrectUsageError",
+    },
+  ],
+}
+`;
+
+exports[`Activity Feed API Can only combine type and other filters at the root level 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "315",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can use NQL OR for type only 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 10,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can use NQL OR for type only 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4858",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can use OR as long as it is not combined with type 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 15,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can use proper pagination 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "5",
+      "next": null,
+      "page": null,
+      "pages": 3,
+      "prev": null,
+      "total": 15,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Can use proper pagination 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "13748",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Can use proper pagination 3: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "5",
+      "next": null,
+      "page": null,
+      "pages": 3,
+      "prev": null,
+      "total": 15,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Cannot combine type filter with OR filter 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "This filter is not supported because you cannot combine type filters with other filters in an OR.",
+      "property": null,
+      "type": "IncorrectUsageError",
+    },
+  ],
+}
+`;
+
+exports[`Activity Feed API Cannot combine type filter with OR filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "289",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter splitting Can AND two ORS 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 3,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter splitting Can AND two ORs 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 3,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter splitting Can only combine type and other filters at the root level 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "This filter is not supported because you cannot combine type filters with other filters except at the root level in an AND.",
+      "property": null,
+      "type": "IncorrectUsageError",
+    },
+  ],
+}
+`;
+
+exports[`Activity Feed API Filter splitting Can only combine type and other filters at the root level 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "315",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter splitting Can use NQL OR for type only 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 10,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter splitting Can use NQL OR for type only 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "5114",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter splitting Can use OR as long as it is not combined with type 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 15,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter splitting Cannot combine type filter with OR filter 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "This filter is not supported because you cannot combine type filters with other filters in an OR.",
+      "property": null,
+      "type": "IncorrectUsageError",
+    },
+  ],
+}
+`;
+
+exports[`Activity Feed API Filter splitting Cannot combine type filter with OR filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "289",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -132,20 +2716,21 @@ Object {
     Object {
       "data": Object {
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "link": Object {
-          "from": "/r/0",
+          "from": "/r/7",
           "to": "https:://ghost.org",
         },
         "member": Object {
           "avatar_image": null,
-          "email": "member1@test.com",
+          "email": "with-product@test.com",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Mr Egg",
+          "name": "Dana Barrett",
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
         },
         "post": Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "HTML Ipsum",
+          "title": "This is a scheduled post!!",
           "url": Any<String>,
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
         },
@@ -155,121 +2740,7 @@ Object {
     Object {
       "data": Object {
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/1",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "member2@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": null,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Ghostly Kitchen Sink",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/2",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "paid@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Egon Spengler",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Short and Sweet",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/3",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "trialing@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Ray Stantz",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Not finished yet",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/4",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "comped@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Vinz Clortho",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Not so short, bit complex",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/5",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "vip@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Winston Zeddemore",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "This is a static page",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "link": Object {
           "from": "/r/6",
           "to": "https:://ghost.org",
@@ -293,20 +2764,141 @@ Object {
     Object {
       "data": Object {
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "link": Object {
-          "from": "/r/7",
+          "from": "/r/5",
           "to": "https:://ghost.org",
         },
         "member": Object {
           "avatar_image": null,
-          "email": "with-product@test.com",
+          "email": "vip@test.com",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Dana Barrett",
+          "name": "Winston Zeddemore",
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
         },
         "post": Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "This is a scheduled post!!",
+          "title": "This is a static page",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "link": Object {
+          "from": "/r/4",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "comped@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Vinz Clortho",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not so short, bit complex",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "link": Object {
+          "from": "/r/3",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "trialing@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Ray Stantz",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not finished yet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "link": Object {
+          "from": "/r/2",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "paid@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Egon Spengler",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Short and Sweet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "link": Object {
+          "from": "/r/1",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "member2@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": null,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Ghostly Kitchen Sink",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "link": Object {
+          "from": "/r/0",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "member1@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Mr Egg",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "HTML Ipsum",
           "url": Any<String>,
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
         },
@@ -331,7 +2923,7 @@ exports[`Activity Feed API Returns click events in activity feed 2: [headers] 1`
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3722",
+  "content-length": "3978",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -401,7 +2993,7 @@ exports[`Activity Feed API Returns email delivered events in activity feed 2: [h
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1246",
+  "content-length": "1303",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -434,7 +3026,7 @@ exports[`Activity Feed API Returns email opened events in activity feed 2: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1243",
+  "content-length": "1300",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -483,7 +3075,7 @@ exports[`Activity Feed API Returns email sent events in activity feed 2: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5774",
+  "content-length": "6059",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -500,119 +3092,14 @@ Object {
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "member": Object {
           "avatar_image": null,
-          "email": "member1@test.com",
+          "email": "with-product@test.com",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Mr Egg",
+          "name": "Dana Barrett",
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
         },
         "post": Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "HTML Ipsum",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "score": Any<Number>,
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "email": "member2@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": null,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Ghostly Kitchen Sink",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "score": Any<Number>,
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "email": "paid@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Egon Spengler",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Short and Sweet",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "score": Any<Number>,
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "email": "trialing@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Ray Stantz",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Not finished yet",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "score": Any<Number>,
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "email": "comped@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Vinz Clortho",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Not so short, bit complex",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "score": Any<Number>,
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "email": "vip@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Winston Zeddemore",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "This is a static page",
+          "title": "This is a scheduled post!!",
           "url": Any<String>,
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
         },
@@ -647,14 +3134,119 @@ Object {
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "member": Object {
           "avatar_image": null,
-          "email": "with-product@test.com",
+          "email": "vip@test.com",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Dana Barrett",
+          "name": "Winston Zeddemore",
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
         },
         "post": Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "This is a scheduled post!!",
+          "title": "This is a static page",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "comped@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Vinz Clortho",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not so short, bit complex",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "trialing@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Ray Stantz",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not finished yet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "paid@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Egon Spengler",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Short and Sweet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "member2@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": null,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Ghostly Kitchen Sink",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "score": Any<Number>,
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member": Object {
+          "avatar_image": null,
+          "email": "member1@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Mr Egg",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "HTML Ipsum",
           "url": Any<String>,
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
         },
@@ -741,7 +3333,7 @@ exports[`Activity Feed API Returns signup events in activity feed 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23027",
+  "content-length": "23155",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",

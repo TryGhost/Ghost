@@ -2447,6 +2447,11 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
+"@faker-js/faker@7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-7.6.0.tgz#9ea331766084288634a9247fcd8b84f16ff4ba07"
+  integrity sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==
+
 "@fortawesome/fontawesome-common-types@^0.2.36":
   version "0.2.36"
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.36.tgz#b44e52db3b6b20523e0c57ef8c42d315532cb903"
@@ -4176,14 +4181,14 @@
     "@tryghost/debug" "^0.1.19"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-filter@^0.4.15":
-  version "0.4.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.4.15.tgz#1291e1754d4bc704457f791972450d303cc9855d"
-  integrity sha512-rpB5yR2XR3QDgbRtYzXrKlYuyHQvT5J6bZ0YSjsMieRKKNP/WigyhH/M6zKCSvtU4jHYEcv7SqldFtmf+htCyQ==
+"@tryghost/bookshelf-filter@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.5.0.tgz#ed9535eebec0e8362fdcc4653c54d6a3f8bc127d"
+  integrity sha512-OiKIuzMXFFbUo6pra+HV02wSilBC0P6ymDcx/QAN0z7rboZwEEZJsF6cULihs5YQmaKHWPNyMi3kOM3jyQLJcw==
   dependencies:
     "@tryghost/debug" "^0.1.19"
     "@tryghost/errors" "^1.2.18"
-    "@tryghost/nql" "^0.9.0"
+    "@tryghost/nql" "^0.11.0"
     "@tryghost/tpl" "^0.1.19"
 
 "@tryghost/bookshelf-has-posts@^0.1.19":
@@ -4218,15 +4223,15 @@
     "@tryghost/tpl" "^0.1.19"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-plugins@0.5.4":
-  version "0.5.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.5.4.tgz#f75c7099f4219eb73778aa8c6b8486d979edd3c4"
-  integrity sha512-p8Gi6E4JSg+wqtaats13BmTe6Z+CjQ/2OV3u0E+BDGvOX/Z7sifUZfBQpaQAj6G9z5WDj9DesmGXTzDBnq3BsA==
+"@tryghost/bookshelf-plugins@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.6.0.tgz#6f037714cd381e90192bd8436a020f3299fce1e5"
+  integrity sha512-WK0+Ap/cSImDbka2sksNcTZ3EGgB1g7YVGhSn6wblBu8p8JEEa7rIj6XiyOWKTaINoVmdX4mbUCMiZrGoHqW6g==
   dependencies:
     "@tryghost/bookshelf-collision" "^0.1.28"
     "@tryghost/bookshelf-custom-query" "^0.1.15"
     "@tryghost/bookshelf-eager-load" "^0.1.18"
-    "@tryghost/bookshelf-filter" "^0.4.15"
+    "@tryghost/bookshelf-filter" "^0.5.0"
     "@tryghost/bookshelf-has-posts" "^0.1.19"
     "@tryghost/bookshelf-include-count" "^0.3.1"
     "@tryghost/bookshelf-order" "^0.1.15"
@@ -4540,18 +4545,18 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mongo-knex@^0.6.4":
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.6.4.tgz#760d91d794cf3bf65336a00f6329fe26849f863b"
-  integrity sha512-249oNobgZvf2e3SI2x8F9AuaPsydgt003HbtKaMtLEGfobU9RsNlmaZNDJGXyaecukO4swymtt3aeHFTjWekyg==
+"@tryghost/mongo-knex@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.8.0.tgz#089a4948bf915a108baf62ead9f2d25d945a756c"
+  integrity sha512-WTsLW7Q6L/mmX9jB7DDHDIR3k7SADjdXTP0dsJAiEwevMFByEQZmGba5bc1FhkTrbNWaVgk0wEnzE/r4SwhXvw==
   dependencies:
     debug "^4.3.3"
     lodash "^4.17.21"
 
-"@tryghost/mongo-utils@0.3.5", "@tryghost/mongo-utils@^0.3.5":
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-utils/-/mongo-utils-0.3.5.tgz#85167cbdefaaa4924261a3a9cd6cbe94a8e5875d"
-  integrity sha512-ycxWoC5D1t3Us5qFK8jN7cCKPfxEwmqhbK2T1hcb7fMXOv2WBZNfbQ3MAU3uICeT8QfyM6dWHPM18QLxycIhrw==
+"@tryghost/mongo-utils@0.5.0", "@tryghost/mongo-utils@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/mongo-utils/-/mongo-utils-0.5.0.tgz#4d697b3374ec8dd3ebe206a269907aff661fa3fb"
+  integrity sha512-7eRb+pQdTe+NK+wQ44WUNQxC8DIPdCYg8jTp8Mk0G6BqlvaYdRtbrZU/uqeR7Z6efLiG4uPfLG7BNkNx5MjvMg==
   dependencies:
     lodash "^4.17.11"
 
@@ -4567,21 +4572,21 @@
     nodemailer-mailgun-transport "^2.1.5"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/nql-lang@0.3.2", "@tryghost/nql-lang@^0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.3.2.tgz#618bff56963d58b211873a4d3f86d9ff04ceb26a"
-  integrity sha512-KlO+x32nTi7q7HAinF1e2XyH0zeDBQOPL6TCDjV+bjDGaJ4h0GzR406/79MosoYbPE3kiMGVIrIdMeQcysGoyg==
+"@tryghost/nql-lang@0.5.0", "@tryghost/nql-lang@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.5.0.tgz#e34082997eca361a71b9d2de6ea6f7dd5a0654b6"
+  integrity sha512-Nxmz82Zm0uRXy0GL+Bd7G2mvjakoYbT6QDiyj6W1v90zXyzMedRfb9289lMzYX8tUG4VkoVOj9rWzFm5iSdpbw==
   dependencies:
     date-fns "^2.28.0"
 
-"@tryghost/nql@0.9.2", "@tryghost/nql@^0.9.0":
-  version "0.9.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.9.2.tgz#76e645ecf5927b84f4c1ef60953811e8324d404d"
-  integrity sha512-XFpZ/1bBGpYtoDA1bTgtjxmq//aimhngeYnKu3anKQ9Ri/UxzHP7ML9NnRhvIPAfrGKaSSb+epv6Zi41LA/d9Q==
+"@tryghost/nql@0.11.0", "@tryghost/nql@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.11.0.tgz#137a05aa3e3c733c8f646afc59dcb9eeb2c6269a"
+  integrity sha512-B8AZUC97NVp6atZ2Jg6mL+03AbQf5gzCkqhCgVjhHeeyQh5xvU1uIMyvuio2wq9MFWxHPD8w8cSltidpY9wTuA==
   dependencies:
-    "@tryghost/mongo-knex" "^0.6.4"
-    "@tryghost/mongo-utils" "^0.3.5"
-    "@tryghost/nql-lang" "^0.3.2"
+    "@tryghost/mongo-knex" "^0.8.0"
+    "@tryghost/mongo-utils" "^0.5.0"
+    "@tryghost/nql-lang" "^0.5.0"
     mingo "^2.2.2"
 
 "@tryghost/pretty-cli@1.2.29":
@@ -9849,6 +9854,11 @@ crypto-random-string@^2.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-2.0.0.tgz#ef2a7a966ec11083388369baa02ebead229b30d5"
   integrity sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==
 
+crypto@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/crypto/-/crypto-0.0.3.tgz#470a81b86be4c5ee17acc8207a1f5315ae20dbb0"
+  integrity sha512-Q6Ka98WcvWXXg+9cnqd3jHpTSIOaH6/q0m/bESMfQo/0uFxy6e/7EqVS4JdaWx9qLdqV56tDufy2b12dj7BHJg==
+
 css-blank-pseudo@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/css-blank-pseudo/-/css-blank-pseudo-3.0.3.tgz#36523b01c12a25d812df343a32c322d2a2324561"
@@ -12147,7 +12157,6 @@ ember-power-calendar@^0.16.3:
 
 ember-power-datepicker@cibernox/ember-power-datepicker:
   version "0.8.1"
-  uid da580474a2c449b715444934ddb626b7c07f46a7
   resolved "https://codeload.github.com/cibernox/ember-power-datepicker/tar.gz/da580474a2c449b715444934ddb626b7c07f46a7"
   dependencies:
     ember-basic-dropdown "^3.0.11"
@@ -14723,7 +14732,6 @@ globrex@^0.1.2:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@9.6.0:
@@ -17520,7 +17528,6 @@ keygrip@~1.1.0:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keypair@1.0.4:
@@ -19368,7 +19375,6 @@ mocha@^2.5.3:
 
 mock-knex@TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682:
   version "0.4.9"
-  uid "8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   resolved "https://codeload.github.com/TryGhost/mock-knex/tar.gz/8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   dependencies:
     bluebird "^3.4.1"
@@ -21905,6 +21911,13 @@ private@^0.1.6, private@^0.1.8:
   resolved "https://registry.yarnpkg.com/private/-/private-0.1.8.tgz#2381edb3689f7a53d653190060fcf822d2f368ff"
   integrity sha512-VvivMrbvd2nKkiG38qjULzlc+4Vx4wm/whI9pQD35YrARNnhxeiRktSOhSukRLFNlzg6Br/cJPet5J/u19r/mg==
 
+probability-distributions@0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/probability-distributions/-/probability-distributions-0.9.1.tgz#c689c8d62173bb281a0999e98263acc76a628e55"
+  integrity sha512-guES77A321GzcK6swYmxhBeYQ10UNyiG0Gf4Ks+3239BuS27EFH/rrlfBW/oYlPyiufdey/3OlVqKvlXFB9LTQ==
+  dependencies:
+    crypto "0.0.3"
+
 probe-image-size@7.2.3:
   version "7.2.3"
   resolved "https://registry.yarnpkg.com/probe-image-size/-/probe-image-size-7.2.3.tgz#d49c64be540ec8edea538f6f585f65a9b3ab4309"
@@ -23795,7 +23808,6 @@ simple-update-notifier@^1.0.7:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
 sinon@14.0.1:

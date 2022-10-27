@@ -1,4 +1,4 @@
-<section class="gh-canvas" {{on-key "cmd+s" this.saveViaKeyboard}}>
+<section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header">
         <div class="flex flex-column">
             <div class="gh-canvas-breadcrumb">
@@ -12,85 +12,20 @@
             </h2>
         </div>
         <section class="view-actions">
-            <GhTaskButton @buttonText="Save" @task={{this.saveTask}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-button="save" />
+            <GhTaskButton
+                @buttonText="Save"
+                @task={{this.saveSettings}}
+                @successText="Saved"
+                @runningText="Saving"
+                {{on-key "cmd+s"}}
+                @class="gh-btn gh-btn-primary gh-btn-icon"
+                data-test-button="save-analytics-settings"
+            />
         </section>
     </GhCanvasHeader>
 
     <div>
-        <div class="gh-main-section">
-            <h4 class="gh-main-section-header small bn">Newsletters</h4>
-            <section class="gh-expandable">
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Track newsletter opens</h4>
-                            <p class="gh-expandable-description">
-                                Record when member opens a newsletter email
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <label class="switch" for="settings-private">
-                                <input
-                                    type="checkbox"
-                                    checked={{this.settings.isPrivate}}
-                                    id="settings-private"
-                                    data-test-private-checkbox
-                                >
-                                <span class="input-toggle-component"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Track newsletter clicks</h4>
-                            <p class="gh-expandable-description">
-                                Record when a member clicks on any link in a newsletter email
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <label class="switch" for="settings-private">
-                                <input
-                                    type="checkbox"
-                                    checked={{this.settings.isPrivate}}
-                                    data-test-private-checkbox
-                                >
-                                <span class="input-toggle-component"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <div class="gh-main-section">
-            <h4 class="gh-main-section-header small bn">Sources</h4>
-            <section class="gh-expandable">
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Track member sources</h4>
-                            <p class="gh-expandable-description">
-                                Record the post/page and referring domain for signups and subscriptions
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <label class="switch" for="settings-private">
-                                <input
-                                    type="checkbox"
-                                    checked={{this.settings.isPrivate}}
-                                    data-test-private-checkbox
-                                >
-                                <span class="input-toggle-component"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
+        <Settings::Analytics />
     </div>
 </section>
 {{outlet}}

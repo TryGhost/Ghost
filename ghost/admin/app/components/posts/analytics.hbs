@@ -41,11 +41,11 @@
         </div>
     </GhCanvasHeader>
 
-    <Tabs::Tabs class="gh-tabs-analytics" as |tabs|>
+    <Tabs::Tabs class="gh-tabs-analytics" @forceRender={{true}} as |tabs|>
         {{#if this.post.hasBeenEmailed}}
             <tabs.tab>
-                <h3>Sent</h3>
-                <p>{{format-number this.post.email.emailCount}}</p>
+                <h3>{{svg-jar "analytics-tab-sent-large"}}{{format-number this.post.email.emailCount}}</h3>
+                <p>{{svg-jar "analytics-tab-sent"}}<span class="analytics-tab-label">Sent</span></p>
             </tabs.tab>
 
             <tabs.tabPanel>
@@ -58,8 +58,8 @@
 
             {{#if this.post.showEmailOpenAnalytics }}
                 <tabs.tab>
-                    <h3>Opened</h3>
-                    <p>{{format-number this.post.email.openedCount}} <strong>{{this.post.email.openRate}}%</strong></p>
+                    <h3>{{svg-jar "analytics-tab-opened-large"}}{{format-number this.post.email.openedCount}}</h3>
+                    <p>{{svg-jar "analytics-tab-opened"}}<span class="analytics-tab-label">Opened<span class="analytics-tab-percentage">&nbsp;— {{this.post.email.openRate}}%</span></span></p>
                 </tabs.tab>
 
                 <tabs.tabPanel>
@@ -73,8 +73,8 @@
 
             {{#if this.post.showEmailClickAnalytics }}
                 <tabs.tab>
-                    <h3>Clicked</h3>
-                    <p>{{format-number this.post.count.clicks}} <strong>{{this.post.clickRate}}%</strong></p>
+                    <h3>{{svg-jar "analytics-tab-clicked-large"}}{{format-number this.post.count.clicks}}</h3>
+                    <p>{{svg-jar "analytics-tab-clicked"}}<span class="analytics-tab-label">Clicked<span class="analytics-tab-percentage">&nbsp;— {{this.post.clickRate}}%</span></span></p>
                 </tabs.tab>
 
                 <tabs.tabPanel>
@@ -85,32 +85,29 @@
                     />
                 </tabs.tabPanel>
             {{/if}}
-        {{/if}}
 
-        {{#if this.post.showAudienceFeedback }}
-            <tabs.tab>
-                <h3>Positive feedback</h3>
-                <p>
-                    {{format-number this.post.count.positive_feedback}}
-                    {{!-- <strong>{{this.post.sentiment}}%</strong> --}}
-                </p>
-            </tabs.tab>
+            {{#if this.post.isFeedbackEnabledForEmail }}
+                <tabs.tab>
+                    <h3>{{svg-jar "analytics-tab-feedback-large"}}{{format-number this.post.count.positive_feedback}}</h3>
+                    <p>{{svg-jar "analytics-tab-feedback"}}<span class="analytics-tab-label">Feedback<span class="analytics-tab-percentage">&nbsp;— {{this.post.sentiment}}%</span></span></p>
+                </tabs.tab>
 
-            <tabs.tabPanel>
-                <Posts::PostActivityFeed
-                    @postId={{this.post.id}}
-                    @eventType="feedback"
-                    @data={{array this.post.count.positive_feedback this.post.count.negative_feedback}}
-                    @positiveLink={{hash filterParam=(concat "(feedback.post_id:" this.post.id "+feedback.score:1)")}}
-                    @negativeLink={{hash filterParam=(concat "(feedback.post_id:" this.post.id "+feedback.score:0)")}}
-                />
-            </tabs.tabPanel>
+                <tabs.tabPanel>
+                    <Posts::PostActivityFeed
+                        @postId={{this.post.id}}
+                        @eventType="feedback"
+                        @data={{array this.post.count.positive_feedback this.post.count.negative_feedback}}
+                        @positiveLink={{hash filterParam=(concat "(feedback.post_id:" this.post.id "+feedback.score:1)")}}
+                        @negativeLink={{hash filterParam=(concat "(feedback.post_id:" this.post.id "+feedback.score:0)")}}
+                    />
+                </tabs.tabPanel>
+            {{/if}}
         {{/if}}
 
         {{#if this.post.showAttributionAnalytics }}
             <tabs.tab>
-                <h3>{{gh-pluralize this.post.count.conversions "Conversions" without-count=true}}</h3>
-                <p>{{format-number this.post.count.conversions}}</p>
+                <h3>{{svg-jar "analytics-tab-conversions-large"}}{{format-number this.post.count.conversions}}</h3>
+                <p>{{svg-jar "analytics-tab-conversions"}}<span class="analytics-tab-label">{{gh-pluralize this.post.count.conversions "Conversions" without-count=true}}</span></p>
             </tabs.tab>
 
             <tabs.tabPanel>
