@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyObjectId, anyUuid, anyISODate, anyString, anyObject, anyNumber} = matchers;
+const {anyEtag, anyErrorId, anyObjectId, anyContentLength, anyUuid, anyISODate, anyString, anyObject, anyNumber} = matchers;
 const models = require('../../../core/server/models');
 
 const assert = require('assert');
@@ -16,7 +16,8 @@ async function testPagination(skippedTypes, postId, totalExpected) {
             .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}`)}&limit=${limit}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
             })
             .matchBodySnapshot({
                 events: new Array(limit).fill({
@@ -50,7 +51,8 @@ async function testPagination(skippedTypes, postId, totalExpected) {
                 .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}+(data.created_at:<'${lastCreatedAt}',(data.created_at:'${lastCreatedAt}'+id:<${lastId}))`)}&limit=${limit}`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
                 })
                 .matchBodySnapshot({
                     events: new Array(Math.min(remaining, limit)).fill({
@@ -424,7 +426,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=data.post_id:${postId}&limit=2`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
             })
             .matchBodySnapshot({
                 events: new Array(2).fill({

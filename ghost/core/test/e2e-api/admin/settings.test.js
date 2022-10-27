@@ -7,7 +7,7 @@ const {stringMatching, anyEtag, anyUuid, anyContentLength} = matchers;
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 68;
+const CURRENT_SETTINGS_COUNT = 69;
 
 const settingsMatcher = {};
 
@@ -22,14 +22,16 @@ const labsSettingMatcher = {
 const matchSettingsArray = (length) => {
     const settingsArray = new Array(length).fill(settingsMatcher);
 
-    if (length > 25) {
-        // Item at index 25 is the public hash, which is always different
-        settingsArray[25] = publicHashSettingMatcher;
+    if (length > 26) {
+        // Added a setting that is alphabetically before 'public_hash'? then you need to increment this counter.
+        // Item at index x is the public hash, which is always different
+        settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 57) {
-        // Item at index 56 is the lab settings, which changes as we add and remove features
-        settingsArray[57] = labsSettingMatcher;
+    if (length > 58) {
+        // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
+        // Item at index x is the lab settings, which changes as we add and remove features
+        settingsArray[58] = labsSettingMatcher;
     }
 
     return settingsArray;
