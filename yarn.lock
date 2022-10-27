@@ -1008,10 +1008,10 @@
     "@babel/helper-plugin-utils" "^7.18.6"
     "@babel/plugin-syntax-class-static-block" "^7.14.5"
 
-"@babel/plugin-proposal-decorators@7.19.6", "@babel/plugin-proposal-decorators@^7.13.5", "@babel/plugin-proposal-decorators@^7.16.4", "@babel/plugin-proposal-decorators@^7.16.7":
-  version "7.19.6"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-decorators/-/plugin-proposal-decorators-7.19.6.tgz#0f1af5c21957e9a438cc1d08d2a6a6858af127b7"
-  integrity sha512-PKWforYpkVkogpOW0RaPuh7eQ7AoFgBJP+d87tQCRY2LVbvyGtfRM7RtrhCBsNgZb+2EY28SeWB6p2xe1Z5oAw==
+"@babel/plugin-proposal-decorators@7.20.0", "@babel/plugin-proposal-decorators@^7.13.5", "@babel/plugin-proposal-decorators@^7.16.4", "@babel/plugin-proposal-decorators@^7.16.7":
+  version "7.20.0"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-decorators/-/plugin-proposal-decorators-7.20.0.tgz#3acef1f1206d7a6a1436aa6ccf9ed7b1bd06aff7"
+  integrity sha512-vnuRRS20ygSxclEYikHzVrP9nZDFXaSzvJxGLQNAiBX041TmhS4hOUHWNIpq/q4muENuEP9XPJFXTNFejhemkg==
   dependencies:
     "@babel/helper-create-class-features-plugin" "^7.19.0"
     "@babel/helper-plugin-utils" "^7.19.0"
