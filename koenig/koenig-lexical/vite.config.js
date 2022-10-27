@@ -44,6 +44,7 @@ export default defineConfig({
     test: {
         globals: true, // required for @testing-library/jest-dom extensions
         environment: 'jsdom',
-        setupFiles: './test/test-setup.js'
+        setupFiles: './test/test-setup.js',
+        testTimeout: 10000
     }
 });
