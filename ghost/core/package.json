@@ -65,6 +65,7 @@
     "@tryghost/config-url-helpers": "1.0.3",
     "@tryghost/constants": "0.0.0",
     "@tryghost/custom-theme-settings-service": "0.0.0",
+    "@tryghost/data-generator": "0.0.0",
     "@tryghost/database-info": "0.3.12",
     "@tryghost/debug": "0.1.19",
     "@tryghost/domain-events": "0.0.0",
