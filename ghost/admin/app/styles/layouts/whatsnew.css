@@ -3,7 +3,7 @@
 .gh-whats-new-canvas .gh-canvas-header-content {
     margin-bottom: -1px;
     padding: 8px 0 16px;
-    border-bottom: 1px solid var(--whitegrey);
+    align-items: center;
 }
 
 .gh-whats-new {
@@ -827,7 +827,7 @@
         font-size: 1.2em;
         padding-left: 1.75em;
         padding-right: 1.75em;
-    } 
+    }
 }
 
 .gh-whats-new .kg-button-card {
