@@ -145,7 +145,7 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
 
@@ -171,7 +171,7 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
 
@@ -197,7 +197,7 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
     });
@@ -237,7 +237,7 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
 
@@ -263,7 +263,7 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
 
@@ -289,7 +289,7 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
     });
