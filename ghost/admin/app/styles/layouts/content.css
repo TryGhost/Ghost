@@ -1713,10 +1713,6 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     grid-template-columns: 40% 40% 20%;
 }
 
-.gh-tabs-analytics .gh-dashboard-list-cols-clicked .gh-dashboard-list-item {
-    grid-template-columns: 26% 54% 20%;
-}
-
 .gh-tabs-analytics .gh-dashboard-list-cols-conversion .gh-dashboard-list-item {
     grid-template-columns: 28% 28% 24% 20%;
 }
