@@ -1614,7 +1614,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     justify-content: flex-start;
     border: 1px solid transparent;
     border-bottom: none;
-    padding: 10px 14px 22px;
+    padding: 12px 14px 22px;
     text-align: left;
 }
 
@@ -1655,9 +1655,9 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     align-items: center;
     gap: 4px;
     padding: 0 0 0 1px;
-    margin: 0 0 6px;
+    margin: 0 0 8px;
     font-weight: 600;
-    font-size: 2.8rem;
+    font-size: 2.6rem;
     line-height: 1em;
     letter-spacing: -0.05em;
     color: var(--black);
