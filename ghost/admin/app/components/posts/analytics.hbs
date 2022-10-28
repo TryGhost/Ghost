@@ -121,7 +121,11 @@
             {{#if (is-empty this.links) }}
             {{!-- Empty state --}}
             {{else}}
-                <Posts::LinksTable @links={{this.links}} @updateLink={{this.updateLink}} />
+                <Posts::LinksTable
+                    @links={{this.links}}
+                    @updateLink={{this.updateLink}}
+                    @showSuccess={{this.showSuccess}}
+                />
             {{/if}}
         {{/if}}
 
