@@ -27,6 +27,8 @@ export default class Analytics extends Component {
     @tracked sources = null;
     @tracked links = null;
     @tracked sortColumn = 'signups';
+    @tracked showSuccess;
+    @tracked updateLinkId;
     displayOptions = DISPLAY_OPTIONS;
 
     get post() {
@@ -100,19 +102,10 @@ export default class Analytics extends Component {
 
     @action
     updateLink(linkId, linkTo) {
-        this.links = this.links?.map((link) => {
-            if (link.link.link_id === linkId) {
-                return {
-                    ...link,
-                    link: {
-                        ...link.link,
-                        to: this.utils.cleanTrackedUrl(linkTo, false),
-                        title: this.utils.cleanTrackedUrl(linkTo, true)
-                    }
-                };
-            }
-            return link;
-        });
+        if (this._updateLinks.isRunning) {
+            return this._updateLinks.last;
+        }
+        return this._updateLinks.perform(linkId, linkTo);
     }
 
     @action
@@ -130,6 +123,51 @@ export default class Analytics extends Component {
         }
     }
 
+    updateLinkData(linksData) {
+        let updatedLinks;
+        if (this.links?.length) {
+            updatedLinks = this.links.map((link) => {
+                let linkData = linksData.find(l => l.link.link_id === link.link.link_id);
+                if (linkData) {
+                    return {
+                        ...linkData,
+                        link: {
+                            ...linkData.link,
+                            originalTo: linkData.link.to,
+                            to: this.utils.cleanTrackedUrl(linkData.link.to, false),
+                            title: this.utils.cleanTrackedUrl(linkData.link.to, true)
+                        }
+                    };
+                }
+                return link;
+            });
+        } else {
+            updatedLinks = linksData.map((link) => {
+                return {
+                    ...link,
+                    link: {
+                        ...link.link,
+                        originalTo: link.link.to,
+                        to: this.utils.cleanTrackedUrl(link.link.to, false),
+                        title: this.utils.cleanTrackedUrl(link.link.to, true)
+                    }
+                };
+            });
+        }
+
+        // Remove duplicates by title ad merge
+        const linksByTitle = updatedLinks.reduce((acc, link) => {
+            if (!acc[link.link.title]) {
+                acc[link.link.title] = link;
+            } else {
+                acc[link.link.title].clicks += link.clicks;
+            }
+            return acc;
+        }, {});
+
+        this.links = Object.values(linksByTitle);
+    }
+
     async fetchReferrersStats() {
         if (this._fetchReferrersStats.isRunning) {
             return this._fetchReferrersStats.last;
@@ -142,6 +180,47 @@ export default class Analytics extends Component {
             return this._fetchLinks.last;
         }
         return this._fetchLinks.perform();
+    }
+
+    @task
+    *_updateLinks(linkId, newLink) {
+        this.updateLinkId = linkId;
+        let currentLink;
+        this.links = this.links?.map((link) => {
+            if (link.link.link_id === linkId) {
+                currentLink = new URL(link.link.originalTo);
+                return {
+                    ...link,
+                    link: {
+                        ...link.link,
+                        to: this.utils.cleanTrackedUrl(newLink, false),
+                        title: this.utils.cleanTrackedUrl(newLink, true)
+                    }
+                };
+            }
+            return link;
+        });
+
+        const filter = `post_id:${this.post.id}+to:'${currentLink}'`;
+        let bulkUpdateUrl = this.ghostPaths.url.api(`links/bulk`) + `?filter=${encodeURIComponent(filter)}`;
+        yield this.ajax.put(bulkUpdateUrl, {
+            data: {
+                bulk: {
+                    action: 'updateLink',
+                    meta: {link: {to: newLink}}
+                }
+            }
+        });
+
+        // Refresh links data
+        const linksFilter = `post_id:${this.post.id}`;
+        let statsUrl = this.ghostPaths.url.api(`links/`) + `?filter=${encodeURIComponent(linksFilter)}`;
+        let result = yield this.ajax.request(statsUrl);
+        this.updateLinkData(result.links);
+        this.showSuccess = this.updateLinkId;
+        setTimeout(() => {
+            this.showSuccess = null;
+        }, 2000);
     }
 
     @task
@@ -162,28 +241,7 @@ export default class Analytics extends Component {
         const filter = `post_id:${this.post.id}`;
         let statsUrl = this.ghostPaths.url.api(`links/`) + `?filter=${encodeURIComponent(filter)}`;
         let result = yield this.ajax.request(statsUrl);
-        const links = result.links.map((link) => {
-            return {
-                ...link,
-                link: {
-                    ...link.link,
-                    to: this.utils.cleanTrackedUrl(link.link.to, false),
-                    title: this.utils.cleanTrackedUrl(link.link.to, true)
-                }
-            };
-        });
-
-        // Remove duplicates by title ad merge
-        const linksByTitle = links.reduce((acc, link) => {
-            if (!acc[link.link.title]) {
-                acc[link.link.title] = link;
-            } else {
-                acc[link.link.title].clicks += link.clicks;
-            }
-            return acc;
-        }, {});
-
-        this.links = Object.values(linksByTitle);
+        this.updateLinkData(result.links);
     }
 
     get showLinks() {
