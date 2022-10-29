@@ -188,6 +188,59 @@ describe('page.* events', function () {
             });
     });
 
+    it('page.deleted event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-deleted/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.deleted',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.deleted webhook',
+                        status: 'published',
+                        published_at: moment().subtract(6, 'hours').toISOString()
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const pageToDelete = res.body.pages[0];
+
+        await adminAPIAgent
+            .delete('pages/' + id)
+            .expectStatus(204)
+            .expectEmptyBody();
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: {},
+                    previous: {
+                        id: anyObjectId,
+                        uuid: anyUuid,
+                        comment_id: anyObjectId,
+                        published_at: anyISODateTime,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime,
+                        authors: new Array(1).fill(buildAuthorSnapshot(true))
+                    }
+                }
+            });
+    });
+
     it('page.edited event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/page-edited/';
         await webhookMockReceiver.mock(webhookURL);
