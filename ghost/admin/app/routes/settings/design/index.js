@@ -7,9 +7,19 @@ export default class SettingsDesignIndexRoute extends AuthenticatedRoute {
     @service customThemeSettings;
     @service modals;
     @service settings;
+    @service store;
 
     confirmModal = null;
     hasConfirmed = false;
+    themes = this.store.peekAll('theme');
+
+    afterModel() {
+        super.afterModel(...arguments);
+        let activeTheme = this.themes.findBy('active', true);
+        if (typeof activeTheme === 'undefined') {
+            return this.transitionTo('settings.design.no-theme');
+        }
+    }
 
     @action
     willTransition(transition) {
