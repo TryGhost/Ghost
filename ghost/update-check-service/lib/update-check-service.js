@@ -2,8 +2,8 @@ const _ = require('lodash');
 const url = require('url');
 const crypto = require('crypto');
 const moment = require('moment');
-const Promise = require('bluebird');
 const exec = require('child_process').exec;
+const util = require('util');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -112,7 +112,7 @@ class UpdateCheckService {
             const theme = (await this.api.settings.read(_.extend({key: 'active_theme'}, internal))).settings[0];
             const posts = await this.api.posts.browse();
             const users = await this.api.users.browse(internal);
-            const npm = await Promise.promisify(exec)('npm -v');
+            const npm = await util.promisify(exec)('npm -v');
 
             const blogUrl = this.config.siteUrl;
             const parsedBlogUrl = url.parse(blogUrl);
@@ -124,7 +124,7 @@ class UpdateCheckService {
             data.post_count = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
             data.user_count = users && users.users && users.users.length ? users.users.length : 0;
             data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
-            data.npm_version = npm.trim();
+            data.npm_version = npm.stdout.trim();
 
             return data;
         } catch (err) {
