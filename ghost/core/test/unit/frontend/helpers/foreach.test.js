@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const foreach = require('../../../../core/frontend/helpers/foreach');
-const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
+const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 
 describe('{{#foreach}} helper', function () {
     let options;
@@ -289,15 +289,8 @@ describe('{{#foreach}} helper', function () {
             world: 'world'
         };
 
-        function shouldCompileToExpected(templateString, hash, expected) {
-            const template = handlebars.compile(templateString);
-            const result = template(hash);
-
-            result.should.eql(expected);
-        }
-
         before(function () {
-            handlebars.registerHelper('foreach', foreach);
+            registerHelper('foreach');
         });
 
         /** Many of these are copied direct from the handlebars spec */

@@ -1,28 +1,19 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const matchHelper = require('../../../../core/frontend/helpers/match');
-const titleHelper = require('../../../../core/frontend/helpers/title');
-const labs = require('../../../../core/shared/labs');
-const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
+
+const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 const {SafeString} = require('express-hbs');
 
 describe('Match helper', function () {
     before(function () {
-        handlebars.registerHelper('match', matchHelper);
-        handlebars.registerHelper('title', titleHelper);
+        registerHelper('match');
+        registerHelper('title');
     });
 
     afterEach(function () {
         sinon.restore();
     });
-
-    function shouldCompileToExpected(templateString, hash, expected) {
-        const template = handlebars.compile(templateString);
-        const result = template(hash);
-
-        result.should.eql(expected);
-    }
 
     /**
      * Run tests takes a list of tests & a data hash in the form of two objects

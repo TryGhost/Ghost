@@ -4,7 +4,7 @@ const should = require('should');
 const excerptHelper = require('../../../../core/frontend/helpers/excerpt');
 
 describe('{{excerpt}} Helper', function () {
-    function shouldCompileToExpected(data, hash, expected) {
+    function shouldRenderToExpected(data, hash, expected) {
         const rendered = excerptHelper.call(data, hash);
         should.exist(rendered);
         rendered.string.should.equal(expected);
@@ -13,7 +13,7 @@ describe('{{excerpt}} Helper', function () {
     it('renders empty string when html, excerpt, and custom_excerpt are null', function () {
         const expected = '';
 
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 html: null,
                 custom_excerpt: null,
@@ -26,7 +26,7 @@ describe('{{excerpt}} Helper', function () {
     it('can render custom_excerpt', function () {
         const custom_excerpt = 'Hello World';
 
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 html: '',
                 custom_excerpt
@@ -36,7 +36,7 @@ describe('{{excerpt}} Helper', function () {
     });
 
     it('can render excerpt when other fields are empty', function () {
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 html: '',
                 custom_excerpt: '',
@@ -50,7 +50,7 @@ describe('{{excerpt}} Helper', function () {
         const excerpt = 'Hello World! It\'s me!';
         const expected = 'Hello World!';
 
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 excerpt,
                 custom_excerpt: ''
@@ -62,7 +62,7 @@ describe('{{excerpt}} Helper', function () {
     it('can truncate excerpt with non-ascii characters by word', function () {
         const excerpt = 'Едквюэ опортэат праэчынт ючю но, квуй эю';
         const expected = 'Едквюэ опортэат';
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 excerpt,
                 custom_excerpt: ''
@@ -76,7 +76,7 @@ describe('{{excerpt}} Helper', function () {
         const excerpt = 'Hello World! It\'s me!';
         const expected = 'Hello Wo';
 
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 excerpt,
                 custom_excerpt: ''
@@ -92,7 +92,7 @@ describe('{{excerpt}} Helper', function () {
         const customExcerpt = 'My Custom Excerpt wins!';
         const expected = 'My Custom Excerpt wins!';
 
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 excerpt,
                 custom_excerpt: customExcerpt
@@ -113,7 +113,7 @@ describe('{{excerpt}} Helper', function () {
                    'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
             'after 300 characters. This give';
 
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 excerpt,
                 custom_excerpt: customExcerpt
@@ -134,7 +134,7 @@ describe('{{excerpt}} Helper', function () {
                    'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
             'after 300 characters. This give';
 
-        shouldCompileToExpected(
+        shouldRenderToExpected(
             {
                 excerpt,
                 custom_excerpt: customExcerpt

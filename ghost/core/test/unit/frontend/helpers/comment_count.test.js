@@ -8,7 +8,7 @@ const proxy = require('../../../../core/frontend/services/proxy');
 const {html} = require('common-tags');
 const {settingsCache} = proxy;
 
-const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
+const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 
 describe('{{comment_count}} helper', function () {
     let keyStub;
@@ -19,15 +19,8 @@ describe('{{comment_count}} helper', function () {
             getFrontendKey: keyStub
         };
         proxy.init({dataService});
-        handlebars.registerHelper('comment_count', commentCount);
+        registerHelper('comment_count');
     });
-
-    function shouldCompileToExpected(templateString, hash, expected) {
-        const template = handlebars.compile(templateString);
-        const result = template(hash);
-
-        result.should.eql(expected);
-    }
 
     beforeEach(function () {
         mockManager.mockMail();
