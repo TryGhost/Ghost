@@ -9,6 +9,7 @@ export default class SettingsDesignRoute extends AdminRoute {
     @service themeManagement;
     @service ui;
     @service session;
+    @service store;
 
     model() {
         // background refresh of preview
@@ -19,7 +20,8 @@ export default class SettingsDesignRoute extends AdminRoute {
         // wait for settings to be loaded - we need the data to be present before display
         return Promise.all([
             this.settings.reload(),
-            this.customThemeSettings.load()
+            this.customThemeSettings.load(),
+            this.store.findAll('theme')
         ]);
     }
 
