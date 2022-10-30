@@ -1356,6 +1356,23 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     }
 }
 
+.gh-dashboard-list-item-sub .gh-members-activity-description {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.gh-dashboard-list-item-sub .gh-members-activity-description svg {
+    width: 18px;
+    min-width: 18px;
+    height: 16px;
+    margin: 0 0.4em 0 0;
+}
+
+.gh-dashboard-list-item-sub .gh-members-activity-description svg path {
+    stroke: var(--midgrey);
+}
+
 
 /* Post list – LABS
 /* ---------------------------------------------------------- */
@@ -1614,7 +1631,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     justify-content: flex-start;
     border: 1px solid transparent;
     border-bottom: none;
-    padding: 10px 14px 22px;
+    padding: 12px 14px 22px;
     text-align: left;
 }
 
@@ -1641,7 +1658,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
 
 .gh-tabs-analytics .tab-panel-selected {
     display: block;
-    padding: 12px 26px 0;
+    padding: 8px 26px 0;
     /* help to hide shadow from selected tab */
     opacity: 0.99999;
     background-color: #ffffff;
@@ -1655,9 +1672,9 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     align-items: center;
     gap: 4px;
     padding: 0 0 0 1px;
-    margin: 0 0 6px;
+    margin: 0 0 8px;
     font-weight: 600;
-    font-size: 2.8rem;
+    font-size: 2.6rem;
     line-height: 1em;
     letter-spacing: -0.05em;
     color: var(--black);
@@ -1696,12 +1713,8 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     grid-template-columns: 40% 40% 20%;
 }
 
-.gh-tabs-analytics .gh-dashboard-list-larger-cols .gh-dashboard-list-item {
-    grid-template-columns: 26% 54% 20%;
-}
-
-.gh-tabs-analytics .gh-dashboard-list-four-cols .gh-dashboard-list-item {
-    grid-template-columns: 35% 25% 20% 20%;
+.gh-tabs-analytics .gh-dashboard-list-cols-conversion .gh-dashboard-list-item {
+    grid-template-columns: 28% 28% 24% 20%;
 }
 
 .gh-post-activity-feed .gh-members-activity-description a {
@@ -1948,6 +1961,17 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
 
 .gh-post-activity-chart-link[hidden="true"] {
     display: none;
+}
+
+.gh-prefix {
+    padding: 0 0.5em 0 0;
+    line-height: 1em;
+    white-space: nowrap;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+    color: var(--midgrey);
+    text-transform: uppercase;
 }
 
 @media (max-width: 1150px) {

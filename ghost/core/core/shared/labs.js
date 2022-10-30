@@ -20,22 +20,22 @@ const GA_FEATURES = [
     'compExpiring',
     'searchHelper',
     'emailAlerts',
-    'fixNewsletterLinks'
+    'fixNewsletterLinks',
+    'sourceAttribution',
+    'memberAttribution',
+    'audienceFeedback'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
-    'activitypub',
-    'sourceAttribution',
-    'memberAttribution'
+    'activitypub'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'lexicalEditor',
-    'audienceFeedback'
+    'lexicalEditor'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

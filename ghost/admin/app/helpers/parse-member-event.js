@@ -1,6 +1,7 @@
 import Helper from '@ember/component/helper';
 import moment from 'moment-timezone';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
+import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {inject as service} from '@ember/service';
 
 export default class ParseMemberEventHelper extends Helper {
@@ -87,7 +88,7 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'comment';
         }
 
-        if (event.type === 'click_event') {
+        if (event.type === 'click_event' || event.type === 'aggregated_click_event') {
             icon = 'click';
         }
 
@@ -169,6 +170,13 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'click_event') {
             return 'clicked link in email';
+        }
+
+        if (event.type === 'aggregated_click_event') {
+            if (event.data.count.clicks <= 1) {
+                return 'clicked link in email';
+            }
+            return `clicked ${ghPluralize(event.data.count.clicks, 'link')} in email`;
         }
 
         if (event.type === 'feedback_event') {
@@ -253,15 +261,15 @@ export default class ParseMemberEventHelper extends Helper {
 
             if (event.data.type === 'created') {
                 const sign = mrrDelta > 0 ? '' : '-';
-                const tierName = this.membersUtils.hasMultipleTiers ? (event.data.tierName ?? 'MRR') : 'paid';
-                return `(${tierName} - ${sign}${symbol}${Math.abs(mrrDelta)}/month)`;
+                const tierName = this.membersUtils.hasMultipleTiers ? (event.data.tierName ?? 'paid') : 'paid';
+                return `${tierName} - ${sign}${symbol}${Math.abs(mrrDelta)}/month`;
             }
             const sign = mrrDelta > 0 ? '+' : '-';
-            return `(MRR - ${sign}${symbol}${Math.abs(mrrDelta)})`;
+            return `MRR - ${sign}${symbol}${Math.abs(mrrDelta)}`;
         }
 
         if (event.type === 'signup_event' && this.membersUtils.paidMembersEnabled) {
-            return '(free)';
+            return 'Free';
         }
 
         return;

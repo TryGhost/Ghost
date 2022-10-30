@@ -7,6 +7,7 @@ const urlService = require('../../../../../core/server/services/url');
 const labs = require('../../../../../core/shared/labs');
 const {parseReplacements, renderEmailForSegment, serialize, _getTemplateSettings, createUnsubscribeUrl, createPostSignupUrl, _PostEmailSerializer} = require('../../../../../core/server/services/mega/post-email-serializer');
 const {HtmlValidate} = require('html-validate');
+const audienceFeedback = require('../../../../../core/server/services/audience-feedback');
 
 function assertKeys(object, keys) {
     assert.deepStrictEqual(Object.keys(object).sort(), keys.sort());
@@ -89,6 +90,17 @@ describe('Post Email Serializer', function () {
     describe('serialize', function () {
         afterEach(function () {
             sinon.restore();
+        });
+
+        beforeEach(function () {
+            // Stub not working because service is undefined
+            audienceFeedback.service = {
+                buildLink: (uuid, postId, score) => {
+                    const url = new URL('https://feedback.com');
+                    url.hash = `#/feedback/${postId}/${score}/?uuid=${encodeURIComponent(uuid)}`;
+                    return url;
+                }
+            };
         });
 
         it('should output valid HTML and escape HTML characters in mobiledoc', async function () {

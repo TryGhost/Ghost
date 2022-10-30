@@ -1,5 +1,5 @@
 <div class="gh-post-activity-feed">
-    {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId excludedEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
+    {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId includeEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
         {{#if eventsFetcher.isError}}
             <div class="gh-dashboard-list-body">
                 <div class="gh-dashboard-list-error">
@@ -21,26 +21,26 @@
                             <p>Once someone receives your email, you'll be able to see the member activity here.</p>
                         {{else if (eq this.eventType "opened")}}
                             {{svg-jar "empty-opened"}}
-                            <h4>No members have opened your email yet</h4>
-                            <p>Once someone opens your email, you'll be able to see the member activity here.</p>
+                            <h4>No members have opened your newsletter</h4>
+                            <p>Once someone opens, you'll see them listed here.</p>
                         {{else if (eq this.eventType "clicked")}}
                             {{svg-jar "empty-clicked"}}
-                            <h4>No members have clicked in your email yet</h4>
-                            <p>Once someone clicks in your email, you'll be able to see the member activity here.</p>
+                            <h4>No links have been clicked in your newsletter</h4>
+                            <p>Once a member clicks a link, you'll see them listed here.</p>
                         {{else if (eq this.eventType "feedback")}}
                             {{svg-jar "empty-feedback"}}
-                            <h4>No members have responded with feedback yet</h4>
-                            <p>Once someone has responded with feedback, you'll be able to see the member activity here.</p>
+                            <h4>No members have given feedback yet</h4>
+                            <p>When someone does, you'll see their response here.</p>
                         {{else if (eq this.eventType "conversion")}}
                             {{svg-jar "empty-conversion"}}
-                            <h4>No members have signed up or upgraded yet</h4>
-                            <p>Once someone has signed up or upgraded, you'll be able to see the member activity here.</p>
+                            <h4>No members have signed up on this post</h4>
+                            <p>When someone new signs up, you'll see them here.</p>
                         {{/if}}
                     </div>
                 </div>
             </div>
         {{else}}
-            <div class="gh-dashboard-list-body {{if (eq this.eventType "clicked") "gh-dashboard-list-larger-cols" }} {{if (eq this.eventType "conversion") "gh-dashboard-list-four-cols" }}">
+            <div class="gh-dashboard-list-body gh-dashboard-list-cols-{{this.eventType}}">
                 {{#each eventsFetcher.data as |event|}}
                     {{#let (parse-member-event event) as |parsedEvent|}}
                         <div class="gh-dashboard-list-item">
@@ -54,13 +54,7 @@
                                     <span class="gh-members-activity-description">
                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
                                         {{#if parsedEvent.info}}
-                                            <span class="highlight">{{parsedEvent.info}}</span>
-                                        {{/if}}
-                                        {{#if (eq this.eventType "clicked")}}
-                                            {{#if (and parsedEvent.description parsedEvent.url) }}
-                                                <span class="gh-members-activity-event-dash">–</span>
-                                                <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.description}}</a>
-                                            {{/if}}
+                                            <span class="highlight">&nbsp;({{parsedEvent.info}})</span>
                                         {{/if}}
                                     </span>
                                 </span>
@@ -68,11 +62,7 @@
                             {{#if (eq this.eventType "conversion")}}
                                 <div class="gh-dashboard-list-item-sub">
                                     {{#if parsedEvent.source}}
-                                        {{#if parsedEvent.source.url}}
-                                            <a href={{parsedEvent.source.url}} rel="noopener noreferrer" target="_blank">{{parsedEvent.source.name}}</a>
-                                        {{else}}
-                                            <span>{{parsedEvent.source.name}}</span>
-                                        {{/if}}
+                                        <span title="Source" class="gh-members-activity-description">{{svg-jar "event-extras-source"}}<span class="gh-members-activity-event-text">{{parsedEvent.source.name}}</span></span>
                                     {{else}}
                                         <span class="midlightgrey">&mdash;</span>
                                     {{/if}}

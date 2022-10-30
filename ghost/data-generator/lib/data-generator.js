@@ -28,8 +28,7 @@ const {faker} = require('@faker-js/faker');
 
 /**
  * @typedef {Object} DataGeneratorOptions
- * @property {boolean} useExistingPosts
- * @property {boolean} useExistingTags
+ * @property {boolean} useBaseData
  * @property {import('knex/types').Knex} knex
  * @property {Object} schema
  * @property {Object} logger
@@ -54,15 +53,13 @@ class DataGenerator {
      * @param {DataGeneratorOptions} options
      */
     constructor({
-        useExistingPosts = false,
-        useExistingTags = false,
+        useBaseData = false,
         knex,
         schema,
         logger,
         modelQuantities = {}
     }) {
-        this.useExistingPosts = useExistingPosts;
-        this.useExistingTags = useExistingTags;
+        this.useBaseData = useBaseData;
         this.knex = knex;
         this.schema = schema;
         this.logger = logger;
@@ -72,37 +69,46 @@ class DataGenerator {
     async importData() {
         const transaction = await this.knex.transaction();
 
-        const newslettersImporter = new NewslettersImporter(transaction);
-        // First newsletter is free, second is paid
-        const newsletters = await newslettersImporter.import({amount: 2});
+        const usersImporter = new UsersImporter(transaction);
+        const users = await usersImporter.import({amount: 8});
 
-        let posts = [];
-        const postsImporter = new PostsImporter(transaction, {
-            newsletters
-        });
-        if (this.useExistingPosts) {
+        let newsletters;
+        let posts;
+        let tags;
+        let products;
+        let stripeProducts;
+        let stripePrices;
+
+        // Use an existant set of data for a more realisitic looking site
+        if (this.useBaseData) {
+            // Must have at least 2 in base data set
+            newsletters = await transaction.select('id').from('newsletters');
+
+            const postsImporter = new PostsImporter(transaction, {
+                newsletters
+            });
             posts = await transaction.select('id').from('posts');
             postsImporter.addNewsletters({posts});
             posts = await transaction.select('id', 'newsletter_id').from('posts');
+
+            tags = await transaction.select('id').from('tags');
+
+            products = await transaction.select('id', 'name', 'monthly_price', 'yearly_price').from('products');
+            stripeProducts = await transaction.select('id', 'product_id', 'stripe_product_id').from('stripe_products');
+            stripePrices = await transaction.select('id', 'stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname');
         } else {
+            const newslettersImporter = new NewslettersImporter(transaction);
+            // First newsletter is free, second is paid
+            newsletters = await newslettersImporter.import({amount: 2});
+
+            const postsImporter = new PostsImporter(transaction, {
+                newsletters
+            });
             posts = await postsImporter.import({
                 amount: this.modelQuantities.posts,
                 rows: ['newsletter_id']
             });
-        }
 
-        const usersImporter = new UsersImporter(transaction);
-        const users = await usersImporter.import({amount: 8});
-
-        const postsAuthorsImporter = new PostsAuthorsImporter(transaction, {
-            users
-        });
-        await postsAuthorsImporter.importForEach(posts, {amount: 1});
-
-        let tags = [];
-        if (this.useExistingTags) {
-            posts = await transaction.select('id').from('tags');
-        } else {
             const tagsImporter = new TagsImporter(transaction, {
                 users
             });
@@ -110,6 +116,34 @@ class DataGenerator {
                 min: 16,
                 max: 24
             })});
+
+            const productsImporter = new ProductsImporter(transaction);
+            products = await productsImporter.import({amount: 4, rows: ['name', 'monthly_price', 'yearly_price']});
+
+            const stripeProductsImporter = new StripeProductsImporter(transaction);
+            stripeProducts = await stripeProductsImporter.importForEach(products, {
+                amount: 1,
+                rows: ['product_id', 'stripe_product_id']
+            });
+
+            const stripePricesImporter = new StripePricesImporter(transaction, {products});
+            stripePrices = await stripePricesImporter.importForEach(stripeProducts, {
+                amount: 2,
+                rows: ['stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname']
+            });
+
+            await productsImporter.addStripePrices({
+                products,
+                stripeProducts,
+                stripePrices
+            });
+
+            const benefitsImporter = new BenefitsImporter(transaction);
+            const benefits = await benefitsImporter.import({amount: 5});
+
+            const productsBenefitsImporter = new ProductsBenefitsImporter(transaction, {benefits});
+            // Up to 5 benefits for each product
+            await productsBenefitsImporter.importForEach(products, {amount: 5});
         }
 
         const postsTagsImporter = new PostsTagsImporter(transaction, {
@@ -122,18 +156,13 @@ class DataGenerator {
             })
         });
 
-        const productsImporter = new ProductsImporter(transaction);
-        const products = await productsImporter.import({amount: 4, rows: ['name', 'monthly_price', 'yearly_price']});
-
         const membersImporter = new MembersImporter(transaction);
         const members = await membersImporter.import({amount: this.modelQuantities.members, rows: ['status', 'created_at', 'name', 'email']});
 
-        const benefitsImporter = new BenefitsImporter(transaction);
-        const benefits = await benefitsImporter.import({amount: 5});
-
-        const productsBenefitsImporter = new ProductsBenefitsImporter(transaction, {benefits});
-        // Up to 5 benefits for each product
-        await productsBenefitsImporter.importForEach(products, {amount: 5});
+        const postsAuthorsImporter = new PostsAuthorsImporter(transaction, {
+            users
+        });
+        await postsAuthorsImporter.importForEach(posts, {amount: 1});
 
         // TODO: Use subscriptions to generate members_products table?
         const membersProductsImporter = new MembersProductsImporter(transaction, {products: products.slice(1)});
@@ -147,10 +176,10 @@ class DataGenerator {
             rows: ['product_id', 'member_id']
         });
 
-        const postsProductsImporter = new PostsProductsImporter(transaction, {products});
+        const postsProductsImporter = new PostsProductsImporter(transaction, {products: products.slice(1)});
         // Paid newsletters
         await postsProductsImporter.importForEach(posts.filter(post => newsletters.findIndex(newsletter => newsletter.id === post.newsletter_id) === 1), {
-            // Each post is available on all 3 products
+            // Each post is available on all 3 premium products
             amount: 3
         });
 
@@ -164,24 +193,6 @@ class DataGenerator {
         const membersStatusEventsImporter = new MembersStatusEventsImporter(transaction);
         // Up to 2 events per member - 1 from null -> free, 1 from free -> {paid, comped}
         await membersStatusEventsImporter.importForEach(members, {amount: 2});
-
-        const stripeProductsImporter = new StripeProductsImporter(transaction);
-        const stripeProducts = await stripeProductsImporter.importForEach(products, {
-            amount: 1,
-            rows: ['product_id', 'stripe_product_id']
-        });
-
-        const stripePricesImporter = new StripePricesImporter(transaction, {products});
-        const stripePrices = await stripePricesImporter.importForEach(stripeProducts, {
-            amount: 2,
-            rows: ['stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname']
-        });
-
-        await productsImporter.addStripePrices({
-            products,
-            stripeProducts,
-            stripePrices
-        });
 
         const subscriptionsImporter = new SubscriptionsImporter(transaction, {members, stripeProducts, stripePrices});
         const subscriptions = await subscriptionsImporter.importForEach(membersProducts, {

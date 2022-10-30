@@ -4214,19 +4214,19 @@
   dependencies:
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-pagination@^0.1.30":
-  version "0.1.30"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-pagination/-/bookshelf-pagination-0.1.30.tgz#40d104e742b874a854e3462242d5a7682088a3a9"
-  integrity sha512-odMT7BqAlvK0FdRzg7RsrVrsQux2N+ALGpzqdkpS6Ck1hCA0cgwuml6EtjMaLvYWNm+nKHiS8+K14ba/YFOU0Q==
+"@tryghost/bookshelf-pagination@^0.1.31":
+  version "0.1.31"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-pagination/-/bookshelf-pagination-0.1.31.tgz#7d6da3948b9bf70b6f4d9a12dc758931807669bf"
+  integrity sha512-OwrcdtsNS/VrA7q9aDzJtfptB1xxt4TeRTd0wfwj3wJh/5jyE2M7lahRaJmc1WYnaSg/aC0wqJYNnKp53989OQ==
   dependencies:
     "@tryghost/errors" "^1.2.18"
     "@tryghost/tpl" "^0.1.19"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-plugins@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.6.0.tgz#6f037714cd381e90192bd8436a020f3299fce1e5"
-  integrity sha512-WK0+Ap/cSImDbka2sksNcTZ3EGgB1g7YVGhSn6wblBu8p8JEEa7rIj6XiyOWKTaINoVmdX4mbUCMiZrGoHqW6g==
+"@tryghost/bookshelf-plugins@0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.6.1.tgz#31685cae7d4488c6837cbd7cc38872d53fbc672d"
+  integrity sha512-HI5dsM0joGzCTf6GjeKBPNkwGacUPj+IOBUPci+CnNp1/CsodPEifnScTBdIhqp3eWisQzqoBIjeZWH00U7HGg==
   dependencies:
     "@tryghost/bookshelf-collision" "^0.1.28"
     "@tryghost/bookshelf-custom-query" "^0.1.15"
@@ -4235,7 +4235,7 @@
     "@tryghost/bookshelf-has-posts" "^0.1.19"
     "@tryghost/bookshelf-include-count" "^0.3.1"
     "@tryghost/bookshelf-order" "^0.1.15"
-    "@tryghost/bookshelf-pagination" "^0.1.30"
+    "@tryghost/bookshelf-pagination" "^0.1.31"
     "@tryghost/bookshelf-search" "^0.1.15"
     "@tryghost/bookshelf-transaction-events" "^0.2.0"
 
@@ -23350,10 +23350,10 @@ sane@^4.0.0, sane@^4.1.0:
     minimist "^1.1.1"
     walker "~1.0.5"
 
-sanitize-html@2.7.2:
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.7.2.tgz#54c5189af75e3237d996e4b9a5e3eaad12c7f7fc"
-  integrity sha512-DggSTe7MviO+K4YTCwprG6W1vsG+IIX67yp/QY55yQqKCJYSWzCA1rZbaXzkjoKeL9+jqwm56wD6srYLtUNivg==
+sanitize-html@2.7.3:
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.7.3.tgz#166c868444ee4f9fd7352ac8c63fa86c343fc2bd"
+  integrity sha512-jMaHG29ak4miiJ8wgqA1849iInqORgNv7SLfSw9LtfOhEUQ1C0YHKH73R+hgyufBW9ZFeJrb057k9hjlfBCVlw==
   dependencies:
     deepmerge "^4.2.2"
     escape-string-regexp "^4.0.0"
