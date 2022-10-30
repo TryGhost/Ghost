@@ -1,46 +1,40 @@
 const should = require('should');
 const price = require('../../../../core/frontend/helpers/price');
-const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 
-function compile(templateString) {
-    const template = handlebars.compile(templateString);
-    template.with = (locals = {}, globals) => {
-        return template(locals, globals);
-    };
-
-    return template;
-}
+const {registerHelper, shouldCompileToError, shouldCompileToExpected} = require('./utils/handlebars');
 
 describe('{{price}} helper', function () {
     before(function () {
-        handlebars.registerHelper('price', price);
+        registerHelper('price');
     });
 
     it('throws an error for no provided parameters', function () {
-        (function compileWith() {
-            compile('{{price}}')
-                .with({});
-        }).should.throw();
+        const templateString = '{{price}}';
+
+        shouldCompileToError(templateString, {}, {
+            name: 'IncorrectUsageError'
+        });
     });
 
     it('throws an error for undefined parameter', function () {
-        (function compileWith() {
-            compile('{{price @dont.exist}}')
-                .with({});
-        }).should.throw();
+        const templateString = '{{price @dont.exist}}';
+
+        shouldCompileToError(templateString, {}, {
+            name: 'IncorrectUsageError'
+        });
     });
 
     it('throws if argument is not a number', function () {
-        (function compileWith() {
-            compile('{{price "not_a_number"}}')
-                .with({});
-        }).should.throw();
+        const templateString = '{{price "not_a_number"}}';
+        shouldCompileToError(templateString, {}, {
+            name: 'IncorrectUsageError'
+        });
     });
 
     it('will format decimal adjusted amount', function () {
-        compile('{{price 2000}}')
-            .with({})
-            .should.equal('20');
+        const templateString = '{{price 2000}}';
+
+        shouldCompileToExpected(templateString, {}, '20');
     });
 
     it('will format with plan object', function () {
