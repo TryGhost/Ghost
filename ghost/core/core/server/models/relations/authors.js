@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
@@ -179,7 +178,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 const authors = model.get('authors');
                 const authorsToSet = [];
 
-                return Promise.each(authors, (author, index) => {
+                return Promise.all(authors.map((author, index) => {
                     const query = {};
 
                     if (author.id) {
@@ -205,7 +204,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                                 authorsToSet[index].id = userId;
                             }
                         });
-                }).then(() => {
+                })).then(() => {
                     model.set('authors', authorsToSet);
                 });
             });
