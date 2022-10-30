@@ -22,7 +22,6 @@
     "sinon": "14.0.1"
   },
   "dependencies": {
-    "bluebird": "3.7.2",
     "fs-extra": "10.1.0",
     "lodash": "4.17.21",
     "papaparse": "5.3.2",
