@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const storage = require('../../../adapters/storage');
 let replaceImage;
 let ImageImporter;
@@ -66,11 +65,11 @@ ImageImporter = {
     doImport: function (imageData) {
         const store = storage.getStorage('images');
 
-        return Promise.map(imageData, function (image) {
+        return Promise.all(imageData.map(function (image) {
             return store.save(image, image.targetDir).then(function (result) {
                 return {originalPath: image.originalPath, newPath: image.newPath, stored: result};
             });
-        });
+        }));
     }
 };
 
