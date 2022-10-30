@@ -129,7 +129,8 @@ export default class ChangeThemeController extends Controller {
                 decoratedTheme.isDefault = true;
             }
 
-            if (theme.name.toLowerCase() === activeTheme.name) {
+            if (typeof activeTheme !== 'undefined'
+                && theme.name.toLowerCase() === activeTheme.name) {
                 decoratedTheme.isActive = true;
             }
 
