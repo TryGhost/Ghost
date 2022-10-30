@@ -1,10 +1,19 @@
+const assert = require('assert');
 const handlebars = require('../../../../../core/frontend/services/theme-engine/engine').handlebars;
 
 module.exports.shouldCompileToExpected = (templateString, hash, expected) => {
     const template = handlebars.compile(templateString);
     const result = template(hash);
 
-    result.should.eql(expected);
+    assert.equal(result, expected);
+};
+
+module.exports.shouldCompileToError = (templateString, hash, error) => {
+    const template = handlebars.compile(templateString);
+
+    assert.throws(() => {
+        return template(hash);
+    }, error);
 };
 
 module.exports.registerHelper = (name) => {
