@@ -4,6 +4,7 @@ export default class MembersUtilsService extends Service {
     @service config;
     @service settings;
     @service feature;
+    @service session;
     @service store;
 
     paidTiers = null;
@@ -29,15 +30,21 @@ export default class MembersUtilsService extends Service {
             return;
         }
 
-        return this.store.query('tier', {filter: 'type:paid+active:true', limit: 'all'}).then((tiers) => {
-            this.paidTiers = tiers;
-        });
+        // contributors don't have permissions to fetch tiers
+        if (this.session.user && !this.session.user.isContributor) {
+            return this.store.query('tier', {filter: 'type:paid+active:true', limit: 'all'}).then((tiers) => {
+                this.paidTiers = tiers;
+            });
+        }
     }
 
     async reload() {
-        return this.store.query('tier', {filter: 'type:paid+active:true', limit: 'all'}).then((tiers) => {
-            this.paidTiers = tiers;
-        });
+        // contributors don't have permissions to fetch tiers
+        if (this.session.user && !this.session.user.isContributor) {
+            return this.store.query('tier', {filter: 'type:paid+active:true', limit: 'all'}).then((tiers) => {
+                this.paidTiers = tiers;
+            });
+        }
     }
 
     /**
