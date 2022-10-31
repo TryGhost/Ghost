@@ -246,7 +246,7 @@ describe('Importer', function () {
 
             result.batches.should.equal(2);
             should.exist(result.metadata);
-
+            should.equal(result.metadata.hasStripeData, false);
             fsWriteSpy.calledOnce.should.be.true();
         });
 
@@ -268,6 +268,15 @@ describe('Importer', function () {
             const fileContents = fsWriteSpy.firstCall.args[1];
 
             fileContents.should.match(/^email,subscribed_to_emails,labels\r\n/);
+        });
+
+        it('checks for stripe data in the imported file', async function () {
+            const membersImporter = buildMockImporterInstance();
+
+            const result = await membersImporter.prepare(`${csvPath}/member-csv-export.csv`);
+
+            should.exist(result.metadata);
+            should.equal(result.metadata.hasStripeData, true);
         });
     });
 
