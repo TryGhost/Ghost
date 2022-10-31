@@ -1,5 +1,4 @@
 const errors = require('@tryghost/errors');
-const Promise = require('bluebird');
 const sinon = require('sinon');
 const shared = require('../../');
 
