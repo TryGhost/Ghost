@@ -1,11 +1,27 @@
-import {paginatedResponse} from '../utils';
+import {paginatedResponse, withPermissionsCheck} from '../utils';
+
+const ALLOWED_WRITE_ROLES = [
+    'Owner',
+    'Administrator'
+];
+const ALLOWED_READ_ROLES = [
+    'Owner',
+    'Administrator',
+    'Editor',
+    'Author'
+];
 
 export default function mockTiers(server) {
-    server.post('/tiers/');
+    // CREATE
+    server.post('/tiers/', withPermissionsCheck(ALLOWED_WRITE_ROLES, function ({tiers}) {
+        const attrs = this.normalizedRequestAttrs();
+        return tiers.create(attrs);
+    }));
 
-    server.get('/tiers/', paginatedResponse('tiers'));
+    // READ
+    server.get('/tiers/', withPermissionsCheck(ALLOWED_READ_ROLES, paginatedResponse('tiers')));
 
-    server.get('/tiers/:id/', function ({tiers}, {params}) {
+    server.get('/tiers/:id/', withPermissionsCheck(ALLOWED_READ_ROLES, function ({tiers}, {params}) {
         let {id} = params;
         let tier = tiers.find(id);
 
@@ -15,16 +31,21 @@ export default function mockTiers(server) {
                 message: 'Tier not found.'
             }]
         });
-    });
+    }));
 
-    server.put('/tiers/:id/', function ({tiers}, {params}) {
+    // UPDATE
+    server.put('/tiers/:id/', withPermissionsCheck(ALLOWED_WRITE_ROLES, function ({tiers}, {params}) {
         const attrs = this.normalizedRequestAttrs();
         const tier = tiers.find(params.id);
 
         tier.update(attrs);
 
         return tier.save();
-    });
+    }));
 
-    server.del('/tiers/:id/');
+    // DELETE
+    server.del('/tiers/:id/', withPermissionsCheck(ALLOWED_WRITE_ROLES, function (schema, request) {
+        const id = request.params.id;
+        schema.tiers.find(id).destroy();
+    }));
 }
