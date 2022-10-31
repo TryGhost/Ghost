@@ -168,7 +168,7 @@ function sendWelcomeEmail(email, mailAPI) {
         };
 
         return mail.utils.generateContent({data: data, template: 'welcome'})
-            .then((content) => {
+            .then(async (content) => {
                 const message = {
                     to: email,
                     subject: tpl(messages.yourNewGhostBlog),
@@ -183,7 +183,7 @@ function sendWelcomeEmail(email, mailAPI) {
                     }]
                 };
 
-                mailAPI.send(payload, {context: {internal: true}})
+                await mailAPI.send(payload, {context: {internal: true}})
                     .catch((err) => {
                         err.context = tpl(messages.unableToSendWelcomeEmail);
                         logging.error(err);

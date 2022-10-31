@@ -1,7 +1,6 @@
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const shared = require('../../../');
 
 describe('validators/input/all', function () {
@@ -148,7 +147,7 @@ describe('validators/input/all', function () {
             };
 
             return shared.validators.input.all.all(apiConfig, frame)
-                .then(Promise.reject)
+                .then(Promise.reject.bind(Promise))
                 .catch((err) => {
                     should.not.exist(err);
                 });
@@ -169,7 +168,7 @@ describe('validators/input/all', function () {
             };
 
             return shared.validators.input.all.all(apiConfig, frame)
-                .then(Promise.reject)
+                .then(Promise.reject.bind(Promise))
                 .catch((err) => {
                     should.not.exist(err);
                 });
