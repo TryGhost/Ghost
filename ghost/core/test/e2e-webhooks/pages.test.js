@@ -21,9 +21,8 @@ const tierSnapshot = {
     updated_at: anyISODateTime
 };
 
-const roleSnapshot = tierSnapshot;
-
 const tagSnapshot = tierSnapshot;
+const roleSnapshot = tierSnapshot;
 
 const buildAuthorSnapshot = (roles = false) => {
     const authorSnapshot = {
@@ -70,10 +69,15 @@ const buildPreviousPageSnapshotWithTiers = (tiersCount) => {
 };
 
 const buildPreviousPageSnapshotWithTiersAndTags = ({tiersCount, tags}) => {
-    return {
-        tiers: new Array(tiersCount).fill(tierSnapshot),
+    const prevSnapshot = {
         tags: tags ? new Array(1).fill(tagSnapshot) : []
     };
+
+    if (tiersCount > 0) {
+        return {...prevSnapshot, tiers: new Array(tiersCount).fill(tierSnapshot)};
+    }
+
+    return prevSnapshot;
 };
 
 describe('page.* events', function () {
@@ -92,6 +96,57 @@ describe('page.* events', function () {
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    it('page.published event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-published/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.published',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.published webhook',
+                        status: 'draft'
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const publishedPage = res.body.pages[0];
+        publishedPage.status = 'published';
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [publishedPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiers(2)
+                }
+            });
     });
 
     it('page.added event is triggered', async function () {
@@ -153,7 +208,7 @@ describe('page.* events', function () {
                 ]
             })
             .expectStatus(201);
-        
+
         const id = res.body.pages[0].id;
         const updatedPage = res.body.pages[0];
         updatedPage.title = 'updated test page';
@@ -277,7 +332,7 @@ describe('page.* events', function () {
                 'content-length': anyNumber,
                 'user-agent': anyGhostAgent
             })
-            .matchBodySnapshot({               
+            .matchBodySnapshot({
                 page: {
                     current: buildPageSnapshotWithTiers({
                         published: true,
@@ -285,6 +340,68 @@ describe('page.* events', function () {
                         roles: true
                     }),
                     previous: buildPreviousPageSnapshotWithTiers(2)
+                }
+            });
+    });
+
+    it('page.tag.detached event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-tag-detached/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.tag.detached',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'test page.tag.detached webhook',
+                        status: 'draft'
+                    }
+                ]
+            })
+            .expectStatus(201);
+        const id = res.body.pages[0].id;
+        const updatedPage = res.body.pages[0];
+        updatedPage.tags = ['Testing TAGS'];
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [updatedPage]
+            })
+            .expectStatus(200);
+
+        updatedPage.tags = [];
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [updatedPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: false,
+                        tiersCount: 2,
+                        roles: true,
+                        tags: false
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiersAndTags({
+                        tiersCount: 0,
+                        tags: true
+                    })
                 }
             });
     });

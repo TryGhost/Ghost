@@ -27,7 +27,6 @@
     "@tryghost/errors": "1.2.18",
     "@tryghost/logging": "2.3.2",
     "@tryghost/tpl": "0.1.19",
-    "bluebird": "3.7.2",
     "lodash": "4.17.21",
     "moment": "2.24.0"
   }
