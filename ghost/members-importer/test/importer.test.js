@@ -246,7 +246,7 @@ describe('Importer', function () {
 
             result.batches.should.equal(2);
             should.exist(result.metadata);
-
+            should.equal(result.metadata.hasStripeData, false);
             fsWriteSpy.calledOnce.should.be.true();
         });
 
