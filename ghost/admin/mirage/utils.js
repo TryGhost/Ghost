@@ -122,3 +122,35 @@ export function extractFilterParam(param, filter = '') {
 
     return normalizeBooleanParams(normalizeStringParams(match));
 }
+
+export function hasInvalidPermissions(allowedRoles) {
+    const {schema, request} = this;
+
+    // always allow dev requests through - the logged in user will be real so
+    // we can't check against it in the mocked db
+    if (!request.requestHeaders['X-Test-User']) {
+        return false;
+    }
+
+    const invalidPermsResponse = new Response(403, {}, {
+        errors: [{
+            type: 'NoPermissionError',
+            message: 'You do not have permission to perform this action'
+        }]
+    });
+
+    const user = schema.users.find(request.requestHeaders['X-Test-User']);
+    const adminRoles = user.roles.filter(role => allowedRoles.includes(role.name));
+
+    if (adminRoles.length === 0) {
+        return invalidPermsResponse;
+    }
+}
+
+export function withPermissionsCheck(allowedRoles, fn) {
+    return function () {
+        const boundPermsCheck = hasInvalidPermissions.bind(this);
+        const boundFn = fn.bind(this);
+        return boundPermsCheck(allowedRoles) || boundFn(...arguments);
+    };
+}
