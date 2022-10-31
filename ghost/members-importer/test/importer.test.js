@@ -269,6 +269,15 @@ describe('Importer', function () {
 
             fileContents.should.match(/^email,subscribed_to_emails,labels\r\n/);
         });
+
+        it('checks for stripe data in the imported file', async function () {
+            const membersImporter = buildMockImporterInstance();
+
+            const result = await membersImporter.prepare(`${csvPath}/member-csv-export.csv`);
+
+            should.exist(result.metadata);
+            should.equal(result.metadata.hasStripeData, true);
+        });
     });
 
     describe('perform', function () {
