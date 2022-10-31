@@ -31,7 +31,7 @@ describe('api/endpoints/content/pages', function () {
     it('browse pages with slug filter, should order in slug order', function () {
         return request.get(localUtils.API.getApiQuery(`pages/?key=${key}&filter=slug:[static-page-test]`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;
@@ -46,7 +46,7 @@ describe('api/endpoints/content/pages', function () {
             .get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[0].id}/?key=${key}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.noCache)
             .expect(404);
     });
 });

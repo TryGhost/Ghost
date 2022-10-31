@@ -5,6 +5,8 @@ const path = require('path');
 
 // Stuff we are testing
 const content = require('../../../../core/frontend/helpers/content');
+const has = require('../../../../core/frontend/helpers/has');
+const is = require('../../../../core/frontend/helpers/is');
 
 describe('{{content}} helper', function () {
     before(function (done) {
@@ -85,6 +87,9 @@ describe('{{content}} helper with no access', function () {
         hbs.cachePartials(function () {
             done();
         });
+
+        hbs.registerHelper('has', has);
+        hbs.registerHelper('is', is);
     });
 
     beforeEach(function () {
@@ -103,6 +108,7 @@ describe('{{content}} helper with no access', function () {
         rendered.string.should.containEql('gh-post-upgrade-cta');
         rendered.string.should.containEql('gh-post-upgrade-cta-content');
         rendered.string.should.containEql('"background-color: #abcdef"');
+        rendered.string.should.containEql('"color:#abcdef"');
 
         should.exist(rendered);
     });
@@ -116,6 +122,46 @@ describe('{{content}} helper with no access', function () {
         rendered.string.should.containEql('gh-post-upgrade-cta-content');
         rendered.string.should.containEql('"background-color: #abcdef"');
     });
+
+    it('can render default template with right message for post resource', function () {
+        // html will be included when there is free content available
+        const html = 'Free content';
+        optionsData.data.root = {
+            post: {}
+        };
+        const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
+        rendered.string.should.containEql('Free content');
+        rendered.string.should.containEql('gh-post-upgrade-cta');
+        rendered.string.should.containEql('gh-post-upgrade-cta-content');
+        rendered.string.should.containEql('"background-color: #abcdef"');
+        rendered.string.should.containEql('This post is for');
+    });
+
+    it('can render default template with right message for page resource', function () {
+        // html will be included when there is free content available
+        const html = 'Free content';
+        optionsData.data.root = {
+            context: ['page']
+        };
+        const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
+        rendered.string.should.containEql('Free content');
+        rendered.string.should.containEql('gh-post-upgrade-cta');
+        rendered.string.should.containEql('gh-post-upgrade-cta-content');
+        rendered.string.should.containEql('"background-color: #abcdef"');
+        rendered.string.should.containEql('This page is for');
+    });
+
+    it('can render default template for upgrade case', function () {
+        // html will be included when there is free content available
+        const html = 'Free content';
+        optionsData.data.member = {
+            id: '123'
+        };
+        const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
+        rendered.string.should.containEql('Free content');
+        rendered.string.should.containEql('Upgrade your account');
+        rendered.string.should.containEql('color:#abcdef');
+    });
 });
 
 describe('{{content}} helper with custom template', function () {
@@ -126,6 +172,9 @@ describe('{{content}} helper with custom template', function () {
         hbs.cachePartials(function () {
             done();
         });
+
+        hbs.registerHelper('has', has);
+        hbs.registerHelper('is', is);
     });
 
     it('can render custom template', function () {
@@ -136,5 +185,21 @@ describe('{{content}} helper with custom template', function () {
         rendered.string.should.containEql('custom-post-upgrade-cta-content');
 
         should.exist(rendered);
+    });
+
+    it('can correctly render message for page', function () {
+        // html will be included when there is free content available
+        const html = 'Free content';
+        const rendered = content.call({html: html, access: false, visibility: 'members'}, {
+            data: {
+                root: {
+                    context: ['page']
+                }
+            }
+        });
+        rendered.string.should.not.containEql('gh-post-upgrade-cta');
+        rendered.string.should.containEql('custom-post-upgrade-cta');
+        rendered.string.should.containEql('custom-post-upgrade-cta-content');
+        rendered.string.should.containEql('This page is for');
     });
 });

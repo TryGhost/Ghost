@@ -72,6 +72,15 @@ describe('Posts Content API', function () {
         assert.match(res.body.posts[9].html, /<img src="http:\/\/127.0.0.1:2369\/content\/images\/lol.jpg"/);
     });
 
+    it('Cannot request mobiledoc or lexical formats', async function () {
+        await agent
+            .get(`posts/?formats=mobiledoc,lexical`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                posts: new Array(11).fill(postMatcher)
+            });
+    });
+
     it('Can filter posts by tag', async function () {
         const res = await agent.get('posts/?filter=tag:kitchen-sink,featured:true&include=tags')
             .expectStatus(200)

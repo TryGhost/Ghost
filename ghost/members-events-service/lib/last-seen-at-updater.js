@@ -1,4 +1,4 @@
-const {MemberPageViewEvent, MemberCommentEvent} = require('@tryghost/member-events');
+const {MemberPageViewEvent, MemberCommentEvent, MemberLinkClickEvent} = require('@tryghost/member-events');
 const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
 
@@ -10,13 +10,11 @@ class LastSeenAtUpdater {
      * Initializes the event subscriber
      * @param {Object} deps dependencies
      * @param {Object} deps.services The list of service dependencies
-     * @param {any} deps.services.domainEvents The DomainEvents service
      * @param {any} deps.services.settingsCache The settings service
      * @param {() => object} deps.getMembersApi - A function which returns an instance of members-api
      */
     constructor({
         services: {
-            domainEvents,
             settingsCache
         },
         getMembersApi
@@ -26,14 +24,22 @@ class LastSeenAtUpdater {
         }
 
         this._getMembersApi = getMembersApi;
-        this._domainEventsService = domainEvents;
         this._settingsCacheService = settingsCache;
-
-        this._domainEventsService.subscribe(MemberPageViewEvent, async (event) => {
+    }
+    /**
+     * Subscribe to events of this domainEvents service
+     * @param {any} domainEvents The DomainEvents service
+     */
+    subscribe(domainEvents) {
+        domainEvents.subscribe(MemberPageViewEvent, async (event) => {
             await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
         });
 
-        this._domainEventsService.subscribe(MemberCommentEvent, async (event) => {
+        domainEvents.subscribe(MemberLinkClickEvent, async (event) => {
+            await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+        });
+
+        domainEvents.subscribe(MemberCommentEvent, async (event) => {
             await this.updateLastCommentedAt(event.data.memberId, event.timestamp);
         });
     }

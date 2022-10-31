@@ -225,6 +225,14 @@ describe('{{url}} helper', function () {
             should.exist(rendered);
             rendered.string.should.equal('');
         });
+
+        it('should not encode square brackets (as in valid IPV6 addresses)', function () {
+            rendered = url.call(
+                {url: 'http://[ffff::]:2368/baz', label: 'Baz', slug: 'baz', current: true},
+                {hash: {absolute: 'true'}});
+            should.exist(rendered);
+            rendered.string.should.equal('http://[ffff::]:2368/baz');
+        });
     });
 
     describe('with subdir', function () {

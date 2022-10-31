@@ -326,11 +326,6 @@ input:focus,
     border-bottom: 1px solid var(--hairline-color-1);
 }
 
-.gh-main-section.no-heading,
-.gh-main-section.bt {
-    border-top: 1px solid var(--hairline-color-1);
-}
-
 .gh-btn-tabs .gh-btn {
     background: transparent !important;
 }
@@ -646,7 +641,7 @@ input:focus,
 }
 
 .settings-code-editor .CodeMirror {
-    color: var(--black);
+    color: var(--darkgrey);
 }
 
 .settings-code-editor .CodeMirror-cursor {
@@ -679,6 +674,22 @@ input:focus,
 
 .CodeMirror .CodeMirror-code .cm-string {
     color: color-mod(#183691 l(+25%));
+}
+
+.settings-code-editor .CodeMirror .cm-variable, .settings-code-editor .CodeMirror .cm-variable-2, .settings-code-editor .CodeMirror .cm-meta {
+    color: var(--black);
+}
+
+.settings-code-editor .CodeMirror .cm-property {
+    color: var(--middarkgrey);
+}
+
+.settings-code-editor .CodeMirror .cm-number {
+    color: color-mod(#164 l(+25%));
+}
+
+.settings-code-editor .CodeMirror .cm-keyword {
+    color: color-mod(#5A5CAD l(+20%));
 }
 
 .id-github img,
@@ -967,6 +978,30 @@ input:focus,
     border-top: 1px solid var(--hairline-color-1);
 }
 
+a.gh-post-list-cta {
+    background: #26282b;
+    color: #ffffff;
+    border-color: #33373d;
+}
+
+a.gh-post-list-cta > svg {
+    color: #ffffff;
+}
+
+a.gh-post-list-cta > span {
+    color: #ffffff;
+}
+
+a.gh-post-list-cta.is-hovered {
+    background: #1d1e20;
+    border-color: #33373d;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+}
+
+a.gh-post-list-cta.is-hovered:hover {
+    background: #1d1e20;
+}
+
 @media (max-width: 1200px) {
     .gh-list-data {
         border-top: 0 none;
@@ -1047,6 +1082,62 @@ input:focus,
 
 .gh-member-feed-row {
     border-bottom: 1px solid var(--lightgrey-l1);
+}
+
+.ghost-members-activity-event-prefix,
+.feature-memberAttribution .ghost-members-activity-event-url > span {
+    color: #505558;
+}
+
+.ghost-members-activity-event-url:before,
+.ghost-members-activity-event-url.scroller:hover::before {
+    background: rgb(255,255,255);
+    background: linear-gradient(90deg, rgba(16,17,20,1) 0%, rgba(16,17,20,0) 100%);
+}
+
+.ghost-members-activity-event-url:after,
+.ghost-members-activity-event-url.scroller:hover::after {
+    background: rgb(255,255,255);
+    background: linear-gradient(90deg, rgba(16,17,20,0) 0%, rgba(16,17,20,1) 100%);
+}
+
+.gh-main-section-content .ghost-members-activity-event-url:before,
+.gh-main-section-content .ghost-members-activity-event-url.scroller:hover::before {
+    background: rgb(255,255,255);
+    background: linear-gradient(90deg, rgba(23,25,28,1) 0%, rgba(23,25,28,0) 100%);
+}
+
+.gh-main-section-content .ghost-members-activity-event-url:after,
+.gh-main-section-content .ghost-members-activity-event-url.scroller:hover::after {
+    background: rgb(255,255,255);
+    background: linear-gradient(90deg, rgba(23,25,28,0) 0%, rgba(23,25,28,1) 100%);
+}
+
+.feature-memberAttribution .ghost-members-activity-event-prefix {
+    opacity: 0.75;
+}
+
+/* Post Analytics Newsletter Links */
+.gh-links-pagination {
+    background: transparent;
+    border-color: rgba(150,150,150,0.1);
+}
+
+.gh-links-pagination-progress {
+    color: rgba(255,255,255,0.5);
+}
+
+.gh-links-pagination-action.gh-links-pagination-prev:after {
+    background: rgba(150,150,150,0.4);
+}
+
+/* Member */
+.gh-cp-membertier-attribution .gh-membertier-advanced {
+    border-top: 1px solid rgb(23, 25, 28);
+}
+
+.gh-dashboard-metric.is-embedded {
+    background: var(--white);
 }
 
 /* Offers */
@@ -1205,8 +1296,12 @@ kbd {
     background: #1c1e21;
 }
 
-.gh-dashboard-recents .gh-dashboard-list-item:hover {
+.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover, .gh-links-list-item:hover {
     background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
+}
+
+.gh-all-sources .gh-dashboard-list-body:before, .gh-all-sources .gh-dashboard-list-body:after {
+    background: transparent;
 }
 
 .gh-dashboard-resource .gh-dashboard-list-item:hover {
@@ -1227,10 +1322,6 @@ kbd {
 
 .gh-dashboard-tooltip {
     background: var(--whitegrey);
-}
-
-.gh-editor-post-status-btn::after {
-    background: var(--hairline-color-2);
 }
 
 /* Empty states */
@@ -1324,4 +1415,48 @@ kbd {
 
 .ember-power-select-option[aria-current="true"] .kg-settings-link-url::after {
     background: linear-gradient(90deg, rgba(19,20,22,0) 0%, rgba(19,20,22,1) 100%);
+}
+
+
+/* Post Analytics */
+
+.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
+.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution {
+    background: #101114;
+    border-color: #26282b;
+}
+
+.gh-tabs-analytics {
+    background: #101114;
+    border-color: #26282b;
+}
+
+.gh-tabs-analytics .tab-list h3 svg path {
+    stroke: #fff !important;
+}
+
+.gh-tabs-analytics .tab-panel-selected,
+.gh-tabs-analytics .tab-selected {
+    background: #101114;
+    border-color: transparent;
+}
+
+.gh-tabs-analytics .tab-list {
+    background: #17191C;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.gh-post-activity-feed-dummy {
+    opacity: 0.2;
+}
+
+.gh-post-activity-feed .gh-dashboard-list-item + .gh-dashboard-list-item,
+.feature-audienceFeedback .gh-links-list-item,
+.gh-post-activity-feed-footer {
+    border-color: #17191c;
+}
+
+.gh-post-activity-feed .gh-dashboard-list-item:hover {
+    background: transparent;
 }

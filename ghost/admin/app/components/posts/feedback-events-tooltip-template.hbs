@@ -1,0 +1,19 @@
+<div class="gh-feedback-events-tooltip-template">
+    <LinkTo
+        class="gh-post-activity-feed-pagination-link gh-post-activity-chart-link gh-post-activity-chart-positive-feedback"
+        @route="members"
+        @query={{@positiveLink}}
+    >
+        {{svg-jar "filter"}}
+        <span>See members</span>
+    </LinkTo>
+
+    <LinkTo
+        class="gh-post-activity-feed-pagination-link gh-post-activity-chart-link gh-post-activity-chart-negative-feedback"
+        @route="members"
+        @query={{@negativeLink}}
+    >
+        {{svg-jar "filter"}}
+        <span>See members</span>
+    </LinkTo>
+</div>

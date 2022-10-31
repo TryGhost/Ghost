@@ -1,6 +1,6 @@
 const path = require('path');
 
-const redirects = require('../../services/redirects');
+const customRedirects = require('../../services/custom-redirects');
 
 module.exports = {
     docName: 'redirects',
@@ -10,11 +10,9 @@ module.exports = {
             disposition: {
                 type: 'file',
                 value() {
-                    return redirects.api.getRedirectsFilePath()
+                    return customRedirects.api.getRedirectsFilePath()
                         .then((filePath) => {
-                            // TODO: Default file type is .json for backward compatibility.
-                            // When .yaml becomes default or .json is removed at v4,
-                            // This part should be changed.
+                            // @deprecated: .json was deprecated in v4.0 but is still the default for backwards compat
                             return filePath === null || path.extname(filePath) === '.json'
                                 ? 'redirects.json'
                                 : 'redirects.yaml';
@@ -25,13 +23,13 @@ module.exports = {
         permissions: true,
         response: {
             async format() {
-                const filePath = await redirects.api.getRedirectsFilePath();
+                const filePath = await customRedirects.api.getRedirectsFilePath();
 
                 return filePath === null || path.extname(filePath) === '.json' ? 'json' : 'plain';
             }
         },
         query() {
-            return redirects.api.get();
+            return customRedirects.api.get();
         }
     },
 
@@ -41,7 +39,7 @@ module.exports = {
             cacheInvalidate: true
         },
         query(frame) {
-            return redirects.api.setFromFilePath(frame.file.path, frame.file.ext);
+            return customRedirects.api.setFromFilePath(frame.file.path, frame.file.ext);
         }
     }
 };

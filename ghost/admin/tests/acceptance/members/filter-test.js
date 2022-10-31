@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
@@ -20,6 +20,7 @@ describe('Acceptance: Members filtering', function () {
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
+        this.server.loadFixtures('newsletters');
         enableStripe(this.server);
         enableNewsletters(this.server, true);
 
@@ -90,7 +91,7 @@ describe('Acceptance: Members filtering', function () {
             expect(operatorOptions[1]).to.have.value('is-not');
 
             // value dropdown can open and has all labels
-            await click(`${filterSelector} .gh-member-label-input .ember-basic-dropdown-trigger`);
+            await click(`${filterSelector} .gh-member-label-input`);
             expect(findAll(`${filterSelector} [data-test-label-filter]`).length, '# of label options').to.equal(5);
 
             // selecting a value updates table
@@ -140,7 +141,7 @@ describe('Acceptance: Members filtering', function () {
             expect(operatorOptions[1]).to.have.value('is-not');
 
             // value dropdown can open and has all labels
-            await click(`${filterSelector} .gh-tier-token-input .ember-basic-dropdown-trigger`);
+            await click(`${filterSelector} .gh-tier-token-input`);
             expect(findAll(`${filterSelector} [data-test-tiers-segment]`).length, '# of label options').to.equal(5);
 
             // selecting a value updates table
@@ -203,6 +204,22 @@ describe('Acceptance: Members filtering', function () {
 
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows after delete')
                 .to.equal(7);
+
+            // Can set filter by path
+            await visit('/');
+            await visit('/members?filter=' + encodeURIComponent('subscribed:true'));
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - true - from URL')
+                .to.equal(3);
+            await click('[data-test-button="members-filter-actions"]');
+            expect(find(`${filterSelector} [data-test-select="members-filter-value"]`)).to.have.value('true');
+
+            // Can set filter by path
+            await visit('/');
+            await visit('/members?filter=' + encodeURIComponent('subscribed:false'));
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - false - from URL')
+                .to.equal(4);
+            await click('[data-test-button="members-filter-actions"]');
+            expect(find(`${filterSelector} [data-test-select="members-filter-value"]`)).to.have.value('false');
         });
 
         it('can filter by member status', async function () {

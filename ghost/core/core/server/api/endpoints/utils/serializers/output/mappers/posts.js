@@ -10,7 +10,6 @@ const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
 const url = require('../utils/url');
 
-const labs = require('../../../../../../../shared/labs');
 const utils = require('../../../index');
 
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
@@ -110,8 +109,36 @@ module.exports = async (model, frame, options = {}) => {
         });
     }
 
-    if (!labs.isSet('memberAttribution')) {
-        delete jsonModel.count;
+    if (jsonModel.email && jsonModel.count) {
+        jsonModel.email.opened_count = Math.min(
+            jsonModel.email.opened_count || 0,
+            jsonModel.email.email_count
+        );
+    }
+
+    // The sentiment has been loaded as a count relation in count.sentiment. But externally in the API we use just 'sentiment' instead of count.sentiment
+    // This part moves count.sentiment to just 'sentiment' when it has been loaded
+    if (frame.options.withRelated && frame.options.withRelated.includes('count.sentiment')) {
+        if (!jsonModel.count) {
+            jsonModel.sentiment = 0;
+        } else {
+            jsonModel.sentiment = jsonModel.count.sentiment ?? 0;
+
+            // Delete it from the original location
+            delete jsonModel.count.sentiment;
+
+            if (Object.keys(jsonModel.count).length === 0) {
+                delete jsonModel.count;
+            }
+        }
+    }
+
+    if (jsonModel.count && !jsonModel.count.positive_feedback) {
+        jsonModel.count.positive_feedback = 0;
+    }
+
+    if (jsonModel.count && !jsonModel.count.negative_feedback) {
+        jsonModel.count.negative_feedback = 0;
     }
 
     return jsonModel;

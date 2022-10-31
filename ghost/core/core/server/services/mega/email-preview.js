@@ -27,14 +27,21 @@ class EmailPreview {
             emailContent = postEmailSerializer.renderEmailForSegment(emailContent, memberSegment);
         }
 
+        // Do fake replacements, just like a normal email, but use fallbacks and empty values
         const replacements = postEmailSerializer.parseReplacements(emailContent);
 
         replacements.forEach((replacement) => {
             emailContent[replacement.format] = emailContent[replacement.format].replace(
-                replacement.match,
+                replacement.regexp,
                 replacement.fallback || ''
             );
         });
+
+        // Replace unsubscribe URL (%recipient.unsubscribe_url% replacement)
+        // We should do this only here because replacements should happen at the very end only, just like when an actual email would be send
+        const previewUnsubscribeUrl = postEmailSerializer.createUnsubscribeUrl(null);
+        emailContent.html = emailContent.html.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
+        emailContent.plaintext = emailContent.plaintext.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
 
         return {
             subject: emailContent.subject,

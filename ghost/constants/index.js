@@ -1,6 +1,7 @@
 module.exports = {
     ONE_HOUR_S: 3600,
     ONE_DAY_S: 86400,
+    ONE_WEEK_S: 604800,
     ONE_MONTH_S: 2628000,
     SIX_MONTH_S: 15768000,
     ONE_YEAR_S: 31536000,

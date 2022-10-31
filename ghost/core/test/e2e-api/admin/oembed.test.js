@@ -86,7 +86,7 @@ describe('Oembed API', function () {
         it('falls back to bookmark without ?type=embed and no oembed metatag', async function () {
             const pageMock = nock('http://example.com')
                 .get('/')
-                .times(2) // 1st = oembed metatag check, 2nd = metascraper
+                .times(1) // url should not be fetched twice
                 .reply(
                     200,
                     '<html><head><title>TESTING</title></head><body></body></html>',
@@ -550,7 +550,6 @@ describe('Oembed API', function () {
         it('falls back to bookmark card for WP oembeds', async function () {
             const pageMock = nock('http://test.com')
                 .get('/')
-                .twice() // oembed fetch then bookmark fetch
                 .reply(
                     200,
                     '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/wp-json/oembed/embed?url=https%3A%2F%2Ftest.com%2F"><title>TESTING</title></head><body></body></html>',
@@ -573,6 +572,58 @@ describe('Oembed API', function () {
 
             pageMock.isDone().should.be.true();
             oembedMock.isDone().should.be.false();
+        });
+
+        it('decodes non utf-8 charsets', async function () {
+            const utfString = '中国abc';
+            const encodedBytes = [0xd6,0xd0,0xb9,0xfa,0x61,0x62,0x63];
+            const replyBuffer = Buffer.concat([
+                Buffer.from('<html><head><title>'),
+                Buffer.from(encodedBytes),
+                Buffer.from('</title><meta charset="gb2312"></head><body></body></html>')
+            ]);
+
+            const pageMock = nock('http://example.com')
+                .get('/')
+                .reply(
+                    200,
+                    replyBuffer,
+                    {'content-type': 'text/html'}
+                );
+
+            const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
+            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            pageMock.isDone().should.be.true();
+            res.body.type.should.eql('bookmark');
+            res.body.url.should.eql('http://example.com');
+            res.body.metadata.title.should.eql(utfString);
+        });
+
+        it('does not fail on unknown charset', async function () {
+            const pageMock = nock('http://example.com')
+                .get('/')
+                .reply(
+                    200,
+                    '<html><head><title>TESTING</title><meta charset="notacharset"></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
+
+            const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
+            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            pageMock.isDone().should.be.true();
+            res.body.type.should.eql('bookmark');
+            res.body.url.should.eql('http://example.com');
+            res.body.metadata.title.should.eql('TESTING');
         });
     });
 });

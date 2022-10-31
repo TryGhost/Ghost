@@ -13,7 +13,7 @@ const SingleUseTokenProvider = require('./SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
-const staffService = require('../staff');
+const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 
@@ -188,17 +188,19 @@ function createApiInstance(config) {
             MemberAnalyticEvent: models.MemberAnalyticEvent,
             MemberCreatedEvent: models.MemberCreatedEvent,
             SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
+            MemberLinkClickEvent: models.MemberClickEvent,
             OfferRedemption: models.OfferRedemption,
             Offer: models.Offer,
             StripeProduct: models.StripeProduct,
             StripePrice: models.StripePrice,
             Product: models.Product,
             Settings: models.Settings,
-            Comment: models.Comment
+            Comment: models.Comment,
+            MemberFeedback: models.MemberFeedback
         },
         stripeAPIService: stripeService.api,
+        tiersService: tiersService,
         offersAPI: offersService.api,
-        staffService: staffService.api,
         labsService: labsService,
         newslettersService: newslettersService,
         memberAttributionService: memberAttributionService.service

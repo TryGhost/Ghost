@@ -14,9 +14,6 @@ const join = require('path').join;
 const errors = require('@tryghost/errors');
 const parse = require('./parse');
 
-// Require bluebird with its own namespace and use it explicitly where we need additional features
-const Bluebird = require('bluebird');
-
 const notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i;
 const packageJSONPath = 'package.json';
 
@@ -127,28 +124,28 @@ async function readPackage(packagePath, packageName) {
  * @returns {Promise<PackageList>}
  */
 async function readPackages(packagePath) {
-    return Bluebird.resolve(fs.readdir(packagePath, {withFileTypes: true}))
-        .filter(async function (packageFile) {
-            // Filter out things which are not packages by regex
-            if (packageFile.name.match(notAPackageRegex)) {
-                return;
-            }
+    const files = await fs.promises.readdir(packagePath, {withFileTypes: true});
+    const packages = await Promise.all(files.map(async (file) => {
+        // Filter out things which are not packages by regex
+        if (file.name.match(notAPackageRegex)) {
+            return false;
+        }
 
-            if (packageFile.isSymbolicLink()) {
-                const packageFileOrig = await fs.stat(join(packagePath, packageFile.name));
-                return packageFileOrig.isDirectory();
-            }
+        if (file.isSymbolicLink()) {
+            const packageFileOrig = await fs.stat(join(packagePath, file.name));
+            return packageFileOrig.isDirectory();
+        }
 
-            // Check the remaining items to ensure they are a directory
-            return packageFile.isDirectory();
-        })
-        .map(function readPackageJson(packageFile) {
+        // Check the remaining items to ensure they are a directory
+        return file.isDirectory();
+    }))
+        .then(results => files.filter((_v, index) => results[index]))
+        .then(packageFiles => Promise.all(packageFiles.map((packageFile) => {
             const absolutePath = join(packagePath, packageFile.name);
             return processPackage(absolutePath, packageFile.name);
-        })
-        .then(function (packages) {
-            return _.keyBy(packages, 'name');
-        });
+        })));
+    
+    return _.keyBy(packages, 'name');
 }
 
 module.exports = {

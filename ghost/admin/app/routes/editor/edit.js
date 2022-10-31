@@ -1,7 +1,10 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {pluralize} from 'ember-inflector';
+import {inject as service} from '@ember/service';
 
 export default class EditRoute extends AuthenticatedRoute {
+    @service router;
+
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
@@ -14,7 +17,7 @@ export default class EditRoute extends AuthenticatedRoute {
         }
     }
 
-    model(params, transition) {
+    async model(params, transition) {
         // eslint-disable-next-line camelcase
         let {type: modelName, post_id} = params;
 
@@ -28,8 +31,14 @@ export default class EditRoute extends AuthenticatedRoute {
             id: post_id
         };
 
-        return this.store.query(modelName, query)
-            .then(records => records.get('firstObject'));
+        const records = await this.store.query(modelName, query);
+        const post = records.firstObject;
+
+        if (post.lexical) {
+            return this.router.transitionTo('lexical-editor.edit', post);
+        }
+
+        return post;
     }
 
     // the API will return a post even if the logged in user doesn't have

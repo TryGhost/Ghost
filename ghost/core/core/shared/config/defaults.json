@@ -99,11 +99,20 @@
             "maxWait": 86400000,
             "lifetime": 3600,
             "freeRetries": 99
+        },
+        "member_login": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
         }
     },
     "caching": {
         "frontend": {
             "maxAge": 0
+        },
+        "publicAssets": {
+            "maxAge": 31536000
         },
         "301": {
             "maxAge": 31536000
@@ -117,11 +126,20 @@
         "sitemap": {
             "maxAge": 3600
         },
+        "sitemapXSL": {
+            "maxAge": 86400
+        },
         "robotstxt": {
-            "maxAge": 3600000
+            "maxAge": 3600
+        },
+        "wellKnown": {
+            "maxAge": 86400
         },
         "cors": {
             "maxAge": 86400
+        },
+        "contentAPI": {
+            "maxAge": 0
         }
     },
     "imageOptimization": {
@@ -139,22 +157,22 @@
         "emailAnalytics": true
     },
     "portal": {
-        "url": "https://cdn.jsdelivr.net/npm/@tryghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.11"
+        "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
+        "version": "2.19"
     },
     "sodoSearch": {
-        "url": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/sodo-search.min.js",
-        "styles": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/main.css",
+        "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
+        "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
         "version": "1.1"
     },
     "comments": {
-        "url": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "styles": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/main.css",
-        "version": "0.9"
+        "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
+        "styles": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/main.css",
+        "version": "0.10"
     },
     "editor": {
-        "url": "https://unpkg.com/@tryghost/koenig-react/dist/umd/koenig-react.min.js",
-        "lexicalUrl": "https://unpkg.com/@tryghost/koenig-lexical-experiment/dist/koenig-lexical.umd.js"
+        "url": "https://unpkg.com/@tryghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
+        "version": "0.0"
     },
     "tenor": {
         "googleApiKey": null,

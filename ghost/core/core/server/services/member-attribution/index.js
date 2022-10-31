@@ -1,51 +1,47 @@
 const urlService = require('../url');
-const labsService = require('../../../shared/labs');
-const DomainEvents = require('@tryghost/domain-events');
 const urlUtils = require('../../../shared/url-utils');
+const settingsCache = require('../../../shared/settings-cache');
 
 class MemberAttributionServiceWrapper {
     init() {
-        if (this.eventHandler) {
-            // Prevent creating duplicate DomainEvents subscribers
+        if (this.service) {
+            // Already done
             return;
         }
 
         // Wire up all the dependencies
-        const {MemberAttributionService, UrlTranslator, AttributionBuilder, EventHandler} = require('@tryghost/member-attribution');
+        const {
+            MemberAttributionService, UrlTranslator, ReferrerTranslator, AttributionBuilder
+        } = require('@tryghost/member-attribution');
         const models = require('../../models');
 
         const urlTranslator = new UrlTranslator({
-            urlService, 
+            urlService,
             urlUtils,
             models: {
-                Post: models.Post, 
-                User: models.User, 
+                Post: models.Post,
+                User: models.User,
                 Tag: models.Tag
             }
         });
 
-        this.attributionBuilder = new AttributionBuilder({urlTranslator});
+        const referrerTranslator = new ReferrerTranslator({
+            siteUrl: urlUtils.urlFor('home', true),
+            adminUrl: urlUtils.urlFor('admin', true)
+        });
+
+        this.attributionBuilder = new AttributionBuilder({urlTranslator, referrerTranslator});
 
         // Expose the service
         this.service = new MemberAttributionService({
             models: {
                 MemberCreatedEvent: models.MemberCreatedEvent,
-                SubscriptionCreatedEvent: models.SubscriptionCreatedEvent
+                SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
+                Integration: models.Integration
             },
             attributionBuilder: this.attributionBuilder,
-            labsService
+            isTrackingEnabled: !!settingsCache.get('members_track_sources')
         });
-
-        // Listen for events and store them in the database
-        this.eventHandler = new EventHandler({
-            models: {
-                MemberCreatedEvent: models.MemberCreatedEvent,
-                SubscriptionCreatedEvent: models.SubscriptionCreatedEvent
-            }, 
-            DomainEvents, 
-            labsService
-        });
-        this.eventHandler.subscribe();
     }
 }
 

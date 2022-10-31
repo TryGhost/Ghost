@@ -3,11 +3,11 @@ const SingleUseTokenProvider = require('../../../core/server/services/members/Si
 const settingsService = require('../../../core/server/services/settings/settings-service');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {stringMatching, anyEtag, anyUuid, anyStringNumber} = matchers;
+const {stringMatching, anyEtag, anyUuid, anyContentLength} = matchers;
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 67;
+const CURRENT_SETTINGS_COUNT = 69;
 
 const settingsMatcher = {};
 
@@ -22,14 +22,16 @@ const labsSettingMatcher = {
 const matchSettingsArray = (length) => {
     const settingsArray = new Array(length).fill(settingsMatcher);
 
-    if (length > 25) {
-        // Item at index 25 is the public hash, which is always different
-        settingsArray[25] = publicHashSettingMatcher;
+    if (length > 26) {
+        // Added a setting that is alphabetically before 'public_hash'? then you need to increment this counter.
+        // Item at index x is the public hash, which is always different
+        settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 56) {
-        // Item at index 56 is the lab settings, which changes as we add and remove features
-        settingsArray[56] = labsSettingMatcher;
+    if (length > 58) {
+        // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
+        // Item at index x is the lab settings, which changes as we add and remove features
+        settingsArray[58] = labsSettingMatcher;
     }
 
     return settingsArray;
@@ -65,7 +67,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 });
         });
 
@@ -201,7 +203,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 });
 
             // Check returned WITH prefix
@@ -228,7 +230,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 })
                 .expect(({body}) => {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
@@ -249,7 +251,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -284,7 +286,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -311,7 +313,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');

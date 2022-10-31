@@ -32,7 +32,7 @@ Object {
   "content-length": "158",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -66,7 +66,7 @@ Object {
   "content-length": "149",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -96,8 +96,8 @@ Object {
       "count": 1,
       "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "negative_delta": 0,
-      "positive_delta": 1,
-      "signups": 1,
+      "positive_delta": 4,
+      "signups": 4,
       "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
     Object {
@@ -121,7 +121,45 @@ Object {
   "content-length": "463",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Post attribution stats Can fetch attribution stats 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "stats": Array [
+    Object {
+      "paid_conversions": 1,
+      "signups": 2,
+      "source": "Direct",
+    },
+    Object {
+      "paid_conversions": 0,
+      "signups": 1,
+      "source": "Twitter",
+    },
+  ],
+}
+`;
+
+exports[`Stats API Referrer source history stats Can fetch attribution stats 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "stats": Array [
+    Object {
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "paid_conversions": 1,
+      "signups": 4,
+      "source": "Direct",
+    },
+    Object {
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "paid_conversions": 2,
+      "signups": 4,
+      "source": "Twitter",
+    },
+  ],
 }
 `;

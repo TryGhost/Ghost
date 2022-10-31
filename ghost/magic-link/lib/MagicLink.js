@@ -1,4 +1,9 @@
-const {IncorrectUsageError} = require('@tryghost/errors');
+const {IncorrectUsageError, BadRequestError} = require('@tryghost/errors');
+const {isEmail} = require('@tryghost/validator');
+const tpl = require('@tryghost/tpl');
+const messages = {
+    invalidEmail: 'Email is not valid'
+};
 
 /**
  * @typedef { import('nodemailer').Transporter } MailTransporter
@@ -47,11 +52,16 @@ class MagicLink {
      * @param {object} options
      * @param {string} options.email - The email to send magic link to
      * @param {TokenData} options.tokenData - The data for token
-     * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
-     * @param {string=} [options.referrer=null] - The referrer of the request, if exists
+     * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions
+     * @param {string} [options.referrer=null] - The referrer of the request, if exists
      * @returns {Promise<{token: Token, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
+        if (!isEmail(options.email)) {
+            throw new BadRequestError({
+                message: tpl(messages.invalidEmail)
+            });
+        }
         const token = await this.tokenProvider.create(options.tokenData);
 
         const type = options.type || 'signin';
@@ -73,13 +83,12 @@ class MagicLink {
      *
      * @param {object} options
      * @param {TokenData} options.tokenData - The data for token
-     * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
+     * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions. This type will also get stored in the token data.
      * @returns {Promise<URL>} - signin URL
      */
     async getMagicLink(options) {
-        const token = await this.tokenProvider.create(options.tokenData);
-
-        const type = options.type || 'signin';
+        const type = options.type ?? 'signin';
+        const token = await this.tokenProvider.create({...options.tokenData, type});
 
         return this.getSigninURL(token, type);
     }

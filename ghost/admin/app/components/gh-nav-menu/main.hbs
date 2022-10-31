@@ -32,6 +32,11 @@
                             <span>{{svg-jar "external"}}</span>
                         </a>
                     </li>
+                    {{#if (gh-user-can-admin this.session.user)}}
+                    <li class="relative">
+                        <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe-simple"}} Explore</LinkTo>
+                    </li>
+                    {{/if}}
                 </ul>
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">
@@ -87,20 +92,20 @@
                         {{/if}}
                     </li>
                     {{#if this.showTagsNavigation}}
-                        <li><LinkTo @route="tags" data-test-nav="tags">{{svg-jar "tag"}}Tags</LinkTo></li>
+                        <li><LinkTo @route="tags" @current-when="tags tag tag.new" data-test-nav="tags">{{svg-jar "tag"}}Tags</LinkTo></li>
                     {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                         <li class="relative">
                             {{#if (eq this.router.currentRouteName "members.index")}}
-                                <LinkTo @route="members" @current-when="members member" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members
+                                <LinkTo @route="members" @current-when="members member member.new" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members
                                     {{#unless this.memberCountLoading}}
-                                        <span class="gh-nav-member-count">{{format-number this.memberCount}}</span>
+                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
                                     {{/unless}}
                                 </LinkTo>
                             {{else}}
-                                <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members
+                                <LinkTo @route="members" @current-when="members member member.new" data-test-nav="members">{{svg-jar "members"}}Members
                                     {{#unless this.memberCountLoading}}
-                                        <span class="gh-nav-member-count">{{format-number this.memberCount}}</span>
+                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
                                     {{/unless}}
                                 </LinkTo>
                             {{/if}}
@@ -108,7 +113,7 @@
 
                         {{#if this.settings.paidMembersEnabled}}
                             <li>
-                                <LinkTo @route="offers" @alt="Offers">{{svg-jar "percentage"}}Offers</LinkTo>
+                                <LinkTo @route="offers" @current-when="offers offer offer.new" @alt="Offers" data-test-nav="offers">{{svg-jar "percentage"}}Offers</LinkTo>
                             </li>
                         {{/if}}
                     {{/if}}

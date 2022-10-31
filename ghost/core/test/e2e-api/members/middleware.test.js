@@ -99,11 +99,11 @@ describe('Comments API', function () {
                 });
         });
 
-        it('can update member bio', async function () {
+        it('can update member expertise', async function () {
             await membersAgent
                 .put(`/api/member/`)
                 .body({
-                    bio: 'Head of Testing'
+                    expertise: 'Head of Testing'
                 })
                 .expectStatus(200)
                 .matchHeaderSnapshot({
@@ -112,17 +112,17 @@ describe('Comments API', function () {
                 .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
-                    body.bio.should.eql('Head of Testing');
+                    body.expertise.should.eql('Head of Testing');
                 });
             member = await models.Member.findOne({id: member.id}, {require: true});
-            member.get('bio').should.eql('Head of Testing');
+            member.get('expertise').should.eql('Head of Testing');
         });
 
-        it('trims whitespace from bio', async function () {
+        it('trims whitespace from expertise', async function () {
             await membersAgent
                 .put(`/api/member/`)
                 .body({
-                    bio: '  test  '
+                    expertise: '  test  '
                 })
                 .expectStatus(200)
                 .matchHeaderSnapshot({
@@ -131,10 +131,10 @@ describe('Comments API', function () {
                 .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
-                    body.bio.should.eql('test');
+                    body.expertise.should.eql('test');
                 });
             member = await models.Member.findOne({id: member.id}, {require: true});
-            member.get('bio').should.eql('test');
+            member.get('expertise').should.eql('test');
         });
 
         it('can update name', async function () {

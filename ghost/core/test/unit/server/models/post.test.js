@@ -250,6 +250,18 @@ describe('Unit: models/post', function () {
             should.not.exist(json.mobiledoc_revisions);
             should.exist(json.mobiledoc);
         });
+
+        it('ensure post revisions are never exposed', function () {
+            const post = {
+                lexical: '{}',
+                post_revisions: []
+            };
+
+            const json = toJSON(post, {formats: ['lexical']});
+
+            should.not.exist(json.post_revisions);
+            should.exist(json.lexical);
+        });
     });
 
     describe('extraFilters', function () {
@@ -332,6 +344,12 @@ describe('Unit: models/post', function () {
             const filter = defaultFilters({}, options);
 
             filter.should.equal('type:post+status:published');
+        });
+    });
+
+    describe('countRelations', function () {
+        it('can include all count relations', function () {
+            return models.Post.findAll({withRelated: ['count.signups', 'count.paid_conversions', 'count.clicks', 'count.sentiment', 'count.negative_feedback', 'count.positive_feedback']});
         });
     });
 });

@@ -19,6 +19,9 @@ export default Model.extend({
     failedCount: attr('number', {defaultValue: 0}),
 
     trackOpens: attr('boolean'),
+    trackClicks: attr('boolean'),
+
+    feedbackEnabled: attr('boolean'),
 
     createdAtUTC: attr('moment-utc'),
     createdBy: attr('string'),

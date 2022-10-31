@@ -1,6 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import unparse from '@tryghost/members-csv/lib/unparse';
 import {
     AcceptedResponse,

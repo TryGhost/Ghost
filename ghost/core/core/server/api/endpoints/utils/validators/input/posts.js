@@ -4,7 +4,10 @@ const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    invalidVisibilityFilter: 'Invalid filter in visibility_filter property'
+    invalidVisibilityFilter: 'Invalid filter in visibility_filter property',
+    onlySingleContentSource: 'Posts can have either a mobiledoc or a lexical property, never both.',
+    onlySingleContentSourceContext: 'Both the mobiledoc and lexical properties are set, one must be null',
+    onlySingleContentSourceHelp: 'https://ghost.org/docs/admin-api/#the-post-object'
 };
 
 const validateVisibility = async function (frame) {
@@ -33,15 +36,31 @@ const validateVisibility = async function (frame) {
     }
 };
 
+const validateSingleContentSource = async function (frame) {
+    if (!frame.data.posts?.[0]) {
+        return;
+    }
+
+    const [post] = frame.data.posts;
+    if (post.mobiledoc && post.lexical) {
+        return Promise.reject(new ValidationError({
+            message: tpl(messages.onlySingleContentSource),
+            context: tpl(messages.onlySingleContentSourceContext),
+            help: tpl(messages.onlySingleContentSourceHelp),
+            property: 'lexical'
+        }));
+    }
+};
+
 module.exports = {
-    add(apiConfig, frame) {
-        return jsonSchema.validate(...arguments).then(() => {
-            return validateVisibility(frame);
-        });
+    async add(apiConfig, frame) {
+        await jsonSchema.validate(...arguments);
+        await validateVisibility(frame);
+        await validateSingleContentSource(frame);
     },
-    edit(apiConfig, frame) {
-        return jsonSchema.validate(...arguments).then(() => {
-            return validateVisibility(frame);
-        });
+    async edit(apiConfig, frame) {
+        await jsonSchema.validate(...arguments);
+        await validateVisibility(frame);
+        await validateSingleContentSource(frame);
     }
 };

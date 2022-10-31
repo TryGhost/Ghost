@@ -16,6 +16,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: true}) subscribeOnSignup;
     @attr({defaultValue: 'members'}) visibility;
     @attr({defaultValue: 0}) sortOrder;
+    @attr({defaultValue: true}) feedbackEnabled;
 
     // Design-related properties
     @attr headerImage;

@@ -1,3 +1,4 @@
+import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
 import Controller from '@ember/controller';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
@@ -18,12 +19,11 @@ export default class MembersAccessController extends Controller {
     @service config;
     @service feature;
     @service membersUtils;
+    @service modals;
     @service settings;
     @service store;
     @service session;
 
-    @tracked showLeavePortalModal = false;
-    @tracked showLeaveRouteModal = false;
     @tracked showPortalSettings = false;
     @tracked showStripeConnect = false;
     @tracked showTierModal = false;
@@ -59,7 +59,7 @@ export default class MembersAccessController extends Controller {
     }
 
     get siteUrl() {
-        return this.config.get('blogUrl');
+        return this.config.blogUrl;
     }
 
     get selectedCurrency() {
@@ -67,7 +67,7 @@ export default class MembersAccessController extends Controller {
     }
 
     get isConnectDisallowed() {
-        const siteUrl = this.config.get('blogUrl');
+        const siteUrl = this.config.blogUrl;
         return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
@@ -93,25 +93,8 @@ export default class MembersAccessController extends Controller {
         this.updatePortalPreview();
     }
 
-    leaveRoute(transition) {
-        if (this.settings.get('hasDirtyAttributes') || this.hasChangedPrices) {
-            transition.abort();
-            this.leaveSettingsTransition = transition;
-            this.showLeaveRouteModal = true;
-        }
-    }
-
-    @action
-    async confirmLeave() {
-        this.settings.rollbackAttributes();
-        this.resetPrices();
-        this.leaveSettingsTransition.retry();
-    }
-
-    @action
-    cancelLeave() {
-        this.showLeaveRouteModal = false;
-        this.leaveSettingsTransition = null;
+    get isDirty() {
+        return this.settings.hasDirtyAttributes || this.hasChangedPrices;
     }
 
     @action
@@ -234,10 +217,17 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    closePortalSettings() {
+    async closePortalSettings() {
         const changedAttributes = this.settings.changedAttributes();
+
         if (changedAttributes && Object.keys(changedAttributes).length > 0) {
-            this.showLeavePortalModal = true;
+            const shouldClose = await this.modals.open(ConfirmUnsavedChangesModal);
+
+            if (shouldClose) {
+                this.settings.rollbackAttributes();
+                this.showPortalSettings = false;
+                this.updatePortalPreview();
+            }
         } else {
             this.showPortalSettings = false;
             this.updatePortalPreview();
@@ -245,24 +235,11 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    async confirmClosePortalSettings() {
-        this.settings.rollbackAttributes();
-        this.showPortalSettings = false;
-        this.showLeavePortalModal = false;
-        this.updatePortalPreview();
-    }
-
-    @action
-    cancelClosePortalSettings() {
-        this.showLeavePortalModal = false;
-    }
-
-    @action
     updatePortalPreview({forceRefresh} = {forceRefresh: false}) {
         // TODO: can these be worked out from settings in membersUtils?
         const monthlyPrice = Math.round(this.stripeMonthlyAmount * 100);
         const yearlyPrice = Math.round(this.stripeYearlyAmount * 100);
-        let portalPlans = this.settings.get('portalPlans') || [];
+        let portalPlans = this.settings.portalPlans || [];
 
         let isMonthlyChecked = portalPlans.includes('monthly');
         let isYearlyChecked = portalPlans.includes('yearly');
@@ -362,11 +339,11 @@ export default class MembersAccessController extends Controller {
 
     @task({drop: true})
     *saveSettingsTask(options) {
-        if (this.settings.get('errors').length !== 0) {
+        if (this.settings.errors.length !== 0) {
             return;
         }
         // When no filer is selected in `Specific tier(s)` option
-        if (!this.settings.get('defaultContentVisibility')) {
+        if (!this.settings.defaultContentVisibility) {
             return;
         }
         const result = yield this.settings.save();
@@ -376,7 +353,7 @@ export default class MembersAccessController extends Controller {
     }
 
     async saveTier() {
-        const paidMembersEnabled = this.settings.get('paidMembersEnabled');
+        const paidMembersEnabled = this.settings.paidMembersEnabled;
         if (this.tier && paidMembersEnabled) {
             const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
             const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
@@ -389,6 +366,14 @@ export default class MembersAccessController extends Controller {
         }
     }
 
+    @action
+    reset() {
+        this.settings.rollbackAttributes();
+        this.resetPrices();
+        this.showLeavePortalModal = false;
+        this.showPortalSettings = false;
+    }
+
     resetPrices() {
         const monthlyPrice = this.tier.get('monthlyPrice');
         const yearlyPrice = this.tier.get('yearlyPrice');
@@ -397,21 +382,15 @@ export default class MembersAccessController extends Controller {
         this.stripeYearlyAmount = yearlyPrice ? (yearlyPrice.amount / 100) : 50;
     }
 
-    reset() {
-        this.showLeaveRouteModal = false;
-        this.showLeavePortalModal = false;
-        this.showPortalSettings = false;
-    }
-
     _validateSignupRedirect(url, type) {
-        const siteUrl = this.config.get('blogUrl');
+        const siteUrl = this.config.blogUrl;
         let errMessage = `Please enter a valid URL`;
-        this.settings.get('errors').remove(type);
-        this.settings.get('hasValidated').removeObject(type);
+        this.settings.errors.remove(type);
+        this.settings.hasValidated.removeObject(type);
 
         if (url === null) {
-            this.settings.get('errors').add(type, errMessage);
-            this.settings.get('hasValidated').pushObject(type);
+            this.settings.errors.add(type, errMessage);
+            this.settings.hasValidated.pushObject(type);
             return false;
         }
 
@@ -422,9 +401,9 @@ export default class MembersAccessController extends Controller {
 
         if (url.href.startsWith(siteUrl)) {
             const path = url.href.replace(siteUrl, '');
-            this.settings.set(type, path);
+            this.settings[type] = path;
         } else {
-            this.settings.set(type, url.href);
+            this.settings[type] = url.href;
         }
     }
 }

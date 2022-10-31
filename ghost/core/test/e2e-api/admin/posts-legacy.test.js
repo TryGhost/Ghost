@@ -3,7 +3,7 @@ const nock = require('nock');
 const path = require('path');
 const supertest = require('supertest');
 const _ = require('lodash');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const moment = require('moment-timezone');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
@@ -112,7 +112,7 @@ describe('Posts API', function () {
             jsonResponse.posts[0],
             'post',
             null,
-            ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count']
+            ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count', 'sentiment']
         );
 
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -233,7 +233,7 @@ describe('Posts API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.posts);
 
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count']);
+        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count', 'sentiment']);
 
         jsonResponse.posts[0].authors[0].should.be.an.Object();
         localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');

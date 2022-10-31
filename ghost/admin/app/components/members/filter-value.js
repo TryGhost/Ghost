@@ -2,37 +2,11 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
-const FILTER_OPTIONS = {
-    subscriptionPriceInterval: [
-        {label: 'Monthly', name: 'month'},
-        {label: 'Yearly', name: 'year'}
-    ],
-    status: [
-        {label: 'Paid', name: 'paid'},
-        {label: 'Free', name: 'free'},
-        {label: 'Complimentary', name: 'comped'}
-    ],
-    subscribed: [
-        {label: 'Subscribed', name: 'true'},
-        {label: 'Unsubscribed', name: 'false'}
-    ],
-    subscriptionStripeStatus: [
-        {label: 'Active', name: 'active'},
-        {label: 'Trialing', name: 'trialing'},
-        {label: 'Canceled', name: 'canceled'},
-        {label: 'Unpaid', name: 'unpaid'},
-        {label: 'Past Due', name: 'past_due'},
-        {label: 'Incomplete', name: 'incomplete'},
-        {label: 'Incomplete - Expired', name: 'incomplete_expired'}
-    ]
-};
-
 export default class MembersFilterValue extends Component {
     @tracked filterValue;
 
     constructor(...args) {
         super(...args);
-        this.availableFilterOptions = FILTER_OPTIONS;
         this.filterValue = this.args.filter.value;
     }
 
@@ -42,30 +16,6 @@ export default class MembersFilterValue extends Component {
             return tiers.map((tier) => {
                 return {
                     slug: tier
-                };
-            });
-        }
-        return [];
-    }
-
-    get signupAttributionFilterValue() {
-        if (this.args.filter?.type === 'signup') {
-            const resources = this.args.filter?.value || [];
-            return resources.map((resource) => {
-                return {
-                    id: resource
-                };
-            });
-        }
-        return [];
-    }
-
-    get conversionAttributionFilterValue() {
-        if (this.args.filter?.type === 'conversion') {
-            const resources = this.args.filter?.value || [];
-            return resources.map((resource) => {
-                return {
-                    id: resource
                 };
             });
         }
@@ -103,13 +53,31 @@ export default class MembersFilterValue extends Component {
         this.args.setFilterValue(filter, tiers.map(tier => tier.slug));
     }
 
-    @action
-    setConversionAttributionFilterValue(filter, resources) {
-        this.args.setFilterValue(filter, resources.map(resource => resource.id));
+    get isResourceFilter() {
+        return !!this.args.filter?.isResourceFilter;
+    }
+
+    get resourceFilterType() {
+        if (!this.isResourceFilter) {
+            return '';
+        }
+
+        return this.args.filter?.properties?.resource ?? '';
+    }
+
+    get resourceFilterValue() {
+        if (!this.isResourceFilter) {
+            return {};
+        }
+        const resource = this.args.filter?.resource || undefined;
+        const resourceId = this.args.filter?.value || undefined;
+        return resource ?? {
+            id: resourceId
+        };
     }
 
     @action
-    setSignupAttributionFilterValue(filter, resources) {
-        this.args.setFilterValue(filter, resources.map(resource => resource.id));
+    setResourceFilterValue(filter, resource) {
+        this.args.setResourceValue(filter, resource);
     }
 }

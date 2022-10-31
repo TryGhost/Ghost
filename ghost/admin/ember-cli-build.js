@@ -118,7 +118,7 @@ module.exports = function (defaults) {
             includePolyfill: false
         },
         'ember-composable-helpers': {
-            only: ['join', 'optional', 'pick', 'toggle', 'toggle-action']
+            only: ['join', 'optional', 'pick', 'toggle', 'toggle-action', 'compute']
         },
         'ember-promise-modals': {
             excludeCSS: true
@@ -135,7 +135,7 @@ module.exports = function (defaults) {
         },
         fingerprint: {
             enabled: isProduction,
-            extensions: ['js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'map']
+            extensions: ['js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'map', 'svg', 'ttf', 'ico']
         },
         minifyJS: {
             options: {
@@ -233,9 +233,6 @@ module.exports = function (defaults) {
                         process: 'process/browser'
                     })
                 ]
-            },
-            alias: {
-                'react-mobiledoc-editor': 'react-mobiledoc-editor/dist/main.js'
             }
         }
     });

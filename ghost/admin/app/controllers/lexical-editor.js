@@ -1,12 +1,13 @@
 import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
+import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
@@ -27,7 +28,7 @@ const TIMEDSAVE_TIMEOUT = 60000;
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
-    'post.scratch',
+    'post.lexicalScratch',
     'post.titleScratch',
     'post.hasDirtyAttributes',
     'post.tags.[]',
@@ -109,7 +110,6 @@ export default class LexicalEditorController extends Controller {
     shouldFocusTitle = false;
     showReAuthenticateModal = false;
     showUpgradeModal = false;
-    showDeleteSnippetModal = false;
     showSettingsMenu = false;
     hostLimitError = null;
 
@@ -120,6 +120,7 @@ export default class LexicalEditorController extends Controller {
 
     _leaveConfirmed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
+    _reAuthenticateModalToggle = false;
 
     /* computed properties ---------------------------------------------------*/
 
@@ -190,8 +191,8 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateScratch(mobiledoc) {
-        this.set('post.scratch', mobiledoc);
+    updateScratch(lexical) {
+        this.set('post.lexicalScratch', JSON.stringify(lexical));
 
         // save 3 seconds after last edit
         this._autosaveTask.perform();
@@ -260,6 +261,8 @@ export default class LexicalEditorController extends Controller {
 
     @action
     toggleReAuthenticateModal() {
+        this._reAuthenticateModalToggle = true;
+
         if (this.showReAuthenticateModal) {
             // closing, re-attempt save if needed
             if (this._reauthSave) {
@@ -410,13 +413,10 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    toggleDeleteSnippetModal(snippet) {
-        this.set('snippetToDelete', snippet);
-    }
-
-    @action
-    deleteSnippet(snippet) {
-        return snippet.destroyRecord();
+    async confirmDeleteSnippet(snippet) {
+        await this.modals.open(DeleteSnippetModal, {
+            snippet
+        });
     }
 
     /* Public tasks ----------------------------------------------------------*/
@@ -476,6 +476,9 @@ export default class LexicalEditorController extends Controller {
 
             post.set('statusScratch', null);
 
+            // Clear any error notification (if any)
+            this.notifications.clearAll();
+
             if (!options.silent) {
                 this._showSaveNotification(prevStatus, post.get('status'), isNew ? true : false);
             }
@@ -490,6 +493,11 @@ export default class LexicalEditorController extends Controller {
 
             return post;
         } catch (error) {
+            if (!this.session.isAuthenticated && !this._reAuthenticateModalToggle) {
+                this.toggleProperty('showReAuthenticateModal');
+            }
+
+            this._reAuthenticateModalToggle = false;
             if (this.showReAuthenticateModal) {
                 this._reauthSave = true;
                 this._reauthSaveOptions = options;
@@ -544,10 +552,10 @@ export default class LexicalEditorController extends Controller {
 
         // Set the properties that are indirected
 
-        // Set mobiledoc equal to what's in the editor but create a copy so that
+        // Set lexical equal to what's in the editor but create a copy so that
         // nested objects/arrays don't keep references which can mean that both
-        // scratch and mobiledoc get updated simultaneously
-        this.set('post.mobiledoc', JSON.parse(JSON.stringify(this.post.scratch || null)));
+        // scratch and lexical get updated simultaneously
+        this.set('post.lexical', this.post.lexicalScratch || null);
 
         // Set a default title
         if (!this.get('post.titleScratch').trim()) {
@@ -692,17 +700,17 @@ export default class LexicalEditorController extends Controller {
         post.updateTags();
         this._previousTagNames = this._tagNames;
 
-        // update the scratch property if it's `null` and we get a blank mobiledoc
+        // update the scratch property if it's `null` and we get a blank lexical
         // back from the API - prevents "unsaved changes" modal on new+blank posts
-        if (!post.scratch) {
-            post.set('scratch', JSON.parse(JSON.stringify(post.get('mobiledoc'))));
+        if (!post.lexicalScratch) {
+            post.set('lexicalScratch', post.get('lexical'));
         }
 
         // if the two "scratch" properties (title and content) match the post,
         // then it's ok to set hasDirtyAttributes to false
         // TODO: why is this necessary?
         let titlesMatch = post.get('titleScratch') === post.get('title');
-        let bodiesMatch = JSON.stringify(post.get('scratch')) === JSON.stringify(post.get('mobiledoc'));
+        let bodiesMatch = post.get('lexicalScratch') === post.get('lexical');
 
         if (titlesMatch && bodiesMatch) {
             this.set('hasDirtyAttributes', false);
@@ -789,7 +797,7 @@ export default class LexicalEditorController extends Controller {
         // edit of the post
         // TODO: can these be `boundOneWay` on the model as per the other attrs?
         post.set('titleScratch', post.get('title'));
-        post.set('scratch', post.get('mobiledoc'));
+        post.set('lexicalScratch', post.get('lexical'));
 
         this._previousTagNames = this._tagNames;
 
@@ -980,15 +988,12 @@ export default class LexicalEditorController extends Controller {
         }
 
         // scratch isn't an attr so needs a manual dirty check
-        let mobiledoc = post.get('mobiledoc');
-        let scratch = post.get('scratch');
+        let lexical = post.get('lexical');
+        let scratch = post.get('lexicalScratch');
         // additional guard in case we are trying to compare null with undefined
-        if (scratch || mobiledoc) {
-            let mobiledocJSON = JSON.stringify(mobiledoc);
-            let scratchJSON = JSON.stringify(scratch);
-
-            if (scratchJSON !== mobiledocJSON) {
-                this._leaveModalReason = {reason: 'mobiledoc is different', context: {current: mobiledocJSON, scratch: scratchJSON}};
+        if (scratch || lexical) {
+            if (scratch !== lexical) {
+                this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
                 return true;
             }
         }
@@ -1041,7 +1046,7 @@ export default class LexicalEditorController extends Controller {
             emailOnly,
             newsletter
         } = this.post;
-        let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.get('timezone'));
+        let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.timezone);
 
         let title = 'Scheduled';
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];

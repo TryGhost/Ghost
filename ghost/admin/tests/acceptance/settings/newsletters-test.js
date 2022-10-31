@@ -122,20 +122,6 @@ describe('Acceptance: Settings - Newsletters', function () {
         expect(currentURL()).to.equal('/settings/newsletters');
     });
 
-    it('can manage open rate tracking', async function () {
-        this.server.db.settings.update({key: 'email_track_opens'}, {value: 'true'});
-
-        await visit('/settings/newsletters');
-        expect(find('[data-test-checkbox="email-track-opens"]')).to.be.checked;
-
-        await click('[data-test-label="email-track-opens"]');
-        expect(find('[data-test-checkbox="email-track-opens"]')).to.not.be.checked;
-
-        await click('[data-test-button="save-members-settings"]');
-
-        expect(this.server.db.settings.findBy({key: 'email_track_opens'}).value).to.equal(false);
-    });
-
     describe('Creating newsletters', function () {
         it('can create new newsletter', async function () {
             await visit('/settings/newsletters');
@@ -273,6 +259,10 @@ describe('Acceptance: Settings - Newsletters', function () {
             await openTab('general.member', false);
             await closeTab('general.member', false);
 
+            // todo: uncomment after `audienceFeedback` feature flag will be removed
+            //await openTab('general.audienceFeedback', false);
+            //await closeTab('general.audienceFeedback', false);
+
             await openTab('design.header', false);
             await closeTab('design.header', false);
 
@@ -381,6 +371,12 @@ describe('Acceptance: Settings - Newsletters', function () {
             await doCheck.call(this, 'general.member', {
                 toggle: '[data-test-toggle="subscribeOnSignup"]'
             });
+
+            // Newsletter analytics
+            // todo: uncomment after `audienceFeedback` feature flag will be removed
+            //await doCheck.call(this, 'general.audienceFeedback', {
+            //    toggle: '[data-test-toggle="feedbackEnabled"]'
+            //});
 
             // Design header
             await doCheck.call(this, 'design.header', {

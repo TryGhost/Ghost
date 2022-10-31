@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const uuid = require('uuid');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 const constants = require('@tryghost/constants');
 const DataGenerator = {};
@@ -419,13 +419,19 @@ DataGenerator.Content = {
             // No ID because these are in the core fixtures.json
             slug: 'free',
             // slug is to match the product, the below are updated for the product
-            welcome_page_url: '/welcome-free'
+            welcome_page_url: '/welcome-free',
+            currency: null,
+            monthly_price: null,
+            yearly_price: null
         },
         {
             // No ID because these are in the core fixtures.json
             slug: 'default-product',
             // slug is to match the product, the below are updated for the product
-            welcome_page_url: '/welcome-paid'
+            welcome_page_url: '/welcome-paid',
+            currency: 'usd',
+            monthly_price: 500,
+            yearly_price: 5000
         }
     ],
 
@@ -582,7 +588,7 @@ DataGenerator.Content = {
             active: true,
             nickname: 'Monthly',
             currency: 'USD',
-            amount: 5000,
+            amount: 500,
             type: 'recurring',
             interval: 'month'
         },
@@ -616,6 +622,17 @@ DataGenerator.Content = {
             nickname: 'Yearly',
             currency: 'GBP',
             amount: 15000,
+            type: 'recurring',
+            interval: 'year'
+        },
+        {
+            id: ObjectId().toHexString(),
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b13',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+            active: true,
+            nickname: 'Yearly',
+            currency: 'USD',
+            amount: 5000,
             type: 'recurring',
             interval: 'year'
         }
@@ -779,6 +796,19 @@ DataGenerator.Content = {
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
             member_email: 'member1@test.com',
             member_name: 'Mr Egg'
+        },
+        {
+            id: ObjectId().toHexString(),
+            email_id: null, // emails[0] relation added later
+            member_id: null, // members[4] relation added later
+            batch_id: null, // email_batches[0] relation added later
+            processed_at: moment().toDate(),
+            delivered_at: moment().toDate(),
+            opened_at: moment().toDate(),
+            failed_at: null,
+            member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
+            member_email: 'member4@test.com',
+            member_name: 'Mr Egg'
         }
     ],
 
@@ -819,6 +849,30 @@ DataGenerator.Content = {
             parent_id: '6195c6a1e792de832cd08144',
             member_index: 1
         }
+    ],
+
+    links: [
+        {
+            id: ObjectId().toHexString(),
+            from: '/r/70b0129a',
+            to: '__GHOST_URL__/blog/email/01cd4df3-83fa-4921-83be-3bb9a465ef83/?ref=Test-newsletter&attribution_id=6343994e7216ffcbce491716&attribution_type=post',
+            created_at: null,
+            updated_at: null
+        },
+        {
+            id: ObjectId().toHexString(),
+            from: '/r/a0b0129a',
+            to: '__GHOST_URL__/blog/email/01cd4df3-83fa-4921-83be-3bb9a465ef83/?ref=Test-newsletter&attribution_id=6343994e7216ffcbce491716&attribution_type=post',
+            created_at: null,
+            updated_at: null
+        },
+        {
+            id: ObjectId().toHexString(),
+            from: '/r/20b0129a',
+            to: 'https://example.com/subscripe?ref=Test-newsletter',
+            created_at: null,
+            updated_at: null
+        }
     ]
 };
 
@@ -844,6 +898,9 @@ DataGenerator.Content.email_recipients[2].member_id = DataGenerator.Content.memb
 DataGenerator.Content.email_recipients[3].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[3].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[3].member_id = DataGenerator.Content.members[3].id;
+DataGenerator.Content.email_recipients[4].batch_id = DataGenerator.Content.email_batches[0].id;
+DataGenerator.Content.email_recipients[4].email_id = DataGenerator.Content.email_batches[0].email_id;
+DataGenerator.Content.email_recipients[4].member_id = DataGenerator.Content.members[4].id;
 DataGenerator.Content.members_stripe_customers[0].member_id = DataGenerator.Content.members[2].id;
 DataGenerator.Content.members_stripe_customers[1].member_id = DataGenerator.Content.members[3].id;
 DataGenerator.Content.members_stripe_customers[2].member_id = DataGenerator.Content.members[4].id;
@@ -852,6 +909,9 @@ DataGenerator.Content.members_stripe_customers[4].member_id = DataGenerator.Cont
 DataGenerator.Content.members_paid_subscription_events[0].member_id = DataGenerator.Content.members[2].id;
 DataGenerator.Content.members_paid_subscription_events[1].member_id = DataGenerator.Content.members[3].id;
 DataGenerator.Content.members_paid_subscription_events[2].member_id = DataGenerator.Content.members[4].id;
+DataGenerator.Content.links[0].post_id = DataGenerator.Content.posts[0].id;
+DataGenerator.Content.links[1].post_id = DataGenerator.Content.posts[0].id;
+DataGenerator.Content.links[2].post_id = DataGenerator.Content.posts[0].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {
@@ -1246,6 +1306,14 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createLink(overrides) {
+        const newObj = _.cloneDeep(overrides);
+        return _.defaults(newObj, {
+            created_at: new Date(),
+            updated_at: new Date()
+        });
+    }
+
     const posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -1527,7 +1595,8 @@ DataGenerator.forKnex = (function () {
         createEmailRecipient(DataGenerator.Content.email_recipients[0]),
         createEmailRecipient(DataGenerator.Content.email_recipients[1]),
         createEmailRecipient(DataGenerator.Content.email_recipients[2]),
-        createEmailRecipient(DataGenerator.Content.email_recipients[3])
+        createEmailRecipient(DataGenerator.Content.email_recipients[3]),
+        createEmailRecipient(DataGenerator.Content.email_recipients[4])
     ];
 
     const members = [
@@ -1542,13 +1611,26 @@ DataGenerator.forKnex = (function () {
     ];
 
     const members_created_events = members.map((member, index) => {
+        const sources = [
+            {
+                referrer_source: 'Twitter',
+                referrer_medium: 'Social',
+                referrer_url: 'https://twitter.com'
+            },
+            {
+                referrer_source: 'Direct',
+                referrer_medium: null,
+                referrer_url: null
+            }
+        ];
         return {
             id: ObjectId().toHexString(),
             member_id: member.id,
             source: 'system',
             attribution_type: 'post',
             attribution_id: DataGenerator.Content.posts[index % 3].id,
-            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug
+            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug,
+            ...sources[index % 2]
         };
     });
 
@@ -1603,7 +1685,8 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.stripe_prices[0]),
         createBasic(DataGenerator.Content.stripe_prices[1]),
         createBasic(DataGenerator.Content.stripe_prices[2]),
-        createBasic(DataGenerator.Content.stripe_prices[3])
+        createBasic(DataGenerator.Content.stripe_prices[3]),
+        createBasic(DataGenerator.Content.stripe_prices[4])
     ];
 
     const stripe_customer_subscriptions = [
@@ -1613,6 +1696,18 @@ DataGenerator.forKnex = (function () {
     ];
 
     const members_subscription_created_events = stripe_customer_subscriptions.map((subscription, index) => {
+        const sources = [
+            {
+                referrer_source: 'Twitter',
+                referrer_medium: 'Social',
+                referrer_url: 'https://twitter.com'
+            },
+            {
+                referrer_source: 'Direct',
+                referrer_medium: null,
+                referrer_url: null
+            }
+        ];
         return {
             id: ObjectId().toHexString(),
             member_id: members[index].id,
@@ -1620,15 +1715,59 @@ DataGenerator.forKnex = (function () {
             source: 'system',
             attribution_type: 'post',
             attribution_id: DataGenerator.Content.posts[index % 3].id,
-            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug
+            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug,
+            ...sources[index % 2]
         };
     });
 
     const members_paid_subscription_events = [
         createBasic(DataGenerator.Content.members_paid_subscription_events[0]),
         createBasic(DataGenerator.Content.members_paid_subscription_events[1]),
-        createBasic(DataGenerator.Content.members_paid_subscription_events[2])
+        createBasic(DataGenerator.Content.members_paid_subscription_events[2]),
+        ...members_subscription_created_events.map((e) => {
+            return {
+                id: ObjectId().toHexString(),
+                type: 'created',
+                mrr_delta: 1000,
+                currency: 'usd',
+                source: 'stripe',
+                subscription_id: e.subscription_id,
+                member_id: e.member_id,
+                from_plan: null,
+                to_plan: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8'
+            };
+        })
     ];
+
+    const redirects = posts.map((post, index) => {
+        return {
+            id: ObjectId().toHexString(),
+            from: '/r/' + index,
+            to: 'https:://ghost.org',
+            post_id: post.id,
+            created_at: new Date(),
+            updated_at: new Date()
+        };
+    });
+
+    const members_click_events = redirects.map((redirect, index) => {
+        return {
+            id: ObjectId().toHexString(),
+            member_id: members[index].id,
+            redirect_id: redirect.id,
+            created_at: new Date()
+        };
+    });
+
+    const members_feedback = posts.map((redirect, index) => {
+        return {
+            id: ObjectId().toHexString(),
+            member_id: members[index].id,
+            post_id: redirect.id,
+            score: index % 2,
+            created_at: new Date()
+        };
+    });
 
     const snippets = [
         createBasic(DataGenerator.Content.snippets[0])
@@ -1642,6 +1781,12 @@ DataGenerator.forKnex = (function () {
     const comments = [
         createComment(DataGenerator.Content.comments[0]),
         createComment(DataGenerator.Content.comments[1])
+    ];
+
+    const links = [
+        createLink(DataGenerator.Content.links[0]),
+        createLink(DataGenerator.Content.links[1]),
+        createLink(DataGenerator.Content.links[2])
     ];
 
     return {
@@ -1704,10 +1849,14 @@ DataGenerator.forKnex = (function () {
         snippets,
         custom_theme_settings,
         comments,
+        redirects,
+        links,
 
         members_paid_subscription_events,
         members_created_events,
-        members_subscription_created_events
+        members_subscription_created_events,
+        members_click_events,
+        members_feedback
     };
 }());
 

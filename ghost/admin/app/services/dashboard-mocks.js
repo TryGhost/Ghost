@@ -137,11 +137,11 @@ export default class DashboardMocksService extends Service {
      * This method generates new data and forces a reload for all the charts
      * Might be better to move this code to a temporary mocking service
      */
-    updateMockedData({days}) {    
+    updateMockedData({days}) {
         const generateDays = days;
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - generateDays + 1);
-    
+
         /**
          * @type {MemberCountStat[]}
          */
@@ -208,6 +208,8 @@ export default class DashboardMocksService extends Service {
             maxPeriod: 90
         };
 
+        this.memberAttributionStats = [];
+
         for (let index = 0; index < generateDays; index++) {
             const date = new Date(startDate.getTime());
             date.setDate(date.getDate() + index);
@@ -236,7 +238,7 @@ export default class DashboardMocksService extends Service {
             let freeDelta = Math.max(0, this._updateGrow(freeGrowth));
 
             viralCounter -= 1;
-            
+
             if (viralCounter <= 0) {
                 viralCounter = Math.floor(Math.random() * 900);
                 freeDelta += Math.floor(Math.random() * 20 * index);
@@ -267,6 +269,36 @@ export default class DashboardMocksService extends Service {
                 paidSubscribed: paidSubscribed1 + paidSubscribed2,
                 paidCanceled: paidCanceled1 + paidCanceled2
             });
+
+            // More than 5 sources
+            let attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct', 'Ghost Newsletter', 'Rediverge Newsletter', 'Reddit', 'The Lever Newsletter', 'The Browser Newsletter', 'Green Newsletter', 'Yellow Newsletter', 'Brown Newsletter', 'Red Newsletter'];
+            const hasPaidConversions = true;
+            const hasFreeSignups = true;
+            const showEmptyState = false;
+            const hasUnavailableSources = true;
+            const hasExtraSources = true;
+
+            if (!hasExtraSources) {
+                attributionSources = attributionSources.slice(0, 5);
+            }
+
+            if (!showEmptyState) {
+                this.memberAttributionStats.push({
+                    date: date.toISOString().split('T')[0],
+                    source: attributionSources[Math.floor(Math.random() * attributionSources.length)],
+                    signups: hasFreeSignups ? Math.floor(Math.random() * 50) : 0,
+                    paidConversions: hasPaidConversions ? Math.floor(Math.random() * 30) : 0
+                });
+
+                if (hasUnavailableSources) {
+                    this.memberAttributionStats.push({
+                        date: date.toISOString().split('T')[0],
+                        source: null,
+                        signups: hasFreeSignups ? Math.floor(Math.random() * 5) : 0,
+                        paidConversions: hasPaidConversions ? Math.floor(Math.random() * 3) : 0
+                    });
+                }
+            }
         }
 
         if (stats.length === 0) {
@@ -284,11 +316,14 @@ export default class DashboardMocksService extends Service {
 
         this.memberCountStats = stats;
         this.subscriptionCountStats = stats.map((data) => {
+            const signups = (data.paidSubscribed - data.paidCanceled);
             return {
                 date: data.date,
                 count: data.paid,
                 positiveDelta: data.paidSubscribed,
-                negativeDelta: data.paidCanceled
+                negativeDelta: data.paidCanceled,
+                signups: signups < 0 ? 0 : signups,
+                cancellations: Math.floor(signups * 0.3) ? Math.floor(signups * 0.3) : 0
             };
         });
 
@@ -334,7 +369,7 @@ export default class DashboardMocksService extends Service {
         };
 
         this.emailsSent30d = Math.floor(days * 123 / 90);
-        
+
         this.membersLastSeen7d = Math.round(Math.random() * currentCounts.free / 2);
         this.membersLastSeen30d = this.membersLastSeen7d + Math.round(Math.random() * currentCounts.free / 2);
 

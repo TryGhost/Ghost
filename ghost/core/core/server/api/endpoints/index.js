@@ -185,6 +185,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comments'), localUtils);
     },
 
+    get links() {
+        return apiFramework.pipeline(require('./links'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
@@ -227,5 +231,9 @@ module.exports = {
 
     get commentsMembers() {
         return apiFramework.pipeline(require('./comments-members'), localUtils, 'members');
-    }
+    },
+
+    get feedbackMembers() {
+        return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
+    }   
 };

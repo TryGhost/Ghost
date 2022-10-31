@@ -13,6 +13,7 @@ const config = require('../../shared/config');
 const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
+const lexicalLib = require('../lib/lexical');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils');
 const {Tag} = require('./tag');
@@ -25,10 +26,15 @@ const messages = {
     expectedPublishedAtInFuture: 'Date must be at least {cannotScheduleAPostBeforeInMinutes} minutes in the future.',
     untitled: '(Untitled)',
     notEnoughPermission: 'You do not have permission to perform this action',
-    invalidNewsletter: 'The newsletter parameter doesn\'t match any active newsletter.'
+    invalidNewsletter: 'The newsletter parameter doesn\'t match any active newsletter.',
+    invalidMobiledocStructure: 'Invalid mobiledoc structure.',
+    invalidMobiledocStructureHelp: 'https://ghost.org/docs/publishing/',
+    invalidLexicalStructure: 'Invalid lexical structure.',
+    invalidLexicalStructureHelp: 'https://ghost.org/docs/publishing/'
 };
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
+const POST_REVISIONS_COUNT = 10;
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
 
 let Post;
@@ -90,7 +96,7 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta', 'tiers'],
+    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'post_revisions', 'posts_meta', 'tiers'],
 
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
@@ -128,6 +134,7 @@ Post = ghostBookshelf.Model.extend({
         // transform URLs from __GHOST_URL__ to absolute
         [
             'mobiledoc',
+            'lexical',
             'html',
             'plaintext',
             'custom_excerpt',
@@ -156,6 +163,7 @@ Post = ghostBookshelf.Model.extend({
                     cardTransformers: mobiledocLib.cards
                 }
             },
+            lexical: 'lexicalToTransformReady',
             html: 'htmlToTransformReady',
             plaintext: 'plaintextToTransformReady',
             custom_excerpt: 'htmlToTransformReady',
@@ -228,6 +236,17 @@ Post = ghostBookshelf.Model.extend({
     },
 
     orderRawQuery: function orderRawQuery(field, direction, withRelated) {
+        if (field === 'sentiment') {
+            if (withRelated.includes('count.sentiment')) {
+                // Internally sentiment can be included via the count.sentiment relation. We can do a quick optimisation of the query in that case.
+                return {
+                    orderByRaw: `count__sentiment ${direction}`
+                };
+            }
+            return {
+                orderByRaw: `(select AVG(score) from \`members_feedback\` where posts.id = members_feedback.post_id) ${direction}`
+            };
+        }
         if (field === 'email.open_rate' && withRelated && withRelated.indexOf('email') > -1) {
             return {
                 // *1.0 is needed on one of the columns to prevent sqlite from
@@ -596,7 +615,7 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        if (!this.get('mobiledoc')) {
+        if (!this.get('mobiledoc') && !this.get('lexical')) {
             this.set('mobiledoc', JSON.stringify(mobiledocLib.blankDocument));
         }
 
@@ -610,16 +629,42 @@ Post = ghostBookshelf.Model.extend({
         // CASE: ?force_rerender=true passed via Admin API
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
         if (
-            this.hasChanged('mobiledoc')
-            || options.force_rerender
-            || (!this.get('html') && (options.migrating || options.importing))
+            !this.get('lexical') &&
+            (
+                this.hasChanged('mobiledoc')
+                || options.force_rerender
+                || (!this.get('html') && (options.migrating || options.importing))
+            )
         ) {
             try {
                 this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
                 throw new errors.ValidationError({
-                    message: 'Invalid mobiledoc structure.',
+                    message: tpl(messages.invalidMobiledocStructure),
                     help: 'https://ghost.org/docs/publishing/'
+                });
+            }
+        }
+
+        // CASE: lexical has changed, generate html
+        // CASE: ?force_rerender=true passed via Admin API
+        // CASE: html is null, but lexical exists (only important for migrations & importing)
+        if (
+            !this.get('mobiledoc') &&
+            (
+                this.hasChanged('lexical')
+                || options.force_rerender
+                || (!this.get('html') && (options.migrating || options.importing))
+            )
+        ) {
+            try {
+                this.set('html', lexicalLib.lexicalHtmlRenderer.render(this.get('lexical')));
+            } catch (err) {
+                throw new errors.ValidationError({
+                    message: tpl(messages.invalidLexicalStructure),
+                    context: err.message,
+                    property: 'lexical',
+                    help: tpl(messages.invalidLexicalStructureHelp)
                 });
             }
         }
@@ -750,7 +795,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // CASE: Handle mobiledoc backups/revisions. This is a pure database feature.
-        if (model.hasChanged('mobiledoc') && !options.importing && !options.migrating) {
+        if (model.hasChanged('mobiledoc') && !model.get('lexical') && !options.importing && !options.migrating) {
             ops.push(function updateRevisions() {
                 return ghostBookshelf.model('MobiledocRevision')
                     .findAll(Object.assign({
@@ -794,6 +839,39 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
+        // CASE: Handle post backups/revisions. This is a pure database feature.
+        if (model.hasChanged('lexical') && !model.get('mobiledoc') && !options.importing && !options.migrating) {
+            ops.push(function updateRevisions() {
+                return ghostBookshelf.model('PostRevision')
+                    .findAll(Object.assign({
+                        filter: `post_id:${model.id}`,
+                        columns: ['id']
+                    }, _.pick(options, 'transacting')))
+                    .then((revisions) => {
+                        // Store previous + latest lexical content
+                        if (!revisions.length && options.method !== 'insert') {
+                            model.set('post_revisions', [{
+                                post_id: model.id,
+                                lexical: model.previous('lexical'),
+                                created_at_ts: Date.now() - 1
+                            }, {
+                                post_id: model.id,
+                                lexical: model.get('lexical'),
+                                created_at_ts: Date.now()
+                            }]);
+                        } else {
+                            const revisionsJSON = revisions.toJSON().slice(0, POST_REVISIONS_COUNT - 1);
+
+                            model.set('post_revisions', revisionsJSON.concat([{
+                                post_id: model.id,
+                                lexical: model.get('lexical'),
+                                created_at_ts: Date.now()
+                            }]));
+                        }
+                    });
+            });
+        }
+
         if (this.get('tiers')) {
             this.set('tiers', this.get('tiers').map(t => ({
                 id: t.id
@@ -829,6 +907,10 @@ Post = ghostBookshelf.Model.extend({
 
     mobiledoc_revisions() {
         return this.hasMany('MobiledocRevision', 'post_id');
+    },
+
+    post_revisions() {
+        return this.hasMany('PostRevision', 'post_id');
     },
 
     posts_meta: function postsMeta() {
@@ -901,6 +983,7 @@ Post = ghostBookshelf.Model.extend({
 
         // CASE: never expose the revisions
         delete attrs.mobiledoc_revisions;
+        delete attrs.post_revisions;
 
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
@@ -974,7 +1057,7 @@ Post = ghostBookshelf.Model.extend({
         return filter;
     }
 }, {
-    allowedFormats: ['mobiledoc', 'html', 'plaintext'],
+    allowedFormats: ['mobiledoc', 'lexical', 'html', 'plaintext'],
 
     orderDefaultOptions: function orderDefaultOptions() {
         return {
@@ -1266,12 +1349,65 @@ Post = ghostBookshelf.Model.extend({
                         .as('count__signups');
                 });
             },
-            conversions(modelOrCollection) {
+            paid_conversions(modelOrCollection) {
                 modelOrCollection.query('columns', 'posts.*', (qb) => {
                     qb.count('members_subscription_created_events.id')
                         .from('members_subscription_created_events')
                         .whereRaw('posts.id = members_subscription_created_events.attribution_id')
+                        .as('count__paid_conversions');
+                });
+            },
+            /**
+             * Combination of sigups and paid conversions, but unique per member
+             */
+            conversions(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.count('*')
+                        .from('k')
+                        .with('k', (q) => {
+                            q.select('member_id')
+                                .from('members_subscription_created_events')
+                                .whereRaw('posts.id = members_subscription_created_events.attribution_id')
+                                .union(function () {
+                                    this.select('member_id')
+                                        .from('members_created_events')
+                                        .whereRaw('posts.id = members_created_events.attribution_id');
+                                });
+                        })
                         .as('count__conversions');
+                });
+            },
+            clicks(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.countDistinct('members_click_events.member_id')
+                        .from('members_click_events')
+                        .join('redirects', 'members_click_events.redirect_id', 'redirects.id')
+                        .whereRaw('posts.id = redirects.post_id')
+                        .as('count__clicks');
+                });
+            },
+            sentiment(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.select(qb.client.raw('COALESCE(ROUND(AVG(score) * 100), 0)'))
+                        .from('members_feedback')
+                        .whereRaw('posts.id = members_feedback.post_id')
+                        .as('count__sentiment');
+                });
+            },
+            negative_feedback(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.count('*')
+                        .from('members_feedback')
+                        .whereRaw('posts.id = members_feedback.post_id AND members_feedback.score = 0')
+                        .as('count__negative_feedback');
+                });
+            },
+            positive_feedback(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.sum('score')
+                        .from('members_feedback')
+                        .whereRaw('posts.id = members_feedback.post_id')
+                        .as('count__positive_feedback');
                 });
             }
         };

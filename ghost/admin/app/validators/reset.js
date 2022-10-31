@@ -10,14 +10,14 @@ const resetValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     newPassword(model) {
-        let p1 = model.get('newPassword');
-        let p2 = model.get('ne2Password');
+        let p1 = model.newPassword;
+        let p2 = model.ne2Password;
 
         if (isBlank(p1)) {
-            model.get('errors').add('newPassword', 'Please enter a password.');
+            model.errors.add('newPassword', 'Please enter a password.');
             this.invalidate();
         } else if (!validator.equals(p1, p2 || '')) {
-            model.get('errors').add('ne2Password', 'The two new passwords don\'t match.');
+            model.errors.add('ne2Password', 'The two new passwords don\'t match.');
             this.invalidate();
         }
 

@@ -4,7 +4,7 @@
     <div
         class="gh-koenig-editor-pane flex flex-column mih-100"
         {{on "mousedown" this.trackMousedown}}
-        {{on "mouseup" this.focusEditor}}
+        {{!-- {{on "mouseup" this.focusEditor}} --}}
     >
         <GhEditorFeatureImage
             @image={{@featureImage}}
@@ -35,7 +35,10 @@
             data-test-editor-title-input={{true}}
         />
 
-        <KoenigLexicalEditor />
+        <KoenigLexicalEditor
+            @lexical={{@body}}
+            @onChange={{@onBodyChange}}
+        />
 
         {{!-- <KoenigEditor
             @mobiledoc={{@body}}

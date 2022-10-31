@@ -30,9 +30,6 @@ const STRIPE_API_VERSION = '2020-08-27';
 module.exports = class StripeAPI {
     /**
      * StripeAPI
-     *
-     * @param {object} params
-     * @param {IStripeAPIConfig} params.config
      */
     constructor() {
         /** @type {Stripe} */
@@ -142,7 +139,7 @@ module.exports = class StripeAPI {
      * @param {string} id
      * @param {object} options
      * @param {boolean} options.active
-     * @param {string=} options.nickname
+     * @param {string} [options.nickname]
      *
      * @returns {Promise<IPrice>}
      */

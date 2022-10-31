@@ -25,7 +25,7 @@ export default class PublicationCoverFormField extends Component {
 
     @action
     update(value) {
-        this.settings.set('coverImage', value);
+        this.settings.coverImage = value;
         this.args.didUpdate('coverImage', value);
     }
 

@@ -155,9 +155,14 @@ async function initServicesForFrontend({bootLogger}) {
     debug('End: Routing Settings');
 
     debug('Begin: Redirects');
-    const customRedirects = require('./server/services/redirects');
-    await customRedirects.init(),
+    const customRedirects = require('./server/services/custom-redirects');
+    await customRedirects.init();
     debug('End: Redirects');
+
+    debug('Begin: Link Redirects');
+    const linkRedirects = require('./server/services/link-redirection');
+    await linkRedirects.init();
+    debug('End: Link Redirects');
 
     debug('Begin: Themes');
     // customThemSettingsService.api must be initialized before any theme activation occurs
@@ -269,6 +274,7 @@ async function initServices({config}) {
     debug('Begin: Services');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
+    const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
@@ -281,6 +287,9 @@ async function initServices({config}) {
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
+    const membersEvents = require('./server/services/members-events');
+    const linkTracking = require('./server/services/link-tracking');
+    const audienceFeedback = require('./server/services/audience-feedback');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -296,6 +305,8 @@ async function initServices({config}) {
         memberAttribution.init(),
         staffService.init(),
         members.init(),
+        tiers.init(),
+        membersEvents.init(),
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
@@ -306,7 +317,9 @@ async function initServices({config}) {
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
-        comments.init()
+        comments.init(),
+        linkTracking.init(),
+        audienceFeedback.init()
     ]);
     debug('End: Services');
 

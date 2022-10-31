@@ -274,6 +274,25 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             });
         });
 
+        it('tags relation is stripped of unknown properties', function () {
+            const apiConfig = {};
+
+            const frame = {
+                options: {},
+                data: {
+                    posts: [
+                        {
+                            id: 'id1',
+                            tags: [{slug: 'slug1', name: 'hey', parent: null}, {slug: 'slug2'}]
+                        }
+                    ]
+                }
+            };
+
+            serializers.input.posts.edit(apiConfig, frame);
+            frame.data.posts[0].tags.should.eql([{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
+        });
+
         describe('Ensure relations format', function () {
             it('relations is array of objects', function () {
                 const apiConfig = {};

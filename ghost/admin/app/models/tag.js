@@ -9,7 +9,6 @@ export default Model.extend(ValidationEngine, {
     name: attr('string'),
     slug: attr('string'),
     description: attr('string'),
-    parent: attr('string'), // unused
     metaTitle: attr('string'),
     metaDescription: attr('string'),
     twitterImage: attr('string'),

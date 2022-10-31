@@ -1,4 +1,6 @@
 import Controller from '@ember/controller';
+import DeleteIntegrationModal from '../../components/settings/integrations/delete-integration-modal';
+import DeleteWebhookModal from '../../components/settings/integrations/delete-webhook-modal';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {
@@ -14,16 +16,14 @@ import {tracked} from '@glimmer/tracking';
 export default class IntegrationController extends Controller {
     @service config;
     @service ghostPaths;
+    @service modals;
 
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
 
-    @tracked showDeleteIntegrationModal = false;
     @tracked showRegenerateKeyModal = false;
-    @tracked showUnsavedChangesModal = false;
     @tracked selectedApiKey = null;
     @tracked isApiKeyRegenerated = false;
-    @tracked webhookToDelete;
 
     constructor() {
         super(...arguments);
@@ -108,62 +108,11 @@ export default class IntegrationController extends Controller {
     }
 
     @action
-    toggleUnsavedChangesModal(transition) {
-        let leaveTransition = this.leaveScreenTransition;
-
-        if (!transition && this.showUnsavedChangesModal) {
-            this.leaveScreenTransition = null;
-            this.showUnsavedChangesModal = false;
-            return;
-        }
-
-        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.leaveScreenTransition = transition;
-
-            // if a save is running, wait for it to finish then transition
-            if (this.saveTask.isRunning) {
-                return this.saveTask.last.then(() => {
-                    transition.retry();
-                });
-            }
-
-            // we genuinely have unsaved data, show the modal
-            this.showUnsavedChangesModal = true;
-        }
-    }
-
-    @action
-    leaveScreen(event) {
-        event?.preventDefault();
-        let transition = this.leaveScreenTransition;
-
-        if (!transition) {
-            this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
-            return;
-        }
-
-        // roll back changes on model props
-        this.integration.rollbackAttributes();
-
-        return transition.retry();
-    }
-
-    @action
-    deleteIntegration(event) {
-        event?.preventDefault();
-        this.integration.destroyRecord();
-    }
-
-    @action
     confirmIntegrationDeletion(event) {
         event?.preventDefault();
-        this.showDeleteIntegrationModal = true;
-    }
-
-    @action
-    cancelIntegrationDeletion(event) {
-        event?.preventDefault();
-        this.showDeleteIntegrationModal = false;
+        return this.modals.open(DeleteIntegrationModal, {
+            integration: this.integration
+        });
     }
 
     @action
@@ -189,13 +138,7 @@ export default class IntegrationController extends Controller {
     @action
     confirmWebhookDeletion(webhook, event) {
         event?.preventDefault();
-        this.webhookToDelete = webhook;
-    }
-
-    @action
-    cancelWebhookDeletion(event) {
-        event?.preventDefault();
-        this.webhookToDelete = null;
+        return this.modals.open(DeleteWebhookModal, {webhook});
     }
 
     @action

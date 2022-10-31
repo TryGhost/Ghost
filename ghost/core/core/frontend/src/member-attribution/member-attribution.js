@@ -15,6 +15,11 @@ const LIMIT = 15;
 //         "path": "/about/"
 //     },
 //     {
+//         "time": 12341234,
+//         "id": "manually-added-id",
+//         "type": "post",
+//     },
+//     {
 //         "time": 12341235,
 //         "path": "/welcome/"
 //     }
@@ -57,7 +62,7 @@ const LIMIT = 15;
             // Valid item (so all following items are also valid by definition)
             return true;
         });
-        
+
         if (firstNotExpiredIndex > 0) {
             // Remove until the first valid item
             history.splice(0, firstNotExpiredIndex);
@@ -66,17 +71,73 @@ const LIMIT = 15;
             history = [];
         }
 
+        // Fetch referrer data from query params
+        let refParam;
+        let sourceParam;
+        let utmSourceParam;
+        let utmMediumParam;
+        try {
+            // Fetch source/medium from query param
+            const url = new URL(window.location.href);
+            refParam = url.searchParams.get('ref');
+            sourceParam = url.searchParams.get('source');
+            utmSourceParam = url.searchParams.get('utm_source');
+            utmMediumParam = url.searchParams.get('utm_medium');
+        } catch (e) {
+            console.error('[Member Attribution] Parsing referrer from querystring failed', e);
+        }
+
+        const referrerSource = refParam || sourceParam || utmSourceParam || null;
+        const referrerMedium = utmMediumParam || null;
+        const referrerUrl = window.document.referrer || null;
+
+        // Do we have attributions in the query string?
+        try {
+            const url = new URL(window.location.href);
+            const params = url.searchParams;
+            if (params.get('attribution_id') && params.get('attribution_type')) {
+                // Add attribution to history before the current path
+                history.push({
+                    time: currentTime,
+                    id: params.get('attribution_id'),
+                    type: params.get('attribution_type'),
+                    referrerSource,
+                    referrerMedium,
+                    referrerUrl
+                });
+
+                // Remove attribution from query string
+                params.delete('attribution_id');
+                params.delete('attribution_type');
+                url.search = '?' + params.toString();
+                window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+            }
+        } catch (error) {
+            console.error('[Member Attribution] Parsing attribution from querystring failed', error);
+        }
+
         const currentPath = window.location.pathname;
 
         if (history.length === 0 || history[history.length - 1].path !== currentPath) {
             history.push({
                 path: currentPath,
-                time: currentTime
+                time: currentTime,
+                referrerSource,
+                referrerMedium,
+                referrerUrl
             });
         } else if (history.length > 0) {
             history[history.length - 1].time = currentTime;
+            // Update referrer information for same path if available (e.g. when opening a link on same path via external referrer)
+            if (referrerSource) {
+                history[history.length - 1].referrerSource = referrerSource;
+                history[history.length - 1].referrerMedium = referrerMedium;
+            }
+            if (referrerUrl) {
+                history[history.length - 1].referrerUrl = referrerUrl;
+            }
         }
-        
+
         // Restrict length
         if (history.length > LIMIT) {
             history = history.slice(-LIMIT);

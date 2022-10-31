@@ -1,7 +1,8 @@
 import Controller, {inject as controller} from '@ember/controller';
+import DeleteMemberModal from '../components/members/modals/delete-member';
 import EmberObject, {action, defineProperty} from '@ember/object';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -13,18 +14,21 @@ export default class MemberController extends Controller {
     @service session;
     @service dropdown;
     @service membersStats;
+    @service modals;
     @service notifications;
     @service router;
     @service store;
 
     @tracked isLoading = false;
-    @tracked showDeleteMemberModal = false;
     @tracked showImpersonateMemberModal = false;
-    @tracked showUnsavedChangesModal = false;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
 
-    leaveScreenTransition = null;
+    _previousLabels = null;
+    _previousNewsletters = null;
+
+    directlyFromAnalytics = false;
+    fromAnalytics = null;
 
     constructor() {
         super(...arguments);
@@ -35,6 +39,22 @@ export default class MemberController extends Controller {
 
     get member() {
         return this.model;
+    }
+
+    set member(member) {
+        this.model = member;
+    }
+
+    get dirtyAttributes() {
+        return this._hasDirtyAttributes();
+    }
+
+    get _labels() {
+        return this.member.get('labels').map(label => label.name);
+    }
+
+    get _newsletters() {
+        return this.member.get('newsletters').map(newsletter => newsletter.id);
     }
 
     get labelModalData() {
@@ -59,10 +79,6 @@ export default class MemberController extends Controller {
         return options;
     }
 
-    set member(member) {
-        this.model = member;
-    }
-
     get scratchMember() {
         let scratchMember = EmberObject.create({member: this.member});
         SCRATCH_PROPS.forEach(prop => defineProperty(scratchMember, prop, boundOneWay(`member.${prop}`)));
@@ -70,13 +86,18 @@ export default class MemberController extends Controller {
     }
 
     get subscribedAt() {
-        // member can be a proxy object in a sparse array so .get is required
-        let memberSince = moment(this.member.get('createdAtUTC')).from(moment());
-        let createdDate = moment(this.member.get('createdAtUTC')).format('D MMM YYYY');
+        let memberSince = moment(this.member.createdAtUTC).from(moment());
+        let createdDate = moment(this.member.createdAtUTC).format('D MMM YYYY');
         return `${createdDate} (${memberSince})`;
     }
 
     // Actions -----------------------------------------------------------------
+
+    @action
+    setInitialRelationshipValues() {
+        this._previousLabels = this._labels;
+        this._previousNewsletters = this._newsletters;
+    }
 
     @action
     toggleLabelModal() {
@@ -100,8 +121,15 @@ export default class MemberController extends Controller {
     }
 
     @action
-    toggleDeleteMemberModal() {
-        this.showDeleteMemberModal = !this.showDeleteMemberModal;
+    confirmDeleteMember() {
+        this.modals.open(DeleteMemberModal, {
+            member: this.member,
+            afterDelete: () => {
+                this.membersStats.invalidate();
+                this.members.refreshData();
+                this.transitionToRoute('members');
+            }
+        });
     }
 
     @action
@@ -119,53 +147,6 @@ export default class MemberController extends Controller {
         return this.saveTask.perform();
     }
 
-    @action
-    deleteMember(cancelSubscriptions = false) {
-        let options = {
-            adapterOptions: {
-                cancel: cancelSubscriptions
-            }
-        };
-        return this.member.destroyRecord(options).then(() => {
-            this.members.refreshData();
-            this.transitionToRoute('members');
-            return;
-        }, (error) => {
-            return this.notifications.showAPIError(error, {key: 'member.delete'});
-        });
-    }
-
-    @action
-    toggleUnsavedChangesModal(transition) {
-        let leaveTransition = this.leaveScreenTransition;
-
-        if (!transition && this.showUnsavedChangesModal) {
-            this.leaveScreenTransition = null;
-            this.showUnsavedChangesModal = false;
-            return;
-        }
-
-        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.leaveScreenTransition = transition;
-
-            // if a save is running, wait for it to finish then transition
-            if (this.save.isRunning) {
-                return this.save.last.then(() => {
-                    transition.retry();
-                });
-            }
-
-            // we genuinely have unsaved data, show the modal
-            this.showUnsavedChangesModal = true;
-        }
-    }
-
-    @action
-    leaveScreen() {
-        this.member.rollbackAttributes();
-        return this.leaveScreenTransition.retry();
-    }
-
     // Tasks -------------------------------------------------------------------
 
     @task({drop: true})
@@ -175,21 +156,35 @@ export default class MemberController extends Controller {
         // if Cmd+S is pressed before the field loses focus make sure we're
         // saving the intended property values
         let scratchProps = scratchMember.getProperties(SCRATCH_PROPS);
-        member.setProperties(scratchProps);
+        Object.assign(member, scratchProps);
 
         try {
             yield member.save();
             member.updateLabels();
             this.members.refreshData();
 
+            this.setInitialRelationshipValues();
+
             // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
 
             return member;
         } catch (error) {
-            if (error) {
-                this.notifications.showAPIError(error, {key: 'member.save'});
+            if (error === undefined) {
+                // Validation error
+                return;
             }
+
+            if (error.payload && error.payload.errors) {
+                for (const payloadError of error.payload.errors) {
+                    if (payloadError.type === 'ValidationError' && payloadError.property && (payloadError.context || payloadError.message)) {
+                        member.errors.add(payloadError.property, payloadError.context || payloadError.message);
+                        member.hasValidated.pushObject(payloadError.property);
+                    }
+                }
+            }
+
+            throw error;
         }
     }
 
@@ -202,13 +197,15 @@ export default class MemberController extends Controller {
             include: 'tiers'
         });
 
+        this.setInitialRelationshipValues();
+
         this.isLoading = false;
     }
 
     // Private -----------------------------------------------------------------
 
     _saveMemberProperty(propKey, newValue) {
-        let currentValue = this.member.get(propKey);
+        let currentValue = this.member[propKey];
 
         if (newValue && typeof newValue === 'string') {
             newValue = newValue.trim();
@@ -219,6 +216,38 @@ export default class MemberController extends Controller {
             return;
         }
 
-        this.member.set(propKey, newValue);
+        this.member[propKey] = newValue;
+    }
+
+    _hasDirtyAttributes() {
+        let member = this.member;
+
+        if (!member) {
+            return false;
+        }
+
+        // member.labels is an array so hasDirtyAttributes doesn't pick up
+        // changes unless the array ref is changed.
+        // use sort() to sort of detect same item is re-added
+        let currentLabels = (this._labels.sort() || []).join(', ');
+        let previousLabels = (this._previousLabels.sort() || []).join(', ');
+        if (currentLabels !== previousLabels) {
+            return true;
+        }
+
+        // member.newsletters is an array so hasDirtyAttributes doesn't pick up
+        // changes unless the array ref is changed
+        // use sort() to sort of detect same item is re-enabled
+        let currentNewsletters = (this._newsletters.sort() || []).join(', ');
+        let previousNewsletters = (this._previousNewsletters.sort() || []).join(', ');
+        if (currentNewsletters !== previousNewsletters) {
+            return true;
+        }
+
+        // we've covered all the non-tracked cases we care about so fall
+        // back on Ember Data's default dirty attribute checks
+        let {hasDirtyAttributes} = member;
+
+        return hasDirtyAttributes;
     }
 }

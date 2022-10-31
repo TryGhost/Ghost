@@ -28,5 +28,29 @@ module.exports = {
         async query() {
             return await statsService.getSubscriptionCountHistory();
         }
+    },
+    postReferrers: {
+        data: [
+            'id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        async query(frame) {
+            return await statsService.getPostReferrers(frame.data.id);
+        }
+    },
+    referrersHistory: {
+        data: [
+            'id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        async query() {
+            return await statsService.getReferrersHistory();
+        }
     }
 };

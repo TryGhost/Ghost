@@ -174,7 +174,7 @@ module.exports = class MemberBREADService {
     async attachAttributionsToMember(member, subscriptionIdMap) {
         // Created attribution
         member.attribution = await this.memberAttributionService.getMemberCreatedAttribution(member.id);
-        
+
         // Subscriptions attributions
         for (const subscription of member.subscriptions) {
             if (!subscription.id) {
@@ -254,12 +254,17 @@ module.exports = class MemberBREADService {
         let model;
 
         try {
+            const attribution = await this.memberAttributionService.getAttributionFromContext(options?.context);
+            if (attribution) {
+                data.attribution = attribution;
+            }
             model = await this.memberRepository.create(data, options);
         } catch (error) {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                 throw new errors.ValidationError({
                     message: tpl(messages.memberAlreadyExists),
-                    context: 'Attempting to add member with existing email address'
+                    context: 'Attempting to add member with existing email address',
+                    property: 'email'
                 });
             }
             throw error;
@@ -316,7 +321,8 @@ module.exports = class MemberBREADService {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                 throw new errors.ValidationError({
                     message: tpl(messages.memberAlreadyExists),
-                    context: 'Attempting to edit member with existing email address'
+                    context: 'Attempting to edit member with existing email address',
+                    property: 'email'
                 });
             }
 

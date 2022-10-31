@@ -32,9 +32,7 @@ function addSetting({key, value, type, group}) {
                     group,
                     type,
                     created_at: now,
-                    created_by: MIGRATION_USER,
-                    updated_at: now,
-                    updated_by: MIGRATION_USER
+                    created_by: MIGRATION_USER
                 });
         },
         async function down(connection) {

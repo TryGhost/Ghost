@@ -8,5 +8,7 @@ module.exports = {
     MemberPaidCancellationEvent: require('./lib/MemberPaidCancellationEvent'),
     MemberPageViewEvent: require('./lib/MemberPageViewEvent'),
     SubscriptionCreatedEvent: require('./lib/SubscriptionCreatedEvent'),
-    MemberCommentEvent: require('./lib/MemberCommentEvent')
+    MemberCommentEvent: require('./lib/MemberCommentEvent'),
+    SubscriptionCancelledEvent: require('./lib/SubscriptionCancelledEvent'),
+    MemberLinkClickEvent: require('./lib/MemberLinkClickEvent')
 };

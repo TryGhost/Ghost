@@ -1,5 +1,5 @@
 import hbs from 'htmlbars-inline-precompile';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -16,8 +16,8 @@ describe('Integration: Helper: gh-format-post-time', function () {
 
     beforeEach(function () {
         let settings = this.owner.lookup('service:settings');
-        settings.content = {};
-        settings.set('timezone', timezoneForTest);
+        settings.settingsModel = {};
+        settings.timezone = timezoneForTest;
     });
 
     afterEach(function () {

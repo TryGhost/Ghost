@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
 import {TrackedArray} from 'tracked-built-ins';
 import {dasherize} from '@ember/string';
@@ -94,8 +94,8 @@ export default class NotificationsService extends Service {
     showAlert(message, options = {}) {
         options = options || {};
 
-        if (!options.isApiError) {
-            if (this.config.get('sentry_dsn')) {
+        if (!options.isApiError && (!options.type || options.type === 'error')) {
+            if (this.config.sentry_dsn) {
                 // message could be a htmlSafe object rather than a string
                 const displayedMessage = message.string || message;
 
@@ -103,15 +103,15 @@ export default class NotificationsService extends Service {
                     ghost: {
                         displayed_message: displayedMessage,
                         ghost_error_code: options.ghostErrorCode,
-                        full_error: message,
-                        source: 'showAlert'
+                        full_error: message
                     }
                 };
 
-                Sentry.captureException(displayedMessage, {
+                Sentry.captureMessage(displayedMessage, {
                     contexts,
                     tags: {
-                        shown_to_user: true
+                        shown_to_user: true,
+                        source: 'showAlert'
                     }
                 });
             }
@@ -188,7 +188,7 @@ export default class NotificationsService extends Service {
             msg = `${msg} ${resp.context}`;
         }
 
-        if (this.config.get('sentry_dsn')) {
+        if (this.config.sentry_dsn) {
             const reportedError = resp instanceof Error ? resp : msg;
 
             Sentry.captureException(reportedError, {
@@ -196,12 +196,12 @@ export default class NotificationsService extends Service {
                     ghost: {
                         ghost_error_code: resp.ghostErrorCode,
                         displayed_message: msg,
-                        full_error: resp,
-                        source: 'showAPIError'
+                        full_error: resp
                     }
                 },
                 tags: {
-                    shown_to_user: true
+                    shown_to_user: true,
+                    source: 'showAPIError'
                 }
             });
         }

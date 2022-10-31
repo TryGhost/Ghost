@@ -167,11 +167,12 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '" />');
-            head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
 
-            // don't allow indexing of preview URLs!
             if (_.includes(context, 'preview')) {
                 head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
+                head.push(writeMetaTag('referrer', 'same-origin', 'name'));
+            } else {
+                head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
             }
 
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
@@ -233,7 +234,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(`<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`);
             }
 
-            if (labs.isSet('memberAttribution')) {
+            if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
                 head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
             }
 

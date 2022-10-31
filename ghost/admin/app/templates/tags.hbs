@@ -1,10 +1,10 @@
-<section class="gh-canvas" {{on-key "c" (action "newTag")}}>
-    <GhCanvasHeader class="gh-canvas-header">
+<section class="gh-canvas" {{on-key "c" this.newTag}}>
+    <GhCanvasHeader class="gh-canvas-header sticky">
         <h2 class="gh-canvas-title" data-test-screen-title>Tags</h2>
         <section class="view-actions">
             <div class="gh-contentfilter gh-btn-group">
-                <button class="gh-btn {{if (eq this.type "public") "gh-btn-group-selected"}}" type="button" {{action "changeType" "public"}}><span>Public tags</span></button>
-                <button class="gh-btn {{if (eq this.type "internal") "gh-btn-group-selected"}}" type="button" {{action "changeType" "internal"}}><span>Internal tags</span></button>
+                <button class="gh-btn {{if (eq this.type "public") "gh-btn-group-selected"}}" type="button" {{action "changeType" "public"}} data-test-tags-nav="public" data-test-active={{eq this.type "public"}}><span>Public tags</span></button>
+                <button class="gh-btn {{if (eq this.type "internal") "gh-btn-group-selected"}}" type="button" {{action "changeType" "internal"}} data-test-tags-nav="internal" data-test-active={{eq this.type "internal"}}><span>Internal tags</span></button>
             </div>
             <LinkTo @route="tag.new" class="gh-btn gh-btn-primary"><span>New tag</span></LinkTo>
         </section>
@@ -20,7 +20,7 @@
                     <div class="gh-list-header gh-list-cellwidth-10"></div>
                 </li>
                 <VerticalCollection @items={{this.sortedTags}} @key="id" @containerSelector=".gh-main" @estimateHeight={{60}} @bufferSize={{20}} as |tag|>
-                    <GhTagsListItem @tag={{tag}} data-test-tag-id={{tag.id}} />
+                    <Tags::ListItem @tag={{tag}} data-test-tag={{tag.id}} />
                 </VerticalCollection>
             {{else}}
                 <li class="no-posts-box">

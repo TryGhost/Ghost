@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('mega');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
-const ObjectID = require('bson-objectid');
+const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const settingsCache = require('../../../shared/settings-cache');
@@ -85,7 +85,7 @@ const getEmailData = async (postModel, options) => {
  * @param {ValidMemberSegment} [memberSegment]
  */
 const sendTestEmail = async (postModel, toEmails, memberSegment) => {
-    let emailData = await getEmailData(postModel);
+    let emailData = await getEmailData(postModel, {isTestEmail: true});
     emailData.subject = `[Test] ${emailData.subject}`;
 
     // fetch any matching members so that replacements use expected values
@@ -239,6 +239,8 @@ const addEmail = async (postModel, options) => {
             plaintext: emailData.plaintext,
             submitted_at: moment().toDate(),
             track_opens: !!settingsCache.get('email_track_opens'),
+            track_clicks: !!settingsCache.get('email_track_clicks'),
+            feedback_enabled: !!newsletter.get('feedback_enabled'),
             recipient_filter: emailRecipientFilter,
             newsletter_id: newsletter.id
         }, knexOptions);

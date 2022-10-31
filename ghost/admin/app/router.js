@@ -29,14 +29,11 @@ Router.map(function () {
     });
 
     this.route('posts');
+    this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
+
     this.route('pages');
 
     this.route('editor', function () {
-        this.route('new', {path: ':type'});
-        this.route('edit', {path: ':type/:post_id'});
-    });
-
-    this.route('react-editor', function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
@@ -45,6 +42,7 @@ Router.map(function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
+    this.route('lexicalsandbox');
 
     this.route('tags');
     this.route('tag.new', {path: '/tags/new'});
@@ -55,6 +53,7 @@ Router.map(function () {
     this.route('settings.membership', {path: '/settings/members'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.history', {path: '/settings/history'});
+    this.route('settings.analytics', {path: '/settings/analytics'});
 
     // redirect from old /settings/members-email to /settings/newsletters
     this.route('settings.members-email', {path: '/settings/members-email'});
@@ -68,6 +67,7 @@ Router.map(function () {
             this.route('view', {path: ':theme_name'});
             this.route('install');
         });
+        this.route('no-theme');
     });
     // redirect for old install route used by ghost.org/marketplace
     this.route('settings.theme-install', {path: '/settings/theme/install'});
@@ -76,7 +76,17 @@ Router.map(function () {
         this.route('user', {path: ':user_slug'});
     });
 
-    this.route('explore');
+    this.route('explore', function () {
+        // actual Ember route, not rendered in iframe
+        this.route('connect');
+        // iframe sub pages, used for categories
+        this.route('explore-sub', {path: '/*sub'}, function () {
+            // needed to allow search to work, as it uses URL
+            // params for search queries. They don't need to
+            // be visible, but may not be cut off.
+            this.route('explore-query', {path: '/*query'});
+        });
+    });
 
     this.route('settings.integrations', {path: '/settings/integrations'}, function () {
         this.route('new');

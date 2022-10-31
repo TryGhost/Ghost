@@ -8,7 +8,7 @@ export default class AccentColorFormField extends Component {
     @service settings;
 
     get accentColor() {
-        const color = this.settings.get('accentColor');
+        const color = this.settings.accentColor;
         if (color && color[0] === '#') {
             return color.slice(1);
         }
@@ -16,7 +16,7 @@ export default class AccentColorFormField extends Component {
     }
 
     get accentColorPickerValue() {
-        return this.settings.get('accentColor') || '#ffffff';
+        return this.settings.accentColor || '#ffffff';
     }
 
     get accentColorBgStyle() {
@@ -31,7 +31,7 @@ export default class AccentColorFormField extends Component {
     @action
     async updateAccentColor(event) {
         let newColor = event.target.value;
-        const oldColor = this.settings.get('accentColor');
+        const oldColor = this.settings.accentColor;
 
         // reset errors and validation
         this.settings.errors.remove('accentColor');
@@ -62,7 +62,7 @@ export default class AccentColorFormField extends Component {
                 return;
             }
 
-            this.settings.set('accentColor', newColor);
+            this.settings.accentColor = newColor;
             this.args.didUpdate('accentColor', newColor);
         } else {
             this.settings.errors.add('accentColor', 'Please enter a color in hex format');

@@ -1,6 +1,6 @@
 import ESASessionService from 'ember-simple-auth/services/session';
 import RSVP from 'rsvp';
-import {configureScope} from '@sentry/browser';
+import {configureScope} from '@sentry/ember';
 import {getOwner} from '@ember/application';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -18,6 +18,7 @@ export default class SessionService extends ESASessionService {
     @service ui;
     @service upgradeStatus;
     @service whatsNew;
+    @service membersUtils;
 
     @tracked user = null;
 
@@ -37,19 +38,20 @@ export default class SessionService extends ESASessionService {
         await RSVP.all([
             this.config.fetchAuthenticated(),
             this.feature.fetch(),
-            this.settings.fetch()
+            this.settings.fetch(),
+            this.membersUtils.fetch()
         ]);
 
         await this.frontend.loginIfNeeded();
 
         // update Sentry with the full Ghost version which we only get after authentication
-        if (this.config.get('sentry_dsn')) {
+        if (this.config.sentry_dsn) {
             configureScope((scope) => {
                 scope.addEventProcessor((event) => {
                     return new Promise((resolve) => {
                         resolve({
                             ...event,
-                            release: `ghost@${this.config.get('version')}`
+                            release: `ghost@${this.config.version}`
                         });
                     });
                 });
@@ -73,6 +75,29 @@ export default class SessionService extends ESASessionService {
 
             super.handleAuthentication('home');
         });
+    }
+
+    /**
+     * Always try to re-setup session & retry the original transition
+     * if user data is still available in session store although the
+     * ember-session is unauthenticated.
+     *
+     * If success, it will retry the original transition.
+     * If failed, it will be handled by the redirect to sign in.
+     */
+    async requireAuthentication(transition, route) {
+        // Only when ember session invalidated
+        if (!this.isAuthenticated) {
+            transition.abort();
+
+            if (this.user) {
+                await this.setup();
+                this.notifications.clearAll();
+                transition.retry();
+            }
+        }
+
+        super.requireAuthentication(transition, route);
     }
 
     handleInvalidation() {

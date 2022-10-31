@@ -1,0 +1,31 @@
+<div ...attributes>
+    <div
+        role="tablist"
+        class="tab-list"
+    >
+        {{yield
+            (hash
+                tab=(
+                    component "tabs/tab"
+                    selectedIndex=this.selectedIndex
+                    onSelect=this.handleSelect
+                    onKeyup=this.handleKeyup
+                    id=this.addTabId
+                    index=this.addTabIndex
+                )
+            )
+        }}
+    </div>
+
+    {{yield
+        (hash
+            tabPanel=(
+                component "tabs/tab-panel"
+                selectedIndex=this.selectedIndex
+                index=this.addPanelIndex
+                tabIds=this.tabIds
+                forceRender=@forceRender
+            )
+        )
+    }}
+</div>

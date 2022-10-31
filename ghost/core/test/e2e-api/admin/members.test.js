@@ -1,6 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId, anyObject} = matchers;
-const ObjectId = require('bson-objectid');
+const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
+const ObjectId = require('bson-objectid').default;
 
 const assert = require('assert');
 const nock = require('nock');
@@ -14,6 +14,18 @@ const membersService = require('../../../core/server/services/members');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
+
+/**
+ * Assert that haystack and needles match, ignoring the order. 
+ */
+function matchArrayWithoutOrder(haystack, needles) {
+    // Order shouldn't matter here
+    for (const a of needles) {
+        haystack.should.matchAny(a);
+    }
+
+    assert.equal(haystack.length, needles.length, `Expected ${needles.length} items, but got ${haystack.length}`);
+}
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
@@ -192,7 +204,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id,
                 url: '/out-of-date/',
-                type: 'post'
+                type: 'post',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -212,7 +227,10 @@ describe('Members API - member attribution', function () {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
-                    title: post.get('title')
+                    title: post.get('title'),
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
@@ -228,7 +246,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id,
                 url: '/out-of-date/',
-                type: 'page'
+                type: 'page',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -248,7 +269,10 @@ describe('Members API - member attribution', function () {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
-                    title: post.get('title')
+                    title: post.get('title'),
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
@@ -264,7 +288,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id,
                 url: '/out-of-date/',
-                type: 'tag'
+                type: 'tag',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -284,7 +311,10 @@ describe('Members API - member attribution', function () {
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
-                    title: tag.get('name')
+                    title: tag.get('name'),
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
@@ -300,7 +330,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id,
                 url: '/out-of-date/',
-                type: 'author'
+                type: 'author',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -320,7 +353,10 @@ describe('Members API - member attribution', function () {
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',
-                    title: author.get('name')
+                    title: author.get('name'),
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
@@ -333,7 +369,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id: null,
                 url: '/a-static-page/',
-                type: 'url'
+                type: 'url',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -353,14 +392,17 @@ describe('Members API - member attribution', function () {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
-                    title: '/a-static-page/'
+                    title: '/a-static-page/',
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
     });
 
     // Activity feed
-    it('Returns sign up attributions in activity feed', async function () {
+    it('Returns sign up attributions of all types in activity feed', async function () {
         // Check activity feed
         await agent
             .get(`/members/events/?filter=type:signup_event`)
@@ -386,7 +428,7 @@ describe('Members API', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments');
+        await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
         await agent.loginAsOwner();
 
         newsletters = await getNewsletters();
@@ -399,26 +441,6 @@ describe('Members API', function () {
 
     afterEach(function () {
         mockManager.restore();
-    });
-
-    // Activity feed
-    it('Returns comments in activity feed', async function () {
-        // Check activity feed
-        await agent
-            .get(`/members/events?filter=type:comment_event`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                events: new Array(2).fill({
-                    type: anyString,
-                    data: anyObject
-                })
-            })
-            .expect(({body}) => {
-                should(body.events.find(e => e.type === 'comment_event')).not.be.undefined();
-            });
     });
 
     // List Members
@@ -525,7 +547,7 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-length': anyString
+                'content-length': anyContentLength
             })
             .matchBodySnapshot({
                 members: new Array(8).fill(memberMatcherShallowIncludes)
@@ -540,7 +562,7 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-length': anyString
+                'content-length': anyContentLength
             })
             .matchBodySnapshot({
                 members: new Array(8).fill(memberMatcherShallowIncludes)
@@ -1293,7 +1315,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
-                    tiers: anyArray,
+                    tiers: new Array(1).fill(tierMatcher),
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
             })
@@ -1459,7 +1481,7 @@ describe('Members API', function () {
             .expectStatus(200);
 
         const beforeMember = body2.members[0];
-        assert.equal(beforeMember.tiers.length, 2, 'The member should have two products now');
+        assert.equal(beforeMember.tiers.length, 2, 'The member should have two tiers now');
 
         // Now try to remove only the complimentary one
         const compedPayload = {
@@ -1666,7 +1688,7 @@ describe('Members API', function () {
             }]
         });
 
-        // Wait 5 second sto guarantee event ordering
+        // Wait 5 seconds to guarantee event ordering
         clock.tick(5000);
 
         const after = new Date();
@@ -1718,7 +1740,9 @@ describe('Members API', function () {
             });
 
         const events = eventsBody.events;
-        events.should.match([
+
+        // The order will be different in each test because two newsletter_events have the same created_at timestamp. And events are ordered by created_at desc, id desc (id will be different each time).
+        matchArrayWithoutOrder(events, [
             {
                 type: 'newsletter_event',
                 data: {
@@ -1742,6 +1766,9 @@ describe('Members API', function () {
                 }
             },
             {
+                type: 'signup_event'
+            },
+            {
                 type: 'newsletter_event',
                 data: {
                     subscribed: true,
@@ -1751,9 +1778,6 @@ describe('Members API', function () {
                         id: newsletters[0].id
                     }
                 }
-            },
-            {
-                type: 'signup_event'
             }
         ]);
 
@@ -1885,6 +1909,106 @@ describe('Members API', function () {
             });
     });
 
+    it('Can edit a subscription', async function () {
+        const memberId = testUtils.DataGenerator.Content.members[1].id;
+        const price = testUtils.DataGenerator.Content.stripe_prices[0];
+        const stripeCustomerId = 'cus_GbEMMOZNVrL450';
+        const stripeSubscriptionId = 'sub_K1cBgJt6sCMu5n';
+
+        const stripeSubscriptionFixture = ({status = 'active'} = {}) => {
+            const now = Math.floor(Date.now() / 1000);
+            return {
+                id: stripeSubscriptionId,
+                customer: stripeCustomerId,
+                cancel_at_period_end: false,
+                items: {
+                    data: [{
+                        price: {
+                            id: price.stripe_price_id,
+                            recurring: {
+                                interval: price.interval
+                            },
+                            unit_amount: price.amount,
+                            currency: price.currency.toLowerCase()
+                        }
+                    }]
+                },
+                status: status,
+                current_period_end: now + 24 * 3600,
+                start_date: now
+            };
+        };
+
+        nock('https://api.stripe.com:443')
+            .post('/v1/customers')
+            .reply(200, {
+                id: `cus_GbEMMOZNVrL450`,
+                email: 'member1@test.com'
+            });
+
+        nock('https://api.stripe.com:443')
+            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
+            .reply(200, stripeSubscriptionFixture());
+
+        nock('https://api.stripe.com:443')
+            .post('/v1/subscriptions')
+            .reply(200, stripeSubscriptionFixture());
+
+        const res = await agent
+            .post(`/members/${memberId}/subscriptions/`)
+            .body({
+                stripe_price_id: price.id
+            })
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    labels: anyArray,
+                    subscriptions: [subscriptionSnapshot],
+                    newsletters: anyArray
+                })
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const subscriptionId = res.body.members[0].subscriptions[0].id;
+
+        nock('https://api.stripe.com:443')
+            .delete(`/v1/subscriptions/${stripeSubscriptionId}`)
+            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
+
+        nock('https://api.stripe.com:443')
+            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
+            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
+
+        const editRes = await agent
+            .put(`/members/${memberId}/subscriptions/${subscriptionId}`)
+            .body({
+                status: 'canceled'
+            })
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    labels: anyArray,
+                    subscriptions: [subscriptionSnapshot],
+                    newsletters: anyArray
+                })
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        assert.equal('canceled', editRes.body.members[0].subscriptions[0].status);
+    });
+
     // Delete a member
 
     it('Can destroy', async function () {
@@ -1986,18 +2110,18 @@ describe('Members API', function () {
             .expectEmptyBody() // express-test body parsing doesn't support CSV
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-length': anyString, //For some reason the content-length changes between 1220 and 1317
+                'content-length': anyContentLength,
                 'content-disposition': anyString
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,products/);
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
 
         const csv = Papa.parse(res.text, {header: true});
         should.exist(csv.data.find(row => row.name === 'Mr Egg'));
         should.exist(csv.data.find(row => row.name === 'Winston Zeddemore'));
         should.exist(csv.data.find(row => row.name === 'Ray Stantz'));
         should.exist(csv.data.find(row => row.email === 'member2@test.com'));
-        should.exist(csv.data.find(row => row.products.length > 0));
+        should.exist(csv.data.find(row => row.tiers.length > 0));
         should.exist(csv.data.find(row => row.labels.length > 0));
     });
 
@@ -2011,14 +2135,14 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,products/);
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
 
         const csv = Papa.parse(res.text, {header: true});
         should.exist(csv.data.find(row => row.name === 'Mr Egg'));
         should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
         should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
         should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
-        // note that this member doesn't have products
+        // note that this member doesn't have tiers
         should.exist(csv.data.find(row => row.labels.length > 0));
     });
 

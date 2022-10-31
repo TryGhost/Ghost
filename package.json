@@ -19,10 +19,11 @@
     "**/node_modules/**"
   ],
   "scripts": {
+    "build": "yarn workspace ghost run build",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
-    "dev:admin": "yarn workspace ghost run grunt shell:ember:watch",
-    "dev:ghost": "nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built",
-    "dev": "concurrently -c \"blue,green\" --kill-others -n ghost,admin \"yarn dev:ghost\" \"yarn dev:admin\"",
+    "dev:admin": "node .github/dev.js --admin",
+    "dev:ghost": "node .github/dev.js --ghost",
+    "dev": "node .github/dev.js",
     "fix": "yarn cache clean && rm -rf node_modules && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
     "lint": "yarn workspaces run lint",
@@ -31,10 +32,11 @@
     "test": "yarn workspaces run test",
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
-    "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\""
+    "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\"",
+    "prepare": "husky install .github/hooks"
   },
   "resolutions": {
-    "@tryghost/logging": "2.3.0",
+    "@tryghost/logging": "2.3.2",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   },
@@ -108,9 +110,14 @@
       }
     ]
   },
+  "lint-staged": {
+    "*.js": "eslint"
+  },
   "devDependencies": {
-    "concurrently": "7.3.0",
-    "eslint-plugin-ghost": "2.15.1",
-    "nodemon": "2.0.19"
+    "concurrently": "7.5.0",
+    "eslint-plugin-ghost": "2.16.0",
+    "husky": "8.0.1",
+    "lint-staged": "13.0.3",
+    "nodemon": "2.0.20"
   }
 }

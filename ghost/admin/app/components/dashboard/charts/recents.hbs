@@ -73,7 +73,7 @@
                     <div class="gh-dashboard-list-title">Time</div>
                 </div>
                 <div class="gh-dashboard-list-body">
-                    {{#let (members-event-fetcher filter=(members-event-filter excludeEmailEvents=true) pageSize=5) as |eventsFetcher|}}
+                    {{#let (members-event-fetcher filter=(members-event-filter excludeEmailEvents=true excludedEvents=this.excludedEventTypes) pageSize=5) as |eventsFetcher|}}
                         {{#if eventsFetcher.isError}}
                             <div class="gh-dashboard-list-error">
                                 <p>There was an error loading events</p>

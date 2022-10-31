@@ -1,10 +1,14 @@
 <section class="gh-dashboard-section gh-dashboard-explore-feed" {{did-insert this.load}}>
     <article class="gh-dashboard-box">
         <div class="gh-dashboard-resource-title">
-            <h4>Featured publications</h4>
+            <h4>Featured publications
+                {{#if this.meta.category_url}}
+                    in <a class="gh-dasboard-explore-title-link" href={{this.meta.category_url}} target="_blank" rel="noopener noreferrer">{{this.meta.category}}</a>
+                {{/if}}
+            </h4>
             <div>
                 <a href="https://ghost.org/explore/" target="_blank" rel="noopener noreferrer">Browse all</a>
-                <LinkTo @route="explore" class="gh-dashboard-explore-add">Add your site to Explore <span>{{svg-jar "ghost-favicon-pink" alt="Ghost" class="w4 v-mid"}}</span></LinkTo>
+                <LinkTo @route="explore.connect" class="gh-dashboard-explore-add">Add your site to Explore</LinkTo>
             </div>
         </div>
         <div class="gh-dashboard-resource-body">
@@ -28,7 +32,7 @@
                                 {{else if entry.members}}
                                     <div class="gh-dashboard-explore-members">{{entry.members}}</div>
                                 {{else}}
-                                    <div class="gh-dashboard-explore-arrow">→</div>
+                                    <div class="gh-dashboard-explore-visit">Visit →</div>
                                 {{/if}}
                             </div>
                         </a>

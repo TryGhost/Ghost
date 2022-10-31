@@ -1,6 +1,8 @@
 const assert = require('assert');
 const sinon = require('sinon');
+const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../lib/repositories/member');
+const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 describe('MemberRepository', function () {
     describe('#isComplimentarySubscription', function () {
@@ -51,9 +53,88 @@ describe('MemberRepository', function () {
         });
     });
 
+    describe('setComplimentarySubscription', function () {
+        let Member;
+        let productRepository;
+
+        beforeEach(function () {
+            Member = {
+                findOne: sinon.stub().resolves({
+                    id: 'member_id_123',
+                    related: () => {
+                        return {
+                            fetch: () => {
+                                return {
+                                    models: []
+                                };
+                            }
+                        };
+                    }
+                })
+            };
+        });
+
+        it('throws an error when there is no default product', async function () {
+            productRepository = {
+                getDefaultProduct: sinon.stub().resolves(null)
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                stripeAPIService: {
+                    configured: true
+                },
+                productRepository
+            });
+
+            try {
+                await repo.setComplimentarySubscription({
+                    id: 'member_id_123'
+                }, {
+                    transacting: true
+                });
+
+                assert.fail('setComplimentarySubscription should have thrown');
+            } catch (err) {
+                assert.equal(err.message, 'Could not find Product "default"');
+            }
+        });
+
+        it('uses the right options for fetching default product', async function () {
+            productRepository = {
+                getDefaultProduct: sinon.stub().resolves({
+                    toJSON: () => {
+                        return null;
+                    }
+                })
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                stripeAPIService: {
+                    configured: true
+                },
+                productRepository
+            });
+
+            try {
+                await repo.setComplimentarySubscription({
+                    id: 'member_id_123'
+                }, {
+                    transacting: true,
+                    withRelated: ['labels']
+                });
+
+                assert.fail('setComplimentarySubscription should have thrown');
+            } catch (err) {
+                productRepository.getDefaultProduct.calledWith({withRelated: ['stripePrices'], transacting: true}).should.be.true();
+                assert.equal(err.message, 'Could not find Product "default"');
+            }
+        });
+    });
+
     describe('linkSubscription', function (){
         let Member;
-        let staffService;
         let notifySpy;
         let MemberPaidSubscriptionEvent;
         let StripeCustomerSubscription;
@@ -112,9 +193,6 @@ describe('MemberRepository', function () {
                     _previousAttributes: {}
                 })
             };
-            staffService = {
-                notifyPaidSubscriptionStart: notifySpy
-            };
             MemberPaidSubscriptionEvent = {
                 add: sinon.stub().resolves()
             };
@@ -145,13 +223,12 @@ describe('MemberRepository', function () {
             };
         });
 
-        it('triggers email alert for member context', async function (){
+        it('dispatches paid subscription event', async function (){
             const repo = new MemberRepository({
                 stripeAPIService,
                 StripeCustomerSubscription,
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
-                staffService,
                 productRepository,
                 labsService,
                 Member
@@ -159,105 +236,18 @@ describe('MemberRepository', function () {
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
+            DomainEvents.subscribe(SubscriptionCreatedEvent, notifySpy);
+
             await repo.linkSubscription({
                 subscription: subscriptionData
             }, {
-                transacting: true,
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
                 context: {}
             });
+
             notifySpy.calledOnce.should.be.true();
-        });
-
-        it('triggers email alert for api context', async function (){
-            const repo = new MemberRepository({
-                stripeAPIService,
-                StripeCustomerSubscription,
-                MemberPaidSubscriptionEvent,
-                MemberProductEvent,
-                staffService,
-                productRepository,
-                labsService,
-                Member
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                subscription: subscriptionData
-            }, {
-                transacting: true,
-                context: {api_key: 'abc'}
-            });
-            notifySpy.calledOnce.should.be.true();
-        });
-
-        it('does not trigger email alert for importer context', async function (){
-            const repo = new MemberRepository({
-                stripeAPIService,
-                StripeCustomerSubscription,
-                MemberPaidSubscriptionEvent,
-                MemberProductEvent,
-                staffService,
-                productRepository,
-                labsService,
-                Member
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                subscription: subscriptionData
-            }, {
-                transacting: true,
-                context: {importer: true}
-            });
-            notifySpy.calledOnce.should.be.false();
-        });
-
-        it('does not trigger email alert for admin context', async function (){
-            const repo = new MemberRepository({
-                stripeAPIService,
-                StripeCustomerSubscription,
-                MemberPaidSubscriptionEvent,
-                MemberProductEvent,
-                staffService,
-                productRepository,
-                labsService,
-                Member
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                subscription: subscriptionData
-            }, {
-                transacting: true,
-                context: {user: {}}
-            });
-            notifySpy.calledOnce.should.be.false();
-        });
-
-        it('does not trigger email alert for internal context', async function (){
-            const repo = new MemberRepository({
-                stripeAPIService,
-                StripeCustomerSubscription,
-                MemberPaidSubscriptionEvent,
-                MemberProductEvent,
-                staffService,
-                productRepository,
-                labsService,
-                Member
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                subscription: subscriptionData
-            }, {
-                transacting: true,
-                context: {internal: true}
-            });
-            notifySpy.calledOnce.should.be.false();
         });
 
         afterEach(function () {

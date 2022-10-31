@@ -40,6 +40,15 @@ describe('Pages Content API', function () {
         assert.equal(urlParts.host, '127.0.0.1:2369');
     });
 
+    it('Cannot request pages with mobiledoc or lexical formats', async function () {
+        await agent
+            .get(`pages/?formats=mobiledoc,lexical`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                pages: new Array(5).fill(pageMatcher)
+            });
+    });
+
     it('Can request page', async function () {
         const res = await agent.get(`pages/${fixtureManager.get('posts', 5).id}/`)
             .expectStatus(200)

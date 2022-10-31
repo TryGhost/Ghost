@@ -1,5 +1,5 @@
 <section class="gh-member-details" ...attributes>
-    <div class="flex flex-column mt4">
+    <div class="flex flex-column">
         <div class="gh-member-details-identity">
             {{#if (or @member.name @member.email)}}
                 <GhMemberAvatar
@@ -42,15 +42,20 @@
                         Unknown location
                     {{/if}}
                 </p>
-                <p>
-                    {{svg-jar "member-add"}}
-                    Created on {{moment-format (moment-site-tz @member.createdAtUTC) "D MMM YYYY"}}
-                </p>
-                {{#if (and @member.attribution @member.attribution.url @member.attribution.title) }}
+                {{#if (not (feature 'sourceAttribution'))}}
                     <p>
-                        {{svg-jar "satellite"}}
-                        Signed up on&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @member.attribution.title }}</a>
+                        {{svg-jar "member-add"}}
+                        Created on {{moment-format (moment-site-tz @member.createdAtUTC) "D MMM YYYY"}}
                     </p>
+                {{/if}}
+                {{#if (feature 'sourceAttribution')}}
+                {{else}}
+                    {{#if (and @member.attribution @member.attribution.url @member.attribution.title) }}
+                        <p>
+                            {{svg-jar "satellite"}}
+                            Signed up on&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @member.attribution.title }}</a>
+                        </p>
+                    {{/if}}
                 {{/if}}
                 <p class="gh-member-last-seen">
                     {{svg-jar "eye"}}
@@ -61,6 +66,29 @@
                     {{/if}}
                 </p>
             </div>
+            {{#if (feature 'sourceAttribution')}}
+                <div class="gh-member-details-attribution">
+                    <h4 class="gh-main-section-header small bn">Signup info</h4>
+                    <p>
+                        {{svg-jar "member-add"}}
+                        Created&nbsp;&mdash;&nbsp;<span>{{moment-format (moment-site-tz @member.createdAtUTC) "D MMM YYYY"}}</span>
+                    </p>
+                    {{#if this.referrerSource}}
+                        <p>
+                            {{svg-jar "earth"}}
+                            Source&nbsp;&mdash;&nbsp;<span title="{{this.referrerSource}}">{{this.referrerSource}}</span>
+                        </p>
+                    {{/if}}
+                    {{#if (and @member.attribution.url @member.attribution.title)}}
+                    <p>
+                        {{svg-jar "posts"}}
+                        Page&nbsp;&mdash;&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
+                    </p>
+                    {{!-- <a href="#" class="gh-member-details-attribution-docs">Learn more →</a> --}}
+                    {{/if}}
+                </div>
+            {{/if}}
+
             {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                 <div class="gh-member-details-stats-container">
                     <h4 class="gh-main-section-header small bn">Engagement</h4>

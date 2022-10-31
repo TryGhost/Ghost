@@ -1,12 +1,13 @@
 import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
+import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
@@ -109,9 +110,12 @@ export default class EditorController extends Controller {
     shouldFocusTitle = false;
     showReAuthenticateModal = false;
     showUpgradeModal = false;
-    showDeleteSnippetModal = false;
     showSettingsMenu = false;
     hostLimitError = null;
+    /**
+     * Flag used to determine if we should return to the analytics page or to the posts/pages overview
+     */
+    fromAnalytics = false;
 
     // koenig related properties
     wordcount = null;
@@ -120,6 +124,7 @@ export default class EditorController extends Controller {
 
     _leaveConfirmed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
+    _reAuthenticateModalToggle = false;
 
     /* computed properties ---------------------------------------------------*/
 
@@ -260,6 +265,8 @@ export default class EditorController extends Controller {
 
     @action
     toggleReAuthenticateModal() {
+        this._reAuthenticateModalToggle = true;
+
         if (this.showReAuthenticateModal) {
             // closing, re-attempt save if needed
             if (this._reauthSave) {
@@ -409,13 +416,10 @@ export default class EditorController extends Controller {
     }
 
     @action
-    toggleDeleteSnippetModal(snippet) {
-        this.set('snippetToDelete', snippet);
-    }
-
-    @action
-    deleteSnippet(snippet) {
-        return snippet.destroyRecord();
+    async confirmDeleteSnippet(snippet) {
+        await this.modals.open(DeleteSnippetModal, {
+            snippet
+        });
     }
 
     /* Public tasks ----------------------------------------------------------*/
@@ -475,6 +479,9 @@ export default class EditorController extends Controller {
 
             post.set('statusScratch', null);
 
+            // Clear any error notification (if any)
+            this.notifications.clearAll();
+
             if (!options.silent) {
                 this._showSaveNotification(prevStatus, post.get('status'), isNew ? true : false);
             }
@@ -489,6 +496,11 @@ export default class EditorController extends Controller {
 
             return post;
         } catch (error) {
+            if (!this.session.isAuthenticated && !this._reAuthenticateModalToggle) {
+                this.toggleProperty('showReAuthenticateModal');
+            }
+
+            this._reAuthenticateModalToggle = false;
             if (this.showReAuthenticateModal) {
                 this._reauthSave = true;
                 this._reauthSaveOptions = options;
@@ -1038,7 +1050,7 @@ export default class EditorController extends Controller {
             emailOnly,
             newsletter
         } = this.post;
-        let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.get('timezone'));
+        let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.timezone);
 
         let title = 'Scheduled';
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];

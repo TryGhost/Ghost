@@ -6,6 +6,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6e9",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "This is a static page",
         "type": "page",
         "url": "http://127.0.0.1:2369/static-page-test/",
@@ -39,10 +42,10 @@ exports[`Members API - member attribution Can read member attributed to a page 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1955",
+  "content-length": "2071",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -53,6 +56,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -86,10 +92,10 @@ exports[`Members API - member attribution Can read member attributed to a post 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1938",
+  "content-length": "2054",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -100,6 +106,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1febe2896088840a6db",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "kitchen sink",
         "type": "tag",
         "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
@@ -133,10 +142,10 @@ exports[`Members API - member attribution Can read member attributed to a tag 2:
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1944",
+  "content-length": "2060",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -147,6 +156,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "1",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "Joe Bloggs",
         "type": "author",
         "url": "http://127.0.0.1:2369/author/joe-bloggs/",
@@ -180,10 +192,10 @@ exports[`Members API - member attribution Can read member attributed to an autho
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1926",
+  "content-length": "2042",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -194,6 +206,9 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "/a-static-page/",
         "type": "url",
         "url": "http://127.0.0.1:2369/a-static-page/",
@@ -227,10 +242,10 @@ exports[`Members API - member attribution Can read member attributed to an url 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1922",
+  "content-length": "2038",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -259,6 +274,12 @@ Object {
       "type": Any<String>,
     },
   ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "total": 5,
+    },
+  },
 }
 `;
 
@@ -266,10 +287,59 @@ exports[`Members API - member attribution Returns sign up attributions in activi
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8514",
+  "content-length": "9249",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API - member attribution Returns sign up attributions of all types in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Members API - member attribution Returns sign up attributions of all types in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "9295",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -299,7 +369,7 @@ Object {
   "content-length": "271",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -326,7 +396,7 @@ Object {
   "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -353,7 +423,7 @@ Object {
   "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -380,7 +450,7 @@ Object {
   "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -420,7 +490,7 @@ Object {
   "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -447,7 +517,7 @@ Object {
   "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -474,7 +544,7 @@ Object {
   "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -501,7 +571,7 @@ Object {
   "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -528,7 +598,7 @@ Object {
   "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -537,7 +607,15 @@ exports[`Members API Can add 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -567,11 +645,11 @@ exports[`Members API Can add 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "641",
+  "content-length": "774",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -580,7 +658,15 @@ exports[`Members API Can add a member that is not subscribed (old) 1: [body] 1`]
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -610,11 +696,11 @@ exports[`Members API Can add a member that is not subscribed (old) 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "517",
+  "content-length": "650",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -625,6 +711,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -647,7 +736,15 @@ Object {
       "subscribed": true,
       "subscriptions": Array [
         Object {
-          "attribution": null,
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": "url",
+            "url": null,
+          },
           "cancel_at_period_end": false,
           "cancellation_reason": null,
           "current_period_end": Any<String>,
@@ -660,14 +757,14 @@ Object {
           "id": "sub_123",
           "offer": null,
           "plan": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
             "nickname": "month",
           },
           "price": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
@@ -698,10 +795,10 @@ exports[`Members API Can add a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2283",
+  "content-length": "2508",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -712,6 +809,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -734,7 +834,15 @@ Object {
       "subscribed": true,
       "subscriptions": Array [
         Object {
-          "attribution": null,
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": "url",
+            "url": null,
+          },
           "cancel_at_period_end": false,
           "cancellation_reason": null,
           "current_period_end": Any<String>,
@@ -747,14 +855,14 @@ Object {
           "id": "sub_123",
           "offer": null,
           "plan": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
             "nickname": "month",
           },
           "price": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
@@ -785,10 +893,10 @@ exports[`Members API Can add a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2283",
+  "content-length": "2508",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -797,7 +905,15 @@ exports[`Members API Can add and edit with custom newsletters 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -815,6 +931,7 @@ Object {
           "body_font_category": "serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -854,11 +971,11 @@ exports[`Members API Can add and edit with custom newsletters 2: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1361",
+  "content-length": "1519",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -867,7 +984,15 @@ exports[`Members API Can add and edit with custom newsletters 3: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -885,6 +1010,7 @@ Object {
           "body_font_category": "serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -924,10 +1050,10 @@ exports[`Members API Can add and edit with custom newsletters 4: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1360",
+  "content-length": "1518",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -936,7 +1062,15 @@ exports[`Members API Can add and send a signup confirmation email (old) 1: [body
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -954,6 +1088,7 @@ Object {
           "body_font_category": "sans_serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -980,6 +1115,7 @@ Object {
           "body_font_category": "serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1019,11 +1155,11 @@ exports[`Members API Can add and send a signup confirmation email (old) 2: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1856",
+  "content-length": "2039",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1033,7 +1169,7 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -1042,7 +1178,15 @@ exports[`Members API Can add and send a signup confirmation email 1: [body] 1`] 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1060,6 +1204,7 @@ Object {
           "body_font_category": "sans_serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1086,6 +1231,7 @@ Object {
           "body_font_category": "serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1125,11 +1271,11 @@ exports[`Members API Can add and send a signup confirmation email 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1851",
+  "content-length": "2034",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1139,7 +1285,7 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -1148,7 +1294,15 @@ exports[`Members API Can add complimentary subscription (out of date) 1: [body] 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1178,11 +1332,11 @@ exports[`Members API Can add complimentary subscription (out of date) 2: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1119",
+  "content-length": "1277",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1191,7 +1345,15 @@ exports[`Members API Can add complimentary subscription (out of date) 3: [body] 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1213,9 +1375,11 @@ Object {
         Object {
           "active": true,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
           "description": null,
           "expiry_at": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
           "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Default Product",
           "slug": "default-product",
@@ -1224,6 +1388,7 @@ Object {
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "visibility": "public",
           "welcome_page_url": "/welcome-paid",
+          "yearly_price": 5000,
           "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         },
       ],
@@ -1238,10 +1403,10 @@ exports[`Members API Can add complimentary subscription (out of date) 4: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2655",
+  "content-length": "3037",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1435,10 +1600,10 @@ exports[`Members API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "13684",
+  "content-length": "14087",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1485,10 +1650,10 @@ exports[`Members API Can browse with filter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1379",
+  "content-length": "1404",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1535,10 +1700,10 @@ exports[`Members API Can browse with search 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1379",
+  "content-length": "1404",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1547,7 +1712,15 @@ exports[`Members API Can create a member with an existing complimentary subscrip
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1565,6 +1738,7 @@ Object {
           "body_font_category": "sans_serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1596,9 +1770,11 @@ Object {
         Object {
           "active": true,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
           "description": null,
           "expiry_at": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
           "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Default Product",
           "slug": "default-product",
@@ -1607,6 +1783,7 @@ Object {
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "visibility": "public",
           "welcome_page_url": "/welcome-paid",
+          "yearly_price": 5000,
           "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         },
       ],
@@ -1621,11 +1798,11 @@ exports[`Members API Can create a member with an existing complimentary subscrip
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2706",
+  "content-length": "3088",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1634,7 +1811,15 @@ exports[`Members API Can create a member with an existing paid subscription 1: [
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1652,6 +1837,7 @@ Object {
           "body_font_category": "sans_serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1679,7 +1865,27 @@ Object {
       "status": "paid",
       "subscribed": true,
       "subscriptions": Any<Array>,
-      "tiers": Any<Array>,
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "expiry_at": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": "/welcome-paid",
+          "yearly_price": 5000,
+          "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+      ],
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
@@ -1691,11 +1897,11 @@ exports[`Members API Can create a member with an existing paid subscription 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2692",
+  "content-length": "3074",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1704,7 +1910,15 @@ exports[`Members API Can create a new member with a product (complimentary) 1: [
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1722,6 +1936,7 @@ Object {
           "body_font_category": "sans_serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1753,9 +1968,11 @@ Object {
         Object {
           "active": true,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
           "description": null,
           "expiry_at": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
           "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Default Product",
           "slug": "default-product",
@@ -1764,6 +1981,7 @@ Object {
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "visibility": "public",
           "welcome_page_url": "/welcome-paid",
+          "yearly_price": 5000,
           "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         },
       ],
@@ -1778,11 +1996,11 @@ exports[`Members API Can create a new member with a product (complimentary) 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2463",
+  "content-length": "2735",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1792,7 +2010,7 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -1801,7 +2019,15 @@ exports[`Members API Can destroy 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1831,11 +2057,11 @@ exports[`Members API Can destroy 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1826",
+  "content-length": "2009",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1845,7 +2071,7 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -1875,7 +2101,203 @@ Object {
   "content-length": "246",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Can edit a subscription 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member2@test.com",
+      "email_count": 0,
+      "email_open_rate": 50,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Array [
+        Object {
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": "url",
+            "url": null,
+          },
+          "cancel_at_period_end": false,
+          "cancellation_reason": null,
+          "current_period_end": Any<String>,
+          "customer": Object {
+            "email": "member1@test.com",
+            "id": "cus_GbEMMOZNVrL450",
+            "name": null,
+          },
+          "default_payment_card_last4": null,
+          "id": "sub_K1cBgJt6sCMu5n",
+          "offer": null,
+          "plan": Object {
+            "amount": 500,
+            "currency": "USD",
+            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
+            "interval": "month",
+            "nickname": "month",
+          },
+          "price": Object {
+            "amount": 500,
+            "currency": "USD",
+            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
+            "interval": "month",
+            "nickname": "Monthly",
+            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "tier": Object {
+              "id": "109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d",
+              "name": "Default Product",
+              "tier_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            },
+            "type": "recurring",
+          },
+          "start_date": Any<String>,
+          "status": "active",
+          "trial_end_at": null,
+          "trial_start_at": null,
+        },
+      ],
+      "tiers": Array [],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API Can edit a subscription 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2375",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Can edit a subscription 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member2@test.com",
+      "email_count": 0,
+      "email_open_rate": 50,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Array [
+        Object {
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": "url",
+            "url": null,
+          },
+          "cancel_at_period_end": false,
+          "cancellation_reason": null,
+          "current_period_end": Any<String>,
+          "customer": Object {
+            "email": "member1@test.com",
+            "id": "cus_GbEMMOZNVrL450",
+            "name": null,
+          },
+          "default_payment_card_last4": null,
+          "id": "sub_K1cBgJt6sCMu5n",
+          "offer": null,
+          "plan": Object {
+            "amount": 500,
+            "currency": "USD",
+            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
+            "interval": "month",
+            "nickname": "month",
+          },
+          "price": Object {
+            "amount": 500,
+            "currency": "USD",
+            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
+            "interval": "month",
+            "nickname": "Monthly",
+            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "tier": Object {
+              "id": "109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d",
+              "name": "Default Product",
+              "tier_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            },
+            "type": "recurring",
+          },
+          "start_date": Any<String>,
+          "status": "canceled",
+          "trial_end_at": null,
+          "trial_start_at": null,
+        },
+      ],
+      "tiers": Array [],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API Can edit a subscription 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2377",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1884,7 +2306,15 @@ exports[`Members API Can edit by id 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1914,11 +2344,11 @@ exports[`Members API Can edit by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1137",
+  "content-length": "1295",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1927,7 +2357,15 @@ exports[`Members API Can edit by id 3: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1957,10 +2395,10 @@ exports[`Members API Can edit by id 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "492",
+  "content-length": "625",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1970,10 +2408,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1983,10 +2421,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": "215",
+  "content-length": "212",
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2013,7 +2451,7 @@ Object {
   "content-length": "93",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2144,10 +2582,10 @@ exports[`Members API Can filter by paid status 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10003",
+  "content-length": "10331",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2232,14 +2670,52 @@ Object {
 }
 `;
 
+exports[`Members API Can filter by signup attribution 2: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member1@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Mr Egg",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
 exports[`Members API Can filter by signup attribution 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4367",
+  "content-length": "4474",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2282,7 +2758,7 @@ Object {
 }
 `;
 
-exports[`Members API Can filter by signup attribution 4: [headers] 1`] = `
+exports[`Members API Can filter by signup attribution 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -2290,6 +2766,18 @@ Object {
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Can filter by signup attribution 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1404",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2399,10 +2887,10 @@ exports[`Members API Can filter on newsletter slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8676",
+  "content-length": "8940",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2604,10 +3092,10 @@ exports[`Members API Can filter on tier slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "20967",
+  "content-length": "22079",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2657,7 +3145,7 @@ Object {
   "content-length": "682",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2788,10 +3276,10 @@ exports[`Members API Can ignore any unknown includes 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10003",
+  "content-length": "10331",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2985,10 +3473,10 @@ exports[`Members API Can order by email_open_rate 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3182,10 +3670,10 @@ exports[`Members API Can order by email_open_rate 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3196,6 +3684,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -3229,10 +3720,10 @@ exports[`Members API Can read 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1427",
+  "content-length": "1544",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3243,6 +3734,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -3277,10 +3771,10 @@ exports[`Members API Can read and include email_recipients 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1449",
+  "content-length": "1566",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3291,6 +3785,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -3324,10 +3821,10 @@ exports[`Members API Can read and include tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1427",
+  "content-length": "1544",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3336,7 +3833,15 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3366,11 +3871,11 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "499",
+  "content-length": "632",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3379,7 +3884,15 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3397,6 +3910,7 @@ Object {
           "body_font_category": "sans_serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -3423,6 +3937,7 @@ Object {
           "body_font_category": "serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -3462,10 +3977,10 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1840",
+  "content-length": "2023",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3474,7 +3989,15 @@ exports[`Members API Can subscribe to a newsletter 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3504,11 +4027,11 @@ exports[`Members API Can subscribe to a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1127",
+  "content-length": "1285",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3517,7 +4040,15 @@ exports[`Members API Can subscribe to a newsletter 3: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3547,10 +4078,10 @@ exports[`Members API Can subscribe to a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1183",
+  "content-length": "1341",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3559,10 +4090,10 @@ exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4732",
+  "content-length": "5144",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3571,7 +4102,15 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3589,6 +4128,7 @@ Object {
           "body_font_category": "sans_serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -3628,11 +4168,11 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1145",
+  "content-length": "1303",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3641,7 +4181,15 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3671,10 +4219,10 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "504",
+  "content-length": "637",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3704,7 +4252,7 @@ Object {
   "content-length": "259",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3734,7 +4282,7 @@ Object {
   "content-length": "257",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3764,7 +4312,7 @@ Object {
   "content-length": "275",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3794,7 +4342,210 @@ Object {
   "content-length": "270",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Returns click events in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/0",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "member1@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Mr Egg",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "HTML Ipsum",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/1",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "member2@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": null,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Ghostly Kitchen Sink",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/2",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "paid@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Egon Spengler",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Short and Sweet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/3",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "trialing@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Ray Stantz",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not finished yet",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/4",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "comped@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Vinz Clortho",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "Not so short, bit complex",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/5",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "vip@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Winston Zeddemore",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a static page",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/6",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "vip-paid@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Peter Venkman",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a draft static page",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+    Object {
+      "data": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+        "link": Object {
+          "from": "/r/7",
+          "to": "https:://ghost.org",
+        },
+        "member": Object {
+          "avatar_image": null,
+          "email": "with-product@test.com",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Dana Barrett",
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+        "post": Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "title": "This is a scheduled post!!",
+          "url": Any<String>,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        },
+      },
+      "type": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Members API Returns click events in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3631",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3818,10 +4569,10 @@ exports[`Members API Returns comments in activity feed 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1081",
+  "content-length": "1147",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3868,10 +4619,10 @@ exports[`Members API Search by case-insensitive email MEMBER2 receives member wi
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1226",
+  "content-length": "1251",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3918,10 +4669,10 @@ exports[`Members API Search by case-insensitive name egg receives member with na
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1379",
+  "content-length": "1404",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3949,7 +4700,7 @@ Object {
   "content-length": "102",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3996,10 +4747,10 @@ exports[`Members API Search for paid members retrieves member with email paid@te
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2503",
+  "content-length": "2585",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -4008,7 +4759,15 @@ exports[`Members API Subscribes to default newsletters 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4038,11 +4797,11 @@ exports[`Members API Subscribes to default newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1827",
+  "content-length": "2010",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -4072,7 +4831,7 @@ Object {
   "content-length": "398",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

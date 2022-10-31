@@ -169,7 +169,7 @@ export default class KoenigLinkToolbar extends Component {
         // on the configured blog url
         this._target = target;
         let href = target.getAttribute('href');
-        let blogUrl = this.config.get('blogUrl');
+        let blogUrl = this.config.blogUrl;
         this.set('url', relativeToAbsolute(href, blogUrl));
         this.set('showToolbar', true);
         run.schedule('afterRender', this, function () {

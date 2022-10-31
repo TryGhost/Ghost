@@ -97,7 +97,7 @@
                                                     @onChange={{this.setMailgunRegion}}
                                                     @class="gh-select"
                                                     @searchEnabled={{false}}
-                                                    @triggerComponent="gh-power-select/trigger"
+                                                    @triggerComponent={{component "gh-power-select/trigger"}}
                                                     as |region|
                                                 >
                                                     {{region.flag}} {{region.name}}
@@ -140,28 +140,6 @@
                     </div>
                 </div>
             {{/unless}}
-
-            <div class="gh-expandable-block">
-                <div class="gh-expandable-header">
-                    <div>
-                        <h4 class="gh-expandable-title">Enable newsletter open-rate</h4>
-                        <p class="gh-expandable-description">Track how many members are reading your emails</p>
-                    </div>
-                    <div class="for-switch">
-                        <label class="switch" data-test-label="email-track-opens">
-                            <input
-                                id="email-track-opens"
-                                type="checkbox"
-                                checked={{this.settings.emailTrackOpens}}
-                                class="gh-input"
-                                {{on "change" this.toggleEmailTrackOpens}}
-                                data-test-checkbox="email-track-opens"
-                            >
-                            <span class="input-toggle-component mt1"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 {{/if}}

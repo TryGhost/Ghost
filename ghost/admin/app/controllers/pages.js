@@ -1,6 +1,6 @@
 import PostsController from './posts';
-import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 const TYPES = [{
     name: 'All pages',
@@ -20,27 +20,24 @@ const TYPES = [{
 }];
 
 const ORDERS = [{
-    name: 'Newest',
+    name: 'Newest first',
     value: null
 }, {
-    name: 'Oldest',
+    name: 'Oldest first',
     value: 'published_at asc'
 }, {
     name: 'Recently updated',
     value: 'updated_at desc'
 }];
 
-/* eslint-disable ghost/ember/alias-model-in-controller */
-@classic
 export default class PagesController extends PostsController {
-    init() {
-        super.init(...arguments);
-        this.availableTypes = TYPES;
-        this.availableOrders = ORDERS;
-    }
+    @service router;
+
+    availableTypes = TYPES;
+    availableOrders = ORDERS;
 
     @action
     openEditor(page) {
-        this.transitionToRoute('editor.edit', 'page', page.get('id'));
+        this.router.transitionTo('editor.edit', 'page', page.get('id'));
     }
 }

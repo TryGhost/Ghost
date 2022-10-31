@@ -1,40 +1,40 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Members API — exportCSV Can export a member without products 1: [headers] 1`] = `
+exports[`Members API — exportCSV Can export a member without tiers 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Members API — exportCSV Can export a member without products 2: [headers] 1`] = `
+exports[`Members API — exportCSV Can export a member without tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Members API — exportCSV Can export a member without products 3: [headers] 1`] = `
+exports[`Members API — exportCSV Can export a member without tiers 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -44,10 +44,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -57,10 +57,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -70,10 +70,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -83,10 +83,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -96,10 +96,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -109,10 +109,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -122,10 +122,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -135,10 +135,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -148,10 +148,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -161,10 +161,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -174,10 +174,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -187,10 +187,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -200,10 +200,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -213,10 +213,10 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -226,62 +226,62 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Members API — exportCSV Can export products 1: [headers] 1`] = `
+exports[`Members API — exportCSV Can export tiers 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Members API — exportCSV Can export products 2: [headers] 1`] = `
+exports[`Members API — exportCSV Can export tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Members API — exportCSV Can export products 3: [headers] 1`] = `
+exports[`Members API — exportCSV Can export tiers 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Members API — exportCSV Can export products 4: [headers] 1`] = `
+exports[`Members API — exportCSV Can export tiers 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": Any<String>,
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

@@ -8,8 +8,20 @@ const tpl = require('@tryghost/tpl');
 const emailTemplate = require('./email-template');
 
 const messages = {
-    filenameCollision: 'Filename already exists, please try again.',
-    jobAlreadyComplete: 'Job is already complete.'
+    filenameCollision: 'Filename already exists, please try again.'
+};
+
+// The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan') 
+// the value should represent an allowed field name coming from user input
+const DEFAULT_CSV_HEADER_MAPPING = {
+    email: 'email',
+    name: 'name',
+    note: 'note',
+    subscribed_to_emails: 'subscribed',
+    created_at: 'created_at',
+    complimentary_plan: 'complimentary_plan',
+    stripe_customer_id: 'stripe_customer_id',
+    labels: 'labels'
 };
 
 module.exports = class MembersCSVImporter {
@@ -17,48 +29,26 @@ module.exports = class MembersCSVImporter {
      * @param {Object} options
      * @param {string} options.storagePath - The path to store CSV's in before importing
      * @param {Function} options.getTimezone - function returning currently configured timezone
-     * @param {() => Object} options.getMembersApi
+     * @param {() => Object} options.getMembersRepository - member model access instance for data access and manipulation
+     * @param {() => Promise<import('@tryghost/tiers/lib/Tier')>} options.getDefaultTier - async function returning default Member Tier
      * @param {Function} options.sendEmail - function sending an email
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
-     * @param {({name, at, job, data, offloaded}) => void} options.addJob - Method registering an async job
+     * @param {({job, offloaded}) => void} options.addJob - Method registering an async job
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
      * @param {Object} options.context
      */
-    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor, context}) {
+    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, sendEmail, isSet, addJob, knex, urlFor, context}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
-        this._getMembersApi = getMembersApi;
+        this._getMembersRepository = getMembersRepository;
+        this._getDefaultTier = getDefaultTier;
         this._sendEmail = sendEmail;
         this._isSet = isSet;
         this._addJob = addJob;
         this._knex = knex;
         this._urlFor = urlFor;
         this._context = context;
-    }
-
-    /**
-     * @typedef {string} JobID
-     */
-
-    /**
-     * @typedef {Object} Job
-     * @prop {string} filename
-     * @prop {JobID} id
-     * @prop {string} status
-     */
-
-    /**
-     * Get the Job for a jobCode
-     * @param {JobID} jobId
-     * @returns {Promise<Job>}
-     */
-    async getJob(jobId) {
-        return {
-            id: jobId,
-            filename: jobId,
-            status: 'pending'
-        };
     }
 
     /**
@@ -69,12 +59,14 @@ module.exports = class MembersCSVImporter {
      * - Creates a MemberImport Job and associated MemberImportBatch's
      *
      * @param {string} inputFilePath - The path to the CSV to prepare
-     * @param {Object.<string, string>} headerMapping - An object whos keys are headers in the input CSV and values are the header to replace it with
-     * @param {Array<string>} defaultLabels - A list of labels to apply to every member
+     * @param {Object.<string, string>} [headerMapping] - An object whose keys are headers in the input CSV and values are the header to replace it with
+     * @param {Array<string>} [defaultLabels] - A list of labels to apply to every member
      *
-     * @returns {Promise<{id: JobID, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the id of the MemberImport Job
+     * @returns {Promise<{filePath: string, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the data including filePath of "prepared" CSV
      */
     async prepare(inputFilePath, headerMapping, defaultLabels) {
+        headerMapping = headerMapping || DEFAULT_CSV_HEADER_MAPPING;
+        // @NOTE: investigate why is it "1" and do we even need this concept anymore?
         const batchSize = 1;
 
         const siteTimezone = this._getTimezone();
@@ -88,6 +80,7 @@ module.exports = class MembersCSVImporter {
             throw new errors.DataImportError({message: tpl(messages.filenameCollision)});
         }
 
+        // completely rely on explicit user input for header mappings
         const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
         const columns = Object.keys(rows[0]);
         const numberOfBatches = Math.ceil(rows.length / batchSize);
@@ -100,7 +93,7 @@ module.exports = class MembersCSVImporter {
         await fs.writeFile(outputFilePath, mappedCSV);
 
         return {
-            id: outputFilePath,
+            filePath: outputFilePath,
             batches: numberOfBatches,
             metadata: {
                 hasStripeData
@@ -111,77 +104,64 @@ module.exports = class MembersCSVImporter {
     /**
      * Performs an import of a CSV file
      *
-     * @param {JobID} id - The id of the job to perform
+     * @param {string} filePath - the path to a "prepared" CSV file
      */
-    async perform(id) {
-        const job = await this.getJob(id);
+    async perform(filePath) {
+        const rows = await membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
 
-        if (job.status === 'complete') {
-            throw new errors.BadRequestError({message: tpl(messages.jobAlreadyComplete)});
-        }
-
-        const rows = membersCSV.parse(job.filename);
-
-        const membersApi = await this._getMembersApi();
-
-        const defaultProductPage = await membersApi.productRepository.list({
-            filter: 'type:paid',
-            limit: 1
-        });
-
-        const defaultProduct = defaultProductPage.data[0];
+        const defaultTier = await this._getDefaultTier();
+        const membersRepository = await this._getMembersRepository();
 
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
 
-            const trx = await this._knex.transaction();
+            // Use doNotReject config to reject `executionPromise` on rollback
+            // https://github.com/knex/knex/blob/master/UPGRADING.md
+            const trx = await this._knex.transaction(undefined, {doNotRejectOnRollback: false});
             const options = {
                 transacting: trx,
                 context: this._context
             };
 
             try {
-                const existingMember = await membersApi.members.get({email: row.email}, {
+                const memberValues = {
+                    email: row.email,
+                    name: row.name,
+                    note: row.note,
+                    subscribed: row.subscribed,
+                    created_at: row.created_at,
+                    labels: row.labels
+                };
+                const existingMember = await membersRepository.get({email: memberValues.email}, {
                     ...options,
                     withRelated: ['labels']
                 });
                 let member;
                 if (existingMember) {
                     const existingLabels = existingMember.related('labels') ? existingMember.related('labels').toJSON() : [];
-                    member = await membersApi.members.update({
-                        ...row,
-                        labels: existingLabels.concat(row.labels)
+                    member = await membersRepository.update({
+                        ...memberValues,
+                        labels: existingLabels.concat(memberValues.labels)
                     }, {
                         ...options,
                         id: existingMember.id
                     });
                 } else {
-                    member = await membersApi.members.create(row, Object.assign({}, options, {
+                    member = await membersRepository.create(memberValues, Object.assign({}, options, {
                         context: {
                             import: true
                         }
                     }));
                 }
 
-                if (row.stripe_customer_id) {
-                    await membersApi.members.linkStripeCustomer({
+                if (row.stripe_customer_id && typeof row.stripe_customer_id === 'string') {
+                    await membersRepository.linkStripeCustomer({
                         customer_id: row.stripe_customer_id,
                         member_id: member.id
                     }, options);
                 } else if (row.complimentary_plan) {
-                    if (!row.products) {
-                        await membersApi.members.update({
-                            products: [{id: defaultProduct.id}]
-                        }, {
-                            ...options,
-                            id: member.id
-                        });
-                    }
-                }
-
-                if (row.products) {
-                    await membersApi.members.update({
-                        products: row.products
+                    await membersRepository.update({
+                        products: [{id: defaultTier.id}]
                     }, {
                         ...options,
                         id: member.id
@@ -298,15 +278,16 @@ module.exports = class MembersCSVImporter {
      * @param {Object} config.user
      * @param {String} config.user.email - calling user email
      * @param {Object} config.LabelModel - instance of Ghosts Label model
+     * @param {Boolean} config.forceInline - allows to force performing imports not in a job (used in test environment)
      */
-    async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel}) {
+    async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel, forceInline}) {
         const meta = {};
         const job = await this.prepare(pathToCSV, headerMapping, globalLabels);
 
         meta.originalImportSize = job.batches;
 
-        if (job.batches <= 500 && !job.metadata.hasStripeData) {
-            const result = await this.perform(job.id);
+        if ((job.batches <= 500 && !job.metadata.hasStripeData) || forceInline) {
+            const result = await this.perform(job.filePath);
             const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
 
             return {
@@ -322,7 +303,7 @@ module.exports = class MembersCSVImporter {
             const emailRecipient = user.email;
             this._addJob({
                 job: async () => {
-                    const result = await this.perform(job.id);
+                    const result = await this.perform(job.filePath);
                     const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
                     const emailContent = this.generateCompletionEmail(result, {
                         emailRecipient,

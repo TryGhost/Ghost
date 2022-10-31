@@ -295,6 +295,14 @@
         "members_yearly_price_id": {
             "defaultValue": null,
             "type": "string"
+        },
+        "members_track_sources": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "portal": {
@@ -353,6 +361,14 @@
             "type": "string"
         },
         "email_track_opens": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "email_track_clicks": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,

@@ -32,7 +32,7 @@ export default ModalComponent.extend({
     confirm() {},
 
     backgroundStyle: computed('settings.accentColor', function () {
-        let color = this.settings.get('accentColor') || '#ffffff';
+        let color = this.settings.accentColor || '#ffffff';
         return htmlSafe(`background-color: ${color}`);
     }),
 
@@ -71,20 +71,20 @@ export default ModalComponent.extend({
 
     selectedButtonStyle: computed('settings.portalButtonStyle', function () {
         return this.buttonStyleOptions.find((buttonStyle) => {
-            return (buttonStyle.name === this.settings.get('portalButtonStyle'));
+            return (buttonStyle.name === this.settings.portalButtonStyle);
         });
     }),
 
     isFreeChecked: computed('settings.{portalPlans.[],membersSignupAccess}', function () {
-        const allowedPlans = this.settings.get('portalPlans') || [];
-        return (this.settings.get('membersSignupAccess') === 'all' && allowedPlans.includes('free'));
+        const allowedPlans = this.settings.portalPlans || [];
+        return (this.settings.membersSignupAccess === 'all' && allowedPlans.includes('free'));
     }),
     isMonthlyChecked: computed('settings.portalPlans.[]', 'membersUtils.paidMembersEnabled', function () {
-        const allowedPlans = this.settings.get('portalPlans') || [];
+        const allowedPlans = this.settings.portalPlans || [];
         return (this.membersUtils.paidMembersEnabled && allowedPlans.includes('monthly'));
     }),
     isYearlyChecked: computed('settings.portalPlans.[]', 'membersUtils.paidMembersEnabled', function () {
-        const allowedPlans = this.settings.get('portalPlans') || [];
+        const allowedPlans = this.settings.portalPlans || [];
         return (this.membersUtils.paidMembersEnabled && allowedPlans.includes('yearly'));
     }),
     tiers: computed('model.tiers.[]', 'changedTiers.[]', 'isPreloading', function () {
@@ -130,13 +130,13 @@ export default ModalComponent.extend({
         }];
         this.iconExtensions = ICON_EXTENSIONS;
         this.changedTiers = [];
-        this.set('supportAddress', this.parseEmailAddress(this.settings.get('membersSupportAddress')));
+        this.set('supportAddress', this.parseEmailAddress(this.settings.membersSupportAddress));
         this.set('openSection', 'signup-options');
     },
 
     didInsertElement() {
         this._super(...arguments);
-        this.settings.get('errors').clear();
+        this.settings.errors.clear();
     },
 
     actions: {
@@ -150,11 +150,11 @@ export default ModalComponent.extend({
             this.updateAllowedTier(tierId, event.target.checked);
         },
         togglePortalButton(showButton) {
-            this.settings.set('portalButton', showButton);
+            this.settings.portalButton = showButton;
         },
 
         togglePortalName(showSignupName) {
-            this.settings.set('portalName', showSignupName);
+            this.settings.portalName = showSignupName;
         },
         toggleSection(section) {
             if (this.get('openSection') === section) {
@@ -169,7 +169,7 @@ export default ModalComponent.extend({
         },
 
         isPlanSelected(plan) {
-            const allowedPlans = this.settings.get('portalPlans');
+            const allowedPlans = this.settings.portalPlans;
             return allowedPlans.includes(plan);
         },
 
@@ -191,11 +191,11 @@ export default ModalComponent.extend({
         },
 
         setButtonStyle(buttonStyle) {
-            this.settings.set('portalButtonStyle', buttonStyle.name);
+            this.settings.portalButtonStyle = buttonStyle.name;
         },
 
         setSignupButtonText(event) {
-            this.settings.set('portalButtonSignupText', event.target.value);
+            this.settings.portalButtonSignupText = event.target.value;
         },
         /**
          * Fired after an image upload completes
@@ -206,7 +206,7 @@ export default ModalComponent.extend({
         imageUploaded(property, results) {
             if (results[0]) {
                 this.set('customIcon', results[0].url);
-                this.settings.set('portalButtonIcon', results[0].url);
+                this.settings.portalButtonIcon = results[0].url;
             }
         },
         /**
@@ -221,11 +221,11 @@ export default ModalComponent.extend({
 
         deleteCustomIcon() {
             this.set('customIcon', null);
-            this.settings.set('portalButtonIcon', this.membersUtils.defaultIconKeys[0]);
+            this.settings.portalButtonIcon = this.membersUtils.defaultIconKeys[0];
         },
 
         selectDefaultIcon(icon) {
-            this.settings.set('portalButtonIcon', icon);
+            this.settings.portalButtonIcon = icon;
         },
 
         closeLeaveSettingsModal() {
@@ -253,9 +253,9 @@ export default ModalComponent.extend({
             this.set('supportAddress', supportAddress);
 
             if (this.config.emailDomain && supportAddress === `noreply@${this.config.emailDomain}`) {
-                this.settings.set('membersSupportAddress', 'noreply');
+                this.settings.membersSupportAddress = 'noreply';
             } else {
-                this.settings.set('membersSupportAddress', supportAddress);
+                this.settings.membersSupportAddress = supportAddress;
             }
         }
     },
@@ -270,18 +270,18 @@ export default ModalComponent.extend({
     },
 
     updateAllowedPlan(plan, isChecked) {
-        const portalPlans = this.settings.get('portalPlans') || [];
+        const portalPlans = this.settings.portalPlans || [];
         const allowedPlans = [...portalPlans];
         const freeTier = this.model.tiers.find(p => p.type === 'free');
 
         if (!isChecked) {
-            this.settings.set('portalPlans', allowedPlans.filter(p => p !== plan));
+            this.settings.portalPlans = allowedPlans.filter(p => p !== plan);
             if (plan === 'free') {
                 freeTier.set('visibility', 'none');
             }
         } else {
             allowedPlans.push(plan);
-            this.settings.set('portalPlans', allowedPlans);
+            this.settings.portalPlans = allowedPlans;
             if (plan === 'free') {
                 freeTier.set('visibility', 'public');
             }
@@ -303,12 +303,12 @@ export default ModalComponent.extend({
 
     _validateSignupRedirect(url, type) {
         let errMessage = `Please enter a valid URL`;
-        this.settings.get('errors').remove(type);
-        this.settings.get('hasValidated').removeObject(type);
+        this.settings.errors.remove(type);
+        this.settings.hasValidated.removeObject(type);
 
         if (url === null) {
-            this.settings.get('errors').add(type, errMessage);
-            this.settings.get('hasValidated').pushObject(type);
+            this.settings.errors.add(type, errMessage);
+            this.settings.hasValidated.pushObject(type);
             return false;
         }
 
@@ -319,9 +319,9 @@ export default ModalComponent.extend({
 
         if (url.href.startsWith(this.siteUrl)) {
             const path = url.href.replace(this.siteUrl, '');
-            this.settings.set(type, path);
+            this.settings[type] = path;
         } else {
-            this.settings.set(type, url.href);
+            this.settings[type] = url.href;
         }
     },
 
@@ -330,12 +330,12 @@ export default ModalComponent.extend({
             await this.model.preloadTask;
         }
 
-        const portalButtonIcon = this.settings.get('portalButtonIcon') || '';
+        const portalButtonIcon = this.settings.portalButtonIcon || '';
         if (portalButtonIcon && !this.membersUtils.defaultIconKeys.includes(portalButtonIcon)) {
-            this.set('customIcon', this.settings.get('portalButtonIcon'));
+            this.set('customIcon', this.settings.portalButtonIcon);
         }
 
-        this.siteUrl = this.config.get('blogUrl');
+        this.siteUrl = this.config.blogUrl;
         this.set('isPreloading', false);
     }),
 
@@ -360,7 +360,7 @@ export default ModalComponent.extend({
         this.settings.errors.remove('members_support_address');
         this.settings.hasValidated.removeObject('members_support_address');
 
-        if (this.settings.get('errors').length !== 0) {
+        if (this.settings.errors.length !== 0) {
             return;
         }
 
@@ -374,14 +374,14 @@ export default ModalComponent.extend({
             })
         );
 
-        const newEmail = this.settings.get('membersSupportAddress');
+        const newEmail = this.settings.membersSupportAddress;
 
         try {
             const result = yield this.settings.save();
             if (result._meta?.sent_email_verification) {
                 yield this.modals.open(ConfirmEmailModal, {
                     newEmail,
-                    currentEmail: this.settings.get('membersSupportAddress')
+                    currentEmail: this.settings.membersSupportAddress
                 });
             }
 

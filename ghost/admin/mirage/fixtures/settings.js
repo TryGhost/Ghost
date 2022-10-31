@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 let id = 0;
 
@@ -71,6 +71,7 @@ export default [
     setting('members', 'stripe_connect_account_id', null),
     setting('members', 'members_monthly_price_id', null),
     setting('members', 'members_yearly_price_id', null),
+    setting('members', 'members_track_sources', 'true'),
 
     // PORTAL
     setting('portal', 'portal_name', 'true'),
@@ -86,6 +87,7 @@ export default [
     setting('email', 'mailgun_api_key', null),
     setting('email', 'mailgun_base_url', null),
     setting('email', 'email_track_opens', 'true'),
+    setting('email', 'email_track_clicks', 'true'),
     setting('email', 'email_verification_required', 'false'),
 
     // AMP

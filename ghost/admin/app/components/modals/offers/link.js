@@ -17,7 +17,7 @@ export default class LinkOfferModal extends Component {
     get offerUrl() {
         const code = this.args.data.offer?.code || '';
         if (code) {
-            const siteUrl = this.config.get('blogUrl');
+            const siteUrl = this.config.blogUrl;
             return `${siteUrl}/${code}`;
         }
         return '';

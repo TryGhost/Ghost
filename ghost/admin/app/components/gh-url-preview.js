@@ -19,7 +19,7 @@ export default class GhUrlPreview extends Component {
     @computed('slug')
     get url() {
         // Get the blog URL and strip the scheme
-        let blogUrl = this.get('config.blogUrl');
+        let blogUrl = this.config.blogUrl;
         // Remove `http[s]://`
         let noSchemeBlogUrl = blogUrl.substr(blogUrl.indexOf('://') + 3);
 

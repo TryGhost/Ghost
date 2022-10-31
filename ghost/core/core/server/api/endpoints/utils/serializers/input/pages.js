@@ -5,11 +5,12 @@ const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const clean = require('./utils/clean');
 
-function removeMobiledocFormat(frame) {
-    if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
+function removeSourceFormats(frame) {
+    if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
         frame.options.formats = frame.options.formats.filter((format) => {
-            return (format !== 'mobiledoc');
+            return !['mobiledoc', 'lexical'].includes(format);
         });
     }
 }
@@ -23,7 +24,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.conversions'];
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
 }
 
 function setDefaultOrder(frame) {
@@ -94,7 +95,7 @@ module.exports = {
         forcePageFilter(frame);
 
         if (localUtils.isContentAPI(frame)) {
-            removeMobiledocFormat(frame);
+            removeSourceFormats(frame);
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
         }
@@ -112,7 +113,7 @@ module.exports = {
         forcePageFilter(frame);
 
         if (localUtils.isContentAPI(frame)) {
-            removeMobiledocFormat(frame);
+            removeSourceFormats(frame);
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
         }
@@ -159,6 +160,8 @@ module.exports = {
                     frame.data.pages[0].tags[index] = {
                         name: tag
                     };
+                } else {
+                    frame.data.pages[0].tags[index] = clean.pagesTag(tag);
                 }
             });
         }

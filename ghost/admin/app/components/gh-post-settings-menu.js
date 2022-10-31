@@ -1,7 +1,7 @@
 import Component from '@ember/component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {alias, or} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
@@ -137,7 +137,7 @@ export default class GhPostSettingsMenu extends Component {
                 // no-op, invalid URL
             }
         } else {
-            const blogUrl = new URL(this.config.get('blogUrl'));
+            const blogUrl = new URL(this.config.blogUrl);
             urlParts.push(blogUrl.host);
             urlParts.push(...blogUrl.pathname.split('/').reject(p => !p));
             urlParts.push(this.post.slug);
@@ -209,8 +209,9 @@ export default class GhPostSettingsMenu extends Component {
 
     @action
     setPublishedAtBlogDate(date) {
+        // date is a Date object that contains the correct date string in the blog timezone
         let post = this.post;
-        let dateString = moment(date).format('YYYY-MM-DD');
+        let dateString = moment.tz(date, this.settings.get('timezone')).format('YYYY-MM-DD');
 
         post.get('errors').remove('publishedAtBlogDate');
 

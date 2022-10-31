@@ -10,7 +10,9 @@ const allowedIncludes = [
     'tiers',
     'newsletter',
     'count.signups',
-    'count.conversions'
+    'count.paid_conversions',
+    'count.clicks',
+    'sentiment'
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 

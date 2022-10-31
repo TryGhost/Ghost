@@ -1,7 +1,15 @@
-const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const should = require('should');
+const settingsCache = require('../../../core/shared/settings-cache');
+const {anyErrorId} = matchers;
 
 let membersAgent, membersService;
+
+async function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 describe('sendMagicLink', function () {
     before(async function () {
@@ -15,10 +23,77 @@ describe('sendMagicLink', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+
+        // Reset settings
+        settingsCache.set('members_signup_access', {value: 'all'});
     });
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    it('Errors when passed multiple emails', async function () {
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email: 'one@test.com,two@test.com',
+                emailType: 'signup'
+            })
+            .expectStatus(400);
+    });
+
+    it('Throws an error when logging in to a email that does not exist', async function () {
+        const email = 'this-member-does-not-exist@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signin'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    // Add this here because it is easy to be overlooked (we need a human readable error!)
+                    // 'Please sign up first' should be included only when invite only is disabled.
+                    message: 'No member exists with this e-mail address. Please sign up first.'
+                }]
+            });
+    });
+
+    it('Throws an error when logging in to a email that does not exist (invite only)', async function () {
+        settingsCache.set('members_signup_access', {value: 'invite'});
+
+        const email = 'this-member-does-not-exist@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signin'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    // Add this here because it is easy to be overlooked (we need a human readable error!)
+                    // 'Please sign up first' should NOT be included
+                    message: 'No member exists with this e-mail address.'
+                }]
+            });
+    });
+
+    it('Throws an error when trying to sign up on an invite only site', async function () {
+        settingsCache.set('members_signup_access', {value: 'invite'});
+
+        const email = 'this-member-does-not-exist@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
     });
 
     it('Creates a valid magic link with tokenData, and without urlHistory', async function () {
@@ -127,6 +202,8 @@ describe('sendMagicLink', function () {
         // Get member data from token
         const data = await membersService.api.getMemberDataFromMagicLinkToken(token);
 
+        // Wait for the dispatched events (because this happens async)
+        await sleep(250);
         // Check member alert is sent to site owners
         mockManager.assert.sentEmail({
             to: 'jbloggs@example.com',

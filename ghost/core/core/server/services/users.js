@@ -111,7 +111,8 @@ class Users {
         //       Rewrite this bit if/when we hit a performance bottleneck here
         for (const postId of usersPostIds) {
             const post = await this.models.Post.findOne({
-                id: postId
+                id: postId,
+                status: 'all'
             }, {
                 id: postId,
                 withRelated: ['tags'],
