@@ -43,11 +43,26 @@
                     {{#if countFetcher.isLoading}}
                         <GhLoadingSpinner />
                     {{else}}
+                        {{#if this.hasMultipleNewsletters }}
+                         <p>
+                            Which newsletter should these
+                            <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> members be unsubscribed from?
+                        </p>
+
+                            {{#each this.newsletterList as |newsletter| }}
+
+                            {{/each}}
+
+                        {{else}}
+
                         <p>
                             You're about to unsubscribe
                             <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> from email newsletters.
                             Are you sure?
                         </p>
+
+                        {{/if}}
+
                     {{/if}}
                 {{/let}}
             {{else}}
@@ -62,6 +77,12 @@
                 <span>Close</span>
             </button>
         {{else}}
+            {{#if this.hasMultipleNewsletters}}
+            <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" @close}}>
+                <span>Cancel</span>
+            </button>
+
+            {{else}}
             <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" @close}}>
                 <span>Cancel</span>
             </button>
@@ -74,6 +95,7 @@
                 @class="gh-btn gh-btn-red gh-btn-icon"
                 data-test-button="confirm"
             />
+            {{/if}}
         {{/if}}
     </div>
 

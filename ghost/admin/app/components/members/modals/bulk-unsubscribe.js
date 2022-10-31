@@ -7,6 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class BulkUnsubscribeMembersModal extends Component {
     @service ajax;
     @service ghostPaths;
+    @service store;
 
     @tracked error;
     @tracked response;
@@ -17,6 +18,28 @@ export default class BulkUnsubscribeMembersModal extends Component {
 
     get hasRun() {
         return !!(this.error || this.response);
+    }
+
+    get hasMultipleNewsletters() {
+        const newsletters = this.store.peekAll('newsletter');
+        const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
+        if (activeNewsletters.length <= 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    get newsletterList() {
+        const newsletters = this.store.peekAll('newsletter');
+        const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
+
+        return activeNewsletters.map((newsletter) => {
+            return {
+                label: newsletter.name,
+                value: newsletter.id
+            };
+        });
     }
 
     @action
