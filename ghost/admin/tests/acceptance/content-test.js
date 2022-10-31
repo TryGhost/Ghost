@@ -248,7 +248,7 @@ describe('Acceptance: Content', function () {
     describe('as contributor', function () {
         beforeEach(async function () {
             let contributorRole = this.server.create('role', {name: 'Contributor'});
-            let contributor = this.server.create('user', {roles: [contributorRole]});
+            this.server.create('user', {roles: [contributorRole]});
 
             return await authenticateSession();
         });
