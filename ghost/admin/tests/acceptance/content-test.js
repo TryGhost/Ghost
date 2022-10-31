@@ -1,6 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {click, currentURL, fillIn, find, findAll, settled, visit} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, settled, visit} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -247,13 +247,33 @@ describe('Acceptance: Content', function () {
 
     describe('as contributor', function () {
         beforeEach(async function () {
-            let adminRole = this.server.create('role', {name: 'Administrator'});
-            let admin = this.server.create('user', {roles: [adminRole]});
-
-            // Create posts
-            this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Admin Post'});
+            let contributorRole = this.server.create('role', {name: 'Contributor'});
+            this.server.create('user', {roles: [contributorRole]});
 
             return await authenticateSession();
+        });
+
+        it('shows posts list and allows post creation', async function () {
+            await visit('/posts');
+
+            // has an empty state
+            expect(findAll('[data-test-post-id]')).to.have.length(0);
+            expect(find('[data-test-no-posts-box]')).to.exist;
+            expect(find('[data-test-link="write-a-new-post"]')).to.exist;
+
+            await click('[data-test-link="write-a-new-post"]');
+
+            expect(currentURL()).to.equal('/editor/post');
+
+            await fillIn('[data-test-editor-title-input]', 'First contributor post');
+            await blur('[data-test-editor-title-input]');
+
+            expect(currentURL()).to.equal('/editor/post/1');
+
+            await click('[data-test-link="posts"]');
+
+            expect(findAll('[data-test-post-id]')).to.have.length(1);
+            expect(find('[data-test-no-posts-box]')).to.not.exist;
         });
     });
 });
