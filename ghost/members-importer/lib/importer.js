@@ -87,7 +87,7 @@ module.exports = class MembersCSVImporter {
         const mappedCSV = membersCSV.unparse(rows, columns);
 
         const hasStripeData = !!(rows.find(function rowHasStripeData(row) {
-            return !!row.stripe_customer_id || !!row.complimentary_plan;
+            return !!row.stripe_customer_id;
         }));
 
         await fs.writeFile(outputFilePath, mappedCSV);
