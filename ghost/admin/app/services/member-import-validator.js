@@ -82,6 +82,7 @@ export default class MemberImportValidatorService extends Service {
             'name',
             'note',
             'subscribed_to_emails',
+            'complimentary_plan',
             'labels',
             'created_at'
         ];
