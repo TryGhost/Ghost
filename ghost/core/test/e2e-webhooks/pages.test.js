@@ -62,6 +62,17 @@ const buildPageSnapshotWithTiers = ({
 };
 
 const buildPreviousPageSnapshotWithTiers = (tiersCount) => {
+    if (tiersCount === 0) {
+        return {
+            id: anyObjectId,
+            uuid: anyUuid,
+            comment_id: anyObjectId,
+            published_at: anyISODateTime,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            authors: new Array(1).fill(buildAuthorSnapshot(true))
+        };
+    }
     return {
         tiers: new Array(tiersCount).fill(tierSnapshot),
         updated_at: anyISODateTime
@@ -210,7 +221,6 @@ describe('page.* events', function () {
             .expectStatus(201);
 
         const id = res.body.pages[0].id;
-        const pageToDelete = res.body.pages[0];
 
         await adminAPIAgent
             .delete('pages/' + id)
@@ -228,15 +238,7 @@ describe('page.* events', function () {
             .matchBodySnapshot({
                 page: {
                     current: {},
-                    previous: {
-                        id: anyObjectId,
-                        uuid: anyUuid,
-                        comment_id: anyObjectId,
-                        published_at: anyISODateTime,
-                        created_at: anyISODateTime,
-                        updated_at: anyISODateTime,
-                        authors: new Array(1).fill(buildAuthorSnapshot(true))
-                    }
+                    previous: buildPreviousPageSnapshotWithTiers(0)
                 }
             });
     });
