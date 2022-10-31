@@ -9,6 +9,16 @@ export default class EditNewsletterDesignForm extends Component {
     imageExtensions = IMAGE_EXTENSIONS;
 
     @action
+    onCheckboxChange(property, event) {
+        this.args.newsletter[property] = event.target.checked;
+    }
+
+    @action
+    toggleProperty(property) {
+        this.args.newsletter[property] = !this.args.newsletter[property];
+    }
+
+    @action
     imageUploaded(property, images) {
         if (images[0]) {
             this.args.newsletter[property] = images[0].url;

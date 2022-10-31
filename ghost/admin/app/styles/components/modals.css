@@ -694,6 +694,10 @@
     padding: 12px 0;
 }
 
+.modal-fullsettings-tab-expanded .gh-setting.gh-setting-extra {
+    padding-bottom: 24px;
+}
+
 .modal-fullsettings-form-labs .for-checkbox .input-toggle-component {
     background: var(--white);
 }

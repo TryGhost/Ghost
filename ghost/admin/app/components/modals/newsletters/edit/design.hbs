@@ -173,6 +173,24 @@
             {{#liquid-if isOpen}}
                 <div class="modal-fullsettings-tab-expanded">
                     <div class="gh-stack">
+
+                        {{#if (feature "audienceFeedback")}}
+                            <GhFormGroup @classNames="gh-stack-item gh-setting gh-setting-extra">
+                                <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Ask your readers for feedback</label>
+                                <div class="for-switch small">
+                                    <div class="container">
+                                        <input
+                                            type="checkbox"
+                                            id="capture-feedback"
+                                            checked={{@newsletter.feedbackEnabled}}
+                                            {{on "change" (fn this.onCheckboxChange "feedbackEnabled")}}
+                                        >
+                                        <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "feedbackEnabled")}}></button>
+                                    </div>
+                                </div>
+                            </GhFormGroup>
+                        {{/if}}
+
                         <GhFormGroup @classNames="gh-stack-item">
                             <label class="modal-fullsettings-title">Email footer</label>
                             <KoenigBasicHtmlInput
