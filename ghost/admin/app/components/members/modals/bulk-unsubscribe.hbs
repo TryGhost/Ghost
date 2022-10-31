@@ -46,13 +46,17 @@
                         {{#if this.hasMultipleNewsletters }}
                          <p>
                             Which newsletter should these
-                            <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> members be unsubscribed from?
+                            <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> be unsubscribed from?
                         </p>
-
-                            {{#each this.newsletterList as |newsletter| }}
-
-                            {{/each}}
-
+                        <OneWaySelect
+                                        @value={{this.selectedNewsletter}}
+                                        @options={{this.newsletterList}}
+                                        @optionLabelPath="name"
+                                        @optionValuePath="value"
+                                        @optionTargetPath="name"
+                                        @update={{fn this.setSelectedNewsletter }}
+                                        data-test-select="members-single-newsletter-unsubscribe"
+                                    />
                         {{else}}
 
                         <p>
@@ -81,6 +85,15 @@
             <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" @close}}>
                 <span>Cancel</span>
             </button>
+
+            <GhTaskButton
+                @disabled={{this.isDisabled}}
+                @buttonText="Unsubscribe members"
+                @successText="Unsubscribed"
+                @task={{this.bulkUnsubscribeTask}}
+                @class="gh-btn gh-btn-red gh-btn-icon"
+                data-test-button="confirm"
+            />
 
             {{else}}
             <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" @close}}>

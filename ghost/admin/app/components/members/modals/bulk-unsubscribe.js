@@ -12,6 +12,8 @@ export default class BulkUnsubscribeMembersModal extends Component {
     @tracked error;
     @tracked response;
 
+    @tracked selectedNewsletter;
+
     get isDisabled() {
         return !this.args.data.query;
     }
@@ -33,13 +35,17 @@ export default class BulkUnsubscribeMembersModal extends Component {
     get newsletterList() {
         const newsletters = this.store.peekAll('newsletter');
         const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
-
-        return activeNewsletters.map((newsletter) => {
-            return {
-                label: newsletter.name,
+        let list = [{
+            label: 'All newsletters',
+            value: 'all'
+        }];
+        activeNewsletters.map((newsletter) => {
+            return list.push({
+                name: newsletter.name,
                 value: newsletter.id
-            };
+            });
         });
+        return list;
     }
 
     @action
@@ -47,9 +53,15 @@ export default class BulkUnsubscribeMembersModal extends Component {
         this.selectedLabel = label;
     }
 
+    @action
+    setSelectedNewsletter(newsletter) {
+        this.selectedNewsletter = newsletter;
+    }
+
     @task({drop: true})
     *bulkUnsubscribeTask() {
         try {
+            console.log('this.selectedNewsletter', this.selectedNewsletter); // eslint-disable-line no-console
             const query = new URLSearchParams(this.args.data.query);
             const removeLabelUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
             const response = yield this.ajax.put(removeLabelUrl, {
