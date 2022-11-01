@@ -67,8 +67,10 @@ class VerificationTrigger {
             const createdAt = new Date();
             createdAt.setDate(createdAt.getDate() - 30);
             const events = await this._eventRepository.getCreatedEvents({}, {
-                'data.source': `data.source:'${source}'`,
-                'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
+                source: source,
+                created_at: {
+                    $gt: createdAt.toISOString().replace('T', ' ').substring(0, 19)
+                }
             });
 
             if (events.meta.pagination.total > sourceThreshold) {
@@ -100,8 +102,10 @@ class VerificationTrigger {
         const createdAt = new Date();
         createdAt.setDate(createdAt.getDate() - 30);
         const events = await this._eventRepository.getCreatedEvents({}, {
-            'data.source': `data.source:'import'`,
-            'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
+            source: 'import',
+            created_at: {
+                $gt: createdAt.toISOString().replace('T', ' ').substring(0, 19)
+            }
         });
 
         const membersTotal = await this._membersStats.getTotalMembers();
