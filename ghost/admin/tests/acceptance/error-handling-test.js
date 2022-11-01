@@ -73,7 +73,7 @@ describe('Acceptance: Error Handling', function () {
                 await visit('/signin');
                 await fillIn('[name="identification"]', 'test@example.com');
                 await fillIn('[name="password"]', 'password');
-                await click('.js-login-button');
+                await click('[data-test-button="sign-in"]');
 
                 // has the refresh to update alert
                 expect(findAll('.gh-alert').length).to.equal(1);
