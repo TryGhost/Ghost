@@ -130,7 +130,7 @@ class MembersStats {
         const totalMembers = await this.getTotalMembers();
 
         // perform final calculations in parallel
-        const [total, total_in_range, total_on_date, new_today] = await Promise.all([
+        const [total, totalInRange, totalOnDate, newToday] = await Promise.all([
             totalMembers,
             this.getTotalMembersInRange({days, totalMembers, siteTimezone}),
             this.getTotalMembersOnDatesInRange({days, totalMembers, siteTimezone}),
@@ -138,10 +138,10 @@ class MembersStats {
         ]);
 
         return {
-            total,
-            total_in_range,
-            total_on_date,
-            new_today
+            total: total,
+            total_in_range: totalInRange,
+            total_on_date: totalOnDate,
+            new_today: newToday
         };
     }
 }
