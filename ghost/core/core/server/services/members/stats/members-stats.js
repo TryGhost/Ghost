@@ -1,5 +1,4 @@
 const moment = require('moment-timezone');
-const Promise = require('bluebird');
 
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
 class MembersStats {
@@ -131,14 +130,19 @@ class MembersStats {
         const totalMembers = await this.getTotalMembers();
 
         // perform final calculations in parallel
-        const results = await Promise.props({
-            total: totalMembers,
-            total_in_range: this.getTotalMembersInRange({days, totalMembers, siteTimezone}),
-            total_on_date: this.getTotalMembersOnDatesInRange({days, totalMembers, siteTimezone}),
-            new_today: this.getNewMembersToday({siteTimezone})
-        });
+        const [total, total_in_range, total_on_date, new_today] = await Promise.all([
+            totalMembers,
+            this.getTotalMembersInRange({days, totalMembers, siteTimezone}),
+            this.getTotalMembersOnDatesInRange({days, totalMembers, siteTimezone}),
+            this.getNewMembersToday({siteTimezone})
+        ]);
 
-        return results;
+        return {
+            total,
+            total_in_range,
+            total_on_date,
+            new_today
+        };
     }
 }
 
