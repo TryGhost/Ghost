@@ -251,5 +251,13 @@ describe('Tier', function () {
                 });
             });
         });
+
+        it('Can set the description of a Tier', async function () {
+            const tier = await Tier.create(validInput);
+
+            tier.description = 'Updated description';
+
+            assert.strictEqual('Updated description', tier.description);
+        });
     });
 });
