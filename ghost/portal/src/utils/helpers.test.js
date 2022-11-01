@@ -1,4 +1,4 @@
-import {getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData} from './helpers';
+import {getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -292,6 +292,19 @@ describe('Helpers - ', () => {
             const urlHistory = getUrlHistory();
             expect(localStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toBeUndefined();
+        });
+    });
+
+    describe('getAvailableProducts', () => {
+        it('Does not include paid Tiers when stripe is not configured', () => {
+            const actual = getAvailableProducts({
+                site: {
+                    ...FixturesSite.multipleTiers.basic,
+                    is_stripe_configured: false
+                }
+            });
+
+            expect(actual.length).toBe(0);
         });
     });
 });
