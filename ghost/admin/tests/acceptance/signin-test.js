@@ -62,7 +62,7 @@ describe('Acceptance: Signin', function () {
             expect(findAll('input[name="password"]').length, 'password input field')
                 .to.equal(1);
 
-            await click('.js-login-button');
+            await click('[data-test-button="sign-in"]');
 
             expect(findAll('.form-group.error').length, 'number of invalid fields')
                 .to.equal(2);
@@ -72,7 +72,7 @@ describe('Acceptance: Signin', function () {
 
             await fillIn('[name="identification"]', 'test@example.com');
             await fillIn('[name="password"]', 'invalid');
-            await click('.js-login-button');
+            await click('[data-test-button="sign-in"]');
 
             expect(currentURL(), 'current url').to.equal('/signin');
 
@@ -91,7 +91,7 @@ describe('Acceptance: Signin', function () {
 
             await fillIn('[name="identification"]', 'test@example.com');
             await fillIn('[name="password"]', 'thisissupersafe');
-            await click('.js-login-button');
+            await click('[data-test-button="sign-in"]');
             expect(currentURL(), 'currentURL').to.equal('/dashboard');
         });
     });

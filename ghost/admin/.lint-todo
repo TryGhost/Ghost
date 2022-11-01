@@ -1003,3 +1003,9 @@ remove|ember-template-lint|no-action|19|35|19|35|8b04fb9251c6a34b6bfc2995b527539
 remove|ember-template-lint|no-action|31|35|31|35|ddfad6e48c0df2368eed5dd9faf83f2a96dc182e|1662681600000|1673053200000|1678237200000|app/templates/reset.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|19|28|19|28|ea0378c5df53f2be82f0fd59e0c538efd7176851|1662681600000|1673053200000|1678237200000|app/templates/reset.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|31|28|31|28|06311a82a9589d4c126863466d56c7c4a76409d0|1662681600000|1673053200000|1678237200000|app/templates/reset.hbs
+remove|ember-template-lint|no-action|15|85|15|85|5f277699a01bbbcf2e74101096f9c9bff189af74|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
+remove|ember-template-lint|no-action|33|35|33|35|85790bc3673715479aa2678f29d8a61e47281bc7|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
+remove|ember-template-lint|no-action|34|39|34|39|e65f48edccba27e52c1f8358a9795dc8ff20d5ef|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
+remove|ember-template-lint|no-action|50|35|50|35|7432725bd18c48f69bf22dc9487d14d25dc6c1b7|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|33|28|33|28|5b371baf419f247953b91b626611cb831c524af3|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|50|28|50|28|40caf07c7cebf6f4321c5b7e7f2f426b5c30217b|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs

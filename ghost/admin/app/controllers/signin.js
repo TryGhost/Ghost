@@ -1,22 +1,18 @@
 // TODO: bump lint rules to be able to take advantage of https://github.com/ember-cli/eslint-plugin-ember/issues/560
 /* eslint-disable ghost/ember/alias-model-in-controller */
 
-import $ from 'jquery';
 import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
-import {alias} from '@ember/object/computed';
 import {htmlSafe} from '@ember/template';
 import {isArray as isEmberArray} from '@ember/array';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-@classic
 export default class SigninController extends Controller.extend(ValidationEngine) {
-    @controller
-        application;
+    @controller application;
 
     @service ajax;
     @service config;
@@ -25,29 +21,32 @@ export default class SigninController extends Controller.extend(ValidationEngine
     @service session;
     @service settings;
 
-    submitting = false;
-    loggingIn = false;
-    authProperties = null;
-    flowErrors = '';
-    passwordResetEmailSent = false;
+    @tracked submitting = false;
+    @tracked loggingIn = false;
+    @tracked flowErrors = '';
+    @tracked passwordResetEmailSent = false;
 
     // ValidationEngine settings
     validationType = 'signin';
 
-    init() {
-        super.init(...arguments);
-        this.authProperties = ['identification', 'password'];
-    }
+    authProperties = ['identification', 'password'];
 
-    @alias('model')
-        signin;
+    get signin() {
+        return this.model;
+    }
 
     @action
-    authenticate() {
-        return this.validateAndAuthenticate.perform();
+    handleInput(event) {
+        this.signin[event.target.name] = event.target.value;
     }
 
-    @(task(function* (authStrategy, authentication) {
+    @action
+    validateProperty(property) {
+        return this.validate({property});
+    }
+
+    @task({drop: true})
+    *authenticateTask(authStrategy, authentication) {
         try {
             return yield this.session
                 .authenticate(authStrategy, ...authentication)
@@ -63,18 +62,18 @@ export default class SigninController extends Controller.extend(ValidationEngine
                 mainError.message = htmlSafe(mainError.message || '');
                 mainError.context = htmlSafe(mainError.context || '');
 
-                this.set('flowErrors', (mainError.context.string || mainError.message.string));
+                this.flowErrors = (mainError.context.string || mainError.message.string);
 
                 if (mainError.type === 'PasswordResetRequiredError') {
-                    this.set('passwordResetEmailSent', true);
+                    this.passwordResetEmailSent = true;
                 }
 
                 if (mainError.context.string.match(/user with that email/i)) {
-                    this.get('signin.errors').add('identification', '');
+                    this.signin.errors.add('identification', '');
                 }
 
                 if (mainError.context.string.match(/password is incorrect/i)) {
-                    this.get('signin.errors').add('password', '');
+                    this.signin.errors.add('password', '');
                 }
             } else {
                 console.error(error); // eslint-disable-line no-console
@@ -87,17 +86,14 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
             return false;
         }
-    }).drop())
-        authenticateTask;
+    }
 
-    @(task(function* () {
+    @task({drop: true})
+    *validateAndAuthenticateTask() {
         let signin = this.signin;
         let authStrategy = 'authenticator:cookie';
 
-        this.set('flowErrors', '');
-        // Manually trigger events for input fields, ensuring legacy compatibility with
-        // browsers and password managers that don't send proper events on autofill
-        $('#login').find('input').trigger('change');
+        this.flowErrors = '';
 
         // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'signin'
         this.hasValidated.addObjects(this.authProperties);
@@ -105,19 +101,19 @@ export default class SigninController extends Controller.extend(ValidationEngine
         try {
             yield this.validate({property: 'signin'});
             return yield this.authenticateTask
-                .perform(authStrategy, [signin.get('identification'), signin.get('password')]);
+                .perform(authStrategy, [signin.identification, signin.password]);
         } catch (error) {
-            this.set('flowErrors', 'Please fill out the form to sign in.');
+            this.flowErrors = 'Please fill out the form to sign in.';
         }
-    }).drop())
-        validateAndAuthenticate;
+    }
 
-    @task(function* () {
-        let email = this.get('signin.identification');
-        let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'password_reset');
+    @task
+    *forgotPasswordTask() {
+        let email = this.signin.identification;
+        let forgottenUrl = this.ghostPaths.url.api('authentication', 'password_reset');
         let notifications = this.notifications;
 
-        this.set('flowErrors', '');
+        this.flowErrors = '';
         // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'forgotPassword'
         this.hasValidated.addObject('identification');
 
@@ -132,7 +128,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
         } catch (error) {
             // ValidationEngine throws "undefined" for failed validation
             if (!error) {
-                return this.set('flowErrors', 'We need your email address to reset your password!');
+                return this.flowErrors = 'We need your email address to reset your password!';
             }
 
             if (isVersionMismatchError(error)) {
@@ -142,15 +138,14 @@ export default class SigninController extends Controller.extend(ValidationEngine
             if (error && error.payload && error.payload.errors && isEmberArray(error.payload.errors)) {
                 let [{message}] = error.payload.errors;
 
-                this.set('flowErrors', message);
+                this.flowErrors = message;
 
                 if (message.match(/no user|not found/)) {
-                    this.get('signin.errors').add('identification', '');
+                    this.signin.errors.add('identification', '');
                 }
             } else {
                 notifications.showAPIError(error, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
             }
         }
-    })
-        forgotten;
+    }
 }
