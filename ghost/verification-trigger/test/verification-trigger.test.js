@@ -185,10 +185,11 @@ describe('Email verification flow', function () {
         }, new Date()));
 
         eventStub.callCount.should.eql(1);
-        eventStub.lastCall.lastArg.should.have.property('data.source');
-        eventStub.lastCall.lastArg.should.have.property('data.created_at');
-        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'api'`);
-        eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
+        eventStub.lastCall.lastArg.should.have.property('source');
+        eventStub.lastCall.lastArg.source.should.eql('api');
+        eventStub.lastCall.lastArg.should.have.property('created_at');
+        eventStub.lastCall.lastArg.created_at.should.have.property('$gt');
+        eventStub.lastCall.lastArg.created_at.$gt.should.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
     });
 
     it('Triggers when a number of members are imported', async function () {
@@ -221,10 +222,11 @@ describe('Email verification flow', function () {
         await trigger.testImportThreshold();
 
         eventStub.callCount.should.eql(1);
-        eventStub.lastCall.lastArg.should.have.property('data.source');
-        eventStub.lastCall.lastArg.should.have.property('data.created_at');
-        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'import'`);
-        eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
+        eventStub.lastCall.lastArg.should.have.property('source');
+        eventStub.lastCall.lastArg.source.should.eql('import');
+        eventStub.lastCall.lastArg.should.have.property('created_at');
+        eventStub.lastCall.lastArg.created_at.should.have.property('$gt');
+        eventStub.lastCall.lastArg.created_at.$gt.should.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         emailStub.callCount.should.eql(1);
         emailStub.lastCall.firstArg.should.eql({
@@ -268,10 +270,11 @@ describe('Email verification flow', function () {
         });
 
         eventStub.callCount.should.eql(1);
-        eventStub.lastCall.lastArg.should.have.property('data.source');
-        eventStub.lastCall.lastArg.should.have.property('data.created_at');
-        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'admin'`);
-        eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
+        eventStub.lastCall.lastArg.should.have.property('source');
+        eventStub.lastCall.lastArg.source.should.eql('admin');
+        eventStub.lastCall.lastArg.should.have.property('created_at');
+        eventStub.lastCall.lastArg.created_at.should.have.property('$gt');
+        eventStub.lastCall.lastArg.created_at.$gt.should.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         emailStub.callCount.should.eql(1);
         emailStub.lastCall.firstArg.should.eql({
@@ -316,10 +319,11 @@ describe('Email verification flow', function () {
         });
 
         eventStub.callCount.should.eql(1);
-        eventStub.lastCall.lastArg.should.have.property('data.source');
-        eventStub.lastCall.lastArg.should.have.property('data.created_at');
-        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'api'`);
-        eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
+        eventStub.lastCall.lastArg.should.have.property('source');
+        eventStub.lastCall.lastArg.source.should.eql('api');
+        eventStub.lastCall.lastArg.should.have.property('created_at');
+        eventStub.lastCall.lastArg.created_at.should.have.property('$gt');
+        eventStub.lastCall.lastArg.created_at.$gt.should.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         emailStub.callCount.should.eql(1);
         emailStub.lastCall.firstArg.should.eql({
