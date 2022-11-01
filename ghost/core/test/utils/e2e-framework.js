@@ -292,13 +292,15 @@ const getAgentsForMembers = async () => {
 };
 
 /**
- * TODO: for now this agent returns a supertest agent instead of a proper test agent.
- * We need to add support for this.
+ * @NOTE: for now method returns a supertest agent for Frontend instead of test agent with snapshot support.
+ *        frontendAgent should be returning an instance of TestAgent.
+ *  @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>, frontendAgent: InstanceType<supertest.SuperAgentTest>, contentAPIAgent: InstanceType<ContentAPITestAgent>}>} agents
  */
 const getAgentsWithFrontend = async () => {
     let membersAgent;
     let adminAgent;
     let frontendAgent;
+    let contentAPIAgent;
 
     const bootOptions = {
         frontend: true,
@@ -316,6 +318,10 @@ const getAgentsWithFrontend = async () => {
             apiURL: '/ghost/api/admin/',
             originURL
         });
+        contentAPIAgent = new ContentAPITestAgent(app, {
+            apiURL: '/ghost/api/content/',
+            originURL
+        });
         frontendAgent = supertest.agent(originURL);
     } catch (error) {
         error.message = `Unable to create test agent. ${error.message}`;
@@ -325,7 +331,8 @@ const getAgentsWithFrontend = async () => {
     return {
         adminAgent,
         membersAgent,
-        frontendAgent
+        frontendAgent,
+        contentAPIAgent
     };
 };
 
