@@ -300,6 +300,11 @@ export function getAvailableProducts({site}) {
     }
 
     return products.filter(product => !!product).filter((product) => {
+        if (site.is_stripe_configured) {
+            return true;
+        }
+        return product.type !== 'paid';
+    }).filter((product) => {
         return !!(product.monthlyPrice && product.yearlyPrice);
     }).filter((product) => {
         return !!(Object.keys(product.monthlyPrice).length > 0 && Object.keys(product.yearlyPrice).length > 0);
