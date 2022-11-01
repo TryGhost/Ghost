@@ -126,4 +126,20 @@ describe('Tiers API', function () {
 
         assert(updatedTier.trial_days === 0, `The trial_days should have been set to 0`);
     });
+
+    it('Can edit description', async function () {
+        const {body: {tiers: [tier]}} = await agent.get('/tiers/?type:paid&limit=1');
+
+        await agent.put(`/tiers/${tier.id}/`)
+            .body({
+                tiers: [{
+                    description: 'Updated description'
+                }]
+            })
+            .expectStatus(200);
+
+        const {body: {tiers: [updatedTier]}} = await agent.get(`/tiers/${tier.id}/`);
+
+        assert.strictEqual('Updated description', updatedTier.description);
+    });
 });
