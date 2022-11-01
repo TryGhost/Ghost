@@ -720,9 +720,19 @@ module.exports = class MemberRepository {
         const memberIds = memberRows.map(row => row.id);
 
         if (data.action === 'unsubscribe') {
-            return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {column: 'member_id'});
+            const hasNewsletterSelected = (Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null);
+            if (hasNewsletterSelected) {
+                const newsletters = await this._Member.bulkFind('members_newsletters', {
+                    newsletter_id: data.newsletter
+                });
+                const newsletterIds = newsletters.filter(newsletter => memberIds.includes(newsletter.member_id));
+                const toUnsubscribe = newsletterIds.map(newsletter => newsletter.id);
+                return await this._Member.bulkDestroy(toUnsubscribe, 'members_newsletters', {column: 'id'});
+            }
+            if (!hasNewsletterSelected) {
+                return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {column: 'member_id'});
+            }
         }
-
         if (data.action === 'removeLabel') {
             const membersLabelsRows = await this._Member.getLabelRelations({
                 labelId: data.meta.label.id,
@@ -797,7 +807,9 @@ module.exports = class MemberRepository {
      * @param {Object} data.subscription
      * @param {String} data.offerId
      * @param {import('@tryghost/member-attribution/lib/attribution').AttributionResource} [data.attribution]
-     * @param {*} options
+     * @param {import { newsletters } from '../../../core/test/e2e-api/admin/members-exporter.test';
+*} optionsimport { member } from '../../../portal/src/utils/test-fixtures';
+
      * @returns
      */
     async linkSubscription(data, options = {}) {

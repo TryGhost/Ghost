@@ -12,7 +12,7 @@ export default class BulkUnsubscribeMembersModal extends Component {
     @tracked error;
     @tracked response;
 
-    @tracked selectedNewsletter;
+    @tracked selectedNewsletterId = null;
 
     get isDisabled() {
         return !this.args.data.query;
@@ -36,7 +36,7 @@ export default class BulkUnsubscribeMembersModal extends Component {
         const newsletters = this.store.peekAll('newsletter');
         const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
         let list = [{
-            label: 'All newsletters',
+            name: 'All newsletters',
             value: 'all'
         }];
         activeNewsletters.map((newsletter) => {
@@ -55,26 +55,29 @@ export default class BulkUnsubscribeMembersModal extends Component {
 
     @action
     setSelectedNewsletter(newsletter) {
-        this.selectedNewsletter = newsletter;
+        if (newsletter === 'all') {
+            this.selectedNewsletterId = null;
+        } else {
+            this.selectedNewsletterId = newsletter;
+        }
     }
 
     @task({drop: true})
     *bulkUnsubscribeTask() {
         try {
-            console.log('this.selectedNewsletter', this.selectedNewsletter); // eslint-disable-line no-console
-            const query = new URLSearchParams(this.args.data.query);
+            let args = this.args.data.query;
+            const query = new URLSearchParams(args);
             const removeLabelUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
-            const response = yield this.ajax.put(removeLabelUrl, {
-                data: {
-                    bulk: {
-                        action: 'unsubscribe',
-                        meta: {}
-                    }
+            const response = yield this.ajax.put(removeLabelUrl, {data: {
+                bulk: {
+                    action: 'unsubscribe',
+                    newsletter: (this.selectedNewsletterId ? this.selectedNewsletterId : null),
+                    meta: {}
                 }
-            });
+            }});
 
             this.args.data.onComplete?.();
-
+            
             this.response = response?.bulk?.meta;
 
             return true;

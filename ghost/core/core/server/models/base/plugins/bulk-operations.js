@@ -79,6 +79,12 @@ const del = createBulkOperation(delSingle, delMultiple);
  */
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({}, {
+        // there is possible another function that already does this on the codebase.
+        bulkFind: function bulkFind(tableName, options) {
+            tableName = tableName || this.prototype.tableName;
+            return Bookshelf.knex(tableName).where(options);
+        },
+
         bulkAdd: function bulkAdd(data, tableName) {
             tableName = tableName || this.prototype.tableName;
 
@@ -101,7 +107,6 @@ module.exports = function (Bookshelf) {
          */
         bulkDestroy: function bulkDestroy(data, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
-
             return del(Bookshelf.knex, tableName, data, options);
         }
     });

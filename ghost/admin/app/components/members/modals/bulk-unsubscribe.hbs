@@ -49,11 +49,11 @@
                             <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> be unsubscribed from?
                         </p>
                         <OneWaySelect
-                                        @value={{this.selectedNewsletter}}
+                                        @value={{this.selectedNewsletterId}}
                                         @options={{this.newsletterList}}
                                         @optionLabelPath="name"
                                         @optionValuePath="value"
-                                        @optionTargetPath="name"
+                                        @optionTargetPath="value"
                                         @update={{fn this.setSelectedNewsletter }}
                                         data-test-select="members-single-newsletter-unsubscribe"
                                     />
