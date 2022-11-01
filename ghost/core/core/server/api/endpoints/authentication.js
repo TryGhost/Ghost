@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const api = require('./index');
 const config = require('../../../shared/config');
 const tpl = require('@tryghost/tpl');
