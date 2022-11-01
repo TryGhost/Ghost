@@ -15,8 +15,13 @@
     padding-right: 0;
 }
 
+.gh-members-activity .view-container {
+    overflow-x: hidden;
+    height: calc(100% - 56px);
+}
+
 .gh-members-activity .gh-list-scrolling {
-    height: calc(100vh - 150px);
+    height: calc(100vh - 103px);
 }
 
 .gh-members-activity-single .gh-list-scrolling {
