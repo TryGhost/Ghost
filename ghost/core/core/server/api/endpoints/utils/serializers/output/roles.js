@@ -13,8 +13,8 @@ module.exports = {
             };
         } else {
             return Promise.all(
-                roles.map((role) => {
-                    const permissionResult = canThis(frame.options.context).assign.role(role)
+                roles.map(async (role) => {
+                    const permissionResult = await canThis(frame.options.context).assign.role(role)
                         .return(role)
                         .catch(() => {});
                     return permissionResult && (permissionResult.name !== 'Owner');   
