@@ -49,22 +49,20 @@
                             <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> be unsubscribed from?
                         </p>
                         <OneWaySelect
-                                        @value={{this.selectedNewsletterId}}
-                                        @options={{this.newsletterList}}
-                                        @optionLabelPath="name"
-                                        @optionValuePath="value"
-                                        @optionTargetPath="value"
-                                        @update={{fn this.setSelectedNewsletter }}
-                                        data-test-select="members-single-newsletter-unsubscribe"
-                                    />
+                            @value={{this.selectedNewsletterId}}
+                            @options={{this.newsletterList}}
+                            @optionLabelPath="name"
+                            @optionValuePath="value"
+                            @optionTargetPath="value"
+                            @update={{this.setSelectedNewsletter}}
+                            data-test-select="members-single-newsletter-unsubscribe"
+                        />
                         {{else}}
-
                         <p>
                             You're about to unsubscribe
                             <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> from email newsletters.
                             Are you sure?
                         </p>
-
                         {{/if}}
 
                     {{/if}}
