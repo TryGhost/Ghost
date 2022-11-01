@@ -88,14 +88,19 @@ class PaymentsService {
 
         const email = options.email || null;
 
-        const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, {
+        const data = {
             metadata,
             successUrl: options.successUrl,
             cancelUrl: options.cancelUrl,
-            customerEmail: customer ? email : null,
             trialDays: trialDays ?? tier.trialDays,
             coupon: coupon?.id
-        });
+        };
+
+        if (!customer && email) {
+            data.customerEmail = email;
+        }
+
+        const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, data);
 
         return session.url;
     }
@@ -108,9 +113,7 @@ class PaymentsService {
         for (const row of rows) {
             const customer = await this.stripeAPIService.getCustomer(row.customer_id);
             if (!customer.deleted) {
-                return {
-                    id: customer.id
-                };
+                return customer;
             }
         }
 
