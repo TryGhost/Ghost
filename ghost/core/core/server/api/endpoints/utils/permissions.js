@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:permissions');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const permissions = require('../../../services/permissions');
 const tpl = require('@tryghost/tpl');
