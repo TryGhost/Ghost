@@ -67,7 +67,7 @@ class PaymentsService {
         let coupon = null;
         let trialDays = null;
         if (offer) {
-            if (offer.tier.id !== tier.id) {
+            if (!tier.id.equals(offer.tier.id)) {
                 throw new BadRequestError({
                     message: 'This Offer is not valid for the Tier'
                 });
