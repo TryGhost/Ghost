@@ -67,7 +67,7 @@ class PaymentsService {
         let coupon = null;
         let trialDays = null;
         if (offer) {
-            if (offer.tier.id !== tier.id) {
+            if (!tier.id.equals(offer.tier.id)) {
                 throw new BadRequestError({
                     message: 'This Offer is not valid for the Tier'
                 });
@@ -86,11 +86,13 @@ class PaymentsService {
 
         const price = await this.getPriceForTierCadence(tier, cadence);
 
+        const email = options.email || null;
+
         const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, {
             metadata,
             successUrl: options.successUrl,
             cancelUrl: options.cancelUrl,
-            customerEmail: options.email,
+            customerEmail: customer ? email : null,
             trialDays: trialDays ?? tier.trialDays,
             coupon: coupon?.id
         });
@@ -119,8 +121,8 @@ class PaymentsService {
 
     async createCustomerForMember(member) {
         const customer = await this.stripeAPIService.createCustomer({
-            email: member.email,
-            name: member.name
+            email: member.get('email'),
+            name: member.get('name')
         });
 
         await this.StripeCustomerModel.add({
