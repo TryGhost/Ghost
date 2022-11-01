@@ -138,7 +138,7 @@ class MembersStats {
         ]);
 
         return {
-            total: total,
+            total,
             total_in_range: totalInRange,
             total_on_date: totalOnDate,
             new_today: newToday
