@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('validators:handle');
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
 

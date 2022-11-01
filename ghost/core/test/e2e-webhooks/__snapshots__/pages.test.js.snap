@@ -571,7 +571,7 @@ Object {
 }
 `;
 
-exports[`page.* events page.rescheduled event is triggered 1: [headers] 1`] = `
+exports[`page.* events page.published.edited event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate",
   "content-length": Any<Number>,
@@ -581,7 +581,7 @@ Object {
 }
 `;
 
-exports[`page.* events page.rescheduled event is triggered 2: [body] 1`] = `
+exports[`page.* events page.published.edited event is triggered 2: [body] 1`] = `
 Object {
   "page": Object {
     "current": Object {
@@ -686,8 +686,8 @@ Object {
       },
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "slug": "testing-page-rescheduled-webhook",
-      "status": "scheduled",
+      "slug": "testing-page-published-edited-webhook",
+      "status": "published",
       "tags": Array [],
       "tiers": Array [
         Object {
@@ -727,7 +727,7 @@ Object {
           "yearly_price_id": null,
         },
       ],
-      "title": "testing page.rescheduled webhook",
+      "title": "testing page.published.edited webhook (edited!)",
       "twitter_description": null,
       "twitter_image": null,
       "twitter_title": null,
@@ -737,7 +737,6 @@ Object {
       "visibility": "public",
     },
     "previous": Object {
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "tiers": Array [
         Object {
           "active": true,
@@ -776,6 +775,7 @@ Object {
           "yearly_price_id": null,
         },
       ],
+      "title": "testing page.published.edited webhook",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   },
