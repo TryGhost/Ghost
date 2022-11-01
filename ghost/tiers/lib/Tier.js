@@ -338,6 +338,7 @@ function validateDescription(value) {
             message: 'Tier description must be a string with a maximum of 191 characters'
         });
     }
+    return value;
 }
 
 function validateStatus(value) {
