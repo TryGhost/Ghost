@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -80,14 +79,14 @@ module.exports = {
             .getFilteredCollectionQuery({filter: `email_id:${emailId}+status:[pending,failed]`}, knexOptions)
             .select('id', 'member_segment');
 
-        const batchResults = await Promise.map(batchIds, async ({id: emailBatchId, member_segment: memberSegment}) => {
+        const batchResults = await Promise.all(batchIds.map(async ({id: emailBatchId, member_segment: memberSegment}) => {
             try {
                 await this.processEmailBatch({emailBatchId, options, memberSegment});
                 return new SuccessfulBatch(emailBatchId);
             } catch (error) {
                 return new FailedBatch(emailBatchId, error);
             }
-        }, {concurrency: 10});
+        }, {concurrency: 10}));
 
         const successes = batchResults.filter(response => (response instanceof SuccessfulBatch));
         const failures = batchResults.filter(response => (response instanceof FailedBatch));
