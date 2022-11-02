@@ -293,10 +293,11 @@ const getAgentsForMembers = async () => {
 
 /**
  * @NOTE: for now method returns a supertest agent for Frontend instead of test agent with snapshot support.
- *        frontendAgent should be returning an instance of TestAgent.
- *  @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>, frontendAgent: InstanceType<supertest.SuperAgentTest>, contentAPIAgent: InstanceType<ContentAPITestAgent>}>} agents
+ *        frontendAgent should be returning an instance of TestAgent (related: https://github.com/TryGhost/Toolbox/issues/471)
+ *  @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>, frontendAgent: InstanceType<supertest.SuperAgentTest>, contentAPIAgent: InstanceType<ContentAPITestAgent>, ghostServer: Express.Application}>} agents
  */
 const getAgentsWithFrontend = async () => {
+    let ghostServer;
     let membersAgent;
     let adminAgent;
     let frontendAgent;
@@ -307,7 +308,9 @@ const getAgentsWithFrontend = async () => {
         server: true
     };
     try {
-        const app = (await startGhost(bootOptions)).rootApp;
+        ghostServer = await startGhost(bootOptions);
+        const app = ghostServer.rootApp;
+
         const originURL = configUtils.config.get('url');
 
         membersAgent = new MembersAPITestAgent(app, {
@@ -332,7 +335,9 @@ const getAgentsWithFrontend = async () => {
         adminAgent,
         membersAgent,
         frontendAgent,
-        contentAPIAgent
+        contentAPIAgent,
+        // @NOTE: ghost server should not be exposed ideally, it's a hack (see commit message)
+        ghostServer
     };
 };
 

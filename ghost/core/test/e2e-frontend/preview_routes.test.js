@@ -34,6 +34,10 @@ describe('Frontend Routing: Preview Routes', function () {
         request = supertest.agent(config.get('url'));
     });
 
+    after(async function () {
+        await testUtils.stopGhost();
+    });
+
     before(addPosts);
 
     it('should display draft posts accessed via uuid', async function () {
