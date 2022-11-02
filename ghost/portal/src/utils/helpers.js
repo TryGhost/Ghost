@@ -179,6 +179,26 @@ export function hasPrice({site = {}, plan}) {
     return false;
 }
 
+export function getCheckoutSessionDataFromPlanAttribute(site, plan) {
+    const products = getAvailableProducts({site});
+    const defaultTier = products.find(p => p.type === 'paid');
+    if (plan === 'monthly') {
+        return {
+            cadence: 'month',
+            tierId: defaultTier.id
+        };
+    }
+    if (plan === 'yearly') {
+        return {
+            cadence: 'year',
+            tierId: defaultTier.id
+        };
+    }
+    return {
+        priceId: plan
+    };
+}
+
 export function getQueryPrice({site = {}, priceId}) {
     const prices = getAvailablePrices({site});
     if (priceId === 'free') {

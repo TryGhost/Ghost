@@ -165,7 +165,6 @@ describe('Member Data attributes:', () => {
             const {event, errorEl, siteUrl, clickHandler, site, member, element} = getMockData();
 
             const paidTier = site.products.find(p => p.type === 'paid');
-            const plan = paidTier.monthlyPrice.id;
 
             await planClickHandler({event, errorEl, siteUrl, clickHandler, site, member, el: element});
             expect(window.fetch).toHaveBeenNthCalledWith(1,
@@ -174,7 +173,8 @@ describe('Member Data attributes:', () => {
                 }
             );
             const expectedBody = {
-                priceId: plan,
+                cadence: 'month',
+                tierId: paidTier.id,
                 identity: 'session-identity',
                 successUrl: 'https://portal.localhost/success',
                 cancelUrl: 'https://portal.localhost/cancel',
@@ -205,14 +205,14 @@ describe('Member Data attributes:', () => {
             let {event, errorEl, siteUrl, clickHandler, site, member, element} = getMockData();
             member = FixtureMember.free;
             const paidTier = site.products.find(p => p.type === 'paid');
-            const plan = paidTier.monthlyPrice.id;
 
             await planClickHandler({event, errorEl, siteUrl, clickHandler, site, member, el: element});
             expect(window.fetch).toHaveBeenNthCalledWith(1, 'https://portal.localhost/members/api/session', {
                 credentials: 'same-origin'
             });
             const expectedBody = {
-                priceId: plan,
+                cadence: 'month',
+                tierId: paidTier.id,
                 identity: 'session-identity',
                 successUrl: 'https://portal.localhost/success',
                 cancelUrl: 'https://portal.localhost/cancel',

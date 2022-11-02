@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import {getQueryPrice, getUrlHistory} from './utils/helpers';
+import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
 import {HumanReadableError} from './utils/errors';
 
 export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
@@ -68,11 +68,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
-    let priceId = '';
-    if (plan) {
-        const price = getQueryPrice({site, priceId: plan.toLowerCase()});
-        priceId = price ? price.id : plan;
-    }
+    let requestData = getCheckoutSessionDataFromPlanAttribute(site, plan);
     let successUrl = el.dataset.membersSuccess;
     let cancelUrl = el.dataset.membersCancel;
     let checkoutSuccessUrl;
@@ -113,7 +109,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                priceId: priceId,
+                ...requestData,
                 identity: identity,
                 successUrl: checkoutSuccessUrl,
                 cancelUrl: checkoutCancelUrl,
