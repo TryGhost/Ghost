@@ -132,6 +132,9 @@ module.exports = {
 
     counts: {
         permissions: false,
+        options: [
+            'ids'
+        ],
         async query(frame) {
             return commentsService.controller.count(frame);
         }
