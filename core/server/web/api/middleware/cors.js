@@ -81,7 +81,7 @@ function corsOptionsDelegate(req, cb) {
 }
 
 /**
- * 
+ *
  * @param {Express.Request} req
  * @param {Express.Response} res
  * @param {Function} next

@@ -53,4 +53,19 @@ function corsOptionsDelegate(req, callback) {
     callback(null, corsOptions);
 }
 
-module.exports = cors(corsOptionsDelegate);
+/**
+ *
+ * @param {Express.Request} req
+ * @param {Express.Response} res
+ * @param {Function} next
+ */
+const handleCaching = (req, res, next) => {
+    // @NOTE: try to add native support for dynamic 'vary' header value in 'cors' module
+    res.vary('Origin');
+    next();
+};
+
+module.exports = [
+    cors(corsOptionsDelegate),
+    handleCaching
+];
