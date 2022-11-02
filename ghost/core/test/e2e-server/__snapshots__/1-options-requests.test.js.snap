@@ -7,7 +7,7 @@ Object {
   "content-length": "8",
   "content-type": "text/html; charset=utf-8",
   "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
-  "vary": "Accept-Version, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -19,7 +19,7 @@ Object {
   "content-length": "8",
   "content-type": "text/html; charset=utf-8",
   "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
-  "vary": "Accept-Version, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

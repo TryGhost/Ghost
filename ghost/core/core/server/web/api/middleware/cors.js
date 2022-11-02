@@ -65,7 +65,7 @@ function getAllowlist() {
  * @param  {Function} cb  callback that configures CORS.
  * @return {null}
  */
-function handleCORS(req, cb) {
+function corsOptionsDelegate(req, cb) {
     const origin = req.get('origin');
 
     // Request must have an Origin header
@@ -81,4 +81,19 @@ function handleCORS(req, cb) {
     return cb(null, DISABLE_CORS);
 }
 
-module.exports = cors(handleCORS);
+/**
+ * 
+ * @param {Express.Request} req
+ * @param {Express.Response} res
+ * @param {Function} next
+ */
+const handleCaching = (req, res, next) => {
+    // @NOTE: try to add native support for dynamic 'vary' header value in 'cors' module
+    res.vary('Origin');
+    next();
+};
+
+module.exports = [
+    cors(corsOptionsDelegate),
+    handleCaching
+];
