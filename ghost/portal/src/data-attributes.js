@@ -68,7 +68,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
-    let requestData = getCheckoutSessionDataFromPlanAttribute(site, plan);
+    let requestData = getCheckoutSessionDataFromPlanAttribute(site, plan.toLowerCase());
     let successUrl = el.dataset.membersSuccess;
     let cancelUrl = el.dataset.membersCancel;
     let checkoutSuccessUrl;
