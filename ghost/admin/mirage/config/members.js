@@ -290,15 +290,45 @@ export default function mockMembers(server) {
     }));
 
     server.get('/members/events/', withPermissionsCheck(ALLOWED_ROLES, function ({memberActivityEvents}, {queryParams}) {
-        let {limit} = queryParams;
+        let {limit, filter, page} = queryParams;
 
         limit = +limit || 15;
+        page = +page || 1;
 
-        let collection = memberActivityEvents.all().sort((a, b) => {
-            return (new Date(a.createdAt)) - (new Date(b.createdAt));
-        }).slice(0, limit);
+        let collection = memberActivityEvents.all();
+        collection = collection.sort((a, b) => {
+            return Number(b.id) - Number(a.id);
+        });
 
-        return collection;
+        if (filter) {
+            try {
+                const nqlFilter = nql(filter, {
+                    expansions: [
+                        {
+                            key: 'data.created_at',
+                            replacement: 'created_at'
+                        }
+                    ]
+                });
+
+                collection = collection.filter((event) => {
+                    const serializedEvent = {};
+
+                    // mirage model keys match our main model keys, so we need to transform
+                    // camelCase to underscore to match the filter format
+                    Object.keys(event.attrs).forEach((key) => {
+                        serializedEvent[underscore(key)] = event.attrs[key];
+                    });
+
+                    return nqlFilter.queryJSON(serializedEvent);
+                });
+            } catch (err) {
+                console.error(err); // eslint-disable-line
+                throw err;
+            }
+        }
+
+        return paginateModelCollection('members', collection, page, limit);
     }));
 
     mockMembersStats(server);
