@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('importer:tags');
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
-const { ValidationError } = require('@tryghost/errors');
 
 class TagsImporter extends BaseImporter {
     constructor(allDataFromFile) {
