@@ -12,10 +12,18 @@ const isString = require('lodash/isString');
  * @param {'public'|'private'} profile Use "private" if you do not want caching
  * @param {object} [options]
  * @param {number} [options.maxAge] The max-age in seconds to use when profile is "public"
+ * @param {number} [options.staleWhileRevalidate] The stale-while-revalidate in seconds to use when profile is "public"
  */
 const cacheControl = (profile, options = {maxAge: 0}) => {
+    const isOptionHasProperty = property => Object.prototype.hasOwnProperty.call(options, property);
+    const publicOptions = [
+        'public',
+        `max-age=${options.maxAge}`,
+        isOptionHasProperty('staleWhileRevalidate') ? `stale-while-revalidate=${options.staleWhileRevalidate}` : ''
+    ];
+
     const profiles = {
-        public: `public, max-age=${options.maxAge}`,
+        public: publicOptions.filter(option => option).join(', '),
         private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     };
 

@@ -34,6 +34,15 @@ describe('Cache-Control middleware', function () {
         });
     });
 
+    it('correctly sets the public profile headers with staleWhileRevalidate', function (done) {
+        cacheControl('public', {maxAge: 1, staleWhileRevalidate: 9})(null, res, function (a) {
+            should.not.exist(a);
+            res.set.calledOnce.should.be.true();
+            res.set.calledWith({'Cache-Control': 'public, max-age=1, stale-while-revalidate=9'}).should.be.true();
+            done();
+        });
+    });
+
     it('correctly sets the private profile headers', function (done) {
         cacheControl('private')(null, res, function (a) {
             should.not.exist(a);
