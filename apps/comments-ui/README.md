@@ -4,17 +4,19 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Basic Setup
+
+This section is mostly relevant for core team only for active Comments development.
+
+- Run `yarn start:dev` to start Comments in development mode
+- Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- To use the local Comments script in a local Ghost site
+    - Update `config.local.json` in Ghost repo to add "comments" config pointing to local dev server url as instructed on terminal.
+    - By default, this uses port `5368` for loading local Comments script on Ghost site. It's also possible to specify a custom port when running the script using - `--port=xxxx`.
+
 ## Available Scripts
 
 In the project directory, you can run:
-
-### `yarn start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
 ### `yarn test`
 
