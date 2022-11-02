@@ -15,8 +15,8 @@ Cypress.Commands.add('login', (memberData) => {
 Cypress.Commands.add('mockAddComments', () => {
     cy.intercept(
         {
-            method: 'POST',
-            url: '/members/api/comments/'
+            method: 'GET',
+            url: '/members/api/comments/counts/'
         },
         [] // and force the response to be: []
     ).as('getCounts'); // and assign an alias
@@ -47,7 +47,7 @@ Cypress.Commands.add('mockComments', (count, override = {}) => {
 
     cy.intercept(
         {
-            method: 'POST',
+            method: 'GET',
             url: '/members/api/comments/counts/'
         },
         []

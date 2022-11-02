@@ -101,17 +101,15 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
 
     api.comments = {
         async count({postId}) {
-            const url = endpointFor({type: 'members', resource: 'comments/counts'});
+            const params = postId ? `?ids=${postId}` : '';
+            const url = endpointFor({type: 'members', resource: `comments/counts`, params});
             const response = await makeRequest({
                 url,
-                method: 'POST',
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    ids: [postId]
-                })
+                credentials: 'same-origin'
             });
 
             const json = await response.json();
