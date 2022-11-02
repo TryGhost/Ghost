@@ -67,13 +67,12 @@
             return;
         }
 
-        const rawRes = await fetch(api, {
-            method: 'POST',
+        const rawRes = await fetch(`${api}?ids=${ids.join(',')}`, {
+            method: 'GET',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ids})
+            }
         });
 
         if (rawRes.status !== 200) {
