@@ -1,11 +1,13 @@
 import Route from '@ember/routing/route';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class SetupRoute extends Route {
     @service ghostPaths;
     @service session;
     @service ajax;
-    @service config;
+
+    @inject config;
 
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.

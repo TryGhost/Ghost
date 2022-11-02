@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -8,11 +9,12 @@ import {tracked} from '@glimmer/tracking';
 
 export default class SignupController extends Controller {
     @service ajax;
-    @service config;
     @service ghostPaths;
     @service notifications;
     @service session;
     @service settings;
+
+    @inject config;
 
     @tracked flowErrors = '';
 

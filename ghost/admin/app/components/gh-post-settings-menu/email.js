@@ -5,6 +5,7 @@ import validator from 'validator';
 import {action, computed} from '@ember/object';
 import {alias, not, oneWay, or} from '@ember/object/computed';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
@@ -18,7 +19,8 @@ export default class Email extends Component {
     @service notifications;
     @service session;
     @service settings;
-    @service config;
+
+    @inject config;
 
     post = null;
     sendTestEmailError = '';

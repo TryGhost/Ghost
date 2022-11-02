@@ -5,6 +5,7 @@ import {
     lightenToContrastThreshold
 } from '@tryghost/color-utils';
 import {action, get} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {tracked} from '@glimmer/tracking';
 
@@ -39,12 +40,13 @@ function updateBodyClasses(transition) {
 }
 
 export default class UiService extends Service {
-    @service config;
     @service dropdown;
     @service feature;
     @service mediaQueries;
     @service router;
     @service settings;
+
+    @inject config;
 
     @tracked contextualNavMenu = null;
     @tracked isFullScreen = false;

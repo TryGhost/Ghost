@@ -8,6 +8,7 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed, get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isArray} from '@ember/array';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
@@ -23,7 +24,6 @@ export const ICON_PARAMS = {purpose: 'icon'};
 
 export default Component.extend({
     ajax: service(),
-    config: service(),
     notifications: service(),
     settings: service(),
 
@@ -63,6 +63,8 @@ export default Component.extend({
     uploadFinished: () => {},
     uploadSuccess: () => {},
     uploadFailed: () => {},
+
+    config: inject(),
 
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads
