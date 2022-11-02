@@ -1,19 +1,24 @@
 const express = require('../../../shared/express');
+const config = require('../../../shared/config');
 const api = require('../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
+const shared = require('../shared');
 
 const bodyParser = require('body-parser');
 const membersService = require('../../../server/services/members');
 
 module.exports = function apiRoutes() {
     const router = express.Router('comment api');
-
     router.use(bodyParser.json({limit: '50mb'}));
 
     // Global handling for member session, ensures a member is logged in to the frontend
     router.use(membersService.middleware.loadMemberSession);
 
-    router.post('/counts', http(api.commentsMembers.counts));
+    const countsCache = shared.middleware.cacheControl(
+        'public',
+        {maxAge: config.get('caching:commentsCountAPI:maxAge')}
+    );
+    router.get('/counts', countsCache, http(api.commentsMembers.counts));
 
     router.get('/', http(api.commentsMembers.browse));
     router.get('/:id', http(api.commentsMembers.read));
