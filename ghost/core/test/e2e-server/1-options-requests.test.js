@@ -30,7 +30,7 @@ describe('OPTIONS requests', function () {
                 .matchHeaderSnapshot();
         });
 
-        it('Rejects no origin header request', async function () {
+        it('Handles no origin header request', async function () {
             await adminAgent
                 .options('site', {
                     headers: {
@@ -41,7 +41,7 @@ describe('OPTIONS requests', function () {
                 .matchHeaderSnapshot();
         });
 
-        it('Rejects unsupported origin header request', async function () {
+        it('Handles cross-domain origin header request', async function () {
             await adminAgent
                 .options('site', {
                     headers: {
@@ -54,14 +54,14 @@ describe('OPTIONS requests', function () {
     });
 
     describe('CORS headers in Members API', function () {
-        it('Responds with no referer vary header value when same referer', async function () {
+        it('Handles same origin request', async function () {
             await membersAgent
                 .options('member')
                 .expectStatus(204)
                 .matchHeaderSnapshot();
         });
 
-        it('Does not allow CORS with when no origin is present in the request', async function () {
+        it('Handles no origin header request', async function () {
             await membersAgent
                 .options('member', {
                     headers: {
@@ -72,7 +72,7 @@ describe('OPTIONS requests', function () {
                 .matchHeaderSnapshot();
         });
 
-        it('Responds with no referer vary header value when different referer', async function () {
+        it('Handles cross-domain origin header request', async function () {
             await membersAgent
                 .options('member', {
                     headers: {
@@ -125,14 +125,14 @@ describe('OPTIONS requests', function () {
     });
 
     describe('CORS headers in Content API', function () {
-        it('Responds with no referer vary header value when same referer', async function () {
+        it('Handles same origin request', async function () {
             await contentAPIAgent
                 .options('site')
                 .expectStatus(204)
                 .matchHeaderSnapshot();
         });
 
-        it('Does not allow CORS with when no origin is present in the request', async function () {
+        it('Handles no origin header request', async function () {
             await contentAPIAgent
                 .options('site', {
                     headers: {
@@ -143,7 +143,7 @@ describe('OPTIONS requests', function () {
                 .matchHeaderSnapshot();
         });
 
-        it('Responds with no referer vary header value when different referer', async function () {
+        it('Handles cross-domain origin header request', async function () {
             await contentAPIAgent
                 .options('site', {
                     headers: {

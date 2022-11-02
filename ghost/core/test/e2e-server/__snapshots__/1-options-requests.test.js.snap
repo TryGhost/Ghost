@@ -1,5 +1,29 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`OPTIONS requests CORS headers in Admin API Handles cross-domain origin header request 1: [headers] 1`] = `
+Object {
+  "allow": "GET,HEAD",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "8",
+  "content-type": "text/html; charset=utf-8",
+  "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Admin API Handles no origin header request 1: [headers] 1`] = `
+Object {
+  "allow": "GET,HEAD",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "8",
+  "content-type": "text/html; charset=utf-8",
+  "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`OPTIONS requests CORS headers in Admin API Handles same origin request 1: [headers] 1`] = `
 Object {
   "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -12,31 +36,7 @@ Object {
 }
 `;
 
-exports[`OPTIONS requests CORS headers in Admin API Rejects no origin header request 1: [headers] 1`] = `
-Object {
-  "allow": "GET,HEAD",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8",
-  "content-type": "text/html; charset=utf-8",
-  "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
-  "vary": "Accept-Version, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`OPTIONS requests CORS headers in Admin API Rejects unsupported origin header request 1: [headers] 1`] = `
-Object {
-  "allow": "GET,HEAD",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8",
-  "content-type": "text/html; charset=utf-8",
-  "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
-  "vary": "Accept-Version, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`OPTIONS requests CORS headers in Content API Does not allow CORS with when no origin is present in the request 1: [headers] 1`] = `
+exports[`OPTIONS requests CORS headers in Content API Handles cross-domain origin header request 1: [headers] 1`] = `
 Object {
   "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
   "access-control-allow-origin": "*",
@@ -48,7 +48,7 @@ Object {
 }
 `;
 
-exports[`OPTIONS requests CORS headers in Content API Responds with no referer vary header value when different referer 1: [headers] 1`] = `
+exports[`OPTIONS requests CORS headers in Content API Handles no origin header request 1: [headers] 1`] = `
 Object {
   "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
   "access-control-allow-origin": "*",
@@ -60,7 +60,7 @@ Object {
 }
 `;
 
-exports[`OPTIONS requests CORS headers in Content API Responds with no referer vary header value when same referer 1: [headers] 1`] = `
+exports[`OPTIONS requests CORS headers in Content API Handles same origin request 1: [headers] 1`] = `
 Object {
   "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
   "access-control-allow-origin": "*",
@@ -72,7 +72,7 @@ Object {
 }
 `;
 
-exports[`OPTIONS requests CORS headers in Members API Does not allow CORS with when no origin is present in the request 1: [headers] 1`] = `
+exports[`OPTIONS requests CORS headers in Members API Handles cross-domain origin header request 1: [headers] 1`] = `
 Object {
   "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
   "access-control-allow-origin": "*",
@@ -84,7 +84,7 @@ Object {
 }
 `;
 
-exports[`OPTIONS requests CORS headers in Members API Responds with no referer vary header value when different referer 1: [headers] 1`] = `
+exports[`OPTIONS requests CORS headers in Members API Handles no origin header request 1: [headers] 1`] = `
 Object {
   "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
   "access-control-allow-origin": "*",
@@ -96,7 +96,7 @@ Object {
 }
 `;
 
-exports[`OPTIONS requests CORS headers in Members API Responds with no referer vary header value when same referer 1: [headers] 1`] = `
+exports[`OPTIONS requests CORS headers in Members API Handles same origin request 1: [headers] 1`] = `
 Object {
   "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
   "access-control-allow-origin": "*",
