@@ -3,7 +3,8 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const configUtils = require('../../../../../utils/configUtils');
 
-let cors = rewire('../../../../../../core/server/web/api/middleware/cors');
+let cors = rewire('../../../../../../core/server/web/api/middleware/cors')[0];
+let corsCaching = rewire('../../../../../../core/server/web/api/middleware/cors')[1];
 
 describe('cors', function () {
     let res;
@@ -22,6 +23,7 @@ describe('cors', function () {
             headers: {},
             getHeader: function () {
             },
+            vary: sinon.spy(),
             setHeader: function (h, v) {
                 this.headers[h] = v;
             }
@@ -33,7 +35,7 @@ describe('cors', function () {
     afterEach(function () {
         sinon.restore();
         configUtils.restore();
-        cors = rewire('../../../../../../core/server/web/api/middleware/cors');
+        cors = rewire('../../../../../../core/server/web/api/middleware/cors')[0];
     });
 
     it('should not be enabled without a request origin header', function (done) {
@@ -129,5 +131,13 @@ describe('cors', function () {
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
+    });
+
+    it('should add origin value to the vary header', function (done) {
+        corsCaching(req, res, function () {
+            should.equal(res.vary.called, true);
+            should.equal(res.vary.args[0], 'Origin');
+            done();
+        });
     });
 });
