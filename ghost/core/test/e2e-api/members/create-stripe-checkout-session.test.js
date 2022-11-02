@@ -165,7 +165,7 @@ describe('Create Stripe Checkout Session', function () {
                 if (uri === '/v1/checkout/sessions') {
                     const bodyJSON = querystring.parse(body);
                     // TODO: Actually work out what Stripe checks and when/how it errors
-                    if (bodyJSON.customerEmail) {
+                    if (Reflect.has(bodyJSON, 'customerEmail')) {
                         return [400, {error: 'Invalid Email'}];
                     }
                     return [200, {id: 'cs_123', url: 'https://site.com'}];
