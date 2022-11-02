@@ -108,7 +108,7 @@ describe('OPTIONS requests', function () {
                 .expect(200);
 
             assert.equal(res.headers['cache-control'], 'public, max-age=0');
-            assert.equal(res.headers.vary, 'Accept-Encoding');
+            assert.equal(res.headers.vary, 'Origin, Accept-Encoding');
             assert.equal(res.headers.allow, 'POST,GET,HEAD');
         });
 
@@ -119,7 +119,7 @@ describe('OPTIONS requests', function () {
                 .expect(200);
 
             assert.equal(res.headers['cache-control'], 'public, max-age=0');
-            assert.equal(res.headers.vary, 'Accept-Encoding');
+            assert.equal(res.headers.vary, 'Origin, Accept-Encoding');
             assert.equal(res.headers.allow, 'POST,GET,HEAD');
         });
     });
