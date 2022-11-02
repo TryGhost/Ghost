@@ -88,20 +88,20 @@ DataImporter = {
             modelOptions.transacting = transacting;
 
             for (const importer of Object.values(importers)) {
-                await importer.fetchExisting(modelOptions, importOptions);
-                await importer.beforeImport(modelOptions, importOptions);
-                if (importer.options.requiredImportedData.length) {
-                    _.each(importer.options.requiredImportedData, (key) => {
-                        importer.requiredImportedData[key] = importers[key].importedData;
-                    });
-                }
-                if (importer.options.requiredExistingData.length) {
-                    _.each(importer.options.requiredExistingData, (key) => {
-                        importer.requiredExistingData[key] = importers[key].existingData;
-                    });
-                }
-                await importer.replaceIdentifiers(modelOptions, importOptions);
                 try {
+                    await importer.fetchExisting(modelOptions, importOptions);
+                    await importer.beforeImport(modelOptions, importOptions);
+                    if (importer.options.requiredImportedData.length) {
+                        _.each(importer.options.requiredImportedData, (key) => {
+                            importer.requiredImportedData[key] = importers[key].importedData;
+                        });
+                    }
+                    if (importer.options.requiredExistingData.length) {
+                        _.each(importer.options.requiredExistingData, (key) => {
+                            importer.requiredExistingData[key] = importers[key].existingData;
+                        });
+                    }
+                    await importer.replaceIdentifiers(modelOptions, importOptions);
                     await importer.doImport(modelOptions, importOptions);
                 } catch (_errors) {
                     errors.push(..._errors);

@@ -1,8 +1,8 @@
 const debug = require('@tryghost/debug')('importer:tags');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
+const { ValidationError } = require('@tryghost/errors');
 
 class TagsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -12,11 +12,9 @@ class TagsImporter extends BaseImporter {
         });
     }
 
-    fetchExisting(modelOptions) {
-        return models.Tag.findAll(_.merge({columns: ['id', 'slug']}, modelOptions))
-            .then((existingData) => {
-                this.existingData = existingData.toJSON();
-            });
+    async fetchExisting(modelOptions) {
+        const existingData = await models.Tag.findAll(_.merge({columns: ['id', 'slug']}, modelOptions));
+        this.existingData = existingData.toJSON();
     }
 
     beforeImport() {
@@ -30,6 +28,7 @@ class TagsImporter extends BaseImporter {
      *   - the tag model is smart enough to regenerate unique fields
      *   - so if you import a tag slug "test" and the same tag slug exists, it would add "test-2"
      *   - that's why we add a protection here to first find the tag
+     *   - tags without an explicit slug will always get a unique slug, so can always be imported without warning
      *
      * @TODO: Add a flag to the base implementation e.g. `fetchBeforeAdd`
      */
@@ -40,10 +39,17 @@ class TagsImporter extends BaseImporter {
         let obj = this.dataToImport.shift();
         while (obj) {
             try {
-                const tag = await models[this.modelName].findOne({name: obj.name}, options);
-                if (tag) {
-                    obj = this.dataToImport.shift();
-                    continue;
+                if (obj.slug) {
+                    const tag = await models[this.modelName].findOne({slug: obj.slug}, options);
+                    if (tag) {
+                        this.problems.push({
+                            message: 'Entry was not imported and ignored. Detected duplicated entry.',
+                            help: this.modelName,
+                            context: JSON.stringify(obj)
+                        });
+                        obj = this.dataToImport.shift();
+                        continue;
+                    }
                 }
 
                 const importedModel = await models[this.modelName].add(obj, options);
