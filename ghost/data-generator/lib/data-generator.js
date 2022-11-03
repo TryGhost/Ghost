@@ -24,9 +24,11 @@ const {
     MembersSubscriptionCreatedEventsImporter,
     MembersSubscribeEventsImporter
 } = require('./tables');
+const path = require('path');
 const fs = require('fs/promises');
 const {faker} = require('@faker-js/faker');
 const JsonImporter = require('./utils/json-importer');
+const {getProcessRoot} = require('@tryghost/root-utils');
 
 /**
  * @typedef {Object} DataGeneratorOptions
@@ -85,15 +87,28 @@ class DataGenerator {
 
         // Use an existant set of data for a more realisitic looking site
         if (this.useBaseData) {
-            const baseData = JSON.parse(await (await fs.readFile(this.baseDataPack)).toString());
+            let baseDataPack = this.baseDataPack;
+            if (!path.isAbsolute(this.baseDataPack)) {
+                baseDataPack = path.join(getProcessRoot(), baseDataPack);
+            }
+            let baseData = {};
+            try {
+                baseData = JSON.parse(await (await fs.readFile(baseDataPack)).toString());
+                this.logger.info('Loaded data pack');
+            } catch (error) {
+                this.logger.error('Failed to load data pack: ', error);
+                throw error;
+            }
             const jsonImporter = new JsonImporter(transaction);
 
             // Must have at least 2 in base data set
             await transaction('newsletters').delete();
             newsletters = await jsonImporter.import({
                 name: 'newsletters',
-                data: baseData.newsletters
+                data: baseData.newsletters,
+                rows: ['sort_order']
             });
+            newsletters.sort((a, b) => a.sort_order - b.sort_order);
 
             await transaction('posts_authors').delete();
             await transaction('posts_tags').delete();
@@ -106,7 +121,7 @@ class DataGenerator {
                 name: 'posts',
                 data: baseData.posts
             });
-            postsImporter.addNewsletters({posts});
+            await postsImporter.addNewsletters({posts});
             posts = await transaction.select('id', 'newsletter_id').from('posts');
 
             await transaction('tags').delete();
@@ -151,10 +166,13 @@ class DataGenerator {
                 name: 'custom_theme_settings',
                 data: baseData.custom_theme_settings
             });
+
+            this.logger.info('Completed JSON import');
         } else {
             const newslettersImporter = new NewslettersImporter(transaction);
             // First newsletter is free, second is paid
-            newsletters = await newslettersImporter.import({amount: 2});
+            newsletters = await newslettersImporter.import({amount: 2, rows: ['sort_order']});
+            newsletters.sort((a, b) => a.sort_order - b.sort_order);
 
             const postsImporter = new PostsImporter(transaction, {
                 newsletters
@@ -176,7 +194,7 @@ class DataGenerator {
             products = await productsImporter.import({amount: 4, rows: ['name', 'monthly_price', 'yearly_price']});
 
             const stripeProductsImporter = new StripeProductsImporter(transaction);
-            stripeProducts = await stripeProductsImporter.importForEach(products.slice(1), {
+            stripeProducts = await stripeProductsImporter.importForEach(products.filter(product => product.name !== 'Free'), {
                 amount: 1,
                 rows: ['product_id', 'stripe_product_id']
             });
@@ -296,6 +314,8 @@ class DataGenerator {
         // TODO: Feedback - members_feedback (relies on members and posts)
 
         await transaction.commit();
+
+        this.logger.info('Completed random import');
     }
 }
 
