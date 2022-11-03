@@ -41,24 +41,6 @@
                     </div>
                 {{/each}}
             </div>
-            {{#if (feature 'compExpiring')}}
-                <GhFormGroup @errors={{this.errors}} @property="product-cadence">
-                    <label for="product-cadence" class="fw6 mt5">Duration</label>
-                    <span class="gh-select">
-                        <OneWaySelect
-                            @value={{this.expiryAt}}
-                            @options={{this.expiryOptions}}
-                            @optionValuePath="duration"
-                            @optionLabelPath="label"
-                            @optionTargetPath="duration"
-                            @disabled={{false}}
-                            @update={{this.updateExpiry}}
-                        />
-                        {{svg-jar "arrow-down-small"}}
-                    </span>
-                    <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
-                </GhFormGroup>
-            {{/if}}
         {{/if}}
     </div>
 </form>

@@ -95,7 +95,7 @@ export default class extends Component {
                 }
             }
 
-            if (!sub.id && this.feature.get('compExpiring') && sub.tier?.expiry_at) {
+            if (!sub.id && sub.tier?.expiry_at) {
                 data.compExpiry = moment(sub.tier.expiry_at).format('D MMM YYYY');
             }
             return data;
