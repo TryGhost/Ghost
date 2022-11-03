@@ -1,4 +1,5 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import MultipleNewslettersLimitModal from '../../../components/modals/limits/multiple-newsletters';
 import NewNewsletterModal from '../../../components/modals/newsletters/new';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -21,7 +22,7 @@ export default class NewNewsletterRoute extends AdminRoute {
         } catch (error) {
             if (error.errorType === 'HostLimitError') {
                 // Not allowed: we reached the limit here
-                this.modals.open('modals/limits/multiple-newsletters', {
+                this.modals.open(MultipleNewslettersLimitModal, {
                     message: error.message
                 });
                 return this.replaceWith('settings.newsletters');
