@@ -11,7 +11,7 @@ class EmailRouter extends ParentRouter {
 
         this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.email;
 
-        // @NOTE: hardcoded, not configureable
+        // @NOTE: hardcoded, not configurable
         this.route = {value: '/email/'};
 
         this._registerRoutes();
