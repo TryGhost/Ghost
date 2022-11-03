@@ -2,6 +2,7 @@ const TableImporter = require('./base');
 const {faker} = require('@faker-js/faker');
 const {luck} = require('../utils/random');
 const generateEvents = require('../utils/event-generator');
+const dateToDatabaseString = require('../utils/database-date');
 
 class MembersLoginEventsImporter extends TableImporter {
     constructor(knex) {
@@ -34,7 +35,7 @@ class MembersLoginEventsImporter extends TableImporter {
         }
         return {
             id: faker.database.mongodbObjectId(),
-            created_at: timestamp.toISOString(),
+            created_at: dateToDatabaseString(timestamp),
             member_id: this.model.id
         };
     }

@@ -2,6 +2,7 @@ const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 const {luck} = require('../utils/random');
 const TableImporter = require('./base');
+const dateToDatabaseString = require('../utils/database-date');
 
 class PostsImporter extends TableImporter {
     constructor(knex, {newsletters}) {
@@ -30,10 +31,10 @@ class PostsImporter extends TableImporter {
         const timestamp = faker.date.between(twoYearsAgo, twoWeeksAgo);
         return {
             id: faker.database.mongodbObjectId(),
-            created_at: timestamp.toISOString(),
+            created_at: dateToDatabaseString(timestamp),
             created_by: 'unused',
-            updated_at: timestamp.toISOString(),
-            published_at: faker.date.soon(5, timestamp).toISOString(),
+            updated_at: dateToDatabaseString(timestamp),
+            published_at: dateToDatabaseString(faker.date.soon(5, timestamp)),
             uuid: faker.datatype.uuid(),
             title: title,
             slug: `${slugify(title)}-${faker.random.numeric(3)}`,

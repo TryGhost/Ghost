@@ -1,5 +1,6 @@
 const TableImporter = require('./base');
 const {faker} = require('@faker-js/faker');
+const dateToDatabaseString = require('../utils/database-date');
 
 class MembersStatusEventsImporter extends TableImporter {
     constructor(knex) {
@@ -20,7 +21,7 @@ class MembersStatusEventsImporter extends TableImporter {
                 member_id: model.id,
                 from_status: 'free',
                 to_status: model.status,
-                created_at: faker.date.between(new Date(model.created_at), new Date()).toISOString()
+                created_at: dateToDatabaseString(faker.date.between(new Date(model.created_at), new Date()))
             });
         }
     }
