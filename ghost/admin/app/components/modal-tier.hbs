@@ -54,7 +54,7 @@
                     </GhFormGroup>
 
                     {{#unless this.isFreeTier}}
-                        {{#if (feature 'freeTrial')}}
+                        {{!-- {{#if (feature 'freeTrial')}} --}}
                         <div class="gh-settings-members-pricetrialcont">
                             <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices" data-test-formgroup="prices">
                                 <div class="gh-settings-members-pricelabelcont free-trial-enabled">
@@ -144,7 +144,7 @@
                                 {{/if}}
                             </GhFormGroup>
                         </div>
-                        {{else}}
+                        {{!-- {{else}} --}}
                             <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices" data-test-formgroup="prices">
                                 <div class="gh-settings-members-pricelabelcont">
                                     <label for="monthlyPrice" class="fw6">Prices</label><span>–</span>
@@ -195,8 +195,8 @@
                                     <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                                 {{/if}}
                             </GhFormGroup>
-                        {{/if}}
-                        
+                        {{!-- {{/if}}
+                         --}}
                         <GhFormGroup>
                             <label for="welcomePage" class="fw6">Welcome page</label>
                             <GhUrlInput
@@ -291,7 +291,7 @@
                                                 <span class="billing-period">/year</span>
                                             {{/if}}
                                         </div>
-                                        {{#if (feature 'freeTrial')}}
+                                        {{!-- {{#if (feature 'freeTrial')}} --}}
                                             {{#if this.isFreeTrialEnabled}}
                                             <span class="gh-portal-discount-label">
                                                 <span style="background-color: {{this.settings.accentColor}}"></span>
@@ -305,22 +305,22 @@
                                                 </span>
                                             {{/if}}
                                         {{/if}}
-                                    {{else}}
+                                    {{!-- {{else}} --}}
                                         <div class="gh-portal-tier-price placeholder">
                                             <span class="currency-sign">{{currency-symbol this.currency}}</span>
                                             <span class="amount">0</span>
                                             <span class="billing-period">/year</span>
                                         </div>
                                     {{/if}}
-                                {{/if}}
+                                {{!-- {{/if}} --}}
                             </div>
-                            {{#if (feature 'freeTrial')}}
+                            {{!-- {{#if (feature 'freeTrial')}} --}}
                                 {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
                                 <span class="gh-portal-discount-label-trial" style={{this.accentColorStyle}}>
                                     {{this.discountValue}}% discount
                                 </span>
                                 {{/if}}
-                            {{/if}}
+                            {{!-- {{/if}} --}}
                         </div>
 
                         <div class="gh-portal-tier-card-details">

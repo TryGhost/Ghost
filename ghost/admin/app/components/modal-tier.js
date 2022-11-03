@@ -62,7 +62,7 @@ export default class ModalTierPrice extends ModalBase {
     }
 
     get isFreeTrialEnabled() {
-        return this.feature.get('freeTrial') && this.freeTrialEnabled && this.tier.get('trialDays') > 0;
+        return this.freeTrialEnabled && this.tier.get('trialDays') > 0;
     }
 
     init() {
