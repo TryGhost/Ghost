@@ -7,6 +7,7 @@ import {action, computed} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {classNameBindings, classNames} from '@ember-decorators/component';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty, typeOf} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -21,9 +22,10 @@ import {inject as service} from '@ember/service';
     '_isSplitScreen:gh-markdown-editor-side-by-side'
 )
 export default class GhMarkdownEditor extends Component.extend(ShortcutsMixin) {
-    @service config;
     @service notifications;
     @service settings;
+
+    @inject config;
 
     // Public attributes
     autofocus = false;

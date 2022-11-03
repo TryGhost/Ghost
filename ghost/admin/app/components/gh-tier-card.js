@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -9,7 +10,8 @@ export default class extends Component {
     @service ghostPaths;
     @service ajax;
     @service store;
-    @service config;
+
+    @inject config;
 
     @tracked showTierModal = false;
 

@@ -5,6 +5,7 @@ import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
 import {task} from 'ember-concurrency';
@@ -13,13 +14,15 @@ import {tracked} from '@glimmer/tracking';
 
 export default class OffersController extends Controller {
     @controller offers;
-    @service config;
+
     @service settings;
     @service store;
     @service modals;
     @service feature;
     @service membersUtils;
     @service notifications;
+
+    @inject config;
 
     @tracked cadences = [];
     @tracked tiers = [];

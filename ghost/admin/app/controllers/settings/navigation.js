@@ -2,16 +2,18 @@ import Controller from '@ember/controller';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 import RSVP from 'rsvp';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class NavigationController extends Controller {
-    @service config;
     @service ghostPaths;
     @service notifications;
     @service session;
     @service settings;
+
+    @inject config;
 
     @tracked dirtyAttributes = false;
     @tracked newNavItem = NavigationItem.create({isNew: true});

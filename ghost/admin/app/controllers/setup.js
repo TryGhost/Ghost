@@ -5,6 +5,7 @@ import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {task} from 'ember-concurrency';
@@ -14,11 +15,12 @@ export default class SetupController extends Controller.extend(ValidationEngine)
     @controller application;
 
     @service ajax;
-    @service config;
     @service ghostPaths;
     @service notifications;
     @service router;
     @service session;
+
+    @inject config;
 
     // ValidationEngine settings
     validationType = 'setup';
@@ -82,7 +84,6 @@ export default class SetupController extends Controller.extend(ValidationEngine)
     _passwordSetup() {
         let setupProperties = ['blogTitle', 'name', 'email', 'password'];
         let data = this.getProperties(setupProperties);
-        let config = this.config;
         let method = this.blogCreated ? 'put' : 'post';
 
         this.set('flowErrors', '');
@@ -102,7 +103,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
                     }]
                 }
             }).then((result) => {
-                config.set('blogTitle', data.blogTitle);
+                this.config.blogTitle = data.blogTitle;
 
                 // don't try to login again if we are already logged in
                 if (this.get('session.isAuthenticated')) {

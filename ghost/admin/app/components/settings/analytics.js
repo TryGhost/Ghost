@@ -3,7 +3,6 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class Analytics extends Component {
-    @service config;
     @service settings;
     @service feature;
 

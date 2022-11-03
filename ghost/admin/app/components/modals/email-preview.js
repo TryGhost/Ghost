@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -17,10 +18,11 @@ html {
 
 export default class EmailPreviewModal extends Component {
     @service ajax;
-    @service config;
     @service ghostPaths;
     @service settings;
     @service store;
+
+    @inject config;
 
     static modalOptions = {
         className: 'fullscreen-modal-full-overlay fullscreen-modal-email-preview'
@@ -58,11 +60,11 @@ export default class EmailPreviewModal extends Component {
         if (!this.newsletter && this.args.data.newsletter) {
             this.newsletter = this.args.data.newsletter;
         }
-            
+
         if (!this.newsletter) {
             const newsletters = (await this.store.query('newsletter', {filter: 'status:active', limit: 1})).toArray();
             const defaultNewsletter = newsletters[0];
-            this.newsletter = defaultNewsletter;    
+            this.newsletter = defaultNewsletter;
         }
 
         if (html && subject) {

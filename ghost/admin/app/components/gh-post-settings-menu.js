@@ -4,6 +4,7 @@ import classic from 'ember-classic-decorator';
 import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {alias, or} from '@ember/object/computed';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
 
@@ -12,7 +13,6 @@ import {tagName} from '@ember-decorators/component';
 export default class GhPostSettingsMenu extends Component {
     @service feature;
     @service store;
-    @service config;
     @service ajax;
     @service ghostPaths;
     @service notifications;
@@ -20,6 +20,8 @@ export default class GhPostSettingsMenu extends Component {
     @service session;
     @service settings;
     @service ui;
+
+    @inject config;
 
     post = null;
     isViewingSubview = false;

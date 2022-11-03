@@ -1,11 +1,13 @@
 import Service, {inject as service} from '@ember/service';
+import {inject} from 'ghost-admin/decorators/inject';
 
 export default class MembersUtilsService extends Service {
-    @service config;
     @service settings;
     @service feature;
     @service session;
     @service store;
+
+    @inject config;
 
     paidTiers = null;
 

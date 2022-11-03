@@ -1,10 +1,11 @@
 import Route from '@ember/routing/route';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 Route.reopen({
-    config: service(),
     billing: service(),
     router: service(),
+    config: inject(),
 
     actions: {
         willTransition(transition) {

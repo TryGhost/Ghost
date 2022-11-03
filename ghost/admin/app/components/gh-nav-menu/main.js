@@ -7,6 +7,7 @@ import {action} from '@ember/object';
 import {and, equal, match, or, reads} from '@ember/object/computed';
 import {getOwner} from '@ember/application';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
 import {task} from 'ember-concurrency';
@@ -15,7 +16,6 @@ import {task} from 'ember-concurrency';
 @tagName('')
 export default class Main extends Component.extend(ShortcutsMixin) {
     @service billing;
-    @service config;
     @service customViews;
     @service feature;
     @service ghostPaths;
@@ -27,6 +27,8 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @service whatsNew;
     @service membersStats;
     @service settings;
+
+    @inject config;
 
     iconStyle = '';
     iconClass = '';

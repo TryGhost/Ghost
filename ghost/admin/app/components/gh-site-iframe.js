@@ -1,11 +1,11 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {inject as service} from '@ember/service';
+import {inject} from 'ghost-admin/decorators/inject';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhSiteIframeComponent extends Component {
-    @service config;
+    @inject config;
 
     @tracked isInvisible = this.args.invisibleUntilLoaded;
 

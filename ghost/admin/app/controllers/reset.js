@@ -2,6 +2,7 @@
 import Controller from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -11,7 +12,8 @@ export default class ResetController extends Controller.extend(ValidationEngine)
     @service notifications;
     @service session;
     @service ajax;
-    @service config;
+
+    @inject config;
 
     @tracked newPassword = '';
     @tracked ne2Password = '';

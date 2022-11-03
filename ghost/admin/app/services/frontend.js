@@ -1,11 +1,13 @@
 import Service, {inject as service} from '@ember/service';
 import fetch from 'fetch';
 import validator from 'validator';
+import {inject} from 'ghost-admin/decorators/inject';
 
 export default class FrontendService extends Service {
     @service settings;
-    @service config;
     @service ajax;
+
+    @inject config;
 
     _hasLoggedIn = false;
     _lastPassword = null;

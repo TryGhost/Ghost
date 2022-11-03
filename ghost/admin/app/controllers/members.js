@@ -8,6 +8,7 @@ import moment from 'moment-timezone';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
 import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
+import {inject} from 'ghost-admin/decorators/inject';
 import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -26,7 +27,6 @@ const PAID_PARAMS = [{
 
 export default class MembersController extends Controller {
     @service ajax;
-    @service config;
     @service ellaSparse;
     @service feature;
     @service ghostPaths;
@@ -36,6 +36,8 @@ export default class MembersController extends Controller {
     @service store;
     @service utils;
     @service settings;
+
+    @inject config;
 
     queryParams = [
         'label',

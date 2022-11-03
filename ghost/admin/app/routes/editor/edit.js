@@ -1,9 +1,12 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {inject} from 'ghost-admin/decorators/inject';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 
 export default class EditRoute extends AuthenticatedRoute {
     @service router;
+
+    @inject config;
 
     beforeModel(transition) {
         super.beforeModel(...arguments);

@@ -1,15 +1,17 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class SettingsDesignIndexController extends Controller {
-    @service config;
     @service customThemeSettings;
     @service notifications;
     @service settings;
     @service themeManagement;
+
+    @inject config;
 
     @tracked previewSize = 'desktop';
 

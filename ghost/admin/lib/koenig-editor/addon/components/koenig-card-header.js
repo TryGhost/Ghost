@@ -2,17 +2,19 @@ import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
 import {IMAGE_EXTENSIONS, IMAGE_MIME_TYPES} from 'ghost-admin/components/gh-image-uploader';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 
 export default class KoenigCardHeaderComponent extends Component {
-    @service config;
     @service feature;
     @service store;
     @service membersUtils;
     @service ui;
+
+    @inject config;
 
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;

@@ -3,6 +3,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
 import {guidFor} from '@ember/object/internals';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {schedule} from '@ember/runloop';
@@ -12,11 +13,12 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KoenigCardEmailCtaComponent extends Component {
-    @service config;
     @service feature;
     @service store;
     @service membersUtils;
     @service ui;
+
+    @inject config;
 
     @tracked buttonFocused = false;
     @tracked contentFocused = false;

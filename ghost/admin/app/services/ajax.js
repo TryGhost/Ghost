@@ -5,6 +5,7 @@ import moment from 'moment-timezone';
 import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
 import {captureMessage} from '@sentry/ember';
 import {get} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
 import {isNone} from '@ember/utils';
 import {inject as service} from '@ember/service';
@@ -163,8 +164,9 @@ export function isAcceptedResponse(errorOrStatus) {
 
 @classic
 class ajaxService extends AjaxService {
-    @service config;
     @service session;
+
+    @inject config;
 
     // flag to tell our ESA authenticator not to try an invalidate DELETE request
     // because it's been triggered by this service's 401 handling which means the

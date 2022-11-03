@@ -11,6 +11,7 @@ import {
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
@@ -38,7 +39,6 @@ const YAML_MIME_TYPE = [
 @classic
 export default class LabsController extends Controller {
     @service ajax;
-    @service config;
     @service feature;
     @service ghostPaths;
     @service modals;
@@ -46,6 +46,8 @@ export default class LabsController extends Controller {
     @service session;
     @service settings;
     @service utils;
+
+    @inject config;
 
     importErrors = null;
     importSuccessful = false;
@@ -119,7 +121,7 @@ export default class LabsController extends Controller {
                 // reload settings
                 return this.settings.reload().then((settings) => {
                     this.feature.fetch();
-                    this.config.set('blogTitle', settings.title);
+                    this.config.blogTitle = settings.title;
                 });
             });
         }).catch((response) => {

@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -8,11 +9,12 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KoenigCardButtonComponent extends Component {
-    @service config;
     @service feature;
     @service store;
     @service membersUtils;
     @service ui;
+
+    @inject config;
 
     @tracked buttonFocused = false;
     @tracked contentFocused = false;

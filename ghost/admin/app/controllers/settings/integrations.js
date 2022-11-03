@@ -1,11 +1,13 @@
 import Controller from '@ember/controller';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default class IntegrationsController extends Controller {
     @service settings;
     @service store;
-    @service config;
+
+    @inject config;
 
     _allIntegrations = this.store.peekAll('integration');
 

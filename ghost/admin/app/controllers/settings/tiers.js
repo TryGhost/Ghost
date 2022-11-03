@@ -1,12 +1,14 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class TiersController extends Controller {
     @service settings;
-    @service config;
+
+    @inject config;
 
     @tracked iconStyle = '';
     @tracked showFreeMembershipModal = false;

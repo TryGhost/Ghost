@@ -1,11 +1,14 @@
 import Controller, {inject as controller} from '@ember/controller';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+
 export default class PostsLoadingController extends Controller {
     @controller('posts') postsController;
 
     @service session;
     @service ui;
-    @service config;
+
+    @inject config;
 
     get availableTypes() {
         return this.postsController.availableTypes;

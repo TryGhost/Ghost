@@ -1,6 +1,7 @@
 import Service, {inject as service} from '@ember/service';
 import config from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {isThemeValidationError} from 'ghost-admin/services/ajax';
 import {task} from 'ember-concurrency';
@@ -8,13 +9,14 @@ import {tracked} from '@glimmer/tracking';
 
 export default class ThemeManagementService extends Service {
     @service ajax;
-    @service config;
     @service customThemeSettings;
     @service limit;
     @service modals;
     @service settings;
     @service store;
     @service frontend;
+
+    @inject config;
 
     @tracked isUploading;
     @tracked previewType = 'homepage';

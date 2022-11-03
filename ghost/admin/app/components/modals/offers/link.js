@@ -1,11 +1,11 @@
 import Component from '@glimmer/component';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
-import {inject as service} from '@ember/service';
+import {inject} from 'ghost-admin/decorators/inject';
 import {task, timeout} from 'ember-concurrency';
 
 export default class LinkOfferModal extends Component {
-    @service config;
+    @inject config;
 
     constructor() {
         super(...arguments);

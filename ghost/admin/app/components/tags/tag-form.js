@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import Ember from 'ember';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
@@ -12,8 +13,9 @@ const {Handlebars} = Ember;
 
 export default class TagForm extends Component {
     @service feature;
-    @service config;
     @service settings;
+
+    @inject config;
 
     @tracked metadataOpen = false;
     @tracked twitterMetadataOpen = false;

@@ -3,6 +3,7 @@ import Controller from '@ember/controller';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -16,13 +17,14 @@ const CURRENCIES = currencies.map((currency) => {
 });
 
 export default class MembersAccessController extends Controller {
-    @service config;
     @service feature;
     @service membersUtils;
     @service modals;
     @service settings;
     @service store;
     @service session;
+
+    @inject config;
 
     @tracked showPortalSettings = false;
     @tracked showStripeConnect = false;

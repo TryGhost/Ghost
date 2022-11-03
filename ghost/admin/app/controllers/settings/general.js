@@ -9,6 +9,7 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {TrackedObject} from 'tracked-built-ins';
+import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -22,7 +23,6 @@ function randomPassword() {
 
 @classic
 export default class GeneralController extends Controller {
-    @service config;
     @service ghostPaths;
     @service notifications;
     @service session;
@@ -30,11 +30,16 @@ export default class GeneralController extends Controller {
     @service frontend;
     @service ui;
 
+    @inject config;
+
     @tracked scratchValues = new TrackedObject();
 
-    availableTimezones = this.config.availableTimezones;
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
+
+    get availableTimezones() {
+        return this.config.availableTimezones;
+    }
 
     @computed('config.blogUrl', 'settings.publicHash')
     get privateRSSUrl() {
@@ -127,7 +132,6 @@ export default class GeneralController extends Controller {
     @task
     *saveTask() {
         let notifications = this.notifications;
-        let config = this.config;
 
         try {
             let changedAttrs = this.settings.changedAttributes();
@@ -135,7 +139,7 @@ export default class GeneralController extends Controller {
 
             this.clearScratchValues();
 
-            config.set('blogTitle', settings.title);
+            this.config.blogTitle = settings.title;
 
             if (changedAttrs.password) {
                 this.frontend.loginIfNeeded();

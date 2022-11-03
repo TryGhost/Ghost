@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {currencies} from 'ghost-admin/utils/currency';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -11,12 +12,13 @@ const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
 const NO_OF_TOP_CURRENCIES = 5;
 
 export default class StripeSettingsForm extends Component {
-    @service config;
     @service ghostPaths;
     @service ajax;
     @service settings;
     @service membersUtils;
     @service store;
+
+    @inject config;
 
     @tracked hasActiveStripeSubscriptions = false;
     @tracked showDisconnectStripeConnectModal = false;

@@ -5,8 +5,8 @@ import {action, computed} from '@ember/object';
 import {attributeBindings, classNames} from '@ember-decorators/component';
 import {getEventTargetMatchingTag} from 'mobiledoc-kit/utils/element-utils';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
-import {inject as service} from '@ember/service';
 
 // gap between link and toolbar bottom
 const TOOLBAR_MARGIN = 8;
@@ -22,7 +22,7 @@ const DELAY = 120;
 @attributeBindings('style')
 @classNames('absolute', 'z-999')
 export default class KoenigLinkToolbar extends Component {
-    @service config;
+    @inject config;
 
     // public attrs
     container = null;
