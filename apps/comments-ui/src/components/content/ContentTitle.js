@@ -1,3 +1,5 @@
+import {formatNumber} from '../../utils/helpers';
+
 const Count = ({showCount, count}) => {
     if (!showCount) {
         return null;
@@ -10,7 +12,7 @@ const Count = ({showCount, count}) => {
     }
 
     return (
-        <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]">{count} comments</div>
+        <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]">{formatNumber(count)} comments</div>
     );
 };
 
