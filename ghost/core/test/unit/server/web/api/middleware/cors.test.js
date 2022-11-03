@@ -13,6 +13,7 @@ describe('cors', function () {
 
     beforeEach(function () {
         req = {
+            method: 'OPTIONS',
             headers: {
                 origin: null
             },
@@ -26,7 +27,8 @@ describe('cors', function () {
             vary: sinon.spy(),
             setHeader: function (h, v) {
                 this.headers[h] = v;
-            }
+            },
+            end: sinon.spy()
         };
 
         next = sinon.spy();
@@ -58,7 +60,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        res.end.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -73,7 +75,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        res.end.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -105,7 +107,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        res.end.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -127,7 +129,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        res.end.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
