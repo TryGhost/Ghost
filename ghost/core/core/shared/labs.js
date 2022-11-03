@@ -19,7 +19,7 @@ const GA_FEATURES = [
     'freeTrial',
     // 'compExpiring',
     // 'searchHelper',
-    // 'emailAlerts',
+    'emailAlerts',
     // 'fixNewsletterLinks',
     // remove above this line
     'sourceAttribution',
