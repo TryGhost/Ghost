@@ -21,12 +21,12 @@ export default class ProRoute extends AuthenticatedRoute {
             return this.transitionTo('home');
         }
 
-        this.billing.set('previousTransition', transition);
+        this.billing.previousTransition = transition;
     }
 
     model(params) {
         if (params.action) {
-            this.billing.set('action', params.action);
+            this.billing.action = params.action;
         }
 
         this.billing.toggleProWindow(true);

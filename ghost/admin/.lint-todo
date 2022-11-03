@@ -1009,3 +1009,4 @@ remove|ember-template-lint|no-action|34|39|34|39|e65f48edccba27e52c1f8358a9795dc
 remove|ember-template-lint|no-action|50|35|50|35|7432725bd18c48f69bf22dc9487d14d25dc6c1b7|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|33|28|33|28|5b371baf419f247953b91b626611cb831c524af3|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|50|28|50|28|40caf07c7cebf6f4321c5b7e7f2f426b5c30217b|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
+remove|ember-template-lint|require-iframe-title|1|0|1|0|d1c9631d150af53ca33b16c8c280c9d815bf43da|1662681600000|1673053200000|1678237200000|app/components/gh-billing-iframe.hbs
