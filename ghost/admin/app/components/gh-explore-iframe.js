@@ -7,26 +7,37 @@ export default class GhExploreIframe extends Component {
     @service router;
     @service feature;
 
+    willDestroy() {
+        super.willDestroy(...arguments);
+        window.removeEventListener('message', this.handleIframeMessage);
+    }
+
     @action
     setup() {
         this.explore.getExploreIframe().src = this.explore.getIframeURL();
+        window.addEventListener('message', this.handleIframeMessage);
+    }
 
-        window.addEventListener('message', async (event) => {
-            // only process messages coming from the explore iframe
-            if (event?.data && this.explore.getIframeURL().includes(event?.origin)) {
-                if (event.data?.request === 'apiUrl') {
-                    this._handleUrlRequest();
-                }
+    @action
+    async handleIframeMessage(event) {
+        if (this.isDestroyed || this.isDestroying) {
+            return;
+        }
 
-                if (event.data?.route) {
-                    this._handleRouteUpdate(event.data);
-                }
-
-                if (event.data?.siteData) {
-                    this._handleSiteDataUpdate(event.data);
-                }
+        // only process messages coming from the explore iframe
+        if (event?.data && this.explore.getIframeURL().includes(event?.origin)) {
+            if (event.data?.request === 'apiUrl') {
+                this._handleUrlRequest();
             }
-        });
+
+            if (event.data?.route) {
+                this._handleRouteUpdate(event.data);
+            }
+
+            if (event.data?.siteData) {
+                this._handleSiteDataUpdate(event.data);
+            }
+        }
     }
 
     // The iframe can send route updates to navigate to within Admin, as some routes
