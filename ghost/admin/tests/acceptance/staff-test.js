@@ -14,7 +14,6 @@ import {
     focus,
     triggerEvent
 } from '@ember/test-helpers';
-import {enableLabsFlag} from '../helpers/labs-flag';
 import {enableMembers} from '../helpers/members';
 import {enableStripe} from '../helpers/stripe';
 import {expect} from 'chai';
