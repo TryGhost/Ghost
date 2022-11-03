@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import ConfirmArchiveModal from '../../modals/newsletters/confirm-archive';
 import ConfirmUnarchiveModal from '../../modals/newsletters/confirm-unarchive';
+import MultipleNewslettersLimitModal from '../../modals/limits/multiple-newsletters';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -98,7 +99,7 @@ export default class NewsletterManagementComponent extends Component {
         } catch (error) {
             if (error.errorType === 'HostLimitError') {
                 // Not allowed: we reached the limit here
-                this.modals.open('modals/limits/multiple-newsletters', {
+                this.modals.open(MultipleNewslettersLimitModal, {
                     message: error.message
                 });
                 return;
