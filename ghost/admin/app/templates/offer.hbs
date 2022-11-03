@@ -47,18 +47,18 @@
                                 <p>Visible to members on Stripe Checkout page.</p>
                             </GhFormGroup>
                         </div>
-                        {{#if (feature 'freeTrial')}}
+                        {{!-- {{#if (feature 'freeTrial')}} --}}
                         <h4 class="gh-main-section-header gh-main-section-header-with-info small bn">
                             <span>Discount information</span>
                             <span class="midgrey gh-main-section-header-info tooltip-left" data-tooltip="Once saved, this cannot be changed" >{{svg-jar "info"}}</span>
                         </h4>
-                        {{else}}
+                        {{!-- {{else}} --}}
                         <h4 class="gh-main-section-header small bn">
                             Discount information <span class="midgrey"> &ndash; Once saved, this cannot be changed.</span>
                         </h4>
-                        {{/if}}
+                        {{!-- {{/if}} --}}
                         <div class="gh-main-section-content grey">
-                            {{#if (feature 'freeTrial')}}
+                            {{!-- {{#if (feature 'freeTrial')}} --}}
                             <GhFormGroup>
                                 <div>
                                     <label class="fw6">Offer type</label>
@@ -81,7 +81,7 @@
                                     </div>
                                 </div>
                             </GhFormGroup>
-                            {{/if}}
+                            {{!-- {{/if}} --}}
                             {{#if this.isTrialOffer}}
                             <div class="gh-offer-tier-and-trial">
                                 <GhFormGroup @errors={{this.errors}} @property="product-cadence">

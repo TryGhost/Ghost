@@ -45,11 +45,6 @@ const StripeCustomerSubscription = ghostBookshelf.Model.extend({
             trial_end_at: defaultSerializedObject.trial_end_at
         };
 
-        // if (labs.isSet('freeTrial')) {
-        //     serialized.trial_start_at = defaultSerializedObject.trial_start_at;
-        //     serialized.trial_end_at = defaultSerializedObject.trial_end_at;
-        // }
-
         if (!_.isEmpty(defaultSerializedObject.stripePrice)) {
             serialized.price = {
                 id: defaultSerializedObject.stripePrice.stripe_price_id,
