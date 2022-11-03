@@ -88,12 +88,15 @@ function corsOptionsDelegate(req, cb) {
  * @param {Function} next
  */
 const handleCaching = (req, res, next) => {
-    // @NOTE: try to add native support for dynamic 'vary' header value in 'cors' module
-    res.vary('Origin');
+    const method = req.method && req.method.toUpperCase && req.method.toUpperCase();
+    if (method === 'OPTIONS') {
+        // @NOTE: try to add native support for dynamic 'vary' header value in 'cors' module
+        res.vary('Origin');
+    }
     next();
 };
 
 module.exports = [
-    cors(corsOptionsDelegate),
-    handleCaching
+    handleCaching,
+    cors(corsOptionsDelegate)
 ];
