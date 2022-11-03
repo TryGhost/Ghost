@@ -48,7 +48,7 @@ class TableImporter {
 
         const data = [];
         for (let i = 0; i < amount; i++) {
-            const model = this.generate();
+            const model = await this.generate();
             if (model) {
                 // Only push models when one is generated successfully
                 data.push(model);
@@ -62,7 +62,8 @@ class TableImporter {
         if (options && options.rows) {
             rows.push(...options.rows);
         }
-        return await this.knex.batchInsert(this.name, data, 500).returning(rows);
+        await this.knex.batchInsert(this.name, data, 500);
+        return await this.knex.select(...rows).whereIn('id', data.map(obj => obj.id)).from(this.name);
     }
 
     /**
