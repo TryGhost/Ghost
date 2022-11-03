@@ -85,8 +85,8 @@ describe('TiersAPI', function () {
     it('Can browse tiers', async function () {
         const page = await api.browse();
 
-        assert(page.data.length === 2);
-        assert(page.meta.pagination.total === 2);
+        assert(page.data.length === 3);
+        assert(page.meta.pagination.total === 3);
     });
 
     it('Can read a default tier', async function () {
