@@ -4,6 +4,7 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {attr, hasMany} from '@ember-data/model';
 import {computed} from '@ember/object';
 import {equal, or} from '@ember/object/computed';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -44,7 +45,8 @@ export default BaseModel.extend(ValidationEngine, {
     ajax: service(),
     session: service(),
     notifications: service(),
-    config: service(),
+
+    config: inject(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.

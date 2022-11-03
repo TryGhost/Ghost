@@ -2,6 +2,7 @@ import Component from '@ember/component';
 import classic from 'ember-classic-decorator';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action, computed} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
 import {task, timeout} from 'ember-concurrency';
@@ -9,9 +10,10 @@ import {task, timeout} from 'ember-concurrency';
 @classic
 @tagName('')
 export default class GhPortalLinks extends Component {
-    @service config;
     @service store;
     @service settings;
+
+    @inject config;
 
     isLink = true;
     prices = null;
@@ -52,9 +54,8 @@ export default class GhPortalLinks extends Component {
         return [];
     }
 
-    init() {
-        super.init(...arguments);
-        this.siteUrl = this.config.blogUrl;
+    get siteUrl() {
+        return this.config.blogUrl;
     }
 
     @action

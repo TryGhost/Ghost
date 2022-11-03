@@ -1,7 +1,8 @@
-import Service, {inject as service} from '@ember/service';
+import Service from '@ember/service';
 import fetch from 'fetch';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -11,7 +12,7 @@ const API_VERSION = 'v2';
 const DEBOUNCE_MS = 600;
 
 export default class TenorService extends Service {
-    @service config;
+    @inject config;
 
     @tracked columnCount = 4;
     @tracked columns = null;

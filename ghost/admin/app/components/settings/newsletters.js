@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -7,9 +8,10 @@ const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'}
 const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v3'};
 
 export default class Newsletters extends Component {
-    @service config;
     @service settings;
     @service feature;
+
+    @inject config;
 
     // set recipientsSelectValue as a static property because within this
     // component's lifecycle it's not always derived from the settings values.

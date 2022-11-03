@@ -1,13 +1,15 @@
 import Controller from '@ember/controller';
 import EmberObject, {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class TierController extends Controller {
-    @service config;
     @service membersUtils;
     @service settings;
+
+    @inject config;
 
     @tracked showLeaveSettingsModal = false;
     @tracked showPriceModal = false;
@@ -15,9 +17,8 @@ export default class TierController extends Controller {
     @tracked showUnsavedChangesModal = false;
     @tracked paidSignupRedirect;
 
-    constructor() {
-        super(...arguments);
-        this.siteUrl = this.config.blogUrl;
+    get siteUrl() {
+        return this.config.blogUrl;
     }
 
     get tier() {

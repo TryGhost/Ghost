@@ -1,15 +1,17 @@
 import Component from '@ember/component';
 import classic from 'ember-classic-decorator';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 @classic
 export default class GhBillingIframe extends Component {
     @service billing;
-    @service config;
     @service ghostPaths;
     @service ajax;
     @service notifications;
+
+    @inject config;
 
     isOwner = null;
     fetchingSubscription = false;

@@ -117,7 +117,7 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        service.get('config').set('testFlag', false);
+        service.config.testFlag = false;
 
         return service.fetch().then(() => {
             expect(service.get('labs.testFlag')).to.be.false;
@@ -135,7 +135,7 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        service.get('config').set('testFlag', true);
+        service.config.testFlag = true;
 
         return service.fetch().then(() => {
             expect(service.get('labs.testFlag')).to.be.false;
@@ -153,7 +153,7 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        service.get('config').set('testFlag', false);
+        service.config.testFlag = false;
 
         return service.fetch().then(() => {
             expect(service.get('labs.testFlag')).to.be.true;
@@ -171,7 +171,7 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        service.get('config').set('testFlag', true);
+        service.config.testFlag = true;
 
         return service.fetch().then(() => {
             expect(service.get('labs.testFlag')).to.be.true;
@@ -223,7 +223,7 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        service.get('config').set('testFlag', false);
+        service.config.testFlag = false;
 
         return service.fetch().then(() => {
             expect(service.get('testFlag')).to.be.false;
@@ -274,7 +274,7 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        service.get('config').set('testFlag', false);
+        service.config.testFlag = false;
 
         return service.fetch().then(() => {
             expect(service.get('testFlag')).to.be.false;
@@ -339,25 +339,25 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let session = this.owner.lookup('service:session');
-        await session.populateUser();
+        let sessionService = this.owner.lookup('service:session');
+        await sessionService.populateUser();
 
-        let service = this.owner.lookup('service:feature');
-        service.get('config').set('testFlag', false);
+        let featureService = this.owner.lookup('service:feature');
+        featureService.config.testFlag = false;
 
-        return service.fetch().then(() => {
-            expect(service.get('testFlag'), 'testFlag before set').to.be.false;
+        return featureService.fetch().then(() => {
+            expect(featureService.get('testFlag'), 'testFlag before set').to.be.false;
 
             run(() => {
                 expect(() => {
-                    service.set('testFlag', true);
+                    featureService.set('testFlag', true);
                 }, EmberError, 'threw validation error');
             });
 
             return settled().then(() => {
                 // ensure validation is happening before the API is hit
                 expect(server.handlers[2].numberOfCalls).to.equal(0);
-                expect(service.get('testFlag')).to.be.false;
+                expect(featureService.get('testFlag')).to.be.false;
             });
         });
     });

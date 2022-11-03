@@ -7,6 +7,7 @@ import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-edit
 import {compare, isBlank} from '@ember/utils';
 import {computed, observer} from '@ember/object';
 import {equal, filterBy, reads} from '@ember/object/computed';
+import {inject} from 'ghost-admin/decorators/inject';
 import {on} from '@ember/object/evented';
 import {inject as service} from '@ember/service';
 
@@ -67,13 +68,14 @@ function publishedAtCompare(postA, postB) {
 }
 
 export default Model.extend(Comparable, ValidationEngine, {
-    config: service(),
     session: service(),
     feature: service(),
     ghostPaths: service(),
     clock: service(),
     settings: service(),
     membersUtils: service(),
+
+    config: inject(),
 
     displayName: 'post',
     validationType: 'post',
