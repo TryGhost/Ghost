@@ -1,6 +1,7 @@
 const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 const TableImporter = require('./base');
+const dateToDatabaseString = require('../utils/database-date');
 
 class TagsImporter extends TableImporter {
     constructor(knex, {users}) {
@@ -20,7 +21,7 @@ class TagsImporter extends TableImporter {
             name: name,
             slug: `${slugify(name)}-${faker.random.numeric(3)}`,
             description: faker.lorem.sentence(),
-            created_at: faker.date.between(threeYearsAgo, twoYearsAgo).toISOString(),
+            created_at: dateToDatabaseString(faker.date.between(threeYearsAgo, twoYearsAgo)),
             created_by: this.users[faker.datatype.number(this.users.length - 1)].id
         };
     }
