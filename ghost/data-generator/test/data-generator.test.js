@@ -78,7 +78,9 @@ describe('Data Generator', function () {
             eventsOnly: false,
             knex: db,
             schema: schema,
-            logger: {},
+            logger: {
+                info: () => {}
+            },
             modelQuantities: {
                 members: 10,
                 membersLoginEvents: 5,
@@ -153,12 +155,12 @@ describe('Importer', function () {
         const products = await productsImporter.import({amount: 1, rows: ['name', 'monthly_price', 'yearly_price']});
 
         products.length.should.eql(1);
-        products[0].name.should.eql('Free Preview');
+        products[0].name.should.eql('Free');
 
         const results = await db.select('id', 'name').from('products');
 
         results.length.should.eql(1);
-        results[0].name.should.eql('Free Preview');
+        results[0].name.should.eql('Free');
     });
 
     it('Should import an item for each entry in an array', async function () {
@@ -201,7 +203,7 @@ describe('Importer', function () {
         const results = await db.select('id', 'name', 'monthly_price_id', 'yearly_price_id').from('products');
 
         results.length.should.eql(4);
-        results[0].name.should.eql('Free Preview');
+        results[0].name.should.eql('Free');
     });
 });
 
