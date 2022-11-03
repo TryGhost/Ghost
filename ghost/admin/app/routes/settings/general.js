@@ -2,12 +2,14 @@ import AdminRoute from 'ghost-admin/routes/admin';
 import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
 import RSVP from 'rsvp';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class GeneralSettingsRoute extends AdminRoute {
     @service modals;
-    @service config;
     @service settings;
+
+    @inject config;
 
     model() {
         return RSVP.hash({

@@ -9,14 +9,16 @@ import {
 } from 'ghost-admin/components/gh-image-uploader';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class IntegrationController extends Controller {
-    @service config;
     @service ghostPaths;
     @service modals;
+
+    @inject config;
 
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;

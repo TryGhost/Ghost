@@ -3,6 +3,7 @@ import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
 import {EmojiButton} from '@joeattardi/emoji-button';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -12,11 +13,12 @@ import {tracked} from '@glimmer/tracking';
 const storageKey = 'gh-kg-callout-emoji';
 
 export default class KoenigCardCalloutComponent extends Component {
-    @service config;
     @service feature;
     @service store;
     @service membersUtils;
     @service ui;
+
+    @inject config;
 
     get isEmpty() {
         return isBlank(this.args.payload.calloutText) && isBlank(this.args.payload.calloutEmoji);

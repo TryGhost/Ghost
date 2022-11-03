@@ -4,6 +4,7 @@ import EmberError from '@ember/error';
 import Service, {inject as service} from '@ember/service';
 import classic from 'ember-classic-decorator';
 import {computed, set} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 
 export function feature(name, options = {}) {
     let {user, onChange} = options;
@@ -39,14 +40,13 @@ export function feature(name, options = {}) {
 
 @classic
 export default class FeatureService extends Service {
-    @service store;
-    @service config;
-
+    @service lazyLoader;
+    @service notifications;
     @service session;
     @service settings;
+    @service store;
 
-    @service notifications;
-    @service lazyLoader;
+    @inject config;
 
     // features
     @feature('emailAnalytics') emailAnalytics;
