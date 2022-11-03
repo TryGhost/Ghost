@@ -13,6 +13,7 @@ import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
@@ -94,7 +95,6 @@ const messageMap = {
 export default class EditorController extends Controller {
     @controller application;
 
-    @service config;
     @service feature;
     @service membersCountCache;
     @service modals;
@@ -104,6 +104,8 @@ export default class EditorController extends Controller {
     @service session;
     @service settings;
     @service ui;
+
+    @inject config;
 
     /* public properties -----------------------------------------------------*/
 

@@ -1,13 +1,14 @@
 import Service, {inject as service} from '@ember/service';
 import classic from 'ember-classic-decorator';
+import {inject} from 'ghost-admin/decorators/inject';
 
 @classic
 export default class BillingService extends Service {
-    @service router;
-    @service config;
-
     @service ghostPaths;
+    @service router;
     @service store;
+
+    @inject config;
 
     billingRouteRoot = '#/pro';
     billingWindowOpen = false;

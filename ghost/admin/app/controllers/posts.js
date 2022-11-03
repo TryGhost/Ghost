@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -47,11 +48,12 @@ const ORDERS = [{
 }];
 
 export default class PostsController extends Controller {
-    @service config;
     @service feature;
     @service router;
     @service session;
     @service store;
+
+    @inject config;
 
     // default values for these are set in constructor and defined in `helpers/reset-query-params`
     queryParams = ['type', 'visibility', 'author', 'tag', 'order'];

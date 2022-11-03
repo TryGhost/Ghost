@@ -3,7 +3,7 @@ import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
-import {inject as service} from '@ember/service';
+import {inject} from 'ghost-admin/decorators/inject';
 
 class ErrorHandler extends React.Component {
     state = {
@@ -90,7 +90,7 @@ const KoenigEditor = (props) => {
 };
 
 export default class KoenigLexicalEditor extends Component {
-    @service config;
+    @inject config;
 
     @action
     onError(error) {
@@ -143,9 +143,9 @@ export default class KoenigLexicalEditor extends Component {
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KoenigComposer 
-                            initialEditorState={this.args.lexical} 
-                            onError={this.onError} 
+                        <KoenigComposer
+                            initialEditorState={this.args.lexical}
+                            onError={this.onError}
                             imageUploadFunction={{imageUploader, uploadProgressPercentage}} >
                             <KoenigEditor onChange={this.args.onChange} />
                         </KoenigComposer>

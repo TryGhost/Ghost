@@ -1,6 +1,7 @@
 import ModalBase from 'ghost-admin/components/modal-base';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -9,13 +10,13 @@ import {tracked} from '@glimmer/tracking';
 @classic
 export default class ModalFreeMembershipSettings extends ModalBase {
     @service settings;
-    @service config;
+
+    @inject config;
 
     @tracked freeSignupRedirect;
-    @tracked siteUrl;
-    init() {
-        super.init(...arguments);
-        this.siteUrl = this.config.blogUrl;
+
+    get siteUrl() {
+        return this.config.blogUrl;
     }
 
     @action

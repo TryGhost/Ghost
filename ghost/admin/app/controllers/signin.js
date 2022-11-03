@@ -5,6 +5,7 @@ import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -15,11 +16,12 @@ export default class SigninController extends Controller.extend(ValidationEngine
     @controller application;
 
     @service ajax;
-    @service config;
     @service ghostPaths;
     @service notifications;
     @service session;
     @service settings;
+
+    @inject config;
 
     @tracked submitting = false;
     @tracked loggingIn = false;

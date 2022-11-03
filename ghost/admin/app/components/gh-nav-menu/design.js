@@ -1,17 +1,19 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class DesignMenuComponent extends Component {
-    @service config;
     @service customThemeSettings;
     @service router;
     @service settings;
     @service store;
     @service themeManagement;
+
+    @inject config;
 
     @tracked openSection = null;
 

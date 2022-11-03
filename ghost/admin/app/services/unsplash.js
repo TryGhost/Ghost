@@ -11,7 +11,6 @@ const API_VERSION = 'v1';
 const DEBOUNCE_MS = 600;
 
 export default Service.extend({
-    config: service(),
     settings: service(),
 
     columnCount: 3,
