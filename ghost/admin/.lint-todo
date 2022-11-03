@@ -1016,3 +1016,4 @@ remove|ember-template-lint|no-passed-in-event-handlers|186|44|186|44|70487c008d7
 remove|ember-template-lint|table-groups|29|12|29|12|fd6c7d9c26f38dac21ab2603a31d20617717ab33|1663977600000|1674349200000|1679533200000|app/templates/offers.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|50|28|50|28|40caf07c7cebf6f4321c5b7e7f2f426b5c30217b|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
 remove|ember-template-lint|no-action|164|56|164|56|fa36149ee581ce634903cef877ccfdc133aa67ec|1662681600000|1673053200000|1678237200000|app/components/modal-tier.hbs
+add|ember-template-lint|table-groups|29|12|29|12|22a05b8f3ce6682814afd256f64d33aa86cd5063|1667433600000|1677801600000|1682985600000|app/templates/offers.hbs
