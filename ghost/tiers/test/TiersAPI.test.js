@@ -66,6 +66,22 @@ describe('TiersAPI', function () {
         assert(updated.name === 'Updated');
     });
 
+    it('Can archive a tier', async function () {
+        const tier = await api.add({
+            name: 'My testing Tier',
+            type: 'paid',
+            monthlyPrice: 5000,
+            yearlyPrice: 50000,
+            currency: 'usd'
+        });
+
+        const updated = await api.edit(tier.id.toHexString(), {
+            status: 'archived'
+        });
+
+        assert(updated.status === 'archived');
+    });
+
     it('Can browse tiers', async function () {
         const page = await api.browse();
 
