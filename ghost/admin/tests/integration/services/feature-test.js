@@ -9,7 +9,9 @@ import {settled} from '@ember/test-helpers';
 import {setupTest} from 'ember-mocha';
 
 function stubSettings(server, labs, validSave = true) {
-    let settings = [
+    const site = [];
+
+    const settings = [
         {
             id: '1',
             type: 'labs',
@@ -17,6 +19,10 @@ function stubSettings(server, labs, validSave = true) {
             value: JSON.stringify(labs)
         }
     ];
+
+    server.get(`${ghostPaths().apiRoot}/site/`, function () {
+        return [200, {'Content-Type': 'application/json'}, JSON.stringify({site})];
+    });
 
     server.get(`${ghostPaths().apiRoot}/settings/`, function () {
         return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings})];
@@ -227,7 +233,7 @@ describe('Integration: Service: feature', function () {
             });
 
             return settled().then(() => {
-                expect(server.handlers[1].numberOfCalls).to.equal(1);
+                expect(server.handlers[2].numberOfCalls).to.equal(1);
                 expect(service.get('testFlag')).to.be.true;
             });
         });
@@ -252,7 +258,7 @@ describe('Integration: Service: feature', function () {
             });
 
             return settled().then(() => {
-                expect(server.handlers[3].numberOfCalls).to.equal(1);
+                expect(server.handlers[4].numberOfCalls).to.equal(1);
                 expect(service.get('testUserFlag')).to.be.true;
             });
         });
@@ -279,7 +285,7 @@ describe('Integration: Service: feature', function () {
 
             return settled().then(() => {
                 expect(
-                    server.handlers[1].numberOfCalls,
+                    server.handlers[2].numberOfCalls,
                     'PUT call is made'
                 ).to.equal(1);
 
@@ -340,7 +346,7 @@ describe('Integration: Service: feature', function () {
         service.get('config').set('testFlag', false);
 
         return service.fetch().then(() => {
-            expect(service.get('testFlag')).to.be.false;
+            expect(service.get('testFlag'), 'testFlag before set').to.be.false;
 
             run(() => {
                 expect(() => {
@@ -350,9 +356,27 @@ describe('Integration: Service: feature', function () {
 
             return settled().then(() => {
                 // ensure validation is happening before the API is hit
-                expect(server.handlers[1].numberOfCalls).to.equal(0);
+                expect(server.handlers[2].numberOfCalls).to.equal(0);
                 expect(service.get('testFlag')).to.be.false;
             });
         });
+    });
+
+    it('has correct labs flags when accessed before and after settings load', async function () {
+        stubSettings(server, {testFlag: true});
+        stubUser(server, {});
+
+        addTestFlag();
+
+        const settingsService = this.owner.lookup('service:settings');
+        const featureService = this.owner.lookup('service:feature');
+
+        expect(featureService.testFlag, 'testFlag before settings fetch').to.be.false;
+
+        await settingsService.fetch();
+
+        expect(featureService.settings.labs, 'feature.settings.labs after settings fetch').to.equal('{"testFlag":true}');
+        expect(featureService.labs, 'feature.labs after settings fetch').to.deep.equal({testFlag: true});
+        expect(featureService.testFlag, 'feature.testFlag after settings fetch').to.be.true;
     });
 });
