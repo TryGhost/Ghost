@@ -80,7 +80,7 @@ describe('Acceptance: Staff', function () {
             adminRole = this.server.schema.roles.find(1);
             enableMembers(this.server);
             enableStripe(this.server);
-            enableLabsFlag(this.server, 'emailAlerts');
+            // enableLabsFlag(this.server, 'emailAlerts');
 
             admin = this.server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 
@@ -906,7 +906,7 @@ describe('Acceptance: Staff', function () {
             adminRole = this.server.schema.roles.find(1);
             enableMembers(this.server);
             enableStripe(this.server);
-            enableLabsFlag(this.server, 'emailAlerts');
+            // enableLabsFlag(this.server, 'emailAlerts');
             ownerRole = this.server.create('role', {name: 'Owner'});
 
             admin = this.server.create('user', {email: 'admin@example.com', roles: [ownerRole]});
