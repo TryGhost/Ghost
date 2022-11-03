@@ -105,7 +105,7 @@ module.exports = class TiersAPI {
             'benefits',
             'description',
             'visibility',
-            'active',
+            'status',
             'trialDays',
             'welcomePageURL'
         ];
