@@ -105,13 +105,13 @@ export function getUpgradeProducts({site, member}) {
         return availableProducts;
     }
     return availableProducts.filter((product) => {
-        return (getProductCurrency({product}) === activePriceCurrency);
+        return (isSameCurrency(getProductCurrency({product}), activePriceCurrency));
     });
 }
 
 export function getFilteredPrices({prices, currency}) {
     return prices.filter((d) => {
-        return (d.currency || '').toLowerCase() === (currency || '').toLowerCase();
+        return isSameCurrency((d.currency || ''), (currency || ''));
     });
 }
 

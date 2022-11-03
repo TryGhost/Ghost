@@ -3,8 +3,8 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const configUtils = require('../../../../../utils/configUtils');
 
-let cors = rewire('../../../../../../core/server/web/api/middleware/cors')[0];
-let corsCaching = rewire('../../../../../../core/server/web/api/middleware/cors')[1];
+let cors = rewire('../../../../../../core/server/web/api/middleware/cors')[1];
+let corsCaching = rewire('../../../../../../core/server/web/api/middleware/cors')[0];
 
 describe('cors', function () {
     let res;
@@ -13,6 +13,7 @@ describe('cors', function () {
 
     beforeEach(function () {
         req = {
+            method: 'OPTIONS',
             headers: {
                 origin: null
             },
@@ -26,7 +27,8 @@ describe('cors', function () {
             vary: sinon.spy(),
             setHeader: function (h, v) {
                 this.headers[h] = v;
-            }
+            },
+            end: sinon.spy()
         };
 
         next = sinon.spy();
@@ -35,7 +37,7 @@ describe('cors', function () {
     afterEach(function () {
         sinon.restore();
         configUtils.restore();
-        cors = rewire('../../../../../../core/server/web/api/middleware/cors')[0];
+        cors = rewire('../../../../../../core/server/web/api/middleware/cors')[1];
     });
 
     it('should not be enabled without a request origin header', function (done) {
@@ -58,7 +60,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        res.end.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -73,7 +75,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        res.end.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -105,7 +107,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        res.end.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -127,7 +129,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        res.end.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -137,6 +139,14 @@ describe('cors', function () {
         corsCaching(req, res, function () {
             should.equal(res.vary.called, true);
             should.equal(res.vary.args[0], 'Origin');
+            done();
+        });
+    });
+
+    it('should NOT add origin value to the vary header when not an OPTIONS request', function (done) {
+        req.method = 'GET';
+        corsCaching(req, res, function () {
+            should.equal(res.vary.called, false);
             done();
         });
     });
