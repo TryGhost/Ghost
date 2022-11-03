@@ -24,11 +24,13 @@ const {
     MembersSubscriptionCreatedEventsImporter,
     MembersSubscribeEventsImporter
 } = require('./tables');
+const fs = require('fs/promises');
 const {faker} = require('@faker-js/faker');
+const JsonImporter = require('./utils/json-importer');
 
 /**
  * @typedef {Object} DataGeneratorOptions
- * @property {boolean} useBaseData
+ * @property {string} baseDataPack
  * @property {import('knex/types').Knex} knex
  * @property {Object} schema
  * @property {Object} logger
@@ -53,13 +55,14 @@ class DataGenerator {
      * @param {DataGeneratorOptions} options
      */
     constructor({
-        useBaseData = false,
+        baseDataPack = '',
         knex,
         schema,
         logger,
         modelQuantities = {}
     }) {
-        this.useBaseData = useBaseData;
+        this.useBaseData = baseDataPack !== '';
+        this.baseDataPack = baseDataPack;
         this.knex = knex;
         this.schema = schema;
         this.logger = logger;
@@ -78,24 +81,76 @@ class DataGenerator {
         let products;
         let stripeProducts;
         let stripePrices;
+        let benefits;
 
         // Use an existant set of data for a more realisitic looking site
         if (this.useBaseData) {
-            // Must have at least 2 in base data set
-            newsletters = await transaction.select('id').from('newsletters');
+            const baseData = JSON.parse(await (await fs.readFile(this.baseDataPack)).toString());
+            const jsonImporter = new JsonImporter(transaction);
 
+            // Must have at least 2 in base data set
+            await transaction('newsletters').delete();
+            newsletters = await jsonImporter.import({
+                name: 'newsletters',
+                data: baseData.newsletters
+            });
+
+            await transaction('posts_authors').delete();
+            await transaction('posts_tags').delete();
+
+            await transaction('posts').delete();
             const postsImporter = new PostsImporter(transaction, {
                 newsletters
             });
-            posts = await transaction.select('id').from('posts');
+            posts = await jsonImporter.import({
+                name: 'posts',
+                data: baseData.posts
+            });
             postsImporter.addNewsletters({posts});
             posts = await transaction.select('id', 'newsletter_id').from('posts');
 
-            tags = await transaction.select('id').from('tags');
+            await transaction('tags').delete();
+            tags = await jsonImporter.import({
+                name: 'tags',
+                data: baseData.tags
+            });
 
-            products = await transaction.select('id', 'name', 'monthly_price', 'yearly_price').from('products');
-            stripeProducts = await transaction.select('id', 'product_id', 'stripe_product_id').from('stripe_products');
-            stripePrices = await transaction.select('id', 'stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname');
+            await transaction('products').delete();
+            products = await jsonImporter.import({
+                name: 'products',
+                data: baseData.products,
+                rows: ['name', 'monthly_price', 'yearly_price']
+            });
+
+            benefits = await jsonImporter.import({
+                name: 'benefits',
+                data: baseData.benefits
+            });
+            await jsonImporter.import({
+                name: 'products_benefits',
+                data: baseData.products_benefits
+            });
+
+            stripeProducts = await jsonImporter.import({
+                name: 'stripe_products',
+                data: baseData.stripe_products,
+                rows: ['product_id', 'stripe_product_id']
+            });
+            stripePrices = await jsonImporter.import({
+                name: 'stripe_prices',
+                data: baseData.stripe_prices,
+                rows: ['stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname']
+            });
+
+            // Import settings
+            await jsonImporter.import({
+                name: 'settings',
+                data: baseData.settings
+            });
+            await jsonImporter.import({
+                name: 'custom_theme_settings',
+                data: baseData.custom_theme_settings
+            });
         } else {
             const newslettersImporter = new NewslettersImporter(transaction);
             // First newsletter is free, second is paid
@@ -121,7 +176,7 @@ class DataGenerator {
             products = await productsImporter.import({amount: 4, rows: ['name', 'monthly_price', 'yearly_price']});
 
             const stripeProductsImporter = new StripeProductsImporter(transaction);
-            stripeProducts = await stripeProductsImporter.importForEach(products, {
+            stripeProducts = await stripeProductsImporter.importForEach(products.slice(1), {
                 amount: 1,
                 rows: ['product_id', 'stripe_product_id']
             });
@@ -139,7 +194,7 @@ class DataGenerator {
             });
 
             const benefitsImporter = new BenefitsImporter(transaction);
-            const benefits = await benefitsImporter.import({amount: 5});
+            benefits = await benefitsImporter.import({amount: 5});
 
             const productsBenefitsImporter = new ProductsBenefitsImporter(transaction, {benefits});
             // Up to 5 benefits for each product
@@ -165,12 +220,12 @@ class DataGenerator {
         await postsAuthorsImporter.importForEach(posts, {amount: 1});
 
         // TODO: Use subscriptions to generate members_products table?
-        const membersProductsImporter = new MembersProductsImporter(transaction, {products: products.slice(1)});
+        const membersProductsImporter = new MembersProductsImporter(transaction, {products: products.filter(product => product.name !== 'Free')});
         const membersProducts = await membersProductsImporter.importForEach(members.filter(member => member.status !== 'free'), {
             amount: 1,
             rows: ['product_id', 'member_id']
         });
-        const membersFreeProductsImporter = new MembersProductsImporter(transaction, {products: [products[0]]});
+        const membersFreeProductsImporter = new MembersProductsImporter(transaction, {products: products.filter(product => product.name === 'Free')});
         await membersFreeProductsImporter.importForEach(members.filter(member => member.status === 'free'), {
             amount: 1,
             rows: ['product_id', 'member_id']

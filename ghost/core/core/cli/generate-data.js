@@ -4,7 +4,7 @@ const DataGenerator = require('@tryghost/data-generator');
 module.exports = class REPL extends Command {
     setup() {
         this.help('Generates random data to populate the database for development & testing');
-        this.argument('--use-base-data', {type: 'boolean', defaultValue: false, desc: 'Only generate data outside of a defined base data set'});
+        this.argument('--base-data-pack', {type: 'string', defaultValue: '', desc: 'Base data pack file location, imported instead of random content'});
     }
 
     initializeContext(context) {
@@ -27,7 +27,7 @@ module.exports = class REPL extends Command {
         const knex = require('../server/data/db/connection');
         const {tables: schema} = require('../server/data/schema/index');
         const dataGenerator = new DataGenerator({
-            useBaseData: argv['use-base-data'],
+            baseDataPack: argv['base-data-pack'],
             knex,
             schema,
             logger: {
