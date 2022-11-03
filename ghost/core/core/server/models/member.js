@@ -154,7 +154,7 @@ const Member = ghostBookshelf.Model.extend({
             .query((qb) => {
                 // avoids bookshelf adding a `DISTINCT` to the query
                 // we know the result set will already be unique and DISTINCT hurts query performance
-                qb.columns('products.*');
+                qb.columns('products.*', 'expiry_at');
             });
     },
 
