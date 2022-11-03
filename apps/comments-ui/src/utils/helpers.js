@@ -22,6 +22,11 @@ export function isSentryEventAllowed({event: sentryEvent}) {
     return lastFileName.includes('@tryghost/comments');
 }
 
+export function formatNumber(number) {
+    // Adds in commas for separators
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
 export function formatRelativeTime(dateString) {
     const date = new Date(dateString);
     const now = new Date();
