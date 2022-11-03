@@ -1,5 +1,3 @@
-const labs = require('../../../shared/labs');
-
 const getSegmentsFromHtml = (html) => {
     const cheerio = require('cheerio');
     const $ = cheerio.load(html);
@@ -11,7 +9,7 @@ const getSegmentsFromHtml = (html) => {
     /**
      * Always add free and paid segments if email has paywall card
      */
-    if (labs.isSet('newsletterPaywall') && html.indexOf('<!--members-only-->') !== -1) {
+    if (html.indexOf('<!--members-only-->') !== -1) {
         allSegments = allSegments.concat(['status:free', 'status:-free']);
     }
 
