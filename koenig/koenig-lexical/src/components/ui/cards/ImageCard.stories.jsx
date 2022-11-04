@@ -29,3 +29,13 @@ Empty.args = {
     isDraggedOver: false
 };
 
+export const Populated = Template.bind({});
+Populated.args = {
+    isSelected: true,
+    src: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
+    setAltText: true,
+    caption: 'Welcome to your new Ghost publication',
+    altText: 'Feature image',
+    isDraggedOver: false
+};
+
