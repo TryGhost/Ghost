@@ -520,6 +520,58 @@ describe('Post Email Serializer', function () {
             assert(outputWithButtons.html.includes('%{feedback_button_like}%'));
             assert(outputWithButtons.html.includes('%{feedback_button_dislike}%'));
         });*/
+
+        it('handles lexical posts', async function () {
+            sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
+                return {
+                    url: 'https://testpost.com/',
+                    title: 'This is a lexical test',
+                    excerpt: 'This is a lexical test',
+                    authors: 'Mr. Test',
+
+                    lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Bacon ipsum dolor amet porchetta drumstick swine ribeye, tail leberkas beef short loin fatback turducken salami pastrami ball tip shankle ground round. Jowl shankle bacon, short ribs cow ham pork loin meatloaf beef chislic tenderloin.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"altText":"","caption":"🤤","src":"http://localhost:2368/content/images/2022/11/michelle-shelly-captures-it-TJzhTJ2U8Jo-unsplash.jpg","type":"image"},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Spare ribs chicken fatback shoulder. Flank swine kielbasa alcatra, porchetta capicola pork loin corned beef short ribs fatback.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"altText":"","caption":"","src":"http://localhost:2368/content/images/2022/11/towfiqu-barbhuiya-yPYOG4_j6YI-unsplash-1.jpg","type":"image"},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Prosciutto drumstick porchetta biltong leberkas tri-tip short ribs sausage picanha ham hock. Turducken buffalo venison hamburger landjaeger. Hamburger burgdoggen meatloaf pork belly picanha drumstick salami short ribs ham hock pork loin biltong chicken.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'
+                };
+            });
+            const customSettings = {
+                accent_color: '#000099',
+                timezone: 'UTC'
+            };
+
+            const settingsMock = sinon.stub(settingsCache, 'get');
+            settingsMock.callsFake(function (key, options) {
+                if (customSettings[key]) {
+                    return customSettings[key];
+                }
+
+                return settingsMock.wrappedMethod.call(settingsCache, key, options);
+            });
+            const template = {
+                name: 'My newsletter',
+                header_image: '',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
+            };
+            const newsletterMock = {
+                get: function (key) {
+                    return template[key];
+                },
+                toJSON: function () {
+                    return template;
+                }
+            };
+
+            const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
+            assert(output.html.includes('Bacon ipsum dolor amet'));
+            assert(output.html.includes('michelle-shelly-captures-it-TJzhTJ2U8Jo-unsplash.jpg'));
+        });
     });
 
     describe('renderEmailForSegment', function () {
