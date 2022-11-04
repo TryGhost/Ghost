@@ -7,7 +7,11 @@ const story = {
     component: ImageCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        isSelected: {control: 'boolean'},
+        breakout: {
+            options: ['regular', 'wide', 'full'],
+            control: {type: 'radio'}
+        }
     }
 };
 export default story;
@@ -36,6 +40,7 @@ Populated.args = {
     setAltText: true,
     caption: 'Welcome to your new Ghost publication',
     altText: 'Feature image',
+    breakout: 'regular',
     isDraggedOver: false
 };
 
