@@ -7,7 +7,7 @@
     {{#if (feature "audienceFeedback")}}<h3 class="gh-newsletter-clicks-header">Newsletter clicks</h3>{{/if}}
     <div class="gh-links-list">
         <div class="gh-links-list-header">
-            {{#if (and this.showPagination) }}
+            {{#if this.showPagination}}
             <div class="gh-links-pagination-progress">
                 Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
             </div>
