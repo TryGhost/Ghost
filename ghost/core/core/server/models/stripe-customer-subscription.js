@@ -1,6 +1,5 @@
 const ghostBookshelf = require('./base');
 const _ = require('lodash');
-const labs = require('../../shared/labs');
 
 const StripeCustomerSubscription = ghostBookshelf.Model.extend({
     tableName: 'members_stripe_customers_subscriptions',
