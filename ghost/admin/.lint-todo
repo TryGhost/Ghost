@@ -1076,3 +1076,5 @@ remove|ember-template-lint|no-action|186|51|186|51|a80dd18e18dda6fb6f1f97d87bef2
 remove|ember-template-lint|no-passed-in-event-handlers|176|44|176|44|dcb4785647a50814bcfce82f8d68ac8dd8f54ec2|1667520000000|1677888000000|1683072000000|app/components/modal-tier.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|186|44|186|44|70487c008d7dda453fef82f0140699ee93c0055c|1667520000000|1677888000000|1683072000000|app/components/modal-tier.hbs
 remove|ember-template-lint|style-concatenation|303|54|303|54|23293f0c3838b23432d2b2daaf04b34504896d91|1667520000000|1677888000000|1683072000000|app/components/modal-tier.hbs
+add|ember-template-lint|simple-unless|86|30|86|30|17d2867a6155411eaf3c32cb83391e3118c2afc8|1667520000000|1677888000000|1683072000000|app/components/posts/links-table.hbs
+add|ember-template-lint|simple-unless|98|26|98|26|17d2867a6155411eaf3c32cb83391e3118c2afc8|1667520000000|1677888000000|1683072000000|app/components/posts/links-table.hbs

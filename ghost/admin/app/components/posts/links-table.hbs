@@ -83,7 +83,7 @@
             <div class="gh-links-pagination">
                 <span class="gh-links-info">{{svg-jar "arrow-right-tail"}} <span class="gh-links-info-normal">Sent a broken link? You can update it!</span><span class="gh-links-info-short">Update your broken link!</span></span>
 
-                    {{#if (not (feature "audienceFeedback"))}}
+                    {{#unless (feature "audienceFeedback")}}
                         <div class="gh-links-pagination-actions">
                             <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
                                 {{svg-jar "arrow-left-pagination"}}
@@ -94,8 +94,8 @@
                                 {{svg-jar "arrow-right-pagination"}}
                             </button>
                         </div>
-                    {{/if}}
-                {{#if (and (not (feature "audienceFeedback")))}}
+                    {{/unless}}
+                {{#unless (feature "audienceFeedback")}}
                     <div class="gh-links-pagination-progress">
                         Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
                     </div>
@@ -111,7 +111,7 @@
                             </button>
                         </div>
                     {{/if}}
-                {{/if}}
+                {{/unless}}
 
                 {{#if (feature "audienceFeedback")}}
                     <div class="gh-post-activity-feed-pagination">
