@@ -34,8 +34,8 @@ const fetchKoenig = function () {
         // required to work around ember-auto-import complaining about an unknown dynamic import
         // during the build step
         const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('service:config').get('editor.url');
-        const urlVersion = GhostAdmin.__container__.lookup('service:config').get('editor.version');
+        const urlTemplate = GhostAdmin.__container__.lookup('config:main').editor?.url;
+        const urlVersion = GhostAdmin.__container__.lookup('config:main').editor?.version;
 
         const url = new URL(urlTemplate.replace('{version}', urlVersion));
 
