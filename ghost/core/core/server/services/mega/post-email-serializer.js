@@ -7,6 +7,7 @@ const api = require('../../api').endpoints;
 const apiFramework = require('@tryghost/api-framework');
 const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
+const lexicalLib = require('../../lib/lexical');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const membersService = require('../members');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
@@ -124,8 +125,8 @@ const PostEmailSerializer = {
 
     // NOTE: serialization is needed to make sure we do post transformations such as image URL transformation from relative to absolute
     async serializePostModel(model) {
-        // fetch mobiledoc rather than html and plaintext so we can render email-specific contents
-        const frame = {options: {context: {user: true}, formats: 'mobiledoc'}};
+        // fetch mobiledoc/lexical rather than html and plaintext so we can render email-specific contents
+        const frame = {options: {context: {user: true}, formats: 'mobiledoc,lexical'}};
         const docName = 'posts';
 
         await apiFramework
@@ -297,11 +298,17 @@ const PostEmailSerializer = {
             post.excerpt = post.excerpt.replace(/\s\[http(.*?)\]/g, '');
         }
 
-        post.html = mobiledocLib.mobiledocHtmlRenderer.render(
-            JSON.parse(post.mobiledoc), {target: 'email', postUrl: post.url}
-        );
+        if (post.lexical) {
+            post.html = lexicalLib.lexicalHtmlRenderer.render(
+                post.lexical, {target: 'email', postUrl: post.url}
+            );
+        } else {
+            post.html = mobiledocLib.mobiledocHtmlRenderer.render(
+                JSON.parse(post.mobiledoc), {target: 'email', postUrl: post.url}
+            );
+        }
 
-        // perform any email specific adjustments to the mobiledoc->HTML render output
+        // perform any email specific adjustments to the HTML render output.
         // body wrapper is required so we can get proper top-level selections
         const cheerio = require('cheerio');
         const _cheerio = cheerio.load(`<body>${post.html}</body>`);
@@ -441,7 +448,7 @@ const PostEmailSerializer = {
         <h2
             style="margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;">
             Subscribe to <span style="white-space: nowrap; font-size: 26px !important;">continue reading.</span></h2>
-        <p style="margin: 0 auto 1.5em auto; line-height: 1.6em; max-width: 440px;">Become a paid member of ${siteTitle} to get access to all 
+        <p style="margin: 0 auto 1.5em auto; line-height: 1.6em; max-width: 440px;">Become a paid member of ${siteTitle} to get access to all
         <span style="white-space: nowrap;">subscriber-only content.</span></p>
         <div class="btn btn-accent" style="box-sizing: border-box; width: 100%; display: table;">
             <table border="0" cellspacing="0" cellpadding="0" align="center"
