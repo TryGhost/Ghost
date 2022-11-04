@@ -121,6 +121,10 @@ export class ImageNode extends DecoratorNode {
         return false;
     }
 
+    isInline() {
+        return false;
+    }
+
     getSrc() {
         return this.__src;
     }
