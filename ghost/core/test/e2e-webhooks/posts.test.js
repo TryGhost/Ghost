@@ -99,6 +99,14 @@ const buildPreviousPostSnapshotWithTiersAndTags = ({tiersCount, tags}) => {
     return previousSnapshot;
 };
 
+const buildPreviousPostSnapshotWithTiersPublished = ({tiersCount, published}) => {
+    return {
+        updated_at: anyISODateTime,
+        published_at: published ? anyISODateTime : null,
+        tiers: new Array(tiersCount).fill(tierSnapshot)
+    };
+};
+
 describe('post.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
@@ -615,6 +623,62 @@ describe('post.* events', function () {
                     }),
                     previous: buildPreviousPostSnapshotWithTiers({
                         tiersCount: 2
+                    })
+                }
+            });
+    });
+
+    it('post.rescheduled event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-rescheduled/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.rescheduled',
+            url: webhookURL
+        });
+
+        const published_at = moment().add(1, 'days').toISOString();
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'testing post rescheduled webhook',
+                    status: 'scheduled',
+                    published_at: published_at
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+        const rescheduledPost = res.body.posts[0];
+        rescheduledPost.status = 'scheduled';
+        rescheduledPost.published_at = moment().add(2, 'days').toISOString();
+
+        await adminAPIAgent
+            .put('posts/' + id)
+            .body({
+                posts: [rescheduledPost]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: buildPreviousPostSnapshotWithTiersPublished({
+                        tiersCount: 2,
+                        published: true
                     })
                 }
             });
