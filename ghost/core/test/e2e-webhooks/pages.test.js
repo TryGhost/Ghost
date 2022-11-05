@@ -91,6 +91,14 @@ const buildPreviousPageSnapshotWithTiersAndTags = ({tiersCount, tags}) => {
     return prevSnapshot;
 };
 
+const buildPreviousPageSnapshotWithTiersPublished = ({tiersCount, published}) => {
+    return {
+        tiers: new Array(tiersCount).fill(tierSnapshot),
+        updated_at: anyISODateTime,
+        published_at: published ? anyISODateTime : null
+    };
+};
+
 describe('page.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
@@ -563,6 +571,63 @@ describe('page.* events', function () {
                     previous: buildPreviousPageSnapshotWithTiersAndTags({
                         tiersCount: 2,
                         tags: false
+                    })
+                }
+            });
+    });
+    
+    it('page.rescheduled event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-rescheduled/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.rescheduled',
+            url: webhookURL
+        });
+
+        const published_at = moment().add(6, 'hours').toISOString();
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.rescheduled webhook',
+                        status: 'scheduled',
+                        published_at: published_at
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const pageRescheduled = res.body.pages[0];
+        pageRescheduled.status = 'scheduled';
+        pageRescheduled.published_at = moment().add(8, 'hours').toISOString();
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [pageRescheduled]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiersPublished({
+                        tiersCount: 2,
+                        published: true
                     })
                 }
             });
