@@ -1,0 +1,24 @@
+This for home page 
+...diff
+-<span class="text-pink-900 font-extrabold">into a business</span> 
+
++<span class="text-black-900 font-extrabold">into a business</span> 
+...
+
+...diff
+-<p class="max-w-6xl text-2xl md:text-5xl font-bold text-pink tracking-tight" style="line-height:1.35">Ghost is a powerful app for new-media creators to publish, share, and grow a business around their content. It comes with modern tools to build a website, publish content, send newsletters &amp; offer paid subscriptions to members.</p>
+
++<p class="max-w-6xl text-2xl md:text-5xl font-sans-serif text-black tracking-tight" style="line-height:1.35">Ghost is a powerful app for new-media creators to publish, share, and grow a business around their content. It comes with modern tools to build a website, publish content, send newsletters &amp; offer paid subscriptions to members.</p>
+...
+...diff
+-<a class="text-pink-900 font-semibold text-xl lg:text-4xl inline-block mt-[4vmin] tracking-tight" href="https://account.ghost.org/signup">Try Ghost completely free for 14 days →</a>
+
++<a class="text-black-900 font-semibold text-xl lg:text-4xl inline-block mt-[4vmin] tracking-tight" href="https://account.ghost.org/signup">Try Ghost completely free for 14 days →</a>
+...diff
+-margin-top: 4vmin
++margin-top: 5vmin
+...
+...diff
+-class="text-gray-400 ml-1 h-5 w-5 group-hover:text-gray-500"
++[class="text-gray-400 ml-1 h-5 w-5 group-hover:text-black-500"]
+...
