@@ -5,15 +5,19 @@ class MemberAttributionService {
      *
      * @param {Object} deps
      * @param {Object} deps.attributionBuilder
-     * @param {boolean} deps.isTrackingEnabled
      * @param {Object} deps.models
      * @param {Object} deps.models.MemberCreatedEvent
      * @param {Object} deps.models.SubscriptionCreatedEvent
+     * @param {() => boolean} deps.getTrackingEnabled
      */
-    constructor({attributionBuilder, models, isTrackingEnabled}) {
+    constructor({attributionBuilder, models, getTrackingEnabled}) {
         this.models = models;
         this.attributionBuilder = attributionBuilder;
-        this.isTrackingEnabled = isTrackingEnabled;
+        this._getTrackingEnabled = getTrackingEnabled;
+    }
+
+    get isTrackingEnabled() {
+        return this._getTrackingEnabled();
     }
 
     /**
