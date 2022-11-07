@@ -73,6 +73,7 @@ class DataGenerator {
 
     async importData() {
         const transaction = await this.knex.transaction();
+        this.logger.info('Starting import process, this has two parts: base data and member data. It can take a while...');
 
         const usersImporter = new UsersImporter(transaction);
         const users = await usersImporter.import({amount: 8});
@@ -94,11 +95,13 @@ class DataGenerator {
             let baseData = {};
             try {
                 baseData = JSON.parse(await (await fs.readFile(baseDataPack)).toString());
-                this.logger.info('Loaded data pack');
+                this.logger.info('Read base data pack');
             } catch (error) {
-                this.logger.error('Failed to load data pack: ', error);
+                this.logger.error('Failed to read data pack: ', error);
                 throw error;
             }
+
+            this.logger.info('Starting base data import');
             const jsonImporter = new JsonImporter(transaction);
 
             // Must have at least 2 in base data set
@@ -167,8 +170,9 @@ class DataGenerator {
                 data: baseData.custom_theme_settings
             });
 
-            this.logger.info('Completed JSON import');
+            this.logger.info('Completed base data import');
         } else {
+            this.logger.info('No base data pack specified, starting random base data generation');
             const newslettersImporter = new NewslettersImporter(transaction);
             // First newsletter is free, second is paid
             newsletters = await newslettersImporter.import({amount: 2, rows: ['sort_order']});
@@ -217,7 +221,11 @@ class DataGenerator {
             const productsBenefitsImporter = new ProductsBenefitsImporter(transaction, {benefits});
             // Up to 5 benefits for each product
             await productsBenefitsImporter.importForEach(products, {amount: 5});
+
+            this.logger.info('Completed random base data generation');
         }
+
+        this.logger.info('Started member data generation');
 
         const postsTagsImporter = new PostsTagsImporter(transaction, {
             tags
@@ -315,7 +323,8 @@ class DataGenerator {
 
         await transaction.commit();
 
-        this.logger.info('Completed random import');
+        this.logger.info('Completed member data generation');
+        this.logger.ok('Completed import process.');
     }
 }
 
