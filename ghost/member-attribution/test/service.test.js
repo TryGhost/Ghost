@@ -13,7 +13,7 @@ describe('MemberAttributionService', function () {
     describe('getAttributionFromContext', function () {
         it('returns null if no context is provided', async function () {
             const service = new MemberAttributionService({
-                isTrackingEnabled: true
+                getTrackingEnabled: () => true
             });
             const attribution = await service.getAttributionFromContext();
 
@@ -31,7 +31,7 @@ describe('MemberAttributionService', function () {
 
         it('returns attribution for importer context', async function () {
             const service = new MemberAttributionService({
-                isTrackingEnabled: true
+                getTrackingEnabled: () => true
             });
             const attribution = await service.getAttributionFromContext({importer: true});
 
@@ -40,7 +40,7 @@ describe('MemberAttributionService', function () {
 
         it('returns attribution for admin context', async function () {
             const service = new MemberAttributionService({
-                isTrackingEnabled: true
+                getTrackingEnabled: () => true
             });
             const attribution = await service.getAttributionFromContext({user: 'abc'});
 
@@ -49,7 +49,7 @@ describe('MemberAttributionService', function () {
 
         it('returns attribution for api without integration context', async function () {
             const service = new MemberAttributionService({
-                isTrackingEnabled: true
+                getTrackingEnabled: () => true
             });
             const attribution = await service.getAttributionFromContext({
                 api_key: 'abc'
@@ -69,7 +69,7 @@ describe('MemberAttributionService', function () {
                         }
                     }
                 },
-                isTrackingEnabled: true
+                getTrackingEnabled: () => true
             });
             const attribution = await service.getAttributionFromContext({
                 api_key: 'abc',
@@ -96,7 +96,7 @@ describe('MemberAttributionService', function () {
                         };
                     }
                 },
-                isTrackingEnabled: true
+                getTrackingEnabled: () => true
             });
             const model = {
                 id: 'event_id',
@@ -130,7 +130,7 @@ describe('MemberAttributionService', function () {
                         };
                     }
                 },
-                isTrackingEnabled: true
+                getTrackingEnabled: () => true
             });
             const model = {
                 id: 'event_id',
@@ -170,7 +170,7 @@ describe('MemberAttributionService', function () {
                         };
                     }
                 },
-                isTrackingEnabled: true
+                getTrackingEnabled: () => true
             });
             const model = {
                 id: 'event_id',
