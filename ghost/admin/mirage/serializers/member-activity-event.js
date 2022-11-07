@@ -37,6 +37,6 @@ export default BaseSerializer.extend({
             };
         });
 
-        return {events};
+        return {events, meta: serialized.meta};
     }
 });
