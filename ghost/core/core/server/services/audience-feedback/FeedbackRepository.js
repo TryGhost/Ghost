@@ -62,6 +62,6 @@ module.exports = class FeedbackRepository {
     }
 
     async getPostById(id) {
-        return await this.#Post.findOne({id});
+        return await this.#Post.findOne({id, status: 'all'});
     }
 };
