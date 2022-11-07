@@ -172,9 +172,7 @@ describe('Acceptance: Authentication', function () {
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
 
-            // we should see a re-auth modal
-            expect(findAll('.fullscreen-modal #login').length, 'modal exists').to.equal(0);
-        });
+      
 
         // don't clobber debounce/throttle for future tests
         afterEach(function () {
