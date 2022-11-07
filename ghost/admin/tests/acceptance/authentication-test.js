@@ -171,11 +171,7 @@ describe('Acceptance: Authentication', function () {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
-            
-            
-      // to see teh re-authentication model
-            expect(findAll('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
-        });
+
       
 
         // don't clobber debounce/throttle for future tests
