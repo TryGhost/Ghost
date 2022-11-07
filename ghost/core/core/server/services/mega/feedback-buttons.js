@@ -58,20 +58,34 @@ const getTemplate = (accentColor) => {
 function getButtonHtml(href, buttonText, accentColor, className, iconUrl) {
     const bgColor = getButtonLightTheme(accentColor).backgroundColor;
     const textColor = getButtonLightTheme(accentColor).color;
+    const buttonAttr = {
+        width: 100,
+        height: 38,
+        iconWidth: 24
+    };
+
+    // Sizes defined in pixels won’t be adjusted when Outlook is rendering at 120 dpi.
+    // To solve the problem we use values in points (1 pixel = 0.75 point).
+    // resource: https://www.hteumeuleu.com/2021/background-properties-in-vml/
+    const buttonAttrOutlook = {
+        width: (buttonAttr.width + buttonAttr.iconWidth) * 0.75,
+        height: buttonAttr.height * 0.75 + 1,
+        iconWidth: buttonAttr.iconWidth * 0.75
+    };
 
     return (`
          <td dir="ltr" valign="top" align="center" style="vertical-align: top; color: ${textColor}; font-family: inherit; font-size: 14px; text-align: center; padding: 0 8px;" nowrap>
             <table class="feedback-buttons" align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: ${bgColor}; overflow: hidden; border-radius: 22px;border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
                 <tr>
-                    <td width="16" height="38" style="paddig-left:10px;"></td>
-                    <td class=${className} background=${iconUrl} bgcolor="${textColor}" width="24" height="38" valign="top" style="background-image: url(${iconUrl});vertical-align: middle; text-align: center;background-size: cover; background-position: 0 50%; background-repeat:no-repeat;">
+                    <td width="16" height="${buttonAttr.height}"></td>
+                    <td class=${className} background=${iconUrl} bgcolor="${textColor}" width="${buttonAttr.iconWidth}" height="${buttonAttr.height}" valign="top" style="background-image: url(${iconUrl});vertical-align: middle; text-align: center;background-size: cover; background-position: 0 50%; background-repeat:no-repeat;">
                         <!--[if gte mso 9]>
-                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:24px;height:38px;">
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:${buttonAttrOutlook.iconWidth}pt;height:${buttonAttrOutlook.height}pt;">
                             <v:fill origin="0.5, 0.5" position="0.5, 0.5" type="tile" src=${iconUrl} color="${textColor}" size="1,1" aspect="atleast" />
                             <v:textbox inset="0,0,0,0">
                         <![endif]-->
                         <div>
-                            <a style="background-color: ${bgColor};border: none; width: 24px; height: 38px; display: block" href=${href} target="_blank"></a>
+                            <a style="background-color: ${bgColor};border: none; width: ${buttonAttr.iconWidth}px; height: ${buttonAttr.height}px; display: block" href=${href} target="_blank"></a>
                         </div>
                         <!--[if gte mso 9]>
                         </v:textbox>
@@ -80,7 +94,7 @@ function getButtonHtml(href, buttonText, accentColor, className, iconUrl) {
                     </td>
                     <td style="text-align: right;font-size: 18px; vertical-align: middle; color: ${textColor}!important; background-position: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';">
                         <div style="color: ${textColor}"><!--[if mso]>
-                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href=${href} style="height:38px;v-text-anchor:middle;width:120px;" stroke="f">
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href=${href} style="height:${buttonAttrOutlook.height}pt;v-text-anchor:middle;width:${buttonAttrOutlook.width}pt;" stroke="f">
                                 <w:anchorlock/>
                                 <center>
                             <![endif]-->
