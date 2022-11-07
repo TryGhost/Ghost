@@ -1,4 +1,11 @@
 const UrlHistory = require('./history');
+const {slugify} = require('@tryghost/string');
+
+const blacklistedReferrerDomains = [
+    // Facebook has some restrictions on the 'ref' attribute (max 15 chars + restricted character set) that breaks links if we add ?ref=longer-string
+    'facebook.com',
+    'www.facebook.com'
+];
 
 class MemberAttributionService {
     /**
@@ -9,15 +16,21 @@ class MemberAttributionService {
      * @param {Object} deps.models.MemberCreatedEvent
      * @param {Object} deps.models.SubscriptionCreatedEvent
      * @param {() => boolean} deps.getTrackingEnabled
+     * @param {() => string} deps.getSiteTitle
      */
-    constructor({attributionBuilder, models, getTrackingEnabled}) {
+    constructor({attributionBuilder, models, getTrackingEnabled, getSiteTitle}) {
         this.models = models;
         this.attributionBuilder = attributionBuilder;
         this._getTrackingEnabled = getTrackingEnabled;
+        this._getSiteTitle = getSiteTitle;
     }
 
     get isTrackingEnabled() {
         return this._getTrackingEnabled();
+    }
+
+    get siteTitle() {
+        return this._getSiteTitle();
     }
 
     /**
@@ -86,13 +99,28 @@ class MemberAttributionService {
      * in the URLHistory.
      * @param {URL} url instance that will get updated
      * @param {Object} newsletter The newsletter from which a link was clicked
+     * @param {boolean} isExternal whether the url points to an external domain
      * @returns {URL}
      */
-    addEmailSourceAttributionTracking(url, newsletter) {
+    addEmailSourceAttributionTracking(url, newsletter, isExternal) {
         // Create a deep copy
         url = new URL(url);
-        // We slugify the name here so that we don't use the default slugs in fixtures
-        url.searchParams.append('ref', newsletter.get('name') + '-newsletter');
+        if (!isExternal) {
+            // For exteral sites, we use the site name instead of the newsletter name
+            const name = slugify(newsletter.get('name'));
+            // If newsletter name ends with newsletter, don't add it again
+            const ref = name.endsWith('newsletter') ? name : `${name}-newsletter`;
+            url.searchParams.append('ref', ref);
+        } else {
+            // Check blacklist domains
+            const referrerDomain = url.hostname;
+            if (blacklistedReferrerDomains.includes(referrerDomain)) {
+                return url;
+            }
+
+            // For links to our site, we'll use the newsletter name as the referrer
+            url.searchParams.append('ref', slugify(this.siteTitle));
+        }
         return url;
     }
 
