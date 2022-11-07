@@ -79,7 +79,8 @@ describe('Data Generator', function () {
             knex: db,
             schema: schema,
             logger: {
-                info: () => {}
+                info: () => { },
+                ok: () => { }
             },
             modelQuantities: {
                 members: 10,
