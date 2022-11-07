@@ -173,7 +173,7 @@ describe('Acceptance: Authentication', function () {
             });
 
             // we should see a re-auth modal
-            expect(findAll('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
+            expect(findAll('.fullscreen-modal #login').length, 'modal exists').to.equal(0);
         });
 
         // don't clobber debounce/throttle for future tests
