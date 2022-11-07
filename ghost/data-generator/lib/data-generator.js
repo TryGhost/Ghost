@@ -161,6 +161,7 @@ class DataGenerator {
             });
 
             // Import settings
+            await transaction('settings').delete();
             await jsonImporter.import({
                 name: 'settings',
                 data: baseData.settings
