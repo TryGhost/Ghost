@@ -405,6 +405,12 @@ module.exports = class MemberRepository {
             'expertise'
         ]);
 
+        if (data.newsletters) {
+            data.newsletters = data.newsletters.map(newsletter => ({
+                id: newsletter.id
+            }));
+        }
+
         // Trim whitespaces from expertise
         if (memberData.expertise) {
             memberData.expertise = memberData.expertise.trim();
