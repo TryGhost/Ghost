@@ -23,6 +23,10 @@ export function isSentryEventAllowed({event: sentryEvent}) {
 }
 
 export function formatNumber(number) {
+    if (number !== 0 && !number) {
+        return '';
+    }
+
     // Adds in commas for separators
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
@@ -128,7 +132,7 @@ export function isCommentPublished(comment) {
  * Returns the y scroll position (top) of the main window of a given element that is in one or multiple stacked iframes
  */
 export const getScrollToPosition = (element) => {
-    let yOffset = 0; 
+    let yOffset = 0;
 
     // Because we are working in an iframe, we need to resolve the position inside this iframe to the position in the top window
     // Get the window of the element, not the window (which is the top window)
@@ -170,7 +174,7 @@ export const scrollToElement = (element) => {
 
     // Trigger scrolling when yMin and yMax is closer than this to the border of the viewport
     const offset = 64;
-    
+
     const viewportHeight = window.innerHeight;
     const viewPortYMin = window.scrollY;
     const viewPortYMax = viewPortYMin + viewportHeight;
