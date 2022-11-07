@@ -40,7 +40,7 @@ class MemberAttributionServiceWrapper {
                 Integration: models.Integration
             },
             attributionBuilder: this.attributionBuilder,
-            getTrackingEnabled: () => !!settingsCache.get('members_track_sources'),
+            getTrackingEnabled: () => !!settingsCache.get('members_track_sources')
         });
     }
 }
