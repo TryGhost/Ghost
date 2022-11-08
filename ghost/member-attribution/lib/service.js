@@ -98,27 +98,31 @@ class MemberAttributionService {
      * Add some parameters to a URL so that the frontend script can detect this and add the required records
      * in the URLHistory.
      * @param {URL} url instance that will get updated
-     * @param {Object} newsletter The newsletter from which a link was clicked
-     * @param {boolean} isExternal whether the url points to an external domain
+     * @param {Object} [useNewsletter] Use the newsletter name instead of the site name as referrer source
      * @returns {URL}
      */
-    addEmailSourceAttributionTracking(url, newsletter, isExternal) {
+    addEmailSourceAttributionTracking(url, useNewsletter) {
         // Create a deep copy
         url = new URL(url);
-        if (!isExternal) {
-            // For exteral sites, we use the site name instead of the newsletter name
-            const name = slugify(newsletter.get('name'));
+
+        if (url.searchParams.has('ref') || url.searchParams.has('utm_source') || url.searchParams.has('source')) {
+            // Don't overwrite + keep existing source attribution
+            return url;
+        }
+
+        // Check blacklist domains
+        const referrerDomain = url.hostname;
+        if (blacklistedReferrerDomains.includes(referrerDomain)) {
+            return url;
+        }
+
+        if (useNewsletter) {
+            const name = slugify(useNewsletter.get('name'));
+            
             // If newsletter name ends with newsletter, don't add it again
             const ref = name.endsWith('newsletter') ? name : `${name}-newsletter`;
             url.searchParams.append('ref', ref);
         } else {
-            // Check blacklist domains
-            const referrerDomain = url.hostname;
-            if (blacklistedReferrerDomains.includes(referrerDomain)) {
-                return url;
-            }
-
-            // For links to our site, we'll use the newsletter name as the referrer
             url.searchParams.append('ref', slugify(this.siteTitle));
         }
         return url;
@@ -134,6 +138,11 @@ class MemberAttributionService {
     addPostAttributionTracking(url, post) {
         // Create a deep copy
         url = new URL(url);
+
+        if (url.searchParams.has('attribution_id') || url.searchParams.has('attribution_type')) {
+            // Don't overwrite
+            return url;
+        }
 
         // Post attribution
         url.searchParams.append('attribution_id', post.id);
