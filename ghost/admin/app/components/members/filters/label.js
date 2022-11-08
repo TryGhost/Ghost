@@ -5,5 +5,11 @@ export const LABEL_FILTER = {
     name: 'label', 
     valueType: 'array', 
     columnLabel: 'Label', 
-    relationOptions: MATCH_RELATION_OPTIONS
+    relationOptions: MATCH_RELATION_OPTIONS,
+    getColumnValue: (member) => {
+        return {
+            class: 'gh-members-list-labels',
+            text: (member.labels ?? []).map(label => label.name).join(', ')
+        };
+    }
 };

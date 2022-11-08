@@ -9,5 +9,10 @@ export const SUBSCRIBED_FILTER = {
     options: [
         {label: 'Subscribed', name: 'true'},
         {label: 'Unsubscribed', name: 'false'}
-    ]
+    ],
+    getColumnValue: (member) => {
+        return {
+            text: member.subscribed ? 'Yes' : 'No'
+        };
+    }
 };

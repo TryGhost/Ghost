@@ -5,5 +5,11 @@ export const TIER_FILTER = {
     name: 'tier', 
     valueType: 'array', 
     columnLabel: 'Membership tier', 
-    relationOptions: MATCH_RELATION_OPTIONS
+    relationOptions: MATCH_RELATION_OPTIONS,
+    getColumnValue: (member) => {
+        return {
+            class: 'gh-members-list-labels',
+            text: (member.tiers ?? []).map(label => label.name).join(', ')
+        };
+    }
 };
