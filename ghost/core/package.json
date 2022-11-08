@@ -82,7 +82,7 @@
     "@tryghost/kg-card-factory": "3.1.7",
     "@tryghost/kg-default-atoms": "3.1.4",
     "@tryghost/kg-default-cards": "5.18.5",
-    "@tryghost/kg-lexical-html-renderer": "0.0.10",
+    "@tryghost/kg-lexical-html-renderer": "0.0.11",
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.9",
     "@tryghost/limit-service": "1.2.3",
     "@tryghost/link-redirects": "0.0.0",
