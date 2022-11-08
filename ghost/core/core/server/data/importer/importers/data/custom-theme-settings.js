@@ -20,6 +20,16 @@ class CustomThemeSettingsImporter extends BaseImporter {
     async doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
+        let reactivateTheme = false;
+        let currentTheme;
+        // Determine whether to reactivate the current theme after importing settings
+        models.Settings.findOne({key: 'active_theme'}).then((theme) => {
+            currentTheme = theme.get('value');
+            if (this.dataToImport.some(themeSetting => themeSetting.theme === currentTheme)) {
+                reactivateTheme = true;
+            }
+        });
+
         const importErrors = [];
         let item = this.dataToImport.shift();
         while (item) {
@@ -56,12 +66,9 @@ class CustomThemeSettingsImporter extends BaseImporter {
             item = this.dataToImport.shift();
         }
 
-        models.Settings.findOne({key: 'active_theme'}).then((theme) => {
-            const currentTheme = theme.get('value');
-            if (this.dataToImport.some(themeSetting => themeSetting.theme === currentTheme)) {
-                activate(currentTheme);
-            }
-        });
+        if (reactivateTheme) {
+            activate(currentTheme);
+        }
 
         // Ensure array is GCd
         this.dataToImport = null;
