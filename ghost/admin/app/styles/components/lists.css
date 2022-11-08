@@ -129,15 +129,6 @@ ul.nostyle li {
     color: var(--darkgrey);
 }
 
-.gh-list-data a.gh-post-row-event { 
-    opacity: 1;
-    transition: opacity .1s linear;
-}
-
-.gh-list-data a.gh-post-row-event:hover { 
-    opacity: 0.7;
-}
-
 .gh-list-data-date {
     font-weight: 500;
     font-size: 1.3rem;
