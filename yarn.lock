@@ -4455,10 +4455,10 @@
     lodash "^4.17.21"
     luxon "^2.1.1"
 
-"@tryghost/kg-lexical-html-renderer@0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.0.10.tgz#514685652f623b8965d7ba844d4feec7400bf1c2"
-  integrity sha512-pOt7H9nnP8JOymOw9YDzmQIctkgr52ZdoBAQyqzpnn1z7eDrrnWMGtyQ3AgsFp6+4A/C4hKs8Di9S/xFIlTjTw==
+"@tryghost/kg-lexical-html-renderer@0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.0.11.tgz#0f4636660be9866cf5f030cc6a435ad958e8804b"
+  integrity sha512-Rl2VEpWRIah/rYXhGJHBCDeNjl3GJB6AwFfQcNybu7J7qP5IyY28csL3eSL7np7o69q4tnsQ0yzx0Eksr4T+6A==
   dependencies:
     "@lexical/clipboard" "^0.5.0"
     "@lexical/code" "^0.5.0"
@@ -22161,7 +22161,7 @@ qs@6.10.3:
   dependencies:
     side-channel "^1.0.4"
 
-qs@6.11.0, qs@^6.10.3, qs@^6.11.0, qs@^6.2.0, qs@^6.4.0:
+qs@6.11.0, qs@^6.11.0, qs@^6.2.0, qs@^6.4.0:
   version "6.11.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.11.0.tgz#fd0d963446f7a65e1367e01abd85429453f0c37a"
   integrity sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==
@@ -24628,13 +24628,13 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==
 
-stripe@8.222.0:
-  version "8.222.0"
-  resolved "https://registry.yarnpkg.com/stripe/-/stripe-8.222.0.tgz#5f159156e411b668a88b8f957df5ac3c63b119de"
-  integrity sha512-hrA79fjmN2Eb6K3kxkDzU4ODeVGGjXQsuVaAPSUro6I9MM3X+BvIsVqdphm3BXWfimAGFvUqWtPtHy25mICY1w==
+stripe@10.17.0:
+  version "10.17.0"
+  resolved "https://registry.yarnpkg.com/stripe/-/stripe-10.17.0.tgz#b65d8c9d55ec7190b866a77dffe9843941ddced7"
+  integrity sha512-JHV2KoL+nMQRXu3m9ervCZZvi4DDCJfzHUE6CmtJxR9TmizyYfrVuhGvnsZLLnheby9Qrnf4Hq6iOEcejGwnGQ==
   dependencies:
     "@types/node" ">=8.1.0"
-    qs "^6.10.3"
+    qs "^6.11.0"
 
 strnum@^1.0.5:
   version "1.0.5"
