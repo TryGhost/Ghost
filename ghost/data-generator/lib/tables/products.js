@@ -9,13 +9,17 @@ class ProductsImporter extends TableImporter {
     }
 
     setImportOptions() {
-        this.names = ['Free Preview', 'Bronze', 'Silver', 'Gold'];
+        this.names = ['Free', 'Bronze', 'Silver', 'Gold'];
         this.count = 0;
     }
 
     async addStripePrices({products, stripeProducts, stripePrices}) {
         for (const {id} of products) {
             const stripeProduct = stripeProducts.find(p => id === p.product_id);
+            if (!stripeProduct) {
+                // Free product
+                continue;
+            }
             const monthlyPrice = stripePrices.find((p) => {
                 return p.stripe_product_id === stripeProduct.stripe_product_id &&
                     p.interval === 'monthly';

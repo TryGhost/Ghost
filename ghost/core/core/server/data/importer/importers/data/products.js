@@ -29,6 +29,44 @@ class ProductsImporter extends BaseImporter {
         };
     }
 
+    populatePriceData() {
+        const invalidRows = [];
+        _.each(this.dataToImport, (row) => {
+            if (row.slug === 'free') {
+                return;
+            }
+            if (row.currency && row.monthly_price && row.yearly_price) {
+                return;
+            }
+            if (!row.monthly_price || !row.currency) {
+                const monthlyStripePrice = _.find(
+                    this.requiredFromFile.stripe_prices,
+                    {id: row.monthly_price_id}
+                ) || _.find(
+                    this.requiredExistingData.stripe_prices,
+                    {id: row.monthly_price_id}
+                );
+                row.monthly_price = row.monthly_price || monthlyStripePrice?.amount;
+                row.currency = monthlyStripePrice?.currency;
+            }
+            if (!row.yearly_price || !row.currency) {
+                const yearlyStripePrice = _.find(
+                    this.requiredFromFile.stripe_prices,
+                    {id: row.yearly_price_id}
+                ) || _.find(
+                    this.requiredExistingData.stripe_prices,
+                    {id: row.yearly_price_id}
+                );
+                row.yearly_price = row.yearly_price || yearlyStripePrice?.amount;
+                row.currency = yearlyStripePrice?.currency;
+            }
+            if (!row.yearly_price || !row.currency || !row.monthly_price) {
+                invalidRows.push(row.id);
+            }
+        });
+        this.dataToImport = this.dataToImport.filter(item => !invalidRows.includes(item.id));
+    }
+
     validateStripePrice() {
         // the stripe price either needs to exist in the current db,
         // or be imported as part of the same import
@@ -82,6 +120,11 @@ class ProductsImporter extends BaseImporter {
         });
         // ignore products that already exist
         this.dataToImport = this.dataToImport.filter(item => !duplicateProducts.includes(item.id));
+    }
+
+    beforeImport() {
+        this.populatePriceData();
+        return super.beforeImport();
     }
 
     replaceIdentifiers() {

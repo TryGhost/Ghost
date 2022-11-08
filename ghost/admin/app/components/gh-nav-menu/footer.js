@@ -2,15 +2,17 @@ import Component from '@ember/component';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
 import {and, match} from '@ember/object/computed';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 @classic
 export default class Footer extends Component {
-    @service config;
     @service session;
     @service router;
     @service whatsNew;
     @service feature;
+
+    @inject config;
 
     @and('config.clientExtensions.dropdown', 'session.user.isOwnerOnly')
         showDropdownExtension;

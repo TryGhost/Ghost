@@ -105,11 +105,13 @@ module.exports = class CommentsController {
     }
 
     async count(frame) {
-        if (!frame?.data?.ids) {
+        if (!frame?.options?.ids) {
             return await this.stats.getAllCounts();
         }
 
-        return await this.stats.getCountsByPost(frame.data.ids);
+        const ids = frame?.options?.ids.split(',');
+
+        return await this.stats.getCountsByPost(ids);
     }
 
     /**
@@ -119,8 +121,8 @@ module.exports = class CommentsController {
         this.#checkMember(frame);
 
         return await this.service.likeComment(
-            frame.options.id, 
-            frame.options?.context?.member, 
+            frame.options.id,
+            frame.options?.context?.member,
             frame.options
         );
     }
@@ -132,8 +134,8 @@ module.exports = class CommentsController {
         this.#checkMember(frame);
 
         return await this.service.unlikeComment(
-            frame.options.id, 
-            frame.options?.context?.member, 
+            frame.options.id,
+            frame.options?.context?.member,
             frame.options
         );
     }
@@ -145,7 +147,7 @@ module.exports = class CommentsController {
         this.#checkMember(frame);
 
         return await this.service.reportComment(
-            frame.options.id, 
+            frame.options.id,
             frame.options?.context?.member
         );
     }

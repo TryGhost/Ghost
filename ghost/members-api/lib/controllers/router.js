@@ -142,7 +142,7 @@ module.exports = class RouterController {
     async createCheckoutSession(req, res) {
         let ghostPriceId = req.body.priceId;
         const tierId = req.body.tierId;
-        const cadence = req.body.cadence;
+        let cadence = req.body.cadence;
         const identity = req.body.identity;
         const offerId = req.body.offerId;
         const metadata = req.body.metadata ?? {};
@@ -185,6 +185,7 @@ module.exports = class RouterController {
         if (offerId) {
             offer = await this._offersAPI.getOffer({id: offerId});
             tier = await this._tiersService.api.read(offer.tier.id);
+            cadence = offer.cadence;
         } else {
             offer = null;
             tier = await this._tiersService.api.read(tierId);

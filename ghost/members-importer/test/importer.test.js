@@ -2,6 +2,8 @@
 // const testUtils = require('./utils');
 require('./utils');
 
+const Tier = require('@tryghost/tiers/lib/Tier');
+const ObjectID = require('bson-objectid').default;
 const assert = require('assert');
 const fs = require('fs-extra');
 const path = require('path');
@@ -16,6 +18,7 @@ describe('Importer', function () {
     let knexStub;
     let sendEmailStub;
     let membersRepositoryStub;
+    let defaultTierId;
 
     const defaultAllowedFields = {
         email: 'email',
@@ -43,9 +46,10 @@ describe('Importer', function () {
     });
 
     const buildMockImporterInstance = () => {
-        const defaultTierDummy = {
-            id: 'default_tier_id'
-        };
+        defaultTierId = new ObjectID();
+        const defaultTierDummy = new Tier({
+            id: defaultTierId
+        });
 
         memberCreateStub = sinon.stub().resolves({
             id: `test_member_id`
@@ -200,7 +204,7 @@ describe('Importer', function () {
             // complimentary_plan import
             membersRepositoryStub.update.calledOnce.should.be.true();
             should.deepEqual(membersRepositoryStub.update.args[0][0].products, [{
-                id: 'default_tier_id'
+                id: defaultTierId.toString()
             }]);
             should.deepEqual(membersRepositoryStub.update.args[0][1].id, 'test_member_id');
         });
@@ -246,7 +250,7 @@ describe('Importer', function () {
 
             result.batches.should.equal(2);
             should.exist(result.metadata);
-
+            should.equal(result.metadata.hasStripeData, false);
             fsWriteSpy.calledOnce.should.be.true();
         });
 
@@ -268,6 +272,15 @@ describe('Importer', function () {
             const fileContents = fsWriteSpy.firstCall.args[1];
 
             fileContents.should.match(/^email,subscribed_to_emails,labels\r\n/);
+        });
+
+        it('checks for stripe data in the imported file', async function () {
+            const membersImporter = buildMockImporterInstance();
+
+            const result = await membersImporter.prepare(`${csvPath}/member-csv-export.csv`);
+
+            should.exist(result.metadata);
+            should.equal(result.metadata.hasStripeData, true);
         });
     });
 

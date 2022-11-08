@@ -1,3 +1,4 @@
+const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
 const {TierCreatedEvent, TierPriceChangeEvent, TierNameChangeEvent} = require('@tryghost/tiers');
 const OfferCreatedEvent = require('@tryghost/members-offers').events.OfferCreatedEvent;
@@ -67,7 +68,7 @@ class PaymentsService {
         let coupon = null;
         let trialDays = null;
         if (offer) {
-            if (offer.tier.id !== tier.id) {
+            if (!tier.id.equals(offer.tier.id)) {
                 throw new BadRequestError({
                     message: 'This Offer is not valid for the Tier'
                 });
@@ -86,14 +87,21 @@ class PaymentsService {
 
         const price = await this.getPriceForTierCadence(tier, cadence);
 
-        const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, {
+        const email = options.email || null;
+
+        const data = {
             metadata,
             successUrl: options.successUrl,
             cancelUrl: options.cancelUrl,
-            customerEmail: options.email,
             trialDays: trialDays ?? tier.trialDays,
             coupon: coupon?.id
-        });
+        };
+
+        if (!customer && email) {
+            data.customerEmail = email;
+        }
+
+        const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, data);
 
         return session.url;
     }
@@ -104,11 +112,13 @@ class PaymentsService {
         }).query().select('customer_id');
 
         for (const row of rows) {
-            const customer = await this.stripeAPIService.getCustomer(row.customer_id);
-            if (!customer.deleted) {
-                return {
-                    id: customer.id
-                };
+            try {
+                const customer = await this.stripeAPIService.getCustomer(row.customer_id);
+                if (!customer.deleted) {
+                    return customer;
+                }
+            } catch (err) {
+                logging.warn(err);
             }
         }
 
@@ -119,8 +129,8 @@ class PaymentsService {
 
     async createCustomerForMember(member) {
         const customer = await this.stripeAPIService.createCustomer({
-            email: member.email,
-            name: member.name
+            email: member.get('email'),
+            name: member.get('name')
         });
 
         await this.StripeCustomerModel.add({
@@ -144,9 +154,13 @@ class PaymentsService {
             .select('stripe_product_id');
 
         for (const row of rows) {
-            const product = await this.stripeAPIService.getProduct(row.stripe_product_id);
-            if (product.active) {
-                return {id: product.id};
+            try {
+                const product = await this.stripeAPIService.getProduct(row.stripe_product_id);
+                if (product.active) {
+                    return {id: product.id};
+                }
+            } catch (err) {
+                logging.warn(err);
             }
         }
 
@@ -194,20 +208,25 @@ class PaymentsService {
      */
     async getPriceForTierCadence(tier, cadence) {
         const product = await this.getProductForTier(tier);
-        const currency = tier.currency;
+        const currency = tier.currency.toLowerCase();
         const amount = tier.getPrice(cadence);
         const rows = await this.StripePriceModel.where({
             stripe_product_id: product.id,
             currency,
+            interval: cadence,
             amount
         }).query().select('stripe_price_id');
 
         for (const row of rows) {
-            const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
-            if (price.active && price.currency.toUpperCase() === currency && price.unit_amount === amount) {
-                return {
-                    id: price.id
-                };
+            try {
+                const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
+                if (price.active && price.currency.toUpperCase() === currency && price.unit_amount === amount && price.recurring?.interval === cadence) {
+                    return {
+                        id: price.id
+                    };
+                }
+            } catch (err) {
+                logging.warn(err);
             }
         }
 

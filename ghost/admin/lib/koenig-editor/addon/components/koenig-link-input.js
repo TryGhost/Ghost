@@ -7,8 +7,8 @@ import {action, computed} from '@ember/object';
 import {attributeBindings, classNames} from '@ember-decorators/component';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
-import {inject as service} from '@ember/service';
 
 // pixels that should be added to the `left` property of the tick adjustment styles
 // TODO: handle via CSS?
@@ -18,7 +18,7 @@ const TICK_ADJUSTMENT = 8;
 @attributeBindings('style')
 @classNames('kg-input-bar', 'absolute', 'z-999')
 export default class KoenigLinkInput extends Component {
-    @service config;
+    @inject config;
 
     // public attrs
     editor = null;

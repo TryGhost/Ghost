@@ -1,12 +1,14 @@
 import Helper from '@ember/component/helper';
 import {get} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isArray} from '@ember/array';
 import {inject as service} from '@ember/service';
 
 export default class CardIsAvailableHelper extends Helper {
-    @service config;
     @service feature;
     @service settings;
+
+    @inject config;
 
     compute([card], {postType} = {}) {
         let cardIsAvailable = true;

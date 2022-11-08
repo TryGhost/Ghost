@@ -2,17 +2,19 @@ import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 
 export default class KoenigCardToggleComponent extends Component {
-    @service config;
     @service feature;
     @service store;
     @service membersUtils;
     @service ui;
+
+    @inject config;
 
     get formattedHeading() {
         return formatTextReplacementHtml(this.args.payload.heading);
