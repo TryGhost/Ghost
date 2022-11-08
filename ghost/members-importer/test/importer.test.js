@@ -2,6 +2,8 @@
 // const testUtils = require('./utils');
 require('./utils');
 
+const Tier = require('@tryghost/tiers/lib/Tier');
+const ObjectID = require('bson-objectid').default;
 const assert = require('assert');
 const fs = require('fs-extra');
 const path = require('path');
@@ -16,6 +18,7 @@ describe('Importer', function () {
     let knexStub;
     let sendEmailStub;
     let membersRepositoryStub;
+    let defaultTierId;
 
     const defaultAllowedFields = {
         email: 'email',
@@ -43,9 +46,10 @@ describe('Importer', function () {
     });
 
     const buildMockImporterInstance = () => {
-        const defaultTierDummy = {
-            id: 'default_tier_id'
-        };
+        defaultTierId = new ObjectID();
+        const defaultTierDummy = new Tier({
+            id: defaultTierId
+        });
 
         memberCreateStub = sinon.stub().resolves({
             id: `test_member_id`
@@ -200,7 +204,7 @@ describe('Importer', function () {
             // complimentary_plan import
             membersRepositoryStub.update.calledOnce.should.be.true();
             should.deepEqual(membersRepositoryStub.update.args[0][0].products, [{
-                id: 'default_tier_id'
+                id: defaultTierId.toString()
             }]);
             should.deepEqual(membersRepositoryStub.update.args[0][1].id, 'test_member_id');
         });
