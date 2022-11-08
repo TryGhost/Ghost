@@ -1,20 +1,31 @@
 import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-
-const CHART_COLORS = [
-    '#F080B2',
-    '#8452f633'
-];
-
-const linksClass = ['gh-post-activity-chart-positive-feedback', 'gh-post-activity-chart-negative-feedback'];
+import {tracked} from '@glimmer/tracking';
 
 export default class FeedbackEventsChart extends Component {
     @service feature;
+    @tracked tooltipData = {};
+    tooltipNode = null;
+
+    @action
+    onTooltipInsert(node) {
+        this.tooltipNode = node;
+    }
+
+    @action
+    onMouseleave() {
+        this.tooltipNode.style.display = 'none';
+    }
 
     getSumOfData() {
-        return this.args.data.reduce((acc, value) => {
+        return this.args.data.values.reduce((acc, value) => {
             return acc + value;
         }, 0);
+    }
+
+    setTooltipData(data) {
+        this.tooltipData = data;
     }
 
     get chartOptions() {
@@ -37,7 +48,8 @@ export default class FeedbackEventsChart extends Component {
                     let offsetY = -100;
 
                     // update tooltip styles
-                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.display = 'block';
+                    tooltipEl.style.opacity = '1';
                     tooltipEl.style.position = 'absolute';
                     tooltipEl.style.left = tooltip.x + offsetX + 'px';
                     tooltipEl.style.top = tooltip.y + offsetY + 'px';
@@ -45,30 +57,17 @@ export default class FeedbackEventsChart extends Component {
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        const tooltipTextEl = document.getElementById('gh-feedback-events-tooltip-body');
                         const label = data.labels[tooltipItems.index] || '';
                         const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
-                        const formattedValue = value.toLocaleString('en-US');
                         const percent = Math.round(value / this.getSumOfData() * 100);
-                        const links = document.querySelectorAll(`.gh-feedback-events-tooltip-template .gh-post-activity-chart-link`);
-                        links.forEach((link) => {
-                            link.setAttribute('hidden', 'true');
-                        });
-                        const linkNode = document.querySelector(`.${linksClass[tooltipItems.index]}`);
-                        linkNode.setAttribute('hidden', 'false');
-
-                        tooltipTextEl.innerHTML = (`
-                            <div class="gh-feedback-events-tooltip-body">
-                                <span
-                                  class="gh-feedback-events-tooltip-badge"
-                                  style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor[tooltipItems.index]}"
-                                ></span>
-                                <span class="gh-feedback-events-tooltip-info">${formattedValue}</span>
-                                <span>${percent}%</span>
-                            </div>
-
-                            <span class="gh-feedback-events-tooltip-metric">${label}</span>
-                        `);
+                        const tooltipData = {
+                            color: data.datasets[tooltipItems.datasetIndex].backgroundColor[tooltipItems.index],
+                            href: this.args.data.links[tooltipItems.index],
+                            value: value.toLocaleString('en-US'),
+                            label,
+                            percent
+                        };
+                        this.setTooltipData(tooltipData);
                     },
                     title: () => {
                         return null;
@@ -83,11 +82,11 @@ export default class FeedbackEventsChart extends Component {
         let borderColor = this.feature.nightShift ? '#101114' : '#fff';
 
         return {
-            labels: ['More like this', 'Less like this'],
+            labels: this.args.data.labels,
             datasets: [{
                 label: 'Feedback events',
-                data: this.args.data,
-                backgroundColor: CHART_COLORS,
+                data: this.args.data.values,
+                backgroundColor: this.args.data.colors,
                 borderWidth: 2,
                 borderColor: borderColor,
                 hoverBorderWidth: 2,
