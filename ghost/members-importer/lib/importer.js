@@ -161,7 +161,7 @@ module.exports = class MembersCSVImporter {
                     }, options);
                 } else if (row.complimentary_plan) {
                     await membersRepository.update({
-                        products: [{id: defaultTier.id}]
+                        products: [{id: defaultTier.id.toString()}]
                     }, {
                         ...options,
                         id: member.id
