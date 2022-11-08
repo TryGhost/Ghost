@@ -6,15 +6,10 @@ export const EMAIL_CLICKED_FILTER = {
     valueType: 'string', 
     resource: 'email', 
     relationOptions: MATCH_RELATION_OPTIONS,
-    getColumns: filter => [
-        {
-            label: 'Clicked email',
-            getValue: () => {
-                return {
-                    class: '',
-                    text: filter.resource?.title ?? ''
-                };
-            }
-        }
-    ]
+    columnLabel: 'Clicked email',
+    getColumnValue: (member, filter) => {
+        return {
+            text: filter.resource?.title ?? ''
+        };
+    }
 };

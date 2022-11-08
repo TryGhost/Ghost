@@ -6,15 +6,10 @@ export const EMAIL_OPENED_FILTER = {
     valueType: 'string', 
     resource: 'email', 
     relationOptions: MATCH_RELATION_OPTIONS,
-    getColumns: filter => [
-        {
-            label: 'Opened email',
-            getValue: () => {
-                return {
-                    class: '',
-                    text: filter.resource?.title ?? ''
-                };
-            }
-        }
-    ]
+    columnLabel: 'Opened email',
+    getColumnValue: (member, filter) => {
+        return {
+            text: filter.resource?.title ?? ''
+        };
+    }
 };

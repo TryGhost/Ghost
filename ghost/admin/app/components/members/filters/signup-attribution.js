@@ -6,15 +6,10 @@ export const SIGNUP_ATTRIBUTION_FILTER = {
     valueType: 'string', 
     resource: 'post', 
     relationOptions: MATCH_RELATION_OPTIONS,
-    getColumns: filter => [
-        {
-            label: 'Signed up on',
-            getValue: () => {
-                return {
-                    class: '',
-                    text: filter.resource?.title ?? ''
-                };
-            }
-        }
-    ]
+    columnLabel: 'Signed up on',
+    getColumnValue: (member, filter) => {
+        return {
+            text: filter.resource?.title ?? ''
+        };
+    }
 };

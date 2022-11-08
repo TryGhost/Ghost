@@ -7,15 +7,10 @@ export const SUBSCRIPTION_ATTRIBUTION_FILTER = {
     resource: 'post', 
     feature: 'memberAttribution', 
     relationOptions: MATCH_RELATION_OPTIONS,
-    getColumns: filter => [
-        {
-            label: 'Subscription started on',
-            getValue: () => {
-                return {
-                    class: '',
-                    text: filter.resource?.title ?? ''
-                };
-            }
-        }
-    ]
+    columnLabel: 'Subscription started on',
+    getColumnValue: (member, filter) => {
+        return {
+            text: filter.resource?.title ?? ''
+        };
+    }
 };

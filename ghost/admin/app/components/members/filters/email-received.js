@@ -6,15 +6,10 @@ export const EMAIL_RECEIVED_FILTER = {
     valueType: 'string', 
     resource: 'email', 
     relationOptions: MATCH_RELATION_OPTIONS,
-    getColumns: filter => [
-        {
-            label: 'Received email',
-            getValue: () => {
-                return {
-                    class: '',
-                    text: filter.resource?.title ?? ''
-                };
-            }
-        }
-    ]
+    columnLabel: 'Received email',
+    getColumnValue: (member, filter) => {
+        return {
+            text: filter.resource?.title ?? ''
+        };
+    }
 };
