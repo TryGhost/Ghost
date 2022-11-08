@@ -5,7 +5,6 @@ export const SIGNUP_ATTRIBUTION_FILTER = {
     name: 'signup', 
     valueType: 'string', 
     resource: 'post', 
-    feature: 'memberAttribution', 
     relationOptions: MATCH_RELATION_OPTIONS,
     getColumns: filter => [
         {
