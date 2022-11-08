@@ -25,7 +25,7 @@ describe('Image card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="false" data-kg-card="image">
-                    <figure>
+                    <figure data-kg-card-width="regular">
                         <div>
                             <div>
                                 <button name="placeholder-button">
@@ -269,6 +269,30 @@ describe('Image card', async () => {
                 </div>
             </div>
         `, {ignoreCardToolbarContents: true});
+    });
+
+    test('toolbar can toggle image sizes', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
+
+        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Wide"]');
+        expect (await page.$('[data-kg-card-width="wide"]')).not.toBeNull();
+
+        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Full"]');
+        expect (await page.$('[data-kg-card-width="full"]')).not.toBeNull();
+
+        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Regular"]');
+        expect (await page.$('[data-kg-card-width="regular"]')).not.toBeNull();
     });
 
     test('toolbar does not disappear on click', async function () {

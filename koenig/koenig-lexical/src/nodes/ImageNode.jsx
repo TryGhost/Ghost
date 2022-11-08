@@ -20,6 +20,7 @@ export class ImageNode extends DecoratorNode {
     __src;
     __caption;
     __altText;
+    __cardWidth;
     // TODO:
     // __width;
     // __height;
@@ -54,6 +55,7 @@ export class ImageNode extends DecoratorNode {
                 src: node.__src,
                 caption: node.__caption,
                 altText: node.__altText,
+                cardWidth: node.__cardWidth,
                 uploadProgress: node.__uploadProgress
             },
             node.__key
@@ -61,11 +63,12 @@ export class ImageNode extends DecoratorNode {
     }
 
     static importJSON(serializedNode) {
-        const {caption, altText, src} = serializedNode;
+        const {caption, altText, src, cardWidth} = serializedNode;
         const node = $createImageNode({
             altText,
             caption,
-            src
+            src,
+            cardWidth
         });
         return node;
     }
@@ -90,11 +93,12 @@ export class ImageNode extends DecoratorNode {
         };
     }
 
-    constructor({src, caption, altText, uploadProgress, triggerFileDialog} = {}, key) {
+    constructor({src, caption, altText, cardWidth, uploadProgress, triggerFileDialog} = {}, key) {
         super(key);
         this.__caption = caption || '';
         this.__altText = altText || '';
         this.__src = src || '';
+        this.__cardWidth = cardWidth || 'regular';
         this.__uploadProgress = uploadProgress;
         this.__triggerFileDialog = triggerFileDialog || false;
     }
@@ -107,7 +111,8 @@ export class ImageNode extends DecoratorNode {
             altText: this.getAltText(),
             caption: this.getCaption(),
             src: isBlob ? '<base64String>' : this.getSrc(),
-            type: 'image'
+            type: 'image',
+            cardWidth: this.__cardWidth
         };
         return dataset;
     }
@@ -132,6 +137,15 @@ export class ImageNode extends DecoratorNode {
     setSrc(src) {
         const writable = this.getWritable();
         return writable.__src = src;
+    }
+
+    setCardWidth(cardWidth) {
+        const writable = this.getWritable();
+        return writable.__cardWidth = cardWidth;
+    }
+
+    getCardWidth() {
+        return this.__cardWidth;
     }
 
     getCaption() {

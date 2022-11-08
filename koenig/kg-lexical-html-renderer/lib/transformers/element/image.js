@@ -5,9 +5,14 @@ module.exports = {
         if (!$isImageNode(node)) {
             return null;
         }
+        let figureClasses = 'kg-card kg-image-card';
+        if (node.cardWidth !== 'regular') {
+            figureClasses += ` kg-width-${node.cardWidth}`;
+        }
+
         return (`
-        <figure>
-            <img src="${node.src}" alt="${node.altText}" /> 
+        <figure class="${figureClasses}">
+            <img src="${node.src}" alt="${node.altText}" />
                 <figcaption>
                 ${node.caption}
                 </figcaption>
