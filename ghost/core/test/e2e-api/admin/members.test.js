@@ -2828,4 +2828,20 @@ describe('Members API Bulk operations', function () {
         const updatedModel2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
         should(updatedModel2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
     });
+
+    it('Can bulk delete members', async function () {
+        await agent
+            .delete('/members?all=true')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                meta: {
+                    stats: {
+                        successful: 8,
+                        unsuccessful: 0
+                    },
+                    unsuccessfulIds: [],
+                    errors: []
+                }
+            });
+    });
 });
