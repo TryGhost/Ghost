@@ -119,7 +119,6 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
             <ActionToolbar
                 isVisible={src && isSelected}
                 data-kg-card-toolbar="image"
-                cardWidth={cardWidth}
             >
                 <ImageUploadForm
                     onFileChange={onFileChange}
