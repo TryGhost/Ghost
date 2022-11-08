@@ -237,20 +237,17 @@
                                                 <span class="billing-period">/year</span>
                                             {{/if}}
                                         </div>
-                                        {{#if (feature 'freeTrial')}}
                                             {{#if this.isFreeTrialEnabled}}
                                             <span class="gh-portal-discount-label">
                                                 <span style="background-color: {{this.settings.accentColor}}"></span>
                                                 {{ this.tier.trialDays }} days free</span>
                                             {{/if}}
-                                        {{else}}
                                             {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
                                                 <span class="gh-portal-discount-label">
                                                 <span style="background-color: {{this.settings.accentColor}}"></span>
                                                 {{this.discountValue}}% discount
                                                 </span>
                                             {{/if}}
-                                        {{/if}}
                                     {{else}}
                                         <div class="gh-portal-tier-price placeholder">
                                             <span class="currency-sign">{{currency-symbol this.currency}}</span>
@@ -260,13 +257,11 @@
                                     {{/if}}
                                 {{/if}}
                             </div>
-                            {{#if (feature 'freeTrial')}}
                                 {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
                                 <span class="gh-portal-discount-label-trial" style={{this.accentColorStyle}}>
                                     {{this.discountValue}}% discount
                                 </span>
                                 {{/if}}
-                            {{/if}}
                         </div>
 
                         <div class="gh-portal-tier-card-details">
