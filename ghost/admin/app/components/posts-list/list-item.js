@@ -34,20 +34,6 @@ export default class PostsListItemClicks extends Component {
         return text.join(' ');
     }
 
-    get routeForLink() {
-        if (this.post.hasAnalyticsPage) {
-            return 'posts.analytics';
-        }
-        return 'editor.edit';
-    }
-
-    get modelsForLink() {
-        if (this.post.hasAnalyticsPage) {
-            return [this.post];
-        }
-        return [this.post.displayName, this.post.id];
-    }
-
     @action
     mouseOver() {
         this.isHovered = true;
