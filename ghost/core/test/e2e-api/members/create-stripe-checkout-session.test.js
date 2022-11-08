@@ -95,7 +95,10 @@ describe('Create Stripe Checkout Session', function () {
                             id: id,
                             active: true,
                             currency: 'usd',
-                            unit_amount: 500
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
                         }];
                     }
                 }
@@ -112,7 +115,19 @@ describe('Create Stripe Checkout Session', function () {
                 }
 
                 if (uri === '/v1/coupons') {
-                    return [200, {id: 'coupon_123', url: 'https://site.com'}];
+                    return [200, {id: 'coupon_123'}];
+                }
+
+                if (uri === '/v1/prices') {
+                    return [200, {
+                        id: 'price_1',
+                        active: true,
+                        currency: 'usd',
+                        unit_amount: 500,
+                        recurring: {
+                            interval: 'month'
+                        }
+                    }];
                 }
 
                 return [500];
@@ -150,7 +165,10 @@ describe('Create Stripe Checkout Session', function () {
                             id: id,
                             active: true,
                             currency: 'usd',
-                            unit_amount: 500
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
                         }];
                     }
                 }
@@ -169,6 +187,18 @@ describe('Create Stripe Checkout Session', function () {
                         return [400, {error: 'Invalid Email'}];
                     }
                     return [200, {id: 'cs_123', url: 'https://site.com'}];
+                }
+
+                if (uri === '/v1/prices') {
+                    return [200, {
+                        id: 'price_2',
+                        active: true,
+                        currency: 'usd',
+                        unit_amount: 500,
+                        recurring: {
+                            interval: 'month'
+                        }
+                    }];
                 }
 
                 return [500];
@@ -205,7 +235,10 @@ describe('Create Stripe Checkout Session', function () {
                             id: id,
                             active: true,
                             currency: 'usd',
-                            unit_amount: 500
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
                         }];
                     }
                 }
@@ -219,6 +252,17 @@ describe('Create Stripe Checkout Session', function () {
             .reply((uri, body) => {
                 if (uri === '/v1/checkout/sessions') {
                     return [200, {id: 'cs_123', url: 'https://site.com'}];
+                }
+                if (uri === '/v1/prices') {
+                    return [200, {
+                        id: 'price_3',
+                        active: true,
+                        currency: 'usd',
+                        unit_amount: 500,
+                        recurring: {
+                            interval: 'month'
+                        }
+                    }];
                 }
 
                 return [500];
@@ -262,7 +306,10 @@ describe('Create Stripe Checkout Session', function () {
                                 id: id,
                                 active: true,
                                 currency: 'usd',
-                                unit_amount: 500
+                                unit_amount: 500,
+                                recurring: {
+                                    interval: 'month'
+                                }
                             }];
                         }
                     }
@@ -281,6 +328,17 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_id]')).be.null();
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_4',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
                     }
 
                     return [500];
@@ -332,7 +390,10 @@ describe('Create Stripe Checkout Session', function () {
                                 id: id,
                                 active: true,
                                 currency: 'usd',
-                                unit_amount: 500
+                                unit_amount: 50,
+                                recurring: {
+                                    interval: 'month'
+                                }
                             }];
                         }
                     }
@@ -351,6 +412,17 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_id]')).eql(post.id);
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_5',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
                     }
 
                     return [500];
@@ -399,7 +471,10 @@ describe('Create Stripe Checkout Session', function () {
                                 id: id,
                                 active: true,
                                 currency: 'usd',
-                                unit_amount: 500
+                                unit_amount: 500,
+                                recurring: {
+                                    interval: 'month'
+                                }
                             }];
                         }
                     }
@@ -418,6 +493,17 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_id]')).be.null();
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_6',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
                     }
 
                     return [500];
