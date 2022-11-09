@@ -112,7 +112,7 @@ export class ImageNode extends DecoratorNode {
             caption: this.getCaption(),
             src: isBlob ? '<base64String>' : this.getSrc(),
             type: 'image',
-            cardWidth: this.__cardWidth
+            cardWidth: this.getCardWidth()
         };
         return dataset;
     }
@@ -182,7 +182,7 @@ export class ImageNode extends DecoratorNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()}>
+            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
                 <ImageNodeComponent
                     nodeKey={this.getKey()}
                     src={this.__src}
