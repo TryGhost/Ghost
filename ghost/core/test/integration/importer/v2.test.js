@@ -239,10 +239,7 @@ describe('Importer', function () {
                         return postTag.tag_id !== 2;
                     });
 
-                    importResult.problems.length.should.equal(1);
-
-                    importResult.problems[0].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
-                    importResult.problems[0].help.should.eql('Tag');
+                    importResult.problems.length.should.equal(0);
                 });
         });
 
