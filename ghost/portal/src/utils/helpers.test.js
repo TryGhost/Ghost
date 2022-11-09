@@ -1,4 +1,4 @@
-import {getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData} from './helpers';
+import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -48,9 +48,58 @@ describe('Helpers - ', () => {
         });
     });
 
+    describe('getAllProductsForSite -', () => {
+        test('returns empty array for undefined site', () => {
+            const value = getAllProductsForSite({});
+            expect(value).toEqual([]);
+        });
+
+        test('filters invalid products and adds symbol', () => {
+            const value = getAllProductsForSite({
+                site: {
+                    portal_plans: ['monthly', 'yearly'],
+                    products: [
+                        {
+                            monthlyPrice: {
+                                amount: 0,
+                                currency: 'usd'
+                            },
+                            yearlyPrice: {
+                                amount: 100,
+                                currency: 'usd'
+                            }
+                        },
+                        undefined,
+                        {
+                            // This one is missing a yearly price
+                            monthlyPrice: {
+                                amount: 100,
+                                currency: 'usd'
+                            }
+                        }
+                    ]
+                }
+            });
+            expect(value).toEqual([
+                {
+                    monthlyPrice: {
+                        amount: 0,
+                        currency: 'usd',
+                        currency_symbol: '$'
+                    },
+                    yearlyPrice: {
+                        amount: 100,
+                        currency: 'usd',
+                        currency_symbol: '$'
+                    }
+                }
+            ]);
+        });
+    });
+
     describe('isActiveOffer -', () => {
         test('returns true for active offer', () => {
-            const value = isActiveOffer({offer: FixtureOffer});
+            const value = isActiveOffer({offer: FixtureOffer, site: FixturesSite.singleTier.basic});
             expect(value).toBe(true);
         });
 
@@ -59,7 +108,12 @@ describe('Helpers - ', () => {
                 ...FixtureOffer,
                 status: 'archived'
             };
-            const value = isActiveOffer({offer: archivedOffer});
+            const value = isActiveOffer({offer: archivedOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(false);
+        });
+
+        test('returns false for active offer with archived or disabled tier', () => {
+            const value = isActiveOffer({offer: FixtureOffer, site: FixturesSite.singleTier.onlyFreePlan});
             expect(value).toBe(false);
         });
     });

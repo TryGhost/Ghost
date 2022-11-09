@@ -630,7 +630,7 @@ export default class App extends React.Component {
             try {
                 const offerData = await this.GhostApi.site.offer({offerId});
                 const offer = offerData?.offers[0];
-                if (isActiveOffer({offer})) {
+                if (isActiveOffer({site, offer})) {
                     if (!portalButton) {
                         const product = getProductFromId({site, productId: offer.tier.id});
                         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
