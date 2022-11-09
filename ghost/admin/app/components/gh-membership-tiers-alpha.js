@@ -65,11 +65,18 @@ export default class extends Component {
     async onUnarchive() {
         this.type = 'active';
         this.args.updatePortalPreview();
+        this.reloadTiers();
     }
 
     @action
     async onArchive() {
         this.args.updatePortalPreview();
+        this.reloadTiers();
+    }
+
+    reloadTiers() {
+        // Reload the cached tiers in membersutils
+        this.membersUtils.reload();
     }
 
     @action

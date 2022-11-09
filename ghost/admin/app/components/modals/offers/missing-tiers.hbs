@@ -1,0 +1,23 @@
+
+<div class="modal-content">
+    <header class="modal-header">
+        <h1>You must have an active tier to create offers</h1>
+    </header>
+    <button class="close" title="Close" type="button" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            You can create new tiers in the membership settings.
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button class="gh-btn" type="button" {{on "click" @close}}>
+            <span>Cancel</span>
+        </button>
+
+        <LinkTo @route="settings.membership" class="gh-btn gh-btn-green" {{on "click" @close}}>
+            <span>Manage tiers</span>
+        </LinkTo>
+    </div>
+</div>
