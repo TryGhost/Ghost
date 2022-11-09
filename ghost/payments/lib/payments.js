@@ -220,7 +220,7 @@ class PaymentsService {
         for (const row of rows) {
             try {
                 const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
-                if (price.active && price.currency.toUpperCase() === currency && price.unit_amount === amount && price.recurring?.interval === cadence) {
+                if (price.active && price.currency.toLowerCase() === currency && price.unit_amount === amount && price.recurring?.interval === cadence) {
                     return {
                         id: price.id
                     };
