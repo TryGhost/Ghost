@@ -807,9 +807,7 @@ module.exports = class MemberRepository {
      * @param {Object} data.subscription
      * @param {String} data.offerId
      * @param {import('@tryghost/member-attribution/lib/attribution').AttributionResource} [data.attribution]
-     * @param {import { newsletters } from '../../../core/test/e2e-api/admin/members-exporter.test';
-*} optionsimport { member } from '../../../portal/src/utils/test-fixtures';
-
+     * @param {*} options
      * @returns
      */
     async linkSubscription(data, options = {}) {
