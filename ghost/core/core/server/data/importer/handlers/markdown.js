@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const fs = require('fs-extra');
 const moment = require('moment');
 const featuredImageRegex = /^(!\[]\(([^)]*?)\)\s+)(?=#)/;
