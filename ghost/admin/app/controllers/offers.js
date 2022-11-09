@@ -36,7 +36,7 @@ export default class MembersController extends Controller {
                 return p.id === offer.tier.id;
             });
             const price = offer.cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice;
-            return offer.status === this.type && !!price;
+            return !!tier && tier.active && offer.status === this.type && !!price;
         }).map((offer) => {
             const tier = this.tiers.find((p) => {
                 return p.id === offer.tier.id;
