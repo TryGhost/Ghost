@@ -112,11 +112,13 @@ describe('Member Model', function run() {
     describe('stripeCustomers', function () {
         it('Is correctly mapped to the stripe customers', async function () {
             const context = testUtils.context.admin;
-            await Member.add({
-                email: 'test@test.member',
-                stripeCustomers: [{
-                    customer_id: 'fake_customer_id1'
-                }]
+            const testMember = await Member.add({
+                email: 'test@test.member'
+            }, context);
+
+            await MemberStripeCustomer.add({
+                member_id: testMember.id,
+                customer_id: 'fake_customer_id1'
             }, context);
 
             const customer1 = await MemberStripeCustomer.findOne({
@@ -270,7 +272,7 @@ describe('Member Model', function run() {
     });
 
     describe('products', function () {
-        it('Products can be created & added to members by the product array', async function () {
+        it('Products can be added to members by the product array', async function () {
             const context = testUtils.context.admin;
             const product = await Product.add({
                 name: 'Product-Add-Test',
@@ -280,9 +282,6 @@ describe('Member Model', function run() {
                 email: 'testing-products@test.member',
                 products: [{
                     id: product.id
-                }, {
-                    name: 'Product-Create-Test',
-                    type: 'paid'
                 }]
             }, {
                 ...context,
@@ -290,16 +289,12 @@ describe('Member Model', function run() {
             });
 
             const createdProduct = await Product.findOne({
-                name: 'Product-Create-Test'
+                name: 'Product-Add-Test'
             }, context);
 
             should.exist(createdProduct, 'Product should have been created');
 
             const products = member.related('products').toJSON();
-
-            should.exist(
-                products.find(model => model.name === 'Product-Create-Test')
-            );
 
             should.exist(
                 products.find(model => model.name === 'Product-Add-Test')
@@ -311,12 +306,15 @@ describe('Member Model', function run() {
         it('Should allow filtering on products', async function () {
             const context = testUtils.context.admin;
 
+            const vipProduct = await Product.add({
+                name: 'VIP',
+                slug: 'vip',
+                type: 'paid'
+            });
             await Member.add({
                 email: 'filter-test@test.member',
                 products: [{
-                    name: 'VIP',
-                    slug: 'vip',
-                    type: 'paid'
+                    id: vipProduct.id
                 }]
             }, context);
 

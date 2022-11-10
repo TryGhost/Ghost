@@ -188,6 +188,8 @@ describe('Front-end members behavior', function () {
 
             // Can update newsletter subscription
             const originalNewsletters = getJsonResponse.newsletters;
+            const originalNewsletterName = originalNewsletters[0].name;
+            originalNewsletters[0].name = 'cannot change me';
 
             const res = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}`)
                 .send({
@@ -212,6 +214,36 @@ describe('Front-end members behavior', function () {
             restoreJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
             restoreJsonResponse.should.not.have.property('id');
             restoreJsonResponse.newsletters.should.have.length(1);
+            // @NOTE: this seems like too much exposed information, needs a review
+            restoreJsonResponse.newsletters[0].should.have.properties([
+                'id',
+                'uuid',
+                'name',
+                'description',
+                'feedback_enabled',
+                'slug',
+                'sender_name',
+                'sender_email',
+                'sender_reply_to',
+                'status',
+                'visibility',
+                'subscribe_on_signup',
+                'sort_order',
+                'header_image',
+                'show_header_icon',
+                'show_header_title',
+                'title_font_category',
+                'title_alignment',
+                'show_feature_image',
+                'body_font_category',
+                'footer_content',
+                'show_badge',
+                'show_header_name',
+                'created_at',
+                'updated_at'
+            ]);
+
+            should.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
         });
 
         it('should serve theme 404 on members endpoint', async function () {
