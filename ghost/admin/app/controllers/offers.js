@@ -16,6 +16,7 @@ const TYPES = [{
 export default class MembersController extends Controller {
     @service modals;
     @service router;
+    @service membersUtils;
 
     @tracked offers = [];
     @tracked tiers = [];

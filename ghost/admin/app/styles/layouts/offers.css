@@ -24,6 +24,10 @@
     margin-bottom: 8px;
 }
 
+.gh-offers-list-cta.missing-tiers h4 {
+    margin-bottom: 20px;
+}
+
 .gh-offers-list-cta p {
     max-width: 390px;
     color: var(--midgrey);
