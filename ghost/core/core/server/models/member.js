@@ -128,6 +128,12 @@ const Member = ghostBookshelf.Model.extend({
     // do not delete email_recipients records when a member is destroyed. Recipient
     // records are used for analytics and historical records
     relationshipConfig: {
+        products: {
+            editable: true
+        },
+        labels: {
+            editable: true
+        },
         email_recipients: {
             destroyRelated: false
         }
