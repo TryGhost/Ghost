@@ -545,7 +545,7 @@ const fixtures = {
 
                     // TODO: replace with full member/product associations
                     if (member.email === 'with-product@test.com') {
-                        member.products = [{slug: product.get('slug')}];
+                        member.products = [{id: product.id}];
                     }
 
                     return models.Member.add(member, context.internal);
