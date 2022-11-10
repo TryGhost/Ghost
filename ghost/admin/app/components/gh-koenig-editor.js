@@ -50,9 +50,17 @@ export default class GhKoenigEditorComponent extends Component {
     }
 
     @action
-    cleanPastedTitle() {
-        // We don't have the updated event.target.value yet, so we need to wait for the next input event
-        this.cleanOnNextTitleInput = true;
+    cleanPastedTitle(event) {
+        const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+
+        if (!pastedText) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const cleanValue = pastedText.replace(/(\n|\r)+/g, ' ').trim();
+        document.execCommand('insertText', false, cleanValue);
     }
 
     @action
