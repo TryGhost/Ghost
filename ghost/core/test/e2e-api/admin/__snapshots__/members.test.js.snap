@@ -455,6 +455,19 @@ Object {
 }
 `;
 
+exports[`Members API Bulk operations Can bulk delete members 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "errors": Array [],
+    "stats": Object {
+      "successful": 8,
+      "unsuccessful": 0,
+    },
+    "unsuccessfulIds": Array [],
+  },
+}
+`;
+
 exports[`Members API Bulk operations Can bulk unsubscribe members from specific newsletter 1: [body] 1`] = `
 Object {
   "bulk": Object {
@@ -466,18 +479,6 @@ Object {
       },
       "unsuccessfulData": Array [],
     },
-    }
-    `;
-    
-exports[`Members API Bulk operations Can bulk delete members 1: [body] 1`] = `
-Object {
-  "meta": Object {
-    "errors": Array [],
-    "stats": Object {
-      "successful": 8,
-      "unsuccessful": 0,
-    },
-    "unsuccessfulIds": Array [],
   },
 }
 `;

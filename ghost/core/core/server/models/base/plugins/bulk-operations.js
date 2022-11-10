@@ -79,7 +79,6 @@ const del = createBulkOperation(delSingle, delMultiple);
  */
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({}, {
-
         bulkAdd: function bulkAdd(data, tableName) {
             tableName = tableName || this.prototype.tableName;
 

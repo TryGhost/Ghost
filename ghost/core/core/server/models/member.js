@@ -171,13 +171,6 @@ const Member = ghostBookshelf.Model.extend({
             });
     },
 
-    newsletterMembers() {
-        return this.hasMany('NewsletterMember', 'member_id', 'id')
-            .query((qb) => {
-                qb.columns('newsletter_members');
-            });
-    },
-
     offerRedemptions() {
         return this.hasMany('OfferRedemption', 'member_id', 'id')
             .query('orderBy', 'created_at', 'DESC');
