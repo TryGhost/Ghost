@@ -29,15 +29,13 @@
         </LinkTo>
     {{/if}}
     {{#if @newsletterEnabled}}
-        {{#if (feature "emailAnalytics")}}
-            <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}" data-test-table-data="open-rate">
-                {{#if (not (is-empty @member.emailOpenRate))}}
-                    <span>{{@member.emailOpenRate}}%</span>
-                {{else}}
-                    <span class="midlightgrey">N/A</span>
-                {{/if}}
-            </LinkTo>
-        {{/if}}
+        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}" data-test-table-data="open-rate">
+            {{#if (not (is-empty @member.emailOpenRate))}}
+                <span>{{@member.emailOpenRate}}%</span>
+            {{else}}
+                <span class="midlightgrey">N/A</span>
+            {{/if}}
+        </LinkTo>
     {{/if}}
 
     <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}" data-test-table-data="location">

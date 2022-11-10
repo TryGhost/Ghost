@@ -176,14 +176,19 @@ export default class MembersController extends Controller {
         return this.availableFilters.flatMap((filter) => {
             if (filter.properties?.getColumns) {
                 return filter.properties?.getColumns(filter).map((c) => {
-                    return {...c, name: filter.type};
+                    return {
+                        label: filter.properties.columnLabel, // default value if not provided
+                        ...c, 
+                        name: filter.type
+                    };
                 });
             }
             if (filter.properties?.columnLabel) {
                 return [
                     {
                         name: filter.type,
-                        label: filter.properties.columnLabel
+                        label: filter.properties.columnLabel,
+                        getValue: filter.properties.getColumnValue ? (member => filter.properties.getColumnValue(member, filter)) : null
                     }
                 ];
             }

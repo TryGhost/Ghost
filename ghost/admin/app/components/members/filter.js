@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
+import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEXT_BILLING_DATE_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -11,328 +12,49 @@ function escapeNqlString(value) {
     return '\'' + value.replace(/'/g, '\\\'') + '\'';
 }
 
-const MATCH_RELATION_OPTIONS = [
-    {label: 'is', name: 'is'},
-    {label: 'is not', name: 'is-not'}
-];
-
-const CONTAINS_RELATION_OPTIONS = [
-    {label: 'is', name: 'is'},
-    {label: 'contains', name: 'contains'},
-    {label: 'does not contain', name: 'does-not-contain'},
-    {label: 'starts with', name: 'starts-with'},
-    {label: 'ends with', name: 'ends-with'}
-];
-
-const FEEDBACK_RELATION_OPTIONS = [
-    {label: 'More like this', name: 1},
-    {label: 'Less like this', name: 0}
-];
-
-const DATE_RELATION_OPTIONS = [
-    {label: 'before', name: 'is-less'},
-    {label: 'on or before', name: 'is-or-less'},
-    {label: 'after', name: 'is-greater'},
-    {label: 'on or after', name: 'is-or-greater'}
-];
-
-const NUMBER_RELATION_OPTIONS = [
-    {label: 'is', name: 'is'},
-    {label: 'is greater than', name: 'is-greater'},
-    {label: 'is less than', name: 'is-less'}
-];
-
-// Ideally we should move all the filter definitions to separate files
-const NAME_FILTER = {
-    label: 'Name', 
-    name: 'name', 
-    group: 'Basic', 
-    valueType: 'string', 
-    relationOptions: CONTAINS_RELATION_OPTIONS
-};
-
-const FILTER_PROPERTIES = [
-    // Basic
-    NAME_FILTER,
+const FILTER_GROUPS = [
     {
-        label: 'Email', 
-        name: 'email',
-        group: 'Basic', 
-        valueType: 'string', 
-        relationOptions: CONTAINS_RELATION_OPTIONS
-    },
-    {
-        label: 'Label', 
-        name: 'label', 
-        group: 'Basic', 
-        valueType: 'array', 
-        columnLabel: 'Label', 
-        relationOptions: MATCH_RELATION_OPTIONS
-    },
-    {
-        label: 'Newsletter subscription', 
-        name: 'subscribed', 
-        group: 'Basic', 
-        columnLabel: 'Subscribed', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        valueType: 'options',
-        options: [
-            {label: 'Subscribed', name: 'true'},
-            {label: 'Unsubscribed', name: 'false'}
+        name: 'Basic',
+        filters: [
+            NAME_FILTER,
+            EMAIL_FILTER,
+            LABEL_FILTER,
+            SUBSCRIBED_FILTER,
+            LAST_SEEN_FILTER,
+            CREATED_AT_FILTER,
+            SIGNUP_ATTRIBUTION_FILTER
         ]
     },
     {
-        label: 'Last seen', 
-        name: 'last_seen_at', 
-        group: 'Basic', 
-        valueType: 'date', 
-        columnLabel: 'Last seen at', 
-        relationOptions: DATE_RELATION_OPTIONS
-    },
-    {
-        label: 'Created', 
-        name: 'created_at', 
-        group: 'Basic', 
-        valueType: 'date', 
-        relationOptions: DATE_RELATION_OPTIONS
-    },
-    {
-        label: 'Signed up on post/page', 
-        name: 'signup', 
-        group: 'Basic', 
-        valueType: 'string', 
-        resource: 'post', 
-        feature: 'memberAttribution', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        getColumns: filter => [
-            {
-                label: 'Signed up on',
-                getValue: () => {
-                    return {
-                        class: '',
-                        text: filter.resource?.title ?? ''
-                    };
-                }
-            }
-        ]
-    },
-
-    // Member subscription
-    {
-        label: 'Membership tier', 
-        name: 'tier', 
-        group: 'Subscription', 
-        valueType: 'array', 
-        columnLabel: 'Membership tier', 
-        relationOptions: MATCH_RELATION_OPTIONS
-    },
-    {
-        label: 'Member status', 
-        name: 'status', 
-        group: 'Subscription', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        valueType: 'options',
-        options: [
-            {label: 'Paid', name: 'paid'},
-            {label: 'Free', name: 'free'},
-            {label: 'Complimentary', name: 'comped'}
+        name: 'Subscription',
+        filters: [
+            TIER_FILTER,
+            STATUS_FILTER,
+            PLAN_INTERVAL_FILTER,
+            SUBSCRIPTION_STATUS_FILTER,
+            SUBSCRIPTION_START_DATE_FILTER,
+            NEXT_BILLING_DATE_FILTER,
+            SUBSCRIPTION_ATTRIBUTION_FILTER
         ]
     },
     {
-        label: 'Billing period', 
-        name: 'subscriptions.plan_interval', 
-        group: 'Subscription', 
-        columnLabel: 'Billing period', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        valueType: 'options',
-        options: [
-            {label: 'Monthly', name: 'month'},
-            {label: 'Yearly', name: 'year'}
-        ]
-    },
-    {
-        label: 'Stripe subscription status', 
-        name: 'subscriptions.status', 
-        group: 'Subscription', 
-        columnLabel: 'Subscription Status', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        valueType: 'options',
-        options: [
-            {label: 'Active', name: 'active'},
-            {label: 'Trialing', name: 'trialing'},
-            {label: 'Canceled', name: 'canceled'},
-            {label: 'Unpaid', name: 'unpaid'},
-            {label: 'Past Due', name: 'past_due'},
-            {label: 'Incomplete', name: 'incomplete'},
-            {label: 'Incomplete - Expired', name: 'incomplete_expired'}
-        ]
-    },
-    {
-        label: 'Paid start date', 
-        name: 'subscriptions.start_date', 
-        valueType: 'date', 
-        group: 'Subscription', 
-        columnLabel: 'Paid start date', 
-        relationOptions: DATE_RELATION_OPTIONS
-    },
-    {
-        label: 'Next billing date', 
-        name: 'subscriptions.current_period_end', 
-        valueType: 'date', 
-        group: 'Subscription', 
-        columnLabel: 'Next billing date', 
-        relationOptions: DATE_RELATION_OPTIONS
-    },
-    {
-        label: 'Subscription started on post/page', 
-        name: 'conversion', 
-        group: 'Subscription', 
-        valueType: 'string', 
-        resource: 'post', 
-        feature: 'memberAttribution', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        getColumns: filter => [
-            {
-                label: 'Subscription started on',
-                getValue: () => {
-                    return {
-                        class: '',
-                        text: filter.resource?.title ?? ''
-                    };
-                }
-            }
-        ]
-    },
-
-    // Emails
-    {
-        label: 'Emails sent (all time)', 
-        name: 'email_count', 
-        group: 'Email', 
-        columnLabel: 'Email count', 
-        valueType: 'number', 
-        relationOptions: NUMBER_RELATION_OPTIONS
-    },
-    {
-        label: 'Emails opened (all time)', 
-        name: 'email_opened_count', 
-        group: 'Email', 
-        columnLabel: 'Email opened count', 
-        valueType: 'number', 
-        relationOptions: NUMBER_RELATION_OPTIONS
-    },
-    {
-        label: 'Open rate (all time)', 
-        name: 'email_open_rate', 
-        group: 'Email', 
-        valueType: 'number', 
-        relationOptions: NUMBER_RELATION_OPTIONS
-    },
-    {
-        label: 'Received email',
-        name: 'emails.post_id', 
-        group: 'Email', 
-        valueType: 'string', 
-        resource: 'email', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        getColumns: filter => [
-            {
-                label: 'Received email',
-                getValue: () => {
-                    return {
-                        class: '',
-                        text: filter.resource?.title ?? ''
-                    };
-                }
-            }
-        ]
-    },
-    {
-        label: 'Opened email', 
-        name: 'opened_emails.post_id', 
-        group: 'Email', 
-        valueType: 'string', 
-        resource: 'email', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        getColumns: filter => [
-            {
-                label: 'Opened email',
-                getValue: () => {
-                    return {
-                        class: '',
-                        text: filter.resource?.title ?? ''
-                    };
-                }
-            }
-        ]
-    },
-    {
-        label: 'Clicked email', 
-        name: 'clicked_links.post_id', 
-        group: 'Email', 
-        valueType: 'string', 
-        resource: 'email', 
-        relationOptions: MATCH_RELATION_OPTIONS,
-        getColumns: filter => [
-            {
-                label: 'Clicked email',
-                getValue: () => {
-                    return {
-                        class: '',
-                        text: filter.resource?.title ?? ''
-                    };
-                }
-            }
-        ]
-    },
-    {
-        label: 'Responded with feedback', 
-        name: 'newsletter_feedback', 
-        group: 'Email', 
-        valueType: 'string', 
-        resource: 'email', 
-        relationOptions: FEEDBACK_RELATION_OPTIONS,
-        feature: 'audienceFeedback', 
-        buildNqlFilter: (filter) => {
-            // Added brackets to make sure we can parse as a single AND filter
-            return `(feedback.post_id:${filter.value}+feedback.score:${filter.relation})`;
-        },
-        parseNqlFilter: (filter) => {
-            if (!filter.$and) {
-                return;
-            }
-            if (filter.$and.length === 2) {
-                if (filter.$and[0]['feedback.post_id'] && filter.$and[1]['feedback.score'] !== undefined) {
-                    return {
-                        relation: parseInt(filter.$and[1]['feedback.score']),
-                        value: filter.$and[0]['feedback.post_id']
-                    };
-                }
-            }
-        },
-        getColumns: filter => [
-            {
-                label: 'Email',
-                getValue: () => {
-                    return {
-                        class: '',
-                        text: filter.resource?.title ?? ''
-                    };
-                }
-            },
-            {
-                label: 'Feedback',
-                getValue: () => {
-                    return {
-                        class: 'gh-members-list-feedback',
-                        text: filter.relation === 1 ? 'More like this' : 'Less like this',
-                        icon: filter.relation === 1 ? 'event-more-like-this' : 'event-less-like-this'
-                    };
-                }
-            }
+        name: 'Email',
+        filters: [
+            EMAIL_COUNT_FILTER,
+            EMAIL_OPENED_COUNT_FILTER,
+            EMAIL_OPEN_RATE_FILTER,
+            EMAIL_RECEIVED_FILTER,
+            EMAIL_OPENED_FILTER,
+            EMAIL_CLICKED_FILTER,
+            AUDIENCE_FEEDBACK_FILTER
         ]
     }
 ];
+
+const FILTER_PROPERTIES = FILTER_GROUPS.flatMap(group => group.filters.map((f) => {
+    f.group = group.name;
+    return f;
+}));
 
 class Filter {
     @tracked value;
@@ -413,6 +135,7 @@ export default class MembersFilter extends Component {
     @service session;
     @service settings;
     @service store;
+    @service membersUtils;
 
     @tracked filters = new TrackedArray([
         new Filter({
@@ -422,10 +145,11 @@ export default class MembersFilter extends Component {
 
     get availableFilterProperties() {
         let availableFilters = FILTER_PROPERTIES;
-        const hasMultipleTiers = this.store.peekAll('tier').length > 1;
+        const hasMultipleTiers = this.membersUtils.hasMultipleTiers;
 
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
+        availableFilters = availableFilters.filter(prop => !prop.setting || this.settings[prop.setting]);
 
         // exclude tiers filter if site has only single tier
         availableFilters = availableFilters
