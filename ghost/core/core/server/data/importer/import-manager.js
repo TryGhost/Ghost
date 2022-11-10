@@ -442,7 +442,9 @@ class ImportManager {
                 });
                 await ghostMailer.send({
                     to: importOptions.user.email,
-                    subject: 'Imported content successfully',
+                    subject: importResult.errors
+                        ? 'Your content import has finished'
+                        : 'Your content import was unsuccessful',
                     html: email
                 });
             }
