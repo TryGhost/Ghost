@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const ObjectId = require('bson-objectid').default;
-const Promise = require('bluebird');
 const semver = require('semver');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('importer:data');
