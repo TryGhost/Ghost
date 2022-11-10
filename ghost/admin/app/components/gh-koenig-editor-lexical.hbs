@@ -32,6 +32,7 @@
             {{on "blur" (fn (mut this.titleIsFocused) false)}}
             {{on "mouseover" (fn (mut this.titleIsHovered) true)}}
             {{on "mouseleave" (fn (mut this.titleIsHovered) false)}}
+            {{on "paste" this.cleanPastedTitle}}
             data-test-editor-title-input={{true}}
         />
 

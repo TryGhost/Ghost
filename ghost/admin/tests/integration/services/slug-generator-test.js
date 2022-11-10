@@ -42,7 +42,7 @@ describe('Integration: Service: slug-generator', function () {
 
     it('calls correct endpoint and returns correct data', function (done) {
         let rawSlug = 'a test post';
-        stubSlugEndpoint(server, 'post', rawSlug);
+        stubSlugEndpoint(server, 'post', 'a-test-post');
 
         let service = this.owner.lookup('service:slug-generator');
 
