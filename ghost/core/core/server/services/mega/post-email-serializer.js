@@ -47,6 +47,8 @@ const PostEmailSerializer = {
 
         // Fix any unsupported chars in Outlook
         juicedHtml = juicedHtml.replace(/&apos;/g, '&#39;');
+        juicedHtml = juicedHtml.replace(/→/g, '&rarr;');
+        juicedHtml = juicedHtml.replace(/–/g, '&ndash;');
 
         return juicedHtml;
     },
