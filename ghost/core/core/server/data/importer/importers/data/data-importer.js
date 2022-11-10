@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const ObjectId = require('bson-objectid').default;
 const Promise = require('bluebird');
 const semver = require('semver');
 const {IncorrectUsageError} = require('@tryghost/errors');
@@ -15,6 +16,7 @@ const StripeProductsImporter = require('./stripe-products');
 const StripePricesImporter = require('./stripe-prices');
 const CustomThemeSettingsImporter = require('./custom-theme-settings');
 const RolesImporter = require('./roles');
+const {slugify} = require('@tryghost/string/lib');
 
 let importers = {};
 let DataImporter;
@@ -45,6 +47,28 @@ DataImporter = {
     // Allow importing with an options object that is passed through the importer
     doImport: async function doImport(importData, importOptions) {
         importOptions = importOptions || {};
+
+        if (importOptions.importTag) {
+            const tagId = ObjectId().toHexString();
+            if (!('tags' in importData.data)) {
+                importData.data.tags = [];
+            }
+            importData.data.tags.push({
+                id: tagId,
+                name: importOptions.importTag,
+                slug: slugify(importOptions.importTag)
+            });
+            for (const post of importData.data.posts || []) {
+                if (!('id' in post)) {
+                    // Make sure post has an id if it doesn't already
+                    post.id = ObjectId().toHexString();
+                }
+                importData.data.posts_tags.push({
+                    post_id: post.id,
+                    tag_id: tagId
+                });
+            }
+        }
 
         const ops = [];
         let problems = [];
