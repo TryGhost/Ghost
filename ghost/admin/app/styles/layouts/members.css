@@ -155,6 +155,7 @@ p.gh-members-list-email {
     display: inline-block;
     max-width: 300px;
     min-width: 220px;
+    white-space: wrap;
 }
 
 .gh-members-list-feedback{
