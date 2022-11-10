@@ -171,7 +171,14 @@ export default class Analytics extends Component {
             if (!acc[link.link.title]) {
                 acc[link.link.title] = link;
             } else {
-                acc[link.link.title].clicks += link.clicks;
+                if (!acc[link.link.title].count) {
+                    acc[link.link.title].count = {clicks: 0};
+                }
+                if (!acc[link.link.title].count.clicks) {
+                    acc[link.link.title].count.clicks = 0;
+                }
+
+                acc[link.link.title].count.clicks += (link.count?.clicks ?? 0);
             }
             return acc;
         }, {});
