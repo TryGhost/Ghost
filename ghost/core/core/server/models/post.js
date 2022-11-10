@@ -97,6 +97,23 @@ Post = ghostBookshelf.Model.extend({
     },
 
     relationships: ['tags', 'authors', 'mobiledoc_revisions', 'post_revisions', 'posts_meta', 'tiers'],
+    relationshipConfig: {
+        tags: {
+            editable: true
+        },
+        authors: {
+            editable: true
+        },
+        mobiledoc_revisions: {
+            editable: true
+        },
+        post_revisions: {
+            editable: true
+        },
+        posts_meta: {
+            editable: true
+        }
+    },
 
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
