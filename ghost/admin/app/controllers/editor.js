@@ -3,6 +3,7 @@ import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
 import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
 import PostModel from 'ghost-admin/models/post';
+import PublishLimitModal from '../components/modals/limits/publish-limit';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
@@ -111,9 +112,8 @@ export default class EditorController extends Controller {
 
     shouldFocusTitle = false;
     showReAuthenticateModal = false;
-    showUpgradeModal = false;
     showSettingsMenu = false;
-    hostLimitError = null;
+
     /**
      * Flag used to determine if we should return to the analytics page or to the posts/pages overview
      */
@@ -282,13 +282,11 @@ export default class EditorController extends Controller {
     }
 
     @action
-    openUpgradeModal() {
-        this.set('showUpgradeModal', true);
-    }
-
-    @action
-    closeUpgradeModal() {
-        this.set('showUpgradeModal', false);
+    openUpgradeModal(hostLimitError = {}) {
+        this.modals.open(PublishLimitModal, {
+            message: hostLimitError.message,
+            details: hostLimitError.details
+        });
     }
 
     @action
@@ -519,8 +517,7 @@ export default class EditorController extends Controller {
             // trigger upgrade modal if forbidden(403) error
             if (isHostLimitError(error)) {
                 this.post.rollbackAttributes();
-                this.set('hostLimitError', error.payload.errors[0]);
-                this.set('showUpgradeModal', true);
+                this.openUpgradeModal(error.payload.errors[0]);
                 return;
             }
 

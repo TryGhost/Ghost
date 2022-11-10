@@ -127,18 +127,6 @@
             @modifier="action wide" />
     {{/if}}
 
-    {{#if this.showUpgradeModal}}
-        <GhFullscreenModal
-            @modal="upgrade-host-limit"
-            @model={{hash
-                message=this.hostLimitError.context
-                details=this.hostLimitError.details
-            }}
-            @close={{this.closeUpgradeModal}}
-            @modifier="action wide"
-        />
-    {{/if}}
-
     {{#if this.snippetToUpdate}}
         <GhFullscreenModal
             @modal="update-snippet"
