@@ -24,7 +24,7 @@ jobs:
       - name: npm install, build, and test
         run: |
           npm install ghost-cli -g
-          ghost install
+          ghost install local
           npm run build --if-present
           npm run test --if-present
 
