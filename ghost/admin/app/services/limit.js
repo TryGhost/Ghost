@@ -2,6 +2,7 @@ import LimitService from '@tryghost/limit-service';
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
 import {bind} from '@ember/runloop';
+import {inject} from 'ghost-admin/decorators/inject';
 
 class LimitError {
     constructor({errorType, errorDetails, message}) {
@@ -24,9 +25,10 @@ class HostLimitError extends LimitError {
 }
 
 export default class LimitsService extends Service {
-    @service config;
     @service store;
     @service membersStats;
+
+    @inject config;
 
     constructor() {
         super(...arguments);
@@ -41,9 +43,7 @@ export default class LimitsService extends Service {
 
         let helpLink;
 
-        if (this.config.hostSettings?.billing?.enabled === true
-            && this.config.hostSettings?.billing?.url
-        ) {
+        if (this.config.hostSettings?.billing?.enabled === true && this.config.hostSettings?.billing?.url) {
             helpLink = this.config.hostSettings.billing?.url;
         } else {
             helpLink = 'https://ghost.org/help/';

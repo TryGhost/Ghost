@@ -1,3 +1,4 @@
+const querystring = require('querystring');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const nock = require('nock');
 const should = require('should');
@@ -55,6 +56,163 @@ describe('Create Stripe Checkout Session', function () {
             });
     });
 
+    it('Can create a checkout session when using offers', async function () {
+        const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+        const paidTier = tiers.find(tier => tier.type === 'paid');
+        const {body: {offers: [offer]}} = await adminAgent.post('/offers/').body({
+            offers: [{
+                name: 'Test Offer',
+                code: 'test-offer',
+                cadence: 'month',
+                status: 'active',
+                currency: 'usd',
+                type: 'percent',
+                amount: 20,
+                duration: 'once',
+                duration_in_months: null,
+                display_title: 'Test Offer',
+                display_description: null,
+                tier: {
+                    id: paidTier.id
+                }
+            }]
+        });
+
+        nock('https://api.stripe.com')
+            .persist()
+            .get(/v1\/.*/)
+            .reply((uri, body) => {
+                const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                if (match) {
+                    if (resource === 'products') {
+                        return [200, {
+                            id: id,
+                            active: true
+                        }];
+                    }
+                    if (resource === 'prices') {
+                        return [200, {
+                            id: id,
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
+                    }
+                }
+
+                return [500];
+            });
+
+        nock('https://api.stripe.com')
+            .persist()
+            .post(/v1\/.*/)
+            .reply((uri, body) => {
+                if (uri === '/v1/checkout/sessions') {
+                    return [200, {id: 'cs_123', url: 'https://site.com'}];
+                }
+
+                if (uri === '/v1/coupons') {
+                    return [200, {id: 'coupon_123'}];
+                }
+
+                if (uri === '/v1/prices') {
+                    return [200, {
+                        id: 'price_1',
+                        active: true,
+                        currency: 'usd',
+                        unit_amount: 500,
+                        recurring: {
+                            interval: 'month'
+                        }
+                    }];
+                }
+
+                return [500];
+            });
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: 'free@test.com',
+                offerId: offer.id
+            })
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot();
+    });
+
+    it('Can create a checkout session without passing a customerEmail', async function () {
+        const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+
+        const paidTier = tiers.find(tier => tier.type === 'paid');
+
+        nock('https://api.stripe.com')
+            .persist()
+            .get(/v1\/.*/)
+            .reply((uri, body) => {
+                const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                if (match) {
+                    if (resource === 'products') {
+                        return [200, {
+                            id: id,
+                            active: true
+                        }];
+                    }
+                    if (resource === 'prices') {
+                        return [200, {
+                            id: id,
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
+                    }
+                }
+
+                return [500];
+            });
+
+        nock('https://api.stripe.com')
+            .persist()
+            .post(/v1\/.*/)
+            .reply((uri, body) => {
+                if (uri === '/v1/checkout/sessions') {
+                    const bodyJSON = querystring.parse(body);
+                    // TODO: Actually work out what Stripe checks and when/how it errors
+                    if (Reflect.has(bodyJSON, 'customerEmail')) {
+                        return [400, {error: 'Invalid Email'}];
+                    }
+                    return [200, {id: 'cs_123', url: 'https://site.com'}];
+                }
+
+                if (uri === '/v1/prices') {
+                    return [200, {
+                        id: 'price_2',
+                        active: true,
+                        currency: 'usd',
+                        unit_amount: 500,
+                        recurring: {
+                            interval: 'month'
+                        }
+                    }];
+                }
+
+                return [500];
+            });
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                tierId: paidTier.id,
+                cadence: 'month'
+            })
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot();
+    });
     it('Does allow to create a checkout session if the customerEmail is not associated with a paid member', async function () {
         const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
 
@@ -77,7 +235,10 @@ describe('Create Stripe Checkout Session', function () {
                             id: id,
                             active: true,
                             currency: 'usd',
-                            unit_amount: 500
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
                         }];
                     }
                 }
@@ -91,6 +252,17 @@ describe('Create Stripe Checkout Session', function () {
             .reply((uri, body) => {
                 if (uri === '/v1/checkout/sessions') {
                     return [200, {id: 'cs_123', url: 'https://site.com'}];
+                }
+                if (uri === '/v1/prices') {
+                    return [200, {
+                        id: 'price_3',
+                        active: true,
+                        currency: 'usd',
+                        unit_amount: 500,
+                        recurring: {
+                            interval: 'month'
+                        }
+                    }];
                 }
 
                 return [500];
@@ -134,7 +306,10 @@ describe('Create Stripe Checkout Session', function () {
                                 id: id,
                                 active: true,
                                 currency: 'usd',
-                                unit_amount: 500
+                                unit_amount: 500,
+                                recurring: {
+                                    interval: 'month'
+                                }
                             }];
                         }
                     }
@@ -153,6 +328,17 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_id]')).be.null();
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_4',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
                     }
 
                     return [500];
@@ -204,7 +390,10 @@ describe('Create Stripe Checkout Session', function () {
                                 id: id,
                                 active: true,
                                 currency: 'usd',
-                                unit_amount: 500
+                                unit_amount: 50,
+                                recurring: {
+                                    interval: 'month'
+                                }
                             }];
                         }
                     }
@@ -223,6 +412,17 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_id]')).eql(post.id);
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_5',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
                     }
 
                     return [500];
@@ -271,7 +471,10 @@ describe('Create Stripe Checkout Session', function () {
                                 id: id,
                                 active: true,
                                 currency: 'usd',
-                                unit_amount: 500
+                                unit_amount: 500,
+                                recurring: {
+                                    interval: 'month'
+                                }
                             }];
                         }
                     }
@@ -290,6 +493,17 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_id]')).be.null();
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_6',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
                     }
 
                     return [500];

@@ -1,19 +1,21 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend(ValidationEngine, {
-    config: service(),
     notifications: service(),
     session: service(),
 
     validationType: 'signin',
 
     authenticationError: null,
+
+    config: inject(),
 
     identification: reads('session.user.email'),
 

@@ -1,9 +1,11 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class ZapierRoute extends AdminRoute {
     @service router;
-    @service config;
+
+    @inject config;
 
     constructor() {
         super(...arguments);

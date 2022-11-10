@@ -1,6 +1,7 @@
 const {faker} = require('@faker-js/faker');
 const generateEvents = require('../utils/event-generator');
 const TableImporter = require('./base');
+const dateToDatabaseString = require('../utils/database-date');
 
 class SubscriptionsImporter extends TableImporter {
     constructor(knex, {members, stripeProducts, stripePrices}) {
@@ -55,8 +56,8 @@ class SubscriptionsImporter extends TableImporter {
             member_id: this.model.member_id,
             tier_id: this.model.product_id,
             payment_provider: 'stripe',
-            expires_at: endDate.toISOString(),
-            created_at: startDate.toISOString()
+            expires_at: dateToDatabaseString(endDate),
+            created_at: dateToDatabaseString(startDate)
         }, billingInfo);
     }
 }

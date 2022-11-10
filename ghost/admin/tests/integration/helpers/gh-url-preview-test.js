@@ -1,4 +1,3 @@
-import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -9,10 +8,10 @@ describe('Unit: Component: gh-url-preview', function () {
     setupRenderingTest();
 
     beforeEach(function () {
-        let configStub = Service.extend({
+        let configStub = {
             blogUrl: 'http://my-ghost-blog.com'
-        });
-        this.owner.register('service:config', configStub);
+        };
+        this.owner.register('config:main', configStub, {instantiate: false});
     });
 
     it('generates the correct preview URL with a prefix', async function () {

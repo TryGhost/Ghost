@@ -3,6 +3,8 @@ const fetch = require('node-fetch').default;
 const {agentProvider, mockManager, fixtureManager} = require('../utils/e2e-framework');
 const urlUtils = require('../../core/shared/url-utils');
 
+// @NOTE: this test suite cannot be run in isolation - most likely because it needs
+//        to have full frontend part of Ghost initialized, not just the backend
 describe('Click Tracking', function () {
     let agent;
 

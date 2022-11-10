@@ -3,12 +3,12 @@ import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action, computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 const ICON_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
 
 export default ModalComponent.extend({
-    config: service(),
     modals: service(),
     membersUtils: service(),
     settings: service(),
@@ -30,6 +30,8 @@ export default ModalComponent.extend({
     portalPreviewGuid: 'modal-portal-settings',
 
     confirm() {},
+
+    config: inject(),
 
     backgroundStyle: computed('settings.accentColor', function () {
         let color = this.settings.accentColor || '#ffffff';

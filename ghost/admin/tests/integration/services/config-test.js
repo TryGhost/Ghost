@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {settled} from '@ember/test-helpers';
 import {setupTest} from 'ember-mocha';
 
-describe('Integration: Service: config', function () {
+describe('Integration: Service: config-manager', function () {
     setupTest();
 
     let server;
@@ -19,8 +19,8 @@ describe('Integration: Service: config', function () {
     });
 
     it('returns a list of timezones in the expected format', function () {
-        const service = this.owner.lookup('service:config');
-        const timezones = service.availableTimezones;
+        const injection = this.owner.lookup('config:main');
+        const timezones = injection.availableTimezones;
 
         expect(timezones.length).to.equal(66);
         expect(timezones[0].name).to.equal('Pacific/Pago_Pago');
@@ -51,13 +51,14 @@ describe('Integration: Service: config', function () {
                 ];
             });
         };
-        let service = this.owner.lookup('service:config');
+        const service = this.owner.lookup('service:config-manager');
+        const injection = this.owner.lookup('config:main');
 
         stubBlogUrl('http://localhost:2368/');
 
         service.fetch().then(() => {
             expect(
-                service.get('blogUrl'), 'trailing-slash'
+                injection.blogUrl, 'trailing-slash'
             ).to.equal('http://localhost:2368');
         });
 
@@ -66,7 +67,7 @@ describe('Integration: Service: config', function () {
 
             service.fetch().then(() => {
                 expect(
-                    service.get('blogUrl'), 'non-trailing-slash'
+                    injection.blogUrl, 'non-trailing-slash'
                 ).to.equal('http://localhost:2368');
 
                 done();

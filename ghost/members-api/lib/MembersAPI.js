@@ -152,14 +152,6 @@ module.exports = function MembersAPI({
         getSubject
     });
 
-    const memberController = new MemberController({
-        memberRepository,
-        productRepository,
-        StripePrice,
-        tokenService,
-        sendEmailWithMagicLink
-    });
-
     const paymentsService = new PaymentsService({
         StripeProduct,
         StripePrice,
@@ -167,6 +159,16 @@ module.exports = function MembersAPI({
         Offer,
         offersAPI,
         stripeAPIService
+    });
+
+    const memberController = new MemberController({
+        memberRepository,
+        productRepository,
+        paymentsService,
+        tiersService,
+        StripePrice,
+        tokenService,
+        sendEmailWithMagicLink
     });
 
     const routerController = new RouterController({

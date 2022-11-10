@@ -64,10 +64,13 @@ export default class ActivityFeedFetcher extends Resource {
 
     @action
     loadNextPage() {
+        if (this.hasReachedEnd) {
+            return;
+        }
         const lastEvent = this.data[this.data.length - 1];
         const lastEventDate = moment.utc(lastEvent.data.created_at).format('YYYY-MM-DD HH:mm:ss');
         const lastEventId = lastEvent.data.id;
-        
+
         let filter = `(data.created_at:<'${lastEventDate}',(data.created_at:'${lastEventDate}'+id:<'${lastEventId}'))`;
         this.eventsBookmarks.push(filter);
 
@@ -80,6 +83,9 @@ export default class ActivityFeedFetcher extends Resource {
 
     @action
     loadPreviousPage() {
+        if (this.hasReachedStart) {
+            return;
+        }
         this.eventsBookmarks.pop();
         let filter = this.eventsBookmarks[this.eventsBookmarks.length - 1];
 

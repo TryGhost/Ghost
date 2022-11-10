@@ -1,11 +1,13 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class ProRoute extends AuthenticatedRoute {
     @service billing;
     @service session;
-    @service config;
+
+    @inject config;
 
     queryParams = {
         action: {refreshModel: true}
@@ -19,12 +21,12 @@ export default class ProRoute extends AuthenticatedRoute {
             return this.transitionTo('home');
         }
 
-        this.billing.set('previousTransition', transition);
+        this.billing.previousTransition = transition;
     }
 
     model(params) {
         if (params.action) {
-            this.billing.set('action', params.action);
+            this.billing.action = params.action;
         }
 
         this.billing.toggleProWindow(true);

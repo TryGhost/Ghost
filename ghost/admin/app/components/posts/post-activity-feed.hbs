@@ -130,34 +130,7 @@
             </div>
 
             {{#if (eq @eventType 'feedback')}}
-                <div
-                    class="gh-feedback-events-feed"
-                    id="gh-feedback-events-feed"
-                    {{on "mouseleave" this.onMouseleave}}
-                >
-                    <div class="gh-feedback-events-feed-container">
-                        <Posts::FeedbackEventsChart
-                            @data={{@data}}
-                        />
-                    </div>
-
-                    <div
-                        class="gh-feedback-events-tooltip"
-                        id="gh-feedback-events-tooltip"
-                        {{did-insert this.onTooltipInsert}}
-                    >
-                        <div id="gh-feedback-events-tooltip-body">
-
-                        </div>
-
-                        <div class="gh-feedback-events-tooltip-footer" id="gh-feedback-events-tooltip-footer">
-                            <Posts::FeedbackEventsTooltipTemplate
-                                @positiveLink={{@positiveLink}}
-                                @negativeLink={{@negativeLink}}
-                            />
-                        </div>
-                    </div>
-                </div>
+                <Posts::FeedbackEventsChart @data={{@data}} />
             {{/if}}
         {{/if}}
     {{/let}}

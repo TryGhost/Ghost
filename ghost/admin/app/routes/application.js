@@ -4,6 +4,7 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {InitSentryForEmber} from '@sentry/ember';
+import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
     isNotFoundError,
@@ -27,7 +28,7 @@ shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
-    config: service(),
+    configManager: service(),
     feature: service(),
     ghostPaths: service(),
     notifications: service(),
@@ -51,6 +52,8 @@ export default Route.extend(ShortcutsRoute, {
 
         this.ui.initBodyDragHandlers();
     },
+
+    config: inject(),
 
     async beforeModel() {
         await this.session.setup();
@@ -153,7 +156,7 @@ export default Route.extend(ShortcutsRoute, {
     },
 
     async prepareApp() {
-        await this.config.fetchUnauthenticated();
+        await this.configManager.fetchUnauthenticated();
 
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets

@@ -1,13 +1,16 @@
 import Service, {inject as service} from '@ember/service';
+import Setting from '../models/setting';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import classic from 'ember-classic-decorator';
+import {computed, defineProperty, get} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
-
+@classic
 export default class SettingsService extends Service.extend(ValidationEngine) {
     @service store;
 
     // will be set to the single Settings model, it's a reference so any later
     // changes to the settings object in the store will be reflected
-    settingsModel = null;
+    @tracked settingsModel = null;
 
     validationType = 'setting';
     _loadingPromise = null;
@@ -15,6 +18,28 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
     // this is an odd case where we only want to react to changes that we get
     // back from the API rather than local updates
     @tracked settledIcon = '';
+
+    init() {
+        super.init(...arguments);
+
+        // TODO: update to use .getSchemaDefinitionService().attributesDefinitionFor({type: 'settings'});
+        // in later Ember versions
+        const attributes = get(Setting, 'attributes');
+
+        for (const [name] of attributes) {
+            if (!Object.prototype.hasOwnProperty.call(this, name)) {
+                // a standard defineProperty here was not autotracking correctly - retry in a later Ember version
+                defineProperty(this, name, computed(`settingsModel.${name}`, {
+                    get() {
+                        return this.settingsModel?.[name];
+                    },
+                    set(keyName, value) {
+                        return this.settingsModel[name] = value;
+                    }
+                }));
+            }
+        }
+    }
 
     get hasDirtyAttributes() {
         return this.settingsModel?.hasDirtyAttributes || false;
@@ -53,19 +78,6 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
 
         this.settingsModel = settingsModel;
         this.settledIcon = settingsModel.icon;
-
-        settingsModel.eachAttribute((name) => {
-            if (!Object.prototype.hasOwnProperty.call(this, name)) {
-                Object.defineProperty(this, name, {
-                    get() {
-                        return this.settingsModel[name];
-                    },
-                    set(newValue) {
-                        this.settingsModel[name] = newValue;
-                    }
-                });
-            }
-        });
 
         return this;
     }

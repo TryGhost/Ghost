@@ -5,6 +5,7 @@ import {action} from '@ember/object';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {A as emberA} from '@ember/array';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -22,8 +23,10 @@ const CURRENCIES = currencies.map((currency) => {
 export default class ModalTierPrice extends ModalBase {
     @service feature;
     @service settings;
-    @service config;
     @service membersUtils;
+
+    @inject config;
+
     @tracked model;
     @tracked tier;
     @tracked periodVal;

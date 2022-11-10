@@ -43,7 +43,7 @@ jobs:
 
       - run: |
           echo "CURRENT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          echo "NEW_VERSION=$(semver bump ${{ inputs.bump-type }} $(git describe --tags --abbrev=0))" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(semver bump ${{ inputs.bump-type }} $(git describe --tags --abbrev=0 --match=v*))" >> $GITHUB_ENV
 
       - name: Create branch
         uses: actions/github-script@v6

@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import validator from 'validator';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -20,12 +21,13 @@ html {
 // TODO: remove duplication with <ModalPostEmailPreview>
 export default class ModalPostPreviewEmailComponent extends Component {
     @service ajax;
-    @service config;
     @service feature;
     @service ghostPaths;
     @service session;
     @service settings;
     @service store;
+
+    @inject config;
 
     @tracked html = '';
     @tracked subject = '';

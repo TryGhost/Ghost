@@ -1,10 +1,12 @@
 import Component from '@glimmer/component';
 import config from 'ghost-admin/config/environment';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class AboutModal extends Component {
-    @service config;
     @service upgradeStatus;
+
+    @inject config;
 
     constructor() {
         super(...arguments);

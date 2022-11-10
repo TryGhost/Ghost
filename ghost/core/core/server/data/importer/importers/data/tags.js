@@ -1,8 +1,8 @@
 const debug = require('@tryghost/debug')('importer:tags');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
+const {sequence} = require('@tryghost/promise');
 
 class TagsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -33,45 +33,44 @@ class TagsImporter extends BaseImporter {
      *
      * @TODO: Add a flag to the base implementation e.g. `fetchBeforeAdd`
      */
-    doImport(options, importOptions) {
+    async doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
         let ops = [];
 
         _.each(this.dataToImport, (obj) => {
-            ops.push(models[this.modelName].findOne({name: obj.name}, options)
-                .then((tag) => {
+            ops.push(async () => {
+                if (obj.slug) {
+                    const tag = await models[this.modelName].findOne({slug: obj.slug}, options);
                     if (tag) {
-                        return Promise.resolve();
+                        return;
+                    }
+                }
+
+                try {
+                    const importedModel = await models[this.modelName].add(obj, options);
+                    obj.model = {
+                        id: importedModel.id
+                    };
+
+                    if (importOptions.returnImportedData) {
+                        this.importedDataToReturn.push(importedModel.toJSON());
                     }
 
-                    return models[this.modelName].add(obj, options)
-                        .then((importedModel) => {
-                            obj.model = {
-                                id: importedModel.id
-                            };
-
-                            if (importOptions.returnImportedData) {
-                                this.importedDataToReturn.push(importedModel.toJSON());
-                            }
-
-                            // for identifier lookup
-                            this.importedData.push({
-                                id: importedModel.id,
-                                originalId: this.originalIdMap[importedModel.id],
-                                slug: importedModel.get('slug'),
-                                originalSlug: obj.slug
-                            });
-
-                            return importedModel;
-                        })
-                        .catch((err) => {
-                            return this.handleError(err, obj);
-                        });
-                }).reflect());
+                    // for identifier lookup
+                    this.importedData.push({
+                        id: importedModel.id,
+                        originalId: this.originalIdMap[importedModel.id],
+                        slug: importedModel.get('slug'),
+                        originalSlug: obj.slug
+                    });
+                } catch (err) {
+                    this.handleError(err, obj);
+                }
+            });
         });
 
-        return Promise.all(ops);
+        await sequence(ops);
     }
 }
 

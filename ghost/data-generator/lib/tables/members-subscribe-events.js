@@ -1,6 +1,7 @@
 const TableImporter = require('./base');
 const {faker} = require('@faker-js/faker');
 const {luck} = require('../utils/random');
+const dateToDatabaseString = require('../utils/database-date');
 
 class MembersSubscribeEventsImporter extends TableImporter {
     constructor(knex, {newsletters, subscriptions}) {
@@ -22,7 +23,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
             return null;
         }
 
-        let createdAt = faker.date.between(new Date(this.model.created_at), new Date()).toISOString();
+        let createdAt = dateToDatabaseString(faker.date.between(new Date(this.model.created_at), new Date()));
         let subscribed = luck(80);
 
         // Free newsletter by default

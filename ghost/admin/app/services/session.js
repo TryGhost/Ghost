@@ -2,13 +2,14 @@ import ESASessionService from 'ember-simple-auth/services/session';
 import RSVP from 'rsvp';
 import {configureScope} from '@sentry/ember';
 import {getOwner} from '@ember/application';
+import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class SessionService extends ESASessionService {
-    @service config;
+    @service configManager;
     @service('store') dataStore;
     @service feature;
     @service notifications;
@@ -19,6 +20,8 @@ export default class SessionService extends ESASessionService {
     @service upgradeStatus;
     @service whatsNew;
     @service membersUtils;
+
+    @inject config;
 
     @tracked user = null;
 
@@ -36,7 +39,7 @@ export default class SessionService extends ESASessionService {
 
     async postAuthPreparation() {
         await RSVP.all([
-            this.config.fetchAuthenticated(),
+            this.configManager.fetchAuthenticated(),
             this.feature.fetch(),
             this.settings.fetch(),
             this.membersUtils.fetch()
@@ -112,7 +115,7 @@ export default class SessionService extends ESASessionService {
 
     // TODO: this feels hacky, find a better way than using .send
     triggerAuthorizationFailed() {
-        getOwner(this).lookup(`route:${this.router.currentRouteName}`).send('authorizationFailed');
+        getOwner(this).lookup(`route:${this.router.currentRouteName}`)?.send('authorizationFailed');
     }
 
     loadServerNotifications() {

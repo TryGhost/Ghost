@@ -140,6 +140,9 @@
         },
         "contentAPI": {
             "maxAge": 0
+        },
+        "commentsCountAPI": {
+            "maxAge": 0
         }
     },
     "imageOptimization": {
@@ -168,7 +171,7 @@
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
         "styles": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/main.css",
-        "version": "0.10"
+        "version": "0.12"
     },
     "editor": {
         "url": "https://unpkg.com/@tryghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",

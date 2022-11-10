@@ -10,11 +10,11 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
 export default ModalComponent.extend({
-    config: service(),
     ajax: service(),
     notifications: service(),
     store: service(),
@@ -33,6 +33,8 @@ export default ModalComponent.extend({
 
     // Allowed actions
     confirm: () => {},
+
+    config: inject(),
 
     uploadUrl: computed(function () {
         return `${ghostPaths().apiRoot}/members/upload/`;

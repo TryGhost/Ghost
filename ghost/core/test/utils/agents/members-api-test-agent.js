@@ -18,7 +18,16 @@ class MembersAPITestAgent extends TestAgent {
 
     async loginAs(email) {
         const membersService = require('../../../core/server/services/members');
-        const magicLink = await membersService.api.getMagicLink(email, 'signup');
+        const memberRepository = membersService.api.members;
+
+        const member = await memberRepository.get({email});
+
+        if (!member) {
+            // Create the member first with context internal if it doesn't exist to prevent sending a signup email
+            await memberRepository.create({name: '', email}, {context: {internal: true}});
+        }
+
+        const magicLink = await membersService.api.getMagicLink(email, 'signin');
         const magicLinkUrl = new URL(magicLink);
         const token = magicLinkUrl.searchParams.get('token');
 

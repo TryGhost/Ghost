@@ -11,7 +11,7 @@ class PreviewRouter extends ParentRouter {
 
         this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.previews;
 
-        // @NOTE: hardcoded, not configureable
+        // @NOTE: hardcoded, not configurable
         this.route = {value: '/p/'};
 
         this._registerRoutes();

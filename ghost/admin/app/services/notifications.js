@@ -3,6 +3,7 @@ import Service, {inject as service} from '@ember/service';
 import {TrackedArray} from 'tracked-built-ins';
 import {dasherize} from '@ember/string';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isArray} from '@ember/array';
 import {isBlank} from '@ember/utils';
 import {
@@ -38,8 +39,9 @@ const GENERIC_ERROR_NAMES = [
 export const GENERIC_ERROR_MESSAGE = 'An unexpected error occurred, please try again.';
 
 export default class NotificationsService extends Service {
-    @service config;
     @service upgradeStatus;
+
+    @inject config;
 
     @tracked delayedNotifications = new TrackedArray([]);
     @tracked content = new TrackedArray([]);

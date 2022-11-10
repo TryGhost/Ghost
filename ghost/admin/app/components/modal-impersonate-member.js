@@ -1,16 +1,18 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {alias} from '@ember/object/computed';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 export default ModalComponent.extend({
-    config: service(),
     store: service(),
 
     classNames: 'modal-impersonate-member',
 
     signinUrl: null,
+    config: inject(),
+
     member: alias('model'),
 
     didInsertElement() {
