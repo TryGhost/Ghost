@@ -7,6 +7,7 @@ export default class GhKoenigEditorComponent extends Component {
     titleElement = null;
     koenigEditor = null;
     mousedownY = 0;
+    cleanOnNextTitleInput = false;
 
     @tracked titleIsHovered = false;
     @tracked titleIsFocused = false;
@@ -40,7 +41,18 @@ export default class GhKoenigEditorComponent extends Component {
 
     @action
     updateTitle(event) {
+        if (this.cleanOnNextTitleInput) {
+            this.cleanOnNextTitleInput = false;
+            const val = event.target.value.replace(/(\n|\r)+/g, ' ').trim();
+            event.target.value = val;
+        }
         this.args.onTitleChange?.(event.target.value);
+    }
+
+    @action
+    cleanPastedTitle() {
+        // We don't have the updated event.target.value yet, so we need to wait for the next input event
+        this.cleanOnNextTitleInput = true;
     }
 
     @action
