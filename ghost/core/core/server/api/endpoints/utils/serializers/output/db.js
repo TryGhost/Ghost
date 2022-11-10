@@ -20,15 +20,11 @@ module.exports = {
     importContent(response, apiConfig, frame) {
         debug('importContent');
 
-        // NOTE: response can contain 2 objects if images are imported
-        const problems = (response.length === 2)
-            ? response[1].problems
-            : response[0].problems;
-
         frame.response = {
-            db: [],
-            problems: problems
+            db: []
         };
+
+        frame.response.problems = response?.data?.problems ?? [];
     },
 
     deleteAllContent(response, apiConfig, frame) {
