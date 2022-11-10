@@ -28,6 +28,7 @@ module.exports = class MemberRepository {
     /**
      * @param {object} deps
      * @param {any} deps.Member
+     * @param {any} deps.MemberNewsletter
      * @param {any} deps.MemberCancelEvent
      * @param {any} deps.MemberSubscribeEventModel
      * @param {any} deps.MemberEmailChangeEvent
@@ -46,6 +47,7 @@ module.exports = class MemberRepository {
      */
     constructor({
         Member,
+        MemberNewsletter,
         MemberCancelEvent,
         MemberSubscribeEventModel,
         MemberEmailChangeEvent,
@@ -63,6 +65,7 @@ module.exports = class MemberRepository {
         newslettersService
     }) {
         this._Member = Member;
+        this._MemberNewsletter = MemberNewsletter;
         this._MemberCancelEvent = MemberCancelEvent;
         this._MemberSubscribeEvent = MemberSubscribeEventModel;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
@@ -722,11 +725,13 @@ module.exports = class MemberRepository {
         if (data.action === 'unsubscribe') {
             const hasNewsletterSelected = (Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null);
             if (hasNewsletterSelected) {
-                const newsletters = await this._Member.bulkFind('members_newsletters', {
-                    newsletter_id: data.newsletter
-                });
-                const newsletterIds = newsletters.filter(newsletter => memberIds.includes(newsletter.member_id));
-                const toUnsubscribe = newsletterIds.map(newsletter => newsletter.id);
+                const newsletters = await this._MemberNewsletter.where('newsletter_id', data.newsletter).fetchAll();
+                const toUnsubscribe = newsletters.toJSON().reduce((acc, newsletter) => {
+                    if (memberIds.includes(newsletter.member_id)) {
+                        acc.push(newsletter.id);
+                    }
+                    return acc;
+                }, []);
                 return await this._Member.bulkDestroy(toUnsubscribe, 'members_newsletters', {column: 'id'});
             }
             if (!hasNewsletterSelected) {
@@ -807,7 +812,10 @@ module.exports = class MemberRepository {
      * @param {Object} data.subscription
      * @param {String} data.offerId
      * @param {import('@tryghost/member-attribution/lib/attribution').AttributionResource} [data.attribution]
-     * @param {*} options
+     * @param {import { findAll } from '@ember/test-helpers';
+*} optionsimport { newsletters } from '../../../core/test/e2e-api/admin/members-exporter.test';
+import Newsletter from '../../../admin/app/components/dashboard/resources/newsletter';
+
      * @returns
      */
     async linkSubscription(data, options = {}) {
