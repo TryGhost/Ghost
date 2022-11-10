@@ -1,9 +1,11 @@
 const Promise = require('bluebird');
+const moment = require('moment-timezone');
 const dbBackup = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
 const importer = require('../../data/importer');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const settingsCache = require('../../../shared/settings-cache');
 
 module.exports = {
     docName: 'db',
@@ -83,7 +85,14 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return importer.importFromFile(frame.file, {include: frame.options.withRelated});
+            const siteTimezone = settingsCache.get('timezone');
+            const importTag = `Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`;
+            return importer.importFromFile(frame.file, {
+                user: {
+                    email: frame.user.get('email')
+                },
+                importTag
+            });
         }
     },
 
