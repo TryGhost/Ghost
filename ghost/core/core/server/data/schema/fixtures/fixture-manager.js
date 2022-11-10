@@ -215,7 +215,7 @@ class FixtureManager {
         // would change the fixturesHash.
         modelFixture = _.cloneDeep(modelFixture);
         // The Post model fixtures need a `published_at` date, where at least the seconds
-        // are different, otherwise `prev_post` and `next_post` helpers won't workd with
+        // are different, otherwise `prev_post` and `next_post` helpers won't work with
         // them.
         if (modelFixture.name === 'Post') {
             _.forEach(modelFixture.entries, (post, index) => {
