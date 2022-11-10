@@ -68,7 +68,7 @@
     "eslint-plugin-tailwindcss": "3.6.2",
     "jsdom": "20.0.2",
     "linkedom": "0.14.19",
-    "postcss": "8.4.18",
+    "postcss": "8.4.19",
     "postcss-import": "15.0.0",
     "prettier": "2.7.1",
     "puppeteer": "19.2.2",
