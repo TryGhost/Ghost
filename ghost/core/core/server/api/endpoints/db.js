@@ -70,18 +70,15 @@ module.exports = {
     },
 
     importContent: {
+        statusCode(result) {
+            if (result && (result.data || result.images)) {
+                return 201;
+            } else {
+                return 202;
+            }
+        },
         headers: {
             cacheInvalidate: true
-        },
-        options: [
-            'include'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: exporter.BACKUP_TABLES
-                }
-            }
         },
         permissions: true,
         query(frame) {
