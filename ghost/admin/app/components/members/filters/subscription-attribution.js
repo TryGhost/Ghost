@@ -5,9 +5,9 @@ export const SUBSCRIPTION_ATTRIBUTION_FILTER = {
     name: 'conversion', 
     valueType: 'string', 
     resource: 'post', 
-    feature: 'memberAttribution', 
     relationOptions: MATCH_RELATION_OPTIONS,
     columnLabel: 'Subscription started on',
+    setting: 'membersTrackSources',
     getColumnValue: (member, filter) => {
         return {
             text: filter.resource?.title ?? ''

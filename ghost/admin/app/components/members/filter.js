@@ -135,6 +135,7 @@ export default class MembersFilter extends Component {
     @service session;
     @service settings;
     @service store;
+    @service membersUtils;
 
     @tracked filters = new TrackedArray([
         new Filter({
@@ -144,10 +145,11 @@ export default class MembersFilter extends Component {
 
     get availableFilterProperties() {
         let availableFilters = FILTER_PROPERTIES;
-        const hasMultipleTiers = this.store.peekAll('tier').length > 1;
+        const hasMultipleTiers = this.membersUtils.hasMultipleTiers;
 
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
+        availableFilters = availableFilters.filter(prop => !prop.setting || this.settings[prop.setting]);
 
         // exclude tiers filter if site has only single tier
         availableFilters = availableFilters

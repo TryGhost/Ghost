@@ -7,6 +7,7 @@ export const SIGNUP_ATTRIBUTION_FILTER = {
     resource: 'post', 
     relationOptions: MATCH_RELATION_OPTIONS,
     columnLabel: 'Signed up on',
+    setting: 'membersTrackSources',
     getColumnValue: (member, filter) => {
         return {
             text: filter.resource?.title ?? ''

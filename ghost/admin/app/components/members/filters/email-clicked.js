@@ -7,6 +7,7 @@ export const EMAIL_CLICKED_FILTER = {
     resource: 'email', 
     relationOptions: MATCH_RELATION_OPTIONS,
     columnLabel: 'Clicked email',
+    setting: 'emailTrackClicks',
     getColumnValue: (member, filter) => {
         return {
             text: filter.resource?.title ?? ''

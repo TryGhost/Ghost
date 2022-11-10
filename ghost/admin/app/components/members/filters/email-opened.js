@@ -7,6 +7,7 @@ export const EMAIL_OPENED_FILTER = {
     resource: 'email', 
     relationOptions: MATCH_RELATION_OPTIONS,
     columnLabel: 'Opened email',
+    setting: 'emailTrackOpens',
     getColumnValue: (member, filter) => {
         return {
             text: filter.resource?.title ?? ''
