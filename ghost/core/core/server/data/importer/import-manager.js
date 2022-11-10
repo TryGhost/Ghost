@@ -426,13 +426,17 @@ class ImportManager {
             importResult = await this.generateReport(importResult);
 
             return importResult;
+        } catch (err) {
+            logging.error(`Content import was unsuccessful`, {
+                error: err
+            });
         } finally {
             // Step 5: Cleanup any files
             await this.cleanUp();
 
             if (!importOptions.forceInline) {
                 // Step 6: Send email
-                const email = this.generateCompletionEmail(importResult.data, {
+                const email = this.generateCompletionEmail(importResult?.data, {
                     emailRecipient: importOptions.user.email,
                     importTag: importOptions.importTag
                 });
