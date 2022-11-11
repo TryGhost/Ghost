@@ -27,6 +27,10 @@ export default class MembersUtilsService extends Service {
         return this.paidMembersEnabled && this.paidTiers && this.paidTiers.length > 1;
     }
 
+    get hasActiveTiers() {
+        return this.paidMembersEnabled && this.paidTiers && this.paidTiers.length > 0;
+    }
+
     async fetch() {
         if (this.paidTiers !== null) {
             return;

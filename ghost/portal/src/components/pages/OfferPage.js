@@ -557,6 +557,9 @@ export default class OfferPage extends React.Component {
             return null;
         }
         const product = getProductFromId({site, productId: offer.tier.id});
+        if (!product) {
+            return null;
+        }
         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
         const updatedPrice = this.getUpdatedPrice({offer, product});
         const benefits = product.benefits || [];
