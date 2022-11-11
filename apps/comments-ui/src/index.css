@@ -24,6 +24,7 @@ body {
 
 /* Links */
 .gh-comment-content a {
+    word-break: break-word;
     text-decoration: underline;
     color: var(--gh-accent-color);
 }
