@@ -41,7 +41,6 @@ function defaultRelations(frame) {
         return false;
     }
 
-    // frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.conversions', 'count.clicks', 'count.sentiment', 'count.positive_feedback', 'count.negative_feedback'];
     frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks'];
 }
 
