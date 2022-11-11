@@ -11,7 +11,6 @@ import {AccountHomePageStyles} from './pages/AccountHomePage';
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
-import {PlanSectionStyles} from './common/PlansSection';
 import {ProductsSectionStyles} from './common/ProductsSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
@@ -860,14 +859,14 @@ const MobileStyles = `
         background: var(--grey13);
     }
 
-    .gh-portal-popup-wrapper.full-size .gh-portal-closeicon, 
+    .gh-portal-popup-wrapper.full-size .gh-portal-closeicon,
     .gh-portal-popup-container.full-size .gh-portal-closeicon {
         width: 16px;
         height: 16px;
     }
 
     /* Small width preview in Admin */
-    .gh-portal-popup-wrapper.preview:not(.full-size) footer.gh-portal-signup-footer, 
+    .gh-portal-popup-wrapper.preview:not(.full-size) footer.gh-portal-signup-footer,
     .gh-portal-popup-wrapper.preview:not(.full-size) footer.gh-portal-signin-footer {
         padding-bottom: 32px;
     }
@@ -891,7 +890,7 @@ const MobileStyles = `
         max-height: 660px;
         margin-bottom: 0;
     }
-    
+
     .preview .gh-portal-invite-only-notification + .gh-portal-signup-message {
         margin-bottom: 16px;
     }
@@ -1161,7 +1160,6 @@ export function getFrameStyles({site}) {
         AccountHomePageStyles +
         AccountPlanPageStyles +
         InputFieldStyles +
-        PlanSectionStyles +
         ProductsSectionStyles({site}) +
         SwitchStyles +
         ActionButtonStyles +
