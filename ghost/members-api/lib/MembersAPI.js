@@ -4,8 +4,6 @@ const MagicLink = require('@tryghost/magic-link');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
-const MemberAnalyticsService = require('@tryghost/member-analytics-service');
-const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
 const PaymentsService = require('@tryghost/members-payments');
 
 const TokenService = require('./services/token');
@@ -48,7 +46,6 @@ module.exports = function MembersAPI({
         MemberStatusEvent,
         MemberProductEvent,
         MemberEmailChangeEvent,
-        MemberAnalyticEvent,
         MemberCreatedEvent,
         SubscriptionCreatedEvent,
         MemberLinkClickEvent,
@@ -73,9 +70,6 @@ module.exports = function MembersAPI({
         publicKey,
         issuer
     });
-
-    const memberAnalyticsService = MemberAnalyticsService.create(MemberAnalyticEvent);
-    memberAnalyticsService.eventHandler.setupSubscribers();
 
     const productRepository = new ProductRepository({
         Product,
@@ -321,10 +315,6 @@ module.exports = function MembersAPI({
         createCheckoutSetupSession: Router().use(
             body.json(),
             forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
-        ),
-        createEvents: Router().use(
-            body.json(),
-            forwardError((req, res) => MembersAnalyticsIngress.createEvents(req, res))
         ),
         updateEmailAddress: Router().use(
             body.json(),
