@@ -16,23 +16,35 @@
                 >
                     <div class="flex items-center pe-auto h-100">
                         {{#if this.ui.isFullScreen}}
-                            <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
-                                <span>
-                                    {{svg-jar "arrow-left"}}
-                                    {{capitalize (pluralize this.post.displayName)}}
-                                </span>
-                            </LinkTo>
+                            {{#if this.fromAnalytics }}
+                                <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button">
+                                    <span>
+                                        {{svg-jar "arrow-left"}}
+                                        Analytics
+                                    </span>
+                                </LinkTo>
+                            {{else}}
+                                <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                                    <span>
+                                        {{svg-jar "arrow-left"}}
+                                        {{capitalize (pluralize this.post.displayName)}}
+                                    </span>
+                                </LinkTo>
+                            {{/if}}
                         {{/if}}
-                        <div class="gh-editor-post-status">
-                            <span>
-                                <GhEditorPostStatus
-                                    @post={{this.post}}
-                                    @hasDirtyAttributes={{this.hasDirtyAttributes}}
-                                    @isSaving={{or this.autosaveTask.isRunning this.saveTasks.isRunning}}
-                                    @openUpdateFlow={{publishManagement.openUpdateFlow}}
-                                />
-                            </span>
-                        </div>
+                        {{#if (or (not this.ui.isFullScreen) (not this.fromAnalytics) this.post.didEmailFail) }}
+                            <div class="gh-editor-post-status">
+                                <span>
+                                    <GhEditorPostStatus
+                                        @post={{this.post}}
+                                        @publishManagement={{publishManagement}}
+                                        @hasDirtyAttributes={{this.hasDirtyAttributes}}
+                                        @isSaving={{or this.autosaveTask.isRunning this.saveTasks.isRunning}}
+                                        @openUpdateFlow={{publishManagement.openUpdateFlow}}
+                                    />
+                                </span>
+                            </div>
+                        {{/if}}
                     </div>
 
                     <section class="flex items-center pe-auto h-100">
