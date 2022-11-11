@@ -170,38 +170,6 @@ module.exports = class EventRepository {
     }
 
     async getSubscriptionEvents(options = {}, filter) {
-        if (!this._labsService.isSet('memberAttribution')){
-            options = {
-                ...options,
-                withRelated: ['member'],
-                filter: 'custom:true',
-                mongoTransformer: chainTransformers(
-                    // First set the filter manually
-                    replaceCustomFilterTransformer(filter),
-    
-                    // Map the used keys in that filter
-                    ...mapKeys({
-                        'data.created_at': 'created_at',
-                        'data.member_id': 'member_id'
-                    })
-                )
-            };
-    
-            const {data: models, meta} = await this._MemberPaidSubscriptionEvent.findPage(options);
-    
-            const data = models.map((model) => {
-                return {
-                    type: 'subscription_event',
-                    data: model.toJSON(options)
-                };
-            });
-    
-            return {
-                data,
-                meta
-            };
-        }
-
         options = {
             ...options,
             withRelated: [
@@ -230,7 +198,7 @@ module.exports = class EventRepository {
                     return expandFilters(f, [{
                         key: 'data.post_id',
                         replacement: 'subscriptionCreatedEvent.attribution_id',
-                        expansion: {'subscriptionCreatedEvent.attribution_type': 'post'}
+                        expansion: {'subscriptionCreatedEvent.attribution_type': 'post', type: 'created'}
                     }]);
                 }
             )
@@ -327,42 +295,6 @@ module.exports = class EventRepository {
     }
 
     async getSignupEvents(options = {}, filter) {
-        if (!this._labsService.isSet('memberAttribution')){
-            options = {
-                ...options,
-                withRelated: ['member'],
-                filter: 'from_status:null+custom:true',
-                mongoTransformer: chainTransformers(
-                    // First set the filter manually
-                    replaceCustomFilterTransformer(filter),
-    
-                    // Map the used keys in that filter
-                    ...mapKeys({
-                        'data.created_at': 'created_at',
-                        'data.member_id': 'member_id'
-                    })
-                )
-            };
-    
-            const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
-    
-            const data = models.map((model) => {
-                return {
-                    type: 'signup_event',
-                    data: model.toJSON(options)
-                };
-            });
-    
-            return {
-                data,
-                meta
-            };
-        }
-
-        return this.getCreatedEvents(options, filter);
-    }
-
-    async getCreatedEvents(options = {}, filter) {
         options = {
             ...options,
             withRelated: [
