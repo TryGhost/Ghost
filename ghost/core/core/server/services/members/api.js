@@ -185,7 +185,6 @@ function createApiInstance(config) {
             MemberPaymentEvent: models.MemberPaymentEvent,
             MemberStatusEvent: models.MemberStatusEvent,
             MemberProductEvent: models.MemberProductEvent,
-            MemberAnalyticEvent: models.MemberAnalyticEvent,
             MemberCreatedEvent: models.MemberCreatedEvent,
             SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
             MemberLinkClickEvent: models.MemberClickEvent,
