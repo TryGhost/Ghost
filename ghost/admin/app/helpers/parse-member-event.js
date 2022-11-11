@@ -196,20 +196,8 @@ export default class ParseMemberEventHelper extends Helper {
      *  -> do this by returning 'on' in getJoin()
      * This string is not added when action and object are in a separete table column, or when the getObject/getURL is empty
      */
-    getJoin(event) {
-        if (event.type === 'signup_event' || event.type === 'subscription_event') {
-            if (event.data.attribution?.title) {
-                return 'on';
-            }
-        }
-
-        if (event.type === 'comment_event') {
-            if (event.data.post) {
-                return 'on';
-            }
-        }
-
-        return '';
+    getJoin() {
+        return '–';
     }
 
     /**
@@ -261,11 +249,11 @@ export default class ParseMemberEventHelper extends Helper {
 
             if (event.data.type === 'created') {
                 const sign = mrrDelta > 0 ? '' : '-';
-                const tierName = this.membersUtils.hasMultipleTiers ? (event.data.tierName ?? 'paid') : 'paid';
-                return `${tierName} - ${sign}${symbol}${Math.abs(mrrDelta)}/month`;
+                const tierName = this.membersUtils.hasMultipleTiers ? (event.data.tierName ?? 'Paid') : 'Paid';
+                return `${tierName} ${sign}${symbol}${Math.abs(mrrDelta)}/month`;
             }
             const sign = mrrDelta > 0 ? '+' : '-';
-            return `MRR - ${sign}${symbol}${Math.abs(mrrDelta)}`;
+            return `MRR ${sign}${symbol}${Math.abs(mrrDelta)}`;
         }
 
         if (event.type === 'signup_event' && this.membersUtils.paidMembersEnabled) {
