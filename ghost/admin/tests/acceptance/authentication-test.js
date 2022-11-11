@@ -3,7 +3,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit} from '@ember/test-helpers';
+import {click, currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit, waitFor} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
@@ -115,7 +115,6 @@ describe('Acceptance: Authentication', function () {
         });
     });
 
-    // TODO: re-enable once modal reappears correctly
     describe('editor', function () {
         let origDebounce = run.debounce;
         let origThrottle = run.throttle;
@@ -160,20 +159,23 @@ describe('Acceptance: Authentication', function () {
             });
 
             // we shouldn't have a modal at this point
-            expect(findAll('.modal-container #login').length, 'modal exists').to.equal(0);
+            expect(findAll('[data-test-modal="re-authenticate"]').length, 'modal exists').to.equal(0);
             // we also shouldn't have any alerts
             expect(findAll('.gh-alert').length, 'no of alerts').to.equal(0);
 
             // update the post
             testOn = 'edit';
             await fillIn('.__mobiledoc-editor', 'Edited post body');
-            await triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
+            triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
 
             // we should see a re-auth modal
-            expect(findAll('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
+            await waitFor('[data-test-modal="re-authenticate"]', {timeout: 100});
+
+            // close the modal so the modal promise is settled and we can continue
+            await click('[data-test-modal="re-authenticate"] button[title="Close"]');
         });
 
         // don't clobber debounce/throttle for future tests

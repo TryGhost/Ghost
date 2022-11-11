@@ -4,6 +4,7 @@ import DeletePostModal from '../components/modals/delete-post';
 import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
 import PostModel from 'ghost-admin/models/post';
 import PublishLimitModal from '../components/modals/limits/publish-limit';
+import ReAuthenticateModal from '../components/editor/modals/re-authenticate';
 import UpdateSnippetModal from '../components/editor/modals/update-snippet';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
@@ -112,7 +113,6 @@ export default class EditorController extends Controller {
     /* public properties -----------------------------------------------------*/
 
     shouldFocusTitle = false;
-    showReAuthenticateModal = false;
     showSettingsMenu = false;
 
     /**
@@ -127,7 +127,6 @@ export default class EditorController extends Controller {
 
     _leaveConfirmed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
-    _reAuthenticateModalToggle = false;
 
     /* computed properties ---------------------------------------------------*/
 
@@ -264,22 +263,6 @@ export default class EditorController extends Controller {
                 post: this.post
             });
         }
-    }
-
-    @action
-    toggleReAuthenticateModal() {
-        this._reAuthenticateModalToggle = true;
-
-        if (this.showReAuthenticateModal) {
-            // closing, re-attempt save if needed
-            if (this._reauthSave) {
-                this.saveTask.perform(this._reauthSaveOptions);
-            }
-
-            this._reauthSave = false;
-            this._reauthSaveOptions = null;
-        }
-        this.toggleProperty('showReAuthenticateModal');
     }
 
     @action
@@ -467,15 +450,13 @@ export default class EditorController extends Controller {
 
             return post;
         } catch (error) {
-            if (!this.session.isAuthenticated && !this._reAuthenticateModalToggle) {
-                this.toggleProperty('showReAuthenticateModal');
-            }
+            if (!this.session.isAuthenticated) {
+                yield this.modals.open(ReAuthenticateModal);
 
-            this._reAuthenticateModalToggle = false;
-            if (this.showReAuthenticateModal) {
-                this._reauthSave = true;
-                this._reauthSaveOptions = options;
-                return;
+                if (this.session.isAuthenticated) {
+                    this.saveTask.perform(options);
+                    return;
+                }
             }
 
             this.set('post.status', prevStatus);

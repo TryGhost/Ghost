@@ -120,12 +120,6 @@
             <span>{{svg-jar "sidemenu"}}</span>
         {{/if}}
     </button>
-
-    {{#if this.showReAuthenticateModal}}
-        <GhFullscreenModal @modal="re-authenticate"
-            @close={{this.toggleReAuthenticateModal}}
-            @modifier="action wide" />
-    {{/if}}
 {{/if}}
 
 {{outlet}}
