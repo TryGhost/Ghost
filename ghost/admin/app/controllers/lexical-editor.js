@@ -4,6 +4,7 @@ import DeletePostModal from '../components/modals/delete-post';
 import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
 import PostModel from 'ghost-admin/models/post';
 import PublishLimitModal from '../components/modals/limits/publish-limit';
+import UpdateSnippetModal from '../components/editor/modals/update-snippet';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
@@ -379,40 +380,10 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    toggleUpdateSnippetModal(snippetRecord, updatedProperties = {}) {
-        if (snippetRecord) {
-            this.set('snippetToUpdate', {snippetRecord, updatedProperties});
-        } else {
-            this.set('snippetToUpdate', null);
-        }
-    }
-
-    @action
-    updateSnippet() {
-        if (!this.snippetToUpdate) {
-            return Promise.reject();
-        }
-
-        const {snippetRecord, updatedProperties: {mobiledoc}} = this.snippetToUpdate;
-        snippetRecord.set('mobiledoc', mobiledoc);
-
-        return snippetRecord.save().then(() => {
-            this.set('snippetToUpdate', null);
-            this.notifications.closeAlerts('snippet.save');
-            this.notifications.showNotification(
-                `Snippet "${snippetRecord.name}" updated`,
-                {type: 'success'}
-            );
-            return snippetRecord;
-        }).catch((error) => {
-            if (!snippetRecord.errors.isEmpty) {
-                this.notifications.showAlert(
-                    `Snippet save failed: ${snippetRecord.errors.messages.join('. ')}`,
-                    {type: 'error', key: 'snippet.save'}
-                );
-            }
-            snippetRecord.rollbackAttributes();
-            throw error;
+    async confirmUpdateSnippet(snippet, updatedProperties = {}) {
+        await this.modals.open(UpdateSnippetModal, {
+            snippet,
+            updatedProperties
         });
     }
 
