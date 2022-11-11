@@ -2,7 +2,7 @@ module.exports = {
     darkMode: 'class',
     theme: {
         screens: {
-            sm: '640px',
+            sm: '481px',
             md: '768px',
             lg: '1024px',
             xl: '1280px',
@@ -161,9 +161,6 @@ module.exports = {
                 '0%, 100%': {transform: 'scale(1)'},
                 '50%': {transform: 'scale(1.3)'}
             }
-        },
-        screens: {
-            'sm': '481px'
         }
     },
     content: [
