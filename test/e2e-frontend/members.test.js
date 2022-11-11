@@ -154,6 +154,8 @@ describe('Front-end members behaviour', function () {
             getJsonResponse.newsletters.should.have.length(1);
 
             // Can update newsletter subscription
+            const originalNewsletters = getJsonResponse.newsletters;
+
             const res = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}`)
                 .send({
                     newsletters: []
@@ -165,6 +167,18 @@ describe('Front-end members behaviour', function () {
             jsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
             jsonResponse.should.not.have.property('id');
             jsonResponse.newsletters.should.have.length(0);
+
+            const resRestored = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}`)
+                .send({
+                    newsletters: originalNewsletters
+                })
+                .expect(200);
+
+            const restoreJsonResponse = resRestored.body;
+            should.exist(restoreJsonResponse);
+            restoreJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+            restoreJsonResponse.should.not.have.property('id');
+            restoreJsonResponse.newsletters.should.have.length(1);
         });
 
         it('should serve theme 404 on members endpoint', async function () {

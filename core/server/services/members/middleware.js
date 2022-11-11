@@ -106,6 +106,11 @@ const updateMemberNewsletters = async function (req, res) {
         }
 
         const data = _.pick(req.body, 'newsletters');
+        if (data.newsletters) {
+            data.newsletters = data.newsletters.map(newsletter => ({
+                id: newsletter.id
+            }));
+        }
         const memberData = await membersService.api.members.get({
             uuid: memberUuid
         });
@@ -131,6 +136,11 @@ const updateMemberNewsletters = async function (req, res) {
 const updateMemberData = async function (req, res) {
     try {
         const data = _.pick(req.body, 'name', 'subscribed', 'newsletters');
+        if (data.newsletters) {
+            data.newsletters = data.newsletters.map(newsletter => ({
+                id: newsletter.id
+            }));
+        }
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
             const options = {
