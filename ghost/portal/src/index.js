@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import setupAnalytics from './analytics';
 
 const ROOT_DIV_ID = 'ghost-portal-root';
 
@@ -34,18 +33,9 @@ function handleTokenUrl() {
     }
 }
 
-function setupAnalyticsScript({siteUrl}) {
-    const analyticsTag = document.querySelector('meta[name=ghost-analytics-id]');
-    const analyticsId = analyticsTag?.content;
-    if (siteUrl && analyticsTag) {
-        setupAnalytics({siteUrl, analyticsId});
-    }
-}
-
 function setup({siteUrl}) {
     addRootDiv();
     handleTokenUrl();
-    setupAnalyticsScript({siteUrl});
 }
 
 function init() {

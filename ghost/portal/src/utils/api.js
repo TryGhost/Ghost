@@ -28,30 +28,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     }
     const api = {};
 
-    api.analytics = {
-        async pushEvent(event) {
-            const url = endpointFor({type: 'members', resource: 'events'});
-            const identity = await api.member.identity();
-            event.identity = identity;
-            const body = {
-                events: [event]
-            };
-            return makeRequest({
-                url,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
-            }).then(function (res) {
-                if (!res.ok) {
-                    return null;
-                }
-                return res.text();
-            });
-        }
-    };
-
     api.site = {
         read() {
             const url = endpointFor({type: 'members', resource: 'site'});
