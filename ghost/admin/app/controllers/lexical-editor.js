@@ -115,6 +115,11 @@ export default class LexicalEditorController extends Controller {
     showSettingsMenu = false;
     hostLimitError = null;
 
+    /**
+     * Flag used to determine if we should return to the analytics page or to the posts/pages overview
+     */
+    fromAnalytics = false;
+
     // koenig related properties
     wordcount = null;
 
