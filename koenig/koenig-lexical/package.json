@@ -35,11 +35,11 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@lexical/list": "^0.5.0",
-    "@lexical/react": "^0.5.0",
-    "@lexical/selection": "^0.5.0",
-    "@lexical/utils": "^0.5.0",
-    "lexical": "^0.5.0",
+    "@lexical/list": "^0.6.0",
+    "@lexical/react": "^0.6.0",
+    "@lexical/selection": "^0.6.0",
+    "@lexical/utils": "^0.6.0",
+    "lexical": "^0.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

@@ -1,5 +1,6 @@
 import React from 'react';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
+import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
@@ -44,6 +45,7 @@ const KoenigEditor = ({
                     </div>
                 }
                 placeholder={<EditorPlaceholder />}
+                ErrorBoundary={LexicalErrorBoundary}
             />
             <OnChangePlugin onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}
