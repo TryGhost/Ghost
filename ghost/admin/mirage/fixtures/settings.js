@@ -107,6 +107,11 @@ export default [
     setting('slack', 'slack_url', ''),
     setting('slack', 'slack_username', 'Ghost'),
 
+    // PLEROMA
+    setting('pleroma', 'pleroma_url', ''),
+    setting('pleroma', 'pleroma_username', ''),
+    setting('pleroma', 'pleroma_password', ''),
+
     // UNSPLASH
     setting('unsplash', 'unsplash', 'true'),
 

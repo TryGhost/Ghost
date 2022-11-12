@@ -39,6 +39,7 @@ const keyGroupMapping = {
     amp: 'amp',
     labs: 'labs',
     slack: 'slack',
+    pleroma: 'pleroma',
     unsplash: 'unsplash',
     shared_views: 'views',
     bulk_email_settings: 'email',

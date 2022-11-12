@@ -42,6 +42,7 @@ const keyTypeMapping = {
     navigation: 'array',
     secondary_navigation: 'array',
     slack: 'array',
+    pleroma: 'array',
     shared_views: 'array',
     portal_plans: 'array',
     stripe_plans: 'array',

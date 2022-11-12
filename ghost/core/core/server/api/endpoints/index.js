@@ -133,6 +133,10 @@ module.exports = {
         return apiFramework.pipeline(require('./slack'), localUtils);
     },
 
+    get pleroma() {
+        return apiFramework.pipeline(require('./pleroma'), localUtils);
+    },
+
     get config() {
         return apiFramework.pipeline(require('./config'), localUtils);
     },

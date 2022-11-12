@@ -433,6 +433,20 @@
             "type": "string"
         }
     },
+	"pleroma": {
+		"pleroma_url": {
+			"type": "string",
+			"defaultValue": ""
+		},
+		"pleroma_username": {
+			"type": "string",
+			"defaultValue": ""
+		},
+		"pleroma_password": {
+			"type": "string",
+			"defaultValue": ""
+		}
+	},
     "unsplash": {
         "unsplash": {
             "defaultValue": "true",

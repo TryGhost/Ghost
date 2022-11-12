@@ -7,6 +7,7 @@ const typeGroupMapping = {
         'amp',
         'labs',
         'slack',
+        'pleroma',
         'unsplash',
         'views'
     ],

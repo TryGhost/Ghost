@@ -200,6 +200,9 @@ module.exports = function apiRoutes() {
     // ## Slack
     router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
+	  // ## Pleroma
+    router.post('/pleroma/test', mw.authAdminApi, http(api.pleroma.sendTest));
+
     // ## Sessions
     router.get('/session', mw.authAdminApi, http(api.session.read));
     // We don't need auth when creating a new session (logging in)

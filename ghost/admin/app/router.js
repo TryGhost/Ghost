@@ -96,6 +96,7 @@ Router.map(function () {
         this.route('webhooks.edit', {path: 'webhooks/:webhook_id'});
     });
     this.route('settings.integrations.slack', {path: '/settings/integrations/slack'});
+    this.route('settings.integrations.pleroma', {path: '/settings/integrations/pleroma'});
     this.route('settings.integrations.amp', {path: '/settings/integrations/amp'});
     this.route('settings.integrations.firstpromoter', {path: '/settings/integrations/firstpromoter'});
     this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});

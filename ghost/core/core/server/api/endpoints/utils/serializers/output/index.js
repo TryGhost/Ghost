@@ -121,6 +121,10 @@ module.exports = {
         return require('./slack');
     },
 
+    get pleroma() {
+        return require('./pleroma');
+    },
+
     get session() {
         return require('./session');
     },

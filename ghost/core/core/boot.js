@@ -278,6 +278,7 @@ async function initServices({config}) {
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
+    const pleroma = require('./server/services/pleroma');
     const {mega} = require('./server/services/mega');
     const webhooks = require('./server/services/webhooks');
     const appService = require('./frontend/services/apps');
@@ -310,6 +311,7 @@ async function initServices({config}) {
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
+        pleroma.listen(),
         mega.listen(),
         webhooks.listen(),
         appService.init(),

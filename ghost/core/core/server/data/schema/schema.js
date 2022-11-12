@@ -218,6 +218,7 @@ module.exports = {
                     'private',
                     'site',
                     'slack',
+                    'pleroma',
                     'theme',
                     'unsplash',
                     'views'
