@@ -20,7 +20,7 @@
             <div class="gh-main-section-block overflow-hidden">
                 <div class="gh-main-section-content app-detail-heading app-grid">
                     <div class="app-cell">
-                        <img class="app-icon" src="assets/img/zapier.svg" />
+                        <img class="app-icon" src="assets/img/zapier.svg" alt="" role="presentation" />
                     </div>
                     <div class="app-cell overflow-hidden">
                         <h3>Zapier</h3>
@@ -30,24 +30,24 @@
                             <div class="gh-zapier-data">
                                 <div class="data-label">Admin API key</div>
                                 <div class="data highlight-hover">
-                                    <div class="relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
+                                    <div class="relative flex items-center {{unless this.copyAdminKeyTask.isRunning "hide-child-instant"}}">
                                         <span class="admin-key" data-test-text="admin-key">
                                             {{this.integration.adminKey.secret}}
                                         </span>
                                         <div class="app-api-buttons child">
-                                            <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="app-button-regenerate">
+                                            <button type="button" {{on "click" (fn this.confirmRegenerateKey this.integration.adminKey)}} class="app-button-regenerate">
                                                 {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                             </button>
-                                            <button type="button" {{action (perform this.copyAdminKey)}} class="app-button-copy">
-                                                {{#if this.copyAdminKey.isRunning}}
-                                                {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                            <button type="button" {{on "click" (perform this.copyAdminKeyTask)}} class="app-button-copy">
+                                                {{#if this.copyAdminKeyTask.isRunning}}
+                                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                                 {{else}}
-                                                Copy
+                                                    Copy
                                                 {{/if}}
                                             </button>
                                         </div>
                                     </div>
-                                    {{#if (eq this.regeneratedKeyType this.integration.adminKey.type)}}
+                                    {{#if (eq this.regeneratedApiKey.type this.integration.adminKey.type)}}
                                         <div class="green"> Admin API Key was successfully regenerated </div>
                                     {{/if}}
                                 </div>
@@ -55,14 +55,14 @@
                             <div class="gh-zapier-data">
                                 <div class="data-label">API URL</div>
                                 <div class="data highlight-hover">
-                                    <div class="relative flex items-center {{unless this.copyApiUrl.isRunning "hide-child-instant"}}">
+                                    <div class="relative flex items-center {{unless this.copyApiUrlTask.isRunning "hide-child-instant"}}">
                                         <span class="api-url" data-test-text="api-url">
                                             {{this.apiUrl}}
                                         </span>
                                         <div class="app-api-buttons child">
-                                            <button type="button" {{action (perform this.copyApiUrl)}} class="app-button-copy">
-                                                {{#if this.copyApiUrl.isRunning}}
-                                                    {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
+                                            <button type="button" {{on "click" (perform this.copyApiUrlTask)}} class="app-button-copy">
+                                                {{#if this.copyApiUrlTask.isRunning}}
+                                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                                 {{else}}
                                                     Copy
                                                 {{/if}}
@@ -247,15 +247,3 @@
         </section>
     </section>
 </section>
-
-{{#if this.showRegenerateKeyModal}}
-    <GhFullscreenModal @modal="regenerate-key"
-        @model={{hash
-            apiKey=this.selectedApiKey
-            integration=this.integration
-            internalIntegration="zapier"
-        }}
-        @confirm={{action "regenerateKey"}}
-        @close={{action "cancelRegenerateKeyModal"}}
-        @modifier="action wide" />
-{{/if}}

@@ -7,16 +7,6 @@ export default class IntegrationRoute extends AdminRoute {
     @service modals;
     @service router;
 
-    constructor() {
-        super(...arguments);
-        this.router.on('routeWillChange', () => {
-            if (this.controller) {
-                this.controller.set('selectedApiKey', null);
-                this.controller.set('isApiKeyRegenerated', false);
-            }
-        });
-    }
-
     model(params, transition) {
         // use the integrations controller to fetch all integrations and pick
         // out the one we want. Allows navigation back to integrations screen
@@ -24,6 +14,10 @@ export default class IntegrationRoute extends AdminRoute {
         return this
             .controllerFor('settings.integrations')
             .integrationModelHook('id', params.integration_id, this, transition);
+    }
+
+    resetController(controller) {
+        controller.regeneratedApiKey = null;
     }
 
     deactivate() {
