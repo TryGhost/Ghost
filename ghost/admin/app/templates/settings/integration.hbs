@@ -87,7 +87,7 @@
                                 @class="flex flex-column w-100 mr3"
                                 @errors={{this.integration.errors}}
                                 @hasValidated={{this.integration.hasValidated}}
-                                @property="decription"
+                                @property="description"
                             >
                                 <label for="integration_description" class="mt3">Description</label>
                                 <GhTextInput
@@ -112,20 +112,20 @@
                                                     {{this.integration.contentKey.secret}}
                                                 </span>
                                                 <div class="app-api-buttons child">
-                                                    <button type="button" {{on "click" (fn this.confirmRegenerateKeyModal this.integration.contentKey)}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                    <button type="button" {{on "click" (fn this.confirmRegenerateKey this.integration.contentKey)}} class="app-button-regenerate" data-tooltip="Regenerate">
                                                         {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                                     </button>
                                                     <button type="button" {{on "click" (perform this.copyContentKey)}} class="app-button-copy">
                                                         {{#if this.copyContentKey.isRunning}}
-                                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                                         {{else}}
-                                                        Copy
+                                                            Copy
                                                         {{/if}}
                                                     </button>
                                                 </div>
                                             </div>
-                                            {{#if (eq this.regeneratedKeyType this.integration.contentKey.type)}}
-                                                <div class="green nt3 mb2"> Content API Key was successfully regenerated </div>
+                                            {{#if (eq this.regeneratedApiKey.type this.integration.contentKey.type)}}
+                                                <div class="green"> Content API Key was successfully regenerated </div>
                                             {{/if}}
                                         </td>
                                     </tr>
@@ -137,19 +137,19 @@
                                                     {{this.integration.adminKey.secret}}
                                                 </span>
                                                 <div class="app-api-buttons child">
-                                                    <button type="button" {{on "click" (fn this.confirmRegenerateKeyModal this.integration.adminKey)}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                    <button type="button" {{on "click" (fn this.confirmRegenerateKey this.integration.adminKey)}} class="app-button-regenerate" data-tooltip="Regenerate">
                                                         {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                                     </button>
                                                     <button type="button" {{on "click" (perform this.copyAdminKey)}} class="app-button-copy">
                                                         {{#if this.copyAdminKey.isRunning}}
-                                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                                         {{else}}
-                                                        Copy
+                                                            Copy
                                                         {{/if}}
                                                     </button>
                                                 </div>
                                             </div>
-                                            {{#if (eq this.regeneratedKeyType this.integration.adminKey.type)}}
+                                            {{#if (eq this.regeneratedApiKey.type this.integration.adminKey.type)}}
                                                 <div class="green"> Admin API key was successfully regenerated </div>
                                             {{/if}}
                                         </td>
@@ -279,16 +279,5 @@
         </div>
     </section>
 </section>
-
-{{#if this.showRegenerateKeyModal}}
-    <GhFullscreenModal @modal="regenerate-key"
-        @model={{hash
-            apiKey=this.selectedApiKey
-            integration=this.integration
-        }}
-        @confirm={{this.regenerateKey}}
-        @close={{this.cancelRegenerateKeyModal}}
-        @modifier="action wide" />
-{{/if}}
 
 {{outlet}}

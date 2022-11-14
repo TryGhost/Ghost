@@ -1,31 +1,29 @@
-import classic from 'ember-classic-decorator';
-import {action, computed} from '@ember/object';
-import {alias} from '@ember/object/computed';
-import {inject as service} from '@ember/service';
-/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
+import RegenerateKeyModal from '../../../components/settings/integrations/regenerate-key-modal';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
+import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-@classic
 export default class ZapierController extends Controller {
     @service ghostPaths;
+    @service modals;
 
-    selectedApiKey = null;
-    isApiKeyRegenerated = false;
+    @tracked regeneratedApiKey = null;
 
-    init() {
-        super.init(...arguments);
+    constructor() {
+        super(...arguments);
         if (this.isTesting === undefined) {
             this.isTesting = config.environment === 'test';
         }
     }
 
-    @alias('model')
-        integration;
+    get integration() {
+        return this.model;
+    }
 
-    @computed
     get apiUrl() {
         let origin = window.location.origin;
         let subdir = this.ghostPaths.subdir;
@@ -34,40 +32,28 @@ export default class ZapierController extends Controller {
         return url.replace(/\/$/, '');
     }
 
-    @computed('isApiKeyRegenerated', 'selectedApiKey')
-    get regeneratedKeyType() {
-        if (this.isApiKeyRegenerated) {
-            return this.get('selectedApiKey.type');
-        }
-        return null;
-    }
-
     @action
-    confirmRegenerateKeyModal(apiKey) {
-        this.set('showRegenerateKeyModal', true);
-        this.set('isApiKeyRegenerated', false);
-        this.set('selectedApiKey', apiKey);
+    async confirmRegenerateKey(apiKey, event) {
+        event?.preventDefault();
+        this.regeneratedApiKey = null;
+        this.regeneratedApiKey = await this.modals.open(RegenerateKeyModal, {
+            apiKey,
+            integration: this.integration,
+            internalIntegration: 'zapier'
+        });
     }
 
-    @action
-    cancelRegenerateKeyModal() {
-        this.set('showRegenerateKeyModal', false);
-    }
-
-    @action
-    regenerateKey() {
-        this.set('isApiKeyRegenerated', true);
-    }
-
-    @task(function* () {
+    @task
+    *copyAdminKeyTask(event) {
+        event?.preventDefault();
         copyTextToClipboard(this.integration.adminKey.secret);
         yield timeout(this.isTesting ? 50 : 3000);
-    })
-        copyAdminKey;
+    }
 
-    @task(function* () {
+    @task
+    *copyApiUrlTask(event) {
+        event?.preventDefault();
         copyTextToClipboard(this.apiUrl);
         yield timeout(this.isTesting ? 50 : 3000);
-    })
-        copyApiUrl;
+    }
 }

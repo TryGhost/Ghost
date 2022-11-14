@@ -440,7 +440,6 @@
 
 .gh-zapier-data-container .gh-zapier-data {
     display: flex;
-    align-items: center;
 }
 
 @media (max-width: 500px) {
@@ -463,14 +462,13 @@
 
 .gh-zapier-data .data {
     width: 100%;
-    height: 28px;
     padding: 4px;
     color: var(--darkgrey);
     font-size: 1.4rem;
     line-height: 1.45;
     font-weight: 500;
     border-radius: 3px;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .gh-zapier-data .data.highlight-hover:hover {
