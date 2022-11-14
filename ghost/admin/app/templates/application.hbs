@@ -1,6 +1,16 @@
 <GhApp>
     <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
+    {{!-- {{#if (and this.session.user.isOwnerOnly this.showUpdateLink)}} --}}
+    <aside class="gh-update-banner">
+        <div class="gh-alert-content">
+            You're missing out on new features, update by January 31st.
+        </div>
+        <a href="https://ghost.org/help/how-to-upgrade-ghost/" target="_blank" rel="noopener noreferrer">Update guide</a>
+        <a href="#" {{on "click" this.openUpdateTab}}>Update now to Ghost 5.0 &rarr;</a>
+    </aside>
+    {{!-- {{/if}} --}}
+
     <GhAlerts />
 
     <div class="gh-viewport {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">

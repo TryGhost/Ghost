@@ -2147,3 +2147,26 @@ section.gh-ds h2 {
         justify-content: center;
     }
 }
+
+.gh-update-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--purple);
+    color: rgba(255, 255, 255, 0.95);
+    padding: 14px;
+}
+
+.gh-update-banner a {
+    display: inline-block;
+    font-size: 1.4rem;
+    font-weight: 500;
+    text-decoration: underline;
+    color: #fff;
+    transition: all ease-in-out 0.35;
+    margin-left: 12px;
+}
+
+.gh-update-banner a:hover {
+    opacity: 0.9;
+}

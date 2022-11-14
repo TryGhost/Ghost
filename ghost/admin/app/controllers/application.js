@@ -1,5 +1,7 @@
 import Controller from '@ember/controller';
 import {inject} from 'ghost-admin/decorators/inject';
+import {action, computed} from '@ember/object';
+import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default class ApplicationController extends Controller {
@@ -11,6 +13,9 @@ export default class ApplicationController extends Controller {
     @service ui;
 
     @inject config;
+
+    @reads('config.hostSettings.update.enabled')
+        showUpdateLink;
 
     get showBilling() {
         return this.config.hostSettings?.billing?.enabled;
@@ -32,5 +37,21 @@ export default class ApplicationController extends Controller {
 
         return (router.currentRouteName !== 'error404' || session.isAuthenticated)
                 && !router.currentRouteName.match(/(signin|signup|setup|reset)/);
+    }
+
+    @action
+    openUpdateTab() {
+        const updateWindow = window.open('', '_blank');
+
+        updateWindow.document.write('Loading...');
+
+        const updateUrl = new URL(this.config.get('hostSettings.update.url'));
+        const ghostIdentityUrl = this.ghostPaths.url.api('identities');
+
+        this.ajax.request(ghostIdentityUrl).then((response) => {
+            const token = response?.identities?.[0]?.token;
+            updateUrl.searchParams.append('jwt', token);
+            updateWindow.location.href = updateUrl.toString();
+        });
     }
 }
