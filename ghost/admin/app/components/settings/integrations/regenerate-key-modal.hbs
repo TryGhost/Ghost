@@ -1,0 +1,29 @@
+<div class="modal-content" data-test-modal="regenerate-key">
+    <header class="modal-header">
+        <h1>Regenerate {{capitalize @data.apiKey.type}} API Key</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close null)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            {{#if (eq @data.internalIntegration "zapier")}}
+                You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.
+            {{else}}
+                You can regenerate <strong>{{capitalize @data.apiKey.type}} API Key</strong> any time, but any scripts or applications using it will need to be updated.
+            {{/if}}
+        </p>
+        {{#if this.errorMessage}}
+            <p class='red'> {{this.errorMessage}}</p>
+        {{/if}}
+    </div>
+
+    <div class="modal-footer">
+        <button class="gh-btn" type="button" {{on "click" (fn @close null)}}><span>Cancel</span></button>
+        <GhTaskButton
+            @buttonText="Regenerate {{capitalize @data.apiKey.type}} API Key"
+            @successText="Regenerated"
+            @task={{this.regenerateKeyTask}}
+            @class="gh-btn gh-btn-icon gh-btn-red"
+        />
+    </div>
+</div>
