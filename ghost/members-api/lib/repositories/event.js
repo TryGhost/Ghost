@@ -50,7 +50,7 @@ module.exports = class EventRepository {
         if (!options.limit) {
             options.limit = 10;
         }
-        
+
         const [typeFilter, otherFilter] = this.getNQLSubset(options.filter);
 
         // Changing this order might need a change in the query functions
@@ -80,6 +80,9 @@ module.exports = class EventRepository {
             pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
             pageActions.push({type: 'email_opened_event', action: 'getEmailOpenedEvents'});
             pageActions.push({type: 'email_failed_event', action: 'getEmailFailedEvents'});
+            if (this._labsService.isSet('suppressionList')) {
+                pageActions.push({type: 'email_complaint_event', action: 'getEmailComplaintEvents'});
+            }
         }
 
         if (this._labsService.isSet('audienceFeedback')) {
@@ -173,10 +176,10 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: [
-                'member', 
-                'subscriptionCreatedEvent.postAttribution', 
-                'subscriptionCreatedEvent.userAttribution', 
-                'subscriptionCreatedEvent.tagAttribution', 
+                'member',
+                'subscriptionCreatedEvent.postAttribution',
+                'subscriptionCreatedEvent.userAttribution',
+                'subscriptionCreatedEvent.tagAttribution',
                 'subscriptionCreatedEvent.memberCreatedEvent',
 
                 // This is rediculous, but we need the tier name (we'll be able to shorten this later when we switch to the subscriptions table)
@@ -208,7 +211,7 @@ module.exports = class EventRepository {
 
         const data = models.map((model) => {
             const tierName = model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null;
-            
+
             // Prevent toJSON on stripeSubscription (we don't have everything loaded)
             delete model.relations.stripeSubscription;
             const d = {
@@ -305,9 +308,9 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: [
-                'member', 
-                'postAttribution', 
-                'userAttribution', 
+                'member',
+                'postAttribution',
+                'userAttribution',
                 'tagAttribution'
             ],
             filter: 'subscriptionCreatedEvent.id:null+custom:true',
@@ -422,15 +425,15 @@ module.exports = class EventRepository {
      */
     async getAggregatedClickEvents(options = {}, filter) {
         // This counts all clicks for a member for the same post
-        const postClickQuery = `SELECT count(distinct A.redirect_id) 
-            FROM members_click_events A 
+        const postClickQuery = `SELECT count(distinct A.redirect_id)
+            FROM members_click_events A
             LEFT JOIN redirects A_r on A_r.id = A.redirect_id
             LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
             WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id`;
 
         // Counts all clicks for the same member, for the same post, but only preceding events. This should be zero to include the event (so we only include the first events)
-        const postClickQueryPreceding = `SELECT count(distinct A.redirect_id) 
-            FROM members_click_events A 
+        const postClickQueryPreceding = `SELECT count(distinct A.redirect_id)
+            FROM members_click_events A
             LEFT JOIN redirects A_r on A_r.id = A.redirect_id
             LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
             WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id AND (A.created_at < members_click_events.created_at OR (A.created_at = members_click_events.created_at AND A.id < members_click_events.id))`;
@@ -509,7 +512,7 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: ['member', 'email'],
-            filter: 'failed_at:null+processed_at:-null+custom:true',
+            filter: 'failed_at:null+complaint_at:null+processed_at:-null+custom:true',
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -632,10 +635,14 @@ module.exports = class EventRepository {
     }
 
     async getEmailFailedEvents(options = {}, filter) {
+        const filterStr = this._labsService.isSet('suppressionList')
+            ? 'failed_at:-null+complaint_at:null+custom:true'
+            : 'failed_at:-null+custom:true';
+
         options = {
             ...options,
             withRelated: ['member', 'email'],
-            filter: 'failed_at:-null+custom:true',
+            filter: filterStr,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -673,11 +680,53 @@ module.exports = class EventRepository {
         };
     }
 
+    async getEmailComplaintEvents(options = {}, filter) {
+        options = {
+            ...options,
+            withRelated: ['member', 'email'],
+            filter: 'complaint_at:-null+custom:true',
+            mongoTransformer: chainTransformers(
+                // First set the filter manually
+                replaceCustomFilterTransformer(filter),
+
+                // Map the used keys in that filter
+                ...mapKeys({
+                    'data.created_at': 'complaint_at',
+                    'data.member_id': 'member_id',
+                    'data.post_id': 'email.post_id'
+                })
+            )
+        };
+        options.order = options.order.replace(/created_at/g, 'complaint_at');
+
+        const {data: models, meta} = await this._EmailRecipient.findPage(
+            options
+        );
+
+        const data = models.map((model) => {
+            return {
+                type: 'email_complaint_event',
+                data: {
+                    id: model.id,
+                    member_id: model.get('member_id'),
+                    created_at: model.get('complaint_at'),
+                    member: model.related('member').toJSON(),
+                    email: model.related('email').toJSON()
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
     /**
      * Split the filter in two parts:
      * - One with 'type' that will be applied to all the pages
      * - Other filter that will be applied to each individual page
-     * 
+     *
      * Throws if splitting is not possible (e.g. OR'ing type with other filters)
      */
     getNQLSubset(filter) {

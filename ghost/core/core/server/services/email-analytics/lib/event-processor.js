@@ -135,7 +135,21 @@ class GhostEventProcessor extends EventProcessor {
     }
 
     async handleComplained(event) {
-        return this._unsubscribeFromNewsletters(event);
+        const emailId = await this.getEmailId(event);
+        let updateComplaint = false;
+
+        if (emailId) {
+            updateComplaint = await this.db.knex('email_recipients')
+                .where('email_id', '=', emailId)
+                .where('member_email', '=', event.recipientEmail)
+                .update({
+                    complaint_at: this.db.knex.raw('COALESCE(complaint_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+                });
+        }
+
+        const updateUnsubscribe = await this._unsubscribeFromNewsletters(event);
+
+        return updateComplaint || updateUnsubscribe;
     }
 
     async _unsubscribeFromNewsletters(event) {

@@ -805,6 +805,7 @@ DataGenerator.Content = {
             processed_at: moment().toDate(),
             delivered_at: moment().toDate(),
             opened_at: moment().toDate(),
+            complaint_at: null,
             failed_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
             member_email: 'member4@test.com',

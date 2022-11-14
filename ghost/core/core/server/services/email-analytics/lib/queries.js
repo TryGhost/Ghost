@@ -18,8 +18,9 @@ module.exports = {
         const {maxDeliveredAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first() || {};
         const {maxOpenedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first() || {};
         const {maxFailedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first() || {};
+        const {maxComplaintAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(complaint_at) as maxComplaintAt')).first() || {};
 
-        const lastSeenEventTimestamp = _.max([maxDeliveredAt, maxOpenedAt, maxFailedAt]);
+        const lastSeenEventTimestamp = _.max([maxDeliveredAt, maxOpenedAt, maxFailedAt, maxComplaintAt]);
         debug(`getLastSeenEventTimestamp: finished in ${Date.now() - startDate}ms`);
 
         return lastSeenEventTimestamp;
@@ -29,7 +30,8 @@ module.exports = {
         await db.knex('emails').update({
             delivered_count: db.knex.raw(`(SELECT COUNT(id) FROM email_recipients WHERE email_id = ? AND delivered_at IS NOT NULL)`, [emailId]),
             opened_count: db.knex.raw(`(SELECT COUNT(id) FROM email_recipients WHERE email_id = ? AND opened_at IS NOT NULL)`, [emailId]),
-            failed_count: db.knex.raw(`(SELECT COUNT(id) FROM email_recipients WHERE email_id = ? AND failed_at IS NOT NULL)`, [emailId])
+            failed_count: db.knex.raw(`(SELECT COUNT(id) FROM email_recipients WHERE email_id = ? AND failed_at IS NOT NULL)`, [emailId]),
+            complaint_count: db.knex.raw(`(SELECT COUNT(id) FROM email_recipients WHERE email_id = ? AND complaint_at IS NOT NULL)`, [emailId])
         }).where('id', emailId);
     },
 

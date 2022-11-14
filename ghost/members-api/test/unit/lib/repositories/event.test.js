@@ -186,7 +186,9 @@ describe('EventRepository', function () {
                 MemberStatusEvent: null,
                 MemberLoginEvent: null,
                 MemberPaidSubscriptionEvent: null,
-                labsService: null
+                labsService: {
+                    isSet: sinon.stub().returns(false)
+                }
             });
         });
 
@@ -238,6 +240,62 @@ describe('EventRepository', function () {
                 withRelated: ['member', 'email'],
                 filter: 'opened_at:-null+custom:true',
                 order: 'opened_at desc, id desc'
+            });
+        });
+    });
+
+    describe('getEmailComplaintEvents', function () {
+        let eventRepository;
+        let fake;
+
+        before(function () {
+            fake = sinon.fake.returns({data: [{get: () => {}, related: () => ({toJSON: () => {}})}]});
+            eventRepository = new EventRepository({
+                EmailRecipient: {
+                    findPage: fake
+                },
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null
+            });
+        });
+
+        afterEach(function () {
+            fake.resetHistory();
+        });
+
+        it('works when setting no filters', async function () {
+            await eventRepository.getEmailComplaintEvents({
+                filter: 'no used',
+                order: 'created_at desc, id desc'
+            }, {
+                type: 'unused'
+            });
+
+            fake.calledOnce.should.be.eql(true);
+            fake.calledOnce.should.be.eql(true);
+            fake.getCall(0).firstArg.should.match({
+                withRelated: ['member', 'email'],
+                filter: 'complaint_at:-null+custom:true',
+                order: 'complaint_at desc, id desc'
+            });
+        });
+
+        it('works when setting a created_at filter', async function () {
+            await eventRepository.getEmailComplaintEvents({
+                order: 'created_at desc, id desc'
+            }, {
+                'data.created_at': 'data.created_at:123'
+            });
+
+            fake.calledOnce.should.be.eql(true);
+            fake.getCall(0).firstArg.should.match({
+                withRelated: ['member', 'email'],
+                filter: 'complaint_at:-null+custom:true',
+                order: 'complaint_at desc, id desc'
             });
         });
     });

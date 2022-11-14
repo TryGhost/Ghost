@@ -284,6 +284,7 @@ function createSerializer(debugString, serialize) {
  * @prop {string} delivered_at
  * @prop {string} opened_at
  * @prop {string} failed_at
+ * @prop {string} complaint_at
  * @prop {string} member_uuid
  * @prop {string} member_email
  * @prop {string} member_name
@@ -304,6 +305,7 @@ function createSerializer(debugString, serialize) {
  * @prop {number} delivered_count
  * @prop {number} opened_count
  * @prop {number} failed_count
+ * @prop {number} complaint_count
  * @prop {string} subject
  * @prop {string} from
  * @prop {string} reply_to
