@@ -214,7 +214,8 @@ class PaymentsService {
             stripe_product_id: product.id,
             currency,
             interval: cadence,
-            amount
+            amount,
+            active: 1
         }).query().select('stripe_price_id');
 
         for (const row of rows) {
@@ -224,6 +225,14 @@ class PaymentsService {
                     return {
                         id: price.id
                     };
+                } else {
+                    // Update the database model to prevent future Stripe fetches when it is not needed
+                    await row.save({
+                        active: !!price.active,
+                        currency: price.currency.toLowerCase(),
+                        amount: price.unit_amount,
+                        interval: price.recurring?.interval
+                    });
                 }
             } catch (err) {
                 logging.warn(err);
