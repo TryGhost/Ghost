@@ -71,8 +71,8 @@ module.exports = {
 
     importContent: {
         statusCode(result) {
-            if (result && (result.data || result.images)) {
-                return 201;
+            if (result && (result.db || result.problems)) {
+                return 200;
             } else {
                 return 202;
             }
