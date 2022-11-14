@@ -57,6 +57,9 @@ DataImporter = {
                 name: importOptions.importTag,
                 slug: slugify(importOptions.importTag)
             });
+            if (!('posts_tags' in importData.data)) {
+                importData.data.posts_tags = [];
+            }
             for (const post of importData.data.posts || []) {
                 if (!('id' in post)) {
                     // Make sure post has an id if it doesn't already

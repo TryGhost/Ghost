@@ -4,6 +4,7 @@ const path = require('path');
 const os = require('os');
 const glob = require('glob');
 const uuid = require('uuid');
+const config = require('../../../shared/config');
 const {extract} = require('@tryghost/zip');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
@@ -401,7 +402,8 @@ class ImportManager {
      * @returns {Promise<Object.<string, ImportResult>>}
      */
     async importFromFile(file, importOptions = {}) {
-        if (!importOptions.forceInline && !importOptions.runningInJob) {
+        const env = config.get('env');
+        if (!env?.startsWith('testing') && !importOptions.runningInJob) {
             return jobManager.addJob({
                 job: () => this.importFromFile(file, Object.assign({}, importOptions, {
                     runningInJob: true
@@ -434,7 +436,7 @@ class ImportManager {
             // Step 5: Cleanup any files
             await this.cleanUp();
 
-            if (!importOptions.forceInline) {
+            if (!env?.startsWith('testing')) {
                 // Step 6: Send email
                 const email = this.generateCompletionEmail(importResult?.data, {
                     emailRecipient: importOptions.user.email,
@@ -454,7 +456,6 @@ class ImportManager {
 
 /**
  * @typedef {object} ImportOptions
- * @property {boolean} [forceInline]
  * @property {boolean} [runningInJob]
  * @property {boolean} [returnImportedData]
  * @property {boolean} [importPersistUser]
