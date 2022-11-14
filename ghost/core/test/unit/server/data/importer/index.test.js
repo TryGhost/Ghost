@@ -401,7 +401,7 @@ describe('Importer', function () {
                     imageSpy.getCall(0).args[0].should.eql(expectedImages);
 
                     // we stubbed this as a noop but ImportManager calls with sequence, so we should get an array
-                    output.should.eql([expectedImages, expectedData]);
+                    output.should.eql({images: expectedImages, data: expectedData});
                     done();
                 }).catch(done);
             });
