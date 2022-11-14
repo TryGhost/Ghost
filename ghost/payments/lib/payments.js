@@ -216,7 +216,7 @@ class PaymentsService {
             interval: cadence,
             amount,
             active: 1
-        }).query().select('stripe_price_id');
+        }).query().select('id', 'stripe_price_id');
 
         for (const row of rows) {
             try {
@@ -227,12 +227,13 @@ class PaymentsService {
                     };
                 } else {
                     // Update the database model to prevent future Stripe fetches when it is not needed
-                    await row.save({
-                        active: !!price.active,
-                        currency: price.currency.toLowerCase(),
-                        amount: price.unit_amount,
-                        interval: price.recurring?.interval
-                    });
+                    await this.StripePriceModel.edit({
+                        active: !!price.active
+                        // do we also update the other fields?
+                        // currency: price.currency.toLowerCase(),
+                        // amount: price.unit_amount,
+                        // interval: price.recurring?.interval
+                    }, {id: row.id});
                 }
             } catch (err) {
                 logging.warn(err);
