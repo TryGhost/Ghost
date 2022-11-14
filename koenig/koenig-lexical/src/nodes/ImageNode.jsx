@@ -21,9 +21,8 @@ export class ImageNode extends DecoratorNode {
     __caption;
     __altText;
     __cardWidth;
-    // TODO:
-    // __width;
-    // __height;
+    __width;
+    __height;
 
     // TODO: does this belong on the node? If we're storing progress here because
     // the node might be re-created whilst uploading then wouldn't we need file
@@ -56,19 +55,23 @@ export class ImageNode extends DecoratorNode {
                 caption: node.__caption,
                 altText: node.__altText,
                 cardWidth: node.__cardWidth,
-                uploadProgress: node.__uploadProgress
+                uploadProgress: node.__uploadProgress,
+                width: node.__width,
+                height: node.__height
             },
             node.__key
         );
     }
 
     static importJSON(serializedNode) {
-        const {caption, altText, src, cardWidth} = serializedNode;
+        const {caption, altText, src, cardWidth, width, height} = serializedNode;
         const node = $createImageNode({
             altText,
             caption,
             src,
-            cardWidth
+            cardWidth,
+            width,
+            height
         });
         return node;
     }
@@ -93,7 +96,7 @@ export class ImageNode extends DecoratorNode {
         };
     }
 
-    constructor({src, caption, altText, cardWidth, uploadProgress, triggerFileDialog} = {}, key) {
+    constructor({src, caption, altText, cardWidth, uploadProgress, triggerFileDialog, width, height} = {}, key) {
         super(key);
         this.__caption = caption || '';
         this.__altText = altText || '';
@@ -101,6 +104,8 @@ export class ImageNode extends DecoratorNode {
         this.__cardWidth = cardWidth || 'regular';
         this.__uploadProgress = uploadProgress;
         this.__triggerFileDialog = triggerFileDialog || false;
+        this.__width = width || null;
+        this.__height = height || null;
     }
 
     exportJSON() {
@@ -112,7 +117,9 @@ export class ImageNode extends DecoratorNode {
             caption: this.getCaption(),
             src: isBlob ? '<base64String>' : this.getSrc(),
             type: 'image',
-            cardWidth: this.getCardWidth()
+            cardWidth: this.getCardWidth(),
+            width: this.getImgWidth(),
+            height: this.getImgHeight()
         };
         return dataset;
     }
@@ -146,6 +153,24 @@ export class ImageNode extends DecoratorNode {
 
     getCardWidth() {
         return this.__cardWidth;
+    }
+
+    getImgWidth() {
+        return this.__width;
+    }
+
+    setImgWidth(width) {
+        const writable = this.getWritable();
+        return writable.__width = width;
+    }
+
+    getImgHeight() {
+        return this.__height;
+    }
+
+    setImgHeight(height) {
+        const writable = this.getWritable();
+        return writable.__height = height;
     }
 
     getCaption() {

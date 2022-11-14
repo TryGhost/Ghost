@@ -8,6 +8,7 @@ import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {openFileSelection} from '../utils/openFileSelection';
+import {getImageDimensions} from '../utils/getImageDimensions';
 
 export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog}) {
     const [editor] = useLexicalComposerContext();
@@ -17,15 +18,32 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
 
-    const onFileChange = async (e) => {
-        const fls = e.target.files;
-        const files = await imageUploader.imageUploader(fls); // idea here is to have something like imageUploader.uploadProgressPercentage to pass to the progress bar.
-
-        if (files) {
+    // Removed the editor update from the onFileChange function so that we can reuse it when adding the Link toolbar button.
+    const updateImageNode = async ({fileSrc, file}) => {
+        if (!fileSrc) {
+            return;
+        }
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setSrc(fileSrc);
+        });
+        if (file) {
+            let url = URL.createObjectURL(file);
+            const {width, height} = await getImageDimensions(url);
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setSrc(files.src);
+                node.setImgWidth(width);
+                node.setImgHeight(height);
             });
+        }
+    };
+
+    const onFileChange = async (e) => {
+        const fls = e.target.files;
+
+        const files = await imageUploader.imageUploader(fls); // idea here is to have something like imageUploader.uploadProgressPercentage to pass to the progress bar.
+        if (files) {
+            updateImageNode({fileSrc: files.src, file: fls[0]});
         }
     };
 
@@ -66,10 +84,10 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
         });
     });
 
-    const handleImageResize = (newWidth) => {
+    const handleImageCardResize = (newWidth) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setCardWidth(newWidth);
+            node.setCardWidth(newWidth); // this is a property on the node, not the card
             setCardWidth(newWidth); // sets the state of the toolbar component
         });
     };
@@ -125,9 +143,9 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
                     fileInputRef={toolbarFileInputRef}
                 />
                 <ToolbarMenu>
-                    <ToolbarMenuItem label="Regular" icon="imageRegular" isActive={cardWidth === 'regular' ? true : false} onClick={() => handleImageResize('regular')} />
-                    <ToolbarMenuItem label="Wide" icon="imageWide" isActive={cardWidth === 'wide' ? true : false} onClick={() => handleImageResize('wide')}/>
-                    <ToolbarMenuItem label="Full" icon="imageFull" isActive={cardWidth === 'full' ? true : false} onClick={() => handleImageResize('full')} />
+                    <ToolbarMenuItem label="Regular" icon="imageRegular" isActive={cardWidth === 'regular' ? true : false} onClick={() => handleImageCardResize('regular')} />
+                    <ToolbarMenuItem label="Wide" icon="imageWide" isActive={cardWidth === 'wide' ? true : false} onClick={() => handleImageCardResize('wide')}/>
+                    <ToolbarMenuItem label="Full" icon="imageFull" isActive={cardWidth === 'full' ? true : false} onClick={() => handleImageCardResize('full')} />
                     <ToolbarMenuSeparator />
                     <ToolbarMenuItem label="Link" icon="link" isActive={false} />
                     <ToolbarMenuItem label="Replace" icon="imageReplace" isActive={false} onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})} />

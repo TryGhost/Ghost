@@ -69,6 +69,8 @@ describe('Image card', async () => {
         `, {ignoreCardToolbarContents: true});
     });
 
+    test.todo('can get image width and height');
+
     test('can toggle to alt text', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
 
