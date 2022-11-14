@@ -47,7 +47,7 @@ DataImporter = {
     doImport: async function doImport(importData, importOptions) {
         importOptions = importOptions || {};
 
-        if (importOptions.importTag) {
+        if (importOptions.importTag && importData?.data?.posts) {
             const tagId = ObjectId().toHexString();
             if (!('tags' in importData.data)) {
                 importData.data.tags = [];
@@ -60,7 +60,7 @@ DataImporter = {
             if (!('posts_tags' in importData.data)) {
                 importData.data.posts_tags = [];
             }
-            for (const post of importData.data.posts || []) {
+            for (const post of importData.data.posts) {
                 if (!('id' in post)) {
                     // Make sure post has an id if it doesn't already
                     post.id = ObjectId().toHexString();
