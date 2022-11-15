@@ -321,13 +321,12 @@ async function sendEmailJob({emailId, options}) {
             }
     
             if (emailModel.get('status') !== 'pending') {
-                // todo: maybe we shouldn't throw this error and only log it.
-                // because we don't want to alter the status to failed when this happens.
-                // throw new errors.IncorrectUsageError({
-                //     message: 'Emails can only be processed when in the "pending" state',
-                //     context: `Email "${emailId}" has state "${emailModel.get('status')}"`,
-                //     code: 'EMAIL_NOT_PENDING'
-                // });
+                // We don't throw this, because we don't want to mark this email as failed
+                logging.error(new errors.IncorrectUsageError({
+                    message: 'Emails can only be processed when in the "pending" state',
+                    context: `Email "${emailId}" has state "${emailModel.get('status')}"`,
+                    code: 'EMAIL_NOT_PENDING'
+                }));
                 return;
             }
 
