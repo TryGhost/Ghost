@@ -175,7 +175,7 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getCreatedEvents: eventStub
+                getSignupEvents: eventStub
             }
         });
 
@@ -215,7 +215,7 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getCreatedEvents: eventStub
+                getSignupEvents: eventStub
             }
         });
 
@@ -259,7 +259,7 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getCreatedEvents: eventStub
+                getSignupEvents: eventStub
             }
         });
 
@@ -308,7 +308,7 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getCreatedEvents: eventStub
+                getSignupEvents: eventStub
             }
         });
 
@@ -356,7 +356,7 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getCreatedEvents: eventStub
+                getSignupEvents: eventStub
             }
         });
 
