@@ -91,7 +91,7 @@
             "type": "string"
         },
         "cover_image": {
-            "defaultValue": "",
+            "defaultValue": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
             "type": "string"
         },
         "icon": {
