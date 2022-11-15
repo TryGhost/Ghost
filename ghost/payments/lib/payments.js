@@ -229,14 +229,11 @@ class PaymentsService {
                     // Update the database model to prevent future Stripe fetches when it is not needed
                     await this.StripePriceModel.edit({
                         active: !!price.active
-                        // do we also update the other fields?
-                        // currency: price.currency.toLowerCase(),
-                        // amount: price.unit_amount,
-                        // interval: price.recurring?.interval
                     }, {id: row.id});
                 }
             } catch (err) {
-                logging.warn(err);
+                logging.error(`Failed to lookup Stripe Price ${row.stripe_price_id}`);
+                logging.error(err);
             }
         }
 
