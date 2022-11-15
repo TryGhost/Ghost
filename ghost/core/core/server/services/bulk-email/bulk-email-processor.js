@@ -70,28 +70,8 @@ module.exports = {
     FailedBatch,
 
     // accepts an ID rather than an Email model to better support running via a job queue
-    async processEmail({emailId, options}) {
-        const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
-        const emailModel = await models.Email.findOne({id: emailId}, knexOptions);
-
-        if (!emailModel) {
-            throw new errors.IncorrectUsageError({
-                message: 'Provided email id does not match a known email record',
-                context: {
-                    id: emailId
-                }
-            });
-        }
-
-        if (emailModel.get('status') !== 'pending') {
-            throw new errors.IncorrectUsageError({
-                message: 'Emails can only be processed when in the "pending" state',
-                context: `Email "${emailId}" has state "${emailModel.get('status')}"`,
-                code: 'EMAIL_NOT_PENDING'
-            });
-        }
-
-        await emailModel.save({status: 'submitting'}, Object.assign({}, knexOptions, {patch: true}));
+    async processEmail({emailModel, options}) {
+        const emailId = emailModel.get('id');
 
         // get batch IDs via knex to avoid model instantiation
         // only fetch pending or failed batches to avoid re-sending previously sent emails
@@ -166,7 +146,8 @@ module.exports = {
         const recipientRows = await models.EmailRecipient
             .getFilteredCollectionQuery({filter: `batch_id:${emailBatchId}`});
 
-        await emailBatchModel.save({status: 'submitting'}, knexOptions);
+        // Patch to prevent saving the related email model
+        await emailBatchModel.save({status: 'submitting'}, {...knexOptions, patch: true});
 
         try {
             // Load newsletter data on email
@@ -185,7 +166,7 @@ module.exports = {
             }, Object.assign({}, knexOptions, {patch: true}));
         } catch (error) {
             // update batch failed status
-            await emailBatchModel.save({status: 'failed'}, knexOptions);
+            await emailBatchModel.save({status: 'failed'}, {...knexOptions, patch: true});
 
             // log any error that didn't come from the provider which would have already logged it
             if (!error.code || error.code !== 'BULK_EMAIL_SEND_FAILED') {

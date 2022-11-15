@@ -283,13 +283,13 @@ async function pendingEmailHandler(emailModel, options) {
     if (!process.env.NODE_ENV.startsWith('test')) {
         return jobsService.addJob({
             job: sendEmailJob,
-            data: {emailModel},
+            data: {emailId: emailModel.id},
             offloaded: false
         });
     }
 }
 
-async function sendEmailJob({emailModel, options}) {
+async function sendEmailJob({emailId, options}) {
     let startEmailSend = null;
 
     try {
@@ -302,6 +302,41 @@ async function sendEmailJob({emailModel, options}) {
         // Check host limit for disabled emails or going over emails limit
         if (limitService.isLimited('emails')) {
             await limitService.errorIfWouldGoOverLimit('emails');
+        }
+
+        // Check if the email is still pending. And set the status to submitting in one transaction.
+        let hasSingleAccess = false;
+        let emailModel;
+        await models.Base.transaction(async (transacting) => {
+            const knexOptions = {...options, transacting, forUpdate: true};
+            emailModel = await models.Email.findOne({id: emailId}, knexOptions);
+
+            if (!emailModel) {
+                throw new errors.IncorrectUsageError({
+                    message: 'Provided email id does not match a known email record',
+                    context: {
+                        id: emailId
+                    }
+                });
+            }
+    
+            if (emailModel.get('status') !== 'pending') {
+                // todo: maybe we shouldn't throw this error and only log it.
+                // because we don't want to alter the status to failed when this happens.
+                // throw new errors.IncorrectUsageError({
+                //     message: 'Emails can only be processed when in the "pending" state',
+                //     context: `Email "${emailId}" has state "${emailModel.get('status')}"`,
+                //     code: 'EMAIL_NOT_PENDING'
+                // });
+                return;
+            }
+
+            await emailModel.save({status: 'submitting'}, Object.assign({}, knexOptions, {patch: true}));
+            hasSingleAccess = true;
+        });
+
+        if (!hasSingleAccess) {
+            return;
         }
 
         // Create email batch and recipient rows unless this is a retry and they already exist
@@ -322,7 +357,7 @@ async function sendEmailJob({emailModel, options}) {
 
         debug('sendEmailJob: sending email');
         startEmailSend = Date.now();
-        await bulkEmailService.processEmail({emailId: emailModel.get('id'), options});
+        await bulkEmailService.processEmail({emailModel, options});
         debug(`sendEmailJob: sent email (${Date.now() - startEmailSend}ms)`);
     } catch (error) {
         if (startEmailSend) {
