@@ -102,11 +102,14 @@
                                                     <span class="gh-members-activity-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
                                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
                                                         {{#if parsedEvent.info}}
-                                                            <span class="highlight">{{parsedEvent.info}}</span>
+                                                            <span class="highlight">({{parsedEvent.info}})</span>
                                                         {{/if}}
                                                         {{#if parsedEvent.url}}
                                                             <span class="gh-members-activity-event-join">{{parsedEvent.join}}</span>
                                                             <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>
+                                                        {{else if parsedEvent.email}}
+                                                            <span class="gh-members-activity-event-join">{{parsedEvent.join}}</span>
+                                                            <GhEmailPreviewLink @data={{event.email}} />
                                                         {{/if}}
                                                     </span>
                                                 </span>

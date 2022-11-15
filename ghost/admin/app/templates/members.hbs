@@ -129,7 +129,7 @@
                             <tr>
                                 <th>{{this.listHeader}}</th>
                                 <th data-test-table-column="status">Status</th>
-                                {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
+                                {{#if (and (not-eq this.settings.editorDefaultEmailRecipients "disabled") this.settings.emailTrackOpens)}}
                                     <th data-test-table-column="email_open_rate">Open rate</th>
                                 {{/if}}
                                 <th data-test-table-column="location">Location</th>
@@ -142,12 +142,12 @@
                         <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-list-scrolling" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
                             {{#if member.is_loading}}
                                 <Members::ListItemLoading
-                                    @newsletterEnabled={{not-eq this.settings.editorDefaultEmailRecipients "disabled"}}
+                                    @newsletterEnabled={{and (not-eq this.settings.editorDefaultEmailRecipients "disabled") this.settings.emailTrackOpens}}
                                     @filterColumns={{this.filterColumns}}
                                 />
                             {{else}}
                                 <Members::ListItem
-                                    @newsletterEnabled={{not-eq this.settings.editorDefaultEmailRecipients "disabled"}}
+                                    @newsletterEnabled={{and (not-eq this.settings.editorDefaultEmailRecipients "disabled") this.settings.emailTrackOpens}}
                                     @member={{member.content}}
                                     @filterColumns={{this.filterColumns}}
                                     data-test-member={{member.id}}
