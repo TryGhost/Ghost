@@ -721,7 +721,6 @@ module.exports = class MemberRepository {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
             Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
         }
-
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')
             .distinct();
@@ -731,14 +730,13 @@ module.exports = class MemberRepository {
         if (data.action === 'unsubscribe') {
             const hasNewsletterSelected = (Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null);
             if (hasNewsletterSelected) {
-                const newsletters = await this._MemberNewsletter.where('newsletter_id', data.newsletter).fetchAll();
-                const toUnsubscribe = newsletters.toJSON().reduce((acc, newsletter) => {
-                    if (memberIds.includes(newsletter.member_id)) {
-                        acc.push(newsletter.id);
-                    }
-                    return acc;
-                }, []);
-                return await this._Member.bulkDestroy(toUnsubscribe, 'members_newsletters', {column: 'id'});
+                const membersArr = memberIds.join(',');
+                const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
+                    filter: `newsletter_id:${data.newsletter}+member_id:[${membersArr}]`
+                });
+                const toUnsubscribe = unsubscribeRows.map(row => row.id);
+                
+                return await this._MemberNewsletter.bulkDestroy(toUnsubscribe);
             }
             if (!hasNewsletterSelected) {
                 return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {column: 'member_id'});
