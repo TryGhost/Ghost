@@ -3,12 +3,23 @@ import {pluralize} from 'ember-inflector';
 
 export default class Analytics extends AuthenticatedRoute {
     model(params) {
-        // eslint-disable-next-line camelcase
-        let {post_id} = params;
+        let {post_id: id} = params;
 
         let query = {
-            // eslint-disable-next-line camelcase
-            id: post_id
+            id,
+            include: [
+                'tags', 
+                'authors', 
+                'authors.roles', 
+                'email', 
+                'tiers', 
+                'newsletter', 
+                'count.conversions', 
+                'count.clicks', 
+                'sentiment', 
+                'count.positive_feedback', 
+                'count.negative_feedback'
+            ].join(',')
         };
 
         return this.store.query('post', query)

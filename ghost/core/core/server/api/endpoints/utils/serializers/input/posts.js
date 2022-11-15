@@ -6,7 +6,6 @@ const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const clean = require('./utils/clean');
-const labs = require('../../../../../../shared/labs');
 
 function removeSourceFormats(frame) {
     if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
@@ -22,11 +21,9 @@ function removeSourceFormats(frame) {
 function mapWithRelated(frame) {
     if (frame.options.withRelated) {
         // Map sentiment to count.sentiment
-        if (labs.isSet('audienceFeedback')) {
-            frame.options.withRelated = frame.options.withRelated.map((relation) => {
-                return relation === 'sentiment' ? 'count.sentiment' : relation;
-            });
-        }
+        frame.options.withRelated = frame.options.withRelated.map((relation) => {
+            return relation === 'sentiment' ? 'count.sentiment' : relation;
+        });
         return;
     }
 }
@@ -44,11 +41,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    if (labs.isSet('audienceFeedback')) {
-        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.conversions', 'count.clicks', 'count.sentiment', 'count.positive_feedback', 'count.negative_feedback'];
-    } else {
-        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks'];
-    }
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks'];
 }
 
 function setDefaultOrder(frame) {

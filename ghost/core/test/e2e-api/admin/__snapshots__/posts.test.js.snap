@@ -21,7 +21,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -49,7 +48,6 @@ Object {
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "sentiment": 0,
       "slug": "scheduled-post",
       "status": "scheduled",
       "tags": Any<Array>,
@@ -108,7 +106,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -138,7 +135,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "sentiment": 0,
       "slug": "unfinished",
       "status": "draft",
       "tags": Any<Array>,
@@ -197,7 +193,7 @@ exports[`Posts API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10236",
+  "content-length": "10176",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -226,7 +222,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -258,7 +253,6 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 0,
-      "sentiment": 0,
       "slug": "scheduled-post",
       "status": "scheduled",
       "tags": Any<Array>,
@@ -317,7 +311,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -369,7 +362,6 @@ Header Level 3
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 1,
-      "sentiment": 0,
       "slug": "unfinished",
       "status": "draft",
       "tags": Any<Array>,
@@ -428,7 +420,7 @@ exports[`Posts API Can browse with formats 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "13102",
+  "content-length": "13042",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -447,7 +439,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -478,7 +469,6 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": null,
       "reading_time": 0,
-      "sentiment": 0,
       "slug": "lexical-test",
       "status": "draft",
       "tags": Any<Array>,
@@ -537,7 +527,7 @@ exports[`Posts API Create Can create a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3914",
+  "content-length": "3884",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -557,7 +547,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -588,7 +577,6 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": null,
       "reading_time": 0,
-      "sentiment": 0,
       "slug": "mobiledoc-test",
       "status": "draft",
       "tags": Any<Array>,
@@ -647,7 +635,7 @@ exports[`Posts API Create Can create a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3730",
+  "content-length": "3700",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -768,7 +756,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -799,7 +786,6 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": null,
       "reading_time": 0,
-      "sentiment": 0,
       "slug": "lexical-update-test",
       "status": "draft",
       "tags": Any<Array>,
@@ -858,7 +844,7 @@ exports[`Posts API Update Can update a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3865",
+  "content-length": "3835",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -878,7 +864,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -909,7 +894,6 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": null,
       "reading_time": 0,
-      "sentiment": 0,
       "slug": "lexical-update-test",
       "status": "draft",
       "tags": Any<Array>,
@@ -968,7 +952,7 @@ exports[`Posts API Update Can update a post with lexical 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3862",
+  "content-length": "3832",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -988,7 +972,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -1019,7 +1002,6 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": null,
       "reading_time": 0,
-      "sentiment": 0,
       "slug": "mobiledoc-update-test",
       "status": "draft",
       "tags": Any<Array>,
@@ -1078,7 +1060,7 @@ exports[`Posts API Update Can update a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3675",
+  "content-length": "3645",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1098,7 +1080,6 @@ Object {
       "comment_id": Any<String>,
       "count": Object {
         "clicks": 0,
-        "conversions": 0,
         "negative_feedback": 0,
         "positive_feedback": 0,
       },
@@ -1129,7 +1110,6 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": null,
       "reading_time": 0,
-      "sentiment": 0,
       "slug": "mobiledoc-update-test",
       "status": "draft",
       "tags": Any<Array>,
@@ -1188,7 +1168,7 @@ exports[`Posts API Update Can update a post with mobiledoc 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3672",
+  "content-length": "3642",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
