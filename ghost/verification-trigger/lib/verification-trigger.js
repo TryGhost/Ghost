@@ -66,7 +66,7 @@ class VerificationTrigger {
         if (['api', 'admin'].includes(source) && isFinite(sourceThreshold)) {
             const createdAt = new Date();
             createdAt.setDate(createdAt.getDate() - 30);
-            const events = await this._eventRepository.getCreatedEvents({}, {
+            const events = await this._eventRepository.getSignupEvents({}, {
                 source: source,
                 created_at: {
                     $gt: createdAt.toISOString().replace('T', ' ').substring(0, 19)
@@ -101,7 +101,7 @@ class VerificationTrigger {
 
         const createdAt = new Date();
         createdAt.setDate(createdAt.getDate() - 30);
-        const events = await this._eventRepository.getCreatedEvents({}, {
+        const events = await this._eventRepository.getSignupEvents({}, {
             source: 'import',
             created_at: {
                 $gt: createdAt.toISOString().replace('T', ' ').substring(0, 19)
