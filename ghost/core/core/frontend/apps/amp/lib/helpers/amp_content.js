@@ -108,7 +108,7 @@ allowedAMPAttributes = {
     'amp-audio': ['src', 'width', 'height', 'autoplay', 'loop', 'muted', 'controls'],
     'amp-iframe': ['src', 'srcdoc', 'width', 'height', 'layout', 'frameborder', 'allowfullscreen', 'allowtransparency',
         'sandbox', 'referrerpolicy'],
-    'amp-youtube': ['src', 'width', 'height', 'layout', 'frameborder', 'autoplay', 'loop', 'data-videoid', 'data-live-channelid']
+    'amp-youtube': ['src', 'layout', 'frameborder', 'autoplay', 'loop', 'data-videoid', 'data-live-channelid']
 };
 
 function getAmperizeHTML(html, post) {
