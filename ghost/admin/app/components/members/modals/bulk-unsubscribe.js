@@ -39,8 +39,8 @@ export default class BulkUnsubscribeMembersModal extends Component {
             name: 'All newsletters',
             value: 'all'
         }];
-        activeNewsletters.map((newsletter) => {
-            return list.push({
+        activeNewsletters.forEach((newsletter) => {
+            list.push({
                 name: newsletter.name,
                 value: newsletter.id
             });
