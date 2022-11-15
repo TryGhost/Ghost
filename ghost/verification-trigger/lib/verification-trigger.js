@@ -19,7 +19,7 @@ class VerificationTrigger {
      * @param {number} deps.importTriggerThreshold Threshold for triggering Import sourced verifications
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
      * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
-     * @param {(content: {subject: string, message: string, amountTriggered: number}) => void} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
+     * @param {(content: {subject: string, message: string, amountTriggered: number}) => Promise<void>} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
      * @param {any} deps.membersStats MemberStats service
      * @param {any} deps.Settings Ghost Settings model
      * @param {any} deps.eventRepository For querying events
@@ -156,8 +156,8 @@ class VerificationTrigger {
                 } else if (source === 'admin') {
                     verificationMessage = messages.emailVerificationEmailMessageAdmin;
                 }
-                
-                this._sendVerificationEmail({
+
+                await this._sendVerificationEmail({
                     message: verificationMessage,
                     subject: messages.emailVerificationEmailSubject,
                     amountTriggered: amount
