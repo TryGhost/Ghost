@@ -103,6 +103,7 @@ Router.map(function () {
 
     this.route('settings.navigation', {path: '/settings/navigation'});
     this.route('settings.labs', {path: '/settings/labs'});
+    this.route('settings.labs.import', {path: '/settings/labs/import'});
 
     this.route('members', function () {
         this.route('import');

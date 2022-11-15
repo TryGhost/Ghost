@@ -1,0 +1,20 @@
+{{#if this.error}}
+    <div class="failed flex items-start gh-content-upload-errorcontainer error">
+        <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w4 h4 fill-red"}}</div>
+        <p class="ma0 pa0">{{this.error.message}}</p>
+    </div>
+{{/if}}
+<div class="upload-form br3">
+    <section class="gh-image-uploader gh-content-import-uploader {{this.dragClass}}"
+        {{on "drop" this.drop}}
+        {{on "dragover" this.dragOver}}
+        {{on "dragleave" this.dragLeave}}
+    >
+        <GhFileInput @multiple={{false}} @alt={{this.labelText}} @action={{this.fileSelected}} @accept={{this.accept}} data-test-fileinput="content-import">
+        <div class="flex flex-column items-center">
+            {{svg-jar "upload"}}
+            <div class="description">{{this.labelText}}</div>
+        </div>
+        </GhFileInput>
+    </section>
+</div>

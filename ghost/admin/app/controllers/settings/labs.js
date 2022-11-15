@@ -3,6 +3,7 @@ import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import DeleteAllModal from '../../components/settings/labs/delete-all-content-modal';
+import ImportContentModal from '../../components/modal-import-content';
 import RSVP from 'rsvp';
 import config from 'ghost-admin/config/environment';
 import {
@@ -137,6 +138,11 @@ export default class LabsController extends Controller {
         }).finally(() => {
             this.set('uploadButtonText', 'Import');
         });
+    }
+
+    @action
+    importContent() {
+        return this.modals.open(ImportContentModal);
     }
 
     @action
