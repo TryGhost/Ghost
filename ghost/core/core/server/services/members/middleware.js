@@ -29,7 +29,7 @@ const loadMemberSession = async function (req, res, next) {
 
 /**
  * Require member authentication, and make it possible to authenticate via uuid.
- * You can chain this after loadMemberSession to make it possible to authetnicate via both the uuid and the session.
+ * You can chain this after loadMemberSession to make it possible to authenticate via both the uuid and the session.
  */
 const authMemberByUuid = async function (req, res, next) {
     try {
