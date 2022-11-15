@@ -1,6 +1,6 @@
 const CardText = ({text}) => {
     return (
-        <span data-kg-card-drag-text className="text-sm font-sans font-bold text-grey-700 transition-all group-hover:text-grey-800">{text}</span>
+        <span data-kg-card-drag-text className="text-sm font-sans font-bold text-grey-800 transition-all group-hover:text-grey-800">{text}</span>
     );
 };
 
