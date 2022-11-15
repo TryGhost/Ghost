@@ -294,6 +294,13 @@ module.exports = class EventRepository {
         };
     }
 
+    /**
+     * @deprecated Do not use
+     */
+    async getCreatedEvents(options = {}, filter) {
+        return await this.getSignupEvents(options, filter);
+    }
+
     async getSignupEvents(options = {}, filter) {
         options = {
             ...options,
