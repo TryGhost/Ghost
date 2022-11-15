@@ -85,6 +85,31 @@ describe('MEGA', function () {
             emailModel.get('status').should.eql('submitted');
         });
 
+        it('Protects the email job from being run multiple times at the same time', async function () {
+            sinon.stub(_mailgunClient, 'getInstance').returns({});
+            sinon.stub(_mailgunClient, 'send').callsFake(async () => {
+                return {
+                    id: 'stubbed-email-id'
+                };
+            });
+
+            // Prepare a post and email model
+            const emailModel = await createPublishedPostEmail();
+
+            // Launch a lot of email jobs in the hope to mimic a possible race condition
+            const promises = [];
+            for (let i = 0; i < 100; i++) {
+                promises.push(_sendEmailJob({emailId: emailModel.id, options: {}}));
+            }
+            await Promise.all(promises);
+
+            await emailModel.refresh();
+            assert.equal(emailModel.get('status'), 'submitted');
+
+            const batchCount = await emailModel.related('emailBatches').count('id');
+            assert.equal(batchCount, 1, 'Should only have created one batch');
+        });
+
         it('Can handle a failed post email', async function () {
             sinon.stub(_mailgunClient, 'getInstance').returns({});
             sinon.stub(_mailgunClient, 'send').callsFake(async () => {
