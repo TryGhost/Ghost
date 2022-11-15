@@ -135,7 +135,9 @@ module.exports = {
             },
             membersStats,
             Settings: models.Settings,
-            eventRepository: membersApi.events
+            eventRepository: {
+                getCreatedEvents: membersApi.events.getSignupEvents.bind(membersApi.events)
+            }
         });
 
         (async () => {
