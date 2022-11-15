@@ -79,7 +79,7 @@ describe('MEGA', function () {
             const emailModel = await createPublishedPostEmail();
 
             // Launch email job
-            await _sendEmailJob({emailModel, options: {}});
+            await _sendEmailJob({emailId: emailModel.id, options: {}});
 
             await emailModel.refresh();
             emailModel.get('status').should.eql('submitted');
@@ -95,7 +95,7 @@ describe('MEGA', function () {
             const emailModel = await createPublishedPostEmail();
 
             // Launch email job
-            await _sendEmailJob({emailModel, options: {}});
+            await _sendEmailJob({emailId: emailModel.id, options: {}});
 
             await emailModel.refresh();
             emailModel.get('status').should.eql('failed');
@@ -143,7 +143,7 @@ describe('MEGA', function () {
             const emailModel = await createPublishedPostEmail();
 
             // Launch email job
-            await _sendEmailJob({emailModel, options: {}});
+            await _sendEmailJob({emailId: emailModel.id, options: {}});
 
             await emailModel.refresh();
             emailModel.get('status').should.eql('submitted');
