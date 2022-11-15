@@ -71,6 +71,7 @@ module.exports = {
 
     // accepts an ID rather than an Email model to better support running via a job queue
     async processEmail({emailModel, options}) {
+        const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
         const emailId = emailModel.get('id');
 
         // get batch IDs via knex to avoid model instantiation

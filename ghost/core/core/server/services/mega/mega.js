@@ -369,10 +369,10 @@ async function sendEmailJob({emailId, options}) {
             errorMessage = errorMessage.substring(0, 2000);
         }
 
-        await emailModel.save({
+        await models.Email.edit({
             status: 'failed',
             error: errorMessage
-        }, {patch: true});
+        }, {id: emailId});
 
         throw new errors.InternalServerError({
             err: error,
