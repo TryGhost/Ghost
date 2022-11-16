@@ -510,3 +510,7 @@ p.gh-content-import-errordetail:first-of-type {
         padding: 4px;
     }
 }
+
+.fullscreen-modal-import-content {
+    max-width: unset !important;
+}
