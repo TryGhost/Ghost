@@ -635,14 +635,10 @@ module.exports = class EventRepository {
     }
 
     async getEmailFailedEvents(options = {}, filter) {
-        const filterStr = this._labsService.isSet('suppressionList')
-            ? 'failed_at:-null+complaint_at:null+custom:true'
-            : 'failed_at:-null+custom:true';
-
         options = {
             ...options,
             withRelated: ['member', 'email'],
-            filter: filterStr,
+            filter: 'failed_at:-null+custom:true',
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
