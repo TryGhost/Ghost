@@ -10,6 +10,7 @@ class Base {
         this.options = options;
         this.modelName = options.modelName;
 
+        // Problems are currently constructed but not displayed to the user
         this.problems = [];
         this.errors = [];
 
