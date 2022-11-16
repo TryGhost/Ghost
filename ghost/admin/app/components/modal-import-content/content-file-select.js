@@ -61,7 +61,6 @@ export default class ContentFileSelect extends Component {
         event.preventDefault();
         this.dragClass = null;
         if (event.dataTransfer.files) {
-            console.log("dropped: ", event.dataTransfer.files);
             this.fileSelected(event.dataTransfer.files);
         }
     }
