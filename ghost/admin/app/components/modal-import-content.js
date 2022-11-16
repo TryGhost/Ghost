@@ -29,27 +29,12 @@ export default ModalComponent.extend({
     config: inject(),
 
     uploadUrl: computed(function () {
-        return `${ghostPaths().apiRoot}/db/importFile`;
+        return `${ghostPaths().apiRoot}/db`;
     }),
 
     formData: computed('file', function () {
         let formData = new FormData();
-
         formData.append(this.paramName, this.file);
-
-        if (this.mappingResult.labels) {
-            this.mappingResult.labels.forEach((label) => {
-                formData.append('labels', label.name);
-            });
-        }
-
-        if (this.mappingResult.mapping) {
-            let mapping = this.mappingResult.mapping.toJSON();
-            for (let [key, val] of Object.entries(mapping)) {
-                formData.append(`mapping[${key}]`, val);
-            }
-        }
-
         return formData;
     }),
 
