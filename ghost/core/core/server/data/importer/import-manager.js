@@ -402,11 +402,21 @@ class ImportManager {
      * @returns {Promise<Object.<string, ImportResult>>}
      */
     async importFromFile(file, importOptions = {}) {
+        let importData;
+        if (importOptions.data) {
+            importData = importOptions.data;
+        } else {
+            // Step 1: Handle converting the file to usable data
+            // Has to be completed outside of job to ensure file is processed before being deleted
+            importData = await this.loadFile(file);
+        }
+
         const env = config.get('env');
         if (!env?.startsWith('testing') && !importOptions.runningInJob) {
             return jobManager.addJob({
                 job: () => this.importFromFile(file, Object.assign({}, importOptions, {
-                    runningInJob: true
+                    runningInJob: true,
+                    data: importData
                 })),
                 offloaded: false
             });
@@ -414,9 +424,6 @@ class ImportManager {
 
         let importResult;
         try {
-            // Step 1: Handle converting the file to usable data
-            let importData = await this.loadFile(file);
-
             // Step 2: Let the importers pre-process the data
             importData = await this.preProcess(importData);
 
@@ -462,6 +469,7 @@ class ImportManager {
  * @property {Object} [user]
  * @property {string} [user.email]
  * @property {string} [importTag]
+ * @property {Object} [data]
  */
 
 /**
