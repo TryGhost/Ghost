@@ -1,5 +1,5 @@
 <div class="gh-content-import-wrapper">
-    {{#if (eq this.state 'INIT')}}
+    {{#if (or (eq this.state 'INIT') (eq this.state 'UPLOADING'))}}
         <header class="modal-header" data-test-modal="import-content">
             <h1>Import content</h1>
         </header>
