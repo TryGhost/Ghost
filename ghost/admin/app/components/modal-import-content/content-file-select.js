@@ -18,11 +18,7 @@ export default class ContentFileSelect extends Component {
 
     @action
     fileSelected(fileList) {
-        console.log('File list: ' + JSON.stringify(fileList));
-
         let [file] = Array.from(fileList);
-
-        console.log('Validating file: ' + JSON.stringify(file));
 
         try {
             this._validateFileType(file);
@@ -31,8 +27,6 @@ export default class ContentFileSelect extends Component {
             this.error = err;
             return;
         }
-
-        console.log('Setting file to: ' + JSON.stringify(file));
 
         this.args.setFile(file);
     }
@@ -67,14 +61,16 @@ export default class ContentFileSelect extends Component {
         event.preventDefault();
         this.dragClass = null;
         if (event.dataTransfer.files) {
+            console.log("dropped: ", event.dataTransfer.files);
             this.fileSelected(event.dataTransfer.files);
         }
     }
 
     _validateFileType(file) {
+        console.log(file);
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
-        if (extension.toLowerCase() !== 'json' || extension.toLowerCase() !== 'zip') {
+        if (extension.toLowerCase() !== 'json' && extension.toLowerCase() !== 'zip') {
             throw new UnsupportedMediaTypeError({
                 message: 'The file type you uploaded is not supported'
             });
