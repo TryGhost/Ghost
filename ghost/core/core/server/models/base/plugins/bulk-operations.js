@@ -101,7 +101,6 @@ module.exports = function (Bookshelf) {
          */
         bulkDestroy: function bulkDestroy(data, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
-
             return del(Bookshelf.knex, tableName, data, options);
         }
     });

@@ -43,11 +43,28 @@
                     {{#if countFetcher.isLoading}}
                         <GhLoadingSpinner />
                     {{else}}
+                        {{#if this.hasMultipleNewsletters }}
+                         <p>
+                            Which newsletter should these
+                            <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> be unsubscribed from?
+                        </p>
+                        <OneWaySelect
+                            @value={{this.selectedNewsletterId}}
+                            @options={{this.newsletterList}}
+                            @optionLabelPath="name"
+                            @optionValuePath="value"
+                            @optionTargetPath="value"
+                            @update={{this.setSelectedNewsletter}}
+                            data-test-select="members-single-newsletter-unsubscribe"
+                        />
+                        {{else}}
                         <p>
                             You're about to unsubscribe
                             <strong data-test-text="unsubscribe-count">{{gh-pluralize countFetcher.count "member"}}</strong> from email newsletters.
                             Are you sure?
                         </p>
+                        {{/if}}
+
                     {{/if}}
                 {{/let}}
             {{else}}
@@ -62,6 +79,7 @@
                 <span>Close</span>
             </button>
         {{else}}
+            {{#if this.hasMultipleNewsletters}}
             <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" @close}}>
                 <span>Cancel</span>
             </button>
@@ -74,6 +92,21 @@
                 @class="gh-btn gh-btn-red gh-btn-icon"
                 data-test-button="confirm"
             />
+
+            {{else}}
+            <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" @close}}>
+                <span>Cancel</span>
+            </button>
+
+            <GhTaskButton
+                @disabled={{this.isDisabled}}
+                @buttonText="Unsubscribe members"
+                @successText="Unsubscribed"
+                @task={{this.bulkUnsubscribeTask}}
+                @class="gh-btn gh-btn-red gh-btn-icon"
+                data-test-button="confirm"
+            />
+            {{/if}}
         {{/if}}
     </div>
 
