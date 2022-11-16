@@ -122,6 +122,8 @@ module.exports = {
 
     // accepts an ID rather than an EmailBatch model to better support running via a job queue
     async processEmailBatch({emailBatchId, options, memberSegment}) {
+        logging.info('[sendEmailJob] Processing email batch ' + emailBatchId);
+
         const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
 
         const emailBatchModel = await models.EmailBatch
@@ -160,12 +162,16 @@ module.exports = {
             // send the email
             const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows, memberSegment);
 
+            logging.info('[sendEmailJob] Submitted email batch ' + emailBatchId);
+
             // update batch success status
             return await emailBatchModel.save({
                 status: 'submitted',
                 provider_id: sendResponse.id.trim().replace(/^<|>$/g, '')
             }, Object.assign({}, knexOptions, {patch: true}));
         } catch (error) {
+            logging.info('[sendEmailJob] Failed email batch ' + emailBatchId);
+
             // update batch failed status
             await emailBatchModel.save({status: 'failed'}, {...knexOptions, patch: true});
 
@@ -195,6 +201,8 @@ module.exports = {
      * @returns {Promise<Object>} - {providerId: 'xxx'}
      */
     async send(emailData, recipients, memberSegment) {
+        logging.info(`[sendEmailJob] Sending email batch to ${recipients.length} recipients`);
+
         const mailgunConfigured = mailgunClient.isConfigured();
         if (!mailgunConfigured) {
             logging.warn('Bulk email has not been configured');
@@ -234,6 +242,7 @@ module.exports = {
         try {
             const response = await mailgunClient.send(emailData, recipientData, replacements);
             debug(`sent message (${Date.now() - startTime}ms)`);
+            logging.info(`[sendEmailJob] Sent message (${Date.now() - startTime}ms)`);
             return response;
         } catch (err) {
             let ghostError = new errors.EmailError({

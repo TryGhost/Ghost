@@ -290,6 +290,7 @@ async function pendingEmailHandler(emailModel, options) {
 }
 
 async function sendEmailJob({emailId, options}) {
+    logging.info('[sendEmailJob] Started for ' + emailId);
     let startEmailSend = null;
 
     try {
@@ -334,7 +335,7 @@ async function sendEmailJob({emailId, options}) {
             hasSingleAccess = true;
         });
 
-        if (!hasSingleAccess) {
+        if (!hasSingleAccess || !emailModel) {
             return;
         }
 
@@ -342,6 +343,7 @@ async function sendEmailJob({emailId, options}) {
         const existingBatchCount = await emailModel.related('emailBatches').count('id');
 
         if (existingBatchCount === 0) {
+            logging.info('[sendEmailJob] Creating new batches for ' + emailId);
             let newBatchCount = 0;
 
             await models.Base.transaction(async (transacting) => {
@@ -350,6 +352,8 @@ async function sendEmailJob({emailId, options}) {
             });
 
             if (newBatchCount === 0) {
+                logging.info('[sendEmailJob] No batches created for ' + emailId);
+                await emailModel.save({status: 'submitted'}, {patch: true});
                 return;
             }
         }
@@ -359,6 +363,12 @@ async function sendEmailJob({emailId, options}) {
         await bulkEmailService.processEmail({emailModel, options});
         debug(`sendEmailJob: sent email (${Date.now() - startEmailSend}ms)`);
     } catch (error) {
+        if (startEmailSend) {
+            logging.info(`[sendEmailJob] Failed sending ${emailId} (${Date.now() - startEmailSend}ms)`);
+        } else {
+            logging.info(`[sendEmailJob] Failed sending ${emailId}`);
+        }
+
         if (startEmailSend) {
             debug(`sendEmailJob: send email failed (${Date.now() - startEmailSend}ms)`);
         }
@@ -548,6 +558,7 @@ async function createEmailBatches({emailModel, memberRows, memberSegment, option
     const batches = _.chunk(memberRows, bulkEmailService.BATCH_SIZE);
     const batchIds = await Promise.mapSeries(batches, storeRecipientBatch);
     debug(`createEmailBatches: stored recipient list (${Date.now() - startOfRecipientStorage}ms)`);
+    logging.info(`[createEmailBatches] stored recipient list (${Date.now() - startOfRecipientStorage}ms)`);
 
     return batchIds;
 }
