@@ -12301,10 +12301,10 @@ ember-svg-jar@2.4.2:
     lodash "^4.17.15"
     safe-stable-stringify "^2.2.0"
 
-ember-template-imports@^3.1.1:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/ember-template-imports/-/ember-template-imports-3.1.2.tgz#c2f5ec824c9873cc8e82843b2f4777178e191c35"
-  integrity sha512-8ocUuIxXeY7S5FQQf9hcLBCyGKNvSxXz9cV/dkUUMvGcnfh8NblrglqPggXmCbBcv4eDAoEzDmOfiGccD5kEJQ==
+ember-template-imports@^3.2.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/ember-template-imports/-/ember-template-imports-3.4.0.tgz#c40757e2d41e289ce08c0fe80671000bf216e0ef"
+  integrity sha512-3Cwcj3NXA129g3ZhmrQ/nYOxksFonTmB/qxyaSNTHrLBSoc93UZys47hBz13DlcfoeSCCrNt2Qpq1j890I04PQ==
   dependencies:
     babel-import-util "^0.2.0"
     broccoli-stew "^3.0.0"
@@ -12316,17 +12316,17 @@ ember-template-imports@^3.1.1:
     string.prototype.matchall "^4.0.6"
     validate-peer-dependencies "^1.1.0"
 
-ember-template-lint@4.18.0:
-  version "4.18.0"
-  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.18.0.tgz#a277fb097069e2b0a6c2f2cadef9e51a5489b6da"
-  integrity sha512-58tARMZMXwfOWOTTzY0vD8Qu+6h1HBSo7elhY+/i/ZE3GSA3wxCqCrqiBLgfWA+gJ7guu5zSFiGVcFMXQLwU5w==
+ember-template-lint@4.18.1:
+  version "4.18.1"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.18.1.tgz#f184f7420075006be60280f59e1b99dec5940585"
+  integrity sha512-YATwZ1zENT5wfW41/W+wz36gJVFlR8FdSXrWhoJbg89r1goTtkLNG7jhU+/jF11sXOcq0KqvK4TOQsfwPDW8Ug==
   dependencies:
     "@lint-todo/utils" "^13.0.3"
     aria-query "^5.0.2"
     chalk "^4.1.2"
     ci-info "^3.4.0"
     date-fns "^2.29.2"
-    ember-template-imports "^3.1.1"
+    ember-template-imports "^3.2.0"
     ember-template-recast "^6.1.3"
     find-up "^6.3.0"
     fuse.js "^6.5.3"
