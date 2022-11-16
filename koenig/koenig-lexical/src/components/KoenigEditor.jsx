@@ -12,6 +12,8 @@ import PlusCardMenuPlugin from '../plugins/PlusCardMenuPlugin';
 import SlashCardMenuPlugin from '../plugins/SlashCardMenuPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
+import DragDropPastePlugin from '../plugins/DragDropPastePlugin';
+
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import '../styles/index.css';
@@ -56,6 +58,7 @@ const KoenigEditor = ({
             <SlashCardMenuPlugin />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
             <ImagePlugin />
+            <DragDropPastePlugin />
             <HorizontalRulePlugin />
         </div>
     );

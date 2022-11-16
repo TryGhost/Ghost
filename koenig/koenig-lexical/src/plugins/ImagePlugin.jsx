@@ -1,12 +1,8 @@
 import React from 'react';
 import {
     $getSelection,
-    DRAGOVER_COMMAND,
-    DRAGSTART_COMMAND,
-    DROP_COMMAND,
     COMMAND_PRIORITY_HIGH,
     $isRangeSelection,
-    LexicalEditor,
     $createNodeSelection,
     $setSelection,
     $isParagraphNode
@@ -14,7 +10,7 @@ import {
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {mergeRegister} from '@lexical/utils';
 import KoenigComposerContext from '../context/KoenigComposerContext';
-import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
+import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND, UPLOAD_IMAGE_COMMAND} from '../nodes/ImageNode';
 
 export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -69,47 +65,18 @@ export const ImagePlugin = () => {
                 COMMAND_PRIORITY_HIGH
             ),
             editor.registerCommand(
-                DRAGSTART_COMMAND,
-                (event) => {
-                    return onDragStart(event);
+                UPLOAD_IMAGE_COMMAND,
+                async (files) => {
+                    const dataset = await imageUploader.imageUploader(files);
+                    editor.dispatchCommand(INSERT_IMAGE_COMMAND, dataset);
                 },
                 COMMAND_PRIORITY_HIGH
             ),
-            editor.registerCommand(
-                DRAGOVER_COMMAND,
-                (event) => {
-                    return onDragOver(event);
-                },
-                COMMAND_PRIORITY_HIGH
-            ),
-            editor.registerCommand(
-                DROP_COMMAND,
-                (event) => {
-                    return onDragDrop(event, editor, imageUploader);
-                },
-                COMMAND_PRIORITY_HIGH
-            ),
+            // todo: create another command to handle more of the upload logic to allow us to be able to keep the image uploader more "dry / generic"
         );
     }, [editor, imageUploader]);
 
     return null;
-};
-
-const onDragStart = (event) => {
-    return true;
-};
-
-const onDragOver = (event) => {
-    return true;
-};
-
-const onDragDrop = async (event, editor = LexicalEditor, imageUploader) => {
-    event.preventDefault();
-    const fls = event.dataTransfer.files;
-    const files = await imageUploader.imageUploader(fls);
-    if (files) {
-        editor.dispatchCommand(INSERT_IMAGE_COMMAND, files);
-    }
 };
 
 export default ImagePlugin;

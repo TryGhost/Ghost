@@ -4,6 +4,7 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
 import {ImageNodeComponent} from './ImageNodeComponent';
 export const INSERT_IMAGE_COMMAND = createCommand();
+export const UPLOAD_IMAGE_COMMAND = createCommand();
 
 function convertImageElement(domNode) {
     if (domNode instanceof HTMLImageElement) {
@@ -62,6 +63,10 @@ export class ImageNode extends DecoratorNode {
             node.__key
         );
     }
+
+    // from https://github.com/TryGhost/Ghost/blob/main/ghost/admin/app/components/gh-image-uploader.js#L18
+    static extensionTypes = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
+    static mimeTypes = ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
 
     static importJSON(serializedNode) {
         const {caption, altText, src, cardWidth, width, height} = serializedNode;
