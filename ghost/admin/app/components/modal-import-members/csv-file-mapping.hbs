@@ -16,6 +16,10 @@
             <p class="pt2">If an email address in your CSV matches an existing member, they will be updated with the mapped values.</p>
         {{/if}}
 
+        {{#if this.hasMappedComplimentaryPlan}}
+            <p class="pt2">When "Complimentary plan" data contains a "true" value, the importer member will get assigned to the cheapest paid active tier.</p>
+        {{/if}}
+
         <div class="mt6">
             <label for="label-input"><span class="fw6 f8 dib mb1">Label these members</span></label>
             <GhMemberLabelInput @labels={{this.labels}} @onChange={{this.updateLabels}} @disabled={{@disabled}} @triggerId="label-input" />

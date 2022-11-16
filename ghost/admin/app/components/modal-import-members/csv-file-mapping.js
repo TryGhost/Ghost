@@ -37,6 +37,10 @@ export default class CsvFileMapping extends Component {
         return !isNone(this.fileData);
     }
 
+    get hasMappedComplimentaryPlan() {
+        return this.args.hasMappedComplimentaryPlan;
+    }
+
     @action
     setMapping(mapping) {
         if (this.fileData.length === 0) {

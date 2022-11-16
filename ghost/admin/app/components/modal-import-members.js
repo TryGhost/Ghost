@@ -62,6 +62,20 @@ export default ModalComponent.extend({
         return formData;
     }),
 
+    hasMappedComplimentaryPlan: computed('mappingResult', function () {
+        if (this.mappingResult?.mapping) {
+            let mapping = this.mappingResult.mapping.toJSON();
+            
+            for (const prop in mapping) {
+                if (mapping[prop] === 'complimentary_plan') {
+                    return true;
+                }
+            }
+        } 
+
+        return false;
+    }),
+
     actions: {
         setFile(file) {
             this.set('file', file);

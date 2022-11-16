@@ -56,6 +56,7 @@
                 @setMappingResult={{action "setMappingResult"}}
                 @setFileData={{action "setMappingFileData"}}
                 @showErrors={{this.showMappingErrors}}
+                @hasMappedComplimentaryPlan={{this.hasMappedComplimentaryPlan}}
                 @disabled={{if (or (eq this.state 'UPLOADING') (eq this.mappingResult.membersCount 0)) true false}}
             />
         {{/if}}
