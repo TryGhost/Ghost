@@ -230,6 +230,11 @@ jobs:
           endTime="$(date +%s)"
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
+      - uses: codecov/codecov-action@v3
+        if: startsWith(matrix.node, '16') && contains(matrix.env.DB, 'mysql')
+        with:
+          flags: e2e-tests
+
       # Continue on error if TailScale service is down
       - name: Tailscale Action
         timeout-minutes: 2
@@ -342,6 +347,8 @@ jobs:
           path: ghost
       - run: rsync -av --remove-source-files ghost/coverage/* ghost/
       - uses: codecov/codecov-action@v3
+        with:
+          flags: unit-tests
 
   canary:
     needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests]
