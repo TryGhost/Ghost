@@ -1010,3 +1010,8 @@ remove|ember-template-lint|no-action|50|35|50|35|7432725bd18c48f69bf22dc9487d14d
 remove|ember-template-lint|no-passed-in-event-handlers|33|28|33|28|5b371baf419f247953b91b626611cb831c524af3|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|50|28|50|28|40caf07c7cebf6f4321c5b7e7f2f426b5c30217b|1662681600000|1673053200000|1678237200000|app/templates/signin.hbs
 remove|ember-template-lint|require-iframe-title|1|0|1|0|d1c9631d150af53ca33b16c8c280c9d815bf43da|1662681600000|1673053200000|1678237200000|app/components/gh-billing-iframe.hbs
+add|ember-template-lint|no-action|28|60|28|60|190532b9954beb4e7e9e0f1c51d170e64d4a5315|1668643200000|1679011200000|1684195200000|app/components/modal-import-content.hbs
+add|ember-template-lint|no-action|55|120|55|120|031d04576149d3034549aa3d14bc26da704cd70c|1668643200000|1679011200000|1684195200000|app/components/modal-import-content.hbs
+add|ember-template-lint|no-action|58|103|58|103|7e581bf2ffd5254ae851201e1f23cb9eaa9b198b|1668643200000|1679011200000|1684195200000|app/components/modal-import-content.hbs
+add|ember-template-lint|no-action|71|95|71|95|031d04576149d3034549aa3d14bc26da704cd70c|1668643200000|1679011200000|1684195200000|app/components/modal-import-content.hbs
+remove|ember-template-lint|no-action|27|42|27|42|b60a8d95bc6d0e8c9f57d46647ab18947415d9dc|1662681600000|1673053200000|1678237200000|app/templates/settings/labs.hbs
