@@ -7,10 +7,14 @@ import {
     $isNodeSelection,
     $isRangeSelection,
     $setSelection,
+    $createTextNode,
     COMMAND_PRIORITY_HIGH,
     KEY_ARROW_DOWN_COMMAND,
-    KEY_ARROW_UP_COMMAND
+    KEY_ARROW_UP_COMMAND,
+    PASTE_COMMAND
 } from 'lexical';
+
+import {$createLinkNode} from '@lexical/link';
 import {mergeRegister} from '@lexical/utils';
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
@@ -191,8 +195,29 @@ function useKoenigBehaviour({editor, containerElem}) {
                     return false;
                 },
                 COMMAND_PRIORITY_HIGH
-            )
-        );
+            ),
+            editor.registerCommand (
+                PASTE_COMMAND,
+                (clipboard) => {
+                    const clipboardDataset = clipboard?.clipboardData?.getData('text');
+                    const linkMatch = clipboardDataset?.match(/^(https?:\/\/[^\s]+)$/); // replace with better regex to include more protocols like mailto, ftp, etc
+                    const selection = $getSelection();
+                    const selectionContent = selection.getTextContent();
+                    if (linkMatch && selectionContent.length > 0) {
+                        const link = linkMatch[1];
+                        if ($isRangeSelection(selection)) {
+                            const textNode = selection.extract()[0];
+                            const linkNode = $createLinkNode(link);
+                            const linkTextNode = $createTextNode(selectionContent);
+                            linkTextNode.setFormat(textNode.getFormat());
+                            linkNode.append(linkTextNode);
+                            textNode.replace(linkNode);
+                        }
+                        return true;
+                    }
+                },
+                COMMAND_PRIORITY_HIGH
+            ));
     });
 
     return null;
