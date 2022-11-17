@@ -117,7 +117,6 @@ export function isMaintenanceError(errorOrStatus) {
     }
 }
 
-
 /* Theme validation error */
 
 export class ThemeValidationError extends AjaxError {
@@ -149,6 +148,8 @@ export function isHostLimitError(errorOrStatus, payload) {
         return get(payload || {}, 'errors.firstObject.type') === 'HostLimitError';
     }
 }
+
+/* Email error */
 
 export class EmailError extends AjaxError {
     constructor(payload) {
