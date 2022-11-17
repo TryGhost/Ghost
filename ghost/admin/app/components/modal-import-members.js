@@ -214,7 +214,7 @@ export default ModalComponent.extend({
             message = 'The file you uploaded was larger than the maximum file size your server allows.';
         } else if (isDataImportError(error, error.payload)) {
             message = htmlSafe(error.payload.errors[0].message);
-        } else if (isHostLimitError(error) && error?.payload?.errors[0]?.code === 'EMAIL_VERIFICATION_NEEDED') {
+        } else if (isHostLimitError(error) && error?.payload?.errors?.[0]?.code === 'EMAIL_VERIFICATION_NEEDED') {
             message = htmlSafe(error.payload.errors[0].message);
 
             header = 'Woah there cowboy, that\'s a big list';
@@ -225,7 +225,7 @@ export default ModalComponent.extend({
             message = 'An unexpected error occurred, please try again';
 
             console.error(error); // eslint-disable-line
-            if (error?.payload?.errors[0]?.id) {
+            if (error?.payload?.errors?.[0]?.id) {
                 console.error(`Error ID: ${error.payload.errors[0].id}`);  // eslint-disable-line
             }
         }
