@@ -1122,6 +1122,23 @@ textarea.gh-member-details-textarea {
     margin-bottom: 0!important;
 }
 
+.gh-member-newsletter-footer-text a {
+    border-bottom: 1px solid currentColor;
+}
+
+.gh-member-newsletter-footer {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 1.25rem;
+    margin-top: 12px;
+}
+
+.gh-member-newsletter-footer-icon {
+    width: 16px;
+    height: 16px;
+}
+
 .gh-member-feed-container {
     display: flex;
     flex-grow: 1;
