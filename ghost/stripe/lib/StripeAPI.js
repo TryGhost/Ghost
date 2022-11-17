@@ -1,5 +1,5 @@
 const {VersionMismatchError} = require('@tryghost/errors');
-const debug = require('@tryghost/debug');
+const debug = require('@tryghost/debug')('stripe');
 const Stripe = require('stripe').Stripe;
 const LeakyBucket = require('leaky-bucket');
 const EXPECTED_API_EFFICIENCY = 0.95;
@@ -449,7 +449,9 @@ module.exports = class StripeAPI {
     async getPrice(id, options = {}) {
         debug(`getPrice(${id}, ${JSON.stringify(options)})`);
 
-        return await this._stripe.prices.retrieve(id, options);
+        const response = await this._stripe.prices.retrieve(id, options);
+        debug(`getPrice response ${JSON.stringify(response)}`);
+        return response;
     }
 
     /**

@@ -215,7 +215,7 @@ class PaymentsService {
             currency,
             interval: cadence,
             amount,
-            active: 1
+            active: true
         }).query().select('id', 'stripe_price_id');
 
         for (const row of rows) {
