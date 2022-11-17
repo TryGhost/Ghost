@@ -25,7 +25,7 @@
 
     <div class="modal-body">
         {{#if (eq this.state 'INIT')}}
-            <ModalImportContent::ContentFileSelect @setFile={{action "setFile"}} />
+            <ModalImportContent::ContentFileSelect @setFile={{this.setFile}} />
         {{/if}}
 
         {{#if (eq this.state 'PROCESSING')}}
@@ -52,10 +52,10 @@
         {{/if}}
 
         {{#if (eq this.state 'UPLOADING')}}
-            <button class="gh-btn disabled" disabled="disabled" data-test-button="restart-import-content" type="button" {{action "reset"}}>
+            <button class="gh-btn disabled" disabled="disabled" data-test-button="restart-import-content" type="button" {{on "click" this.reset}}>
                 <span>Start over</span>
             </button>
-            <button class="gh-btn gh-btn-green gh-btn-icon disabled" disabled="disabled" type="button" {{action "upload"}}>
+            <button class="gh-btn gh-btn-green gh-btn-icon disabled" disabled="disabled" type="button" {{on "click" this.upload}}>
                 <span>{{svg-jar "spinner" class="gh-icon-spinner"}} {{this.runningText}}Uploading</span>
             </button>
         {{/if}}
@@ -68,7 +68,7 @@
 
         {{#if (eq this.state 'ERROR')}}
             {{#if this.showTryAgainButton}}
-                <button class="gh-btn" data-test-button="restart-import-content" type="button" {{action "reset"}}>
+                <button class="gh-btn" data-test-button="restart-import-content" type="button" {{on "click" this.reset}}>
                     <span>Try again</span>
                 </button>
             {{/if}}
