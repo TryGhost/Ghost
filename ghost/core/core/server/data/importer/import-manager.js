@@ -445,15 +445,15 @@ class ImportManager {
 
             if (!env?.startsWith('testing')) {
                 // Step 6: Send email
-                const email = this.generateCompletionEmail(importResult?.data, {
+                const email = this.generateCompletionEmail(importResult, {
                     emailRecipient: importOptions.user.email,
                     importTag: importOptions.importTag
                 });
                 await ghostMailer.send({
                     to: importOptions.user.email,
-                    subject: importResult.errors
-                        ? 'Your content import has finished'
-                        : 'Your content import was unsuccessful',
+                    subject: importResult.data.problems.length
+                        ? 'Your content import was unsuccessful'
+                        : 'Your content import has finished',
                     html: email
                 });
             }
