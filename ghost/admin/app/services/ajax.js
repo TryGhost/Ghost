@@ -37,6 +37,22 @@ export function isVersionMismatchError(errorOrStatus, payload) {
     }
 }
 
+/* DataImport error */
+
+export class DataImportError extends AjaxError {
+    constructor(payload) {
+        super(payload, 'he server encountered an error whilst importing data.');
+    }
+}
+
+export function isDataImportError(errorOrStatus, payload) {
+    if (isAjaxError(errorOrStatus)) {
+        return errorOrStatus instanceof DataImportError;
+    } else {
+        return get(payload || {}, 'errors.firstObject.type') === 'DataImportError';
+    }
+}
+
 /* Server unreachable error */
 
 export class ServerUnreachableError extends AjaxError {
@@ -132,6 +148,8 @@ export function isHostLimitError(errorOrStatus, payload) {
         return get(payload || {}, 'errors.firstObject.type') === 'HostLimitError';
     }
 }
+
+/* Email error */
 
 export class EmailError extends AjaxError {
     constructor(payload) {
@@ -341,6 +359,10 @@ class ajaxService extends AjaxService {
 
     isUnsupportedMediaTypeError(status) {
         return isUnsupportedMediaTypeError(status);
+    }
+
+    isDataImportError(status) {
+        return isDataImportError(status);
     }
 
     isMaintenanceError(status, headers, payload) {

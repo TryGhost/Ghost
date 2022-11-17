@@ -50,8 +50,8 @@ class VerificationTrigger {
     }
 
     /**
-     * 
-     * @param {MemberCreatedEvent} event 
+     *
+     * @param {MemberCreatedEvent} event
      */
     async _handleMemberCreatedEvent(event) {
         const source = event.data?.source;
@@ -156,7 +156,7 @@ class VerificationTrigger {
                 } else if (source === 'admin') {
                     verificationMessage = messages.emailVerificationEmailMessageAdmin;
                 }
-                
+
                 this._sendVerificationEmail({
                     message: verificationMessage,
                     subject: messages.emailVerificationEmailSubject,
@@ -164,8 +164,9 @@ class VerificationTrigger {
                 });
 
                 if (throwOnTrigger) {
-                    throw new errors.ValidationError({
-                        message: messages.emailVerificationNeeded
+                    throw new errors.HostLimitError({
+                        message: messages.emailVerificationNeeded,
+                        code: 'EMAIL_VERIFICATION_NEEDED'
                     });
                 }
 
