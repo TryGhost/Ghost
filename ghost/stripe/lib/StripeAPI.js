@@ -1,5 +1,5 @@
 const {VersionMismatchError} = require('@tryghost/errors');
-const debug = require('@tryghost/debug');
+const debug = require('@tryghost/debug')('stripe');
 const Stripe = require('stripe').Stripe;
 const LeakyBucket = require('leaky-bucket');
 const EXPECTED_API_EFFICIENCY = 0.95;
