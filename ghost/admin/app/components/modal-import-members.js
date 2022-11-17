@@ -4,6 +4,8 @@ import moment from 'moment-timezone';
 import unparse from '@tryghost/members-csv/lib/unparse';
 import {
     AcceptedResponse,
+    isDataImportError,
+    isHostLimitError,
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError,
     isVersionMismatchError
@@ -11,7 +13,6 @@ import {
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
-import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
 export default ModalComponent.extend({
@@ -206,22 +207,27 @@ export default ModalComponent.extend({
             this.notifications.showAPIError(error);
         }
 
+        // Handle all the specific errors that we know about
         if (isUnsupportedMediaTypeError(error)) {
             message = 'The file type you uploaded is not supported.';
         } else if (isRequestEntityTooLargeError(error)) {
             message = 'The file you uploaded was larger than the maximum file size your server allows.';
-        } else if (error.payload && error.payload.errors && !isBlank(error.payload.errors[0].message)) {
+        } else if (isDataImportError(error, error.payload)) {
+            message = htmlSafe(error.payload.errors[0].message);
+        } else if (isHostLimitError(error) && error?.payload?.errors?.[0]?.code === 'EMAIL_VERIFICATION_NEEDED') {
             message = htmlSafe(error.payload.errors[0].message);
 
-            if (error.payload.errors[0].message.match(/great deliverability/gi)) {
-                header = 'Woah there cowboy, that\'s a big list';
-                this.set('showTryAgainButton', false);
-                // NOTE: confirm makes sure to refresh the members data in the background
-                this.confirm();
-            }
-        } else {
+            header = 'Woah there cowboy, that\'s a big list';
+            this.set('showTryAgainButton', false);
+            // NOTE: confirm makes sure to refresh the members data in the background
+            this.confirm();
+        } else { // Generic fallback error
+            message = 'An unexpected error occurred, please try again';
+
             console.error(error); // eslint-disable-line
-            message = 'Something went wrong :(';
+            if (error?.payload?.errors?.[0]?.id) {
+                console.error(`Error ID: ${error.payload.errors[0].id}`);  // eslint-disable-line
+            }
         }
 
         this.set('errorMessage', message);
