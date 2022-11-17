@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => `
 <!doctype html>
 <html>
