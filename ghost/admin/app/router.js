@@ -102,7 +102,7 @@ Router.map(function () {
     this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 
     this.route('settings.navigation', {path: '/settings/navigation'});
-    this.route('settings.labs', {path: '/settings/labs'}, function() {
+    this.route('settings.labs', {path: '/settings/labs'}, function () {
         this.route('import');
     });
     // this.route('settings.labs.import', {path: '/settings/labs/import'});
