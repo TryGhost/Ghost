@@ -514,3 +514,11 @@ p.gh-content-import-errordetail:first-of-type {
 .fullscreen-modal-import-content {
     max-width: unset !important;
 }
+
+.gh-import-content-spinner {
+    min-height: 120px;
+}
+
+.gh-import-content-spinner .gh-loading-content {
+    padding-bottom: 0;
+}
