@@ -126,7 +126,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
-        expect(find('.failed').textContent).to.match(/Error: UnknownError/);
+        expect(find('.failed').textContent).to.match(/An unexpected error occurred, please try again/);
     });
 
     it('handles unknown failure', async function () {
@@ -141,7 +141,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
-        expect(find('.failed').textContent).to.match(/Something went wrong/);
+        expect(find('.failed').textContent).to.match(/An unexpected error occurred, please try again/);
     });
 
     it('triggers notifications.showAPIError for VersionMismatchError', async function () {
