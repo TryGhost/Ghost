@@ -283,13 +283,14 @@ async function pendingEmailHandler(emailModel, options) {
     if (!process.env.NODE_ENV.startsWith('test')) {
         return jobsService.addJob({
             job: sendEmailJob,
-            data: {emailModel},
+            data: {emailId: emailModel.id},
             offloaded: false
         });
     }
 }
 
-async function sendEmailJob({emailModel, options}) {
+async function sendEmailJob({emailId, options}) {
+    logging.info('[sendEmailJob] Started for ' + emailId);
     let startEmailSend = null;
 
     try {
@@ -304,10 +305,45 @@ async function sendEmailJob({emailModel, options}) {
             await limitService.errorIfWouldGoOverLimit('emails');
         }
 
+        // Check if the email is still pending. And set the status to submitting in one transaction.
+        let hasSingleAccess = false;
+        let emailModel;
+        await models.Base.transaction(async (transacting) => {
+            const knexOptions = {...options, transacting, forUpdate: true};
+            emailModel = await models.Email.findOne({id: emailId}, knexOptions);
+
+            if (!emailModel) {
+                throw new errors.IncorrectUsageError({
+                    message: 'Provided email id does not match a known email record',
+                    context: {
+                        id: emailId
+                    }
+                });
+            }
+    
+            if (emailModel.get('status') !== 'pending') {
+                // We don't throw this, because we don't want to mark this email as failed
+                logging.error(new errors.IncorrectUsageError({
+                    message: 'Emails can only be processed when in the "pending" state',
+                    context: `Email "${emailId}" has state "${emailModel.get('status')}"`,
+                    code: 'EMAIL_NOT_PENDING'
+                }));
+                return;
+            }
+
+            await emailModel.save({status: 'submitting'}, Object.assign({}, knexOptions, {patch: true}));
+            hasSingleAccess = true;
+        });
+
+        if (!hasSingleAccess || !emailModel) {
+            return;
+        }
+
         // Create email batch and recipient rows unless this is a retry and they already exist
         const existingBatchCount = await emailModel.related('emailBatches').count('id');
 
         if (existingBatchCount === 0) {
+            logging.info('[sendEmailJob] Creating new batches for ' + emailId);
             let newBatchCount = 0;
 
             await models.Base.transaction(async (transacting) => {
@@ -316,15 +352,23 @@ async function sendEmailJob({emailModel, options}) {
             });
 
             if (newBatchCount === 0) {
+                logging.info('[sendEmailJob] No batches created for ' + emailId);
+                await emailModel.save({status: 'submitted'}, {patch: true});
                 return;
             }
         }
 
         debug('sendEmailJob: sending email');
         startEmailSend = Date.now();
-        await bulkEmailService.processEmail({emailId: emailModel.get('id'), options});
+        await bulkEmailService.processEmail({emailModel, options});
         debug(`sendEmailJob: sent email (${Date.now() - startEmailSend}ms)`);
     } catch (error) {
+        if (startEmailSend) {
+            logging.info(`[sendEmailJob] Failed sending ${emailId} (${Date.now() - startEmailSend}ms)`);
+        } else {
+            logging.info(`[sendEmailJob] Failed sending ${emailId}`);
+        }
+
         if (startEmailSend) {
             debug(`sendEmailJob: send email failed (${Date.now() - startEmailSend}ms)`);
         }
@@ -334,10 +378,10 @@ async function sendEmailJob({emailModel, options}) {
             errorMessage = errorMessage.substring(0, 2000);
         }
 
-        await emailModel.save({
+        await models.Email.edit({
             status: 'failed',
             error: errorMessage
-        }, {patch: true});
+        }, {id: emailId});
 
         throw new errors.InternalServerError({
             err: error,
@@ -514,6 +558,7 @@ async function createEmailBatches({emailModel, memberRows, memberSegment, option
     const batches = _.chunk(memberRows, bulkEmailService.BATCH_SIZE);
     const batchIds = await Promise.mapSeries(batches, storeRecipientBatch);
     debug(`createEmailBatches: stored recipient list (${Date.now() - startOfRecipientStorage}ms)`);
+    logging.info(`[createEmailBatches] stored recipient list (${Date.now() - startOfRecipientStorage}ms)`);
 
     return batchIds;
 }
