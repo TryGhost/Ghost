@@ -200,6 +200,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Suppression List</h4>
+                            <p class="gh-expandable-description">
+                                Allows checking whether a member's email is blocked and removing emails from the suppression list.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="suppressionList" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}

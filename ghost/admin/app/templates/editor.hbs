@@ -17,7 +17,7 @@
                     <div class="flex items-center pe-auto h-100">
                         {{#if this.ui.isFullScreen}}
                             {{#if this.fromAnalytics }}
-                                <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button">
+                                <LinkTo @route="posts.analytics" @model={{this.post.id}} class="gh-btn-editor gh-editor-back-button">
                                     <span>
                                         {{svg-jar "arrow-left"}}
                                         Analytics
@@ -79,7 +79,7 @@
                 @onWordCountChange={{this.updateWordCount}}
                 @snippets={{this.snippets}}
                 @saveSnippet={{if this.canManageSnippets this.saveSnippet}}
-                @updateSnippet={{if this.canManageSnippets this.toggleUpdateSnippetModal}}
+                @updateSnippet={{if this.canManageSnippets this.confirmUpdateSnippet}}
                 @deleteSnippet={{if this.canManageSnippets this.confirmDeleteSnippet}}
                 @featureImage={{this.post.featureImage}}
                 @featureImageAlt={{this.post.featureImageAlt}}
@@ -120,34 +120,6 @@
             <span>{{svg-jar "sidemenu"}}</span>
         {{/if}}
     </button>
-
-    {{#if this.showReAuthenticateModal}}
-        <GhFullscreenModal @modal="re-authenticate"
-            @close={{this.toggleReAuthenticateModal}}
-            @modifier="action wide" />
-    {{/if}}
-
-    {{#if this.showUpgradeModal}}
-        <GhFullscreenModal
-            @modal="upgrade-host-limit"
-            @model={{hash
-                message=this.hostLimitError.context
-                details=this.hostLimitError.details
-            }}
-            @close={{this.closeUpgradeModal}}
-            @modifier="action wide"
-        />
-    {{/if}}
-
-    {{#if this.snippetToUpdate}}
-        <GhFullscreenModal
-            @modal="update-snippet"
-            @model={{this.snippetToUpdate}}
-            @confirm={{this.updateSnippet}}
-            @close={{this.toggleUpdateSnippetModal}}
-            @modifier="action wide"
-        />
-    {{/if}}
 {{/if}}
 
 {{outlet}}

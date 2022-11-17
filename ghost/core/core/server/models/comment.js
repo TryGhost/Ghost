@@ -101,7 +101,7 @@ const Comment = ghostBookshelf.Model.extend({
     },
 
     enforcedFilters: function enforcedFilters(options) {
-        // Convenicence option to merge all filters with parent_id:null filter
+        // Convenience option to merge all filters with parent_id:null filter
         if (options.parentId !== undefined) {
             if (options.parentId === null) {
                 return 'parent_id:null';

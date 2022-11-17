@@ -9,10 +9,13 @@ const allowedIncludes = [
     'email',
     'tiers',
     'newsletter',
+    'count.conversions', 
     'count.signups',
     'count.paid_conversions',
     'count.clicks',
-    'sentiment'
+    'sentiment',
+    'count.positive_feedback',
+    'count.negative_feedback'
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 

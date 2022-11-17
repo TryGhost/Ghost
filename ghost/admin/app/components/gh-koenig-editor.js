@@ -44,6 +44,20 @@ export default class GhKoenigEditorComponent extends Component {
     }
 
     @action
+    cleanPastedTitle(event) {
+        const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+
+        if (!pastedText) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const cleanValue = pastedText.replace(/(\n|\r)+/g, ' ').trim();
+        document.execCommand('insertText', false, cleanValue);
+    }
+
+    @action
     focusTitle() {
         this.titleElement.focus();
     }

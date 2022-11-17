@@ -386,6 +386,29 @@ describe('Portal Data attributes:', () => {
         });
     });
 
+    describe('data-portal=signup/:tierid/monthly', () => {
+        test('opens Portal signup page', async () => {
+            const siteData = FixturesSite.singleTier.basic;
+            const paidTier = siteData.products.find(p => p.type === 'paid');
+
+            document.body.innerHTML = `
+                <div data-portal="signup/${paidTier.id}/monthly"> </div>
+            `;
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(popupFrame).not.toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+        });
+    });
+
     describe('data-portal=account', () => {
         test('opens Portal account home page', async () => {
             document.body.innerHTML = `

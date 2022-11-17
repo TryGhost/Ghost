@@ -775,8 +775,14 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     return updatedAmount;
 };
 
-export const isActiveOffer = ({offer}) => {
-    return offer?.status === 'active';
+export const isActiveOffer = ({site, offer}) => {
+    if (offer?.status !== 'active') {
+        return false;
+    }
+
+    // Check if the corresponding tier has been archived
+    const product = getProductFromId({site, productId: offer.tier.id});
+    return !!product;
 };
 
 function createMonthlyPrice({tier, priceId}) {

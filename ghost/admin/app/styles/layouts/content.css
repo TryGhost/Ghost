@@ -1255,20 +1255,20 @@
     }
 }
 
-.gh-dashboard-list-item-sub .gh-members-activity-description {
+.gh-post-activity-feed .gh-dashboard-list-item-sub .gh-members-activity-description {
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
-.gh-dashboard-list-item-sub .gh-members-activity-description svg {
+.gh-post-activity-feed .gh-dashboard-list-item-sub .gh-members-activity-description svg {
     width: 18px;
     min-width: 18px;
     height: 16px;
     margin: 0 0.4em 0 0;
 }
 
-.gh-dashboard-list-item-sub .gh-members-activity-description svg path {
+.gh-post-activity-feed .gh-dashboard-list-item-sub .gh-members-activity-description svg path {
     stroke: var(--midgrey);
 }
 
