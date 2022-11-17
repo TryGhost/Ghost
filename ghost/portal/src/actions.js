@@ -106,6 +106,9 @@ async function signup({data, state, api}) {
                 ({tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan}));
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
             }
+            return {
+                page: 'loading'
+            };
         }
         return {
             page: 'magiclink',
@@ -283,7 +286,7 @@ async function updateNewsletterPreference({data, state, api}) {
         const member = await api.member.update(updateData);
         const action = 'updateNewsletterPref:success';
         return {
-            action, 
+            action,
             member
         };
     } catch (e) {
