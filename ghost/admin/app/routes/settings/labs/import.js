@@ -8,7 +8,7 @@ export default class LabsImportRoute extends AdminRoute {
 
     importModal = null;
 
-    setupController(controller, model) {
+    setupController() {
         this.importModal?.close();
 
         this.importModal = this.modals.open(ImportContentModal, {}, {
