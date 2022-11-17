@@ -66,7 +66,6 @@ export default class ContentFileSelect extends Component {
     }
 
     _validateFileType(file) {
-        console.log(file);
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
         if (extension.toLowerCase() !== 'json' && extension.toLowerCase() !== 'zip') {
