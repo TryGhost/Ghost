@@ -1015,3 +1015,9 @@ add|ember-template-lint|no-action|55|120|55|120|031d04576149d3034549aa3d14bc26da
 add|ember-template-lint|no-action|58|103|58|103|7e581bf2ffd5254ae851201e1f23cb9eaa9b198b|1668643200000|1679011200000|1684195200000|app/components/modal-import-content.hbs
 add|ember-template-lint|no-action|71|95|71|95|031d04576149d3034549aa3d14bc26da704cd70c|1668643200000|1679011200000|1684195200000|app/components/modal-import-content.hbs
 remove|ember-template-lint|no-action|27|42|27|42|b60a8d95bc6d0e8c9f57d46647ab18947415d9dc|1662681600000|1673053200000|1678237200000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-action|33|66|33|66|2e441eb8956fdd6684b75ae1139f097237ebc1fa|1662681600000|1673053200000|1678237200000|app/templates/settings/integrations/zapier.hbs
+remove|ember-template-lint|no-action|36|66|36|66|2d51bed033fe50baea3002bf5acc234ac3738b58|1662681600000|1673053200000|1678237200000|app/templates/settings/integrations/zapier.hbs
+remove|ember-template-lint|no-action|58|66|58|66|bfcab210b651dbe74a1b9e5eb565756ab863f3bb|1662681600000|1673053200000|1678237200000|app/templates/settings/integrations/zapier.hbs
+remove|ember-template-lint|no-action|253|17|253|17|1907c9b1ae81cfb450b7a2ae7e0f874c26595144|1662681600000|1673053200000|1678237200000|app/templates/settings/integrations/zapier.hbs
+remove|ember-template-lint|no-action|254|15|254|15|20eb710122c95e74c9293fe14e11f105a86f172a|1662681600000|1673053200000|1678237200000|app/templates/settings/integrations/zapier.hbs
+remove|ember-template-lint|require-valid-alt-text|18|24|18|24|c1c041ff951875c8cf87ba24bd45d2a2a7597969|1662681600000|1673053200000|1678237200000|app/templates/settings/integrations/zapier.hbs
