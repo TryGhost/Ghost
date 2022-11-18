@@ -64,7 +64,8 @@ module.exports = function MembersAPI({
     offersAPI,
     labsService,
     newslettersService,
-    memberAttributionService
+    memberAttributionService,
+    emailSuppressionList
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -132,7 +133,8 @@ module.exports = function MembersAPI({
         },
         labsService,
         stripeService: stripeAPIService,
-        memberAttributionService
+        memberAttributionService,
+        emailSuppressionList
     });
 
     const geolocationService = new GeolocationSerice();
