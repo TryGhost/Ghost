@@ -30,7 +30,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'lexicalEditor',
-    'suppressionList'
+    'suppressionList',
+    'emailStability'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
