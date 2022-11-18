@@ -74,6 +74,36 @@ const processImport = async (options) => {
     return result;
 };
 
+const updateVerificationTrigger = () => {
+    verificationTrigger = new VerificationTrigger({
+        apiTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
+        adminTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
+        importTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+        isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
+        isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
+        sendVerificationEmail: async ({subject, message, amountTriggered}) => {
+            const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
+            const fromAddress = config.get('user_email');
+
+            if (escalationAddress) {
+                await ghostMailer.send({
+                    subject,
+                    html: tpl(message, {
+                        amountTriggered: amountTriggered,
+                        siteUrl: urlUtils.getSiteUrl()
+                    }),
+                    forceTextContent: true,
+                    from: fromAddress,
+                    to: escalationAddress
+                });
+            }
+        },
+        membersStats,
+        Settings: models.Settings,
+        eventRepository: membersApi.events
+    });
+};
+
 module.exports = {
     async init() {
         const stripeService = require('../stripe');
@@ -110,33 +140,7 @@ module.exports = {
             getMembersApi: () => module.exports.api
         });
 
-        verificationTrigger = new VerificationTrigger({
-            apiTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
-            adminTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
-            importTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
-            isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
-            isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
-            sendVerificationEmail: ({subject, message, amountTriggered}) => {
-                const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
-                const fromAddress = config.get('user_email');
-
-                if (escalationAddress) {
-                    ghostMailer.send({
-                        subject,
-                        html: tpl(message, {
-                            amountTriggered: amountTriggered,
-                            siteUrl: urlUtils.getSiteUrl()
-                        }),
-                        forceTextContent: true,
-                        from: fromAddress,
-                        to: escalationAddress
-                    });
-                }
-            },
-            membersStats,
-            Settings: models.Settings,
-            eventRepository: membersApi.events
-        });
+        updateVerificationTrigger();
 
         (async () => {
             try {
@@ -185,7 +189,10 @@ module.exports = {
     processImport: processImport,
 
     stats: membersStats,
-    export: require('./exporter/query')
+    export: require('./exporter/query'),
+
+    // Only for tests
+    _updateVerificationTrigger: updateVerificationTrigger
 };
 
 module.exports.middleware = require('./middleware');

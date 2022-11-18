@@ -5,8 +5,12 @@ const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
+const configUtils = require('../../../utils/configUtils');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 const {mockManager} = require('../../../utils/e2e-framework');
+const assert = require('assert');
+const {_updateVerificationTrigger} = require('../../../../core/server/services/members');
 
 let request;
 
@@ -236,5 +240,66 @@ describe('Members Importer API', function () {
                 should.exist(jsonResponse.meta.import_label);
                 jsonResponse.meta.import_label.slug.should.match(/^import-/);
             });
+    });
+    
+    it('Can import members with host emailVerification limits', async function () {
+        // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
+        configUtils.set('hostSettings:emailVerification', {
+            apiThreshold: 2,
+            adminThreshold: 2,
+            importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
+            verified: false,
+            escalationAddress: 'test@example.com'
+        });
+        _updateVerificationTrigger();
+
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['new-global-label'])
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.meta);
+        should.exist(jsonResponse.meta.stats);
+
+        jsonResponse.meta.stats.imported.should.equal(10);
+        jsonResponse.meta.stats.invalid.length.should.equal(0);
+
+        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+
+        mockManager.assert.sentEmail({
+            subject: 'Email needs verification'
+        });
+    });
+
+    it('Can still import members once email verification is required but does not send email', async function () {
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['new-global-label'])
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.meta);
+        should.exist(jsonResponse.meta.stats);
+
+        jsonResponse.meta.stats.imported.should.equal(10);
+        jsonResponse.meta.stats.invalid.length.should.equal(0);
+
+        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+
+        // Don't send another email
+        mockManager.assert.sentEmailCount(0);
     });
 });
