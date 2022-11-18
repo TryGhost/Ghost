@@ -1154,6 +1154,10 @@ textarea.gh-member-details-textarea {
     height: 24px;
 }
 
+.gh-member-newsletter-footer-icon [class*="__body"] {
+    stroke: #95A1AD;
+}
+
 .gh-member-feed-container {
     display: flex;
     flex-grow: 1;
