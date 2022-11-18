@@ -122,10 +122,10 @@ module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => `
                     </tr>
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top;">
-                        <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">${result.data.problems.length ? 'Import unsuccessful' : 'Your content import has finished successfully'}</p>
+                        <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">${result?.data?.errors ? 'Import unsuccessful' : 'Your content import has finished successfully'}</p>
                       </td>
                     </tr>
-                    ${result.data.problems.length ? `
+                    ${result?.data?.errors ? `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">One or more error occured while importing your content. Please contact support or report on the <a href="https://forum.ghost.org/">Ghost Community Forum</a>.</td>
                     </tr>
