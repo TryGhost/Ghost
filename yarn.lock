@@ -12301,7 +12301,7 @@ ember-svg-jar@2.4.2:
     lodash "^4.17.15"
     safe-stable-stringify "^2.2.0"
 
-ember-template-imports@^3.2.0:
+ember-template-imports@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/ember-template-imports/-/ember-template-imports-3.4.0.tgz#c40757e2d41e289ce08c0fe80671000bf216e0ef"
   integrity sha512-3Cwcj3NXA129g3ZhmrQ/nYOxksFonTmB/qxyaSNTHrLBSoc93UZys47hBz13DlcfoeSCCrNt2Qpq1j890I04PQ==
@@ -12316,17 +12316,17 @@ ember-template-imports@^3.2.0:
     string.prototype.matchall "^4.0.6"
     validate-peer-dependencies "^1.1.0"
 
-ember-template-lint@4.18.1:
-  version "4.18.1"
-  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.18.1.tgz#f184f7420075006be60280f59e1b99dec5940585"
-  integrity sha512-YATwZ1zENT5wfW41/W+wz36gJVFlR8FdSXrWhoJbg89r1goTtkLNG7jhU+/jF11sXOcq0KqvK4TOQsfwPDW8Ug==
+ember-template-lint@4.18.2:
+  version "4.18.2"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.18.2.tgz#18e5e5fc6ea7301e7a075e024008271d2a781e1e"
+  integrity sha512-yI8kQ8IQ2x5HVq0tQAISXABOHr0Is5sAg6rwceO6M8CYozq7HMxUPEj0VbdcbyIE70SWw/8d24M1rBI4km544Q==
   dependencies:
     "@lint-todo/utils" "^13.0.3"
     aria-query "^5.0.2"
     chalk "^4.1.2"
     ci-info "^3.4.0"
     date-fns "^2.29.2"
-    ember-template-imports "^3.2.0"
+    ember-template-imports "^3.4.0"
     ember-template-recast "^6.1.3"
     find-up "^6.3.0"
     fuse.js "^6.5.3"
