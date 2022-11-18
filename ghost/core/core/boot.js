@@ -290,6 +290,7 @@ async function initServices({config}) {
     const membersEvents = require('./server/services/members-events');
     const linkTracking = require('./server/services/link-tracking');
     const audienceFeedback = require('./server/services/audience-feedback');
+    const emailSuppressionList = require('./server/services/email-suppression-list');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -319,7 +320,8 @@ async function initServices({config}) {
         }),
         comments.init(),
         linkTracking.init(),
-        audienceFeedback.init()
+        audienceFeedback.init(),
+        emailSuppressionList.init()
     ]);
     debug('End: Services');
 
