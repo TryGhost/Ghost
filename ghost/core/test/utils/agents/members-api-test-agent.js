@@ -12,8 +12,15 @@ const errors = require('@tryghost/errors');
  * @param {String} options.originURL
  */
 class MembersAPITestAgent extends TestAgent {
+    #bootOptions = null;
+
     constructor(app, options) {
         super(app, options);
+        this.#bootOptions = options;
+    }
+
+    duplicate() {
+        return new MembersAPITestAgent(this.app, this.#bootOptions);
     }
 
     async loginAs(email) {

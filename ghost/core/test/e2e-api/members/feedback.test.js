@@ -10,7 +10,7 @@ describe('Members Feedback', function () {
 
     before(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
-        membersAgent2 = await agentProvider.getMembersAPIAgent();
+        membersAgent2 = membersAgent.duplicate();
 
         await fixtureManager.init('posts', 'members');
         memberUuid = fixtureManager.get('members', 0).uuid;
