@@ -90,6 +90,17 @@ export default class Analytics extends Component {
         return this.post.count.positive_feedback + this.post.count.negative_feedback;
     }
 
+    get feedbackChartData() {
+        const values = [this.post.count.positive_feedback, this.post.count.negative_feedback];
+        const labels = ['More like this', 'Less like this'];
+        const links = [
+            {filterParam: '(feedback.post_id:' + this.post.id + '+feedback.score:1)'},
+            {filterParam: '(feedback.post_id:' + this.post.id + '+feedback.score:0)'}
+        ];
+        const colors = ['#F080B2', '#8452f633'];
+        return {values, labels, links, colors};
+    }
+
     @action
     onDisplayChange(selected) {
         this.sortColumn = selected.value;
@@ -160,7 +171,14 @@ export default class Analytics extends Component {
             if (!acc[link.link.title]) {
                 acc[link.link.title] = link;
             } else {
-                acc[link.link.title].clicks += link.clicks;
+                if (!acc[link.link.title].count) {
+                    acc[link.link.title].count = {clicks: 0};
+                }
+                if (!acc[link.link.title].count.clicks) {
+                    acc[link.link.title].count.clicks = 0;
+                }
+
+                acc[link.link.title].count.clicks += (link.count?.clicks ?? 0);
             }
             return acc;
         }, {});

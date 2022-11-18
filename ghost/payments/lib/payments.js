@@ -1,3 +1,4 @@
+const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
 const {TierCreatedEvent, TierPriceChangeEvent, TierNameChangeEvent} = require('@tryghost/tiers');
 const OfferCreatedEvent = require('@tryghost/members-offers').events.OfferCreatedEvent;
@@ -111,9 +112,13 @@ class PaymentsService {
         }).query().select('customer_id');
 
         for (const row of rows) {
-            const customer = await this.stripeAPIService.getCustomer(row.customer_id);
-            if (!customer.deleted) {
-                return customer;
+            try {
+                const customer = await this.stripeAPIService.getCustomer(row.customer_id);
+                if (!customer.deleted) {
+                    return customer;
+                }
+            } catch (err) {
+                logging.warn(err);
             }
         }
 
@@ -149,9 +154,13 @@ class PaymentsService {
             .select('stripe_product_id');
 
         for (const row of rows) {
-            const product = await this.stripeAPIService.getProduct(row.stripe_product_id);
-            if (product.active) {
-                return {id: product.id};
+            try {
+                const product = await this.stripeAPIService.getProduct(row.stripe_product_id);
+                if (product.active) {
+                    return {id: product.id};
+                }
+            } catch (err) {
+                logging.warn(err);
             }
         }
 
@@ -199,20 +208,32 @@ class PaymentsService {
      */
     async getPriceForTierCadence(tier, cadence) {
         const product = await this.getProductForTier(tier);
-        const currency = tier.currency;
+        const currency = tier.currency.toLowerCase();
         const amount = tier.getPrice(cadence);
         const rows = await this.StripePriceModel.where({
             stripe_product_id: product.id,
             currency,
-            amount
-        }).query().select('stripe_price_id');
+            interval: cadence,
+            amount,
+            active: true
+        }).query().select('id', 'stripe_price_id');
 
         for (const row of rows) {
-            const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
-            if (price.active && price.currency.toUpperCase() === currency && price.unit_amount === amount) {
-                return {
-                    id: price.id
-                };
+            try {
+                const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
+                if (price.active && price.currency.toLowerCase() === currency && price.unit_amount === amount && price.recurring?.interval === cadence) {
+                    return {
+                        id: price.id
+                    };
+                } else {
+                    // Update the database model to prevent future Stripe fetches when it is not needed
+                    await this.StripePriceModel.edit({
+                        active: !!price.active
+                    }, {id: row.id});
+                }
+            } catch (err) {
+                logging.error(`Failed to lookup Stripe Price ${row.stripe_price_id}`);
+                logging.error(err);
             }
         }
 

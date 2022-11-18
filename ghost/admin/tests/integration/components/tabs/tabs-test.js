@@ -102,4 +102,31 @@ describe('Integration: Component: tabs/tabs', function () {
         await triggerKeyEvent(tabButtons[0], 'keyup', 'End');
         isTabRenders(2);
     });
+
+    it('renders content for all tabs with forceRender option', async function () {
+        await render(hbs`
+            <Tabs::Tabs class="test-tab" @forceRender={{true}} as |tabs|>
+                <tabs.tab>Tab 1</tabs.tab>
+                <tabs.tab>Tab 2</tabs.tab>
+
+                <tabs.tabPanel>Content 1</tabs.tabPanel>
+                <tabs.tabPanel>Content 2</tabs.tabPanel>
+            </Tabs::Tabs>`);
+
+        const tabButtons = findAll('.tab');
+        const tabPanels = findAll('.tab-panel');
+
+        expect(tabPanels[0]).to.have.trimmed.text('Content 1');
+        expect(tabPanels[1]).to.have.trimmed.text('Content 2');
+
+        await click(tabButtons[1]);
+
+        expect(findAll('.tab-selected').length).to.equal(1);
+        expect(findAll('.tab-panel-selected').length).to.equal(1);
+        expect(tabButtons[1]).to.have.class('tab-selected');
+        expect(tabPanels[1]).to.have.class('tab-panel-selected');
+
+        expect(tabPanels[0]).to.have.trimmed.text('Content 1');
+        expect(tabPanels[1]).to.have.trimmed.text('Content 2');
+    });
 });

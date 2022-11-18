@@ -376,8 +376,6 @@ describe('Signup', () => {
                 tierId: singleTierProduct.id,
                 cadence: 'year'
             });
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('without name field on monthly plan', async () => {

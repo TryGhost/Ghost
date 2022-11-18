@@ -34,7 +34,7 @@ module.exports = function setupMembersApp() {
     membersApp.post('/webhooks/stripe', bodyParser.raw({type: 'application/json'}), stripeService.webhookController.handle.bind(stripeService.webhookController));
 
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
-    // We don't want to add global bodyParser middleware as that interfers with stripe webhook requests on - `/webhooks`.
+    // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
 
     // Manage newsletter subscription via unsubscribe link
     membersApp.get('/api/member/newsletters', middleware.getMemberNewsletters);
@@ -62,7 +62,6 @@ module.exports = function setupMembersApp() {
     membersApp.post('/api/create-stripe-checkout-session', (req, res, next) => membersService.api.middleware.createCheckoutSession(req, res, next));
     membersApp.post('/api/create-stripe-update-session', (req, res, next) => membersService.api.middleware.createCheckoutSetupSession(req, res, next));
     membersApp.put('/api/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
-    membersApp.post('/api/events', labs.enabledMiddleware('membersActivity'), middleware.loadMemberSession, (req, res, next) => membersService.api.middleware.createEvents(req, res, next));
 
     // Comments
     membersApp.use('/api/comments', commentRouter());

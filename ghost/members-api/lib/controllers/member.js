@@ -5,6 +5,8 @@ module.exports = class MemberController {
      * @param {object} deps
      * @param {any} deps.memberRepository
      * @param {any} deps.productRepository
+     * @param {any} deps.paymentsService
+     * @param {any} deps.tiersService
      * @param {any} deps.StripePrice
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
@@ -12,12 +14,16 @@ module.exports = class MemberController {
     constructor({
         memberRepository,
         productRepository,
+        paymentsService,
+        tiersService,
         StripePrice,
         tokenService,
         sendEmailWithMagicLink
     }) {
         this._memberRepository = memberRepository;
         this._productRepository = productRepository;
+        this._paymentsService = paymentsService;
+        this._tiersService = tiersService;
         this._StripePrice = StripePrice;
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
@@ -108,17 +114,17 @@ module.exports = class MemberController {
             }
 
             if (tierId && cadence) {
-                const tier = await this._productRepository.get({id: tierId});
-                if (tier) {
-                    if (cadence === 'month') {
-                        ghostPriceId = tier.get('monthly_price_id');
-                    } else {
-                        ghostPriceId = tier.get('yearly_price_id');
-                    }
-                }
-            }
+                const tier = await this._tiersService.api.read(tierId);
+                const stripePrice = await this._paymentsService.getPriceForTierCadence(tier, cadence);
 
-            if (ghostPriceId !== undefined) {
+                await this._memberRepository.updateSubscription({
+                    email,
+                    subscription: {
+                        subscription_id: subscriptionId,
+                        price: stripePrice.id
+                    }
+                });
+            } else if (ghostPriceId !== undefined) {
                 const price = await this._StripePrice.findOne({
                     id: ghostPriceId
                 });

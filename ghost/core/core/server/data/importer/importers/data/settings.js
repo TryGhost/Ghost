@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('importer:settings');
-const Promise = require('bluebird');
 const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');
 const BaseImporter = require('./base');
@@ -8,6 +7,7 @@ const defaultSettings = require('../../../schema').defaultSettings;
 const keyGroupMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-group-mapper');
 const keyTypeMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-type-mapper');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../shared/labs');
+const {sequence} = require('@tryghost/promise');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
 const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address', 'portal_products'];
@@ -252,22 +252,22 @@ class SettingsImporter extends BaseImporter {
         return Promise.resolve();
     }
 
-    doImport(options) {
+    async doImport(options) {
         debug('doImport', this.dataToImport.length);
 
         let ops = [];
 
         _.each(this.dataToImport, (model) => {
-            ops.push(
-                models.Settings.edit(model, options)
-                    .catch((err) => {
-                        return this.handleError(err, model);
-                    })
-                    .reflect()
-            );
+            ops.push(async () => {
+                try {
+                    await models.Settings.edit(model, options);
+                } catch (err) {
+                    this.handleError(err, model);
+                }
+            });
         });
 
-        return Promise.all(ops);
+        await sequence(ops);
     }
 }
 

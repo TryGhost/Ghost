@@ -249,6 +249,11 @@
     width: 740px;
 }
 
+.gh-post-preview-email-test .gh-btn-group .gh-btn span {
+    height: 34px;
+    line-height: 34px;
+}
+
 .gh-post-preview-email-input {
     width: 100%;
 }

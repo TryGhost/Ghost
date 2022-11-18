@@ -978,27 +978,27 @@ input:focus,
     border-top: 1px solid var(--hairline-color-1);
 }
 
-a.gh-post-list-cta {
+.gh-post-list-cta {
     background: #26282b;
     color: #ffffff;
     border-color: #33373d;
 }
 
-a.gh-post-list-cta > svg {
+.gh-post-list-cta > svg {
     color: #ffffff;
 }
 
-a.gh-post-list-cta > span {
+.gh-post-list-cta > span {
     color: #ffffff;
 }
 
-a.gh-post-list-cta.is-hovered {
+.gh-post-list-cta.is-hovered {
     background: #1d1e20;
     border-color: #33373d;
     box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
 }
 
-a.gh-post-list-cta.is-hovered:hover {
+.gh-post-list-cta.is-hovered:hover {
     background: #1d1e20;
 }
 
@@ -1225,7 +1225,6 @@ kbd {
 
 
 /* Finishing touches */
-/* ---------------------------------------------------- */
 
 .gh-done {
     background: #15171A;
@@ -1459,4 +1458,13 @@ kbd {
 
 .gh-post-activity-feed .gh-dashboard-list-item:hover {
     background: transparent;
+}
+
+
+/* Post rows */
+
+.gh-posts-list-item .gh-content-entry-meta,
+.gh-posts-list-item .gh-content-entry-status,
+.gh-posts-list-item .gh-content-email-stats {
+    color: #626D79;
 }

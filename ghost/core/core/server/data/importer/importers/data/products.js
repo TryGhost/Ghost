@@ -46,14 +46,10 @@ class ProductsImporter extends BaseImporter {
                     this.requiredExistingData.stripe_prices,
                     {id: row.monthly_price_id}
                 );
-                if (!monthlyStripePrice) {
-                    invalidRows.push(row.id);
-                    return;
-                }
-                row.monthly_price = row.monthly_price || monthlyStripePrice.amount;
-                row.currency = monthlyStripePrice.currency;
+                row.monthly_price = row.monthly_price || monthlyStripePrice?.amount;
+                row.currency = monthlyStripePrice?.currency;
             }
-            if (!row.yearly_price) {
+            if (!row.yearly_price || !row.currency) {
                 const yearlyStripePrice = _.find(
                     this.requiredFromFile.stripe_prices,
                     {id: row.yearly_price_id}
@@ -61,11 +57,11 @@ class ProductsImporter extends BaseImporter {
                     this.requiredExistingData.stripe_prices,
                     {id: row.yearly_price_id}
                 );
-                if (!yearlyStripePrice) {
-                    invalidRows.push(row.id);
-                    return;
-                }
-                row.yearly_price = row.yearly_price || yearlyStripePrice.amount;
+                row.yearly_price = row.yearly_price || yearlyStripePrice?.amount;
+                row.currency = yearlyStripePrice?.currency;
+            }
+            if (!row.yearly_price || !row.currency || !row.monthly_price) {
+                invalidRows.push(row.id);
             }
         });
         this.dataToImport = this.dataToImport.filter(item => !invalidRows.includes(item.id));

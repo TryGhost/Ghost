@@ -29,7 +29,8 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'lexicalEditor'
+    'lexicalEditor',
+    'suppressionList'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

@@ -22951,6 +22951,606 @@ Object {
 }
 `;
 
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for aggregated clicks for all posts 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "32",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 33,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for aggregated clicks for all posts 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for aggregated clicks for all posts 3: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "32",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for aggregated clicks for all posts 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for aggregated clicks for one post 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "8",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 9,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for aggregated clicks for one post 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for aggregated clicks for one post 3: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "8",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for aggregated clicks for one post 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for all posts 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "36",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 37,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for all posts 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for all posts 3: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "36",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for all posts 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for one post 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "10",
+      "next": null,
+      "page": null,
+      "pages": 2,
+      "prev": null,
+      "total": 13,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for one post 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for one post 3: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+    Object {
+      "data": Any<Object>,
+      "type": Any<String>,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": "10",
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 3,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Filter-based pagination Can do filter based pagination for one post 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Activity Feed API Returns click events in activity feed 1: [body] 1`] = `
 Object {
   "events": Array [

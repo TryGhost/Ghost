@@ -20,7 +20,7 @@
   "devDependencies": {
     "c8": "7.12.0",
     "mocha": "10.1.0",
-    "sinon": "14.0.1"
+    "sinon": "14.0.2"
   },
   "dependencies": {
     "@tryghost/email-content-generator": "0.0.0",

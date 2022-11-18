@@ -17,11 +17,12 @@
     "c8": "7.12.0",
     "mocha": "10.1.0",
     "should": "13.2.3",
-    "sinon": "14.0.1"
+    "sinon": "14.0.2"
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/member-events": "0.0.0",
-    "@tryghost/referrers": "0.0.0"
+    "@tryghost/referrers": "0.0.0",
+    "@tryghost/string": "0.2.1"
   }
 }

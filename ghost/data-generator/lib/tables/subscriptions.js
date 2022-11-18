@@ -26,12 +26,9 @@ class SubscriptionsImporter extends TableImporter {
                 return price.stripe_product_id === stripeProduct.stripe_product_id &&
                     (isMonthly ? price.interval === 'month' : price.interval === 'year');
             });
-            // TODO: Understand why stripePrice can sometimes be undefined
-            if (stripePrice) {
-                billingInfo.cadence = isMonthly ? 'month' : 'year';
-                billingInfo.currency = stripePrice.currency;
-                billingInfo.amount = stripePrice.amount;
-            }
+            billingInfo.cadence = isMonthly ? 'month' : 'year';
+            billingInfo.currency = stripePrice.currency;
+            billingInfo.amount = stripePrice.amount;
         }
         const [startDate] = generateEvents({
             total: 1,

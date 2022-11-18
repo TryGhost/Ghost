@@ -1,8 +1,7 @@
 import Service, {inject as service} from '@ember/service';
-import classic from 'ember-classic-decorator';
 import {inject} from 'ghost-admin/decorators/inject';
+import {tracked} from '@glimmer/tracking';
 
-@classic
 export default class BillingService extends Service {
     @service ghostPaths;
     @service router;
@@ -11,14 +10,15 @@ export default class BillingService extends Service {
     @inject config;
 
     billingRouteRoot = '#/pro';
-    billingWindowOpen = false;
-    subscription = null;
-    previousRoute = null;
-    action = null;
-    ownerUser = null;
 
-    init() {
-        super.init(...arguments);
+    @tracked billingWindowOpen = false;
+    @tracked subscription = null;
+    @tracked previousRoute = null;
+    @tracked action = null;
+    @tracked ownerUser = null;
+
+    constructor() {
+        super(...arguments);
 
         if (this.config.hostSettings?.billing?.url) {
             window.addEventListener('message', (event) => {
@@ -70,7 +70,7 @@ export default class BillingService extends Service {
                 await this.store.findAll('user', {reload: true});
                 user = this.store.peekAll('user').findBy('isOwnerOnly', true);
             }
-            this.set('ownerUser', user);
+            this.ownerUser = user;
         }
         return this.ownerUser;
     }
@@ -88,7 +88,7 @@ export default class BillingService extends Service {
                 }, '*');
             }
 
-            this.set('action', null);
+            this.action = null;
         }
     }
 
@@ -103,7 +103,7 @@ export default class BillingService extends Service {
 
         this.sendRouteUpdate();
 
-        this.set('billingWindowOpen', value);
+        this.billingWindowOpen = value;
     }
 
     // Controls navigation to billing window modal which is triggered from the application UI.
@@ -119,7 +119,7 @@ export default class BillingService extends Service {
             return;
         }
 
-        this.set('previousRoute', currentRoute);
+        this.previousRoute = currentRoute;
 
         // Ensures correct "getIframeURL" calculation when syncing iframe location
         // in toggleProWindow

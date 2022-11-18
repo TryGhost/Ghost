@@ -1,5 +1,5 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
-<li class="gh-list-row gh-posts-list-item gh-posts-list-item-labs gh-post-list-plain-status"
+<li class="gh-list-row gh-posts-list-item gh-post-list-plain-status"
     {{on "mouseover" this.mouseOver}}
     {{on "mouseleave" this.mouseLeave}}
     ...attributes
@@ -45,7 +45,7 @@
             {{/unless}}
         </a>
     {{else}}
-        <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-title">
+        <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-title">
             <h3 class="gh-content-entry-title">
                 {{@post.title}}
                 {{#if @post.lexical}}
@@ -74,10 +74,10 @@
                 </p>
                 <p class="gh-content-entry-status">
                     {{#if @post.isScheduled}}
-                        <span class="scheduled" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                        <span class="scheduled">
                             <span class="status-dot"></span>
                             Scheduled
-                            {{#if this.isStateHovered}}
+                            {{#if this.isHovered}}
                                 <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
                             {{/if}}
                         </span>
@@ -91,7 +91,7 @@
                     {{/if}}
 
                     {{#if @post.isPublished}}
-                        <span class="published {{this.errorClass}}" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                        <span class="published {{this.errorClass}}">
                             Published
                             {{#if @post.didEmailFail}}
                                 but failed to send newsletter
@@ -105,7 +105,7 @@
                     {{/if}}
 
                     {{#if @post.isSent}}
-                        <span class="sent {{this.errorClass}}" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                        <span class="sent {{this.errorClass}}">
                             {{#if @post.didEmailFail}}
                                 Failed to send newsletter
                             {{else}}
@@ -122,9 +122,60 @@
     {{/if}}
 
     {{!-- Opened / Signups column --}}
-    <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-opens">
-        {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
-            <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+    {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
+        <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-metrics">
+            <span class="gh-content-email-stats-value">
+                {{#if this.isHovered}}
+                    {{format-number @post.email.openedCount}}
+                {{else}}
+                    {{@post.email.openRate}}<sup>%</sup>
+                {{/if}}
+            </span>
+            <span class="gh-content-email-stats">
+                opened
+            </span>
+        </LinkTo>
+    {{else if (and @post.isPage @post.showAttributionAnalytics) }}
+        <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-metrics">
+            <span class="gh-content-email-stats-value">
+                {{@post.count.signups}}
+            </span>
+            <span class="gh-content-email-stats">
+                signups
+            </span>
+        </LinkTo>
+    {{else}}
+        <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
+            {{!-- Empty on purpose --}}
+        </LinkTo>
+    {{/if}}
+    
+    {{!-- Clicked / Conversions column --}}
+    {{#if @post.showEmailClickAnalytics }}
+        <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-metrics">
+            <span class="gh-content-email-stats-value">
+                {{#if this.isHovered}}
+                    {{format-number @post.count.clicks}}
+                {{else}}
+                    {{@post.clickRate}}<sup>%</sup>
+                {{/if}}
+            </span>
+            <span class="gh-content-email-stats">
+                clicked
+            </span>
+        </LinkTo>
+    {{else if (and @post.isPage @post.showPaidAttributionAnalytics) }}
+        <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-metrics">
+            <span class="gh-content-email-stats-value">
+                {{@post.count.paid_conversions}}
+            </span>
+            <span class="gh-content-email-stats">
+                conversions
+            </span>
+        </LinkTo>
+    {{else}}
+        {{#if @post.showEmailOpenAnalytics }}
+            <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-metrics">
                 <span class="gh-content-email-stats-value">
                     {{#if this.isHovered}}
                         {{format-number @post.email.openedCount}}
@@ -136,73 +187,25 @@
                     opened
                 </span>
             </LinkTo>
-        {{else if (and @post.isPage @post.showAttributionAnalytics) }}
-            <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
-                <span class="gh-content-email-stats-value">
-                    {{@post.count.signups}}
-                </span>
-                <span class="gh-content-email-stats">
-                    signups
-                </span>
+        {{else}}
+            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
+                {{!-- Empty on purpose --}}
             </LinkTo>
         {{/if}}
-    </LinkTo>
-    
-    {{!-- Clicked / Conversions column --}}
-    <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-clicks">
-        {{#unless @post.showEmailClickAnalytics}}
-            {{#if @post.showEmailOpenAnalytics }}
-                <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
-                    <span class="gh-content-email-stats-value">
-                        {{#if this.isHovered}}
-                            {{format-number @post.email.openedCount}}
-                        {{else}}
-                            {{@post.email.openRate}}<sup>%</sup>
-                        {{/if}}
-                    </span>
-                    <span class="gh-content-email-stats">
-                        opened
-                    </span>
-                </LinkTo>
-            {{/if}}
-        {{/unless}}
-        {{#if @post.showEmailClickAnalytics }}
-            <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
-                <span class="gh-content-email-stats-value">
-                    {{#if this.isHovered}}
-                        {{format-number @post.count.clicks}}
-                    {{else}}
-                        {{@post.clickRate}}<sup>%</sup>
-                    {{/if}}
-                </span>
-                <span class="gh-content-email-stats">
-                    clicked
-                </span>
-            </LinkTo>
-        {{else if (and @post.isPage @post.showPaidAttributionAnalytics) }}
-            <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
-                <span class="gh-content-email-stats-value">
-                    {{@post.count.paid_conversions}}
-                </span>
-                <span class="gh-content-email-stats">
-                    conversions
-                </span>
-            </LinkTo>
-        {{/if}}
-    </LinkTo>
+    {{/if}}
 
     {{!-- Button column --}}
-    <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-button">
-        <div class="gh-list-data-inner">
-            {{#if @post.hasAnalyticsPage }}
-                <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="">
-                    {{svg-jar "stats" title=""}}
-                </LinkTo>
-            {{else}}
-                <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="">
-                    {{svg-jar "pen" title=""}}
-                </LinkTo>
-            {{/if}}
-        </div>
-    </LinkTo>
+    {{#if @post.hasAnalyticsPage }}
+        <LinkTo @route="posts.analytics" @model={{@post.id}} class="permalink gh-list-data gh-post-list-button" title="">
+            <span class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="Go to Analytics">
+                {{svg-jar "stats" title="Go to Analytics"}}
+            </span>
+        </LinkTo>
+    {{else}}
+        <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-button" title="">
+            <span class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="Go to Editor">
+                {{svg-jar "pen" title="Go to Editor"}}
+            </span>
+        </LinkTo>
+    {{/if}}
 </li>

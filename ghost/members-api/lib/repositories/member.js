@@ -28,6 +28,7 @@ module.exports = class MemberRepository {
     /**
      * @param {object} deps
      * @param {any} deps.Member
+     * @param {any} deps.MemberNewsletter
      * @param {any} deps.MemberCancelEvent
      * @param {any} deps.MemberSubscribeEventModel
      * @param {any} deps.MemberEmailChangeEvent
@@ -46,6 +47,7 @@ module.exports = class MemberRepository {
      */
     constructor({
         Member,
+        MemberNewsletter,
         MemberCancelEvent,
         MemberSubscribeEventModel,
         MemberEmailChangeEvent,
@@ -63,6 +65,7 @@ module.exports = class MemberRepository {
         newslettersService
     }) {
         this._Member = Member;
+        this._MemberNewsletter = MemberNewsletter;
         this._MemberCancelEvent = MemberCancelEvent;
         this._MemberSubscribeEvent = MemberSubscribeEventModel;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
@@ -405,6 +408,12 @@ module.exports = class MemberRepository {
             'expertise'
         ]);
 
+        if (data.newsletters) {
+            data.newsletters = data.newsletters.map(newsletter => ({
+                id: newsletter.id
+            }));
+        }
+
         // Trim whitespaces from expertise
         if (memberData.expertise) {
             memberData.expertise = memberData.expertise.trim();
@@ -712,7 +721,6 @@ module.exports = class MemberRepository {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
             Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
         }
-
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')
             .distinct();
@@ -720,9 +728,20 @@ module.exports = class MemberRepository {
         const memberIds = memberRows.map(row => row.id);
 
         if (data.action === 'unsubscribe') {
-            return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {column: 'member_id'});
+            const hasNewsletterSelected = (Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null);
+            if (hasNewsletterSelected) {
+                const membersArr = memberIds.join(',');
+                const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
+                    filter: `newsletter_id:${data.newsletter}+member_id:[${membersArr}]`
+                });
+                const toUnsubscribe = unsubscribeRows.map(row => row.id);
+                
+                return await this._MemberNewsletter.bulkDestroy(toUnsubscribe);
+            }
+            if (!hasNewsletterSelected) {
+                return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {column: 'member_id'});
+            }
         }
-
         if (data.action === 'removeLabel') {
             const membersLabelsRows = await this._Member.getLabelRelations({
                 labelId: data.meta.label.id,

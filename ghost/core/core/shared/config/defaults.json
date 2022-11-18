@@ -161,7 +161,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.19"
+        "version": "2.20"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -171,7 +171,7 @@
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
         "styles": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/main.css",
-        "version": "0.11"
+        "version": "0.12"
     },
     "editor": {
         "url": "https://unpkg.com/@tryghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",

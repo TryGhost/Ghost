@@ -2,7 +2,7 @@ import {useContext, useEffect, useState} from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.svg';
 import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
-import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
+import {ReactComponent as ThumbErrorIcon} from '../../images/icons/thumbs-error.svg';
 import setupGhostApi from '../../utils/api';
 import {HumanReadableError} from '../../utils/errors';
 import ActionButton from '../common/ActionButton';
@@ -26,10 +26,11 @@ export const FeedbackPageStyles = `
 
     .gh-portal-feedback .gh-feedback-icon.gh-feedback-icon-error {
         color: #f50b23;
+        width: 96px;
     }
 
     .gh-portal-feedback .gh-portal-text-center {
-        padding: 15px 0;
+        padding: 16px 32px 12px;
     }
 
     .gh-portal-confirm-title {
@@ -97,6 +98,13 @@ export const FeedbackPageStyles = `
     .gh-feedback-button svg path {
         stroke-width: 4px;
     }
+
+    @media (max-width: 480px) {
+        .gh-portal-feedback .gh-portal-text-center {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+    }
 `;
 
 function ErrorPage({error}) {
@@ -106,9 +114,9 @@ function ErrorPage({error}) {
         <div className='gh-portal-content gh-portal-feedback with-footer'>
             <CloseButton />
             <div class="gh-feedback-icon gh-feedback-icon-error">
-                <WarningIcon />
+                <ThumbErrorIcon />
             </div>
-            <h1 className="gh-portal-main-title">It's not you, it's us</h1>
+            <h1 className="gh-portal-main-title">Sorry, that didn’t work.</h1>
             <div>
                 <p className="gh-portal-text-center">{error}</p>
             </div>
@@ -252,7 +260,7 @@ export default function FeedbackPage() {
             await sendFeedback({siteUrl: site.url, uuid, postId, score: selectedScore});
             setScore(selectedScore);
         } catch (e) {
-            const text = HumanReadableError.getMessageFromError(e, 'There was a problem submitting your feedback. Please try again or contact the site owner.');
+            const text = HumanReadableError.getMessageFromError(e, 'There was a problem submitting your feedback. Please try again a little later.');
             setError(text);
         }
         setLoading(false);

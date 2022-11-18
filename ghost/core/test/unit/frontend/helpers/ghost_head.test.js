@@ -21,9 +21,18 @@ const {settingsCache, labs} = proxy;
  * So these changes become visible in PR's.
  */
 async function testGhostHead(options) {
-    const rendered = await ghost_head(options);
+    let rendered = (await ghost_head(options)).toString();
+
+    // Ignore some parts of the response by replacing regexes
+    const portalVersion = /portal@~\d+\.\d+(\.\d+)?\//g;
+    rendered = rendered.replace(portalVersion, 'portal@~[[VERSION]]/');
+
+    const sodoSearchVersion = /sodo-search@~\d+\.\d+(\.\d+)?\//g;
+    rendered = rendered.replace(sodoSearchVersion, 'sodo-search@~[[VERSION]]/');
+
     should.exist(rendered);
-    rendered.should.matchSnapshot();
+    // Note: we need to convert the string to an object in order to use the snapshot feature
+    should({rendered}).matchSnapshot();
     return rendered;
 }
 

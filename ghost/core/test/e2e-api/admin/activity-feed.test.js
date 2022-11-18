@@ -7,20 +7,54 @@ const moment = require('moment');
 
 let agent;
 
-async function testPagination(skippedTypes, postId, totalExpected) {
+async function testPagination(skippedTypes, postId, totalExpected, limit) {
     const postFilter = postId ? `+data.post_id:${postId}` : '';
 
     // To make the test cover more edge cases, we test different limit configurations
-    for (let limit = 1; limit <= totalExpected; limit++) {
-        const {body: firstPage} = await agent
-            .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}`)}&limit=${limit}`)
+    const {body: firstPage} = await agent
+        .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}`)}&limit=${limit}`)
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+            etag: anyEtag,
+            'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
+        })
+        .matchBodySnapshot({
+            events: new Array(limit).fill({
+                type: anyString,
+                data: anyObject
+            })
+        })
+        .expect(({body}) => {
+            if (postId) {
+                assert(!body.events.find(e => (e.data?.post?.id ?? e.data?.attribution?.id ?? e.data?.email?.post_id) !== postId && e.type !== 'aggregated_click_event'), 'Should only return events for the post');
+            }
+
+            // Assert total is correct
+            assert.equal(body.meta.pagination.total, totalExpected, 'Expected total of ' + totalExpected + ' at limit ' + limit);
+        });
+    let previousPage = firstPage;
+    let page = 1;
+
+    const allEvents = previousPage.events;
+
+    while (allEvents.length < totalExpected && page < 50) {
+        page += 1;
+
+        // Calculate next page
+        let lastId = previousPage.events[previousPage.events.length - 1].data.id;
+        let lastCreatedAt = moment(previousPage.events[previousPage.events.length - 1].data.created_at).format('YYYY-MM-DD HH:mm:ss');
+
+        const remaining = totalExpected - (page - 1) * limit;
+
+        const {body: secondPage} = await agent
+            .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}+(data.created_at:<'${lastCreatedAt}',(data.created_at:'${lastCreatedAt}'+id:<${lastId}))`)}&limit=${limit}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
             })
             .matchBodySnapshot({
-                events: new Array(limit).fill({
+                events: new Array(Math.min(remaining, limit)).fill({
                     type: anyString,
                     data: anyObject
                 })
@@ -31,52 +65,16 @@ async function testPagination(skippedTypes, postId, totalExpected) {
                 }
 
                 // Assert total is correct
-                assert.equal(body.meta.pagination.total, totalExpected, 'Expected total of ' + totalExpected + ' at limit ' + limit);
+                assert.equal(body.meta.pagination.total, remaining, 'Expected total to be correct for page ' + page + ' with limit ' + limit);
             });
-        let previousPage = firstPage;
-        let page = 1;
+        allEvents.push(...secondPage.events);
+    }
 
-        const allEvents = previousPage.events;
-
-        while (allEvents.length < totalExpected && page < 50) {
-            page += 1;
-
-            // Calculate next page
-            let lastId = previousPage.events[previousPage.events.length - 1].data.id;
-            let lastCreatedAt = moment(previousPage.events[previousPage.events.length - 1].data.created_at).format('YYYY-MM-DD HH:mm:ss');
-
-            const remaining = totalExpected - (page - 1) * limit;
-
-            const {body: secondPage} = await agent
-                .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}+(data.created_at:<'${lastCreatedAt}',(data.created_at:'${lastCreatedAt}'+id:<${lastId}))`)}&limit=${limit}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    etag: anyEtag,
-                    'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
-                })
-                .matchBodySnapshot({
-                    events: new Array(Math.min(remaining, limit)).fill({
-                        type: anyString,
-                        data: anyObject
-                    })
-                })
-                .expect(({body}) => {
-                    if (postId) {
-                        assert(!body.events.find(e => (e.data?.post?.id ?? e.data?.attribution?.id ?? e.data?.email?.post_id) !== postId && e.type !== 'aggregated_click_event'), 'Should only return events for the post');
-                    }
-
-                    // Assert total is correct
-                    assert.equal(body.meta.pagination.total, remaining, 'Expected total to be correct for page ' + page + ' with limit ' + limit);
-                });
-            allEvents.push(...secondPage.events);
-        }
-
-        // Check if the ordering is correct and we didn't receive duplicate events
-        assert.equal(allEvents.length, totalExpected, 'Total actually received should match the total');
-        for (const event of allEvents) {
-            // Check no other events have the same id
-            assert.equal(allEvents.filter(e => e.data.id === event.data.id).length, 1);
-        }
+    // Check if the ordering is correct and we didn't receive duplicate events
+    assert.equal(allEvents.length, totalExpected, 'Total actually received should match the total');
+    for (const event of allEvents) {
+        // Check no other events have the same id
+        assert.equal(allEvents.filter(e => e.data.id === event.data.id).length, 1);
     }
 }
 
@@ -187,15 +185,13 @@ describe('Activity Feed API', function () {
         });
     });
 
-    // Temporarily skip slow tests
-    // eslint-disable-next-line
-    describe.skip('Filter-based pagination', function () {
+    describe('Filter-based pagination', function () {
         it('Can do filter based pagination for all posts', async function () {
             // There is an annoying restriction in the pagination. It doesn't work for mutliple email events at the same time because they have the same id (causes issues as we use id to deduplicate the created_at timestamp)
             // If that is ever fixed (it is difficult) we can update this test to not use a filter
             // Same for click_event and aggregated_click_event (use same id)
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
-            await testPagination(skippedTypes, null, 37);
+            await testPagination(skippedTypes, null, 37, 36);
         });
 
         it('Can do filter based pagination for one post', async function () {
@@ -206,7 +202,7 @@ describe('Activity Feed API', function () {
             // Same for click_event and aggregated_click_event (use same id)
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
 
-            await testPagination(skippedTypes, postId, 13);
+            await testPagination(skippedTypes, postId, 13, 10);
         });
 
         it('Can do filter based pagination for aggregated clicks for one post', async function () {
@@ -214,13 +210,13 @@ describe('Activity Feed API', function () {
             const postId = fixtureManager.get('posts', 0).id;
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_sent_event', 'click_event'];
 
-            await testPagination(skippedTypes, postId, 9);
+            await testPagination(skippedTypes, postId, 9, 8);
         });
 
         it('Can do filter based pagination for aggregated clicks for all posts', async function () {
             // Same as previous but with aggregated clicks instead of normal click events + email_delivered_events instead of sent events
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_sent_event', 'click_event'];
-            await testPagination(skippedTypes, null, 33);
+            await testPagination(skippedTypes, null, 33, 32);
         });
     });
 

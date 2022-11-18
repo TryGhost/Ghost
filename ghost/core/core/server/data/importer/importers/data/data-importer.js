@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
+const ObjectId = require('bson-objectid').default;
 const semver = require('semver');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('importer:data');
@@ -15,6 +15,8 @@ const StripeProductsImporter = require('./stripe-products');
 const StripePricesImporter = require('./stripe-prices');
 const CustomThemeSettingsImporter = require('./custom-theme-settings');
 const RolesImporter = require('./roles');
+const {slugify} = require('@tryghost/string/lib');
+
 let importers = {};
 let DataImporter;
 
@@ -42,12 +44,38 @@ DataImporter = {
     },
 
     // Allow importing with an options object that is passed through the importer
-    doImport: function doImport(importData, importOptions) {
+    doImport: async function doImport(importData, importOptions) {
         importOptions = importOptions || {};
 
+        if (importOptions.importTag && importData?.data?.posts) {
+            const tagId = ObjectId().toHexString();
+            if (!('tags' in importData.data)) {
+                importData.data.tags = [];
+            }
+            importData.data.tags.push({
+                id: tagId,
+                name: importOptions.importTag,
+                slug: slugify(importOptions.importTag)
+            });
+            if (!('posts_tags' in importData.data)) {
+                importData.data.posts_tags = [];
+            }
+            for (const post of importData.data.posts) {
+                if (!('id' in post)) {
+                    // Make sure post has an id if it doesn't already
+                    post.id = ObjectId().toHexString();
+                }
+                importData.data.posts_tags.push({
+                    post_id: post.id,
+                    tag_id: tagId
+                });
+            }
+        }
+
         const ops = [];
+        let problems = [];
         let errors = [];
-        let results = [];
+        let importedData = {};
 
         const modelOptions = {
             importing: true,
@@ -89,36 +117,34 @@ DataImporter = {
 
         this.init(importData);
 
-        return models.Base.transaction(function (transacting) {
+        return models.Base.transaction(async function (transacting) {
             modelOptions.transacting = transacting;
 
             _.each(importers, function (importer) {
-                ops.push(function doModelImport() {
-                    return importer.fetchExisting(modelOptions, importOptions)
-                        .then(function () {
-                            return importer.beforeImport(modelOptions, importOptions);
-                        })
-                        .then(function () {
-                            if (importer.options.requiredImportedData.length) {
-                                _.each(importer.options.requiredImportedData, (key) => {
-                                    importer.requiredImportedData[key] = importers[key].importedData;
-                                });
-                            }
+                ops.push(async function doModelImport() {
+                    await importer.fetchExisting(modelOptions, importOptions);
+                    await importer.beforeImport(modelOptions, importOptions);
 
-                            if (importer.options.requiredExistingData.length) {
-                                _.each(importer.options.requiredExistingData, (key) => {
-                                    importer.requiredExistingData[key] = importers[key].existingData;
-                                });
-                            }
-
-                            return importer.replaceIdentifiers(modelOptions, importOptions);
-                        })
-                        .then(function () {
-                            return importer.doImport(modelOptions, importOptions)
-                                .then(function (_results) {
-                                    results = results.concat(_results);
-                                });
+                    if (importer.options.requiredImportedData.length) {
+                        _.each(importer.options.requiredImportedData, (key) => {
+                            importer.requiredImportedData[key] = importers[key].importedData;
                         });
+                    }
+
+                    if (importer.options.requiredExistingData.length) {
+                        _.each(importer.options.requiredExistingData, (key) => {
+                            importer.requiredExistingData[key] = importers[key].existingData;
+                        });
+                    }
+
+                    await importer.replaceIdentifiers(modelOptions, importOptions);
+                    await importer.doImport(modelOptions, importOptions);
+
+                    errors = errors.concat(importer.errors);
+                    problems = problems.concat(importer.problems);
+                    if (importOptions.returnImportedData) {
+                        importedData[importer.dataKeyToImport] = importer.importedDataToReturn;
+                    }
                 });
             });
 
@@ -151,49 +177,19 @@ DataImporter = {
                 return sequence(productOps);
             });
 
-            return sequence(ops)
-                .then(function () {
-                    results.forEach(function (promise) {
-                        if (!promise.isFulfilled()) {
-                            errors = errors.concat(promise.reason());
-                        }
-                    });
+            await sequence(ops);
 
-                    if (errors.length === 0) {
-                        return;
-                    } else {
-                        throw errors;
-                    }
-                });
-        }).then(function () {
-            /**
-             * data: imported data
-             * originalData: data from the json file
-             * problems: warnings
-             */
-            const toReturn = {
-                data: {},
+            // Errors preventing import:
+            if (errors.length > 0) {
+                debug(errors);
+                throw errors;
+            }
+
+            return {
+                data: importedData,
                 originalData: importData.data,
-                problems: []
+                problems: problems
             };
-
-            _.each(importers, function (importer) {
-                toReturn.problems = toReturn.problems.concat(importer.problems);
-
-                if (importOptions.returnImportedData) {
-                    toReturn.data[importer.dataKeyToImport] = importer.importedDataToReturn;
-                }
-            });
-
-            return toReturn;
-        }).catch(function (err) {
-            debug(err);
-            return Promise.reject(err);
-        }).finally(() => {
-            // release memory
-            importers = {};
-            results = null;
-            importData = null;
         });
     }
 };

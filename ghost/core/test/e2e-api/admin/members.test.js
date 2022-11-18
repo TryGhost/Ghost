@@ -2617,6 +2617,38 @@ describe('Members API Bulk operations', function () {
             });
     });
 
+    it('Can bulk unsubscribe members from specific newsletter', async function () {
+        const member = fixtureManager.get('members', 4);
+        const newsletterCount = 2;
+
+        const model = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
+        should(model.relations.newsletters.models.length).equal(newsletterCount, 'This test requires a member with 2 or more newsletters');
+
+        await agent
+            .put(`/members/bulk/?all=true`)
+            .body({bulk: {
+                action: 'unsubscribe',
+                newsletter: model.relations.newsletters.models[0].id,
+                meta: {}
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 4,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            });
+        const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
+        // ensure they were unsubscribed from the single 'chosen' newsletter
+        should(updatedModel.relations.newsletters.models.length).equal(newsletterCount - 1);
+    });
+
     it('Can bulk unsubscribe members with deprecated subscribed filter', async function () {
         await agent
             .put(`/members/bulk/?filter=subscribed:false`)
@@ -2827,5 +2859,21 @@ describe('Members API Bulk operations', function () {
 
         const updatedModel2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
         should(updatedModel2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
+    });
+
+    it('Can bulk delete members', async function () {
+        await agent
+            .delete('/members?all=true')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                meta: {
+                    stats: {
+                        successful: 8,
+                        unsuccessful: 0
+                    },
+                    unsuccessfulIds: [],
+                    errors: []
+                }
+            });
     });
 });
