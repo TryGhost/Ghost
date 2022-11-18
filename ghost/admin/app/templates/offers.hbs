@@ -70,12 +70,10 @@
                                     <span class="blue">{{svg-jar "offer"}}</span>
                                     <span class="blue fw6">{{gh-price-amount offer.amount}} <span class="ttu">{{offer.currency}}</span> OFF</span>
                                 {{/if}}
-                                {{#if (feature 'freeTrial')}}
                                     {{#if (eq offer.type 'trial')}}
                                         <span class="pink">{{svg-jar "offer"}}</span>
                                         <span class="pink fw6"><span class="ttu">{{offer.amount}}</span> DAYS FREE</span>
                                     {{/if}}
-                                {{/if}}
                                 {{#if (not (eq offer.type 'trial'))}}
                                     <span class="dib ml1 midgrey ttc"> –
                                         {{if (eq offer.duration 'once') "First-payment" "Repeating"}}

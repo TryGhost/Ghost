@@ -7,7 +7,7 @@
     {{#if (feature "audienceFeedback")}}<h3 class="gh-newsletter-clicks-header">Newsletter clicks</h3>{{/if}}
     <div class="gh-links-list">
         <div class="gh-links-list-header">
-            {{#if (and this.showPagination (feature "fixNewsletterLinks")) }}
+            {{#if this.showPagination}}
             <div class="gh-links-pagination-progress">
                 Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
             </div>
@@ -23,7 +23,6 @@
         <div class="gh-links-list-items">
         {{#each this.visibleLinks as |link|}}
             <div class="gh-links-list-item {{if (eq this.editingLink link.link.link_id) "gh-links-list-item-edit-mode"}}">
-                {{#if (feature "fixNewsletterLinks")}}
                 <div class="gh-links-list-url">
                     {{#if (eq this.editingLink link.link.link_id)}}
                     <div class="gh-links-list-input-container {{if (eq this.showError link.link.link_id) "error"}}">
@@ -77,19 +76,14 @@
                     <span class="gh-links-list-item-success {{if (eq @showSuccess link.link.link_id) "gh-links-list-item-success-show"}}">{{svg-jar "check-circle"}}</span>
                     {{/if}}
                 </div>
-                {{else}}
-                <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
-                {{/if}}
                 <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
             </div>
         {{/each}}
         </div>
-        {{#if (or this.showPagination (feature "fixNewsletterLinks")) }}
             <div class="gh-links-pagination">
-                {{#if (feature "fixNewsletterLinks")}}
                 <span class="gh-links-info">{{svg-jar "arrow-right-tail"}} <span class="gh-links-info-normal">Sent a broken link? You can update it!</span><span class="gh-links-info-short">Update your broken link!</span></span>
 
-                    {{#if (not (feature "audienceFeedback"))}}
+                    {{#unless (feature "audienceFeedback")}}
                         <div class="gh-links-pagination-actions">
                             <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
                                 {{svg-jar "arrow-left-pagination"}}
@@ -100,10 +94,8 @@
                                 {{svg-jar "arrow-right-pagination"}}
                             </button>
                         </div>
-                    {{/if}}
-                {{/if}}
-
-                {{#if (and (not (feature "fixNewsletterLinks")) (not (feature "audienceFeedback")))}}
+                    {{/unless}}
+                {{#unless (feature "audienceFeedback")}}
                     <div class="gh-links-pagination-progress">
                         Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
                     </div>
@@ -119,13 +111,11 @@
                             </button>
                         </div>
                     {{/if}}
-                {{/if}}
+                {{/unless}}
 
                 {{#if (feature "audienceFeedback")}}
                     <div class="gh-post-activity-feed-pagination">
-                        {{#if (feature "fixNewsletterLinks")}}
-                            Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
-                        {{/if}}
+                        Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
                         <div class="gh-post-activity-feed-pagination-group">
                             <button
                                 class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
@@ -147,12 +137,8 @@
                                 {{svg-jar "arrow-right-pagination"}}
                             </button>
                         </div>
-                        {{#if (not (feature "fixNewsletterLinks"))}}
-                            Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
-                        {{/if}}
                     </div>
                 {{/if}}
             </div>
-        {{/if}}
     </div>
 </div>

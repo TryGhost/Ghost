@@ -58,16 +58,10 @@ export default class FeatureService extends Service {
     // labs flags
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
-    @feature('newsletterPaywall') newsletterPaywall;
-    @feature('freeTrial') freeTrial;
-    @feature('compExpiring') compExpiring;
     @feature('memberAttribution') memberAttribution;
-    @feature('emailAlerts') emailAlerts;
     @feature('sourceAttribution') sourceAttribution;
     @feature('lexicalEditor') lexicalEditor;
     @feature('audienceFeedback') audienceFeedback;
-    @feature('fixNewsletterLinks') fixNewsletterLinks;
-    @feature('suppressionList') suppressionList;
 
     _user = null;
 
