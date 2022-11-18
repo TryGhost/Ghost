@@ -45,14 +45,6 @@ export default class extends Component {
         return hasAnActivePaidTier;
     }
 
-    get hasSingleNewsletter() {
-        return this.newslettersList?.length === 1;
-    }
-
-    get hasMultipleNewsletters() {
-        return !!(this.newslettersList?.length > 1);
-    }
-
     get isCreatingComplimentary() {
         return this.args.isSaveRunning;
     }
@@ -122,6 +114,21 @@ export default class extends Component {
             };
         }
         return null;
+    }
+
+    get canShowSingleNewsletter() {
+        return (
+            this.newslettersList?.length === 1
+            && this.settings.editorDefaultEmailRecipients !== 'disabled'
+            && !this.feature.get('suppressionList')
+        );
+    }
+
+    get canShowMultipleNewsletters() {
+        return (
+            (this.newslettersList?.length > 1 || this.feature.get('suppressionList'))
+            && this.settings.editorDefaultEmailRecipients !== 'disabled'
+        );
     }
 
     @action
