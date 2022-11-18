@@ -16,6 +16,7 @@ const offersService = require('../offers');
 const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
+const emailSuppressionList = require('../email-suppression-list');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
@@ -203,7 +204,8 @@ function createApiInstance(config) {
         offersAPI: offersService.api,
         labsService: labsService,
         newslettersService: newslettersService,
-        memberAttributionService: memberAttributionService.service
+        memberAttributionService: memberAttributionService.service,
+        emailSuppressionList
     });
 
     return membersApiInstance;
