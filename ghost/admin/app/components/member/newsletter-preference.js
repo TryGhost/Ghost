@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
@@ -24,6 +25,18 @@ export default class MembersNewsletterPreference extends Component {
             });
         }
         return [];
+    }
+
+    get suppressionData() {
+        const {emailSuppression} = this.args.member;
+        const timestamp = emailSuppression?.info?.timestamp;
+        const formattedDate = timestamp ? moment(new Date(timestamp)).format('D MMM YYYY') : null;
+
+        return {
+            suppressed: emailSuppression?.suppressed,
+            reason: emailSuppression?.info?.reason,
+            date: formattedDate
+        };
     }
 
     @action

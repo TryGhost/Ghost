@@ -115,12 +115,12 @@ export default class MembersEventsFetcher extends Resource {
                     return;
                 }
                 const member = yield this.store.findRecord('member', memberId);
-                if (member.email === 'spam@ghost.org') {
+                if (member.email === 'spam@member.test') {
                     this.data.unshift(mockData('email_delivered_event'));
                     this.data.unshift(mockData('email_complaint_event'));
                 }
 
-                if (member.email === 'fail@ghost.org') {
+                if (member.email === 'fail@member.test') {
                     this.data.unshift(mockData('email_failed_event'));
                 }
             }
@@ -150,7 +150,7 @@ function mockData(eventType) {
             member: {
                 id: '63737a1719675aed3b7cc988',
                 uuid: '5c753e47-9f49-43ad-86d4-c5c0168519a2',
-                email: 'spam@ghost.org',
+                email: 'spam@member.test',
                 status: 'free',
                 name: 'Spam',
                 expertise: null,

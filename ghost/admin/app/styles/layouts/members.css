@@ -1122,6 +1122,42 @@ textarea.gh-member-details-textarea {
     margin-bottom: 0!important;
 }
 
+.gh-main-section-content.gh-member-newsletter-section {
+    padding-bottom: 16px;
+}
+
+.gh-member-newsletter-section .for-switch.disabled {
+    opacity: 0.1;
+}
+
+.gh-member-newsletter-footer-text {
+    font-weight: 500;
+}
+
+.gh-member-newsletter-footer-text a {
+    display: inline-block;
+    text-decoration: underline;
+    margin-left: 2px;
+    font-weight: 400;
+}
+
+.gh-member-newsletter-footer {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 1.25rem;
+    margin-top: 12px;
+}
+
+.gh-member-newsletter-footer-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.gh-member-newsletter-footer-icon [class*="__body"] {
+    stroke: #95A1AD;
+}
+
 .gh-member-feed-container {
     display: flex;
     flex-grow: 1;
