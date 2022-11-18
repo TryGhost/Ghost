@@ -30,7 +30,12 @@ describe('Posts API', function () {
         await models.Post.edit({newsletter_id: newsletterId}, {id: postId});
     });
 
+    beforeEach(function () {
+        mockManager.mockLabsDisabled('emailStability');
+    });
+
     afterEach(function () {
+        mockManager.restore();
         nock.cleanAll();
     });
 

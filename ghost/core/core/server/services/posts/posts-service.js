@@ -142,7 +142,7 @@ const getPostServiceInstance = () => {
         mega: mega,
         urlUtils: urlUtils,
         models: models,
-        isSet: labs.isSet.bind(labs),
+        isSet: flag => labs.isSet(flag), // don't use bind, that breaks test subbing of labs
         stats: postStats,
         emailService: emailService.service
     });
