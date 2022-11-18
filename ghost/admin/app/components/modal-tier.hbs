@@ -54,7 +54,6 @@
                     </GhFormGroup>
 
                     {{#unless this.isFreeTier}}
-                        {{#if (feature 'freeTrial')}}
                         <div class="gh-settings-members-pricetrialcont">
                             <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices" data-test-formgroup="prices">
                                 <div class="gh-settings-members-pricelabelcont free-trial-enabled">
@@ -144,58 +143,6 @@
                                 {{/if}}
                             </GhFormGroup>
                         </div>
-                        {{else}}
-                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices" data-test-formgroup="prices">
-                                <div class="gh-settings-members-pricelabelcont">
-                                    <label for="monthlyPrice" class="fw6">Prices</label><span>–</span>
-                                    <div>
-                                        <span class="gh-setting-members-currency gh-select">
-                                            <div class="gh-setting-members-currencylabel">
-                                                <span>{{this.currency}}</span>
-                                                {{svg-jar "arrow-down-small"}}
-                                            </div>
-                                            <OneWaySelect
-                                                @value={{this.selectedCurrency}}
-                                                id="currency"
-                                                name="currency"
-                                                @options={{readonly this.allCurrencies}}
-                                                @optionValuePath="value"
-                                                @optionLabelPath="label"
-                                                @update={{action "setCurrency"}}
-                                            />
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="gh-setting-members-prices">
-
-                                    <div class="gh-input-group">
-                                        <GhTextInput
-                                            @id="monthlyPrice"
-                                            @value={{readonly this.stripeMonthlyAmount}}
-                                            @type="number"
-                                            @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                                            @focus-out={{this.validateStripePlans}}
-                                        />
-                                        <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
-                                    </div>
-                                    <div class="gh-input-group">
-                                        <GhTextInput
-                                            @id="yearlyPrice"
-                                            @value={{readonly this.stripeYearlyAmount}}
-                                            @type="number"
-                                            @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                                            @focus-out={{this.validateStripePlans}}
-                                            @placeholder=''
-                                            data-test-title-input={{true}}
-                                        />
-                                        <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
-                                    </div>
-                                </div>
-                                {{#if this.stripePlanError}}
-                                    <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
-                                {{/if}}
-                            </GhFormGroup>
-                        {{/if}}
                         
                         <GhFormGroup>
                             <label for="welcomePage" class="fw6">Welcome page</label>
@@ -291,20 +238,11 @@
                                                 <span class="billing-period">/year</span>
                                             {{/if}}
                                         </div>
-                                        {{#if (feature 'freeTrial')}}
                                             {{#if this.isFreeTrialEnabled}}
                                             <span class="gh-portal-discount-label">
                                                 <span style="background-color: {{this.settings.accentColor}}"></span>
                                                 {{ this.tier.trialDays }} days free</span>
                                             {{/if}}
-                                        {{else}}
-                                            {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
-                                                <span class="gh-portal-discount-label">
-                                                <span style="background-color: {{this.settings.accentColor}}"></span>
-                                                {{this.discountValue}}% discount
-                                                </span>
-                                            {{/if}}
-                                        {{/if}}
                                     {{else}}
                                         <div class="gh-portal-tier-price placeholder">
                                             <span class="currency-sign">{{currency-symbol this.currency}}</span>
@@ -314,13 +252,11 @@
                                     {{/if}}
                                 {{/if}}
                             </div>
-                            {{#if (feature 'freeTrial')}}
                                 {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
                                 <span class="gh-portal-discount-label-trial" style={{this.accentColorStyle}}>
                                     {{this.discountValue}}% discount
                                 </span>
                                 {{/if}}
-                            {{/if}}
                         </div>
 
                         <div class="gh-portal-tier-card-details">

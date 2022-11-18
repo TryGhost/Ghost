@@ -265,7 +265,7 @@
                                     </div>
                                 </div>
                                 {{#if this.user.isAdmin}}
-                                {{#if (and this.canToggleMemberAlerts (feature 'emailAlerts'))}}
+                                {{#if this.canToggleMemberAlerts}}
                                     <div class="user-setting-toggle">
                                         <div>
                                             <label for="user-email">New signups</label>

@@ -3,7 +3,6 @@ const uuid = require('uuid');
 const _ = require('lodash');
 const config = require('../../shared/config');
 const {gravatar} = require('../lib/image');
-const labs = require('../../shared/labs');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -154,11 +153,7 @@ const Member = ghostBookshelf.Model.extend({
             .query((qb) => {
                 // avoids bookshelf adding a `DISTINCT` to the query
                 // we know the result set will already be unique and DISTINCT hurts query performance
-                if (labs.isSet('compExpiring')) {
-                    qb.columns('products.*', 'expiry_at');
-                } else {
-                    qb.columns('products.*');
-                }
+                qb.columns('products.*', 'expiry_at');
             });
     },
 
@@ -207,9 +202,6 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     async updateTierExpiry(products = [], options = {}) {
-        if (!labs.isSet('compExpiring')) {
-            return;
-        }
         for (const product of products) {
             if (product?.expiry_at) {
                 const expiry = new Date(product.expiry_at);

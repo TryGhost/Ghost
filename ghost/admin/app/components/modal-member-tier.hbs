@@ -41,7 +41,6 @@
                     </div>
                 {{/each}}
             </div>
-            {{#if (feature 'compExpiring')}}
                 <GhFormGroup @errors={{this.errors}} @property="product-cadence">
                     <label for="product-cadence" class="fw6 mt5">Duration</label>
                     <span class="gh-select">
@@ -58,7 +57,6 @@
                     </span>
                     <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
                 </GhFormGroup>
-            {{/if}}
         {{/if}}
     </div>
 </form>

@@ -15,12 +15,6 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
-    'newsletterPaywall',
-    'freeTrial',
-    'compExpiring',
-    'searchHelper',
-    'emailAlerts',
-    'fixNewsletterLinks',
     'sourceAttribution',
     'memberAttribution',
     'audienceFeedback'
