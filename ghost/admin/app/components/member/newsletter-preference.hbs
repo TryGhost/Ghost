@@ -1,5 +1,5 @@
 <h4 class="gh-main-section-header small bn">Newsletters</h4>
-<div class="gh-main-section-content grey">
+<div class="gh-main-section-content grey {{if (feature "suppressionList") 'gh-member-newsletter-section'}}">
     <div class="gh-member-newsletters">
         {{#each this.newsletters as |newsletter|}}
             <div class="gh-member-newsletter-row">
@@ -25,7 +25,13 @@
 
     {{#if (and (feature "suppressionList") this.suppressionData.suppressed)}}
         <div class="gh-member-newsletter-footer red">
-            {{svg-jar "warning-circle" class="gh-member-newsletter-footer-icon"}}
+            {{#if (eq this.suppressionData.reason 'fail')}}
+                {{svg-jar "event-email-delivery-failed" class="gh-member-newsletter-footer-icon"}}
+            {{/if}}
+
+            {{#if (eq this.suppressionData.reason 'spam')}}
+                {{svg-jar "event-email-delivery-spam" class="gh-member-newsletter-footer-icon"}}
+            {{/if}}
 
             <div class="gh-member-newsletter-footer-text">
                 {{#if (eq this.suppressionData.reason 'fail')}}

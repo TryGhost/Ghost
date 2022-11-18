@@ -1122,8 +1122,19 @@ textarea.gh-member-details-textarea {
     margin-bottom: 0!important;
 }
 
+.gh-main-section-content.gh-member-newsletter-section {
+    padding-bottom: 16px;
+}
+
+.gh-member-newsletter-footer-text {
+    font-weight: 500;
+}
+
 .gh-member-newsletter-footer-text a {
-    border-bottom: 1px solid currentColor;
+    display: inline-block;
+    text-decoration: underline;
+    margin-left: 2px;
+    font-weight: 400;
 }
 
 .gh-member-newsletter-footer {
@@ -1135,8 +1146,8 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-newsletter-footer-icon {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
 }
 
 .gh-member-feed-container {
