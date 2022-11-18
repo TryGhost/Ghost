@@ -451,7 +451,7 @@ class ImportManager {
                 });
                 await ghostMailer.send({
                     to: importOptions.user.email,
-                    subject: importResult.data.problems.length
+                    subject: importResult.data?.errors
                         ? 'Your content import was unsuccessful'
                         : 'Your content import has finished',
                     html: email
