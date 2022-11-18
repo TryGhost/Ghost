@@ -288,7 +288,7 @@ export function transformApiSiteData({site}) {
     }
 
     // self signup must be available for free plan signup to work
-    if (site.portal_plans.includes('free')) {
+    if (site.portal_plans?.includes('free')) {
         site.allow_self_signup = true;
     }
 
