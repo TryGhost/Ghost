@@ -243,7 +243,7 @@
                                                 <span style="background-color: {{this.settings.accentColor}}"></span>
                                                 {{ this.tier.trialDays }} days free</span>
                                             {{/if}}
-                                    {{else}}
+                                    {{else}} <!-- if this.stripeYearlyAmount -->
                                         <div class="gh-portal-tier-price placeholder">
                                             <span class="currency-sign">{{currency-symbol this.currency}}</span>
                                             <span class="amount">0</span>
