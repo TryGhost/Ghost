@@ -1126,6 +1126,10 @@ textarea.gh-member-details-textarea {
     padding-bottom: 16px;
 }
 
+.gh-member-newsletter-section .for-switch.disabled {
+    opacity: 0.1;
+}
+
 .gh-member-newsletter-footer-text {
     font-weight: 500;
 }
