@@ -84,6 +84,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'email-delivery-failed';
         }
 
+        if (event.type === 'email_complaint_event') {
+            icon = 'email-delivery-spam';
+        }
+
         if (event.type === 'comment_event') {
             icon = 'comment';
         }
@@ -158,7 +162,11 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'email_failed_event') {
-            return 'failed to receive email';
+            return this.feature.get('suppressionList') ? 'bounced email' : 'failed to receive email';
+        }
+
+        if (event.type === 'email_complaint_event') {
+            return 'flagged as spam email';
         }
 
         if (event.type === 'comment_event') {

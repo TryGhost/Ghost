@@ -30,12 +30,12 @@
         </div>
     </GhCanvasHeader>
     <div class="view-container">
-        {{#let (members-event-fetcher filter=(members-event-filter excludedEvents=this.fullExcludedEvents member=this.member) pageSize=50) as |eventsFetcher|}}
+        {{#let (members-event-fetcher filter=(members-event-filter excludedEvents=this.fullExcludedEvents member=this.member) pageSize=50 memberId=this.member) as |eventsFetcher|}}
             {{#if eventsFetcher.data}}
                 {{#if this.memberRecord}}
                     <GhMemberDetailsActivity @member={{this.memberRecord}} />
                 {{/if}}
-                <div class="gh-list-scrolling">   
+                <div class="gh-list-scrolling">
                     <MembersActivity::Table @hideMemberColumn={{if this.member true}} @events={{eventsFetcher.data}} @hasMultipleNewsletters={{eventsFetcher.hasMultipleNewsletters}} />
 
                     {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
