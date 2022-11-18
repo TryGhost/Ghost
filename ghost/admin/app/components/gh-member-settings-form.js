@@ -88,14 +88,14 @@ export default class extends Component {
                 },
                 isComplimentary: !sub.id
             };
-            if (this.feature.get('freeTrial') && sub.trial_end_at) {
+            if (sub.trial_end_at) {
                 const inTrialMode = moment(sub.trial_end_at).isAfter(new Date(), 'day');
                 if (inTrialMode) {
                     data.trialUntil = moment(sub.trial_end_at).format('D MMM YYYY');
                 }
             }
 
-            if (!sub.id && this.feature.get('compExpiring') && sub.tier?.expiry_at) {
+            if (!sub.id && sub.tier?.expiry_at) {
                 data.compExpiry = moment(sub.tier.expiry_at).format('D MMM YYYY');
             }
             return data;

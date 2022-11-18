@@ -54,7 +54,7 @@
                         <div class="period">Yearly</div>
                     </div>
                 </div>
-                {{#if (and (feature 'freeTrial') this.isFreeTrialEnabled)}}
+                {{#if this.isFreeTrialEnabled}}
                 <div class="gh-tier-free-trial-label">
                     <span class="gh-tier-free-trial-days">{{this.tierTrialDays}} day</span> free trial
                 </div>
