@@ -459,7 +459,7 @@ class SignupPage extends React.Component {
         const {site} = this.context;
         if (hasFreeTrialTier({site})) {
             return (
-                <p className='gh-portal-free-trial-notification'>After a free trial ends, you will be charged regular price for the tier you’ve chosen. You can always cancel before then.</p>
+                <p className='gh-portal-free-trial-notification'>After a free trial ends, you will be charged the regular price for the tier you’ve chosen. You can always cancel before then.</p>
             );
         }
         return null;
