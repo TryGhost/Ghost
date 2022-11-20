@@ -7,6 +7,7 @@ const {isReqResUserSpecific, cacheControlValues} = require('@tryghost/http-cache
 const tpl = require('@tryghost/tpl');
 
 const messages = {
+    genericError: 'An unexpected error occurred, please try again.',
     pageNotFound: 'Page not found',
     resourceNotFound: 'Resource not found',
     methodNotAcceptableVersionAhead: {
@@ -62,12 +63,15 @@ module.exports.prepareError = (err, req, res, next) => {
         err = err[0];
     }
 
+    // If the error is already a GhostError, it has been handled and can be returned as-is
+    // For everything else, we do some custom handling here
     if (!errors.utils.isGhostError(err)) {
-        // We need a special case for 404 errors & bookshelf empty errors
+        // Catch bookshelf empty errors and other 404s, and turn into a Ghost 404
         if ((err.statusCode && err.statusCode === 404) || err.message === 'EmptyResponse') {
             err = new errors.NotFoundError({
                 err: err
             });
+        // Catch handlebars errors, and render them as 400, rather than 500 errors
         } else if (err.stack.match(/node_modules\/handlebars\//)) {
             // Temporary handling of theme errors from handlebars
             // @TODO remove this when #10496 is solved properly
@@ -76,10 +80,12 @@ module.exports.prepareError = (err, req, res, next) => {
                 message: err.message,
                 statusCode: err.statusCode
             });
+        // For everything else, create a generic 500 error, with context set to the original error message
         } else {
             err = new errors.InternalServerError({
                 err: err,
-                message: err.message,
+                message: tpl(messages.genericError),
+                context: err.message,
                 statusCode: err.statusCode
             });
         }
@@ -126,7 +132,7 @@ module.exports.jsonErrorRenderer = (err, req, res, next) => { // eslint-disable-
 };
 
 /**
- * 
+ *
  * @param {String} [cacheControlHeaderValue] cache-control header value
  */
 module.exports.prepareErrorCacheControl = (cacheControlHeaderValue) => {

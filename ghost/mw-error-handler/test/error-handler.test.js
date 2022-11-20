@@ -17,13 +17,28 @@ const {
 } = require('../');
 
 describe('Prepare Error', function () {
-    it('Correctly prepares a normal error', function (done) {
+    it('Correctly prepares a non-Ghost error', function (done) {
         prepareError(new Error('test!'), {}, {
             set: () => {}
         }, (err) => {
             err.statusCode.should.eql(500);
             err.name.should.eql('InternalServerError');
+            err.message.should.eql('An unexpected error occurred, please try again.');
+            err.context.should.eql('test!');
             err.stack.should.startWith('Error: test!');
+            done();
+        });
+    });
+
+    it('Correctly prepares a Ghost error', function (done) {
+        prepareError(new InternalServerError({message: 'Handled Error', context: 'Details'}), {}, {
+            set: () => {}
+        }, (err) => {
+            err.statusCode.should.eql(500);
+            err.name.should.eql('InternalServerError');
+            err.message.should.eql('Handled Error');
+            err.context.should.eql('Details');
+            err.stack.should.startWith('InternalServerError: Handled Error');
             done();
         });
     });
