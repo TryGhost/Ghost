@@ -1,11 +1,8 @@
 import React from 'react';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-// import {isMimeType, mediaFileReader} from '@lexical/utils'; // not yet available in stable version of lexical
 import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
-// import {imageUploadHandler} from '../utils/imageUploadHandler';
-// import {UPLOAD_IMAGE_COMMAND} from './ImagePlugin';
 import {INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
 
 function isMimeType(file, acceptableMimeTypes) {
@@ -102,7 +99,6 @@ function DragDropPastePlugin() {
             DRAG_DROP_PASTE,
             async (files) => {
                 try {
-                    // potential bug with DRAG_DROP_PASTE - it's rendering twice, which often leads the selection not being grabbed correctly.
                     return await handleFileUpload(files);
                 } catch (error) {
                     console.error(error); // eslint-disable-line no-console
