@@ -109,7 +109,7 @@ export default class KoenigLexicalEditor extends Component {
     }
 
     ReactComponent = () => {
-        const [uploadProgress, setUploadProgress] = React.useState(0); // not in use right now, but will need to decide how to handle the percentage state and pass to the Image Cards
+        const [uploadProgress, setUploadProgress] = React.useState(0);
 
         const uploadProgressHandler = (event) => {
             const percentComplete = (event.loaded / event.total) * 100;
