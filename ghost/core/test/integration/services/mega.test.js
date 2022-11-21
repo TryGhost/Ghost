@@ -54,6 +54,14 @@ describe('MEGA', function () {
     let _mailgunClient;
     let frontendAgent;
 
+    beforeEach(function () {
+        mockManager.mockLabsDisabled('emailStability');
+    });
+
+    afterEach(function () {
+        mockManager.restore();
+    });
+
     describe('sendEmailJob', function () {
         before(async function () {
             agent = await agentProvider.getAdminAPIAgent();
@@ -61,10 +69,6 @@ describe('MEGA', function () {
             await agent.loginAsOwner();
             _sendEmailJob = require('../../../core/server/services/mega/mega')._sendEmailJob;
             _mailgunClient = require('../../../core/server/services/bulk-email')._mailgunClient;
-        });
-
-        afterEach(function () {
-            mockManager.restore();
         });
 
         it('Can send a scheduled post email', async function () {
@@ -142,10 +146,6 @@ describe('MEGA', function () {
             await agent.loginAsOwner();
             _sendEmailJob = require('../../../core/server/services/mega/mega')._sendEmailJob;
             _mailgunClient = require('../../../core/server/services/bulk-email')._mailgunClient;
-        });
-
-        afterEach(function () {
-            mockManager.restore();
         });
 
         it('Tracks all the links in an email', async function () {
