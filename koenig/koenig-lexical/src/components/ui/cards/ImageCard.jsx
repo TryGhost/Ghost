@@ -6,24 +6,21 @@ import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img
 import {openFileSelection} from '../../../utils/openFileSelection';
 import ImageUploadForm from '../ImageUploadForm';
 
-function PopulatedImageCard({src, alt}) {
-    return (
-        <img src={src} alt={alt} />
-    );
-}
-
-function ImageProgressCard({previewSrc, progress}) {
+function PopulatedImageCard({src, alt, previewSrc, progress}) {
     const progressStyle = {
-        width: `${progress.toFixed(0)}%`
+        width: `${progress?.toFixed(0)}%`
     };
     return (
         <div>
-            <img classname="opacity-40" src={previewSrc} alt={`upload in progress, ${progress} `} />
-            <div className="absolute inset-0 flex items-center min-w-full bg-white/50 justify-center overflow-hidden">
-                <div className="not-kg-prose bg-grey-200 rounded-full shadow w-[60%]">
-                    <div className="bg-green rounded-full text-xs leading-none py-1 text-center text-white" style={progressStyle}></div>
+            <img className={previewSrc ? `opacity-40` : ``} src={previewSrc ? previewSrc : src} alt={alt ? alt : `upload in progress, ${progress} `} />
+            {previewSrc && progress && !src ?
+                <div className="absolute inset-0 flex items-center min-w-full bg-white/50 justify-center overflow-hidden">
+                    <div className="not-kg-prose bg-grey-200 rounded-full shadow w-[60%]">
+                        <div className="bg-green rounded-full text-xs leading-none py-1 text-center text-white" style={progressStyle}></div>
+                    </div>
                 </div>
-            </div>
+                : <></>
+            }
         </div>
     );
 }
@@ -66,18 +63,13 @@ const ImageHolder = ({
     handleDrop,
     isDraggedOver
 }) => {
-    if (previewSrc && !src && uploadProgress > 0) {
-        return (
-            <ImageProgressCard 
-                previewSrc={previewSrc} 
-                progress={uploadProgress} 
-            />
-        );
-    } else if (src && !previewSrc) {
+    if (previewSrc || src) {
         return (
             <PopulatedImageCard 
                 src={src} 
-                alt={altText} 
+                alt={altText}
+                previewSrc={previewSrc} 
+                progress={uploadProgress} 
             />
         );
     } else {
