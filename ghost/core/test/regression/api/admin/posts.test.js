@@ -26,6 +26,14 @@ describe('Posts API', function () {
         await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters', 'members:newsletters');
     });
 
+    beforeEach(function () {
+        mockManager.mockLabsDisabled('emailStability');
+    });
+
+    afterEach(function () {
+        mockManager.restore();
+    });
+
     describe('Browse', function () {
         it('fields & formats combined', function (done) {
             request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title'))

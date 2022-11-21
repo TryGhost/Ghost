@@ -291,6 +291,7 @@ async function initServices({config}) {
     const linkTracking = require('./server/services/link-tracking');
     const audienceFeedback = require('./server/services/audience-feedback');
     const emailSuppressionList = require('./server/services/email-suppression-list');
+    const emailService = require('./server/services/email-service');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -311,6 +312,7 @@ async function initServices({config}) {
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
+        emailService.init(),
         mega.listen(),
         webhooks.listen(),
         appService.init(),

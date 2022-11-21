@@ -132,6 +132,7 @@
     "@tryghost/verification-trigger": "0.0.0",
     "@tryghost/version": "0.1.16",
     "@tryghost/zip": "1.1.29",
+    "@tryghost/email-service": "0.0.0",
     "amperize": "0.6.1",
     "analytics-node": "6.2.0",
     "bluebird": "3.7.2",
