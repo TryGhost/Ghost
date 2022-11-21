@@ -23,5 +23,8 @@
     "should": "13.2.3",
     "sinon": "14.0.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@tryghost/errors": "1.2.18",
+    "@tryghost/tpl": "0.1.19"
+  }
 }
