@@ -4,14 +4,17 @@ import papaparse from 'papaparse';
 import {action} from '@ember/object';
 import {isNone} from '@ember/utils';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class CsvFileMapping extends Component {
     @tracked error = null;
     @tracked fileData = null;
     @tracked labels = null;
+    @tracked defaultTier;
 
     @service membersStats;
+    @service store;
 
     constructor(...args) {
         super(...args);
@@ -63,6 +66,22 @@ export default class CsvFileMapping extends Component {
     updateLabels(labels) {
         this.labels = labels;
         this.setMappingResult();
+    }
+
+    @action
+    setup() {
+        this.fetchTiers.perform();
+    }
+
+    @task({drop: true})
+    *fetchTiers() {
+        this.tiers = yield this.store.query('tier', {
+            filter: 'type:paid+active:true',
+            limit: 'all'
+        });
+
+        this.defaultTier = this.tiers
+            .sortBy('amount')[0];
     }
 
     setMappingResult() {
