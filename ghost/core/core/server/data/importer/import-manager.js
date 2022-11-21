@@ -439,6 +439,7 @@ class ImportManager {
             logging.error(`Content import was unsuccessful`, {
                 error: err
             });
+            importResult = {data: {errors: [err]}};
         } finally {
             // Step 5: Cleanup any files
             await this.cleanUp();
@@ -451,7 +452,7 @@ class ImportManager {
                 });
                 await ghostMailer.send({
                     to: importOptions.user.email,
-                    subject: importResult.data?.errors
+                    subject: importResult?.data?.errors
                         ? 'Your content import was unsuccessful'
                         : 'Your content import has finished',
                     html: email
