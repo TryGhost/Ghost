@@ -10,11 +10,18 @@ import {
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {mergeRegister} from '@lexical/utils';
 import KoenigComposerContext from '../context/KoenigComposerContext';
-import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND, UPLOAD_IMAGE_COMMAND} from '../nodes/ImageNode';
+import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
+import {imageUploadHandler} from '../utils/imageUploadHandler';
 
 export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();
     const {imageUploader} = React.useContext(KoenigComposerContext);
+
+    const handleImageUpload = React.useCallback(async (files, imageNodeKey) => {
+        if (files?.length > 0) {
+            return await imageUploadHandler(files, imageNodeKey, editor, imageUploader);
+        }
+    }, [imageUploader, editor]);
 
     React.useEffect(() => {
         if (!editor.hasNodes([ImageNode])){
@@ -24,7 +31,7 @@ export const ImagePlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_IMAGE_COMMAND,
-                (dataset) => {
+                async (dataset) => {
                     const selection = $getSelection();
 
                     if (!$isRangeSelection(selection)) {
@@ -36,9 +43,14 @@ export const ImagePlugin = () => {
                     if (focusNode !== null) {
                         const imageNode = $createImageNode(dataset);
 
+                        if (!dataset.src) {
+                            const imageNodeKey = imageNode.getKey();
+                            handleImageUpload(dataset, imageNodeKey);
+                        }
                         // insert a paragraph if this will be the last card and
                         // we're not already on a blank paragraph so we always
                         // have a trailing paragraph in the doc
+                        
                         const selectedNode = selection.focus.getNode();
                         const selectedIsBlankParagraph = $isParagraphNode(selectedNode) && selectedNode.getTextContent() === '';
                         const nextNode = selectedNode.getTopLevelElementOrThrow().getNextSibling();
@@ -63,18 +75,19 @@ export const ImagePlugin = () => {
                     return true;
                 },
                 COMMAND_PRIORITY_HIGH
-            ),
-            editor.registerCommand(
-                UPLOAD_IMAGE_COMMAND,
-                async (files) => {
-                    const dataset = await imageUploader.imageUploader(files);
-                    editor.dispatchCommand(INSERT_IMAGE_COMMAND, dataset);
-                },
-                COMMAND_PRIORITY_HIGH
-            ),
-            // todo: create another command to handle more of the upload logic to allow us to be able to keep the image uploader more "dry / generic"
+            )
+            // editor.registerCommand(
+            //     UPLOAD_IMAGE_COMMAND,
+            //     async (files) => {
+            //         // const dataset = await imageUploader.imageUploader(files);
+            //         editor.dispatchCommand(INSERT_IMAGE_COMMAND, dataset);
+            //     },
+            //     COMMAND_PRIORITY_HIGH
+            // ),
+            // todo: create another command to handle more of the upload logic to allow us to be able to keep the image uploader more "dry / generic" as it needs to handle multiple states of the upload,
+            // eg: the progress bar, error states, temp image, etc
         );
-    }, [editor, imageUploader]);
+    }, [editor, imageUploader, handleImageUpload]);
 
     return null;
 };

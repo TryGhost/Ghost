@@ -33,6 +33,18 @@ Empty.args = {
     isDraggedOver: false
 };
 
+export const inProgress = Template.bind({});
+inProgress.args = {
+    isSelected: true,
+    setAltText: true,
+    caption: '',
+    altText: '',
+    cardWidth: 'regular',
+    isDraggedOver: false,
+    previewSrc: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
+    uploadProgress: 50
+};
+
 export const Populated = Template.bind({});
 Populated.args = {
     isSelected: true,
@@ -43,4 +55,3 @@ Populated.args = {
     cardWidth: 'regular',
     isDraggedOver: false
 };
-

@@ -8,9 +8,9 @@ import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {openFileSelection} from '../utils/openFileSelection';
-import {getImageDimensions} from '../utils/getImageDimensions';
+import {imageUploadHandler} from '../utils/imageUploadHandler';
 
-export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog}) {
+export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog, previewSrc}) {
     const [editor] = useLexicalComposerContext();
     const [dragOver, setDragOver] = React.useState(false);
     const {imageUploader} = React.useContext(KoenigComposerContext);
@@ -18,33 +18,9 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
 
-    // Removed the editor update from the onFileChange function so that we can reuse it when adding the Link toolbar button.
-    const updateImageNode = async ({fileSrc, file}) => {
-        if (!fileSrc) {
-            return;
-        }
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setSrc(fileSrc);
-        });
-        if (file) {
-            let url = URL.createObjectURL(file);
-            const {width, height} = await getImageDimensions(url);
-            editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
-                node.setImgWidth(width);
-                node.setImgHeight(height);
-            });
-        }
-    };
-
     const onFileChange = async (e) => {
         const fls = e.target.files;
-
-        const files = await imageUploader.imageUploader(fls); // idea here is to have something like imageUploader.uploadProgressPercentage to pass to the progress bar.
-        if (files) {
-            updateImageNode({fileSrc: files.src, file: fls[0]});
-        }
+        return await imageUploadHandler(fls, nodeKey, editor, imageUploader);
     };
 
     const setCaption = (newCaption) => {
@@ -107,16 +83,15 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
         e.preventDefault();
         e.stopPropagation();
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const files = await imageUploader.imageUploader(e.dataTransfer.files);
-            if (files) {
-                editor.update(() => {
-                    const node = $getNodeByKey(nodeKey);
-                    node.setSrc(files.src);
-                });
+            const fls = e.dataTransfer.files;
+            if (fls) {
                 setDragOver(false);
+                await imageUploadHandler(fls, nodeKey, editor, imageUploader);
             }
         }
     };
+
+    const uploadProgress = imageUploader?.uploadProgress || 100;
 
     return (
         <>
@@ -133,6 +108,8 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
                 handleDrop={handleDrop}
                 isDraggedOver={dragOver}
                 cardWidth={cardWidth}
+                previewSrc={previewSrc}
+                uploadProgress={uploadProgress}
             />
             <ActionToolbar
                 isVisible={src && isSelected}

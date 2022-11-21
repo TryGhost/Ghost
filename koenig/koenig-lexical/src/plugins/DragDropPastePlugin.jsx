@@ -4,12 +4,9 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 // import {isMimeType, mediaFileReader} from '@lexical/utils'; // not yet available in stable version of lexical
 import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
-import {UPLOAD_IMAGE_COMMAND} from '../nodes/ImageNode';
-
-// TODO - replace the next 2 isMimeType and mediaFileReader with  @lexical/utils library when released in next `not nightly` version of Lexical - currently not available in latest published Lexical version.
-// NB added minor adjustment to mediaFileReader to adapt to existing uploaders, 
-// both on Ghost and Demo - we should adapt those functions to meet Lexicals output which is an array like [{file: fileData, result: base64 String}] )
-// source https://github.com/facebook/lexical/blob/main/packages/lexical-utils/src/index.ts
+// import {imageUploadHandler} from '../utils/imageUploadHandler';
+// import {UPLOAD_IMAGE_COMMAND} from './ImagePlugin';
+import {INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
 
 function isMimeType(file, acceptableMimeTypes) {
     const mimeType = file.type;
@@ -88,23 +85,32 @@ function DragDropPastePlugin() {
             dropTarget.removeEventListener('dragover', handleDrag);
             dropTarget.removeEventListener('drop', handleDrop);
         };
-    }, [handleDrag, handleDrop]);
+    }, [handleDrop, handleDrag]);
+
+    const handleFileUpload = React.useCallback(async (files) => {
+        const {acceptableMimeTypes} = await getListofAcceptableMimeTypes(editor);
+        const {processed, node} = await mediaFileReader(files, acceptableMimeTypes);
+        if (processed.length) {
+            if (node === 'image') {
+                editor.dispatchCommand(INSERT_IMAGE_COMMAND, processed);
+            }
+        }
+    }, [editor]);
 
     React.useEffect(() => {
         return editor.registerCommand(
             DRAG_DROP_PASTE,
             async (files) => {
-                const {acceptableMimeTypes} = await getListofAcceptableMimeTypes(editor);
-                const {processed, node} = await mediaFileReader(files, acceptableMimeTypes);
-                if (processed && node) {
-                    if (node === 'image') {
-                        editor.dispatchCommand(UPLOAD_IMAGE_COMMAND, processed);
-                    }
+                try {
+                    // potential bug with DRAG_DROP_PASTE - it's rendering twice, which often leads the selection not being grabbed correctly.
+                    return await handleFileUpload(files);
+                } catch (error) {
+                    console.error(error); // eslint-disable-line no-console
                 }
             },
             COMMAND_PRIORITY_LOW 
         );
-    }, [editor]);
+    }, [editor, handleFileUpload]);
     return null;
 }
 

@@ -143,6 +143,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
     });
@@ -158,6 +159,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Regular"]')).not.toBeNull();
     });
@@ -173,6 +175,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Wide"]')).not.toBeNull();
     });
@@ -188,6 +191,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Full"]')).not.toBeNull();
     });
@@ -203,6 +207,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Link"]')).not.toBeNull();
     });
@@ -218,6 +223,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Replace"]')).not.toBeNull();
     });
@@ -233,6 +239,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Snippet"]')).not.toBeNull();
     });
@@ -249,6 +256,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
 
@@ -284,6 +292,7 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.accept([filePath]);
+        await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
 

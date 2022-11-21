@@ -1,6 +1,7 @@
 import React from 'react';
 import {DecoratorNode, createCommand} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
+// import KoenigComposerContext from '../context/KoenigComposerContext';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
 import {ImageNodeComponent} from './ImageNodeComponent';
 export const INSERT_IMAGE_COMMAND = createCommand();
@@ -28,10 +29,11 @@ export class ImageNode extends DecoratorNode {
     // TODO: does this belong on the node? If we're storing progress here because
     // the node might be re-created whilst uploading then wouldn't we need file
     // refs too?
-    __uploadProgress;
+    // __uploadProgress;
 
     // transient properties used to control node behaviour
     __triggerFileDialog = false;
+    __previewSrc = null;
 
     static getType() {
         return 'image';
@@ -56,7 +58,6 @@ export class ImageNode extends DecoratorNode {
                 caption: node.__caption,
                 altText: node.__altText,
                 cardWidth: node.__cardWidth,
-                uploadProgress: node.__uploadProgress,
                 width: node.__width,
                 height: node.__height
             },
@@ -101,13 +102,13 @@ export class ImageNode extends DecoratorNode {
         };
     }
 
-    constructor({src, caption, altText, cardWidth, uploadProgress, triggerFileDialog, width, height} = {}, key) {
+    constructor({src, caption, altText, cardWidth, uploadProgress, triggerFileDialog, width, height, previewSrc} = {}, key) {
         super(key);
         this.__caption = caption || '';
         this.__altText = altText || '';
         this.__src = src || '';
+        this.__previewSrc = previewSrc || '';
         this.__cardWidth = cardWidth || 'regular';
-        this.__uploadProgress = uploadProgress;
         this.__triggerFileDialog = triggerFileDialog || false;
         this.__width = width || null;
         this.__height = height || null;
@@ -149,6 +150,15 @@ export class ImageNode extends DecoratorNode {
     setSrc(src) {
         const writable = this.getWritable();
         return writable.__src = src;
+    }
+
+    getPreviewSrc() {
+        return this.__previewSrc;
+    }
+
+    setPreviewSrc(previewSrc) {
+        const writable = this.getWritable();
+        return writable.__previewSrc = previewSrc;
     }
 
     setCardWidth(cardWidth) {
@@ -196,15 +206,6 @@ export class ImageNode extends DecoratorNode {
         return writable.__altText = altText;
     }
 
-    getUploadProgress() {
-        return this.__uploadProgress;
-    }
-
-    setUploadProgress(progress) {
-        const writable = this.getWritable();
-        return writable.__uploadProgress = progress;
-    }
-
     setTriggerFileDialog(shouldTrigger) {
         const writable = this.getWritable();
         return writable.__triggerFileDialog = shouldTrigger;
@@ -218,8 +219,8 @@ export class ImageNode extends DecoratorNode {
                     src={this.__src}
                     altText={this.__altText}
                     caption={this.__caption}
-                    uploadProgress={this.__uploadProgress}
                     triggerFileDialog={this.__triggerFileDialog}
+                    previewSrc={this.getPreviewSrc()}
                 />
             </KoenigCardWrapper>
         );
