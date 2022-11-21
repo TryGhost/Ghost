@@ -18,9 +18,11 @@ function ImageProgressCard({previewSrc, progress}) {
     };
     return (
         <div>
-            <img src={previewSrc} alt={`upload in progress, ${progress} `} />
-            <div className="bg-grey-light not-kg-prose shadow w-full">
-                <div className="bg-blue text-xs leading-none py-1 text-center text-white" style={progressStyle}></div>
+            <img classname="opacity-40" src={previewSrc} alt={`upload in progress, ${progress} `} />
+            <div className="absolute inset-0 flex items-center min-w-full bg-white/50 justify-center overflow-hidden">
+                <div className="not-kg-prose bg-grey-200 rounded-full shadow w-[60%]">
+                    <div className="bg-green rounded-full text-xs leading-none py-1 text-center text-white" style={progressStyle}></div>
+                </div>
             </div>
         </div>
     );
