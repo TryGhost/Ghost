@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function UnsplashCard() {
+export function UnsplashSelector() {
     return (
         <>
             <div className="bg-black opacity-60 inset-0 h-[100vh]"></div>

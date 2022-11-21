@@ -1,15 +1,15 @@
 import React from 'react';
-import {UnsplashCard} from './Unsplashcard';
+import {UnsplashSelector} from './UnsplashSelector';
 
 const story = {
-    title: 'Embed cards/Unsplash card',
-    component: UnsplashCard
+    title: 'File Selectors/Unsplash',
+    component: UnsplashSelector
 };
 export default story;
 
 const Template = args => (
     <div className="w-full">
-        <UnsplashCard {...args} />
+        <UnsplashSelector {...args} />
     </div>
 );
 
