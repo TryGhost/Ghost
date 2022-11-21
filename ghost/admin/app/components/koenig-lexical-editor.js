@@ -109,21 +109,24 @@ export default class KoenigLexicalEditor extends Component {
     }
 
     ReactComponent = () => {
-        const [uploadProgressPercentage] = React.useState(0); // not in use right now, but will need to decide how to handle the percentage state and pass to the Image Cards
+        const [uploadProgress, setUploadProgress] = React.useState(0);
 
-        // const uploadProgress = (event) => {
-        //     const percentComplete = (event.loaded / event.total) * 100;
-        //     setUploadProgressPercentage(percentComplete);
-        // };
+        const uploadProgressHandler = (event) => {
+            const percentComplete = (event.loaded / event.total) * 100;
+            setUploadProgress(percentComplete);
+            if (percentComplete === 100) {
+                setUploadProgress(0);
+            }
+        };
 
         async function imageUploader(files) {
             function uploadToUrl(formData, url) {
                 return new Promise((resolve, reject) => {
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', url);
-                    // xhr.upload.onprogress = (event) => {
-                    //     uploadProgress(event);
-                    // };
+                    xhr.upload.onprogress = (event) => {
+                        uploadProgressHandler(event);
+                    };
                     xhr.onload = () => resolve(xhr.response);
                     xhr.onerror = () => reject(xhr.statusText);
                     xhr.send(formData);
@@ -146,7 +149,7 @@ export default class KoenigLexicalEditor extends Component {
                         <KoenigComposer
                             initialEditorState={this.args.lexical}
                             onError={this.onError}
-                            imageUploadFunction={{imageUploader, uploadProgressPercentage}} >
+                            imageUploadFunction={{imageUploader, uploadProgress}} >
                             <KoenigEditor onChange={this.args.onChange} />
                         </KoenigComposer>
                     </Suspense>
