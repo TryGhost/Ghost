@@ -33,7 +33,7 @@
     "@babel/core": "7.20.2",
     "@babel/preset-env": "7.20.2",
     "c8": "7.12.0",
-    "jsdom": "20.0.2",
+    "jsdom": "20.0.3",
     "mocha": "10.1.0",
     "rollup": "2.79.1",
     "rollup-plugin-babel": "4.4.0",
