@@ -13,10 +13,15 @@ function PopulatedImageCard({src, alt}) {
 }
 
 function ImageProgressCard({previewSrc, progress}) {
+    const progressStyle = {
+        width: `${progress.toFixed(0)}%`
+    };
     return (
         <div>
             <img src={previewSrc} alt={`upload in progress, ${progress} `} />
-            <div>{progress}</div>
+            <div className="bg-grey-light not-kg-prose shadow w-full">
+                <div className="bg-blue text-xs leading-none py-1 text-center text-white" style={progressStyle}></div>
+            </div>
         </div>
     );
 }
@@ -59,11 +64,12 @@ const ImageHolder = ({
     handleDrop,
     isDraggedOver
 }) => {
-    if (previewSrc && !src) {
+    if (previewSrc && !src && uploadProgress > 0) {
         return (
             <ImageProgressCard 
                 previewSrc={previewSrc} 
-                progress={uploadProgress} />
+                progress={uploadProgress} 
+            />
         );
     } else if (src && !previewSrc) {
         return (
