@@ -56,7 +56,7 @@ const membersImporter = new MembersCSVImporter({
         return tiersService.api.readDefaultTier();
     },
     sendEmail: ghostMailer.send.bind(ghostMailer),
-    isSet: labsService.isSet.bind(labsService),
+    isSet: flag => labsService.isSet(flag),
     addJob: jobsService.addJob.bind(jobsService),
     knex: db.knex,
     urlFor: urlUtils.urlFor.bind(urlUtils),

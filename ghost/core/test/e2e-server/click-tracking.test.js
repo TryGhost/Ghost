@@ -15,6 +15,7 @@ describe('Click Tracking', function () {
     });
 
     beforeEach(function () {
+        mockManager.mockLabsDisabled('emailStability');
         mockManager.mockMail();
     });
 

@@ -8,12 +8,13 @@ const messages = {
 };
 
 class PostsService {
-    constructor({mega, urlUtils, models, isSet, stats}) {
+    constructor({mega, urlUtils, models, isSet, stats, emailService}) {
         this.mega = mega;
         this.urlUtils = urlUtils;
         this.models = models;
         this.isSet = isSet;
         this.stats = stats;
+        this.emailService = emailService;
     }
 
     async editPost(frame) {
@@ -41,12 +42,22 @@ class PostsService {
 
             if (sendEmail) {
                 let postEmail = model.relations.email;
+                let email;
 
                 if (!postEmail) {
-                    const email = await this.mega.addEmail(model, frame.options);
-                    model.set('email', email);
+                    if (this.isSet('emailStability')) {
+                        email = await this.emailService.createEmail(model);
+                    } else {
+                        email = await this.mega.addEmail(model, frame.options);
+                    }
                 } else if (postEmail && postEmail.get('status') === 'failed') {
-                    const email = await this.mega.retryFailedEmail(postEmail);
+                    if (this.isSet('emailStability')) {
+                        email = await this.emailService.retryEmail(postEmail);
+                    } else {
+                        email = await this.mega.retryFailedEmail(postEmail);
+                    }
+                }
+                if (email) {
                     model.set('email', email);
                 }
             }
@@ -123,6 +134,7 @@ const getPostServiceInstance = () => {
     const labs = require('../../../shared/labs');
     const models = require('../../models');
     const PostStats = require('./stats/post-stats');
+    const emailService = require('../email-service');
 
     const postStats = new PostStats();
 
@@ -130,8 +142,9 @@ const getPostServiceInstance = () => {
         mega: mega,
         urlUtils: urlUtils,
         models: models,
-        isSet: labs.isSet.bind(labs),
-        stats: postStats
+        isSet: flag => labs.isSet(flag), // don't use bind, that breaks test subbing of labs
+        stats: postStats,
+        emailService: emailService.service
     });
 };
 

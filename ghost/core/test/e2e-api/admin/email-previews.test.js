@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId} = matchers;
 const assert = require('assert');
 
@@ -9,6 +9,14 @@ const models = require('../../../core/server/models/index');
 
 describe('Email Preview API', function () {
     let agent;
+
+    beforeEach(function () {
+        mockManager.mockLabsDisabled('emailStability');
+    });
+
+    afterEach(function () {
+        mockManager.restore();
+    });
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
