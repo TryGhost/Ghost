@@ -29,7 +29,7 @@
     "@tryghost/errors": "1.2.18",
     "@tryghost/logging": "2.3.2",
     "bree": "6.5.0",
-    "cron-validate": "1.4.4",
+    "cron-validate": "1.4.5",
     "fastq": "1.13.0",
     "p-wait-for": "3.2.0"
   }

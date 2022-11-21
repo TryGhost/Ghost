@@ -9799,10 +9799,10 @@ create-hmac@^1.1.0, create-hmac@^1.1.4, create-hmac@^1.1.7:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-cron-validate@1.4.4, cron-validate@^1.4.1:
-  version "1.4.4"
-  resolved "https://registry.yarnpkg.com/cron-validate/-/cron-validate-1.4.4.tgz#412619e7cf6bc18fb8c48ebbe7f2b6698a949ef0"
-  integrity sha512-QvVpGR32350w3BWVB4zT84UhA5kq/oWDmSfbbTFLJanq63KS8rsunV+0PKAQIeIJ+gHhysVF4sJ8gsq8+3gfAw==
+cron-validate@1.4.5, cron-validate@^1.4.1:
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/cron-validate/-/cron-validate-1.4.5.tgz#eceb221f7558e6302e5f84c7b3a454fdf4d064c3"
+  integrity sha512-nKlOJEnYKudMn/aNyNH8xxWczlfpaazfWV32Pcx/2St51r2bxWbGhZD7uwzMcRhunA/ZNL+Htm/i0792Z59UMQ==
   dependencies:
     yup "0.32.9"
 
