@@ -3,7 +3,7 @@ import {PaywallCard} from './PaywallCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Public preview Card',
+    title: 'Primary cards/Public preview card',
     component: PaywallCard,
     subcomponent: {CardWrapper},
     argTypes: {

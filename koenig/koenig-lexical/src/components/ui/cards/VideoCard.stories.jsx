@@ -3,7 +3,7 @@ import {VideoCard} from './VideoCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Video Card',
+    title: 'Primary cards/Video card',
     component: VideoCard,
     subcomponent: {CardWrapper},
     argTypes: {

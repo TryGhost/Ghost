@@ -3,7 +3,7 @@ import {CodeBlockCard} from './CodeBlockCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Code Card',
+    title: 'Primary cards/Code card',
     component: CodeBlockCard,
     subcomponent: {CardWrapper},
     argTypes: {

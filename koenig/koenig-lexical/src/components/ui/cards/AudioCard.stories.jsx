@@ -3,7 +3,7 @@ import {AudioCard} from './AudioCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Audio Card',
+    title: 'Primary cards/Audio card',
     component: AudioCard,
     subcomponent: {CardWrapper},
     argTypes: {

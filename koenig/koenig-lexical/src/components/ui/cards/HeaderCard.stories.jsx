@@ -3,7 +3,7 @@ import {HeaderCard} from './HeaderCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Header Card',
+    title: 'Primary cards/Header card',
     component: HeaderCard,
     subcomponent: {CardWrapper},
     argTypes: {

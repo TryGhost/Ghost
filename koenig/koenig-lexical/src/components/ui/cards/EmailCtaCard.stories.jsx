@@ -3,7 +3,7 @@ import {EmailCtaCard} from './EmailCtaCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Email CTA Card',
+    title: 'Primary cards/Email CTA card',
     component: EmailCtaCard,
     subcomponent: {CardWrapper},
     argTypes: {

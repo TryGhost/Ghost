@@ -3,7 +3,7 @@ import {HorizontalRuleCard} from './HorizontalRuleCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Divider Card',
+    title: 'Primary cards/Divider card',
     component: HorizontalRuleCard,
     subcomponent: {CardWrapper},
     argTypes: {

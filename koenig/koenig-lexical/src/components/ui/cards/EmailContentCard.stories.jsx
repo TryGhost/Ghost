@@ -3,7 +3,7 @@ import {EmailContentCard} from './EmailContentCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Email Content Card',
+    title: 'Primary cards/Email content card',
     component: EmailContentCard,
     subcomponent: {CardWrapper},
     argTypes: {

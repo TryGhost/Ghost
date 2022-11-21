@@ -3,7 +3,7 @@ import {BookmarkCard} from './BookmarkCard';
 import {CardWrapper} from './../CardWrapper';
 
 const story = {
-    title: 'Cards/Bookmark Card',
+    title: 'Primary cards/Bookmark card',
     component: BookmarkCard,
     subcomponent: {CardWrapper},
     argTypes: {
