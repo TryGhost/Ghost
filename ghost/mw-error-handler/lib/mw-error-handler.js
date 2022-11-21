@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const path = require('path');
 const semver = require('semver');
 const debug = require('@tryghost/debug')('error-handler');
 const errors = require('@tryghost/errors');
@@ -53,6 +54,12 @@ const messages = {
     UnknownError: 'Unknown error - {name}, cannot {action}.'
 };
 
+function isDependencyInStack(dependency, err) {
+    const dependencyPath = path.join('node_modules', dependency);
+
+    return err?.stack?.match(dependencyPath);
+}
+
 /**
  * Get an error ready to be shown the the user
  */
@@ -71,8 +78,8 @@ module.exports.prepareError = (err, req, res, next) => {
             err = new errors.NotFoundError({
                 err: err
             });
-        // Catch handlebars errors, and render them as 400, rather than 500 errors
-        } else if (err.stack.match(/node_modules\/handlebars\//)) {
+        // Catch handlebars / express-hbs errors, and render them as 400, rather than 500 errors as the server isn't broken
+        } else if (isDependencyInStack('handlebars', err) || isDependencyInStack('express-hbs', err)) {
             // Temporary handling of theme errors from handlebars
             // @TODO remove this when #10496 is solved properly
             err = new errors.IncorrectUsageError({

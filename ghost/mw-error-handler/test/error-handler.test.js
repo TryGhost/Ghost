@@ -1,6 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
+const path = require('path');
 const should = require('should');
 const assert = require('assert');
 const {InternalServerError, NotFoundError} = require('@tryghost/errors');
@@ -68,16 +69,38 @@ describe('Prepare Error', function () {
         });
     });
 
-    it('Correctly prepares a handlebars errpr', function (done) {
+    it('Correctly prepares a handlebars error', function (done) {
         let error = new Error('obscure handlebars message!');
-        error.stack += '\nnode_modules/handlebars/something';
+
+        error.stack += '\n';
+        error.stack += path.join('node_modules', 'handlebars', 'something');
 
         prepareError(error, {}, {
             set: () => {}
         }, (err) => {
             err.statusCode.should.eql(400);
             err.name.should.eql('IncorrectUsageError');
+            // TODO: the message shouldn't be trusted here
+            err.message.should.eql('obscure handlebars message!');
             err.stack.should.startWith('Error: obscure handlebars message!');
+            done();
+        });
+    });
+
+    it('Correctly prepares an express-hbs error', function (done) {
+        let error = new Error('obscure express-hbs message!');
+
+        error.stack += '\n';
+        error.stack += path.join('node_modules', 'express-hbs', 'lib');
+
+        prepareError(error, {}, {
+            set: () => {}
+        }, (err) => {
+            err.statusCode.should.eql(400);
+            err.name.should.eql('IncorrectUsageError');
+            // TODO: the message shouldn't be trusted here
+            err.message.should.eql('obscure express-hbs message!');
+            err.stack.should.startWith('Error: obscure express-hbs message!');
             done();
         });
     });
