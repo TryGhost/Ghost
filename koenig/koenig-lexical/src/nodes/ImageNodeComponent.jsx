@@ -91,7 +91,7 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
         }
     };
 
-    const uploadProgress = imageUploader?.uploadProgress || 100;
+    const uploadProgress = imageUploader?.uploadProgress || 0;
 
     return (
         <>

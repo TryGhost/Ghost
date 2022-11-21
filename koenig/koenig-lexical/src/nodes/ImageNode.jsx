@@ -29,7 +29,7 @@ export class ImageNode extends DecoratorNode {
     // TODO: does this belong on the node? If we're storing progress here because
     // the node might be re-created whilst uploading then wouldn't we need file
     // refs too?
-    // __uploadProgress;
+    // ;
 
     // transient properties used to control node behaviour
     __triggerFileDialog = false;
@@ -102,7 +102,7 @@ export class ImageNode extends DecoratorNode {
         };
     }
 
-    constructor({src, caption, altText, cardWidth, uploadProgress, triggerFileDialog, width, height, previewSrc} = {}, key) {
+    constructor({src, caption, altText, cardWidth, triggerFileDialog, width, height, previewSrc} = {}, key) {
         super(key);
         this.__caption = caption || '';
         this.__altText = altText || '';
