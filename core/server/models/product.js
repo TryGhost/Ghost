@@ -10,6 +10,11 @@ const Product = ghostBookshelf.Model.extend({
     },
 
     relationships: ['benefits'],
+    relationshipConfig: {
+        benefits: {
+            editable: true
+        }
+    },
 
     relationshipBelongsTo: {
         benefits: 'benefits'

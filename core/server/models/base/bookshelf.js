@@ -65,6 +65,7 @@ ghostBookshelf.plugin(require('./plugins/overrides'));
 ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
     unsetRelations: true,
+    editRelations: false,
     extendChanged: '_changed',
     attachPreviousRelations: true,
     hooks: {

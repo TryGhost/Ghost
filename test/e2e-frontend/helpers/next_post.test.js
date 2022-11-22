@@ -31,11 +31,16 @@ describe('e2e {{#next_post}} helper', function () {
     let fn;
     let inverse;
     let publicPost, membersPost, paidPost, basicTierPost, publicPost2;
+    let defaultProduct;
 
     before(async function () {
         await testUtils.startGhost({
             backend: true,
             frontend: false
+        });
+
+        defaultProduct = await models.Product.findOne({
+            slug: 'default-product'
         });
 
         publicPost = await createPost({
@@ -60,7 +65,7 @@ describe('e2e {{#next_post}} helper', function () {
             slug: 'tiers-post',
             visibility: 'tiers',
             tiers: [{
-                slug: 'default-product'
+                id: defaultProduct.id
             }],
             published_at: new Date(2020, 0, 4) // here to ensure sorting is not modified
         });
@@ -225,26 +230,22 @@ describe('e2e {{#next_post}} helper', function () {
             });
         });
 
-        describe('tiers member', function () {
-            const member = buildMember('tiers', [{
-                name: 'Default Product',
-                slug: 'default-product',
-                type: 'paid',
-                active: true
-            }]);
-
-            const locals = {
-                root: {
-                    _locals: {
-                        apiVersion: API_VERSION
-                    },
-                    context: ['post']
-                },
-                member
-            };
+        describe('tiers member', function async() {
+            let member;
             let optionsData;
             
             beforeEach(function () {
+                member = buildMember('tiers', [defaultProduct.toJSON()]);
+    
+                const locals = {
+                    root: {
+                        _locals: {
+                            apiVersion: API_VERSION
+                        },
+                        context: ['post']
+                    },
+                    member
+                };
                 optionsData = {name: 'next_post', data: locals, fn, inverse};
             });
 

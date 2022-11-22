@@ -6,6 +6,14 @@ const Integration = ghostBookshelf.Model.extend({
     tableName: 'integrations',
 
     relationships: ['api_keys', 'webhooks'],
+    relationshipConfig: {
+        api_keys: {
+            editable: true
+        },
+        webhooks: {
+            editable: true
+        }
+    },
 
     relationshipBelongsTo: {
         api_keys: 'api_keys',

@@ -14,6 +14,12 @@ async function createPost(data) {
     return post;
 }
 
+async function createProduct(data) {
+    const product = testUtils.DataGenerator.forKnex.createProduct(data);
+    await models.Product.add(product, {context: {internal: true}});
+    return product;
+}
+
 function buildMember(status, products = []) {
     return {
         uuid: '1234',
@@ -48,11 +54,16 @@ describe('e2e {{#get}} helper', function () {
     let inverse;
     let locals = {};
     let publicPost, membersPost, paidPost, basicTierPost;
+    let defaultProduct;
 
     before(async function () {
         await testUtils.startGhost({
             backend: true,
             frontend: false
+        });
+
+        defaultProduct = await models.Product.findOne({
+            slug: 'default-product'
         });
 
         publicPost = await createPost({
@@ -77,7 +88,7 @@ describe('e2e {{#get}} helper', function () {
             slug: 'tiers-post',
             visibility: 'tiers',
             tiers: [{
-                slug: 'default-product'
+                id: defaultProduct.id
             }],
             published_at: new Date() // here to ensure sorting is not modified
         });
@@ -200,12 +211,7 @@ describe('e2e {{#get}} helper', function () {
          * When using the get helper, you need to include tiers to properly determine {{access}} for posts with specific tiers
          */
         it('tiers member not including tiers', async function () {
-            member = buildMember('paid', [{
-                name: 'Default Product',
-                slug: 'default-product',
-                type: 'paid',
-                active: true
-            }]);
+            member = buildMember('paid', []);
             
             locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
             await get.call(
@@ -230,12 +236,7 @@ describe('e2e {{#get}} helper', function () {
         });
 
         it('tiers member including tiers', async function () {
-            member = buildMember('paid', [{
-                name: 'Default Product',
-                slug: 'default-product',
-                type: 'paid',
-                active: true
-            }]);
+            member = buildMember('paid', [defaultProduct.toJSON()]);
             
             locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
             await get.call(
@@ -260,12 +261,13 @@ describe('e2e {{#get}} helper', function () {
         });
 
         it('tiers member with different product', async function () {
-            member = buildMember('paid', [{
+            const proProduct = await createProduct({
                 name: 'Default Product',
                 slug: 'pro-product',
                 type: 'paid',
                 active: true
-            }]);
+            });
+            member = buildMember('paid', [proProduct]);
             
             locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
             await get.call(
