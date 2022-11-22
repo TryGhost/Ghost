@@ -301,6 +301,29 @@ async function updateNewsletterPreference({data, state, api}) {
     }
 }
 
+async function removeEmailFromSuppressionList({state, api}) {
+    try {
+        await api.member.deleteSuppression();
+        const action = 'removeEmailFromSuppressionList:success';
+        return {
+            action,
+            popupNotification: createPopupNotification({
+                type: 'removeEmailFromSuppressionList:success', autoHide: true, closeable: true, state, status: 'success',
+                message: 'You have been successfully resubscribed'
+            })
+        };
+    } catch (e) {
+        return {
+            action: 'removeEmailFromSuppressionList:failed',
+            popupNotification: createPopupNotification({
+                type: 'removeEmailFromSuppressionList:failed',
+                autoHide: true, closeable: true, state, status: 'error',
+                message: 'Your email has failed to resubscribe, please try again'
+            })
+        };
+    }
+}
+
 async function updateNewsletter({data, state, api}) {
     try {
         const {subscribed} = data;
@@ -377,14 +400,16 @@ async function refreshMemberData({state, api}) {
             if (member) {
                 return {
                     member,
-                    success: true
+                    success: true,
+                    action: 'refreshMemberData:success'
                 };
             }
             return null;
         } catch (err) {
             return {
                 success: false,
-                error: err
+                error: err,
+                action: 'refreshMemberData:failed'
             };
         }
     }
@@ -469,7 +494,8 @@ const Actions = {
     editBilling,
     checkoutPlan,
     updateNewsletterPreference,
-    showPopupNotification
+    showPopupNotification,
+    removeEmailFromSuppressionList
 };
 
 /** Handle actions in the App, returns updated state */
