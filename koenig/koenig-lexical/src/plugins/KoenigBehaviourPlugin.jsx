@@ -11,6 +11,7 @@ import {
     COMMAND_PRIORITY_HIGH,
     KEY_ARROW_DOWN_COMMAND,
     KEY_ARROW_UP_COMMAND,
+    KEY_BACKSPACE_COMMAND,
     PASTE_COMMAND
 } from 'lexical';
 
@@ -196,7 +197,51 @@ function useKoenigBehaviour({editor, containerElem}) {
                 },
                 COMMAND_PRIORITY_HIGH
             ),
-            editor.registerCommand (
+            editor.registerCommand(
+                KEY_BACKSPACE_COMMAND,
+                (event) => {
+                    const selection = $getSelection();
+
+                    // <KoenigCardWrapper> currently handles the behaviour for
+                    // backspace on a selected card
+                    if ($isNodeSelection(selection)) {
+                        return false;
+                    }
+
+                    if ($isRangeSelection(selection)) {
+                        if (selection.isCollapsed) {
+                            const topLevelElement = selection.anchor.getNode().getTopLevelElement();
+                            const previousSibling = topLevelElement.getPreviousSibling();
+
+                            const onEmptyNode =
+                                topLevelElement?.getTextContent().trim() === '' &&
+                                selection.anchor.offset === 0;
+
+                            if (onEmptyNode && $isDecoratorNode(previousSibling)) {
+                                // delete the empty node and select the previous card
+                                topLevelElement.remove();
+                                $selectDecoratorNode(previousSibling);
+                                return true;
+                            }
+
+                            const atStartOfElement =
+                                selection.anchor.offset === 0 &&
+                                selection.focus.offset === 0;
+
+                            if (atStartOfElement && $isDecoratorNode(previousSibling)) {
+                                // delete the previous card keeping caret in place
+                                event.preventDefault();
+                                previousSibling.remove();
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
                 PASTE_COMMAND,
                 (clipboard) => {
                     const clipboardDataset = clipboard?.clipboardData?.getData('text');
@@ -217,7 +262,8 @@ function useKoenigBehaviour({editor, containerElem}) {
                     }
                 },
                 COMMAND_PRIORITY_HIGH
-            ));
+            )
+        );
     });
 
     return null;

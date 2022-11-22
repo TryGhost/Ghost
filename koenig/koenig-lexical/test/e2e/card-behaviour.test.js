@@ -647,12 +647,85 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                        <div data-kg-card-selected="true" data-kg-card="horizontalrule">
-                            <hr>
-                        </div>
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
                 </div>
                 <p><br></p>
             `);
+        });
+
+        // deletes empty paragraph, selects card
+        test('on empty paragraph after card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('Populated paragraph after empty paragraph');
+            await page.keyboard.press('ArrowUp');
+
+            // sanity check - cursor is on empty paragraph
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
+
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p dir="ltr"><span data-lexical-text="true">Populated paragraph after empty paragraph</span></p>
+            `);
+        });
+
+        // deletes card, keeps selection at beginning of paragraph
+        test('at beginning of paragraph after card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First paragraph');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('Second paragraph');
+            for (let i = 0; i < 'Second paragraph'.length; i++) {
+                await page.keyboard.press('ArrowLeft');
+            }
+            // await page.keyboard.press('Control+KeyA');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p><span data-lexical-text="true">Second paragraph</span></p>
+            `);
+
+            // sanity check - cursor is at beginning of second paragraph
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [2, 0, 0],
+                focusOffset: 0,
+                focusPath: [2, 0, 0]
+            });
+
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
+                <p><span data-lexical-text="true">Second paragraph</span></p>
+            `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1, 0, 0],
+                focusOffset: 0,
+                focusPath: [1, 0, 0]
+            });
         });
     });
 
