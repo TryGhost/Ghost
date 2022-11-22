@@ -113,7 +113,11 @@ export function getMemberData({
     subscriptions = [],
     paid = false,
     avatarImage: avatar_image = '',
-    subscribed = true
+    subscribed = true,
+    email_suppression = {
+        suppressed: false,
+        info: null
+    }
 } = {}) {
     return {
         uuid: `member_${objectId()}`,
@@ -123,7 +127,8 @@ export function getMemberData({
         paid,
         subscribed,
         avatar_image,
-        subscriptions
+        subscriptions,
+        email_suppression
     };
 }
 

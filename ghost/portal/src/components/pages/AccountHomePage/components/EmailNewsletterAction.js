@@ -1,15 +1,12 @@
 import AppContext from 'AppContext';
 import Switch from 'components/common/Switch';
-import {getSiteNewsletters, hasCommentsEnabled, hasMultipleNewsletters} from 'utils/helpers';
+import {getSiteNewsletters} from 'utils/helpers';
 import {useContext} from 'react';
 
 function EmailNewsletterAction() {
     const {member, site, onAction} = useContext(AppContext);
     let {newsletters} = member;
 
-    if (hasMultipleNewsletters({site}) || hasCommentsEnabled({site})) {
-        return null;
-    }
     const subscribed = !!newsletters?.length;
     let label = subscribed ? 'Subscribed' : 'Unsubscribed';
     const onToggleSubscription = (e, sub) => {
