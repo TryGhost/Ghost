@@ -14,7 +14,9 @@ import {
     KEY_BACKSPACE_COMMAND,
     KEY_DELETE_COMMAND,
     PASTE_COMMAND,
-    $isElementNode
+    $isElementNode,
+    KEY_ARROW_LEFT_COMMAND,
+    KEY_ARROW_RIGHT_COMMAND
 } from 'lexical';
 
 import {$createLinkNode} from '@lexical/link';
@@ -193,6 +195,53 @@ function useKoenigBehaviour({editor, containerElem}) {
                                 }
                             }
                         }
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_ARROW_LEFT_COMMAND,
+                (event) => {
+                    const selection = $getSelection();
+
+                    if (!$isNodeSelection(selection)) {
+                        return false;
+                    }
+
+                    const firstNode = selection.getNodes()[0];
+                    const topLevelElement = firstNode.getTopLevelElement();
+                    const previousSibling = topLevelElement.getPreviousSibling();
+
+                    if ($isDecoratorNode(previousSibling)) {
+                        event.preventDefault();
+                        $selectDecoratorNode(previousSibling);
+                        return true;
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_ARROW_RIGHT_COMMAND,
+                (event) => {
+                    const selection = $getSelection();
+
+                    if (!$isNodeSelection(selection)) {
+                        return false;
+                    }
+
+                    const selectedNodes = selection.getNodes();
+                    const lastNode = selectedNodes[selectedNodes.length - 1];
+                    const topLevelElement = lastNode.getTopLevelElement();
+                    const nextSibling = topLevelElement.getNextSibling();
+
+                    if ($isDecoratorNode(nextSibling)) {
+                        event.preventDefault();
+                        $selectDecoratorNode(nextSibling);
+                        return true;
                     }
 
                     return false;
