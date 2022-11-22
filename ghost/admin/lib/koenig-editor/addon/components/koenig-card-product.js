@@ -21,11 +21,11 @@ export default class KoenigCardProductComponent extends Component {
     @inject config;
 
     @tracked files = null;
-    imageExtensions = IMAGE_EXTENSIONS;
-    imageMimeTypes = IMAGE_MIME_TYPES;
-
     @tracked previewSrc = null;
     @tracked isDraggedOver = false;
+
+    imageExtensions = IMAGE_EXTENSIONS;
+    imageMimeTypes = IMAGE_MIME_TYPES;
 
     handlesDragDrop = true;
 
