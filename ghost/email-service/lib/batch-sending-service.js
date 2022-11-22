@@ -56,7 +56,7 @@ class BatchSendingService {
         this.#models = models;
         this.#db = db;
     }
-    
+
     /**
      * Schedules a background job that sends the email in the background if it is pending or failed.
      * @param {Email} email 
@@ -95,7 +95,7 @@ class BatchSendingService {
             }, {patch: true});
         } catch (e) {
             logging.error(`Error sending email ${email.id}: ${e.message}`);
-            
+
             // Edge case: Store error in email model (that are not caught by the batch)
             await email.save({
                 status: 'failed',
@@ -113,7 +113,7 @@ class BatchSendingService {
         logging.info(`Sending email ${email.id}`);
 
         // Load required relations
-        const newsletter = await email.getLazyRelation('newsletter', {require: true}); 
+        const newsletter = await email.getLazyRelation('newsletter', {require: true});
         const post = await email.getLazyRelation('post', {require: true});
 
         let batches = await this.getBatches(email);
@@ -155,10 +155,10 @@ class BatchSendingService {
             // Avoiding Bookshelf for performance reasons
             let members;
             let lastId = null;
-            
+
             while (!members || lastId) {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
-                
+
                 const filter = segmentFilter + (lastId ? `+id:<${lastId}` : '');
                 members = await this.#models.Member.getFilteredCollectionQuery({filter, order: 'id DESC'}).select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
 
@@ -180,7 +180,7 @@ class BatchSendingService {
 
         if (email.get('email_count') !== totalCount) {
             logging.error(`Email ${email.id} has wrong recipient count ${totalCount}, expected ${email.get('email_count')}. Updating the model.`);
-            
+
             // We update the email model because this will probably happen a few times because of the time difference
             // between creating the email and sending it (or when the email failed initially and is retried a day later)
             await email.save({
@@ -211,7 +211,7 @@ class BatchSendingService {
             member_segment: segment,
             status: 'pending'
         }, options);
-        
+
         const recipientData = [];
 
         members.forEach((memberRow) => {
@@ -236,7 +236,7 @@ class BatchSendingService {
         if (options.transacting) {
             insertQuery.transacting(options.transacting);
         }
-        
+
         logging.info(`Inserting ${recipientData.length} recipients for email ${email.id} batch ${batch.id}`);
         await insertQuery;
         return batch;
@@ -302,7 +302,7 @@ class BatchSendingService {
             succeeded = true;
         } catch (err) {
             logging.error(`Error sending email batch ${batch.id}`, err);
-            
+
             await batch.save({
                 status: 'failed'
                 // TODO: error should be instance of EmailProviderError (see IEmailProviderService) + we should read error message
@@ -311,7 +311,7 @@ class BatchSendingService {
                 // error_data: err.message_full
             }, {patch: true, require: false});
         }
-        
+
         // Mark as processed, even when failed
         await this.#models.EmailRecipient
             .where({batch_id: batch.id})
