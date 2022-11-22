@@ -26,6 +26,7 @@ describe('Prepare Error', function () {
             err.name.should.eql('InternalServerError');
             err.message.should.eql('An unexpected error occurred, please try again.');
             err.context.should.eql('test!');
+            err.code.should.eql('UNEXPECTED_ERROR');
             err.stack.should.startWith('Error: test!');
             done();
         });
@@ -80,7 +81,7 @@ describe('Prepare Error', function () {
         }, (err) => {
             err.statusCode.should.eql(400);
             err.name.should.eql('IncorrectUsageError');
-            // TODO: the message shouldn't be trusted here
+            // TODO: consider if the message should be trusted here
             err.message.should.eql('obscure handlebars message!');
             err.stack.should.startWith('Error: obscure handlebars message!');
             done();
@@ -98,7 +99,6 @@ describe('Prepare Error', function () {
         }, (err) => {
             err.statusCode.should.eql(400);
             err.name.should.eql('IncorrectUsageError');
-            // TODO: the message shouldn't be trusted here
             err.message.should.eql('obscure express-hbs message!');
             err.stack.should.startWith('Error: obscure express-hbs message!');
             done();

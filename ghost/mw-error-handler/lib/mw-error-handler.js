@@ -93,7 +93,8 @@ module.exports.prepareError = (err, req, res, next) => {
                 err: err,
                 message: tpl(messages.genericError),
                 context: err.message,
-                statusCode: err.statusCode
+                statusCode: err.statusCode,
+                code: 'UNEXPECTED_ERROR'
             });
         }
     }
