@@ -7,11 +7,13 @@ const CardText = ({text}) => {
 export function MediaPlaceholder({desc, Icon, filePicker, size, handleDrag, handleDrop, isDraggedOver, ...props}) {
     return (
         <div
-            onDragEnter={handleDrag} 
-            onDragLeave={handleDrag} 
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            className="border border-transparent" {...props}>
+            className="border border-transparent" {...props}
+            data-testid="media-placeholder"
+        >
             <div className={`h-100 relative flex items-center justify-center border border-grey/20 bg-grey-50 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'}`}>
                 {
                     isDraggedOver ?

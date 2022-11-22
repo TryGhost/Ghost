@@ -20,8 +20,9 @@ describe('Drag Drop Paste Plugin', async function () {
     });
 
     test.todo('can drag and drop an image into the editor');
+
     // test('can drop an image on the editor', async function () {
-    //     const fp = path.relative(process.cwd(), __dirname + '/assets/large.png');
+    //     const fp = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
     //     const buffer = fs.readFileSync(fp);
     //     await focusEditor(page);
     //     // eslint - disable - next - line

@@ -79,7 +79,7 @@ describe('Plus button', async () => {
             expect(await page.$('[data-kg-plus-button]')).toBeNull();
 
             await page.keyboard.press('Backspace');
-            await page.waitForSelector('p > br');
+            await page.waitForSelector('p > br', {state: 'attached'});
 
             expect(await page.$('[data-kg-plus-button]')).not.toBeNull();
         });
@@ -281,7 +281,7 @@ describe('Plus button', async () => {
         it('closes and moves focus on up/down', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
-            await page.click('[data-kg-plus-button');
+            await page.click('[data-kg-plus-button]');
             expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
 
             await assertSelection(page, {

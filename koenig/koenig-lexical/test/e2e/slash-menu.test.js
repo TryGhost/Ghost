@@ -265,11 +265,7 @@ describe('Slash menu', async () => {
             await page.keyboard.type('/hr');
             await page.keyboard.press('Enter');
             await page.keyboard.type('/img');
-            const [fileChooser] = await Promise.all([
-                page.waitForFileChooser(),
-                page.keyboard.press('Enter')
-            ]);
-            await fileChooser.cancel();
+            await page.keyboard.press('Enter');
 
             // image card retains focus after insert
             await assertHTML(page, html`
