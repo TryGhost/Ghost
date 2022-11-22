@@ -12,7 +12,9 @@ import {
     KEY_ARROW_DOWN_COMMAND,
     KEY_ARROW_UP_COMMAND,
     KEY_BACKSPACE_COMMAND,
-    PASTE_COMMAND
+    KEY_DELETE_COMMAND,
+    PASTE_COMMAND,
+    $isElementNode
 } from 'lexical';
 
 import {$createLinkNode} from '@lexical/link';
@@ -232,6 +234,58 @@ function useKoenigBehaviour({editor, containerElem}) {
                                 // delete the previous card keeping caret in place
                                 event.preventDefault();
                                 previousSibling.remove();
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_DELETE_COMMAND,
+                (event) => {
+                    const selection = $getSelection();
+
+                    // <KoenigCardWrapper> currently handles the behaviour for
+                    // delete on a selected card
+                    if ($isNodeSelection(selection)) {
+                        return false;
+                    }
+
+                    if ($isRangeSelection(selection)) {
+                        if (selection.isCollapsed) {
+                            const anchor = selection.anchor;
+                            const anchorNode = anchor.getNode();
+                            const topLevelElement = anchorNode.getTopLevelElement();
+                            const nextSibling = topLevelElement.getNextSibling();
+
+                            const onEmptyNode =
+                                topLevelElement?.getTextContent().trim() === '' &&
+                                selection.anchor.offset === 0;
+
+                            if (onEmptyNode && $isDecoratorNode(nextSibling)) {
+                                // delete the empty node and select the previous card
+                                event.preventDefault();
+                                topLevelElement.remove();
+                                $selectDecoratorNode(nextSibling);
+                                return true;
+                            }
+
+                            const atEndOfNode = ((
+                                anchor.type === 'element' &&
+                                $isElementNode(anchorNode) &&
+                                anchor.offset === anchorNode.getChildrenSize()
+                            ) || (
+                                anchor.type === 'text' &&
+                                anchor.offset === anchorNode.getTextContentSize()
+                            ));
+
+                            if (atEndOfNode && $isDecoratorNode(nextSibling)) {
+                                // delete the card, keeping selection in place
+                                event.preventDefault();
+                                nextSibling.remove();
                                 return true;
                             }
                         }

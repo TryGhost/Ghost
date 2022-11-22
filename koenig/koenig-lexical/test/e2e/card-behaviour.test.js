@@ -777,8 +777,91 @@ describe('Card behaviour', async () => {
             `);
         });
 
-        // general BACKSPACE behaviour needed to delete trailing
-        // paragraph after HR card without also deleting the card
-        test.todo('with selected card as last section');
+        // deletes paragraph and selects card
+        test('on empty paragraph before card', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+
+            await assertHTML(page, html`
+                <p><br></p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0],
+                focusOffset: 0,
+                focusPath: [0]
+            });
+
+            await page.keyboard.press('Delete');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+
+            await page.keyboard.press('Delete');
+
+            await assertHTML(page, html`
+                <p><br></p>
+            `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0],
+                focusOffset: 0,
+                focusPath: [0]
+            });
+        });
+
+        // deletes card, keeping caret at end of paragraph
+        test('at end of paragraph before card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First paragraph');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('Second paragraph');
+            await page.click('p:nth-of-type(1)');
+
+            await assertSelection(page, {
+                anchorOffset: 15,
+                anchorPath: [0, 0, 0],
+                focusOffset: 15,
+                focusPath: [0, 0, 0]
+            });
+
+            await page.keyboard.press('Delete');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
+                <p><span data-lexical-text="true">Second paragraph</span></p>
+            `);
+
+            await assertSelection(page, {
+                anchorOffset: 15,
+                anchorPath: [0, 0, 0],
+                focusOffset: 15,
+                focusPath: [0, 0, 0]
+            });
+
+            await page.keyboard.press('Delete');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">First paragraphSecond paragraph</span></p>
+            `);
+        });
     });
 });
