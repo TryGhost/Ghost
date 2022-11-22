@@ -1,5 +1,7 @@
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
+// @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
+//         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
 class StaffService {
     constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, DomainEvents}) {
         this.logging = logging;
