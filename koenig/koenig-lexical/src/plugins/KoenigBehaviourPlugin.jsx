@@ -4,23 +4,26 @@ import {
     $createNodeSelection,
     $getSelection,
     $isDecoratorNode,
+    $isElementNode,
+    $isParagraphNode,
     $isNodeSelection,
     $isRangeSelection,
     $setSelection,
     $createTextNode,
+    $createParagraphNode,
     COMMAND_PRIORITY_HIGH,
     KEY_ARROW_DOWN_COMMAND,
     KEY_ARROW_UP_COMMAND,
+    KEY_ARROW_LEFT_COMMAND,
+    KEY_ARROW_RIGHT_COMMAND,
     KEY_BACKSPACE_COMMAND,
     KEY_DELETE_COMMAND,
     PASTE_COMMAND,
-    $isElementNode,
-    KEY_ARROW_LEFT_COMMAND,
-    KEY_ARROW_RIGHT_COMMAND
+    INSERT_PARAGRAPH_COMMAND
 } from 'lexical';
-
 import {$createLinkNode} from '@lexical/link';
 import {mergeRegister} from '@lexical/utils';
+import {$isListItemNode} from '@lexical/list';
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
 
@@ -261,26 +264,48 @@ function useKoenigBehaviour({editor, containerElem}) {
 
                     if ($isRangeSelection(selection)) {
                         if (selection.isCollapsed) {
-                            const topLevelElement = selection.anchor.getNode().getTopLevelElement();
+                            const anchor = selection.anchor;
+                            const anchorNode = anchor.getNode();
+                            const topLevelElement = anchorNode.getTopLevelElement();
                             const previousSibling = topLevelElement.getPreviousSibling();
-
-                            const onEmptyNode =
-                                topLevelElement?.getTextContent().trim() === '' &&
-                                selection.anchor.offset === 0;
-
-                            if (onEmptyNode && $isDecoratorNode(previousSibling)) {
-                                // delete the empty node and select the previous card
-                                topLevelElement.remove();
-                                $selectDecoratorNode(previousSibling);
-                                return true;
-                            }
 
                             const atStartOfElement =
                                 selection.anchor.offset === 0 &&
                                 selection.focus.offset === 0;
 
+                            // convert empty top level list items to paragraphs
+                            if (
+                                atStartOfElement &&
+                                $isListItemNode(anchorNode) &&
+                                anchorNode.getIndent() === 0 &&
+                                anchorNode.isEmpty()
+                            ) {
+                                event.preventDefault();
+                                editor.dispatchCommand(INSERT_PARAGRAPH_COMMAND);
+                                return true;
+                            }
+
+                            // delete empty paragraphs and select card if preceded by card
+                            if ($isParagraphNode(anchorNode) && anchorNode.isEmpty() && $isDecoratorNode(previousSibling)) {
+                                topLevelElement.remove();
+                                $selectDecoratorNode(previousSibling);
+                                return true;
+                            }
+
+                            // convert populated top level list items to paragraphs when cursor is at beginning
+                            if (atStartOfElement && $isListItemNode(anchorNode.getParent())) {
+                                const listItemNode = anchorNode.getParent();
+                                if (listItemNode.getIndent() === 0) {
+                                    event.preventDefault();
+                                    const paragraphNode = $createParagraphNode();
+                                    paragraphNode.append(...listItemNode.getChildren());
+                                    listItemNode.replace(paragraphNode);
+                                    return true;
+                                }
+                            }
+
+                            // delete any previous card keeping caret in place
                             if (atStartOfElement && $isDecoratorNode(previousSibling)) {
-                                // delete the previous card keeping caret in place
                                 event.preventDefault();
                                 previousSibling.remove();
                                 return true;
