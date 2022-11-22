@@ -113,8 +113,9 @@ export default Component.extend({
         }
 
         // if we have new files, validate and start an upload
-        let files = this.files;
-        this._setFiles(files);
+        if (this.files?.length) {
+            this._setFiles(this.files);
+        }
     },
 
     actions: {
