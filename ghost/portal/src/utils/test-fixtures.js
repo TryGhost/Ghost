@@ -189,6 +189,22 @@ export const member = {
         avatarImage: '',
         subscribed: true
     }),
+    suppressed: getMemberData({
+        name: 'Jamie Larson',
+        email: 'jamie@example.com',
+        firstname: 'Jamie',
+        subscriptions: [],
+        paid: false,
+        avatarImage: '',
+        subscribed: true,
+        email_suppression: {
+            suppressed: true,
+            info: {
+                reason: 'spam',
+                timestamp: '2022-11-23T09:54:06.210Z'
+            }
+        }
+    }),
     paid: getMemberData({
         paid: true,
         subscriptions: [

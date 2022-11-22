@@ -65,6 +65,21 @@ footer.gh-portal-account-footer {
     margin: 24px 0 32px;
 }
 
+.gh-portal-list-detail .gh-portal-email-notice {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    color: var(--red);
+    font-weight: 500;
+    font-size: 1.25rem;
+}
+
+.gh-portal-email-notice-icon {
+    width: 20px;
+    height: 20px;
+}
+
 .gh-portal-billing-button-loader {
     width: 32px;
     height: 32px;

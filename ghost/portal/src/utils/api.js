@@ -199,6 +199,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
+        deleteSuppression() {
+            const url = endpointFor({type: 'members', resource: 'member/suppression'});
+
+            return makeRequest({
+                url,
+                method: 'DELETE'
+            }).then(function (res) {
+                if (!res.ok) {
+                    throw new Error('Your email has failed to resubscribe, please try again');
+                }
+                return true;
+            });
+        },
+
         async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {

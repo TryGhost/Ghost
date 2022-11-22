@@ -1,21 +1,31 @@
 import AppContext from 'AppContext';
-import {hasCommentsEnabled, hasMultipleNewsletters} from 'utils/helpers';
 import {useContext} from 'react';
+import {isEmailSuppressed} from 'utils/helpers';
+import {ReactComponent as EmailDeliveryFailedIcon} from 'images/icons/email-delivery-failed.svg';
 
 function EmailPreferencesAction() {
-    const {site, onAction} = useContext(AppContext);
-    if (!hasMultipleNewsletters({site}) && !hasCommentsEnabled({site})) {
-        return null;
-    }
+    const {onAction, member} = useContext(AppContext);
+    const emailSuppressed = isEmailSuppressed({member});
+    const page = emailSuppressed ? 'emailSuppressed' : 'accountEmail';
+
     return (
         <section>
             <div className='gh-portal-list-detail'>
                 <h3>Emails</h3>
-                <p>Update your preferences</p>
+                {
+                    emailSuppressed
+                        ? (
+                            <p className="gh-portal-email-notice">
+                                <EmailDeliveryFailedIcon className="gh-portal-email-notice-icon" />
+                                You're currently not receiving emails
+                            </p>
+                        )
+                        : <p>Update your preferences</p>
+                }
             </div>
             <button className='gh-portal-btn gh-portal-btn-list' onClick={(e) => {
                 onAction('switchPage', {
-                    page: 'accountEmail',
+                    page,
                     lastPage: 'accountHome'
                 });
             }}>Manage</button>
