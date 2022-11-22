@@ -25003,10 +25003,10 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testem@3.9.0, testem@^3.2.0:
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.9.0.tgz#a82ccf01e5a248e3924244186e348c665ab90f7d"
-  integrity sha512-YTxCYKj0cc8uUSKEziJtSC5T/pw4fQnY0ZXNOyvAFgrijfsN9NxmncJZOHLhPgFOuhbRd5i+DBQxw0Cpe0SEFg==
+testem@3.10.0, testem@^3.2.0:
+  version "3.10.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.10.0.tgz#df3f43839892c17f35f4c5994c50c99aa8242bb0"
+  integrity sha512-2BMbPkAJT5xNojNxQGKT8CU9ix4EYDmHjjKFpUeeSW6tBVfFVgOi2vfrpJ5Hwdq4HsfnOALNAWN8/yjuFTgQfA==
   dependencies:
     "@xmldom/xmldom" "^0.8.0"
     backbone "^1.1.2"
