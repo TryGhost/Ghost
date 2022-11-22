@@ -1,12 +1,13 @@
 import AppContext from 'AppContext';
 import {useContext} from 'react';
+import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed} from 'utils/helpers';
 
 import PaidAccountActions from './PaidAccountActions';
 import EmailNewsletterAction from './EmailNewsletterAction';
 import EmailPreferencesAction from './EmailPreferencesAction';
 
 const AccountActions = () => {
-    const {member, onAction} = useContext(AppContext);
+    const {member, onAction, site} = useContext(AppContext);
     const {name, email} = member;
 
     const openEditProfile = () => {
@@ -15,6 +16,8 @@ const AccountActions = () => {
             lastPage: 'accountHome'
         });
     };
+
+    const showEmailPreferences = hasMultipleNewsletters({site}) || hasCommentsEnabled({site}) || isEmailSuppressed({member});
 
     return (
         <div>
@@ -28,8 +31,12 @@ const AccountActions = () => {
                 </section>
 
                 <PaidAccountActions />
-                <EmailPreferencesAction />
-                <EmailNewsletterAction />
+                {
+                    showEmailPreferences
+                        ? <EmailPreferencesAction />
+                        : <EmailNewsletterAction />
+                }
+
             </div>
             {/* <ProductList openUpdatePlan={openUpdatePlan}></ProductList> */}
         </div>
