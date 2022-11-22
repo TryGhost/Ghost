@@ -11,13 +11,17 @@ const messages = {
 /**
  * @typedef {import('./sending-service')} SendingService
  * @typedef {import('./email-segmenter')} EmailSegmenter
+ * @typedef {import('./email-renderer')} EmailRenderer
+ * @typedef {import('./email-renderer').MemberLike} MemberLike
  * @typedef {object} JobsService
  * @typedef {object} Email
  * @typedef {object} Newsletter
+ * @typedef {object} Post
  * @typedef {object} EmailBatch
  */
 
 class BatchSendingService {
+    #emailRenderer;
     #sendingService;
     #emailSegmenter;
     #jobsService;
@@ -26,6 +30,7 @@ class BatchSendingService {
 
     /**
      * @param {Object} dependencies 
+     * @param {EmailRenderer} dependencies.emailRenderer
      * @param {SendingService} dependencies.sendingService
      * @param {JobsService} dependencies.jobsService
      * @param {EmailSegmenter} dependencies.emailSegmenter
@@ -37,25 +42,27 @@ class BatchSendingService {
      * @param {object} dependencies.db
      */
     constructor({
+        emailRenderer,
         sendingService,
         jobsService,
         emailSegmenter,
         models,
         db
     }) {
+        this.#emailRenderer = emailRenderer;
         this.#sendingService = sendingService;
         this.#jobsService = jobsService;
         this.#emailSegmenter = emailSegmenter;
         this.#models = models;
         this.#db = db;
     }
-
+    
     /**
+     * Schedules a background job that sends the email in the background if it is pending or failed.
      * @param {Email} email 
      * @returns {void}
      */
     scheduleEmail(email) {
-        // schedule background job that calls sendEmail
         return this.#jobsService.addJob({
             job: this.emailJob.bind(this),
             data: {emailId: email.id},
@@ -63,25 +70,18 @@ class BatchSendingService {
         });
     }
 
+    /**
+     * @private
+     * @param {{emailId: string}} data Data passed from the job service. We only need the emailId because we need to refetch the email anyway to make sure the status is right and 'locked'.
+     */
     async emailJob({emailId}) {
         logging.info(`Starting email job for email ${emailId}`);
 
         // Check if email is 'pending' only + change status to submitting in one transaction.
         // This allows us to have a lock around the email job that makes sure an email can only have one active job.
-        let email;
-        await this.#models.Email.transaction(async (transacting) => {
-            email = await this.#models.Email.findOne({id: emailId}, {require: true, transacting, forUpdate: true});
-            if (email.get('status') !== 'pending' && email.get('status') !== 'failed') {
-                logging.error(`Tried sending email that is not pending or failed ${emailId}; status: ${email.get('status')}`);
-                email = undefined;
-                return;
-            }
-            await email.save({
-                status: 'submitting'
-            }, {patch: true, transacting});
-        });
-
+        let email = await this.updateStatusLock(this.#models.Email, emailId, 'submitting', ['pending', 'failed']);
         if (!email) {
+            logging.error(`Tried sending email that is not pending or failed ${emailId}`);
             return;
         }
 
@@ -92,7 +92,6 @@ class BatchSendingService {
                 status: 'submitted',
                 submitted_at: new Date(),
                 error: null
-                // todo: add new error fields if any
             }, {patch: true});
         } catch (e) {
             logging.error(`Error sending email ${email.id}: ${e.message}`);
@@ -100,7 +99,7 @@ class BatchSendingService {
             // Edge case: Store error in email model (that are not caught by the batch)
             await email.save({
                 status: 'failed',
-                error: e.message || 'Something went wrong while sending the email' // TODO: check if we can improve error message data
+                error: e.message || 'Something went wrong while sending the email'
             }, {patch: true});
         }
     }
@@ -108,20 +107,20 @@ class BatchSendingService {
     /**
      * @private
      * @param {Email} email 
-     * @returns {Promise<boolean>} True if every email succeeded
+     * @throws {errors.EmailError} If one of the batches fails
      */
     async sendEmail(email) {
         logging.info(`Sending email ${email.id}`);
 
         // Load required relations
-        const newsletter = await email.getLazyRelation('newsletter', {require: false}); // TODO: consider making newsletter required
+        const newsletter = await email.getLazyRelation('newsletter', {require: true}); 
         const post = await email.getLazyRelation('post', {require: true});
 
         let batches = await this.getBatches(email);
         if (batches.length === 0) {
-            batches = await this.createBatches(email, newsletter);
+            batches = await this.createBatches({email, newsletter, post});
         }
-        return await this.sendBatches({email, batches, post, newsletter});
+        await this.sendBatches({email, batches, post, newsletter});
     }
 
     /**
@@ -137,16 +136,15 @@ class BatchSendingService {
 
     /**
      * @private
-     * @param {Email} email
-     * @param {Newsletter} newsletter
+     * @param {{email: Email, newsletter: Newsletter, post: Post}} data
      * @returns {Promise<EmailBatch[]>}
      */
-    async createBatches(email, newsletter) {
+    async createBatches({email, post, newsletter}) {
         logging.info(`Creating batches for email ${email.id}`);
 
-        const segments = [null]; // TODO: get segments from email
+        const segments = await this.#emailRenderer.getSegments(post, newsletter);
         const batches = [];
-        const BATCH_SIZE = 500; // TODO: should be configured in email provider
+        const BATCH_SIZE = 500;
         let totalCount = 0;
 
         for (const segment of segments) {
@@ -247,8 +245,8 @@ class BatchSendingService {
     async sendBatches({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
 
-        // Loop batches and send them via the emailproviderservice
-        // TODO: send x batches in parallel
+        // Loop batches and send them via the EmailProvider
+        // TODO: introduce concurrency when sending (need a replacement for bluebird)
         let succeededCount = 0;
         for (const batch of batches) {
             if (await this.sendBatch({email, batch, post, newsletter})) {
@@ -270,27 +268,16 @@ class BatchSendingService {
 
     /**
      * 
-     * @param {*} param0 
+     * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter}} data 
      * @returns {Promise<boolean>} True when succeeded, false when failed with an error
      */
     async sendBatch({email, batch, post, newsletter}) {
         logging.info(`Sending batch ${batch.id} for email ${email.id}`);
 
         // Check the status of the email batch in a 'for update' transaction
-        await this.#models.EmailBatch.transaction(async (transacting) => {
-            batch = await this.#models.EmailBatch.findOne({id: batch.id}, {require: true, transacting, forUpdate: true});
-            if (batch.get('status') !== 'pending' && batch.get('status') !== 'failed') {
-                logging.error(`Tried sending email batch that is not pending or failed ${batch.id}; status: ${batch.get('status')}`);
-                batch = undefined;
-                return;
-            }
-            await batch.save({
-                status: 'submitting'
-            }, {patch: true, transacting});
-        });
-
+        batch = await this.updateStatusLock(this.#models.EmailBatch, batch.id, 'submitting', ['pending', 'failed']);
         if (!batch) {
-            // Already sent
+            logging.error(`Tried sending email batch that is not pending or failed ${batch.id}; status: ${batch.get('status')}`);
             return true;
         }
 
@@ -349,6 +336,30 @@ class BatchSendingService {
                 name: model.get('member_name')
             };
         });
+    }
+
+    /**
+     * @private
+     * Update the status of an email or emailBatch to a given status, but first check if their current status is 'pending' or 'failed'.
+     * @param {object} Model Bookshelf model constructor
+     * @param {string} id id of the model
+     * @param {string} status set the status of the model to this value
+     * @param {string[]} allowedStatuses Check if the models current status is one of these values
+     * @returns {Promise<object|undefined>} The updated model. Undefined if the model didn't pass the status check.
+     */
+    async updateStatusLock(Model, id, status, allowedStatuses) {
+        let model;
+        await Model.transaction(async (transacting) => {
+            model = await Model.findOne({id}, {require: true, transacting, forUpdate: true});
+            if (!allowedStatuses.includes(model.get('status'))) {
+                model = undefined;
+                return;
+            }
+            await model.save({
+                status
+            }, {patch: true, transacting});
+        });
+        return model;
     }
 }
 

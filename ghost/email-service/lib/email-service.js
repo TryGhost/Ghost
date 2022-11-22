@@ -3,12 +3,14 @@
 /**
  * @typedef {object} Post
  * @typedef {object} Email
+ * @typedef {object} LimitService
  */
 
 const BatchSendingService = require('./batch-sending-service');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const EmailRenderer = require('./email-renderer');
+const EmailSegmenter = require('./email-segmenter');
 
 const messages = {
     archivedNewsletterError: 'Cannot send email to archived newsletters',
@@ -20,6 +22,8 @@ class EmailService {
     #models;
     #settingsCache;
     #emailRenderer;
+    #emailSegmenter;
+    #limitService;
 
     /**
      * 
@@ -29,17 +33,39 @@ class EmailService {
      * @param {object} dependencies.models.Email
      * @param {object} dependencies.settingsCache
      * @param {EmailRenderer} dependencies.emailRenderer
+     * @param {EmailSegmenter} dependencies.emailSegmenter
+     * @param {LimitService} dependencies.limitService
      */
     constructor({
         batchSendingService,
         models,
         settingsCache,
-        emailRenderer
+        emailRenderer,
+        emailSegmenter,
+        limitService
     }) {
         this.#batchSendingService = batchSendingService;
         this.#models = models;
         this.#settingsCache = settingsCache;
         this.#emailRenderer = emailRenderer;
+        this.#emailSegmenter = emailSegmenter;
+        this.#limitService = limitService;
+    }
+
+    /**
+     * @private
+     */
+    async checkLimits() {
+        // Check host limit for allowed member count and throw error if over limit
+        // - do this even if it's a retry so that there's no way around the limit
+        if (this.#limitService.isLimited('members')) {
+            await this.#limitService.errorIfIsOverLimit('members');
+        }
+
+        // Check host limit for disabled emails or going over emails limit
+        if (this.#limitService.isLimited('emails')) {
+            await this.#limitService.errorIfWouldGoOverLimit('emails');
+        }
     }
 
     /**
@@ -77,11 +103,11 @@ class EmailService {
             subject: this.#emailRenderer.getSubject(post, newsletter),
             from: this.#emailRenderer.getFromAddress(post, newsletter),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
-            email_count: 1 // TODO
+            email_count: await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter)
         });
 
         try {
-            // TODO: Check limits here
+            await this.checkLimits();
             this.#batchSendingService.scheduleEmail(email);
         } catch (e) {
             await email.save({
@@ -93,7 +119,7 @@ class EmailService {
         return email;
     }
     async retryEmail(email) {
-        // TODO: check if email is failed before allowing retry
+        await this.checkLimits();
         this.#batchSendingService.scheduleEmail(email);
         return email;
     }

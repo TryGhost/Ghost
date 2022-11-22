@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 /**
  * @typedef {string|null} Segment
  * @typedef {object} Post

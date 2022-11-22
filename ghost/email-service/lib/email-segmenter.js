@@ -2,12 +2,30 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    noneFilterError: 'Cannot send email to "none" {property}',
+    noneFilterError: 'Cannot send email to "none" recipient filter',
     newsletterVisibilityError: 'Unexpected visibility value "{value}". Use one of the valid: "members", "paid".'
 };
 
+/**
+ * @typedef {object} MembersRepository
+ * @prop {(options) => Promise<any>} list
+ */
+
 class EmailSegmenter {
-    getMemberFilterForSegment(newsletter, emailRecipientFilter, errorProperty) {
+    #membersRepository;
+
+    /**
+     * 
+     * @param {object} dependencies 
+     * @param {MembersRepository} dependencies.membersRepository
+     */
+    constructor({
+        membersRepository
+    }) {
+        this.#membersRepository = membersRepository;
+    }
+
+    getMemberFilterForSegment(newsletter, emailRecipientFilter, segment) {
         const filter = [`newsletters.id:${newsletter.id}`];
     
         switch (emailRecipientFilter) {
@@ -15,9 +33,7 @@ class EmailSegmenter {
             break;
         case 'none':
             throw new errors.InternalServerError({
-                message: tpl(messages.noneFilterError, {
-                    property: errorProperty
-                })
+                message: tpl(messages.noneFilterError)
             });
         default:
             filter.push(`(${emailRecipientFilter})`);
@@ -39,8 +55,19 @@ class EmailSegmenter {
                 })
             });
         }
+
+        if (segment) {
+            filter.push(`(${segment})`);
+        }
     
         return filter.join('+');
+    }
+    
+    async getMembersCount(newsletter, emailRecipientFilter, segment) {
+        const filter = this.getMemberFilterForSegment(newsletter, emailRecipientFilter, segment);
+        const {meta: {pagination: {total: membersCount}}} = await this.#membersRepository.list({filter});
+
+        return membersCount;
     }
 }
 
