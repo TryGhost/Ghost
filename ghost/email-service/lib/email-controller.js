@@ -3,7 +3,8 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     postNotFound: 'Post not found.',
-    noEmailsProvided: 'No emails provided.'
+    noEmailsProvided: 'No emails provided.',
+    emailNotFound: 'Email not found.'
 };
 
 class EmailController {
@@ -13,7 +14,7 @@ class EmailController {
     /**
      * 
      * @param {EmailService} service 
-     * @param {{models: {Post: any, Newsletter: any}}} dependencies
+     * @param {{models: {Post: any, Newsletter: any, Email: any}}} dependencies
      */
     constructor(service, {models}) {
         this.service = service;
@@ -59,6 +60,18 @@ class EmailController {
         }
 
         return await this.service.sendTestEmail(post, newsletter, segment, emails);
+    }
+
+    async retryFailedEmail(frame) {
+        const email = await this.models.Email.findOne(frame.data, {require: false});
+        
+        if (!email) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.emailNotFound)
+            });
+        }
+
+        return await this.service.retryEmail(email);
     }
 }
 
