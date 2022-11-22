@@ -167,37 +167,38 @@
                     </div>
                 </div>
             </div>
+
             {{#if @payload.productButtonEnabled}}
-            <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="product-button-input">Button text</label>
-                <div class="kg-settings-panel-control-input">
-                    <input
-                        type="text"
-                        class="gh-input"
-                        id="product-button-input"
-                        name="product-button"
-                        value={{@payload.productButton}}
-                        placeholder="Add button text"
-                        {{on "input" this.setProductButton}}
-                        {{on-key "Enter" (fn this.focusElement "#product-button-input")}}
-                    >
+                <div class="kg-settings-panel-control">
+                    <label class="kg-settings-panel-control-label" for="product-button-input">Button text</label>
+                    <div class="kg-settings-panel-control-input">
+                        <input
+                            type="text"
+                            class="gh-input"
+                            id="product-button-input"
+                            name="product-button"
+                            value={{@payload.productButton}}
+                            placeholder="Add button text"
+                            {{on "input" this.setProductButton}}
+                            {{on-key "Enter" (fn this.focusElement "#product-button-input")}}
+                        >
+                    </div>
                 </div>
-            </div>
-            <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="product-url-input">Button URL</label>
-                <div class="kg-settings-panel-control-input">
-                    <input
-                        type="text"
-                        class="gh-input"
-                        id="product-url-input"
-                        name="product-url"
-                        value={{@payload.productUrl}}
-                        placeholder="Add URL"
-                        {{on "input" this.setProductUrl}}
-                        {{on-key "Enter" (fn this.focusElement "#product-url-input")}}
-                    >
+                <div class="kg-settings-panel-control">
+                    <label class="kg-settings-panel-control-label" for="product-url-input">Button URL</label>
+                    <div class="kg-settings-panel-control-input">
+                        <input
+                            type="text"
+                            class="gh-input"
+                            id="product-url-input"
+                            name="product-url"
+                            value={{@payload.productUrl}}
+                            placeholder="Add URL"
+                            {{on "input" this.setProductUrl}}
+                            {{on-key "Enter" (fn this.focusElement "#product-url-input")}}
+                        >
+                    </div>
                 </div>
-            </div>
             {{/if}}
         </KoenigSettingsPanel>
 
