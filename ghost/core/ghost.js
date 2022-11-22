@@ -19,6 +19,7 @@ switch (mode) {
 case 'repl':
 case 'timetravel':
 case 'generate-data':
+case 'record-test':
     command.run(mode);
     break;
 default:

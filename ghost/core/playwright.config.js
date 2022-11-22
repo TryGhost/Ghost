@@ -1,14 +1,12 @@
-const ghostConfig = require('./core/shared/config');
-
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    timeout: 10 * 1000,
-    webServer: {
-        command: 'yarn test:browser:start',
-        url: ghostConfig.get('url')
-    },
+    timeout: 20 * 1000,
+    workers: 1,
     use: {
-        baseURL: ghostConfig.get('url')
+        // Use a single browser since we can't run multiple instances of Ghost simultaneously
+        // and we can't run tests against a standalone server if we also want to add fixtures
+        browserName: 'chromium',
+        headless: false
     }
 };
 
