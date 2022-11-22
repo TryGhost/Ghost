@@ -267,6 +267,8 @@ export default class KoenigCardProductComponent extends Component {
             this._productImageWidth = null;
             this._productImageHeight = null;
         });
+
+        this.files = null;
     }
 
     /**
