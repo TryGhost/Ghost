@@ -49,6 +49,7 @@ describe('UNIT: sentry', function () {
             assert.equal(initArgs[0].dsn, fakeDSN, 'shoudl be our fake dsn');
             assert.match(initArgs[0].release, /ghost@\d+\.\d+\.\d+/, 'should be a valid version');
             assert.equal(initArgs[0].environment, 'testing', 'should be the testing env');
+            assert.ok(initArgs[0].hasOwnProperty('beforeSend'), 'should have a beforeSend function');
         });
     });
 });

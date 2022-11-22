@@ -9,7 +9,27 @@ if (sentryConfig && !sentryConfig.disabled) {
     Sentry.init({
         dsn: sentryConfig.dsn,
         release: 'ghost@' + version,
-        environment: environment
+        environment: environment,
+        beforeSend: function (event, hint) {
+            const exception = hint.originalException;
+
+            event.tags = event.tags || {};
+
+            if (errors.utils.isGhostError(exception)) {
+                // Unexpected errors have a generic error message, set it back to context if there is one
+                if (exception.code === 'UNEXPECTED_ERROR' && exception.context !== null) {
+                    event.exception.values[0].type = exception.context;
+                }
+
+                // This is a Ghost Error, copy all our extra data to tags
+                event.tags.type = exception.errorType;
+                event.tags.code = exception.code;
+                event.tags.id = exception.id;
+                event.tags.statusCode = exception.statusCode;
+            }
+
+            return event;
+        }
     });
 
     module.exports = {
