@@ -1,6 +1,6 @@
 import SigninPage from './components/pages/SigninPage';
 import SignupPage from './components/pages/SignupPage';
-import AccountHomePage from './components/pages/AccountHomePage';
+import AccountHomePage from './components/pages/AccountHomePage/AccountHomePage';
 import MagicLinkPage from './components/pages/MagicLinkPage';
 import LoadingPage from './components/pages/LoadingPage';
 import AccountPlanPage from './components/pages/AccountPlanPage';
