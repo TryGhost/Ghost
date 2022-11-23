@@ -2,6 +2,8 @@ import React from 'react';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/kg-card-type-unsplash.svg';
 import {ReactComponent as SearchIcon} from '../../../assets/icons/kg-search.svg';
 import {ReactComponent as CloseIcon} from '../../../assets/icons/kg-close.svg';
+import {ReactComponent as UnsplashHeartIcon} from '../../../assets/icons/kg-unsplash-heart.svg';
+import {ReactComponent as DownloadIcon} from '../../../assets/icons/kg-download.svg';
 
 export function UnsplashSelector() {
     return (
@@ -51,6 +53,39 @@ function UnsplashImg({imgUrl}) {
     return (
         <div className="relative block w-full mb-6 cursor-zoom-in bg-grey-100">
             <img src={imgUrl} alt="Unsplash" />
+            <div className="absolute inset-0 flex flex-col justify-between p-5 transition-all ease-in-out bg-gradient-to-b from-black/5 via-black/5 to-black/30 opacity-0 hover:opacity-100">
+                <div className="flex items-center justify-end">
+                    <UnsplashButton icon="heart" label="127" />
+                    <UnsplashButton icon="download" />
+                </div>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                        <img className="w-8 h-8 rounded-full mr-2" src="https://images.unsplash.com/profile-1562493255799-d28c159b565e?auto=format&fit=crop&w=32&h=32&q=60&crop=faces&bg=fff" alt="author" />
+                        <div className="font-sans text-white text-sm font-medium">Richard de Ruijter</div>
+                    </div>
+                    <UnsplashButton label="Insert image" />
+                </div>
+            </div>
         </div>
+    );
+}
+
+const BUTTON_ICONS = {
+    heart: UnsplashHeartIcon,
+    download: DownloadIcon
+};
+
+function UnsplashButton({icon, label, ...props}) {
+    const Icon = BUTTON_ICONS[icon];
+
+    return (
+        <button 
+            type="button" 
+            className="flex items-center shrink-0 h-8 py-2 px-3 font-sans text-sm text-grey-700 font-medium leading-6 bg-white rounded-md opacity-90 transition-all ease-in-out hover:opacity-100 first-of-type:mr-3" 
+            {...props}
+        >
+            {icon && <Icon className={`w-4 h-4 fill-red stroke-[3px] ${label && 'mr-1'}`} />}
+            {label && <span>{label}</span>}
+        </button>
     );
 }
