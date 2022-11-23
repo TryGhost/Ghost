@@ -805,6 +805,9 @@ module.exports = {
             validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
         },
         member_segment: {type: 'text', maxlength: 2000, nullable: true},
+        error_status_code: {type: 'integer', nullable: true, unsigned: true},
+        error_message: {type: 'string', maxlength: 2000, nullable: true},
+        error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false}
     },
