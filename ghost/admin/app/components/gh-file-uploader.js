@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import {GENERIC_ERROR_MESSAGE} from 'ghost-admin/services/notifications';
 import {
     UnsupportedMediaTypeError,
     isRequestEntityTooLargeError,
@@ -242,7 +243,8 @@ export default Component.extend({
         } else if (error.payload && error.payload.errors && !isBlank(error.payload.errors[0].message)) {
             message = htmlSafe(error.payload.errors[0].message);
         } else {
-            message = 'Something went wrong :(';
+            console.error(error); // eslint-disable-line
+            message = GENERIC_ERROR_MESSAGE;
         }
 
         this.set('failureMessage', message);
