@@ -186,7 +186,7 @@ export default class NotificationsService extends Service {
             msg = resp.message;
         }
 
-        if (!isBlank(resp?.context)) {
+        if (!isBlank(resp?.context) && resp?.context !== msg) {
             msg = `${msg} ${resp.context}`;
         }
 
