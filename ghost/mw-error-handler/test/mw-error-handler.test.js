@@ -15,7 +15,7 @@ const {
     prepareStack,
     resourceNotFound,
     pageNotFound
-} = require('../');
+} = require('..');
 
 describe('Prepare Error', function () {
     it('Correctly prepares a non-Ghost error', function (done) {
