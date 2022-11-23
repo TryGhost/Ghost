@@ -1,5 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import {GENERIC_ERROR_MESSAGE} from 'ghost-admin/services/notifications';
 import {computed} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -95,7 +96,7 @@ export default ModalComponent.extend({
             message = 'The file you uploaded was larger than the maximum file size your server allows.';
         } else {
             console.error(error); // eslint-disable-line
-            message = 'Something went wrong :(';
+            message = GENERIC_ERROR_MESSAGE;
         }
 
         this.set('errorMessage', message);
