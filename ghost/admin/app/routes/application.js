@@ -170,7 +170,10 @@ export default Route.extend(ShortcutsRoute, {
                     event.tags.shown_to_user = event.tags.shown_to_user || false;
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
                     return event;
-                }
+                },
+                // TransitionAborted errors surface from normal application behaviour
+                // - https://github.com/emberjs/ember.js/issues/12505
+                ignoreErrors: [/^TransitionAborted$/]
             });
         }
 
