@@ -2,8 +2,8 @@ import moment from 'moment-timezone';
 import {Resource} from 'ember-could-get-used-to-this';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const actions = {
@@ -59,7 +59,14 @@ export default class ActivityFeedFetcher extends Resource {
             filter += `+${this.args.named.filter}`;
         }
 
-        await this.loadEventsTask.perform({filter}, actions.showNext);
+        try {
+            await this.loadEventsTask.perform({filter}, actions.showNext);
+        } catch (e) {
+            if (!didCancel(e)) {
+                // re-throw the non-cancelation error
+                throw e;
+            }
+        }
     }
 
     @action
