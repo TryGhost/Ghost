@@ -4,6 +4,10 @@ exports[`Comments API when authenticated can get member data 1: [body] 1`] = `
 Object {
   "avatar_image": null,
   "email": "member@example.com",
+  "email_suppression": Object {
+    "info": null,
+    "suppressed": false,
+  },
   "enable_comment_notifications": true,
   "expertise": null,
   "firstname": null,
@@ -33,7 +37,7 @@ exports[`Comments API when authenticated can get member data 2: [headers] 1`] = 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "489",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
