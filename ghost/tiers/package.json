@@ -25,6 +25,6 @@
     "@tryghost/errors": "1.2.18",
     "@tryghost/string": "0.2.1",
     "@tryghost/tpl": "0.1.19",
-    "bson-objectid": "2.0.3"
+    "bson-objectid": "2.0.4"
   }
 }
