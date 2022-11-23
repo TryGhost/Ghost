@@ -180,8 +180,6 @@ export default class NotificationsService extends Service {
             msg = GENERIC_ERROR_MESSAGE;
         } else if (resp instanceof String) {
             msg = resp;
-        } else if (!isBlank(resp?.detail)) {
-            msg = resp.detail;
         } else if (!isBlank(resp?.message)) {
             msg = resp.message;
         }
