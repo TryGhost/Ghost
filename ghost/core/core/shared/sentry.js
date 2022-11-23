@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
 
 if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
-    const version = require('../../package.json').version;
+    const version = require('@tryghost/version').full;
     const environment = config.get('env');
     Sentry.init({
         dsn: sentryConfig.dsn,
@@ -34,9 +34,11 @@ if (sentryConfig && !sentryConfig.disabled) {
         next();
     };
 
+    const noop = () => {};
+
     module.exports = {
         requestHandler: expressNoop,
         errorHandler: expressNoop,
-        captureException: () => {}
+        captureException: noop
     };
 }
