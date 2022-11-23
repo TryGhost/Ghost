@@ -406,7 +406,8 @@ describe('Image card', async () => {
                 </div>
             </div>
         `);
-
-        // TODO: test upload progress and final result
     });
+
+    test.todo('upload progress is shown');
+    test.todo('upload is completed');
 });
