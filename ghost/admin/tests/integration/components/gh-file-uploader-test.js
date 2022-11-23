@@ -4,6 +4,7 @@ import Service from '@ember/service';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
+import {GENERIC_ERROR_MESSAGE} from 'ghost-admin/services/notifications';
 import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
 import {click, find, findAll, render, settled, triggerEvent} from '@ember/test-helpers';
 import {createFile, fileUpload} from '../../helpers/file-upload';
@@ -213,7 +214,7 @@ describe('Integration: Component: gh-file-uploader', function () {
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
-        expect(find('.failed').textContent).to.match(/Something went wrong/);
+        expect(find('.failed').textContent).to.match(new RegExp(GENERIC_ERROR_MESSAGE));
     });
 
     it('triggers notifications.showAPIError for VersionMismatchError', async function () {

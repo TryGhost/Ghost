@@ -193,7 +193,7 @@ describe('Unit: Service: notifications', function () {
             notifications.showAPIError(resp);
         });
         expect(notifications.content).to.deep.equal([
-            {message: 'There was a problem on the server, please try again.', status: 'alert', type: 'error', key: 'api-error', actions: undefined, description: undefined, icon: undefined}
+            {message: GENERIC_ERROR_MESSAGE, status: 'alert', type: 'error', key: 'api-error', actions: undefined, description: undefined, icon: undefined}
         ]);
 
         notifications.set('content', emberA());

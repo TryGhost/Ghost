@@ -174,7 +174,7 @@ export default class NotificationsService extends Service {
         }
         options.key = ['api-error', options.key].compact().join('.');
 
-        let msg = options.defaultErrorText || 'There was a problem on the server, please try again.';
+        let msg = options.defaultErrorText || GENERIC_ERROR_MESSAGE;
 
         if (resp?.name && GENERIC_ERROR_NAMES.includes(resp.name)) {
             msg = GENERIC_ERROR_MESSAGE;

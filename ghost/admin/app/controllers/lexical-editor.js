@@ -11,6 +11,7 @@ import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment-timezone';
+import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
@@ -246,7 +247,7 @@ export default class LexicalEditorController extends Controller {
         let transition = this.leaveEditorTransition;
 
         if (!transition) {
-            this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+            this.notifications.showAlert(GENERIC_ERROR_MESSAGE, {type: 'error'});
             return;
         }
 
