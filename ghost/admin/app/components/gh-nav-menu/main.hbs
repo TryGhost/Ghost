@@ -32,11 +32,6 @@
                             <span>{{svg-jar "external"}}</span>
                         </a>
                     </li>
-                    {{#if (gh-user-can-admin this.session.user)}}
-                    <li class="relative">
-                        <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe-simple"}} Explore</LinkTo>
-                    </li>
-                    {{/if}}
                 </ul>
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">
