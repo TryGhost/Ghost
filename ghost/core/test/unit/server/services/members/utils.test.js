@@ -24,7 +24,11 @@ describe('Members Service - utils', function () {
                 subscribed: true,
                 status: 'free',
                 extra: 'property',
-                enable_comment_notifications: true
+                enable_comment_notifications: true,
+                email_suppression: {
+                    suppressed: false,
+                    info: null
+                }
             });
             should(member1).deepEqual({
                 uuid: 'uuid-1',
@@ -36,7 +40,11 @@ describe('Members Service - utils', function () {
                 subscribed: true,
                 subscriptions: [],
                 paid: false,
-                enable_comment_notifications: true
+                enable_comment_notifications: true,
+                email_suppression: {
+                    suppressed: false,
+                    info: null
+                }
             });
         });
 

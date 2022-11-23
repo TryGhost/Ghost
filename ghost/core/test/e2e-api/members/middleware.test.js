@@ -196,5 +196,12 @@ describe('Comments API', function () {
             member = await models.Member.findOne({id: member.id}, {require: true});
             member.get('enable_comment_notifications').should.eql(true);
         });
+
+        it('can remove member from suppression list', async function () {
+            await membersAgent
+                .delete(`/api/member/suppression`)
+                .expectStatus(204)
+                .expectEmptyBody();
+        });
     });
 });
