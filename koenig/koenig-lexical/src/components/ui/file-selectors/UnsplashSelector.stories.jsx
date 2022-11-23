@@ -17,3 +17,8 @@ export const Gallery = Template.bind({});
 Gallery.args = {
     isZoomed: false
 };
+
+export const Zoomed = Template.bind({});
+Zoomed.args = {
+    isZoomed: true
+};
