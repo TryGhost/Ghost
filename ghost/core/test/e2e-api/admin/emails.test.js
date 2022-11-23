@@ -20,6 +20,7 @@ describe('Emails API', function () {
 
     beforeEach(function () {
         mockManager.mockEvents();
+        mockManager.mockLabsDisabled('emailStability');
     });
 
     afterEach(function () {
