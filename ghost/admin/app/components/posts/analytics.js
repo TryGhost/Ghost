@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 /**
@@ -187,10 +187,17 @@ export default class Analytics extends Component {
     }
 
     async fetchReferrersStats() {
-        if (this._fetchReferrersStats.isRunning) {
-            return this._fetchReferrersStats.last;
+        try {
+            if (this._fetchReferrersStats.isRunning) {
+                return this._fetchReferrersStats.last;
+            }
+            return this._fetchReferrersStats.perform();
+        } catch (e) {
+            if (!didCancel(e)) {
+                // re-throw the non-cancelation error
+                throw e;
+            }
         }
-        return this._fetchReferrersStats.perform();
     }
 
     async fetchLinks() {
