@@ -140,7 +140,7 @@
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.5.0",
     "brute-knex": "4.0.1",
-    "bson-objectid": "2.0.3",
+    "bson-objectid": "2.0.4",
     "chalk": "4.1.2",
     "cheerio": "0.22.0",
     "common-tags": "1.8.2",
