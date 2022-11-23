@@ -274,6 +274,24 @@ describe('Unit: Service: notifications', function () {
         expect(alert.key).to.equal('api-error');
     });
 
+    it('#showAPIError does not add context to message if it duplicates the message', function () {
+        let notifications = this.owner.lookup('service:notifications');
+        let error = new AjaxError({errors: [{
+            message: 'Authorization Error.',
+            context: 'Authorization Error.'
+        }]});
+
+        run(() => {
+            notifications.showAPIError(error);
+        });
+
+        let [alert] = notifications.alerts;
+        expect(alert.message).to.equal('Authorization Error.');
+        expect(alert.status).to.equal('alert');
+        expect(alert.type).to.equal('error');
+        expect(alert.key).to.equal('api-error');
+    });
+
     it('#showAPIError shows generic error for built-in error types', function () {
         let notifications = this.owner.lookup('service:notifications');
         const error = new TypeError('Testing');
