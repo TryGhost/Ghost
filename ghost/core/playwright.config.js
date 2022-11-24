@@ -1,12 +1,20 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    timeout: 20 * 1000,
+    timeout: 60 * 1000,
     workers: 1,
     use: {
-        // Use a single browser since we can't run multiple instances of Ghost simultaneously
-        // and we can't run tests against a standalone server if we also want to add fixtures
+        // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
-        headless: false
+        baseURL: 'http://localhost:2368'
+    },
+    webServer: {
+        command: 'yarn start',
+        env: {
+            // TODO: Use `testing` when starting a server
+            NODE_ENV: 'development'
+        },
+        reuseExistingServer: !process.env.CI,
+        url: 'http://localhost:2368'
     }
 };
 
