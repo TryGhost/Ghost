@@ -69,7 +69,9 @@ export default class GhHtmlIframeComponent extends Component {
             }
             this._lastPageId = this.args.pageId;
 
-            this.iframes[this.toRenderIframe].contentDocument.body.scrollTop = newScrollTop;
+            if (this.iframes[this.toRenderIframe].contentDocument.body) {
+                this.iframes[this.toRenderIframe].contentDocument.body.scrollTop = newScrollTop;
+            }
             this.iframes[this.toRenderIframe].style = this.visibleIframeStyle;
             this.renderedIframe = this.toRenderIframe;
             this.toRenderIframe = this.toRenderIframe === 0 ? 1 : 0;
