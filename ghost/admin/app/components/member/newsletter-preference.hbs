@@ -1,55 +1,59 @@
 <h4 class="gh-main-section-header small bn">Newsletters</h4>
-<div class="gh-main-section-content grey {{if (feature "suppressionList") 'gh-member-newsletter-section'}}">
-    <div class="gh-member-newsletters">
-        {{#each this.newsletters as |newsletter|}}
-            <div class="gh-member-newsletter-row">
-                <div>
-                    <h4 class="gh-member-newsletter-title">{{newsletter.name}}</h4>
+<div class="gh-main-section-content grey {{if (and (feature "suppressionList") (not this.suppressionData.suppressed)) 'gh-member-newsletter-section'}}">
+    {{#unless this.suppressionData.suppressed}}
+        <div class="gh-member-newsletters">
+            {{#each this.newsletters as |newsletter|}}
+                <div class="gh-member-newsletter-row">
+                    <div>
+                        <h4 class="gh-member-newsletter-title">{{newsletter.name}}</h4>
+                    </div>
+                    <div class="for-switch {{if (and (feature "suppressionList") this.suppressionData.suppressed) 'disabled'}}">
+                        <label class="switch" for={{newsletter.forId}}>
+                            <Input
+                                @checked={{newsletter.subscribed}}
+                                @type="checkbox"
+                                id={{newsletter.forId}}
+                                name="subscribed"
+                                data-test-checkbox="member-subscribed"
+                                {{on "click" (fn this.updateNewsletterPreference newsletter)}}
+                            />
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
                 </div>
-                <div class="for-switch {{if (and (feature "suppressionList") this.suppressionData.suppressed) 'disabled'}}">
-                    <label class="switch" for={{newsletter.forId}}>
-                        <Input
-                            @checked={{newsletter.subscribed}}
-                            @type="checkbox"
-                            id={{newsletter.forId}}
-                            name="subscribed"
-                            data-test-checkbox="member-subscribed"
-                            {{on "click" (fn this.updateNewsletterPreference newsletter)}}
-                        />
-                        <span class="input-toggle-component"></span>
-                    </label>
-                </div>
-            </div>
-        {{/each}}
-    </div>
+            {{/each}}
+        </div>
+    {{/unless}}
 
     {{#if (and (feature "suppressionList") this.suppressionData.suppressed)}}
-        <div class="gh-member-newsletter-footer red">
+        <div class="gh-members-no-data gh-member-newsletter-no-data">
             {{#if (eq this.suppressionData.reason 'fail')}}
-                {{svg-jar "event-email-delivery-failed" class="gh-member-newsletter-footer-icon"}}
+                {{svg-jar "suppression-notice-bounced" class="gh-member-newsletter-icon"}}
             {{/if}}
 
             {{#if (eq this.suppressionData.reason 'spam')}}
-                {{svg-jar "event-email-delivery-spam" class="gh-member-newsletter-footer-icon"}}
+                {{svg-jar "suppression-notice-flagged" class="gh-member-newsletter-icon"}}
             {{/if}}
 
-            <div class="gh-member-newsletter-footer-text">
+            <h4>Email disabled</h4>
+
+            <p>
                 {{#if (eq this.suppressionData.reason 'fail')}}
-                    Member email was suppressed due to it bouncing on {{this.suppressionData.date}}
+                    Bounced on {{this.suppressionData.date}}
                 {{/if}}
 
                 {{#if (eq this.suppressionData.reason 'spam')}}
-                    Member email was suppressed due to a spam complaint on {{this.suppressionData.date}}
+                    Flagged as spam on {{this.suppressionData.date}}
                 {{/if}}
 
                 <a class="midgrey" href="javascript:void(0)" target="_blank" rel="noopener noreferrer">Learn more</a>
-            </div>
+            </p>
         </div>
     {{/if}}
 
     {{#if (and (feature "suppressionList") (not this.suppressionData.suppressed))}}
         <div class="gh-member-newsletter-footer midgrey">
-            If disabled, member will <i>not</i> receive newsletter emails
+            If disabled, member will <em>not</em> receive newsletter emails
         </div>
     {{/if}}
 </div>
