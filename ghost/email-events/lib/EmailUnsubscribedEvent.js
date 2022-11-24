@@ -1,4 +1,4 @@
-module.exports = class EmailBouncedEvent {
+module.exports = class EmailUnsubscribedEvent {
     /**
      * @readonly
      * @type {string}
@@ -34,7 +34,7 @@ module.exports = class EmailBouncedEvent {
     }
 
     static create(data) {
-        return new EmailBouncedEvent({
+        return new EmailUnsubscribedEvent({
             ...data,
             timestamp: data.timestamp || new Date
         });

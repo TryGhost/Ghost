@@ -1,8 +1,22 @@
 const EventProcessingResult = require('./event-processing-result');
 const debug = require('@tryghost/debug')('services:email-analytics');
 
+/**
+ * @typedef {import('@tryghost/email-service').EmailEventProcessor} EmailEventProcessor
+ */
+
 module.exports = class EmailAnalyticsService {
-    constructor({config, settings, queries, eventProcessor, providers} = {}) {
+    config;
+    settings;
+    queries;
+    eventProcessor;
+    providers;
+
+    /**
+     * @param {object} dependencies 
+     * @param {EmailEventProcessor} dependencies.eventProcessor
+     */
+    constructor({config, settings, queries, eventProcessor, providers}) {
         this.config = config;
         this.settings = settings;
         this.queries = queries;
@@ -61,11 +75,104 @@ module.exports = class EmailAnalyticsService {
         const result = new EventProcessingResult();
 
         for (const event of events) {
-            const batchResult = await this.eventProcessor.process(event);
+            const batchResult = await this.processEvent(event);
             result.merge(batchResult);
         }
 
         return result;
+    }
+
+    /**
+     * 
+     * @param {{type: any; severity: any; recipientEmail: any; emailId: any; providerId: string; timestamp: Date;}} event 
+     * @returns {Promise<EventProcessingResult>}
+     */
+    async processEvent(event) {
+        if (event.type === 'delivered') {
+            const recipient = await this.eventProcessor.handleDelivered({providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+
+            if (recipient) {
+                return new EventProcessingResult({
+                    delivered: 1,
+                    emailIds: [recipient.emailId],
+                    memberIds: [recipient.memberId]
+                });
+            }
+
+            return new EventProcessingResult({unprocessable: 1});
+        }
+
+        if (event.type === 'opened') {
+            const recipient = await this.eventProcessor.handleOpened({providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+
+            if (recipient) {
+                return new EventProcessingResult({
+                    opened: 1,
+                    emailIds: [recipient.emailId],
+                    memberIds: [recipient.memberId]
+                });
+            }
+
+            return new EventProcessingResult({unprocessable: 1});
+        }
+
+        if (event.type === 'failed') {
+            if (event.severity === 'permanent') {
+                const recipient = await this.eventProcessor.handlePermanentFailed({providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+
+                if (recipient) {
+                    return new EventProcessingResult({
+                        permanentFailed: 1,
+                        emailIds: [recipient.emailId],
+                        memberIds: [recipient.memberId]
+                    });
+                }
+
+                return new EventProcessingResult({unprocessable: 1});
+            } else {
+                const recipient = await this.eventProcessor.handleTemporaryFailed({providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+
+                if (recipient) {
+                    return new EventProcessingResult({
+                        temporaryFailed: 1,
+                        emailIds: [recipient.emailId],
+                        memberIds: [recipient.memberId]
+                    });
+                }
+
+                return new EventProcessingResult({unprocessable: 1});
+            }
+        }
+
+        if (event.type === 'unsubscribed') {
+            const recipient = await this.eventProcessor.handleUnsubscribed({providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+
+            if (recipient) {
+                return new EventProcessingResult({
+                    unsubscribed: 1,
+                    emailIds: [recipient.emailId],
+                    memberIds: [recipient.memberId]
+                });
+            }
+
+            return new EventProcessingResult({unprocessable: 1});
+        }
+
+        if (event.type === 'complained') {
+            const recipient = await this.eventProcessor.handleComplained({providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+
+            if (recipient) {
+                return new EventProcessingResult({
+                    complained: 1,
+                    emailIds: [recipient.emailId],
+                    memberIds: [recipient.memberId]
+                });
+            }
+
+            return new EventProcessingResult({unprocessable: 1});
+        }
+
+        return new EventProcessingResult({unhandled: 1});
     }
 
     async aggregateStats({emailIds = [], memberIds = []}) {

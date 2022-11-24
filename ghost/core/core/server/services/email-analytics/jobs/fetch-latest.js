@@ -44,14 +44,30 @@ if (parentPort) {
     };
 
     const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
-    const EventProcessor = require('../lib/event-processor');
     const MailgunProvider = require('@tryghost/email-analytics-provider-mailgun');
     const queries = require('../lib/queries');
+    const {EmailEventProcessor} = require('@tryghost/email-service');
+
+    // Since this is running in a worker thread, we cant dispatch directly
+    // So we post the events as a message to the job manager
+    const eventProcessor = new EmailEventProcessor({
+        domainEvents: {
+            dispatch(event) {
+                parentPort.postMessage({
+                    event: {
+                        type: event.constructor.name, 
+                        data: event
+                    }
+                });
+            }
+        },
+        db
+    });
 
     const emailAnalyticsService = new EmailAnalyticsService({
         config,
         settings,
-        eventProcessor: new EventProcessor({db}),
+        eventProcessor,
         providers: [
             new MailgunProvider({config, settings})
         ],

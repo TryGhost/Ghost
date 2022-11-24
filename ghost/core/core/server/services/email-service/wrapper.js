@@ -3,7 +3,11 @@ const ObjectID = require('bson-objectid').default;
 
 class EmailServiceWrapper {
     init() {
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter} = require('@tryghost/email-service');
+        if (this.service) {
+            return;
+        }
+
+        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, EmailEventStorage} = require('@tryghost/email-service');
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const settingsCache = require('../../../shared/settings-cache');
         const jobsService = require('../jobs');
@@ -11,6 +15,7 @@ class EmailServiceWrapper {
         const db = require('../../data/db');
         const membersRepository = membersService.api.members;
         const limitService = require('../limits');
+        const domainEvents = require('@tryghost/domain-events');
 
         const emailRenderer = new EmailRenderer();
         const sendingService = new SendingService({
@@ -58,6 +63,11 @@ class EmailServiceWrapper {
                 Email
             }
         });
+
+        this.eventStorage = new EmailEventStorage({
+            db
+        });
+        this.eventStorage.listen(domainEvents);
     }
 }
 

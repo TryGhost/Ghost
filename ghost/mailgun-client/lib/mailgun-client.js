@@ -182,6 +182,7 @@ module.exports = class MailgunClient {
     }
 
     #getConfig() {
+        console.log('Getting config mailgun');
         const bulkEmailConfig = this.#config.get('bulkEmail');
         const bulkEmailSetting = {
             apiKey: this.#settings.get('mailgun_api_key'),
@@ -193,6 +194,7 @@ module.exports = class MailgunClient {
         const hasMailgunSetting = !!(bulkEmailSetting && bulkEmailSetting.apiKey && bulkEmailSetting.baseUrl && bulkEmailSetting.domain);
 
         if (!hasMailgunConfig && !hasMailgunSetting) {
+            console.log('no config', bulkEmailSetting, hasMailgunConfig);
             return null;
         }
 

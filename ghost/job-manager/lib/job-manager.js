@@ -28,16 +28,20 @@ const ALL_STATUSES = {
 };
 
 class JobManager {
+    #domainEvents;
+
     /**
      * @param {Object} options
      * @param {Function} [options.errorHandler] - custom job error handler
      * @param {Function} [options.workerMessageHandler] - custom message handler coming from workers
      * @param {Object} [options.JobModel] - a model which can persist job data in the storage
+     * @param {Object} [options.domainEvents] - domain events emitter
      */
-    constructor({errorHandler, workerMessageHandler, JobModel}) {
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents}) {
         this.queue = fastq(this, worker, 1);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
+        this.#domainEvents = domainEvents;
 
         const combinedMessageHandler = workerMessageHandler
             ? ({name, message}) => {
@@ -108,6 +112,14 @@ class JobManager {
                         status: ALL_STATUSES.finished,
                         finished_at: new Date()
                     });
+                }
+            } else {
+                if (typeof message === 'object' && this.#domainEvents) {
+                    // Is this an event?
+                    if (message.event) {
+                        console.log('Job manager received event message', message);
+                        this.#domainEvents.ee.emit(message.event.type, message.event.data);
+                    }
                 }
             }
         }
