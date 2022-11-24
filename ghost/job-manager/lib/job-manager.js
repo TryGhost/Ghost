@@ -117,7 +117,6 @@ class JobManager {
                 if (typeof message === 'object' && this.#domainEvents) {
                     // Is this an event?
                     if (message.event) {
-                        console.log('Job manager received event message', message);
                         this.#domainEvents.ee.emit(message.event.type, message.event.data);
                     }
                 }

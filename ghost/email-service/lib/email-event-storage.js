@@ -1,4 +1,4 @@
-const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEvent, EmailUnsubscribedEvent} = require('@tryghost/email-events');
+const {EmailDeliveredEvent, EmailOpenedEvent} = require('@tryghost/email-events');
 const moment = require('moment-timezone');
 
 class EmailEventStorage {

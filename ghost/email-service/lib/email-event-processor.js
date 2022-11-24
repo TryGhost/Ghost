@@ -1,5 +1,4 @@
 const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEvent, EmailUnsubscribedEvent} = require('@tryghost/email-events');
-const logging = require('@tryghost/logging');
 
 /**
  * @typedef EmailIdentification
@@ -31,7 +30,6 @@ class EmailEventProcessor {
      * @param {Date} timestamp 
      */
     async handleDelivered(emailIdentification, timestamp) {
-        logging.info(`Email to ${emailIdentification.email} was delivered`);
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
             this.#domainEvents.dispatch(EmailDeliveredEvent.create({
@@ -50,7 +48,6 @@ class EmailEventProcessor {
      * @param {Date} timestamp 
      */
     async handleOpened(emailIdentification, timestamp) {
-        logging.info(`Email to ${emailIdentification.email} was opened`);
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
             this.#domainEvents.dispatch(EmailOpenedEvent.create({

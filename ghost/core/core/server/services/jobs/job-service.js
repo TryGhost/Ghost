@@ -16,7 +16,9 @@ const errorHandler = (error, workerMeta) => {
 };
 
 const workerMessageHandler = ({name, message}) => {
-    logging.info(`Worker for job ${name} sent a message: ${message}`);
+    if (typeof message === 'string') {
+        logging.info(`Worker for job ${name} sent a message: ${message}`);
+    }
 };
 
 const initTestMode = () => {
