@@ -238,6 +238,8 @@ const addEmail = async (postModel, options) => {
             from: emailData.from,
             reply_to: emailData.replyTo,
             html: emailData.html,
+            source: emailData.html,
+            source_type: 'html',
             plaintext: emailData.plaintext,
             submitted_at: moment().toDate(),
             track_opens: !!settingsCache.get('email_track_opens'),
