@@ -203,7 +203,7 @@ export default class KoenigCardMarkdown extends Component {
         if (style === fixedBottom) {
             let mobileNav = document.querySelector('.gh-mobile-nav-bar');
 
-            if (mobileNav.offsetHeight) {
+            if (mobileNav?.offsetHeight) {
                 style = `${style}; bottom: ${mobileNav.offsetHeight}px`;
             }
         }
