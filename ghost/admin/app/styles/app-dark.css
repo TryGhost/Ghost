@@ -1072,8 +1072,7 @@ input:focus,
 
 /* Members activity */
 .gh-members-activity-icon svg path,
-.gh-member-feed-icon svg path,
-.gh-member-activity-actions-menu-item svg path {
+.gh-member-feed-icon svg path {
     stroke: #fff;
 }
 

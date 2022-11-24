@@ -364,12 +364,13 @@
 
 .gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .ember-power-select-option label {
     padding: 0 6px 0 0;
+    color: var(--darkgrey);
 }
 
 .gh-member-activity-actions-menu--suppression .gh-member-activity-actions-menu-divider {
     height: 1px;
     margin: 1rem 0;
-    background: #EAE9E9;
+    background: var(--lightgrey-l1);
 }
 
 /* End of styles for dropdown for suppressionList feature */
