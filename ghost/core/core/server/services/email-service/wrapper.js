@@ -14,13 +14,16 @@ class EmailServiceWrapper {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, EmailEventStorage} = require('@tryghost/email-service');
+        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, EmailEventStorage, MailgunEmailProvider} = require('@tryghost/email-service');
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
+        const MailgunClient = require('@tryghost/mailgun-client');
+        const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../../services/settings-helpers');
         const jobsService = require('../jobs');
         const membersService = require('../members');
         const db = require('../../data/db');
+        const sentry = require('../../../shared/sentry');
         const membersRepository = membersService.api.members;
         const limitService = require('../limits');
         const domainEvents = require('@tryghost/domain-events');
@@ -32,6 +35,22 @@ class EmailServiceWrapper {
         const linkReplacer = require('@tryghost/link-replacer');
         const linkTracking = require('../link-tracking');
         const audienceFeedback = require('../audience-feedback');
+
+        // capture errors from mailgun client and log them in sentry
+        const errorHandler = (error) => {
+            logging.info(`Capturing error for mailgun email provider service`);
+            sentry.captureException(error);
+        };
+
+        // Mailgun client instance for email provider
+        const mailgunClient = new MailgunClient({
+            config: configService, settings: settingsCache
+        });
+
+        const mailgunEmailProvider = new MailgunEmailProvider({
+            mailgunClient,
+            errorHandler
+        });
 
         const emailRenderer = new EmailRenderer({
             settingsCache,
@@ -50,31 +69,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: {
-                send: async ({plaintext, subject, from, replyTo, recipients}) => {
-                    logging.info(`Sending email\nSubject: ${subject}\nFrom: ${from}\nReplyTo: ${replyTo}\nRecipients: ${recipients.length}\n\n${plaintext}`);
-
-                    // Uncomment to test email HTML rendering with GhostMailer
-                    /*const {GhostMailer} = require('../mail');
-                    const mailer = new GhostMailer();
-                    logging.info(`Sending email\nSubject: ${subject}\nFrom: ${from}\nReplyTo: ${replyTo}\nRecipients: ${recipients.length}\n\n${JSON.stringify(recipients[0].replacements, undefined, '    ')}`);
-                    
-                    for (const replacement of recipients[0].replacements) {
-                        html = html.replace(replacement.token, replacement.value);
-                        plaintext = plaintext.replace(replacement.token, replacement.value);
-                    }
-
-                    await mailer.send({
-                        subject,
-                        html,
-                        to: recipients[0].email,
-                        from,
-                        replyTo,
-                        text: plaintext
-                    });*/
-                    return Promise.resolve({id: 'fake_provider_id_' + ObjectID().toHexString()});
-                }
-            },
+            emailProvider: mailgunEmailProvider,
             emailRenderer
         });
 
@@ -105,7 +100,7 @@ class EmailServiceWrapper {
             emailSegmenter,
             limitService
         });
-        
+
         this.controller = new EmailController(this.service, {
             models: {
                 Post,
