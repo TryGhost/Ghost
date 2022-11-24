@@ -32,7 +32,7 @@ class EmailEventStorage {
             }
 
             await this.#db.knex('members')
-                .where('email', '=', event.recipientEmail)
+                .where('id', '=', event.memberId)
                 .andWhere(builder => builder
                     .where('last_seen_at', '<', moment.utc(event.timestamp).tz(timezone).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss'))
                     .orWhereNull('last_seen_at')
