@@ -29,7 +29,7 @@ class BatchSendingService {
     #db;
 
     /**
-     * @param {Object} dependencies 
+     * @param {Object} dependencies
      * @param {EmailRenderer} dependencies.emailRenderer
      * @param {SendingService} dependencies.sendingService
      * @param {JobsService} dependencies.jobsService
@@ -59,7 +59,7 @@ class BatchSendingService {
 
     /**
      * Schedules a background job that sends the email in the background if it is pending or failed.
-     * @param {Email} email 
+     * @param {Email} email
      * @returns {void}
      */
     scheduleEmail(email) {
@@ -106,7 +106,7 @@ class BatchSendingService {
 
     /**
      * @private
-     * @param {Email} email 
+     * @param {Email} email
      * @throws {errors.EmailError} If one of the batches fails
      */
     async sendEmail(email) {
@@ -267,8 +267,8 @@ class BatchSendingService {
     }
 
     /**
-     * 
-     * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter}} data 
+     *
+     * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter}} data
      * @returns {Promise<boolean>} True when succeeded, false when failed with an error
      */
     async sendBatch({email, batch, post, newsletter}) {
@@ -297,18 +297,21 @@ class BatchSendingService {
 
             await batch.save({
                 status: 'submitted',
-                provider_id: response.id
+                provider_id: response.id,
+                // reset error fields when sending succeeds
+                error_status_code: null,
+                error_message: null,
+                error_data: null
             }, {patch: true, require: false});
             succeeded = true;
         } catch (err) {
             logging.error(`Error sending email batch ${batch.id}`, err);
 
             await batch.save({
-                status: 'failed'
-                // TODO: error should be instance of EmailProviderError (see IEmailProviderService) + we should read error message
-                // error_status_code: err.status_code,
-                // error_message: err.message_short,
-                // error_data: err.message_full
+                status: 'failed',
+                error_status_code: err.statusCode,
+                error_message: err.message,
+                error_data: err.errorDetails
             }, {patch: true, require: false});
         }
 
