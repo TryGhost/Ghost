@@ -67,7 +67,7 @@
     "eslint-plugin-jest": "27.1.5",
     "eslint-plugin-tailwindcss": "3.6.2",
     "jsdom": "20.0.3",
-    "linkedom": "0.14.20",
+    "linkedom": "0.14.21",
     "playwright": "1.28.1",
     "postcss": "8.4.19",
     "postcss-import": "15.0.0",
