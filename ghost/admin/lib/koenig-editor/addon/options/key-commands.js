@@ -78,6 +78,10 @@ export const DEFAULT_KEY_COMMANDS = [{
     run(editor, koenig) {
         let {isCollapsed, head: {offset, section}} = editor.range;
 
+        if (!section) {
+            return false;
+        }
+
         // if cursor is at beginning of a heading, insert a blank paragraph above
         if (isCollapsed && offset === 0 && section.tagName && section.tagName.match(/^h\d$/)) {
             editor.run((postEditor) => {
@@ -144,6 +148,11 @@ export const DEFAULT_KEY_COMMANDS = [{
     str: 'BACKSPACE',
     run(editor, koenig) {
         let {head, isCollapsed, head: {marker, offset, section}} = editor.range;
+
+        if (!section) {
+            return false;
+        }
+
         let {next, prev} = section;
 
         // if a card is selected we should delete the card then place the cursor
@@ -257,6 +266,10 @@ export const DEFAULT_KEY_COMMANDS = [{
     run(editor, koenig) {
         let {isCollapsed, head: {offset, section}} = editor.range;
 
+        if (!section) {
+            return false;
+        }
+
         // if a card is selected we should delete the card then place the cursor
         // at the beginning of the next section or select the following card
         if (koenig.selectedCard) {
@@ -291,6 +304,11 @@ export const DEFAULT_KEY_COMMANDS = [{
     str: 'UP',
     run(editor, koenig) {
         let {isCollapsed, head: {offset, section}} = editor.range;
+
+        if (!section) {
+            return false;
+        }
+
         let prevSection = section.isListItem && !section.prev ? section.parent.prev : section.prev;
 
         if (isCollapsed && (offset === 0 || section.isCardSection) && !prevSection) {
@@ -313,6 +331,10 @@ export const DEFAULT_KEY_COMMANDS = [{
     str: 'LEFT',
     run(editor, koenig) {
         let {isCollapsed, head: {offset, section}} = editor.range;
+
+        if (!section) {
+            return false;
+        }
 
         // trigger a closure action to indicate that the caret "left" the top of
         // the editor canvas if the caret is at the very beginning of the doc
