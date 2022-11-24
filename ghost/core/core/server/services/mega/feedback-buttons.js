@@ -125,7 +125,13 @@ function getButtonLightTheme(accentColor) {
     };
 }
 
+/**
+ * @deprecated
+ * PLEASE MAKE IDENTICAL CHANGES TO email-service package email-templates/styles.hbs
+ */
 function getButtonsHeadStyles() {
+    // DEPRECATED!
+    // PLEASE MAKE IDENTICAL CHANGES TO email-service package email-templates/styles.hbs
     return (`
         .like-icon {
             mix-blend-mode: darken;

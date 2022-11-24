@@ -26,6 +26,12 @@
   "dependencies": {
     "@tryghost/errors": "1.2.18",
     "@tryghost/tpl": "0.1.19",
-    "bson-objectid": "2.0.4"
+    "bson-objectid": "2.0.4",
+    "handlebars": "4.7.7",
+    "@tryghost/kg-default-cards": "5.18.5",
+    "@tryghost/color-utils": "0.1.21",
+    "@tryghost/html-to-plaintext": "0.0.0",
+    "juice": "8.1.0",
+    "cheerio": "0.22.0"
   }
 }
