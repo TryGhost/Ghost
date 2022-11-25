@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.23.0",
+  "version": "5.24.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -74,6 +74,7 @@
     "@tryghost/email-analytics-provider-mailgun": "0.0.0",
     "@tryghost/email-analytics-service": "0.0.0",
     "@tryghost/email-content-generator": "0.0.0",
+    "@tryghost/email-service": "0.0.0",
     "@tryghost/email-suppression-list": "0.0.0",
     "@tryghost/errors": "1.2.18",
     "@tryghost/express-dynamic-redirects": "0.0.0",
@@ -132,7 +133,6 @@
     "@tryghost/verification-trigger": "0.0.0",
     "@tryghost/version": "0.1.16",
     "@tryghost/zip": "1.1.29",
-    "@tryghost/email-service": "0.0.0",
     "amperize": "0.6.1",
     "analytics-node": "6.2.0",
     "bluebird": "3.7.2",
