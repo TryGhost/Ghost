@@ -108,7 +108,7 @@ allowedAMPAttributes = {
     'amp-audio': ['src', 'width', 'height', 'autoplay', 'loop', 'muted', 'controls'],
     'amp-iframe': ['src', 'srcdoc', 'width', 'height', 'layout', 'frameborder', 'allowfullscreen', 'allowtransparency',
         'sandbox', 'referrerpolicy'],
-    'amp-youtube': ['src', 'layout', 'frameborder', 'autoplay', 'loop', 'data-videoid', 'data-live-channelid']
+    'amp-youtube': ['src', 'layout', 'frameborder', 'autoplay', 'loop', 'data-videoid', 'data-live-channelid', 'width', 'height']
 };
 
 function getAmperizeHTML(html, post) {
@@ -192,6 +192,10 @@ module.exports = async function amp_content() { // eslint-disable-line camelcase
         // then we have to remove remaining, invalid HTML tags.
         $('audio').children('source').remove();
         $('audio').children('track').remove();
+
+        $('amp-youtube').attr('layout', 'responsive');
+        $('amp-youtube').attr('height', '350');
+        $('amp-youtube').attr('width', '600');
 
         ampHTML = $.html();
 
