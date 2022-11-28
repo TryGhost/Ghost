@@ -2496,6 +2496,13 @@ p.gh-members-import-errordetail:first-of-type {
     margin-top: -16px;
 }
 
+.gh-members-resource-filter .ember-power-select-selected-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 16px;
+}
+
 .gh-members-filter-builder {
     width: 780px;
     margin-top: 8px;
