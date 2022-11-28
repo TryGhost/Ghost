@@ -33,6 +33,7 @@
     "@lexical/list": "^0.5.0",
     "@lexical/rich-text": "^0.5.0",
     "jsdom": "^20.0.0",
-    "lexical": "^0.5.0"
+    "lexical": "^0.5.0",
+    "prettier": "^2.7.1"
   }
 }

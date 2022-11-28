@@ -1,9 +1,9 @@
 const Renderer = require('../../');
 
-function shouldRender({input, output}) {
+function shouldRender({input, output, options}) {
     return function () {
         const renderer = new Renderer();
-        renderer.render(input).should.equal(output);
+        renderer.render(input, options).should.equal(output);
     };
 }
 
