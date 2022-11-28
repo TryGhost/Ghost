@@ -67,7 +67,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await run({
+        const {eventStats: result} = await run({
             domainEvents
         });
         assert.equal(result.delivered, 1);
@@ -121,7 +121,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await run({
+        const {eventStats: result} = await run({
             domainEvents
         });
         assert.equal(result.delivered, 1);
@@ -172,7 +172,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await run({
+        const {eventStats: result} = await run({
             domainEvents
         });
         assert.equal(result.opened, 1);
@@ -226,7 +226,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await run({
+        const {eventStats: result} = await run({
             domainEvents
         });
         assert.equal(result.permanentFailed, 1);
@@ -283,7 +283,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await run({
+        const {eventStats: result} = await run({
             domainEvents
         });
         assert.equal(result.temporaryFailed, 1);
@@ -333,7 +333,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await run({
+        const {eventStats: result} = await run({
             domainEvents
         });
         assert.equal(result.complained, 1);
@@ -386,7 +386,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await run({
+        const {eventStats: result} = await run({
             domainEvents
         });
         assert.equal(result.unsubscribed, 1);
@@ -428,7 +428,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await run({
+        const {eventStats: result} = await run({
             domainEvents
         });
         assert.equal(result.unhandled, 1);

@@ -52,6 +52,6 @@ async function run({domainEvents}) {
     await emailAnalyticsService.aggregateStats(eventStats);
     const aggregateEndDate = new Date();
     debug(`Finished aggregating email analytics in ${aggregateEndDate - aggregateStartDate}ms`);
-    return eventStats;
+    return {eventStats, fetchStartDate, fetchEndDate, aggregateStartDate, aggregateEndDate};
 }
 module.exports.run = run;

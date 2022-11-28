@@ -25,7 +25,7 @@ if (parentPort) {
 
 (async () => {
     const {run} = require('./run');
-    const eventStats = await run({
+    const {eventStats, aggregateEndDate, fetchStartDate} = await run({
         domainEvents: {
             dispatch(event) {
                 parentPort.postMessage({
