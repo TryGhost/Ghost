@@ -10,6 +10,7 @@ export default class MembersActivityController extends Controller {
     @service router;
     @service settings;
     @service store;
+    @service feature;
 
     queryParams = ['excludedEvents', 'member'];
 
@@ -27,8 +28,9 @@ export default class MembersActivityController extends Controller {
         if (!this.member) {
             hiddenEvents.push(...EMAIL_EVENTS);
         } else {
-            // Always hide sent event
-            hiddenEvents.push('email_sent_event');
+            if (!this.feature.get('suppressionList')) {
+                hiddenEvents.push('email_sent_event');
+            }
         }
         hiddenEvents.push('aggregated_click_event');
 
