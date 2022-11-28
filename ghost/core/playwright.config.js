@@ -6,8 +6,7 @@ const config = {
     use: {
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
-        baseURL: process.env.TEST_URL ?? 'http://localhost:2368',
-        headless: false
+        baseURL: process.env.TEST_URL ?? 'http://localhost:2368'
     }
 };
 
