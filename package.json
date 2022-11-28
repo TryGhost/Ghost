@@ -31,8 +31,8 @@
     "start": "yarn workspace ghost run start",
     "test": "yarn workspaces run test",
     "main": "yarn main:monorepo && yarn main:submodules",
-    "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
-    "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\"",
+    "main:monorepo": "git checkout main && git pull upstream main && yarn",
+    "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull upstream main && yarn\"",
     "prepare": "husky install .github/hooks"
   },
   "resolutions": {
