@@ -66,12 +66,7 @@ const membersImporter = new MembersCSVImporter({
 });
 
 const processImport = async (options) => {
-    const result = await membersImporter.process(options);
-
-    // Check whether all imports in last 30 days > threshold
-    await verificationTrigger.testImportThreshold();
-
-    return result;
+    return await membersImporter.process({...options, verificationTrigger});
 };
 
 const updateVerificationTrigger = () => {
