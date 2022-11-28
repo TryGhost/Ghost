@@ -4,6 +4,7 @@ const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEv
  * @typedef EmailIdentification
  * @property {string} email
  * @property {string} providerId
+ * @property {string} [emailId] Optional email id
  */
 
 /**
@@ -13,6 +14,9 @@ const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEv
  * @property {string} emailId
  */
 
+/**
+ * WARNING: this class is used in a separate thread (an offloaded job). Be careful when working with settings and models.
+ */
 class EmailEventProcessor {
     #domainEvents;
     #db;
@@ -129,7 +133,7 @@ class EmailEventProcessor {
      */
     async getRecipient(emailIdentification) {
         // With the provider_id and email address we can look for the EmailRecipient
-        const emailId = await this.getEmailId(emailIdentification.providerId);
+        const emailId = emailIdentification.emailId ?? await this.getEmailId(emailIdentification.providerId);
         if (!emailId) {
             // Invalid
             return;

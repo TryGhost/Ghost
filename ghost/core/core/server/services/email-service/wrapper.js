@@ -65,7 +65,8 @@ class EmailServiceWrapper {
         });
 
         this.eventStorage = new EmailEventStorage({
-            db
+            db,
+            membersRepository
         });
         this.eventStorage.listen(domainEvents);
     }

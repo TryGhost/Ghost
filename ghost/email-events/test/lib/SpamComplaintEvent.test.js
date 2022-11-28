@@ -6,8 +6,8 @@ describe('SpamComplaintEvent', function () {
     it('exports a static create method to create instances', function () {
         const event = SpamComplaintEvent.create({
             email: 'test@test.test',
-            memberId: new ObjectID(),
-            emailId: new ObjectID(),
+            memberId: new ObjectID().toHexString(),
+            emailId: new ObjectID().toHexString(),
             timestamp: new Date()
         });
         assert(event instanceof SpamComplaintEvent);
