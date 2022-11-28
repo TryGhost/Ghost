@@ -50,7 +50,7 @@ module.exports = class EventRepository {
         if (!options.limit) {
             options.limit = 10;
         }
-        
+
         const [typeFilter, otherFilter] = this.getNQLSubset(options.filter);
 
         // Changing this order might need a change in the query functions
@@ -173,10 +173,10 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: [
-                'member', 
-                'subscriptionCreatedEvent.postAttribution', 
-                'subscriptionCreatedEvent.userAttribution', 
-                'subscriptionCreatedEvent.tagAttribution', 
+                'member',
+                'subscriptionCreatedEvent.postAttribution',
+                'subscriptionCreatedEvent.userAttribution',
+                'subscriptionCreatedEvent.tagAttribution',
                 'subscriptionCreatedEvent.memberCreatedEvent',
 
                 // This is rediculous, but we need the tier name (we'll be able to shorten this later when we switch to the subscriptions table)
@@ -208,7 +208,7 @@ module.exports = class EventRepository {
 
         const data = models.map((model) => {
             const tierName = model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null;
-            
+
             // Prevent toJSON on stripeSubscription (we don't have everything loaded)
             delete model.relations.stripeSubscription;
             const d = {
@@ -298,9 +298,9 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: [
-                'member', 
-                'postAttribution', 
-                'userAttribution', 
+                'member',
+                'postAttribution',
+                'userAttribution',
                 'tagAttribution'
             ],
             filter: 'subscriptionCreatedEvent.id:null+custom:true',
@@ -415,15 +415,15 @@ module.exports = class EventRepository {
      */
     async getAggregatedClickEvents(options = {}, filter) {
         // This counts all clicks for a member for the same post
-        const postClickQuery = `SELECT count(distinct A.redirect_id) 
-            FROM members_click_events A 
+        const postClickQuery = `SELECT count(distinct A.redirect_id)
+            FROM members_click_events A
             LEFT JOIN redirects A_r on A_r.id = A.redirect_id
             LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
             WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id`;
 
         // Counts all clicks for the same member, for the same post, but only preceding events. This should be zero to include the event (so we only include the first events)
-        const postClickQueryPreceding = `SELECT count(distinct A.redirect_id) 
-            FROM members_click_events A 
+        const postClickQueryPreceding = `SELECT count(distinct A.redirect_id)
+            FROM members_click_events A
             LEFT JOIN redirects A_r on A_r.id = A.redirect_id
             LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
             WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id AND (A.created_at < members_click_events.created_at OR (A.created_at = members_click_events.created_at AND A.id < members_click_events.id))`;
@@ -499,10 +499,13 @@ module.exports = class EventRepository {
     }
 
     async getEmailSentEvents(options = {}, filter) {
+        const filterStr = this._labsService.isSet('suppressionList')
+            ? 'failed_at:null+processed_at:-null+delivered_at:null+custom:true'
+            : 'failed_at:null+processed_at:-null+custom:true';
         options = {
             ...options,
             withRelated: ['member', 'email'],
-            filter: 'failed_at:null+processed_at:-null+custom:true',
+            filter: filterStr,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -670,7 +673,7 @@ module.exports = class EventRepository {
      * Split the filter in two parts:
      * - One with 'type' that will be applied to all the pages
      * - Other filter that will be applied to each individual page
-     * 
+     *
      * Throws if splitting is not possible (e.g. OR'ing type with other filters)
      */
     getNQLSubset(filter) {

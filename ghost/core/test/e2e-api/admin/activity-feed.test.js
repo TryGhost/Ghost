@@ -191,7 +191,7 @@ describe('Activity Feed API', function () {
             // If that is ever fixed (it is difficult) we can update this test to not use a filter
             // Same for click_event and aggregated_click_event (use same id)
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
-            await testPagination(skippedTypes, null, 37, 36);
+            await testPagination(skippedTypes, null, 36, 36);
         });
 
         it('Can do filter based pagination for one post', async function () {
@@ -202,7 +202,7 @@ describe('Activity Feed API', function () {
             // Same for click_event and aggregated_click_event (use same id)
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
 
-            await testPagination(skippedTypes, postId, 13, 10);
+            await testPagination(skippedTypes, postId, 12, 10);
         });
 
         it('Can do filter based pagination for aggregated clicks for one post', async function () {
@@ -335,7 +335,7 @@ describe('Activity Feed API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                events: new Array(5).fill({
+                events: new Array(4).fill({
                     type: anyString,
                     data: anyObject
                 })
@@ -396,7 +396,7 @@ describe('Activity Feed API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                events: new Array(16).fill({
+                events: new Array(15).fill({
                     type: anyString,
                     data: anyObject
                 })
@@ -416,7 +416,7 @@ describe('Activity Feed API', function () {
                 assert(body.events.find(e => e.type === 'email_opened_event'), 'Expected an email opened event');
 
                 // Assert total is correct
-                assert.equal(body.meta.pagination.total, 16);
+                assert.equal(body.meta.pagination.total, 15);
             });
     });
 
@@ -439,7 +439,7 @@ describe('Activity Feed API', function () {
                 assert(!body.events.find(e => (e.data?.post?.id ?? e.data?.attribution?.id ?? e.data?.email?.post_id) !== postId), 'Should only return events for the post');
 
                 // Assert total is correct
-                assert.equal(body.meta.pagination.total, 16);
+                assert.equal(body.meta.pagination.total, 15);
             });
     });
 });

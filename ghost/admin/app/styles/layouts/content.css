@@ -1751,6 +1751,25 @@
     filter: brightness(0.8);
 }
 
+.gh-post-activity-feed-pagination-link-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #959595;
+}
+
+.gh-post-activity-feed-pagination-link-wrapper svg {
+    width: 15px;
+    height: 15px;
+}
+
+.gh-post-activity-feed-pagination-link-wrapper path {
+    stroke: currentColor;
+}
+
 .gh-post-activity-feed-pagination-link {
     display: flex;
     align-items: center;
