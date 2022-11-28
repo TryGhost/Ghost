@@ -94,6 +94,10 @@ class SettingsHelpers {
         }
         return supportAddress;
     }
+
+    getNoReplyAddress() {
+        return `noreply@${this.getDefaultEmailDomain()}`;
+    }
 }
 
 module.exports = SettingsHelpers;

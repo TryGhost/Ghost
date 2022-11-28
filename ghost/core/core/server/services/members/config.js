@@ -7,7 +7,7 @@ class MembersConfigProvider {
     /**
      * @param {object} options
      * @param {{get: (key: string) => any}} options.settingsCache
-     * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, isStripeConnected(): boolean}} options.settingsHelpers
+     * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, getNoReplyAddress(): string, isStripeConnected(): boolean}} options.settingsHelpers
      * @param {any} options.urlUtils
      */
     constructor({settingsCache, settingsHelpers, urlUtils}) {
@@ -20,11 +20,17 @@ class MembersConfigProvider {
         return this._settingsHelpers.getDefaultEmailDomain();
     }
 
+    /**
+     * @deprecated Use settingsHelpers.getNoReplyAddress or settingsHelpers.getMembersSupportAddress instead
+     */
     getEmailFromAddress() {
         // Individual from addresses are set per newsletter - this is the fallback address
-        return `noreply@${this.defaultEmailDomain}`;
+        return this._settingsHelpers.getNoReplyAddress();
     }
 
+    /**
+     * @deprecated Use settingsHelpers.getNoReplyAddress or settingsHelpers.getMembersSupportAddress instead
+     */
     getEmailSupportAddress() {
         return this._settingsHelpers.getMembersSupportAddress();
     }
@@ -33,6 +39,9 @@ class MembersConfigProvider {
         return this.getEmailSupportAddress();
     }
 
+    /**
+     * @deprecated Use settingsHelpers.isStripeConnected instead
+     */
     isStripeConnected() {
         return this._settingsHelpers.isStripeConnected();
     }
