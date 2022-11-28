@@ -7,12 +7,19 @@ const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
 const configUtils = require('../../../utils/configUtils');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const models = require('../../../../core/server/models');
 
 const {mockManager} = require('../../../utils/e2e-framework');
 const assert = require('assert');
 const {_updateVerificationTrigger} = require('../../../../core/server/services/members');
 
 let request;
+
+async function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 describe('Members Importer API', function () {
     before(async function () {
@@ -301,5 +308,49 @@ describe('Members Importer API', function () {
 
         // Don't send another email
         mockManager.assert.sentEmailCount(0);
+    });
+
+    it('Can import members with host emailVerification limits for large imports', async function () {
+        await models.Settings.edit([{
+            key: 'email_verification_required',
+            value: false
+        }], {context: {internal: true}});
+
+        assert(!settingsCache.get('email_verification_required'), 'Email verification should not be required');
+
+        // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
+        configUtils.set('hostSettings:emailVerification', {
+            apiThreshold: 2,
+            adminThreshold: 2,
+            importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
+            verified: false,
+            escalationAddress: 'test@example.com'
+        });
+        _updateVerificationTrigger();
+
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['new-global-label'])
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large-501.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(202);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.meta);
+
+        // Wait for the job to finish
+        await sleep(2500);
+
+        console.log('Done sleep');
+
+        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+
+        mockManager.assert.sentEmail({
+            subject: 'Email needs verification'
+        });
     });
 });
