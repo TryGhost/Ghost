@@ -76,8 +76,18 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'opened-email';
         }
 
-        if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
-            icon = 'received-email';
+        if (this.feature.get('suppressionList')) {
+            if (event.type === 'email_sent_event') {
+                icon = 'sent-email';
+            }
+
+            if (event.type === 'email_delivered_event') {
+                icon = 'received-email';
+            }
+        } else {
+            if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
+                icon = 'received-email';
+            }
         }
 
         if (event.type === 'email_failed_event') {
@@ -157,8 +167,18 @@ export default class ParseMemberEventHelper extends Helper {
             return 'opened email';
         }
 
-        if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
-            return 'received email';
+        if (this.feature.get('suppressionList')) {
+            if (event.type === 'email_sent_event') {
+                return 'sent email';
+            }
+
+            if (event.type === 'email_delivered_event') {
+                return 'received email';
+            }
+        } else {
+            if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
+                return 'received email';
+            }
         }
 
         if (event.type === 'email_failed_event') {

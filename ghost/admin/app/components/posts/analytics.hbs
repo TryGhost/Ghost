@@ -53,6 +53,7 @@
                     @postId={{this.post.id}}
                     @eventType="sent"
                     @linkQuery={{hash filterParam=(concat "emails.post_id:" this.post.id) }}
+                    @linkText="Received"
                 />
             </tabs.tabPanel>
 
@@ -67,6 +68,7 @@
                         @postId={{this.post.id}}
                         @eventType="opened"
                         @linkQuery={{hash filterParam=(concat "opened_emails.post_id:" this.post.id) }}
+                        @linkText="Opened"
                     />
                 </tabs.tabPanel>
             {{/if}}
@@ -82,6 +84,7 @@
                         @postId={{this.post.id}}
                         @eventType="clicked"
                         @linkQuery={{hash filterParam=(concat "clicked_links.post_id:" this.post.id) }}
+                        @linkText="Clicked"
                     />
                 </tabs.tabPanel>
             {{/if}}
