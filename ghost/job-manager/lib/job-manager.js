@@ -117,7 +117,7 @@ class JobManager {
                 if (typeof message === 'object' && this.#domainEvents) {
                     // Is this an event?
                     if (message.event) {
-                        this.#domainEvents.ee.emit(message.event.type, message.event.data);
+                        this.#domainEvents.dispatchRaw(message.event.type, message.event.data);
                     }
                 }
             }

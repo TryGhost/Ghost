@@ -28,7 +28,7 @@ class DomainEvents {
      * @returns {void}
      */
     static subscribe(Event, handler) {
-        DomainEvents.ee.on(Event.name, handler);
+        this.ee.on(Event.name, handler);
     }
 
     /**
@@ -37,7 +37,18 @@ class DomainEvents {
      * @returns {void}
      */
     static dispatch(event) {
-        DomainEvents.ee.emit(event.constructor.name, event);
+        this.dispatchRaw(event.constructor.name, event);
+    }
+
+    /**
+     * Dispatch an event in case you don't have an instance of the event class, but you do have the event name and even data.
+     * @template Data
+     * @param {string} name
+     * @param {Data} data
+     * @returns {void}
+     */
+    static dispatchRaw(name, data) {
+        this.ee.emit(name, data);
     }
 }
 
