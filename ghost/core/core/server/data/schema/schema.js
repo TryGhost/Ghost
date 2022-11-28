@@ -783,6 +783,14 @@ module.exports = {
         reply_to: {type: 'string', maxlength: 2000, nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        source: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        source_type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'html',
+            validations: {isIn: [['html', 'lexical', 'mobiledoc']]}
+        },
         track_opens: {type: 'boolean', nullable: false, defaultTo: false},
         track_clicks: {type: 'boolean', nullable: false, defaultTo: false},
         feedback_enabled: {type: 'boolean', nullable: false, defaultTo: false},
@@ -805,6 +813,9 @@ module.exports = {
             validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
         },
         member_segment: {type: 'text', maxlength: 2000, nullable: true},
+        error_status_code: {type: 'integer', nullable: true, unsigned: true},
+        error_message: {type: 'string', maxlength: 2000, nullable: true},
+        error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false}
     },

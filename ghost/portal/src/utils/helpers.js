@@ -497,6 +497,10 @@ export function hasMultipleNewsletters({site}) {
     return newsletters?.length > 1;
 }
 
+export function isEmailSuppressed({member}) {
+    return member?.email_suppression?.suppressed;
+}
+
 export function hasOnlyFreeProduct({site}) {
     const products = getSiteProducts({site});
     return (products.length === 1 && hasFreeProductPrice({site}));

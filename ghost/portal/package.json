@@ -18,8 +18,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@sentry/react": "7.15.0",
-    "@sentry/tracing": "7.15.0",
+    "@sentry/react": "7.21.1",
+    "@sentry/tracing": "7.21.1",
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.4.3",
@@ -55,7 +55,10 @@
     ],
     "plugins": [
       "ghost"
-    ]
+    ],
+    "rules": {
+      "import/no-webpack-loader-syntax": "off"
+    }
   },
   "browserslist": {
     "production": [
@@ -74,14 +77,19 @@
       "cobertura",
       "text-summary",
       "html"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^!!raw-loader!.*": "jest-raw-loader"
+    }
   },
   "devDependencies": {
     "chalk": "4.1.2",
     "chokidar": "3.5.3",
     "copy-webpack-plugin": "11.0.0",
+    "jest-raw-loader": "1.0.1",
     "minimist": "1.2.7",
     "ora": "5.4.1",
+    "raw-loader": "4.0.2",
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
     "source-map-explorer": "2.5.3",

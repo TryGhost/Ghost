@@ -2,8 +2,8 @@ import moment from 'moment-timezone';
 import {Resource} from 'ember-could-get-used-to-this';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class HistoryEventFetcher extends Resource {
@@ -38,8 +38,14 @@ export default class HistoryEventFetcher extends Resource {
             filter += `+${this.args.named.filter}`;
         }
 
-        // Can't get this working with Promise.all, somehow results in an infinite loop
-        await this.loadEventsTask.perform({filter});
+        try {
+            await this.loadEventsTask.perform({filter});
+        } catch (e) {
+            if (!didCancel(e)) {
+                // re-throw the non-cancelation error
+                throw e;
+            }
+        }
     }
 
     @action

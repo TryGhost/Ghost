@@ -1,50 +1,50 @@
 const {expect, test} = require('@playwright/test');
-const testUtils = require('../utils');
-
-/** @type {import('@playwright/test').Page} */
-let page;
-let baseURL;
-
-const setupGhost = async ({browser}) => {
-    const app = await testUtils.startGhost();
-    baseURL = `${app.url}ghost/`;
-
-    page = await browser.newPage();
-    await page.goto(`${baseURL}`);
-    await page.getByPlaceholder('The Daily Awesome').click();
-    await page.getByPlaceholder('The Daily Awesome').fill('The Local Test');
-    await page.getByPlaceholder('Jamie Larson').fill('Testy McTesterson');
-    await page.getByPlaceholder('jamie@example.com').fill('testy@example.com');
-    await page.getByPlaceholder('At least 10 characters').fill('Mc.T3ster$0n');
-    await page.getByPlaceholder('At least 10 characters').press('Enter');
-    await page.locator('.gh-done-pink').click();
-};
-
-const teardownGhost = async () => {
-    await testUtils.stopGhost();
-    await page.close();
-};
+const {setupGhost, setupStripe, createTier, createOffer, completeStripeSubscription} = require('./utils');
 
 test.describe('Ghost Frontend', () => {
-    test.describe('Basic frontend', () => {
-        test.beforeAll(setupGhost);
-        test.afterAll(teardownGhost);
+    test.beforeEach(async ({page}) => {
+        await setupGhost(page);
+    });
 
-        test('Loads the homepage', async () => {
-            const response = await page.goto(`${baseURL}`);
+    test.describe('Basic frontend', () => {
+        test('Loads the homepage', async ({page}) => {
+            const response = await page.goto('/');
             expect(response.status()).toEqual(200);
         });
     });
 
     test.describe('Portal flows', () => {
-        test.beforeAll(setupGhost);
-        test.afterAll(teardownGhost);
+        test('Uses an offer successfully', async ({page}) => {
+            await setupStripe(page);
+            await createTier(page, {
+                name: 'Portal Tier',
+                monthlyPrice: 6,
+                yearlyPrice: 60
+            });
+            const offerName = await createOffer(page, {
+                name: 'Black Friday Special',
+                tierName: 'Portal Tier',
+                percentOff: 10
+            });
 
-        test('Loads the homepage', async () => {
-            const response = await page.goto(`${baseURL}`);
-            expect(response.status()).toEqual(200);
+            // TODO: Click on the offer, copy the link, goto the link
+            await page.locator('[data-test-list="offer-name"]').filter({hasText: offerName}).click();
+            const portalUrl = await page.locator('input#url').inputValue();
 
-            // TODO: Implement a real portal test
+            await page.goto(portalUrl);
+            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            await portalFrame.locator('#input-name').fill('Testy McTesterson');
+            await portalFrame.locator('#input-email').fill('testy@example.com');
+            await portalFrame.getByRole('button', {name: 'Continue'}).click();
+
+            await completeStripeSubscription(page);
+
+            // Wait for success notification to say we have subscribed successfully
+            const gotNotification = await page.frameLocator('iframe >> nth=1').getByText('Success! Check your email for magic link').waitFor({
+                state: 'visible',
+                timeout: 10000
+            }).then(() => true).catch(() => false);
+            test.expect(gotNotification, 'Did not get portal success notification').toBeTruthy();
         });
     });
 });

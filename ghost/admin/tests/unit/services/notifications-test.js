@@ -193,7 +193,7 @@ describe('Unit: Service: notifications', function () {
             notifications.showAPIError(resp);
         });
         expect(notifications.content).to.deep.equal([
-            {message: 'There was a problem on the server, please try again.', status: 'alert', type: 'error', key: 'api-error', actions: undefined, description: undefined, icon: undefined}
+            {message: GENERIC_ERROR_MESSAGE, status: 'alert', type: 'error', key: 'api-error', actions: undefined, description: undefined, icon: undefined}
         ]);
 
         notifications.set('content', emberA());
@@ -269,6 +269,24 @@ describe('Unit: Service: notifications', function () {
 
         let [alert] = notifications.alerts;
         expect(alert.message).to.equal('Authorization Error. Please sign in.');
+        expect(alert.status).to.equal('alert');
+        expect(alert.type).to.equal('error');
+        expect(alert.key).to.equal('api-error');
+    });
+
+    it('#showAPIError does not add context to message if it duplicates the message', function () {
+        let notifications = this.owner.lookup('service:notifications');
+        let error = new AjaxError({errors: [{
+            message: 'Authorization Error.',
+            context: 'Authorization Error.'
+        }]});
+
+        run(() => {
+            notifications.showAPIError(error);
+        });
+
+        let [alert] = notifications.alerts;
+        expect(alert.message).to.equal('Authorization Error.');
         expect(alert.status).to.equal('alert');
         expect(alert.type).to.equal('error');
         expect(alert.key).to.equal('api-error');

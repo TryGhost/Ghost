@@ -1126,36 +1126,25 @@ textarea.gh-member-details-textarea {
     padding-bottom: 16px;
 }
 
-.gh-member-newsletter-section .for-switch.disabled {
-    opacity: 0.1;
+.gh-member-newsletter-no-data {
+    padding: 24px 0 28px;
 }
 
-.gh-member-newsletter-footer-text {
+.gh-member-newsletter-no-data .gh-member-newsletter-icon path {
+    stroke-width: 2.8;
+}
+
+.gh-member-newsletter-no-data a {
+    color: var(--midgrey);
+    opacity: 0.6;
     font-weight: 500;
-}
-
-.gh-member-newsletter-footer-text a {
-    display: inline-block;
+    letter-spacing: 0.02em;
     text-decoration: underline;
-    margin-left: 2px;
-    font-weight: 400;
 }
 
 .gh-member-newsletter-footer {
-    display: flex;
-    gap: 4px;
-    align-items: center;
     font-size: 1.25rem;
     margin-top: 12px;
-}
-
-.gh-member-newsletter-footer-icon {
-    width: 24px;
-    height: 24px;
-}
-
-.gh-member-newsletter-footer-icon [class*="__body"] {
-    stroke: #95A1AD;
 }
 
 .gh-member-feed-container {
@@ -2505,6 +2494,13 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-member-addcomp-warning {
     margin-top: -16px;
+}
+
+.gh-members-resource-filter .ember-power-select-selected-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 16px;
 }
 
 .gh-members-filter-builder {

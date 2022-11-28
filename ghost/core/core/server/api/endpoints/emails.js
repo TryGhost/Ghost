@@ -2,6 +2,8 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const megaService = require('../../services/mega');
+const emailService = require('../../services/email-service');
+const labs = require('../../../shared/labs');
 
 const messages = {
     emailNotFound: 'Email not found.',
@@ -57,23 +59,27 @@ module.exports = {
             'id'
         ],
         permissions: true,
-        query(frame) {
-            return models.Email.findOne(frame.data, frame.options)
-                .then(async (model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.emailNotFound)
-                        });
-                    }
+        // (complexity removed with new labs flag)
+        // eslint-disable-next-line ghost/ghost-custom/max-api-complexity
+        async query(frame) {
+            if (labs.isSet('emailStability')) {
+                return await emailService.controller.retryFailedEmail(frame);
+            }
 
-                    if (model.get('status') !== 'failed') {
-                        throw new errors.IncorrectUsageError({
-                            message: tpl(messages.retryNotAllowed)
-                        });
-                    }
-
-                    return await megaService.mega.retryFailedEmail(model);
+            const model = await models.Email.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.emailNotFound)
                 });
+            }
+
+            if (model.get('status') !== 'failed') {
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.retryNotAllowed)
+                });
+            }
+
+            return await megaService.mega.retryFailedEmail(model);
         }
     }
 };
