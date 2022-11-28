@@ -345,8 +345,6 @@ describe('Members Importer API', function () {
         // Wait for the job to finish
         await sleep(2500);
 
-        console.log('Done sleep');
-
         assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
 
         mockManager.assert.sentEmail({
