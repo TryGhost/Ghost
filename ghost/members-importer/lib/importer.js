@@ -4,8 +4,8 @@ const fs = require('fs-extra');
 const membersCSV = require('@tryghost/members-csv');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-
 const emailTemplate = require('./email-template');
+const logging = require('@tryghost/logging');
 
 const messages = {
     filenameCollision: 'Filename already exists, please try again.'
@@ -279,8 +279,9 @@ module.exports = class MembersCSVImporter {
      * @param {String} config.user.email - calling user email
      * @param {Object} config.LabelModel - instance of Ghosts Label model
      * @param {Boolean} config.forceInline - allows to force performing imports not in a job (used in test environment)
+     * @param {{testImportThreshold: () => Promise<void>}} config.verificationTrigger
      */
-    async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel, forceInline}) {
+    async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel, forceInline, verificationTrigger}) {
         const meta = {};
         const job = await this.prepare(pathToCSV, headerMapping, globalLabels);
 
@@ -289,6 +290,7 @@ module.exports = class MembersCSVImporter {
         if ((job.batches <= 500 && !job.metadata.hasStripeData) || forceInline) {
             const result = await this.perform(job.filePath);
             const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
+            await verificationTrigger.testImportThreshold();
 
             return {
                 meta: Object.assign(meta, {
@@ -303,22 +305,34 @@ module.exports = class MembersCSVImporter {
             const emailRecipient = user.email;
             this._addJob({
                 job: async () => {
-                    const result = await this.perform(job.filePath);
-                    const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
-                    const emailContent = this.generateCompletionEmail(result, {
-                        emailRecipient,
-                        importLabel: importLabelModel ? importLabelModel.toJSON() : null
-                    });
-                    const errorCSV = this.generateErrorCSV(result);
-                    const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
+                    try {
+                        const result = await this.perform(job.filePath);
+                        const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
+                        const emailContent = this.generateCompletionEmail(result, {
+                            emailRecipient,
+                            importLabel: importLabelModel ? importLabelModel.toJSON() : null
+                        });
+                        const errorCSV = this.generateErrorCSV(result);
+                        const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
+                        await this.sendErrorEmail({
+                            emailRecipient,
+                            emailSubject,
+                            emailContent,
+                            errorCSV,
+                            importLabel
+                        });
+                    } catch (e) {
+                        logging.error('Error in members import job');
+                        logging.error(e);
+                    }
 
-                    await this.sendErrorEmail({
-                        emailRecipient,
-                        emailSubject,
-                        emailContent,
-                        errorCSV,
-                        importLabel
-                    });
+                    // Still check verification triggers in case of errors (e.g., email sending failed)
+                    try {
+                        await verificationTrigger.testImportThreshold();
+                    } catch (e) {
+                        logging.error('Error in members import job when testing import threshold');
+                        logging.error(e);
+                    }
                 },
                 offloaded: false
             });

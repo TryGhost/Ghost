@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@tryghost/errors": "1.2.18",
+    "@tryghost/logging": "2.3.2",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/tpl": "0.1.19",
     "moment-timezone": "0.5.23"
