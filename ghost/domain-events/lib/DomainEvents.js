@@ -41,7 +41,7 @@ class DomainEvents {
     }
 
     /**
-     * Dispatch an event in case you don't have an instance of the event class, but you do have the event name and even data.
+     * Dispatch an event in case you don't have an instance of the event class, but you do have the event name and event data.
      * @template Data
      * @param {string} name
      * @param {Data} data
