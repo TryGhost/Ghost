@@ -2500,7 +2500,7 @@ p.gh-members-import-errordetail:first-of-type {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-right: 8px;
+    margin-right: 16px;
 }
 
 .gh-members-filter-builder {
