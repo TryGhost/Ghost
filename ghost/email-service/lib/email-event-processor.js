@@ -86,6 +86,7 @@ class EmailEventProcessor {
                 email: emailIdentification.email,
                 memberId: recipient.memberId,
                 emailId: recipient.emailId,
+                emailRecipientId: recipient.emailRecipientId,
                 timestamp
             }));
         }

@@ -50,7 +50,7 @@ class EmailEventStorage {
 
     async handlePermanentFailed(event) {
         await this.#db.knex('email_recipients')
-            .where('email_id', '=', event.emailRecipientId)
+            .where('id', '=', event.emailRecipientId)
             .update({
                 failed_at: this.#db.knex.raw('COALESCE(failed_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
             });

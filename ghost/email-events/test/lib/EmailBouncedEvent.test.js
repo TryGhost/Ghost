@@ -8,6 +8,7 @@ describe('EmailBouncedEvent', function () {
             email: 'test@test.test',
             memberId: new ObjectID().toHexString(),
             emailId: new ObjectID().toHexString(),
+            emailRecipientId: new ObjectID().toHexString(),
             timestamp: new Date()
         });
         assert(event instanceof EmailBouncedEvent);
