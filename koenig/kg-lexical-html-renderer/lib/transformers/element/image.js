@@ -59,20 +59,6 @@ module.exports = {
 
             if (img.getAttribute('srcset') && node.width && node.width >= 720) {
                 // standard size
-                if (!node.cardWidth) {
-                    img.setAttribute('sizes', '(min-width: 720px) 720px');
-                }
-
-                if (node.cardWidth === 'wide' && node.width >= 1200) {
-                    img.setAttribute('sizes', '(min-width: 1200px) 1200px');
-                }
-            }
-        }
-
-        if (options.target !== 'email') {
-            setSrcsetAttribute(img, node, options);
-            if (img.getAttribute('srcset') && node.width && node.width >= 720) {
-                // standard size
                 if (!node.cardWidth || node.cardWidth === 'regular') {
                     img.setAttribute('sizes', '(min-width: 720px) 720px');
                 }
@@ -112,11 +98,13 @@ module.exports = {
         }
 
         figure.appendChild(img);
+
         if (node.caption) {
             const caption = document.createElement('figcaption');
             caption.innerHTML = node.caption;
             figure.appendChild(caption);
         }
+
         return figure.outerHTML;
     }
 };
