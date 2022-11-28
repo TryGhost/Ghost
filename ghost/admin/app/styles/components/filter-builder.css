@@ -30,7 +30,7 @@
 
 .gh-filter-builder .gh-filter-inputgroup {
     display: grid;
-    grid-template-columns: 1fr 146px 1fr 18px;
+    grid-template-columns: 1fr 146px minmax(0, 1fr) 18px;
     grid-column-gap: 8px;
 }
 
