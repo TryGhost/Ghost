@@ -96,6 +96,7 @@ module.exports = class GhostMailer {
      * @param {string} message.subject - email subject
      * @param {string} message.html - email content
      * @param {string} message.to - email recipient address
+     * @param {string} [message.replyTo]
      * @param {string} [message.from] - sender email address
      * @param {string} [message.text] - text version of this message
      * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
