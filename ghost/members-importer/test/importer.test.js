@@ -107,7 +107,10 @@ describe('Importer', function () {
                 user: {
                     email: 'test@example.com'
                 },
-                LabelModel: LabelModelStub
+                LabelModel: LabelModelStub,
+                verificationTrigger: {
+                    testImportThreshold: () => {}
+                }
             });
 
             should.exist(result.meta);
@@ -153,7 +156,10 @@ describe('Importer', function () {
                     email: 'test@example.com'
                 },
                 LabelModel: LabelModelStub,
-                forceInline: true
+                forceInline: true,
+                verificationTrigger: {
+                    testImportThreshold: () => {}
+                }
             });
 
             should.exist(result.meta);
