@@ -100,10 +100,12 @@ class EmailService {
             track_clicks: !!this.#settingsCache.get('email_track_clicks'),
             feedback_enabled: !!newsletter.get('feedback_enabled'),
             recipient_filter: emailRecipientFilter,
-            subject: this.#emailRenderer.getSubject(post, newsletter),
+            subject: this.#emailRenderer.getSubject(post),
             from: this.#emailRenderer.getFromAddress(post, newsletter),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
-            email_count: await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter)
+            email_count: await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter),
+            source: post.get('lexical') || post.get('mobiledoc'),
+            source_type: post.get('lexical') ? 'lexical' : 'mobiledoc'
         });
 
         try {

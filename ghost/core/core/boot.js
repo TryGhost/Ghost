@@ -312,6 +312,7 @@ async function initServices({config}) {
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
+        audienceFeedback.init(),
         emailService.init(),
         mega.listen(),
         webhooks.listen(),
@@ -322,7 +323,6 @@ async function initServices({config}) {
         }),
         comments.init(),
         linkTracking.init(),
-        audienceFeedback.init(),
         emailSuppressionList.init()
     ]);
     debug('End: Services');
