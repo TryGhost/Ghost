@@ -1,7 +1,14 @@
 const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
+const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 
 class EmailServiceWrapper {
+    getPostUrl(post) {
+        const jsonModel = post.toJSON();
+        url.forPost(post.id, jsonModel, {options: {}});
+        return jsonModel.url;
+    }
+
     init() {
         if (this.service) {
             return;
@@ -20,7 +27,6 @@ class EmailServiceWrapper {
 
         const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
-        const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
         const urlUtils = require('../../../shared/url-utils');
         const memberAttribution = require('../member-attribution');
         const linkReplacer = require('@tryghost/link-replacer');
@@ -36,11 +42,7 @@ class EmailServiceWrapper {
             },
             imageSize: null,
             urlUtils,
-            getPostUrl: (post) => {
-                const jsonModel = post.toJSON();
-                url.forPost(post.id, jsonModel, {options: {}});
-                return jsonModel.url;
-            },
+            getPostUrl: this.getPostUrl,
             linkReplacer,
             linkTracking,
             memberAttributionService: memberAttribution.service,
@@ -49,8 +51,11 @@ class EmailServiceWrapper {
 
         const sendingService = new SendingService({
             emailProvider: {
-                send: async ({html, plaintext, subject, from, replyTo, recipients}) => {
-                    const {GhostMailer} = require('../mail');
+                send: async ({plaintext, subject, from, replyTo, recipients}) => {
+                    logging.info(`Sending email\nSubject: ${subject}\nFrom: ${from}\nReplyTo: ${replyTo}\nRecipients: ${recipients.length}\n\n${plaintext}`);
+
+                    // Uncomment to test email HTML rendering with GhostMailer
+                    /*const {GhostMailer} = require('../mail');
                     const mailer = new GhostMailer();
                     logging.info(`Sending email\nSubject: ${subject}\nFrom: ${from}\nReplyTo: ${replyTo}\nRecipients: ${recipients.length}\n\n${JSON.stringify(recipients[0].replacements, undefined, '    ')}`);
                     
@@ -66,7 +71,7 @@ class EmailServiceWrapper {
                         from,
                         replyTo,
                         text: plaintext
-                    });
+                    });*/
                     return Promise.resolve({id: 'fake_provider_id_' + ObjectID().toHexString()});
                 }
             },
