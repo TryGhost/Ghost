@@ -41,17 +41,5 @@
                 {{/each}}
             </div>
         </div>
-
-        <div class="gh-nav-bottom">
-            <div class="gh-change-theme">
-                <LinkTo class="gh-nav-design-tab" @route="settings.design.change-theme" {{on "click" this.closeAllSections}} data-test-nav="change-theme">
-                    <div>
-                        <span>Change theme</span>
-                        <span class="active-theme" data-test-text="current-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}</span>
-                    </div>
-                    <div class="gh-nav-design-tabicon">{{svg-jar "sync"}}</div>
-                </LinkTo>
-            </div>
-        </div>
     </section>
 </div>
