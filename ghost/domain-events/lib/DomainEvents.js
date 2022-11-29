@@ -28,7 +28,7 @@ class DomainEvents {
      * @returns {void}
      */
     static subscribe(Event, handler) {
-        this.ee.on(Event.name, handler);
+        DomainEvents.ee.on(Event.name, handler);
     }
 
     /**
@@ -37,7 +37,7 @@ class DomainEvents {
      * @returns {void}
      */
     static dispatch(event) {
-        this.dispatchRaw(event.constructor.name, event);
+        DomainEvents.dispatchRaw(event.constructor.name, event);
     }
 
     /**
@@ -48,7 +48,7 @@ class DomainEvents {
      * @returns {void}
      */
     static dispatchRaw(name, data) {
-        this.ee.emit(name, data);
+        DomainEvents.ee.emit(name, data);
     }
 }
 
