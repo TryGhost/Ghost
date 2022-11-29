@@ -23,7 +23,7 @@
     "build": "vite build",
     "build:demo": "vite build --config vite.config.demo.js",
     "preview": "vite preview",
-    "pretest": "yarn build --mode test --config vite.config.demo.js",
+    "pretest": "yarn build --config vite.config.demo.js",
     "test": "vitest run",
     "pretest:watch": "yarn pretest",
     "test:watch": "vitest",

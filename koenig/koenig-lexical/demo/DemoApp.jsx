@@ -7,24 +7,25 @@ import {imageUploader} from './utils/imageUploader';
 import Sidebar from './components/Sidebar';
 import content from './content/content.json';
 import ToggleButton from './components/ToggleButton';
+import {useLocation} from 'react-router-dom';
 
 const loadContent = () => {
-    if (import.meta.env.MODE !== 'test') {
-        const cnt = JSON.stringify(content);
-        return cnt;
-    }
+    const cnt = JSON.stringify(content);
+    return cnt;
 };
 
+function useQuery() {
+    const {search} = useLocation();
+  
+    return React.useMemo(() => new URLSearchParams(search), [search]);
+}
+
 function DemoApp() {
+    let query = useQuery();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
-    const [defaultContent, setDefaultContent] = useState(loadContent());
+    const [defaultContent] = useState(query.get('content') !== 'false' ? loadContent() : undefined);
     const [title, setTitle] = useState(defaultContent ? 'Meet the Koenig editor.' : '');
-
-    React.useEffect(() => {
-        const contentJson = loadContent();
-        setDefaultContent(contentJson);
-    }, []);
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -48,7 +49,10 @@ function DemoApp() {
                         <KoenigEditor />
                     </div>
                 </div>
-                <ToggleButton setTitle={setTitle} content={defaultContent}/>
+                {
+                    query.get('content') !== 'false' ?
+                        <ToggleButton setTitle={setTitle} content={defaultContent}/> : null
+                }
                 <div className="flex h-full flex-col items-end">
                     <Sidebar isOpen={isSidebarOpen} view={sidebarView} />
                     <FloatingButton onClick={openSidebar} />
