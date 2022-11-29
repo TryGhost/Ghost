@@ -172,12 +172,19 @@ module.exports = class MailgunClient {
         const providerId = event?.message?.headers['message-id'];
 
         return {
+            id: event.id,
             type: event.event,
             severity: event.severity,
             recipientEmail: event.recipient,
             emailId: event['user-variables'] && event['user-variables']['email-id'],
             providerId: providerId,
-            timestamp: new Date(event.timestamp * 1000)
+            timestamp: new Date(event.timestamp * 1000),
+
+            error: event['delivery-status'] && event['delivery-status'] ? {
+                code: event['delivery-status'].code,
+                message: event['delivery-status'].message || event['delivery-status'].description,
+                enhancedCode: event['delivery-status']['enhanced-code'] ?? null
+            } : null
         };
     }
 
