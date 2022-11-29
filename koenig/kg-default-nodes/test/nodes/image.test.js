@@ -190,6 +190,42 @@ describe('ImageNode', function () {
             output.should.containEql('width="3000" height="6000"');
         }));
 
+        describe('srcset attribute', function () {
+            it('is included when src is an unsplash image', editorTest(function () {
+                dataset.width = 3000;
+                dataset.height = 6000;
+                dataset.src = 'https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ';
+
+                const imageNode = $createImageNode(dataset);
+                const {element} = imageNode.exportDOM(exportOptions);
+                const output = element.outerHTML;
+
+                output.should.containEql('https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w');
+            }));
+
+            it('is ommitted when target is email', editorTest(function () {
+                exportOptions.target = 'email';
+
+                const imageNode = $createImageNode(dataset);
+                const {element} = imageNode.exportDOM(exportOptions);
+                const output = element.outerHTML;
+
+                output.should.not.containEql('srcset');
+            }));
+
+            it('is included for absolute images when siteUrl has trailing slash');
+            it('is omitted when no contentImageSizes are passed as options');
+            it('is omitted when `srcsets: false` is passed in as an option');
+            it('is omitted when canTransformImages is provided and returns false');
+            it('is omitted when no width is provided');
+            it('is omitted when image is smaller than minimum responsive width');
+            it('omits sizes larger than image width and includes origin image width if smaller than largest responsive width');
+            it('works correctly with subdirectories');
+            it('works correctly with absolute subdirectories');
+            it('is included when src is an Unsplash image');
+            it('has same size omission behaviour for Unsplash as local files');
+        });
+
         describe('sizes attribute', function () {
             it('is added for standard images', editorTest(function () {
                 dataset.width = 3000;
@@ -222,30 +258,6 @@ describe('ImageNode', function () {
             it('is omitted for full images');
         });
 
-        describe('srcset attribute', function () {
-            it('is included when src is an unsplash image', editorTest(function () {
-                dataset.width = 3000;
-                dataset.height = 6000;
-                dataset.src = 'https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ';
-
-                const imageNode = $createImageNode(dataset);
-                const {element} = imageNode.exportDOM(exportOptions);
-                const output = element.outerHTML;
-
-                output.should.containEql('https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w');
-            }));
-
-            it('is ommitted when target is email', editorTest(function () {
-                exportOptions.target = 'email';
-
-                const imageNode = $createImageNode(dataset);
-                const {element} = imageNode.exportDOM(exportOptions);
-                const output = element.outerHTML;
-
-                output.should.not.containEql('srcset');
-            }));
-        });
-
         describe('email target', function () {
             it('adds width/height and uses resized local image');
             it('adds width/height and uses resized unsplash image');
@@ -254,6 +266,7 @@ describe('ImageNode', function () {
             it('uses original image width/height if image is smaller than 600px wide');
             it('skips width/height and resize if payload is missing dimensions');
             it('resizes Unsplash images even if width/height data is missing');
+            it('omits srcset attribute');
         });
     });
 
