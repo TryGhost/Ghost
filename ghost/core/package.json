@@ -213,7 +213,7 @@
     "nock": "13.2.9",
     "papaparse": "5.3.2",
     "postcss": "8.4.19",
-    "postcss-cli": "10.0.0",
+    "postcss-cli": "10.1.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
     "sinon": "14.0.2",
