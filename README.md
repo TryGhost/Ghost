@@ -1,4 +1,4 @@
-    git clone --recurse-submodules https://github.com/IIGdevelopment/core kyivindependent
+    git clone --recurse-submodules git@github.com:IIGdevelopment/core.git kyivindependent
     cd kyivindependent
     git submodule add -f git@github.com:IIGdevelopment/theme-kyivindependent.git theme
     cd theme
