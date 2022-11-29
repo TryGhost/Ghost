@@ -6,8 +6,9 @@ describe('EmailBouncedEvent', function () {
     it('exports a static create method to create instances', function () {
         const event = EmailBouncedEvent.create({
             email: 'test@test.test',
-            memberId: new ObjectID(),
-            emailId: new ObjectID(),
+            memberId: new ObjectID().toHexString(),
+            emailId: new ObjectID().toHexString(),
+            emailRecipientId: new ObjectID().toHexString(),
             timestamp: new Date()
         });
         assert(event instanceof EmailBouncedEvent);

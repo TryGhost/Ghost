@@ -27,7 +27,7 @@ class MembersEventsServiceWrapper {
             services: {
                 settingsCache
             },
-            async getMembersApi() {
+            getMembersApi() {
                 return members.api;
             }
         });

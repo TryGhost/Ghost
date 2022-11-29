@@ -30,7 +30,7 @@ module.exports = {
 
                 jobsService.addJob({
                     at: `${s} ${m}/5 * * * *`,
-                    job: path.resolve(__dirname, 'fetch-latest.js'),
+                    job: path.resolve(__dirname, 'fetch-latest/index.js'),
                     name: 'email-analytics-fetch-latest'
                 });
 
