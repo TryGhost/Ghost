@@ -4,7 +4,7 @@ const TitleTextBox = ({handleTitleInput, title}) => {
     const titleEl = React.useRef(null);
     React.useEffect(() => {
         if (titleEl.current) {
-            titleEl.current.style.height = 'auto';
+            titleEl.current.style.height = '64px';
             titleEl.current.style.height = titleEl.current.scrollHeight + 'px';
         }
     }, [title]);
