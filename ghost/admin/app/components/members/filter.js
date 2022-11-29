@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
-import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEXT_BILLING_DATE_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
+import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEXT_BILLING_DATE_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -44,6 +44,7 @@ const FILTER_GROUPS = [
             EMAIL_OPENED_COUNT_FILTER,
             EMAIL_OPEN_RATE_FILTER,
             EMAIL_RECEIVED_FILTER,
+            EMAIL_SENT_FILTER,
             EMAIL_OPENED_FILTER,
             EMAIL_CLICKED_FILTER,
             AUDIENCE_FEEDBACK_FILTER
@@ -150,6 +151,7 @@ export default class MembersFilter extends Component {
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
         availableFilters = availableFilters.filter(prop => !prop.setting || this.settings[prop.setting]);
+        availableFilters = availableFilters.filter(prop => !prop.excludeForFeature || !this.feature[prop.excludeForFeature]);
 
         // exclude tiers filter if site has only single tier
         availableFilters = availableFilters
@@ -415,7 +417,14 @@ export default class MembersFilter extends Component {
         }
 
         if (relation && value) {
-            const properties = FILTER_PROPERTIES.find(prop => key === prop.name);
+            let filterProperties = FILTER_PROPERTIES;
+
+            if (this.feature.get('suppressionList')) {
+                filterProperties = filterProperties.filter(prop => !prop.feature || this.feature[prop.feature]);
+                filterProperties = filterProperties.filter(prop => !prop.excludeForFeature || !this.feature[prop.excludeForFeature]);
+            }
+
+            const properties = filterProperties.find(prop => key === prop.name);
             if (FILTER_PROPERTIES.find(prop => key === prop.name)) {
                 return new Filter({
                     properties,
@@ -534,7 +543,7 @@ export default class MembersFilter extends Component {
         this.fetchFilterResourcesTask.perform();
     }
 
-    @action 
+    @action
     applyFiltersPressed(dropdown) {
         dropdown?.actions.close();
         this.applyFilter();

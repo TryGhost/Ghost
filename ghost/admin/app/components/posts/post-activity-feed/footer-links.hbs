@@ -1,0 +1,49 @@
+{{#if (eq @eventType "sent")}}
+    <Posts::PostActivityFeed::Link>
+        <LinkTo
+            class="gh-post-activity-feed-pagination-link"
+            @route="members"
+            @query={{hash filterParam=(concat "emails.post_id:" @postId) }}
+        >
+            Sent
+        </LinkTo>
+    </Posts::PostActivityFeed::Link>
+{{else if (eq @eventType "opened")}}
+    <Posts::PostActivityFeed::Link>
+        <LinkTo
+            class="gh-post-activity-feed-pagination-link"
+            @route="members"
+            @query={{hash filterParam=(concat "opened_emails.post_id:" @postId) }}
+        >
+            Opened
+        </LinkTo>
+    </Posts::PostActivityFeed::Link>
+{{else if (eq @eventType "clicked")}}
+    <Posts::PostActivityFeed::Link>
+        <LinkTo
+            class="gh-post-activity-feed-pagination-link"
+            @route="members"
+            @query={{hash filterParam=(concat "clicked_links.post_id:" @postId) }}
+        >
+            Clicked
+        </LinkTo>
+    </Posts::PostActivityFeed::Link>
+{{else if (eq @eventType "feedback")}}
+    <Posts::PostActivityFeed::Link>
+        <LinkTo
+            class="gh-post-activity-feed-pagination-link"
+            @route="members"
+            @query={{hash filterParam=(concat "(feedback.post_id:" @postId "+feedback.score:1)")}}
+        >
+            More like this
+        </LinkTo>
+        and
+        <LinkTo
+            class="gh-post-activity-feed-pagination-link"
+            @route="members"
+            @query={{hash filterParam=(concat "(feedback.post_id:" @postId "+feedback.score:0)")}}
+        >
+            Less like this
+        </LinkTo>
+    </Posts::PostActivityFeed::Link>
+{{/if}}

@@ -84,29 +84,22 @@
                 {{/if}}
 
                 <div class="gh-post-activity-feed-footer">
-                    {{#if @linkQuery}}
-                        {{#if (feature "suppressionList")}}
-                            <div class="gh-post-activity-feed-pagination-link-wrapper">
-                                {{svg-jar "filter"}}
-                                See members for
-                                <LinkTo
-                                    class="gh-post-activity-feed-pagination-link"
-                                    @route="members"
-                                    @query={{@linkQuery}}
-                                >
-                                    {{@linkText}}
-                                </LinkTo>
-                            </div>
-                        {{else}}
-                            <LinkTo
-                                class="gh-post-activity-feed-pagination-link"
-                                @route="members"
-                                @query={{@linkQuery}}
-                            >
-                                {{svg-jar "filter"}}
-                                See members
-                            </LinkTo>
-                        {{/if}}
+                    {{#if (feature "suppressionList")}}
+                        <Posts::PostActivityFeed::FooterLinks
+                            @eventType={{this.eventType}}
+                            @postId={{@postId}}
+                        />
+                    {{/if}}
+
+                    {{#if (and @linkQuery (not (feature "suppressionList")))}}
+                        <LinkTo
+                            class="gh-post-activity-feed-pagination-link"
+                            @route="members"
+                            @query={{@linkQuery}}
+                        >
+                            {{svg-jar "filter"}}
+                            See members
+                        </LinkTo>
                     {{/if}}
 
                     <div class="gh-post-activity-feed-pagination">
