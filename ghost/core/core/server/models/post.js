@@ -180,7 +180,13 @@ Post = ghostBookshelf.Model.extend({
                     cardTransformers: mobiledocLib.cards
                 }
             },
-            lexical: 'lexicalToTransformReady',
+            lexical: {
+                method: 'lexicalToTransformReady',
+                options: {
+                    nodes: lexicalLib.nodes,
+                    transformMap: lexicalLib.urlTransformMap
+                }
+            },
             html: 'htmlToTransformReady',
             plaintext: 'plaintextToTransformReady',
             custom_excerpt: 'htmlToTransformReady',
