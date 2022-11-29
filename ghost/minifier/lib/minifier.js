@@ -6,6 +6,7 @@ const terser = require('terser');
 const glob = require('tiny-glob');
 const path = require('path');
 const fs = require('fs').promises;
+const isWin = process.platform === 'win32';
 
 const messages = {
     badDestination: {
@@ -69,7 +70,12 @@ class Minifier {
     }
 
     async getMatchingFiles(src) {
-        return await glob(this.getFullSrc(src));
+        let fullSrc = this.getFullSrc(src);
+        // must feed glob forward slashes to function properly
+        if (isWin) { 
+            fullSrc = fullSrc.replace(/\\/g,'/');
+        };
+        return await glob(fullSrc);
     }
 
     async readFiles(files) {
@@ -84,7 +90,9 @@ class Minifier {
 
     async getSrcFileContents(src) {
         try {
+            debug(`files for `,src)
             const files = await this.getMatchingFiles(src);
+            debug(`found files `,files)
 
             if (files) {
                 return await this.readFiles(files);
