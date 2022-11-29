@@ -14,7 +14,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Router>
             <Routes>
                 <Route path="/designsandbox" element={<DesignSandbox />} />
-                <Route path="/" element={<DemoApp />} />
+                <Route path="/" element={<DemoApp introContent={true} />} />
             </Routes>
         </Router>
     </React.StrictMode>
