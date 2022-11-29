@@ -22,7 +22,14 @@ class EmailController {
     }
 
     async _getFrameData(frame) {
-        const post = await this.models.Post.findOne({...frame.data, status: 'all'}, {...frame.options});
+        // Bit absurd situation in email-previews endpoints that one endpoint is using options and other one is using data.
+        // So we need to handle both cases.
+        let post;
+        if (frame.options.id) {
+            post = await this.models.Post.findOne({...frame.options, status: 'all'}, {withRelated: ['posts_meta', 'authors']});
+        } else {
+            post = await this.models.Post.findOne({...frame.data, status: 'all'}, {...frame.options, withRelated: ['posts_meta', 'authors']});
+        }
 
         if (!post) {
             throw new errors.NotFoundError({
@@ -32,7 +39,7 @@ class EmailController {
 
         let newsletter;
         if (frame.options.newsletter) {
-            newsletter = await this.models.Newsletter.findOne({slug: frame.options.newsletter});
+            newsletter = await this.models.Newsletter.findOne({slug: frame.options.newsletter}, {require: true});
         } else {
             newsletter = (await post.getLazyRelation('newsletter')) ?? (await this.models.Newsletter.getDefaultNewsletter());
         }
