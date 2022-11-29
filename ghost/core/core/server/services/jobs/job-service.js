@@ -7,6 +7,7 @@ const JobManager = require('@tryghost/job-manager');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
 const sentry = require('../../../shared/sentry');
+const domainEvents = require('@tryghost/domain-events');
 
 const errorHandler = (error, workerMeta) => {
     logging.info(`Capturing error for worker during execution of job: ${workerMeta.name}`);
@@ -15,7 +16,9 @@ const errorHandler = (error, workerMeta) => {
 };
 
 const workerMessageHandler = ({name, message}) => {
-    logging.info(`Worker for job ${name} sent a message: ${message}`);
+    if (typeof message === 'string') {
+        logging.info(`Worker for job ${name} sent a message: ${message}`);
+    }
 };
 
 const initTestMode = () => {
@@ -39,7 +42,7 @@ const initTestMode = () => {
     }, 5000);
 };
 
-const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job});
+const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents});
 
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;

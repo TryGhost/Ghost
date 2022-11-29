@@ -5,22 +5,35 @@ require('./utils');
 const sinon = require('sinon');
 
 const {
-    EmailAnalyticsService,
-    EventProcessor
+    EmailAnalyticsService
 } = require('..');
 const EventProcessingResult = require('../lib/event-processing-result');
 
 describe('EmailAnalyticsService', function () {
+    let eventProcessor;
+    beforeEach(function () {
+        eventProcessor = {};
+        eventProcessor.handleDelivered = sinon.stub().callsFake(({emailId}) => {
+            return {
+                emailId,
+                emailRecipientId: emailId,
+                memberId: 1
+            };
+        });
+        eventProcessor.handleOpened = sinon.stub().callsFake(({emailId}) => {
+            return {
+                emailId,
+                emailRecipientId: emailId,
+                memberId: 1
+            };
+        });
+    });
+
     describe('fetchAll', function () {
-        let eventProcessor;
         let providers;
         let queries;
 
         beforeEach(function () {
-            eventProcessor = new EventProcessor();
-            eventProcessor.handleDelivered = sinon.fake.resolves(true);
-            eventProcessor.handleOpened = sinon.fake.resolves(true);
-
             providers = {
                 testing: {
                     async fetchAll(batchHandler) {
@@ -102,9 +115,6 @@ describe('EmailAnalyticsService', function () {
 
     describe('processEventBatch', function () {
         it('uses passed-in event processor', async function () {
-            const eventProcessor = new EventProcessor();
-            eventProcessor.handleDelivered = sinon.stub().resolves(true);
-
             const service = new EmailAnalyticsService({
                 eventProcessor
             });
@@ -124,8 +134,10 @@ describe('EmailAnalyticsService', function () {
 
             result.should.deepEqual(new EventProcessingResult({
                 delivered: 2,
-                unprocessable: 1,
-                emailIds: [1, 2]
+                opened: 1,
+                unprocessable: 0,
+                emailIds: [1, 2],
+                memberIds: [1]
             }));
         });
     });
