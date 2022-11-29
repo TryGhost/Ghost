@@ -1,6 +1,10 @@
     git clone --recurse-submodules https://github.com/IIGdevelopment/core ghost
     cd ghost
-    git submodule add -f git@github.com:IIGdevelopment/theme-kyivindependent.git theme
+    git submodule add -f git@github.com:IIGdevelopment/theme.git theme
+    cd theme
+    git remote rename origin upstream
+    git remote add origin git@github.com:IIGdevelopment/theme-kyivindependent.git
+    cd ../
     git remote rename origin upstream
     git remote add origin git@github.com:IIGdevelopment/core-kyivindependent.git
     git add -A
