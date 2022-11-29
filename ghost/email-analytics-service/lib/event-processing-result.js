@@ -1,6 +1,20 @@
 const _ = require('lodash');
 
 class EventProcessingResult {
+    /**
+     * @param {object} result
+     * @param {number} [result.delivered]
+     * @param {number} [result.opened]
+     * @param {number} [result.temporaryFailed]
+     * @param {number} [result.permanentFailed]
+     * @param {number} [result.unsubscribed]
+     * @param {number} [result.complained]
+     * @param {number} [result.unhandled]
+     * @param {number} [result.unprocessable]
+     * @param {number} [result.processingFailures]
+     * @param {string[]} [result.emailIds]
+     * @param {string[]} [result.memberIds]
+     */
     constructor(result = {}) {
         // counts
         this.delivered = 0;

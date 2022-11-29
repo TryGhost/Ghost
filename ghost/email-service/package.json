@@ -26,6 +26,8 @@
   "dependencies": {
     "@tryghost/errors": "1.2.18",
     "@tryghost/tpl": "0.1.19",
-    "bson-objectid": "2.0.4"
+    "bson-objectid": "2.0.4",
+    "@tryghost/email-events": "0.0.0",
+    "moment-timezone": "0.5.23"
   }
 }

@@ -1,32 +1,8 @@
-const {parentPort} = require('worker_threads');
 const debug = require('@tryghost/debug')('jobs:email-analytics:fetch-latest');
 
-// recurring job to fetch analytics since the most recently seen event timestamp
-
-// Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
-// where it left off on next run
-function cancel() {
-    if (parentPort) {
-        parentPort.postMessage('Email analytics fetch-latest job cancelled before completion');
-        parentPort.postMessage('cancelled');
-    } else {
-        setTimeout(() => {
-            process.exit(0);
-        }, 1000);
-    }
-}
-
-if (parentPort) {
-    parentPort.once('message', (message) => {
-        if (message === 'cancel') {
-            return cancel();
-        }
-    });
-}
-
-(async () => {
-    const config = require('../../../../shared/config');
-    const db = require('../../../data/db');
+async function run({domainEvents}) {
+    const config = require('../../../../../shared/config');
+    const db = require('../../../../data/db');
 
     const settingsRows = await db.knex('settings')
         .whereIn('key', ['mailgun_api_key', 'mailgun_domain', 'mailgun_base_url']);
@@ -44,14 +20,21 @@ if (parentPort) {
     };
 
     const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
-    const EventProcessor = require('../lib/event-processor');
     const MailgunProvider = require('@tryghost/email-analytics-provider-mailgun');
-    const queries = require('../lib/queries');
+    const queries = require('../../lib/queries');
+    const {EmailEventProcessor} = require('@tryghost/email-service');
+
+    // Since this is running in a worker thread, we cant dispatch directly
+    // So we post the events as a message to the job manager
+    const eventProcessor = new EmailEventProcessor({
+        domainEvents,
+        db
+    });
 
     const emailAnalyticsService = new EmailAnalyticsService({
         config,
         settings,
-        eventProcessor: new EventProcessor({db}),
+        eventProcessor,
         providers: [
             new MailgunProvider({config, settings})
         ],
@@ -69,14 +52,6 @@ if (parentPort) {
     await emailAnalyticsService.aggregateStats(eventStats);
     const aggregateEndDate = new Date();
     debug(`Finished aggregating email analytics in ${aggregateEndDate - aggregateStartDate}ms`);
-
-    if (parentPort) {
-        parentPort.postMessage(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
-        parentPort.postMessage('done');
-    } else {
-        // give the logging pipes time finish writing before exit
-        setTimeout(() => {
-            process.exit(0);
-        }, 1000);
-    }
-})();
+    return {eventStats, fetchStartDate, fetchEndDate, aggregateStartDate, aggregateEndDate};
+}
+module.exports.run = run;

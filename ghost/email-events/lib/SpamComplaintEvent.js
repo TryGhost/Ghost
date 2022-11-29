@@ -1,7 +1,3 @@
-/**
- * @typedef {import('bson-objectid').default} ObjectID
- */
-
 module.exports = class SpamComplaintEvent {
     /**
      * @readonly
@@ -11,13 +7,13 @@ module.exports = class SpamComplaintEvent {
 
     /**
      * @readonly
-     * @type {ObjectID}
+     * @type {string}
      */
     memberId;
 
     /**
      * @readonly
-     * @type {ObjectID}
+     * @type {string}
      */
     emailId;
 
@@ -31,9 +27,9 @@ module.exports = class SpamComplaintEvent {
      * @private
      */
     constructor({email, memberId, emailId, timestamp}) {
-        this.email = email;
         this.memberId = memberId;
         this.emailId = emailId;
+        this.email = email;
         this.timestamp = timestamp;
     }
 
