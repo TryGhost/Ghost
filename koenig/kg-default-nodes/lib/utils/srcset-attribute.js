@@ -1,10 +1,10 @@
-const {isLocalContentImage} = require('./is-local-content-image');
-const {getAvailableImageWidths} = require('./get-available-image-widths');
-const {isUnsplashImage} = require('./is-unsplash-image');
+import {isLocalContentImage} from './is-local-content-image';
+import {getAvailableImageWidths} from './get-available-image-widths';
+import {isUnsplashImage} from './is-unsplash-image';
 
 // default content sizes: [600, 1000, 1600, 2400]
 
-const getSrcsetAttribute = function ({src, width, options}) {
+export const getSrcsetAttribute = function ({src, width, options}) {
     if (!options.imageOptimization || options.imageOptimization.srcsets === false || !width || !options.imageOptimization.contentImageSizes) {
         return;
     }
@@ -49,7 +49,7 @@ const getSrcsetAttribute = function ({src, width, options}) {
     }
 };
 
-const setSrcsetAttribute = function (elem, image, options) {
+export const setSrcsetAttribute = function (elem, image, options) {
     if (!elem || !['IMG', 'SOURCE'].includes(elem.tagName) || !elem.getAttribute('src') || !image) {
         return;
     }
@@ -60,9 +60,4 @@ const setSrcsetAttribute = function (elem, image, options) {
     if (srcset) {
         elem.setAttribute('srcset', srcset);
     }
-};
-
-module.exports = {
-    getSrcsetAttribute,
-    setSrcsetAttribute
 };

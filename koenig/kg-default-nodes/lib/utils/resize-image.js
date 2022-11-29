@@ -1,4 +1,4 @@
-const resizeImage = function (image, {width: desiredWidth, height: desiredHeight} = {}) {
+export const resizeImage = function (image, {width: desiredWidth, height: desiredHeight} = {}) {
     const {width, height} = image;
     const ratio = width / height;
 
@@ -20,5 +20,3 @@ const resizeImage = function (image, {width: desiredWidth, height: desiredHeight
         };
     }
 };
-
-module.exports = {resizeImage};

@@ -5,6 +5,7 @@ const {
     $isTextNode
 } = require('lexical');
 const {$isLinkNode} = require('@lexical/link');
+const {$isKoenigCard} = require('@tryghost/kg-default-nodes');
 const TextContent = require('./utils/text-content');
 const {elementTransformers} = require('./transformers');
 
@@ -26,6 +27,11 @@ function $convertToHtmlString(options = {}) {
 }
 
 function exportTopLevelElementOrDecorator(node, options) {
+    if ($isKoenigCard(node)) {
+        const {element} = node.exportDOM(options);
+        return element.outerHTML;
+    }
+
     for (const transformer of elementTransformers) {
         if (transformer.export !== null) {
             const result = transformer.export(node, options, _node => exportChildren(_node, options));

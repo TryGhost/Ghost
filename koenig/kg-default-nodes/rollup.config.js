@@ -12,7 +12,7 @@ export default [
         output: {
             file: pkg.main,
             format: 'cjs',
-            interop: false
+            sourcemap: true
         },
         external: dependencies
     },

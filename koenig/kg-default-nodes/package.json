@@ -1,0 +1,47 @@
+{
+  "name": "@tryghost/kg-default-nodes",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-nodes",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "cjs/kg-default-nodes.js",
+  "module": "es/kg-default-nodes.js",
+  "source": "lib/kg-default-nodes.js",
+  "scripts": {
+    "dev": "rollup -c -w --bundleConfigAsCjs",
+    "build": "rollup -c --bundleConfigAsCjs",
+    "prepare": "NODE_ENV=production yarn build",
+    "pretest": "yarn build",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test": "yarn test:unit",
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "cjs/",
+    "es/",
+    "lib/"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.19.1",
+    "@babel/plugin-syntax-import-assertions": "^7.20.0",
+    "@lexical/headless": "^0.6.3",
+    "@lexical/html": "^0.6.3",
+    "c8": "7.12.0",
+    "mocha": "10.1.0",
+    "rollup": "^3.5.0",
+    "rollup-plugin-babel": "4.4.0",
+    "should": "13.2.3",
+    "sinon": "14.0.2"
+  },
+  "dependencies": {
+    "jsdom": "^20.0.3",
+    "lexical": "^0.6.0"
+  }
+}
