@@ -2,8 +2,7 @@
     cd kyivindependent
     git submodule add -f git@github.com:IIGdevelopment/theme-kyivindependent.git theme
     cd theme
-    git remote rename origin upstream
-    git remote add origin git@github.com:IIGdevelopment/theme-kyivindependent.git
+    git remote add upstream git@github.com:IIGdevelopment/theme.git
     cd ../
     git remote rename origin upstream
     git remote add origin git@github.com:IIGdevelopment/core-kyivindependent.git
