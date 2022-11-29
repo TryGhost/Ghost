@@ -43,7 +43,8 @@ const BACKUP_TABLES = [
     'jobs',
     'redirects',
     'members_click_events',
-    'members_feedback'
+    'members_feedback',
+    'suppressions'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file
