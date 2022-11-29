@@ -949,5 +949,22 @@ module.exports = {
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
+    },
+    suppressions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        email_address: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
+        email_id: {type: 'string', maxlength: 24, nullable: true, references: 'emails.id'},
+        reason: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            validations: {
+                isIn: [[
+                    'spam',
+                    'bounce'
+                ]]
+            }
+        },
+        created_at: {type: 'dateTime', nullable: false}
     }
 };
