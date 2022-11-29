@@ -48,10 +48,10 @@ function DemoApp() {
                         <KoenigEditor />
                     </div>
                 </div>
+                <ToggleButton setTitle={setTitle} content={defaultContent}/>
                 <div className="flex h-full flex-col items-end">
                     <Sidebar isOpen={isSidebarOpen} view={sidebarView} />
                     <FloatingButton onClick={openSidebar} />
-                    <ToggleButton setTitle={setTitle} content={defaultContent}/>
                 </div>
             </KoenigComposer>
         </div>
