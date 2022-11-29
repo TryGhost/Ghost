@@ -59,7 +59,7 @@
         {
           "altText": "",
           "caption": "",
-          "src": "/Koenig-editor-1.png",
+          "src": "/demo/assets/Koenig-editor-1.png",
           "type": "image",
           "cardWidth": "regular",
           "width": 1480,
@@ -315,7 +315,7 @@
         {
           "altText": "",
           "caption": "",
-          "src": "/Koenig-editor-2.png",
+          "src": "/demo/assets/Koenig-editor-2.png",
           "type": "image",
           "cardWidth": "regular",
           "width": 1480,
