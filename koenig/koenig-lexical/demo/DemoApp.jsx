@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar';
 import content from './content/content.json';
 import ToggleButton from './components/ToggleButton';
 import {useLocation} from 'react-router-dom';
+import TitleTextBox from './components/TitleTextBox';
 
 const loadContent = () => {
     const cnt = JSON.stringify(content);
@@ -45,7 +46,8 @@ function DemoApp() {
                 <Watermark />
                 <div className="h-full grow overflow-auto">
                     <div className="mx-auto max-w-[740px] py-[15vmin]">
-                        <textarea onChange={handleTitleInput} value={title} className="w-full min-w-[auto] mb-3 pb-1 text-black font-sans text-5xl font-bold resize-none overflow-hidden focus-visible:outline-none" placeholder="Post title" />
+                        <TitleTextBox handleTitleInput={handleTitleInput} title={title} />
+                        {/* <textarea onKeyDown={handleTitleKeyDown} ref={titleEl} onChange={handleTitleInput} value={title} className="w-full min-w-[auto] mb-3 pb-1 text-black font-sans text-5xl font-bold resize-none overflow-hidden focus-visible:outline-none" placeholder="Post title" /> */}
                         <KoenigEditor />
                     </div>
                 </div>
