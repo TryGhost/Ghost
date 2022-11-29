@@ -1,0 +1,130 @@
+<section class="gh-canvas {{if (feature "audienceFeedback") "feature-audienceFeedback"}}" {{did-insert this.loadData}}>
+    <GhCanvasHeader class="gh-canvas-header gh-post-analytics-header">
+        <div class="flex flex-column flex-grow-1">
+            <div class="gh-canvas-breadcrumb">
+                <LinkTo @route="posts">
+                    Posts
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}}Analytics
+            </div>
+            <h2 class="gh-canvas-title gh-post-title">
+                Post title
+            </h2>
+            <div class="gh-post-analytics-meta">
+                <div class="gh-post-analytics-meta-text">
+                    {{#if this.post.hasBeenEmailed }}
+                        {{#if this.post.emailOnly}}
+                            Sent
+                        {{else}}
+                            Published and sent
+                        {{/if}}
+                    {{else}}
+                        Published
+                        {{#if @post.didEmailFail}}
+                            but failed to send
+                        {{else}}
+                            on your site
+                        {{/if}}
+                    {{/if}}
+
+                    {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                        on
+                        {{moment-format publishedAt "D MMM YYYY"}}
+                        at
+                        {{moment-format publishedAt "HH:mm"}}
+                    {{/let}}
+                </div>
+            </div>
+            <div class="gh-box gh-box-error gh-box-tip flex justify-between">
+                {{svg-jar "warning"}}
+                <div>
+                    <h4>Major error</h4>
+                    <p class="mb0">This is the explanation of what happened.</p>
+                </div>
+                <button type="button" class="gh-btn gh-btn-primary gh-btn-icon gh-btn-red ember-view self-center"><span>Retry</span></button>
+            </div>
+        </div>
+    </GhCanvasHeader>
+
+    <Tabs::Tabs class="gh-tabs-analytics" @forceRender={{true}} as |tabs|>
+            <tabs.tab>
+                <h3>{{svg-jar "analytics-tab-sent-large"}}23</h3>
+                <p><span class="analytics-tab-label">Permanent failures</span></p>
+            </tabs.tab>
+
+            <tabs.tabPanel>
+                <div class="gh-post-activity-feed">
+                    <div class="gh-dashboard-list-body">
+                        <div class="gh-dashboard-list-body gh-dashboard-list-cols-3">
+                            <div class="gh-dashboard-list-item" style="grid-template-columns:30% 70%;">
+                                <div class="gh-dashboard-list-item-sub">
+                                    <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
+                                        <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
+                                            <span class="gh-member-avatar-label gh-member-list-avatar">NN</span>
+                                        </div>
+                                        {{#if this.avatarImage}}
+                                            <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or @member.name @member.email}}" />
+                                        {{/if}}
+                                    </figure>
+                                    <div class="">
+                                        <h3 class="ma0 pa0 gh-members-list-name">Name Lastname</h3>
+                                        <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">dzvlais@gmail.com</p>
+                                    </div>
+                                </div>
+                                <div class="gh-dashboard-list-item-sub">
+                                    {{svg-jar "warning-stroke"}}
+                                    <span class="gh-dashboard-list-subtext">
+                                        <span class="gh-members-activity-description">
+                                            <span class="gh-members-activity-event-text">402</span>
+                                            <p>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</p>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </tabs.tabPanel>
+
+                <tabs.tab>
+                    <h3>{{svg-jar "analytics-tab-opened-large"}}36</h3>
+                    <p><span class="analytics-tab-label">Temporary failures</span></p>
+                </tabs.tab>
+
+                <tabs.tabPanel>
+                    <Posts::PostActivityFeed
+                        @postId={{this.post.id}}
+                        @eventType="opened"
+                        @linkQuery={{hash filterParam=(concat "opened_emails.post_id:" this.post.id) }}
+                    />
+                </tabs.tabPanel>
+
+                <tabs.tab>
+                    <h3>{{svg-jar "analytics-tab-clicked-large"}}3</h3>
+                    <p><span class="analytics-tab-label">Batches errored</span></p>
+                </tabs.tab>
+
+                <tabs.tabPanel>
+                    <Posts::PostActivityFeed
+                        @postId={{this.post.id}}
+                        @eventType="clicked"
+                        @linkQuery={{hash filterParam=(concat "clicked_links.post_id:" this.post.id) }}
+                    />
+                </tabs.tabPanel>
+
+                <tabs.tab>
+                    <h3>{{svg-jar "settings"}}{{format-number this.totalFeedback}}</h3>
+                    <p><span class="analytics-tab-label">Settings</span></p>
+                </tabs.tab>
+
+                <tabs.tabPanel>
+                    <Posts::PostActivityFeed
+                        @postId={{this.post.id}}
+                        @eventType="feedback"
+                        @data={{this.feedbackChartData}}
+                    />
+                </tabs.tabPanel>
+
+    </Tabs::Tabs>
+</section>
