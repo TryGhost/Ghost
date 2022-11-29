@@ -8,9 +8,18 @@ const TitleTextBox = ({handleTitleInput, title}) => {
             titleEl.current.style.height = titleEl.current.scrollHeight + 'px';
         }
     }, [title]);
+
+    // prevent default enter key behavior
+
+    const handleTitleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    };
     
     return (
-        <textarea 
+        <textarea
+            onKeyDown={handleTitleKeyDown}
             ref={titleEl} 
             onChange={handleTitleInput}
             value={title} 
