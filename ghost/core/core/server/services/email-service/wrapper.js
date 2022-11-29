@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const ObjectID = require('bson-objectid').default;
 const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 
 class EmailServiceWrapper {
