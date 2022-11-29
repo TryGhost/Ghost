@@ -289,6 +289,10 @@
     margin-bottom: 0;
 }
 
+.gh-members-activity-single.gh-members-activity .view-container {
+    height: calc(100% - 96px);
+}
+
 .gh-members-activity-icon svg {
     width: 100%;
     height: 100%;
