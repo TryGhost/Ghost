@@ -8,7 +8,7 @@
   ],
   "statements": 60,
   "branches": 85,
-  "functions": 51,
+  "functions": 50,
   "lines": 60,
   "include": [
     "core/{*.js,frontend,server,shared}"
