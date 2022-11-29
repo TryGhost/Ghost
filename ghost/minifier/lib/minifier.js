@@ -89,15 +89,10 @@ class Minifier {
     }
 
     async getSrcFileContents(src) {
-        try {
-            debug(`files for `,src)
-            const files = await this.getMatchingFiles(src);
-            debug(`found files `,files)
-
-            if (files) {
-                return await this.readFiles(files);
-            }
-        } catch (error) {
+        const files = await this.getMatchingFiles(src);
+        if (files.length > 0) {
+            return await this.readFiles(files);
+        } else {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.badSource.message, {src}),
                 context: tpl(messages.badSource.context),
@@ -137,6 +132,13 @@ class Minifier {
         const minifiedFiles = [];
 
         for (const dest of destinations) {
+            if (!dest.endsWith('.css') && !dest.endsWith('.js')) { 
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.badDestination.message, {dest}),
+                    context: tpl(messages.badDestination.context),
+                    help: tpl(messages.globalHelp)
+            })};
+
             const src = globs[dest];
             let contents = await this.getSrcFileContents(src);
 
@@ -151,12 +153,6 @@ class Minifier {
                 minifiedContents = await this.minifyCSS(contents);
             } else if (dest.endsWith('.js')) {
                 minifiedContents = await this.minifyJS(contents);
-            } else {
-                throw new errors.IncorrectUsageError({
-                    message: tpl(messages.badDestination.message, {dest}),
-                    context: tpl(messages.badDestination.context),
-                    help: tpl(messages.globalHelp)
-                });
             }
 
             const result = await this.writeFile(minifiedContents, dest);

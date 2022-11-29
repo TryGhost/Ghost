@@ -123,7 +123,6 @@ describe('Minifier', function () {
         it('can handle missing files and folders gracefully', async function () {
             try {
                 await minifier.minify({
-                    'card.min.ts': 'ts/*.ts',
                     'card.min.js': 'js/fake.js'
                 });
                 should.fail(minifier, 'Should have errored');
