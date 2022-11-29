@@ -36,7 +36,8 @@
 
 /**
  * @typedef {object} Replacement
- * @prop {string} token
+ * @prop {string} id
+ * @prop {RegExp} token
  * @prop {string} value
  */
 
@@ -82,7 +83,7 @@ class SendingService {
 
         const recipients = this.buildRecipients(members, emailBody.replacements);
         return await this.#emailProvider.send({
-            subject: this.#emailRenderer.getSubject(post, newsletter),
+            subject: this.#emailRenderer.getSubject(post),
             from: this.#emailRenderer.getFromAddress(post, newsletter),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter) ?? undefined,
             html: emailBody.html,
@@ -103,6 +104,7 @@ class SendingService {
                 email: member.email,
                 replacements: replacementDefinitions.map((def) => {
                     return {
+                        id: def.id,
                         token: def.token,
                         value: def.getValue(member)
                     };

@@ -8,5 +8,12 @@ describe('EmailServiceWrapper', function () {
 
         const service = require('../../../../../core/server/services/email-service');
         service.init();
+
+        // Increase test coverage for the wrapper
+        service.getPostUrl({
+            toJSON: () => [{
+                id: '1'
+            }]
+        });
     });
 });
