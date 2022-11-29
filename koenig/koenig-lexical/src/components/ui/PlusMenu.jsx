@@ -6,7 +6,7 @@ export function PlusButton({onClick}) {
             <button
                 type="button"
                 aria-label="Add a card"
-                className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-grey bg-white transition-all ease-linear hover:border-grey-900 md:h-9 md:w-9"
+                className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-grey transition-all ease-linear hover:border-grey-900 md:h-9 md:w-9"
                 onClick={onClick}
             >
                 <PlusIcon className="h-4 w-4 stroke-grey-800 stroke-2 group-hover:stroke-grey-900" />

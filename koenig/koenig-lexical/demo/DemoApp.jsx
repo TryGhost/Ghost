@@ -24,6 +24,7 @@ function DemoApp() {
                 <Watermark />
                 <div className="h-full grow overflow-auto">
                     <div className="mx-auto max-w-[740px] py-[15vmin]">
+                        <textarea className="w-full min-w-[auto] mb-3 pb-1 text-black font-sans text-5xl font-bold resize-none overflow-hidden focus-visible:outline-none" placeholder="Post title" />
                         <KoenigEditor />
                     </div>
                 </div>
