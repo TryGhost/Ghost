@@ -123,7 +123,7 @@ class MailgunEmailProvider {
             }, {});
 
             // update content to use Mailgun variable syntax for all replacements
-            ['html', 'plaintext', 'subject'].forEach((key) => {
+            ['html', 'plaintext'].forEach((key) => {
                 if (messageData[key]) {
                     messageData[key] = this.#updateRecipientVariables(messageData[key], replacementDefinitions);
                 }
