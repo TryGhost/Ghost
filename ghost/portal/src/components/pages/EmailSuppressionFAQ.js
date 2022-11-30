@@ -6,16 +6,16 @@ export default function EmailSuppressedPage() {
     const {onAction} = useContext(AppContext);
 
     const onClose = () => {
-        onAction('switchPage', {page: 'emailSuppressed'});
+        onAction('switchPage', {page: 'emailSuppressed', lastPage: 'accountHome'});
     };
 
     return (
-        <div className="gh-email-suppressed-page">
+        <div className="gh-email-suppression-faq">
             <header className='gh-portal-detail-header'>
                 <CloseButton onClick={onClose} />
             </header>
 
-            <div className="gh-email-suppression-faq">
+            <div>
                 <h3>Why is my email disabled?</h3>
             </div>
         </div>
