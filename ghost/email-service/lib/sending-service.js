@@ -4,12 +4,14 @@
  * @prop {string} plaintext
  * @prop {string} subject
  * @prop {string} from
+ * @prop {string} emailId
  * @prop {string} [replyTo]
  * @prop {Recipient[]} recipients
- * 
+ * @prop {import("./email-renderer").ReplacementDefinition[]} replacementDefinitions
+ *
  * @typedef {object} IEmailProviderService
  * @prop {(emailData: EmailData, options: EmailSendingOptions) => Promise<EmailProviderSuccessResponse>} send
- * 
+ *
  * @typedef {object} Post
  * @typedef {object} Newsletter
  */
@@ -63,20 +65,21 @@ class SendingService {
         this.#emailRenderer = emailRenderer;
     }
 
-    /** 
+    /**
      * Send a given post, rendered for a given newsletter and segment to the members provided in the list
      * @param {object} data
      * @param {Post} data.post
      * @param {Newsletter} data.newsletter
      * @param {string|null} data.segment
+     * @param {string|null} data.emailId
      * @param {MemberLike[]} data.members
      * @param {EmailSendingOptions} options
      * @returns {Promise<EmailProviderSuccessResponse>}
     */
-    async send({post, newsletter, segment, members}, options) {
+    async send({post, newsletter, segment, members, emailId}, options) {
         const emailBody = await this.#emailRenderer.renderBody(
-            post, 
-            newsletter, 
+            post,
+            newsletter,
             segment,
             options
         );
@@ -88,10 +91,12 @@ class SendingService {
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter) ?? undefined,
             html: emailBody.html,
             plaintext: emailBody.plaintext,
-            recipients
+            recipients,
+            emailId: emailId,
+            replacementDefinitions: emailBody.replacements
         }, options);
     }
-    
+
     /**
      * @private
      * @param {MemberLike[]} members

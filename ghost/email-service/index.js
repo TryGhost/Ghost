@@ -6,5 +6,6 @@ module.exports = {
     SendingService: require('./lib/sending-service'),
     BatchSendingService: require('./lib/batch-sending-service'),
     EmailEventProcessor: require('./lib/email-event-processor'),
-    EmailEventStorage: require('./lib/email-event-storage')
+    EmailEventStorage: require('./lib/email-event-storage'),
+    MailgunEmailProvider: require('./lib/mailgun-email-provider')
 };

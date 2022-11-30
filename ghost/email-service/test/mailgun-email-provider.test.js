@@ -1,0 +1,131 @@
+const MailgunEmailProvider = require('../lib/mailgun-email-provider');
+const sinon = require('sinon');
+const should = require('should');
+
+describe('Mailgun Email Provider', function () {
+    describe('send', function () {
+        let mailgunClient;
+        let sendStub;
+
+        beforeEach(function () {
+            sendStub = sinon.stub().resolves({
+                id: 'provider-123'
+            });
+
+            mailgunClient = {
+                send: sendStub
+            };
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('calls mailgun client with correct data', async function () {
+            const mailgunEmailProvider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+
+            const response = await mailgunEmailProvider.send({
+                subject: 'Hi',
+                html: '<html><body>Hi {{name}}</body></html>',
+                plaintext: 'Hi',
+                from: 'ghost@example.com',
+                replyTo: 'ghost@example.com',
+                emailId: '123',
+                recipients: [
+                    {
+                        email: 'member@example.com',
+                        replacements: [
+                            {
+                                id: 'name',
+                                token: '{{name}}',
+                                value: 'John'
+                            }
+                        ]
+                    }
+                ],
+                replacementDefinitions: [
+                    {
+                        id: 'name',
+                        token: '{{name}}',
+                        getValue: () => 'John'
+                    }
+                ]
+            }, {
+                clickTrackingEnabled: true,
+                openTrackingEnabled: true
+            });
+            should(response.id).eql('provider-123');
+            should(sendStub.calledOnce).be.true();
+            sendStub.calledWith(
+                {
+                    subject: 'Hi',
+                    html: '<html><body>Hi %recipient.name%</body></html>',
+                    plaintext: 'Hi',
+                    from: 'ghost@example.com',
+                    replyTo: 'ghost@example.com',
+                    id: '123',
+                    track_opens: true,
+                    track_clicks: true
+                },
+                {'member@example.com': {name: 'John'}},
+                []
+            ).should.be.true();
+        });
+
+        it('handles mailgun client error correctly', async function () {
+            const mailgunErr = new Error('Bad Request');
+            mailgunErr.details = 'Invalid domain';
+            mailgunErr.status = 400;
+            sendStub = sinon.stub().throws({
+                error: mailgunErr,
+                messageData: {}
+            });
+
+            mailgunClient = {
+                send: sendStub
+            };
+
+            const mailgunEmailProvider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+            try {
+                const response = await mailgunEmailProvider.send({
+                    subject: 'Hi',
+                    html: '<html><body>Hi {{name}}</body></html>',
+                    plaintext: 'Hi',
+                    from: 'ghost@example.com',
+                    replyTo: 'ghost@example.com',
+                    emailId: '123',
+                    recipients: [
+                        {
+                            email: 'member@example.com',
+                            replacements: [
+                                {
+                                    id: 'name',
+                                    token: '{{name}}',
+                                    value: 'John'
+                                }
+                            ]
+                        }
+                    ],
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: () => 'John'
+                        }
+                    ]
+                }, {});
+                should(response).be.undefined();
+            } catch (e) {
+                should(e.message).eql('Bad Request:Invalid domain');
+                should(e.statusCode).eql(400);
+                should(e.errorDetails).eql('{"error":{"details":"Invalid domain","status":400},"messageData":{}}');
+            }
+        });
+    });
+});

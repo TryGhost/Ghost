@@ -144,21 +144,21 @@ class EmailRenderer {
     getSegments(post) {
         const allowedSegments = ['status:free', 'status:-free'];
         const html = this.renderPostBaseHtml(post);
-        
+
         const cheerio = require('cheerio');
         const $ = cheerio.load(html);
-    
+
         let allSegments = $('[data-gh-segment]')
             .get()
             .map(el => el.attribs['data-gh-segment']);
-    
+
         /**
          * Always add free and paid segments if email has paywall card
          */
         if (html.indexOf('<!--members-only-->') !== -1) {
             allSegments = allSegments.concat(['status:free', 'status:-free']);
         }
-    
+
         const segments = [...new Set(allSegments)].filter(segment => allowedSegments.includes(segment));
         if (segments.length === 0) {
             // One segment to all members
@@ -182,11 +182,11 @@ class EmailRenderer {
     }
 
     /**
-     * 
-     * @param {Post} post 
-     * @param {Newsletter} newsletter 
-     * @param {Segment} segment 
-     * @param {EmailRenderOptions} options 
+     *
+     * @param {Post} post
+     * @param {Newsletter} newsletter
+     * @param {Segment} segment
+     * @param {EmailRenderOptions} options
      * @returns {Promise<EmailBody>}
      */
     async renderBody(post, newsletter, segment, options) {
@@ -202,15 +202,15 @@ class EmailRenderer {
             if (segment === 'status:free') {
                 // Add paywall
                 addPaywall = true;
-                
+
                 // Remove the members-only content
                 html = html.slice(0, membersOnlyIndex);
             }
         }
 
         const templateData = await this.getTemplateData({
-            post, 
-            newsletter, 
+            post,
+            newsletter,
             html,
             addPaywall
         });
@@ -258,14 +258,14 @@ class EmailRenderer {
 
         // force all links to open in new tab
         $('a').attr('target', '_blank');
-        
+
         // convert figure and figcaption to div so that Outlook applies margins
         $('figure, figcaption').each((i, elem) => !!(elem.tagName = 'div'));
-        
+
         // Remove/hide parts of the email based on segment data attributes
         $('[data-gh-segment]').get().forEach((node) => {
             // TODO: replace with NQL interpretation
-            if (node.attribs['data-gh-segment'] !== segment) { 
+            if (node.attribs['data-gh-segment'] !== segment) {
                 $(node).remove();
             } else {
                 // Getting rid of the attribute for a cleaner html output
@@ -274,7 +274,7 @@ class EmailRenderer {
         });
 
         // Convert DOM back to HTML
-        html = $.html(); // () Fix for vscode syntax highlighter 
+        html = $.html(); // () Fix for vscode syntax highlighter
 
         // Replacement strings
         const replacementDefinitions = this.buildReplacementDefinitions({html, newsletter});
@@ -351,7 +351,7 @@ class EmailRenderer {
             {
                 id: 'first_name',
                 getValue: (member) => {
-                    return member.name.split(' ')[0];
+                    return member.name?.split(' ')[0];
                 }
             }
         ];
@@ -515,7 +515,7 @@ class EmailRenderer {
             site: {
                 title: this.#settingsCache.get('title'),
                 url: this.#urlUtils.urlFor('home', true),
-                iconUrl: this.#settingsCache.get('icon') ? 
+                iconUrl: this.#settingsCache.get('icon') ?
                     this.#urlUtils.urlFor('image', {
                         image: this.#settingsCache.get('icon')
                     }, true) : null
@@ -570,7 +570,7 @@ class EmailRenderer {
                     width: 100,
                     height: 38,
                     iconWidth: 24
-                }, 
+                },
                 // Sizes defined in pixels won’t be adjusted when Outlook is rendering at 120 dpi.
                 // To solve the problem we use values in points (1 pixel = 0.75 point).
                 // resource: https://www.hteumeuleu.com/2021/background-properties-in-vml/

@@ -11,6 +11,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const EmailRenderer = require('./email-renderer');
 const EmailSegmenter = require('./email-segmenter');
+const MailgunEmailProvider = require('./mailgun-email-provider');
 
 const messages = {
     archivedNewsletterError: 'Cannot send email to archived newsletters',
@@ -26,8 +27,8 @@ class EmailService {
     #limitService;
 
     /**
-     * 
-     * @param {object} dependencies 
+     *
+     * @param {object} dependencies
      * @param {BatchSendingService} dependencies.batchSendingService
      * @param {object} dependencies.models
      * @param {object} dependencies.models.Email
@@ -69,8 +70,8 @@ class EmailService {
     }
 
     /**
-     * 
-     * @param {Post} post 
+     *
+     * @param {Post} post
      * @returns {Promise<Email>}
      */
     async createEmail(post) {
