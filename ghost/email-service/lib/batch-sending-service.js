@@ -114,7 +114,7 @@ class BatchSendingService {
 
         // Load required relations
         const newsletter = await email.getLazyRelation('newsletter', {require: true});
-        const post = await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta']});
+        const post = await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors']});
 
         let batches = await this.getBatches(email);
         if (batches.length === 0) {

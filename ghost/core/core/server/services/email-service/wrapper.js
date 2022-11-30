@@ -91,13 +91,15 @@ class EmailServiceWrapper {
 
         this.service = new EmailService({
             batchSendingService,
+            sendingService,
             models: {
                 Email
             },
             settingsCache,
             emailRenderer,
             emailSegmenter,
-            limitService
+            limitService,
+            membersRepository
         });
 
         this.controller = new EmailController(this.service, {
