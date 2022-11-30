@@ -160,6 +160,7 @@ class EmailService {
                 exampleMember.email = member.get('email');
                 exampleMember.name = member.get('name');
             } else {
+                exampleMember.name = ''; // Force empty name to simulate name fallbacks
                 exampleMember.email = email;
             }
         }
