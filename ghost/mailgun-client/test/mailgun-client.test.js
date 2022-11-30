@@ -367,7 +367,7 @@ describe('MailgunClient', function () {
                 error: {
                     code: 605,
                     enhancedCode: null,
-                    message: 'Not delivering to previously bounced address',
+                    message: 'Not delivering to previously bounced address'
                 },
                 id: 'pl271FzxTTmGRW8Uj3dUWw'
             });
@@ -439,7 +439,7 @@ describe('MailgunClient', function () {
                 error: {
                     code: 451,
                     enhancedCode: '4.7.652',
-                    message: '4.7.652 The mail server [xxx.xxx.xxx.xxx] has exceeded the maximum number of connections.',
+                    message: '4.7.652 The mail server [xxx.xxx.xxx.xxx] has exceeded the maximum number of connections.'
                 },
                 id: 'pl271FzxTTmGRW8Uj3dUWw'
             });
