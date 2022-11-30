@@ -180,10 +180,10 @@ module.exports = class MailgunClient {
             providerId: providerId,
             timestamp: new Date(event.timestamp * 1000),
 
-            error: event['delivery-status'] && event['delivery-status'] ? {
+            error: event['delivery-status'] && (typeof (event['delivery-status'].message || event['delivery-status'].description) === 'string') ? {
                 code: event['delivery-status'].code,
-                message: event['delivery-status'].message || event['delivery-status'].description,
-                enhancedCode: event['delivery-status']['enhanced-code'] ?? null
+                message: (event['delivery-status'].message || event['delivery-status'].description).substring(0, 2000),
+                enhancedCode: event['delivery-status']['enhanced-code']?.toString()?.substring(0, 50) ?? null
             } : null
         };
     }
