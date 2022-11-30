@@ -1,5 +1,5 @@
 <div class="gh-post-activity-feed">
-    {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId includeEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
+    {{#let (activity-feed-fetcher filter=(members-event-filter post=@post.id includeEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
         {{#if eventsFetcher.isError}}
             <div class="gh-dashboard-list-body">
                 <div class="gh-dashboard-list-error">
@@ -87,7 +87,7 @@
                     {{#if (feature "suppressionList")}}
                         <Posts::PostActivityFeed::FooterLinks
                             @eventType={{this.eventType}}
-                            @postId={{@postId}}
+                            @post={{@post}}
                         />
                     {{/if}}
 

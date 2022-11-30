@@ -50,7 +50,7 @@
 
             <tabs.tabPanel>
                 <Posts::PostActivityFeed
-                    @postId={{this.post.id}}
+                    @post={{this.post}}
                     @eventType="sent"
                     @linkQuery={{hash filterParam=(concat "emails.post_id:" this.post.id) }}
                 />
@@ -64,7 +64,7 @@
 
                 <tabs.tabPanel>
                     <Posts::PostActivityFeed
-                        @postId={{this.post.id}}
+                        @post={{this.post}}
                         @eventType="opened"
                         @linkQuery={{hash filterParam=(concat "opened_emails.post_id:" this.post.id) }}
                     />
@@ -79,7 +79,7 @@
 
                 <tabs.tabPanel>
                     <Posts::PostActivityFeed
-                        @postId={{this.post.id}}
+                        @post={{this.post}}
                         @eventType="clicked"
                         @linkQuery={{hash filterParam=(concat "clicked_links.post_id:" this.post.id) }}
                     />
@@ -94,7 +94,7 @@
 
                 <tabs.tabPanel>
                     <Posts::PostActivityFeed
-                        @postId={{this.post.id}}
+                        @post={{this.post}}
                         @eventType="feedback"
                         @data={{this.feedbackChartData}}
                     />
@@ -109,7 +109,7 @@
             </tabs.tab>
 
             <tabs.tabPanel>
-                <Posts::PostActivityFeed @postId={{this.post.id}} @eventType="conversion" />
+                <Posts::PostActivityFeed @post={{this.post}} @eventType="conversion" />
             </tabs.tabPanel>
         {{/if}}
     </Tabs::Tabs>
