@@ -33,7 +33,7 @@ describe('Mailgun Email Provider', function () {
                 plaintext: 'Hi',
                 from: 'ghost@example.com',
                 replyTo: 'ghost@example.com',
-                id: '123',
+                emailId: '123',
                 recipients: [
                     {
                         email: 'member@example.com',
@@ -99,7 +99,7 @@ describe('Mailgun Email Provider', function () {
                     plaintext: 'Hi',
                     from: 'ghost@example.com',
                     replyTo: 'ghost@example.com',
-                    id: '123',
+                    emailId: '123',
                     recipients: [
                         {
                             email: 'member@example.com',
