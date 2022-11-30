@@ -144,14 +144,20 @@ export default class MembersFilter extends Component {
         })
     ]);
 
-    get availableFilterProperties() {
+    get filterProperties() {
         let availableFilters = FILTER_PROPERTIES;
-        const hasMultipleTiers = this.membersUtils.hasMultipleTiers;
 
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
         availableFilters = availableFilters.filter(prop => !prop.setting || this.settings[prop.setting]);
         availableFilters = availableFilters.filter(prop => !prop.excludeForFeature || !this.feature[prop.excludeForFeature]);
+
+        return availableFilters;
+    }
+
+    get availableFilterProperties() {
+        let availableFilters = this.filterProperties;
+        const hasMultipleTiers = this.membersUtils.hasMultipleTiers;
 
         // exclude tiers filter if site has only single tier
         availableFilters = availableFilters
@@ -226,7 +232,7 @@ export default class MembersFilter extends Component {
 
         let query = '';
         filters.forEach((filter) => {
-            const filterProperty = FILTER_PROPERTIES.find(prop => prop.name === filter.type);
+            const filterProperty = this.filterProperties.find(prop => prop.name === filter.type);
 
             if (filterProperty.buildNqlFilter) {
                 query += `${filterProperty.buildNqlFilter(filter)}+`;
@@ -285,7 +291,7 @@ export default class MembersFilter extends Component {
         const parsedFilters = [];
 
         // Check custom parsing
-        for (const filterProperties of FILTER_PROPERTIES) {
+        for (const filterProperties of this.filterProperties) {
             if (filterProperties.parseNqlFilter) {
                 // This filter has a custom parsing function
                 const parsedFilter = filterProperties.parseNqlFilter(filter);
@@ -307,7 +313,7 @@ export default class MembersFilter extends Component {
             parsedFilters.push(...this.parseNqlFilter(filter.yg));
         } else {
             const filterKeys = Object.keys(filter);
-            const validKeys = FILTER_PROPERTIES.map(prop => prop.name);
+            const validKeys = this.filterProperties.map(prop => prop.name);
 
             for (const key of filterKeys) {
                 if (validKeys.includes(key)) {
@@ -341,7 +347,7 @@ export default class MembersFilter extends Component {
         const key = keys[0];
         const nqlValue = nqlFilter[key];
 
-        const filterProperty = FILTER_PROPERTIES.find(prop => prop.name === key);
+        const filterProperty = this.filterProperties.find(prop => prop.name === key);
 
         let relation;
         let value;
@@ -417,15 +423,8 @@ export default class MembersFilter extends Component {
         }
 
         if (relation && value) {
-            let filterProperties = FILTER_PROPERTIES;
-
-            if (this.feature.get('suppressionList')) {
-                filterProperties = filterProperties.filter(prop => !prop.feature || this.feature[prop.feature]);
-                filterProperties = filterProperties.filter(prop => !prop.excludeForFeature || !this.feature[prop.excludeForFeature]);
-            }
-
-            const properties = filterProperties.find(prop => key === prop.name);
-            if (FILTER_PROPERTIES.find(prop => key === prop.name)) {
+            const properties = this.filterProperties.find(prop => key === prop.name);
+            if (this.filterProperties.find(prop => key === prop.name)) {
                 return new Filter({
                     properties,
                     relation,
@@ -482,7 +481,7 @@ export default class MembersFilter extends Component {
             newType = newType.target.value;
         }
 
-        const newProp = FILTER_PROPERTIES.find(prop => prop.name === newType);
+        const newProp = this.filterProperties.find(prop => prop.name === newType);
 
         if (!newProp) {
             // eslint-disable-next-line no-console
