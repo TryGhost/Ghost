@@ -15,11 +15,19 @@ class EmailEventStorage {
 
     listen(domainEvents) {
         domainEvents.subscribe(EmailDeliveredEvent, async (event) => {
-            await this.handleDelivered(event);
+            try {
+                await this.handleDelivered(event);
+            } catch (err) {
+                logging.error(err);
+            }
         });
 
         domainEvents.subscribe(EmailOpenedEvent, async (event) => {
-            await this.handleOpened(event);
+            try {
+                await this.handleOpened(event);
+            } catch (err) {
+                logging.error(err);
+            }
         });
 
         domainEvents.subscribe(EmailBouncedEvent, async (event) => {
@@ -39,17 +47,29 @@ class EmailEventStorage {
         });
 
         domainEvents.subscribe(EmailUnsubscribedEvent, async (event) => {
-            await this.handleUnsubscribed(event);
+            try {
+                await this.handleUnsubscribed(event);
+            } catch (e) {
+                logging.error(e);
+            }
         });
 
         domainEvents.subscribe(SpamComplaintEvent, async (event) => {
-            await this.handleComplained(event);
+            try {
+                await this.handleComplained(event);
+            } catch (e) {
+                logging.error(e);
+            }
         });
     }
 
     async handleDelivered(event) {
+        // To properly handle events that are received out of order (this happens because of polling)
+        // we only can set an email recipient to delivered if they are not already marked as failed
+        // Why handle this her?  An email can be 'delivered' and later have a delayed bounce event. So we need to prevent that delivered_at is set again.
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
+            .whereNull('failed_at')
             .update({
                 delivered_at: this.#db.knex.raw('COALESCE(delivered_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
             });
@@ -67,7 +87,8 @@ class EmailEventStorage {
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
             .update({
-                failed_at: this.#db.knex.raw('COALESCE(failed_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+                failed_at: this.#db.knex.raw('COALESCE(failed_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')]),
+                delivered_at: null // Reset in case we have a delayed bounce event
             });
         await this.saveFailure('permanent', event);
     }
@@ -116,6 +137,11 @@ class EmailEventStorage {
         } else {
             if (existing.get('severity') === 'permanent') {
                 // Already marked as failed, no need to change anything here
+                return;
+            }
+
+            if (existing.get('failed_at') > event.timestamp) {
+                /// We can get events out of order, so only save the last one
                 return;
             }
     

@@ -6,6 +6,7 @@ const domainEvents = require('@tryghost/domain-events');
 const MailgunClient = require('@tryghost/mailgun-client');
 const {run} = require('../../../../core/server/services/email-analytics/jobs/fetch-latest/run.js');
 const membersService = require('../../../../core/server/services/members');
+const {EmailDeliveredEvent} = require('@tryghost/email-events');
 
 async function sleep(ms) {
     return new Promise((resolve) => {
@@ -261,6 +262,7 @@ describe('EmailEventStorage', function () {
         }, {require: true});
 
         assert.equal(initialModel.get('failed_at'), null);
+        assert.notEqual(initialModel.get('delivered_at'), null);
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
@@ -280,6 +282,9 @@ describe('EmailEventStorage', function () {
         }, {require: true});
 
         assert.equal(updatedEmailRecipient.get('failed_at').toUTCString(), timestamp.toUTCString());
+        
+        // Check delivered at is reset back to null
+        assert.equal(updatedEmailRecipient.get('delivered_at'), null);
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
@@ -295,6 +300,31 @@ describe('EmailEventStorage', function () {
         assert.equal(permanentFailures.models[0].get('event_id'), 'pl271FzxTTmGRW8Uj3dUWw');
         assert.equal(permanentFailures.models[0].get('severity'), 'permanent');
         assert.equal(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
+
+        // Sometimes we emit events outside of order beacuse of the TRUST_THRESHOLD of the provider-mailgun class.
+        // Check if we handle this correctly.
+        // Manually emit the delivered event again, and see if it is ignored correctly
+        // @ts-ignore
+        domainEvents.dispatch(EmailDeliveredEvent.create({
+            email: emailRecipient.member_email,
+            emailRecipientId: emailRecipient.id,
+            memberId: memberId,
+            emailId: emailId,
+            timestamp
+        }));
+
+        // Now wait for events processed
+        await sleep(200);
+
+        // Check delivered at is not set again
+        const updatedEmailRecipient2 = await models.EmailRecipient.findOne({
+            id: emailRecipient.id
+        }, {require: true});
+
+        assert.equal(updatedEmailRecipient2.get('failed_at').toUTCString(), timestamp.toUTCString());
+        
+        // Check delivered at is reset back to null
+        assert.equal(updatedEmailRecipient2.get('delivered_at'), null, 'A delivered event after a permanent failure event should be ignored');
     });
 
     it('Ignores permanent failures if already failed', async function () {
