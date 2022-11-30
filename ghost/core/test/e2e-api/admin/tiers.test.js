@@ -95,7 +95,7 @@ describe('Tiers API', function () {
     });
 
     it('Can edit visibility', async function () {
-        const {body: {tiers: [tier]}} = await agent.get('/tiers/?type:paid&limit=1');
+        const {body: {tiers: [tier]}} = await agent.get('/tiers/?filter=type:paid&limit=1');
 
         const visibility = tier.visibility === 'none' ? 'public' : 'none';
 
@@ -129,14 +129,13 @@ describe('Tiers API', function () {
     });
 
     it('Can edit tier properties and relations', async function () {
-        let {body: {tiers: [tier]}} = await agent.get('/tiers/?type:paid&limit=1')
+        let {body: {tiers: [tier]}} = await agent.get('/tiers/?filter=type:paid&limit=1')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                // @NOTE: bug here, the returned array of tiers should be '1' NOT '2' 
-                tiers: Array(2).fill({
+                tiers: Array(1).fill({
                     id: matchers.anyObjectId,
                     created_at: matchers.anyISODateTime,
                     updated_at: matchers.anyISODateTime
