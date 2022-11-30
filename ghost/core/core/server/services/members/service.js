@@ -7,7 +7,6 @@ const MembersConfigProvider = require('./config');
 const MembersCSVImporter = require('@tryghost/members-importer');
 const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
-const createMembersSettingsInstance = require('./settings');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
@@ -42,7 +41,6 @@ const membersStats = new MembersStats({
 });
 
 let membersApi;
-let membersSettings;
 let verificationTrigger;
 
 const membersImporter = new MembersCSVImporter({
@@ -168,13 +166,6 @@ module.exports = {
 
     get api() {
         return membersApi;
-    },
-
-    get settings() {
-        if (!membersSettings) {
-            membersSettings = createMembersSettingsInstance(membersConfig);
-        }
-        return membersSettings;
     },
 
     ssr: null,
