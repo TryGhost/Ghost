@@ -23,6 +23,7 @@
     "!core/frontend/web/middleware/**",
     "core/server/web/api/**",
     "!core/server/web/api/middleware/**",
+    "core/server/web/api/testmode/**",
     "core/server/web/parent/**",
     "!core/server/web/parent/middleware/**",
     "core/server/web/shared/**",
