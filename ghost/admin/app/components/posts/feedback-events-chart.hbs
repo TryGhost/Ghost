@@ -30,7 +30,7 @@
             <span class="gh-feedback-events-tooltip-metric">{{this.tooltipData.label}}</span>
         </div>
 
-        {{#if this.tooltipData.href}}
+        {{#if (and this.tooltipData.href (not (feature "suppressionList")))}}
             <div class="gh-feedback-events-tooltip-footer">
                 <LinkTo
                     class="gh-post-activity-feed-pagination-link gh-post-activity-chart-link"
