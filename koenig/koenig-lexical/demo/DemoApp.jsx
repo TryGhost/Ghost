@@ -17,7 +17,7 @@ const loadContent = () => {
 
 function useQuery() {
     const {search} = useLocation();
-  
+
     return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
@@ -27,6 +27,7 @@ function DemoApp() {
     const [sidebarView, setSidebarView] = useState('json');
     const [defaultContent] = useState(query.get('content') !== 'false' ? loadContent() : undefined);
     const [title, setTitle] = useState(defaultContent ? 'Meet the Koenig editor.' : '');
+    const [editorAPI, setEditorAPI] = useState(null);
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -35,10 +36,6 @@ function DemoApp() {
         setSidebarView(view);
         setIsSidebarOpen(true);
     }
-
-    const handleTitleInput = (e) => {
-        setTitle(e.target.value);
-    };
 
     return (
         <div className="koenig-lexical top">
@@ -51,9 +48,8 @@ function DemoApp() {
                     }
                     <div className="h-full overflow-auto">
                         <div className="mx-auto max-w-[740px] py-[15vmin]">
-                            <TitleTextBox handleTitleInput={handleTitleInput} title={title} />
-                            {/* <textarea onKeyDown={handleTitleKeyDown} ref={titleEl} onChange={handleTitleInput} value={title} className="w-full min-w-[auto] mb-3 pb-1 text-black font-sans text-5xl font-bold resize-none overflow-hidden focus-visible:outline-none" placeholder="Post title" /> */}
-                            <KoenigEditor />
+                            <TitleTextBox title={title} setTitle={setTitle} editorAPI={editorAPI} />
+                            <KoenigEditor registerAPI={setEditorAPI} />
                         </div>
                     </div>
                 </div>

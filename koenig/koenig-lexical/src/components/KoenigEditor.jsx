@@ -15,11 +15,13 @@ import ImagePlugin from '../plugins/ImagePlugin';
 import DragDropPastePlugin from '../plugins/DragDropPastePlugin';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
+import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
 import '../styles/index.css';
 
 const KoenigEditor = ({
     onChange,
-    markdownTransformers
+    markdownTransformers,
+    registerAPI
 }) => {
     const _onChange = React.useCallback((editorState) => {
         const json = editorState.toJSON();
@@ -58,6 +60,7 @@ const KoenigEditor = ({
             <ImagePlugin />
             <DragDropPastePlugin />
             <HorizontalRulePlugin />
+            <ExternalControlPlugin registerAPI={registerAPI} />
         </div>
     );
 };
