@@ -16,6 +16,7 @@ const StripePricesImporter = require('./stripe-prices');
 const CustomThemeSettingsImporter = require('./custom-theme-settings');
 const RolesImporter = require('./roles');
 const {slugify} = require('@tryghost/string/lib');
+const imageScraper = require('./image-scraper');
 
 let importers = {};
 let DataImporter;
@@ -146,6 +147,24 @@ DataImporter = {
                         importedData[importer.dataKeyToImport] = importer.importedDataToReturn;
                     }
                 });
+            });
+
+            // Look at the posts that were just imported and update image references
+            ops.push(async () => {
+                debug(`start image scraping`);
+
+                _.forEach(importers.posts.importedData, async (importedPost) => {
+                    let thePost = await models.Post.findOne({id: importedPost.id});
+
+                    let derp = await imageScraper(thePost);
+
+                    const resp = await models.Post.edit(derp, {id: importedPost.id});
+                    return resp;
+                });
+
+                // TODO: Add support for user avatars, tag cover images, and eventually everything else
+
+                debug(`end image scraping`);
             });
 
             /**
