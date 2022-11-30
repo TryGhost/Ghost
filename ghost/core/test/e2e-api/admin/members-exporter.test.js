@@ -150,13 +150,13 @@ describe('Members API — exportCSV', function () {
             })
         });
 
-        const labelsList = labels.map(label => label.get('name')).join(',');
+        const labelsList = labels.map(label => label.get('name')).sort().join(',');
 
         await testOutput(member, (row) => {
             basicAsserts(member, row);
             should(row.subscribed_to_emails).eql('false');
             should(row.complimentary_plan).eql('');
-            should(row.labels).eql(labelsList);
+            should(row.labels.split(',').sort().join(',')).eql(labelsList);
             should(row.tiers).eql('');
         }, [`filter=label:${labels[0].get('slug')}`, 'filter=subscribed:false']);
     });
