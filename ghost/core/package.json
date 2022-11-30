@@ -35,7 +35,7 @@
     "test:browser": "NODE_ENV=development playwright test --browser=chromium test/e2e-browser",
     "test:browser:record": "NODE_ENV=development yarn start record-test",
     "test:ci": "c8 -c ./.c8rc.e2e.json yarn test:ci:base",
-    "test:ci:base": "yarn test:e2e -b",
+    "test:ci:base": "yarn test:e2e -b && yarn test:integration -b && yarn test:regression -b",
     "test:unit:slow": "yarn test:unit --reporter=mocha-slow-test-reporter",
     "test:int:slow": "yarn test:integration --reporter=mocha-slow-test-reporter",
     "test:e2e:slow": "yarn test:e2e --reporter=mocha-slow-test-reporter",
