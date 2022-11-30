@@ -1,13 +1,13 @@
 import {MATCH_RELATION_OPTIONS} from './relation-options';
 
-export const EMAIL_RECEIVED_FILTER = {
-    label: 'Received email',
+export const EMAIL_SENT_FILTER = {
+    label: 'Sent email',
     name: 'emails.post_id',
     valueType: 'string',
     resource: 'email',
-    excludeForFeature: 'suppressionList',
+    feature: 'suppressionList',
     relationOptions: MATCH_RELATION_OPTIONS,
-    columnLabel: 'Received email',
+    columnLabel: 'Sent email',
     getColumnValue: (member, filter) => {
         return {
             text: filter.resource?.title ?? ''
