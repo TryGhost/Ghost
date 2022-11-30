@@ -37,7 +37,7 @@ describe('Job Manager', function () {
 
         should.exist(jobManager.addJob);
         should.exist(jobManager.hasExecutedSuccessfully);
-        should.exist(jobManager.awaitCompletion);
+        should.exist(jobManager.awaitOneOffCompletion);
     });
 
     describe('Add a job', function () {
@@ -641,7 +641,7 @@ describe('Job Manager', function () {
             });
 
             should.equal(spy.called, false);
-            await jobManager.awaitCompletion('solovei');
+            await jobManager.awaitOneOffCompletion('solovei');
             should.equal(spy.called, true);
         });
     });

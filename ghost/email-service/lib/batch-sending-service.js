@@ -64,6 +64,7 @@ class BatchSendingService {
      */
     scheduleEmail(email) {
         return this.#jobsService.addJob({
+            name: 'batch-sending-service-job',
             job: this.emailJob.bind(this),
             data: {emailId: email.id},
             offloaded: false
@@ -144,7 +145,7 @@ class BatchSendingService {
 
         const segments = this.#emailRenderer.getSegments(post);
         const batches = [];
-        const BATCH_SIZE = 500;
+        const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         let totalCount = 0;
 
         for (const segment of segments) {
@@ -160,7 +161,9 @@ class BatchSendingService {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
 
                 const filter = segmentFilter + (lastId ? `+id:<${lastId}` : '');
-                members = await this.#models.Member.getFilteredCollectionQuery({filter, order: 'id DESC'}).select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
+                members = await this.#models.Member.getFilteredCollectionQuery({filter})
+                    .orderByRaw('id DESC')
+                    .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
 
                 if (members.length > BATCH_SIZE) {
                     lastId = members[members.length - 2].id;

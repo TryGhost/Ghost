@@ -144,24 +144,47 @@ class MailgunEmailProvider {
             return {
                 id: response.id.trim().replace(/^<|>$/g, '')
             };
-        } catch ({error, messageData}) {
-            // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
-            let ghostError = new errors.EmailError({
-                statusCode: error.status,
-                message: this.#createMailgunErrorMessage(error),
-                errorDetails: JSON.stringify({error, messageData}),
-                context: `Mailgun Error ${error.status}: ${error.details}`,
-                help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
-                code: 'BULK_EMAIL_SEND_FAILED'
-            });
+        } catch (e) {
+            if (e.error && e.messageData) {
+                const {error, messageData} = e;
+                
+                // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
+                let ghostError = new errors.EmailError({
+                    statusCode: error.status,
+                    message: this.#createMailgunErrorMessage(error),
+                    errorDetails: JSON.stringify({error, messageData}),
+                    context: `Mailgun Error ${error.status}: ${error.details}`,
+                    help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
+                    code: 'BULK_EMAIL_SEND_FAILED'
+                });
 
-            logging.warn(ghostError);
-            debug(`failed to send message (${Date.now() - startTime}ms)`);
+                logging.warn(ghostError);
+                debug(`failed to send message (${Date.now() - startTime}ms)`);
 
-            // log error to custom error handler. ex sentry
-            this.#errorHandler(ghostError);
-            throw ghostError;
+                // log error to custom error handler. ex sentry
+                this.#errorHandler(ghostError);
+                throw ghostError;
+            } else {
+                let ghostError = new errors.EmailError({
+                    statusCode: undefined,
+                    message: e.message,
+                    errorDetails: undefined,
+                    context: e.context || 'Mailgun Error',
+                    code: 'BULK_EMAIL_SEND_FAILED'
+                });
+
+                logging.warn(ghostError);
+                debug(`failed to send message (${Date.now() - startTime}ms)`);
+
+                // log error to custom error handler. ex sentry
+                this.#errorHandler(ghostError);
+                throw ghostError;
+            }
         }
+    }
+
+    getMaximumRecipients() {
+        return MailgunEmailProvider.BATCH_SIZE;
     }
 }
 
