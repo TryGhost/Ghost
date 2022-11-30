@@ -385,4 +385,7 @@ describe('Batch sending tests', function () {
         memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
     });
+
+    // TODO: Link tracking
+    // TODO: Replacement fallbacks
 });
