@@ -65,11 +65,6 @@ describe('Batch sending tests', function () {
         };
     });
 
-    afterEach(function () {
-        // warn: don't restore mockmanager as the would clear our prototype stubs
-        // mockManager.restore();
-    });
-
     before(async function () {
         mockManager.mockSetting('mailgun_api_key', 'test');
         mockManager.mockSetting('mailgun_domain', 'example.com');
@@ -88,6 +83,10 @@ describe('Batch sending tests', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
+    });
+
+    after(function () {
+        mockManager.restore();
     });
 
     it('Can send a scheduled post email', async function () {
