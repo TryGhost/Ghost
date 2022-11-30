@@ -677,5 +677,24 @@
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             margin: 1.6rem 0;
         }
+
+        /* Code
+        /* -------------------------------------------------------------------- */
+
+        code {
+            font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+            background: var(--grey-100);
+            border: 1px solid var(--grey-200);
+        }
+
+        code {
+            border-radius: 2px;
+            color: var(--grey-900);
+            font-size: .8em;
+            line-height: 1em;
+            padding: .4rem .4rem .2rem;
+            vertical-align: middle;
+            white-space: pre-wrap;
+        }
     }
 }

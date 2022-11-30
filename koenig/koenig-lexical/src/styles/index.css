@@ -13,6 +13,7 @@
 
 /* TODO: will these clash with consuming apps? */
 :root {
+    --grey-100: #F4F5F6;
     --grey-200: #EBEEF0;
     --grey-300: #DDE1E5;
     --grey-500: #AEB7C1;
