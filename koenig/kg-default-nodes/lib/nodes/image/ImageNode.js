@@ -21,7 +21,7 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     static clone(node) {
-        return new ImageNode(
+        return new this(
             node.getDataset(),
             node.__key
         );
@@ -64,7 +64,7 @@ export class ImageNode extends KoenigDecoratorNode {
 
     static importJSON(serializedNode) {
         const {src, caption, title, altText, width, height, cardWidth} = serializedNode;
-        const node = $createImageNode({
+        const node = new this({
             src,
             caption,
             title,
@@ -94,7 +94,7 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     static importDOM() {
-        const parser = new ImageParser($createImageNode);
+        const parser = new ImageParser(this);
         return parser.DOMConversionMap;
     }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import {ImageNode as BaseImageNode, INSERT_IMAGE_COMMAND, ImageParser} from '@tryghost/kg-default-nodes';
+import {ImageNode as BaseImageNode, INSERT_IMAGE_COMMAND} from '@tryghost/kg-default-nodes';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
 import {ReactComponent as UnsplashIcon} from '../assets/icons/kg-card-type-unsplash.svg';
@@ -44,25 +44,8 @@ export class ImageNode extends BaseImageNode {
         const {previewSrc, triggerFileDialog} = dataset;
 
         this.__previewSrc = previewSrc || '';
-        this.__triggerFileDialog = triggerFileDialog || false;
-    }
-
-    static clone(node) {
-        const dataset = node.getDataset();
-
-        return new ImageNode(
-            dataset,
-            node.__key
-        );
-    }
-
-    static importJSON(serializedNode) {
-        return $createImageNode(serializedNode);
-    }
-
-    static importDOM() {
-        const parser = new ImageParser($createImageNode);
-        return parser.DOMConversionMap;
+        // don't trigger the file dialog when rendering if we've already been given a url
+        this.__triggerFileDialog = (!dataset.src && triggerFileDialog) || false;
     }
 
     getDataset() {
@@ -109,11 +92,6 @@ export class ImageNode extends BaseImageNode {
 }
 
 export const $createImageNode = (dataset) => {
-    // don't trigger the file dialog when rendering if we've already been given a url
-    if (dataset.src) {
-        delete dataset.triggerFileDialog;
-    }
-
     return new ImageNode(dataset);
 };
 
