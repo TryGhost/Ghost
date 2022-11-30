@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
-import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEXT_BILLING_DATE_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
+import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEXT_BILLING_DATE_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -44,6 +44,7 @@ const FILTER_GROUPS = [
             EMAIL_OPENED_COUNT_FILTER,
             EMAIL_OPEN_RATE_FILTER,
             EMAIL_RECEIVED_FILTER,
+            EMAIL_SENT_FILTER,
             EMAIL_OPENED_FILTER,
             EMAIL_CLICKED_FILTER,
             AUDIENCE_FEEDBACK_FILTER
@@ -143,13 +144,20 @@ export default class MembersFilter extends Component {
         })
     ]);
 
-    get availableFilterProperties() {
+    get filterProperties() {
         let availableFilters = FILTER_PROPERTIES;
-        const hasMultipleTiers = this.membersUtils.hasMultipleTiers;
 
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
         availableFilters = availableFilters.filter(prop => !prop.setting || this.settings[prop.setting]);
+        availableFilters = availableFilters.filter(prop => !prop.excludeForFeature || !this.feature[prop.excludeForFeature]);
+
+        return availableFilters;
+    }
+
+    get availableFilterProperties() {
+        let availableFilters = this.filterProperties;
+        const hasMultipleTiers = this.membersUtils.hasMultipleTiers;
 
         // exclude tiers filter if site has only single tier
         availableFilters = availableFilters
@@ -224,7 +232,7 @@ export default class MembersFilter extends Component {
 
         let query = '';
         filters.forEach((filter) => {
-            const filterProperty = FILTER_PROPERTIES.find(prop => prop.name === filter.type);
+            const filterProperty = this.filterProperties.find(prop => prop.name === filter.type);
 
             if (filterProperty.buildNqlFilter) {
                 query += `${filterProperty.buildNqlFilter(filter)}+`;
@@ -283,7 +291,7 @@ export default class MembersFilter extends Component {
         const parsedFilters = [];
 
         // Check custom parsing
-        for (const filterProperties of FILTER_PROPERTIES) {
+        for (const filterProperties of this.filterProperties) {
             if (filterProperties.parseNqlFilter) {
                 // This filter has a custom parsing function
                 const parsedFilter = filterProperties.parseNqlFilter(filter);
@@ -305,7 +313,7 @@ export default class MembersFilter extends Component {
             parsedFilters.push(...this.parseNqlFilter(filter.yg));
         } else {
             const filterKeys = Object.keys(filter);
-            const validKeys = FILTER_PROPERTIES.map(prop => prop.name);
+            const validKeys = this.filterProperties.map(prop => prop.name);
 
             for (const key of filterKeys) {
                 if (validKeys.includes(key)) {
@@ -339,7 +347,7 @@ export default class MembersFilter extends Component {
         const key = keys[0];
         const nqlValue = nqlFilter[key];
 
-        const filterProperty = FILTER_PROPERTIES.find(prop => prop.name === key);
+        const filterProperty = this.filterProperties.find(prop => prop.name === key);
 
         let relation;
         let value;
@@ -415,8 +423,8 @@ export default class MembersFilter extends Component {
         }
 
         if (relation && value) {
-            const properties = FILTER_PROPERTIES.find(prop => key === prop.name);
-            if (FILTER_PROPERTIES.find(prop => key === prop.name)) {
+            const properties = this.filterProperties.find(prop => key === prop.name);
+            if (this.filterProperties.find(prop => key === prop.name)) {
                 return new Filter({
                     properties,
                     relation,
@@ -473,7 +481,7 @@ export default class MembersFilter extends Component {
             newType = newType.target.value;
         }
 
-        const newProp = FILTER_PROPERTIES.find(prop => prop.name === newType);
+        const newProp = this.filterProperties.find(prop => prop.name === newType);
 
         if (!newProp) {
             // eslint-disable-next-line no-console
@@ -534,7 +542,7 @@ export default class MembersFilter extends Component {
         this.fetchFilterResourcesTask.perform();
     }
 
-    @action 
+    @action
     applyFiltersPressed(dropdown) {
         dropdown?.actions.close();
         this.applyFilter();
