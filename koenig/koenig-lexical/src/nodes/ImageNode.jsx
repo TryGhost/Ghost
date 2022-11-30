@@ -13,10 +13,6 @@ export class ImageNode extends BaseImageNode {
     __triggerFileDialog = false;
     __previewSrc = null;
 
-    static get type() {
-        return 'image';
-    }
-
     static kgMenu = [{
         label: 'Image',
         desc: 'Upload, or embed with /image [url]',
@@ -60,9 +56,13 @@ export class ImageNode extends BaseImageNode {
         );
     }
 
-    static importDom() {
+    static importJSON(serializedNode) {
+        return $createImageNode(serializedNode);
+    }
+
+    static importDOM() {
         const parser = new ImageParser($createImageNode);
-        return parser.DOMMap;
+        return parser.DOMConversionMap;
     }
 
     getDataset() {
