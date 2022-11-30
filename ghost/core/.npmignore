@@ -8,7 +8,8 @@ ghost-*.tgz
 .eslintrc.json
 .eslintrc.js
 .npmignore
-.c8rc.json
+.c8rc*.json
+playwright.config.js
 jsconfig.json
 changelog.md*
 coverage/**
