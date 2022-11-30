@@ -9,9 +9,10 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     containerElement = null;
     titleElement = null;
-    // koenigEditor = null;
     mousedownY = 0;
     uploadUrl = `${ghostPaths().apiRoot}/images/upload/`;
+
+    editorAPI = null;
 
     @tracked titleIsHovered = false;
     @tracked titleIsFocused = false;
@@ -75,31 +76,41 @@ export default class GhKoenigEditorReactComponent extends Component {
         this.titleElement.focus();
     }
 
-    // @action
-    // onTitleKeydown(event) {
-    //     let value = event.target.value;
-    //     let selectionStart = event.target.selectionStart;
+    // move cursor to the editor on
+    // - Tab
+    // - Arrow Down/Right when input is empty or caret at end of input
+    // - Enter, creating an empty paragraph when editor is not empty
+    @action
+    onTitleKeydown(event) {
+        const {editorAPI} = this;
 
-    //     // enter will always focus the editor
-    //     // down arrow will only focus the editor when the cursor is at the
-    //     // end of the input to preserve the default OS behaviour
-    //     if (
-    //         event.key === 'Enter' ||
-    //         event.key === 'Tab' ||
-    //         ((event.key === 'ArrowDown' || event.key === 'ArrowRight') && (!value || selectionStart === value.length))
-    //     ) {
-    //         event.preventDefault();
+        if (!editorAPI) {
+            return;
+        }
 
-    //         // on Enter we also want to create a blank para if necessary
-    //         if (event.key === 'Enter') {
-    //             this._addParaAtTop();
-    //         }
+        const {key} = event;
+        const {value, selectionStart} = event.target;
 
-    //         this.koenigEditor.focus();
-    //     }
-    // }
+        const couldLeaveTitle = !value || selectionStart === value.length;
+        const arrowLeavingTitle = ['ArrowDown', 'ArrowRight'].includes(key) && couldLeaveTitle;
+
+        if (key === 'Enter' || key === 'Tab' || arrowLeavingTitle) {
+            event.preventDefault();
+
+            if (key === 'Enter' && !editorAPI.editorIsEmpty()) {
+                editorAPI.insertParagraphAtTop({focus: true});
+            } else {
+                editorAPI.focusEditor({position: 'top'});
+            }
+        }
+    }
 
     // Body actions ------------------------------------------------------------
+
+    @action
+    registerEditorAPI(API) {
+        this.editorAPI = API;
+    }
 
     // @action
     // onEditorCreated(koenig) {
