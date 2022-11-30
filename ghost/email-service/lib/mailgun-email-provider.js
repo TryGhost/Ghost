@@ -95,7 +95,7 @@ class MailgunEmailProvider {
             plaintext,
             from,
             replyTo,
-            id,
+            emailId,
             recipients,
             replacementDefinitions
         } = data;
@@ -111,7 +111,7 @@ class MailgunEmailProvider {
                 plaintext,
                 from,
                 replyTo,
-                id,
+                id: emailId,
                 track_opens: !!options.openTrackingEnabled,
                 track_clicks: !!options.clickTrackingEnabled
             };

@@ -286,6 +286,7 @@ class BatchSendingService {
         try {
             const members = await this.getBatchMembers(batch.id);
             const response = await this.#sendingService.send({
+                emailId: email.id,
                 post,
                 newsletter,
                 segment: batch.get('member_segment'),
