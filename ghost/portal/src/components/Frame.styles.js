@@ -19,6 +19,7 @@ import {PopupNotificationStyles} from './common/PopupNotification';
 import {OfferPageStyles} from './pages/OfferPage';
 import {FeedbackPageStyles} from './pages/FeedbackPage';
 import EmailSuppressedPage from '!!raw-loader!./pages/EmailSuppressedPage.css';
+import EmailSuppressionFAQ from '!!raw-loader!./pages/EmailSuppressionFAQ.css';
 
 // Global styles
 const FrameStyles = `
@@ -1175,6 +1176,7 @@ export function getFrameStyles({site}) {
         MobileStyles +
         MultipleProductsGlobalStyles +
         FeedbackPageStyles +
-        EmailSuppressedPage;
+        EmailSuppressedPage +
+        EmailSuppressionFAQ;
     return FrameStyle;
 }

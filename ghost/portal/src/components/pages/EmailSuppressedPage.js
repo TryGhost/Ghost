@@ -43,11 +43,12 @@ export default function EmailSuppressedPage() {
                     permanent failure (bounce).
                 </p>
 
-                <a href="https://ghost.org" target="_blank" rel="noopener noreferrer" onClick={() => {
-                    window.open('https://ghost.org', '_blank');
-                }}>
+                <button
+                    className="gh-portal-btn-text gh-email-suppressed-page-button"
+                    onClick={() => onAction('switchPage', {page: 'emailSuppressionFAQ'})}
+                >
                     Learn more about why this happens
-                </a>
+                </button>
             </div>
 
             <ActionButton
