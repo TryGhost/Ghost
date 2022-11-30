@@ -44,17 +44,19 @@ function DemoApp() {
         <div className="koenig-lexical top">
             <KoenigComposer initialEditorState={defaultContent} imageUploadFunction={{imageUploader}}>
                 <Watermark />
-                <div className="h-full grow overflow-auto">
-                    <div className="mx-auto max-w-[740px] py-[15vmin]">
-                        <TitleTextBox handleTitleInput={handleTitleInput} title={title} />
-                        {/* <textarea onKeyDown={handleTitleKeyDown} ref={titleEl} onChange={handleTitleInput} value={title} className="w-full min-w-[auto] mb-3 pb-1 text-black font-sans text-5xl font-bold resize-none overflow-hidden focus-visible:outline-none" placeholder="Post title" /> */}
-                        <KoenigEditor />
+                <div className="h-full grow relative">
+                    {
+                        query.get('content') !== 'false' ?
+                            <ToggleButton setTitle={setTitle} content={defaultContent}/> : null
+                    }
+                    <div className="h-full overflow-auto">
+                        <div className="mx-auto max-w-[740px] py-[15vmin]">
+                            <TitleTextBox handleTitleInput={handleTitleInput} title={title} />
+                            {/* <textarea onKeyDown={handleTitleKeyDown} ref={titleEl} onChange={handleTitleInput} value={title} className="w-full min-w-[auto] mb-3 pb-1 text-black font-sans text-5xl font-bold resize-none overflow-hidden focus-visible:outline-none" placeholder="Post title" /> */}
+                            <KoenigEditor />
+                        </div>
                     </div>
                 </div>
-                {
-                    query.get('content') !== 'false' ?
-                        <ToggleButton setTitle={setTitle} content={defaultContent}/> : null
-                }
                 <div className="flex h-full flex-col items-end">
                     <Sidebar isOpen={isSidebarOpen} view={sidebarView} />
                     <FloatingButton onClick={openSidebar} />
