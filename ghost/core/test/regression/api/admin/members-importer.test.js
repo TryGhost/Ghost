@@ -343,7 +343,7 @@ describe('Members Importer API', function () {
         should.exist(jsonResponse.meta);
 
         // Wait for the job to finish
-        await sleep(10000);
+        await sleep(15000);
 
         assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
 
