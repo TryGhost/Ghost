@@ -767,10 +767,13 @@ describe('EmailEventStorage', function () {
         const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
+        const eventsURI = '/members/events/?' + encodeURIComponent(
+            `filter=type:-[comment_event,aggregated_click_event]+data.member_id:${memberId}`
+        );
 
         // Check not unsubscribed
-        const memberInitial = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
-        assert.notEqual(memberInitial.related('newsletters').length, 0, 'This test requires a member that is subscribed to at least one newsletter');
+        const {body: {events: [notSpamEvent]}} = await agent.get(eventsURI);
+        assert.notEqual(notSpamEvent.type, 'email_complaint_event', 'This test requires a member that does not have a spam event');
 
         events = [{
             event: 'complained',
@@ -799,9 +802,9 @@ describe('EmailEventStorage', function () {
         // Now wait for events processed
         await sleep(200);
 
-        // Check if unsubscribed
-        const member = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
-        assert.equal(member.related('newsletters').length, 0);
+        // Check if event exists
+        const {body: {events: [spamComplaintEvent]}} = await agent.get(eventsURI);
+        assert.equal(spamComplaintEvent.type, 'email_complaint_event');
     });
 
     it('Can handle unsubscribe events', async function () {

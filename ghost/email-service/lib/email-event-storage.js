@@ -13,6 +13,9 @@ class EmailEventStorage {
         this.#membersRepository = membersRepository;
     }
 
+    /**
+     * @param {import('@tryghost/domain-events')} domainEvents
+     */
     listen(domainEvents) {
         domainEvents.subscribe(EmailDeliveredEvent, async (event) => {
             try {
@@ -100,9 +103,9 @@ class EmailEventStorage {
     /**
      * @private
      * @param {'temporary'|'permanent'} severity
-     * @param {import('@tryghost/email-events').EmailTemporaryBouncedEvent|import('@tryghost/email-events').EmailBouncedEvent} event 
-     * @param {{transacting?: any}} options 
-     * @returns 
+     * @param {import('@tryghost/email-events').EmailTemporaryBouncedEvent|import('@tryghost/email-events').EmailBouncedEvent} event
+     * @param {{transacting?: any}} options
+     * @returns
      */
     async saveFailure(severity, event, options = {}) {
         if (!event.error) {
@@ -144,7 +147,7 @@ class EmailEventStorage {
                 /// We can get events out of order, so only save the last one
                 return;
             }
-    
+
             // Update the existing failure
             await existing.save({
                 severity,
@@ -162,7 +165,11 @@ class EmailEventStorage {
     }
 
     async handleComplained(event) {
-        return this.unsubscribeFromNewsletters(event);
+        await this.#models.EmailSpamComplaintEvent.add({
+            member_id: event.memberId,
+            email_id: event.emailId,
+            email_address: event.email
+        });
     }
 
     async unsubscribeFromNewsletters(event) {
