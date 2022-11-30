@@ -33,6 +33,15 @@ export async function initialize({page}) {
 
     await page.goto(url);
     await page.waitForSelector('.koenig-lexical');
+
+    await exposeLexicalEditor(page);
+}
+
+async function exposeLexicalEditor(page) {
+    await page.waitForSelector('[data-lexical-editor]');
+    await page.evaluate(() => {
+        window.lexicalEditor = document.querySelector('[data-lexical-editor]').__lexicalEditor;
+    });
 }
 
 export async function focusEditor(page, parentSelector = '.koenig-lexical') {

@@ -19,6 +19,55 @@ describe('Image card', async () => {
         await initialize({page});
     });
 
+    test('can import serialized image card nodes', async function () {
+        await page.evaluate(() => {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'image',
+                        src: '/content/images/2022/11/koenig-lexical.jpg',
+                        width: 3840,
+                        height: 2160,
+                        title: 'This is a title',
+                        altText: 'This is some alt text',
+                        caption: 'This is a <b>caption</b>',
+                        cardWidth: 'wide'
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+            const editor = window.lexicalEditor;
+            const editorState = editor.parseEditorState(serializedState);
+            editor.setEditorState(editorState);
+        });
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="false" data-kg-card="image">
+                    <figure data-kg-card-width="wide">
+                        <div>
+                            <img
+                                src="/content/images/2022/11/koenig-lexical.jpg"
+                                alt="This is some alt text"
+                            />
+                        </div>
+                        <figcaption>
+                            <input
+                                placeholder="Type caption for image (optional)"
+                                value="This is a <b>caption</b>"
+                            />
+                            <button name="alt-toggle-button">Alt</button>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        `);
+    });
+
     test('renders image card node', async function () {
         await focusEditor(page);
         await page.keyboard.type('image! ');
