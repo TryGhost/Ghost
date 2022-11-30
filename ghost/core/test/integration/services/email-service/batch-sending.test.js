@@ -1,4 +1,3 @@
-require('should');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const moment = require('moment');
 const ObjectId = require('bson-objectid').default;
@@ -10,12 +9,6 @@ const jobManager = require('../../../../core/server/services/jobs/job-service');
 let agent;
 const _ = require('lodash');
 const {MailgunEmailProvider} = require('@tryghost/email-service');
-
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
 
@@ -51,9 +44,14 @@ async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
     const emailModel = await models.Email.findOne({
         post_id: id
     });
-    should.exist(emailModel);
+    assert(!!emailModel);
 
     return emailModel;
+}
+
+async function retryEmail(emailId) {
+    await agent.put(`emails/${emailId}/retry`)
+        .expectStatus(200);
 }
 
 describe('Batch sending tests', function () {
@@ -73,11 +71,19 @@ describe('Batch sending tests', function () {
     });
 
     before(async function () {
+        mockManager.mockSetting('mailgun_api_key', 'test');
+        mockManager.mockSetting('mailgun_domain', 'example.com');
+        mockManager.mockSetting('mailgun_base_url', 'test');
+
         // We need to stub the Mailgun client before starting Ghost
-        sinon.stub(MailgunClient.prototype, 'send').callsFake(async function () {
-            return stubbedSend();
+        sinon.stub(MailgunClient.prototype, 'getInstance').returns({
+            // @ts-ignore
+            messages: {
+                create: async () => {
+                    return await stubbedSend();
+                }
+            }
         });
-        sinon.stub(MailgunClient.prototype, 'getInstance').returns({});
 
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
@@ -146,7 +152,7 @@ describe('Batch sending tests', function () {
         await completedPromise;
 
         await emailModel.refresh();
-        emailModel.get('status').should.eql('submitted');
+        assert(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
@@ -200,7 +206,7 @@ describe('Batch sending tests', function () {
         await completedPromise;
 
         await emailModel.refresh();
-        emailModel.get('status').should.eql('submitted');
+        assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 2);
 
         // Did we create batches?
@@ -240,7 +246,7 @@ describe('Batch sending tests', function () {
         await completedPromise;
 
         await emailModel.refresh();
-        emailModel.get('status').should.eql('submitted');
+        assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
@@ -268,6 +274,115 @@ describe('Batch sending tests', function () {
 
         // Check members are unique
         const memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
+        assert.equal(memberIds.length, _.uniq(memberIds).length);
+    });
+
+    it('One failed batch marks the email as failed and allows for a retry', async function () {
+        MailgunEmailProvider.BATCH_SIZE = 1;
+        let counter = 0;
+        stubbedSend = async function () {
+            counter += 1;
+            if (counter === 4) {
+                throw {
+                    status: 500,
+                    message: 'Internal server error',
+                    details: 'Something went wrong'
+                };
+            }
+            return {
+                id: 'stubbed-email-id-' + counter
+            };
+        };
+
+        // Prepare a post and email model
+        let completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+        const emailModel = await createPublishedPostEmail();
+
+        assert.equal(emailModel.get('source_type'), 'mobiledoc');
+        assert(emailModel.get('subject'));
+        assert(emailModel.get('from'));
+
+        // Await sending job
+        await completedPromise;
+
+        await emailModel.refresh();
+        assert.equal(emailModel.get('status'), 'failed');
+        assert.equal(emailModel.get('email_count'), 4);
+
+        // Did we create batches?
+        let batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`, order: 'provider_id ASC'});
+        assert.equal(batches.models.length, 4);
+
+        let emailRecipients = [];
+
+        // Check all batches are in send state
+        let count = 0;
+        for (const batch of batches.models) {
+            count += 1;
+
+            if (count === 4) {
+                assert.equal(batch.get('provider_id'), null);
+                assert.equal(batch.get('status'), 'failed');
+                assert.equal(batch.get('error_status_code'), 500);
+                assert.equal(batch.get('error_message'), 'Internal server error:Something went wrong');
+                const errorData = JSON.parse(batch.get('error_data'));
+                assert.equal(errorData.error.status, 500);
+                assert.deepEqual(errorData.messageData.to.length, 1);
+            } else {
+                assert.equal(batch.get('provider_id'), 'stubbed-email-id-' + count);
+                assert.equal(batch.get('status'), 'submitted');
+                assert.equal(batch.get('error_status_code'), null);
+                assert.equal(batch.get('error_message'), null);
+                assert.equal(batch.get('error_data'), null);
+            }
+            
+            assert.equal(batch.get('member_segment'), null);
+
+            // Did we create recipients?
+            const batchRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${batch.id}`});
+            assert.equal(batchRecipients.models.length, 1);
+
+            emailRecipients.push(...batchRecipients.models);
+        }
+
+        // Check members are unique
+        let memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
+        assert.equal(memberIds.length, _.uniq(memberIds).length);
+
+        completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+        await retryEmail(emailModel.id);
+        await completedPromise;
+
+        await emailModel.refresh();
+        batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`, order: 'provider_id ASC'});
+        assert.equal(emailModel.get('status'), 'submitted');
+        assert.equal(emailModel.get('email_count'), 4);
+
+        // Did we keep the batches?
+        batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`, order: 'provider_id ASC'});
+        assert.equal(batches.models.length, 4);
+
+        emailRecipients = [];
+
+        // Check all batches are in send state
+        for (const batch of batches.models) {
+            assert(!!batch.get('provider_id'));
+            assert.equal(batch.get('status'), 'submitted');
+            assert.equal(batch.get('member_segment'), null);
+
+            assert.equal(batch.get('error_status_code'), null);
+            assert.equal(batch.get('error_message'), null);
+            assert.equal(batch.get('error_data'), null);
+
+            // Did we create recipients?
+            const batchRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${batch.id}`});
+            assert.equal(batchRecipients.models.length, 1);
+
+            emailRecipients.push(...batchRecipients.models);
+        }
+
+        // Check members are unique
+        memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
     });
 });

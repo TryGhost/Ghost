@@ -274,13 +274,13 @@ class BatchSendingService {
      * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter}} data
      * @returns {Promise<boolean>} True when succeeded, false when failed with an error
      */
-    async sendBatch({email, batch, post, newsletter}) {
-        logging.info(`Sending batch ${batch.id} for email ${email.id}`);
+    async sendBatch({email, batch: originalBatch, post, newsletter}) {
+        logging.info(`Sending batch ${originalBatch.id} for email ${email.id}`);
 
         // Check the status of the email batch in a 'for update' transaction
-        batch = await this.updateStatusLock(this.#models.EmailBatch, batch.id, 'submitting', ['pending', 'failed']);
+        const batch = await this.updateStatusLock(this.#models.EmailBatch, originalBatch.id, 'submitting', ['pending', 'failed']);
         if (!batch) {
-            logging.error(`Tried sending email batch that is not pending or failed ${batch.id}; status: ${batch.get('status')}`);
+            logging.error(`Tried sending email batch that is not pending or failed ${originalBatch.id}`);
             return true;
         }
 
