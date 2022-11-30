@@ -145,11 +145,12 @@ class MailgunEmailProvider {
                 id: response.id.trim().replace(/^<|>$/g, '')
             };
         } catch (e) {
+            let ghostError;
             if (e.error && e.messageData) {
                 const {error, messageData} = e;
                 
                 // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
-                let ghostError = new errors.EmailError({
+                ghostError = new errors.EmailError({
                     statusCode: error.status,
                     message: this.#createMailgunErrorMessage(error),
                     errorDetails: JSON.stringify({error, messageData}),
@@ -157,29 +158,22 @@ class MailgunEmailProvider {
                     help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
                     code: 'BULK_EMAIL_SEND_FAILED'
                 });
-
-                logging.warn(ghostError);
-                debug(`failed to send message (${Date.now() - startTime}ms)`);
-
-                // log error to custom error handler. ex sentry
-                this.#errorHandler(ghostError);
-                throw ghostError;
             } else {
-                let ghostError = new errors.EmailError({
+                ghostError = new errors.EmailError({
                     statusCode: undefined,
                     message: e.message,
                     errorDetails: undefined,
                     context: e.context || 'Mailgun Error',
                     code: 'BULK_EMAIL_SEND_FAILED'
                 });
-
-                logging.warn(ghostError);
-                debug(`failed to send message (${Date.now() - startTime}ms)`);
-
-                // log error to custom error handler. ex sentry
-                this.#errorHandler(ghostError);
-                throw ghostError;
             }
+
+            logging.warn(ghostError);
+            debug(`failed to send message (${Date.now() - startTime}ms)`);
+
+            // log error to custom error handler. ex sentry
+            this.#errorHandler(ghostError);
+            throw ghostError;
         }
     }
 
