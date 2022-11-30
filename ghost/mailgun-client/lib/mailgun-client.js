@@ -168,6 +168,38 @@ module.exports = class MailgunClient {
         }
     }
 
+    async removeSuppression(type, email) {
+        if (!this.isConfigured()) {
+            return false;
+        }
+        const instance = this.getInstance();
+        const config = this.#getConfig();
+
+        try {
+            await instance.suppressions.destroy(
+                config.domain,
+                type,
+                email
+            );
+            return true;
+        } catch (err) {
+            logging.error(err);
+            return false;
+        }
+    }
+
+    async removeBounce(email) {
+        return this.removeSuppression('bounces', email);
+    }
+
+    async removeComplaint(email) {
+        return this.removeSuppression('complaints', email);
+    }
+
+    async removeUnsubscribe(email) {
+        return this.removeSuppression('unsubscribes', email);
+    }
+
     normalizeEvent(event) {
         const providerId = event?.message?.headers['message-id'];
 
