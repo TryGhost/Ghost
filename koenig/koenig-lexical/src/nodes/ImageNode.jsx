@@ -2,6 +2,7 @@ import React from 'react';
 import {ImageNode as BaseImageNode, INSERT_IMAGE_COMMAND, ImageParser} from '@tryghost/kg-default-nodes';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
+import {ReactComponent as UnsplashIcon} from '../assets/icons/kg-card-type-unsplash.svg';
 import {ImageNodeComponent} from './ImageNodeComponent';
 
 // re-export here so we don't need to import from multiple places throughout the app
@@ -12,7 +13,11 @@ export class ImageNode extends BaseImageNode {
     __triggerFileDialog = false;
     __previewSrc = null;
 
-    static kgMenu = {
+    static get type() {
+        return 'image';
+    }
+
+    static kgMenu = [{
         label: 'Image',
         desc: 'Upload, or embed with /image [url]',
         Icon: ImageCardIcon,
@@ -22,7 +27,20 @@ export class ImageNode extends BaseImageNode {
         },
         matches: ['image', 'img'],
         queryParams: ['src']
-    };
+    },
+    {
+        section: 'Embed',
+        label: 'Unsplash',
+        desc: '/unsplash [search term or url]',
+        Icon: UnsplashIcon,
+        insertCommand: INSERT_IMAGE_COMMAND,
+        insertParams: {
+            triggerFileDialog: false,
+            triggerFileSelector: 'unsplash'
+        },
+        matches: ['unsplash', 'uns'],
+        queryParams: ['src']
+    }];
 
     constructor(dataset = {}, key) {
         super(dataset, key);

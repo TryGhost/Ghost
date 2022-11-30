@@ -13,7 +13,6 @@ import SlashCardMenuPlugin from '../plugins/SlashCardMenuPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
 import DragDropPastePlugin from '../plugins/DragDropPastePlugin';
-
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import '../styles/index.css';
@@ -28,7 +27,6 @@ const KoenigEditor = ({
     }, [onChange]);
 
     const {editorContainerRef} = React.useContext(KoenigComposerContext);
-
     // we need an element reference for the container element that
     // any floating elements in plugins will be rendered inside
     const [floatingAnchorElem, setFloatingAnchorElem] = React.useState(null);

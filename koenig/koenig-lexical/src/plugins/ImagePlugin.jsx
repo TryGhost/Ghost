@@ -12,10 +12,14 @@ import {mergeRegister} from '@lexical/utils';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
+import UnsplashModal from '../components/ui/UnsplashModal';
 
 export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();
     const {imageUploader} = React.useContext(KoenigComposerContext);
+    const [selector, setSelector] = React.useState(null);
+    const [selectedKey, setSelectedKey] = React.useState(null);
+    const [showModal, setShowModal] = React.useState(false);
 
     const handleImageUpload = React.useCallback(async (files, imageNodeKey) => {
         if (files?.length > 0) {
@@ -43,10 +47,18 @@ export const ImagePlugin = () => {
                     if (focusNode !== null) {
                         const imageNode = $createImageNode(dataset);
 
+                        // fires the unsplash selector
+                        if (dataset?.triggerFileSelector === 'unsplash') {
+                            setSelectedKey(imageNode.getKey());
+                            setShowModal(true);
+                            setSelector('unsplash');
+                        }
+
                         if (!dataset.src) {
                             const imageNodeKey = imageNode.getKey();
                             handleImageUpload(dataset, imageNodeKey);
                         }
+
                         // insert a paragraph if this will be the last card and
                         // we're not already on a blank paragraph so we always
                         // have a trailing paragraph in the doc
@@ -68,26 +80,22 @@ export const ImagePlugin = () => {
                         const nodeSelection = $createNodeSelection();
                         nodeSelection.add(imageNode.getKey());
                         $setSelection(nodeSelection);
-
-                        // TODO: trigger file selector?
                     }
 
                     return true;
                 },
                 COMMAND_PRIORITY_HIGH
             )
-            // editor.registerCommand(
-            //     UPLOAD_IMAGE_COMMAND,
-            //     async (files) => {
-            //         // const dataset = await imageUploader.imageUploader(files);
-            //         editor.dispatchCommand(INSERT_IMAGE_COMMAND, dataset);
-            //     },
-            //     COMMAND_PRIORITY_HIGH
-            // ),
-            // todo: create another command to handle more of the upload logic to allow us to be able to keep the image uploader more "dry / generic" as it needs to handle multiple states of the upload,
-            // eg: the progress bar, error states, temp image, etc
         );
     }, [editor, imageUploader, handleImageUpload]);
+
+    if (showModal && selector) {
+        return (<UnsplashModal
+            service={selector} 
+            nodeKey={selectedKey}
+            handleModalClose={setShowModal}
+        />);
+    }
 
     return null;
 };

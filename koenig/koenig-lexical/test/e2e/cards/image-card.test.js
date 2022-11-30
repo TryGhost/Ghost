@@ -408,6 +408,30 @@ describe('Image card', async () => {
         `);
     });
 
+    test('can select unsplash image', async () => {
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+        await page.click('button[data-kg-card-menu-item="Unsplash"]');
+        await page.click('[data-kg-unsplash-insert-button]');
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="true" data-kg-card="unsplash">
+                    <figure data-kg-card-width="regular">
+                        <div>
+                            <img
+                                src="https://images.unsplash.com/photo-1574948495680-f67aab1ec3ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8c2VhcmNofDMyMXx8c3VtbWVyfGVufDB8fHx8MTY2OTEwNDUwNw&ixlib=rb-4.0.3&q=80&w=1200"
+                                alt="" />
+                        </div>
+                        <figcaption>
+                            <input placeholder="Type caption for image (optional)" value="" />
+                            <button name="alt-toggle-button">Alt</button>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        `, {ignoreCardToolbarContents: true});
+    });
+
     test.todo('upload progress is shown');
     test.todo('upload is completed');
 });
