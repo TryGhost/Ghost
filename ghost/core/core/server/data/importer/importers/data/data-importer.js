@@ -153,27 +153,35 @@ DataImporter = {
             ops.push(async () => {
                 debug(`start image scraping`);
 
-                _.forEach(importers.posts.importedData, async (importedPost) => {
-                    let thePost = await models.Post.findOne({id: importedPost.id}, {withRelated: ['posts_meta']});
+                // _.forEach(importers.posts.importedData, async (importedPost) => {
+                //     let thePost = await models.Post.findOne({id: importedPost.id}, {withRelated: ['posts_meta']});
 
-                    let newData = await imageScraper(thePost, 'post');
+                //     let newData = await imageScraper(thePost, 'post');
 
-                    const resp = await models.Post.edit(newData, {id: importedPost.id});
-                    return resp;
-                });
+                //     const resp = await models.Post.edit(newData, {id: importedPost.id});
+                //     return resp;
+                // });
 
-                _.forEach(importers.users.importedData, async (importedUser) => {
-                    let theUser = await models.User.findOne({id: importedUser.id});
+                // _.forEach(importers.users.importedData, async (importedUser) => {
+                //     let theUser = await models.User.findOne({id: importedUser.id});
 
-                    let newData = await imageScraper(theUser, 'user');
+                //     let newData = await imageScraper(theUser, 'user');
 
-                    const resp = await models.User.edit(newData, {id: importedUser.id});
-                    return resp;
-                });
+                //     const resp = await models.User.edit(newData, {id: importedUser.id});
+                //     return resp;
+                // });
+
+                // _.forEach(importers.users.importedData, async (importedUser) => {
+                //     return await imageScraperTemp(importedUser, 'user');
+                // });
+
+                let imageScrapeTasks = imageScraper.tempMethodForModelTesting(importers);
+
+                return sequence(imageScrapeTasks);
 
                 // TODO: Add support for tag cover images, and eventually everything else
 
-                debug(`end image scraping`);
+                // debug(`end image scraping`);
             });
 
             /**

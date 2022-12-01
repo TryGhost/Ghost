@@ -1,10 +1,12 @@
-const debug = require('@tryghost/debug')('importer:image-scraper');
+const _ = require('lodash');
 const url = require('url');
 const path = require('path');
+const debug = require('@tryghost/debug')('importer:image-scraper');
 const request = require('@tryghost/request');
 const imageTransform = require('@tryghost/image-transform');
 const storage = require('../../../../adapters/storage');
 const ImageHandler = require('../../handlers/image');
+const models = require('../../../../models');
 
 const setExtension = (string, ext) => {
     return path.join(path.dirname(string), path.basename(string, path.extname(string)) + '.' + ext);
@@ -132,4 +134,29 @@ const imageScraper = async (modelData, type = '') => {
     return newData;
 };
 
+const tempMethodForModelTesting = (importers) => {
+    const ops = [];
+
+    _.forEach(importers.posts.importedData, async (importedPost) => {
+        ops.push(async () => {
+            let thePost = await models.Post.findOne({id: importedPost.id}, {withRelated: ['posts_meta']});
+
+            let newData = await imageScraper(thePost, 'post');
+
+            const resp = await models.Post.edit(newData, {id: importedPost.id});
+            return resp;
+        });
+    });
+
+    return ops;
+
+    // let theUser = await models.User.findOne({id: importedUser.id});
+
+    // let newData = await imageScraper(theUser, type);
+
+    // const resp = await models.User.edit(newData, {id: importedUser.id});
+    // return resp;
+};
+
 module.exports = imageScraper;
+module.exports.tempMethodForModelTesting = tempMethodForModelTesting;
