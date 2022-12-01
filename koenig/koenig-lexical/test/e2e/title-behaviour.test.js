@@ -1,4 +1,4 @@
-import {afterAll, beforeAll, beforeEach, describe, expect, it, test} from 'vitest';
+import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
 import {startApp, initialize, focusEditor, assertHTML, html, assertSelection} from '../utils/e2e';
 
 describe('Title behaviour (ExternalControlPlugin)', async () => {
@@ -391,6 +391,39 @@ describe('Title behaviour (ExternalControlPlugin)', async () => {
                 const title = page.getByTestId('post-title');
                 let titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
+            });
+
+            it('moves cursor to title when a range is selected with no indents', async function () {
+                await focusEditor(page);
+                await page.keyboard.type('Test');
+                await page.keyboard.press('Shift+ArrowLeft');
+                await page.keyboard.press('Shift+ArrowLeft');
+                await page.keyboard.press('Shift+ArrowLeft');
+                await page.keyboard.press('Shift+ArrowLeft');
+                await page.keyboard.press('Shift+Tab');
+
+                const title = page.getByTestId('post-title');
+                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                expect(titleHasFocus).toEqual(true);
+            });
+
+            it('does not move cursor to title if a range selection would outdent something', async function () {
+                await focusEditor(page);
+                await page.keyboard.type('Test');
+                await page.keyboard.press('Enter');
+                await page.keyboard.press('Tab');
+                await page.keyboard.type('Test');
+                await page.keyboard.press('Shift+ArrowUp');
+                await page.keyboard.press('Shift+Tab');
+
+                const title = page.getByTestId('post-title');
+                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                expect(titleHasFocus).toEqual(false);
+
+                await assertHTML(page, html`
+                    <p dir="ltr"><span data-lexical-text="true">Test</span></p>
+                    <p dir="ltr"><span data-lexical-text="true">Test</span></p>
+                `);
             });
         });
     });

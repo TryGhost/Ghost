@@ -29,6 +29,20 @@ import {$isListItemNode} from '@lexical/list';
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
 
+function $isAtStartOfDocument(selection) {
+    let [selectedNode] = selection.getNodes();
+    if ($isTextNode(selectedNode)) {
+        selectedNode = selectedNode.getParent();
+    }
+    const selectedIndex = selectedNode.getIndexWithinParent();
+    const selectedTopLevelIndex = selectedNode.getTopLevelElement()?.getIndexWithinParent();
+
+    return selectedIndex === 0
+        && selectedTopLevelIndex === 0
+        && selection.anchor.offset === 0
+        && selection.focus.offset === 0;
+}
+
 function $selectDecoratorNode(node) {
     const nodeSelection = $createNodeSelection();
     nodeSelection.add(node.getKey());
@@ -98,23 +112,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                             const topLevelElement = selection.anchor.getNode().getTopLevelElement();
                             const nativeSelection = window.getSelection();
 
-                            if (cursorDidExitAtTop) {
-                                let [selectedNode] = selection.getNodes();
-                                if ($isTextNode(selectedNode)) {
-                                    selectedNode = selectedNode.getParent();
-                                }
-                                const selectedIndex = selectedNode.getIndexWithinParent();
-                                const selectedTopLevelIndex = selectedNode.getTopLevelElement()?.getIndexWithinParent();
-
-                                if (
-                                    selectedIndex === 0 &&
-                                    selectedTopLevelIndex === 0 &&
-                                    selection.anchor.offset === 0 &&
-                                    selection.focus.offset === 0
-                                ) {
-                                    cursorDidExitAtTop();
-                                    return true;
-                                }
+                            if (cursorDidExitAtTop && $isAtStartOfDocument(selection)) {
+                                cursorDidExitAtTop();
+                                return true;
                             }
 
                             // empty paragraphs are odd because the native range won't
@@ -244,24 +244,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                             }
                         }
 
-                        if (selection.isCollapsed) {
-                            let [selectedNode] = selection.getNodes();
-                            if ($isTextNode(selectedNode)) {
-                                selectedNode = selectedNode.getParent();
-                            }
-                            const selectedIndex = selectedNode.getIndexWithinParent();
-                            const selectedTopLevelIndex = selectedNode.getTopLevelElement()?.getIndexWithinParent();
-
-                            if (
-                                selectedIndex === 0 &&
-                                selectedTopLevelIndex === 0 &&
-                                selection.anchor.offset === 0 &&
-                                selection.focus.offset === 0
-                            ) {
-                                event.preventDefault();
-                                cursorDidExitAtTop();
-                                return true;
-                            }
+                        if (selection.isCollapsed && $isAtStartOfDocument(selection)) {
+                            event.preventDefault();
+                            cursorDidExitAtTop();
+                            return true;
                         }
                     }
 
@@ -431,33 +417,31 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                     if (event.shiftKey) {
                         const selection = $getSelection();
 
+                        if ($isNodeSelection(selection)) {
+                            event.preventDefault();
+                            selection.clear();
+                            cursorDidExitAtTop();
+                            return true;
+                        }
+
+                        let nodes;
                         if (selection.isCollapsed) {
-                            if ($isNodeSelection(selection)) {
-                                const currentNode = selection.getNodes()[0];
-                                const previousSibling = currentNode.getPreviousSibling();
+                            const anchorNode = selection.anchor.getNode();
+                            nodes = $isTextNode(anchorNode) ? [anchorNode.getParent()] : [anchorNode];
+                        } else {
+                            nodes = selection.getNodes();
+                        }
 
-                                if (!previousSibling) {
-                                    event.preventDefault();
-                                    selection.clear();
-                                    cursorDidExitAtTop();
-                                    return true;
-                                }
+                        const hasIndentedNode = nodes.some((node) => {
+                            return node.getIndent && node.getIndent() > 0;
+                        });
 
-                                return false;
-                            }
-
-                            let node = selection.anchor.getNode();
-                            if ($isTextNode(node)) {
-                                node = node.getParent();
-                            }
-
-                            if (node.getIndent()) {
-                                return false;
-                            } else {
-                                event.preventDefault();
-                                cursorDidExitAtTop();
-                                return true;
-                            }
+                        if (hasIndentedNode) {
+                            return false;
+                        } else {
+                            event.preventDefault();
+                            cursorDidExitAtTop();
+                            return true;
                         }
                     }
                 },
