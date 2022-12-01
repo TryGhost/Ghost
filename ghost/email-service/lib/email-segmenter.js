@@ -15,8 +15,8 @@ class EmailSegmenter {
     #membersRepository;
 
     /**
-     * 
-     * @param {object} dependencies 
+     *
+     * @param {object} dependencies
      * @param {MembersRepository} dependencies.membersRepository
      */
     constructor({
@@ -27,7 +27,7 @@ class EmailSegmenter {
 
     getMemberFilterForSegment(newsletter, emailRecipientFilter, segment) {
         const filter = [`newsletters.id:${newsletter.id}`];
-    
+
         switch (emailRecipientFilter) {
         case 'all':
             break;
@@ -39,7 +39,7 @@ class EmailSegmenter {
             filter.push(`(${emailRecipientFilter})`);
             break;
         }
-    
+
         const visibility = newsletter.get('visibility');
         switch (visibility) {
         case 'members':
@@ -59,10 +59,10 @@ class EmailSegmenter {
         if (segment) {
             filter.push(`(${segment})`);
         }
-    
+
         return filter.join('+');
     }
-    
+
     async getMembersCount(newsletter, emailRecipientFilter, segment) {
         const filter = this.getMemberFilterForSegment(newsletter, emailRecipientFilter, segment);
         const {meta: {pagination: {total: membersCount}}} = await this.#membersRepository.list({filter});
