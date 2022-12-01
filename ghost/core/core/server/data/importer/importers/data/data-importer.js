@@ -154,7 +154,7 @@ DataImporter = {
                 debug(`start image scraping`);
 
                 _.forEach(importers.posts.importedData, async (importedPost) => {
-                    let thePost = await models.Post.findOne({id: importedPost.id});
+                    let thePost = await models.Post.findOne({id: importedPost.id}, {withRelated: ['posts_meta']});
 
                     let derp = await imageScraper(thePost);
 

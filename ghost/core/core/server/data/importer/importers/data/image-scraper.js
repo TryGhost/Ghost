@@ -92,7 +92,7 @@ const getAndSaveImage = async (src) => {
 const imageScraper = async (importedPost) => {
     debug(`start scraping images for post id ${importedPost.id}`);
     const postData = importedPost.attributes;
-    // const postMeta = importedPost.posts_meta; // Unsure how to get post meta attributes as an object I can read from
+    const postMeta = importedPost.relations.posts_meta.attributes;
 
     let newPostData = {
         posts_meta: {}
@@ -104,13 +104,13 @@ const imageScraper = async (importedPost) => {
         newPostData.feature_image = await getAndSaveImage(postData.feature_image);
     }
 
-    // if (postMeta.og_image) {
-    //     newPostData.posts_meta.og_image = await getAndSaveImage(postMeta.og_image);
-    // }
+    if (postMeta.og_image) {
+        newPostData.posts_meta.og_image = await getAndSaveImage(postMeta.og_image);
+    }
 
-    // if (postMeta.twitter_image) {
-    //     newPostData.posts_meta.twitter_image = await getAndSaveImage(postMeta.twitter_image);
-    // }
+    if (postMeta.twitter_image) {
+        newPostData.posts_meta.twitter_image = await getAndSaveImage(postMeta.twitter_image);
+    }
 
     // TODO: Add support for:
     // - Images in mobiledoc
