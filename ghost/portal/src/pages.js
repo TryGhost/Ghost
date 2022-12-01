@@ -12,6 +12,7 @@ import UnsubscribePage from './components/pages/UnsubscribePage';
 import FeedbackPage from './components/pages/FeedbackPage';
 import EmailSuppressedPage from './components/pages/EmailSuppressedPage';
 import EmailSuppressionFAQ from './components/pages/EmailSuppressionFAQ';
+import EmailReceivingFAQ from './components/pages/EmailReceivingFAQ';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
@@ -30,7 +31,8 @@ const Pages = {
     offer: OfferPage,
     feedback: FeedbackPage,
     emailSuppressed: EmailSuppressedPage,
-    emailSuppressionFAQ: EmailSuppressionFAQ
+    emailSuppressionFAQ: EmailSuppressionFAQ,
+    emailReceivingFAQ: EmailReceivingFAQ
 };
 
 /** Return page if valid, fallback to signup */
