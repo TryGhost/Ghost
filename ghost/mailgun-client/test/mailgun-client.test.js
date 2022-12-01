@@ -277,6 +277,7 @@ describe('MailgunClient', function () {
     describe('normalizeEvent()', function () {
         it('works', function () {
             const event = {
+                id: 'pl271FzxTTmGRW8Uj3dUWw',
                 event: 'testEvent',
                 severity: 'testSeverity',
                 recipient: 'testRecipient',
@@ -300,7 +301,147 @@ describe('MailgunClient', function () {
                 recipientEmail: 'testRecipient',
                 emailId: 'testEmailId',
                 providerId: 'testProviderId',
-                timestamp: new Date('2021-02-25T17:54:22.000Z')
+                timestamp: new Date('2021-02-25T17:54:22.000Z'),
+                error: null,
+                id: 'pl271FzxTTmGRW8Uj3dUWw'
+            });
+        });
+
+        it('works for errors', function () {
+            const event = {
+                event: 'failed',
+                id: 'pl271FzxTTmGRW8Uj3dUWw',
+                'log-level': 'error',
+                severity: 'permanent',
+                reason: 'suppress-bounce',
+                envelope: {
+                    sender: 'john@example.org',
+                    transport: 'smtp',
+                    targets: 'joan@example.com'
+                },
+                flags: {
+                    'is-routed': false,
+                    'is-authenticated': true,
+                    'is-system-test': false,
+                    'is-test-mode': false
+                },
+                'delivery-status': {
+                    'attempt-no': 1,
+                    message: '',
+                    code: 605,
+                    description: 'Not delivering to previously bounced address',
+                    'session-seconds': 0.0
+                },
+                message: {
+                    headers: {
+                        to: 'joan@example.com',
+                        'message-id': 'testProviderId',
+                        from: 'john@example.org',
+                        subject: 'Test Subject'
+                    },
+                    attachments: [],
+                    size: 867
+                },
+                storage: {
+                    url: 'https://se.api.mailgun.net/v3/domains/example.org/messages/eyJwI...',
+                    key: 'eyJwI...'
+                },
+                recipient: 'testRecipient',
+                'recipient-domain': 'mailgun.com',
+                campaigns: [],
+                tags: [],
+                'user-variables': {},
+                timestamp: 1614275662
+            };
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const result = mailgunClient.normalizeEvent(event);
+
+            assert.deepStrictEqual(result, {
+                type: 'failed',
+                severity: 'permanent',
+                recipientEmail: 'testRecipient',
+                emailId: undefined,
+                providerId: 'testProviderId',
+                timestamp: new Date('2021-02-25T17:54:22.000Z'),
+                error: {
+                    code: 605,
+                    enhancedCode: null,
+                    message: 'Not delivering to previously bounced address'
+                },
+                id: 'pl271FzxTTmGRW8Uj3dUWw'
+            });
+        });
+
+        it('works for enhanced errors', function () {
+            const event = {
+                event: 'failed',
+                id: 'pl271FzxTTmGRW8Uj3dUWw',
+                'log-level': 'error',
+                severity: 'permanent',
+                reason: 'suppress-bounce',
+                envelope: {
+                    sender: 'john@example.org',
+                    transport: 'smtp',
+                    targets: 'joan@example.com'
+                },
+                flags: {
+                    'is-routed': false,
+                    'is-authenticated': true,
+                    'is-system-test': false,
+                    'is-test-mode': false
+                },
+                'delivery-status': {
+                    tls: true,
+                    'mx-host': 'hotmail-com.olc.protection.outlook.com',
+                    code: 451,
+                    description: '',
+                    'session-seconds': 0.7517080307006836,
+                    utf8: true,
+                    'retry-seconds': 600,
+                    'enhanced-code': '4.7.652',
+                    'attempt-no': 1,
+                    message: '4.7.652 The mail server [xxx.xxx.xxx.xxx] has exceeded the maximum number of connections.',
+                    'certificate-verified': true
+                },
+                message: {
+                    headers: {
+                        to: 'joan@example.com',
+                        'message-id': 'testProviderId',
+                        from: 'john@example.org',
+                        subject: 'Test Subject'
+                    },
+                    attachments: [],
+                    size: 867
+                },
+                storage: {
+                    url: 'https://se.api.mailgun.net/v3/domains/example.org/messages/eyJwI...',
+                    key: 'eyJwI...'
+                },
+                recipient: 'testRecipient',
+                'recipient-domain': 'mailgun.com',
+                campaigns: [],
+                tags: [],
+                'user-variables': {},
+                timestamp: 1614275662
+            };
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const result = mailgunClient.normalizeEvent(event);
+
+            assert.deepStrictEqual(result, {
+                type: 'failed',
+                severity: 'permanent',
+                recipientEmail: 'testRecipient',
+                emailId: undefined,
+                providerId: 'testProviderId',
+                timestamp: new Date('2021-02-25T17:54:22.000Z'),
+                error: {
+                    code: 451,
+                    enhancedCode: '4.7.652',
+                    message: '4.7.652 The mail server [xxx.xxx.xxx.xxx] has exceeded the maximum number of connections.'
+                },
+                id: 'pl271FzxTTmGRW8Uj3dUWw'
             });
         });
     });
