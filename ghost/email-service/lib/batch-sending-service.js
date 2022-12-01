@@ -309,7 +309,8 @@ class BatchSendingService {
             }, {patch: true, require: false});
             succeeded = true;
         } catch (err) {
-            logging.error(`Error sending email batch ${batch.id}`, err);
+            logging.error(`Error sending email batch ${batch.id}`);
+            logging.error(err);
 
             await batch.save({
                 status: 'failed',
