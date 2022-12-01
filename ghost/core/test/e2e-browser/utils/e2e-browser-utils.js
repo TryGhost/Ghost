@@ -138,7 +138,7 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
     await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
     // Expand the premium tier list
     await page.getByRole('button', {name: 'Expand'}).nth(1).click({
-        delay: 50 // TODO: Figure out how to prevent this from opening with an empty list without using delay
+        delay: 500 // TODO: Figure out how to prevent this from opening with an empty list without using delay
     });
 
     // Archive if already exists
@@ -147,6 +147,7 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
         await tierCard.locator('.gh-tier-card-actions-button').click();
         await tierCard.getByRole('button', {name: 'Archive'}).click();
         await page.locator('.modal-content').getByRole('button', {name: 'Archive'}).click();
+        await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
     }
 
     await page.locator('.gh-btn-add-tier').click();
