@@ -156,13 +156,22 @@ DataImporter = {
                 _.forEach(importers.posts.importedData, async (importedPost) => {
                     let thePost = await models.Post.findOne({id: importedPost.id}, {withRelated: ['posts_meta']});
 
-                    let derp = await imageScraper(thePost);
+                    let newData = await imageScraper(thePost, 'post');
 
-                    const resp = await models.Post.edit(derp, {id: importedPost.id});
+                    const resp = await models.Post.edit(newData, {id: importedPost.id});
                     return resp;
                 });
 
-                // TODO: Add support for user avatars, tag cover images, and eventually everything else
+                _.forEach(importers.users.importedData, async (importedUser) => {
+                    let theUser = await models.User.findOne({id: importedUser.id});
+
+                    let newData = await imageScraper(theUser, 'user');
+
+                    const resp = await models.User.edit(newData, {id: importedUser.id});
+                    return resp;
+                });
+
+                // TODO: Add support for tag cover images, and eventually everything else
 
                 debug(`end image scraping`);
             });

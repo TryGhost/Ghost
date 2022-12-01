@@ -89,25 +89,39 @@ const getAndSaveImage = async (src) => {
     return src;
 };
 
-const imageScraper = async (importedPost) => {
-    debug(`start scraping images for post id ${importedPost.id}`);
-    const postData = importedPost.attributes;
-    const postMeta = importedPost.relations.posts_meta.attributes;
+const imageScraper = async (modelData, type = '') => {
+    debug(`start scraping images for ${type} id ${modelData.id}`);
 
-    let newPostData = {
-        posts_meta: {}
-    };
+    const attributes = modelData?.attributes ?? [];
+    const metaAttributes = modelData?.relations?.posts_meta?.attributes ?? [];
 
-    if (postData.feature_image) {
-        newPostData.feature_image = await getAndSaveImage(postData.feature_image);
+    // This is what wll be written to the model
+    let newData = {};
+
+    let fields = [];
+    let metaFields = [];
+
+    if (type === 'post') {
+        fields = ['feature_image'];
+        metaFields = ['og_image', 'twitter_image'];
+
+        newData = {
+            posts_meta: {}
+        };
+    } else if (type === 'user') {
+        fields = ['profile_image', 'cover_image'];
     }
 
-    if (postMeta.og_image) {
-        newPostData.posts_meta.og_image = await getAndSaveImage(postMeta.og_image);
+    for (const field of fields) {
+        if (attributes[field]) {
+            newData[field] = await getAndSaveImage(attributes[field]);
+        }
     }
 
-    if (postMeta.twitter_image) {
-        newPostData.posts_meta.twitter_image = await getAndSaveImage(postMeta.twitter_image);
+    for (const field of metaFields) {
+        if (metaAttributes[field]) {
+            newData.posts_meta[field] = await getAndSaveImage(metaAttributes[field]);
+        }
     }
 
     // TODO: Add support for:
@@ -115,7 +129,7 @@ const imageScraper = async (importedPost) => {
     // - Images in HTML (as cards in mobiledoc)
     // - Images in Markdown (as cards in mobiledoc)
 
-    return newPostData;
+    return newData;
 };
 
 module.exports = imageScraper;
