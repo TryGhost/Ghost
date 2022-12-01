@@ -30,6 +30,7 @@ Router.map(function () {
 
     this.route('posts');
     this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
+    this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
 
     this.route('pages');
 
