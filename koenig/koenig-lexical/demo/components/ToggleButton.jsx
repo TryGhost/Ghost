@@ -1,8 +1,8 @@
 import React from 'react';
-import {$getRoot} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ReactComponent as EyeOpenIcon} from './icons/eye-open.svg';
 import {ReactComponent as EyeClosedIcon} from './icons/eye-closed.svg';
+import {$createParagraphNode, $getRoot} from 'lexical';
 
 const ToggleButton = ({content, setTitle}) => {
     const [editor] = useLexicalComposerContext();
@@ -16,7 +16,11 @@ const ToggleButton = ({content, setTitle}) => {
         }
         if (isOn) {
             editor.update(() => {
-                $getRoot().clear();
+                const root = $getRoot();
+                const paragraph = $createParagraphNode();
+                root.clear();
+                root.append(paragraph);
+                paragraph.select();
             });
             setTitle('');
         }
