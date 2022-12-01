@@ -17,9 +17,7 @@ test.describe('Ghost Admin', () => {
         await page.locator('.gh-nav a[href="#/posts/"]').click();
         await page.locator('.gh-post-list-title').first().click();
         await page.locator('.settings-menu-toggle').click();
-        const now = new Date();
-        const currentDate = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-        await expect(page.getByPlaceholder('YYYY-MM-DD')).toHaveValue(currentDate);
+        await expect(page.getByPlaceholder('YYYY-MM-DD')).toHaveValue(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
     });
 
     test('Can create a tier and offer', async ({page}) => {

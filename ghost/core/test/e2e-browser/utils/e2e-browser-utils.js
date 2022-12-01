@@ -60,13 +60,33 @@ const setupGhost = async (page) => {
     }
 };
 
+const setupStripe = async (page, stripConnectIntegrationToken) => {
+    await deleteAllMembers(page);
+    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+    if (await page.isVisible('.gh-btn-stripe-status.connected')) {
+        // Disconnect if already connected
+        await page.locator('.gh-btn-stripe-status.connected').click();
+        await page.locator('.modal-content .gh-btn-stripe-disconnect').first().click();
+        await page
+            .locator('.modal-content')
+            .filter({hasText: 'Are you sure you want to disconnect?'})
+            .first()
+            .getByRole('button', {name: 'Disconnect'})
+            .click();
+    } else {
+        await page.locator('.gh-setting-members-tierscontainer .stripe-connect').click();
+    }
+    await page.getByPlaceholder('Paste your secure key here').first().fill(stripConnectIntegrationToken);
+    await page.getByRole('button', {name: 'Save Stripe settings'}).click();
+    await page.getByRole('button', {name: 'OK'}).click();
+};
+
 /**
  * Delete all members, 1 by 1, using the UI
  * @param {import('@playwright/test').Page} page
  */
 const deleteAllMembers = async (page) => {
-    await page.goto('/ghost');
-
     await page.locator('a[href="#/members/"]').first().click();
 
     const firstMember = page.locator('.gh-list tbody tr').first();
@@ -223,6 +243,7 @@ const completeStripeSubscription = async (page) => {
 
 module.exports = {
     setupGhost,
+    setupStripe,
     deleteAllMembers,
     createTier,
     createOffer,

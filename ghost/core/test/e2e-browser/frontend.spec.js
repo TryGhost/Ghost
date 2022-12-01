@@ -11,6 +11,7 @@ test.describe('Ghost Frontend', () => {
 
     test.describe('Portal flows', () => {
         test('Uses an offer successfully', async ({page}) => {
+            page.goto('/ghost');
             await deleteAllMembers(page);
             const tierName = 'Portal Tier';
             await createTier(page, {

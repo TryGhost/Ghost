@@ -219,7 +219,8 @@
     "should": "13.2.3",
     "sinon": "14.0.2",
     "supertest": "6.3.1",
-    "tmp": "0.2.1"
+    "tmp": "0.2.1",
+    "toml": "3.0.0"
   },
   "resolutions": {
     "@tryghost/logging": "2.3.2",

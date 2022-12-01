@@ -1,7 +1,8 @@
 const {execSync} = require('child_process');
 
 const getWebhookSecret = () => {
-    const webhookSecret = execSync(`stripe listen --print-secret --api-key ${process.env.STRIPE_API_KEY}`);
+    const command = `stripe listen --print-secret ${process.env.CI ? `--api-key ${process.env.STRIPE_API_KEY}` : ''}`.trim();
+    const webhookSecret = execSync(command);
     return webhookSecret.toString().trim();
 };
 
