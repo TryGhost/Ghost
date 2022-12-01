@@ -1,7 +1,6 @@
 import React from 'react';
 import {render, fireEvent} from 'utils/test-utils';
 import AccountHomePage from './AccountHomePage';
-import {member} from 'utils/test-fixtures';
 import {site} from 'utils/fixtures';
 
 const setup = (overrides) => {
@@ -34,18 +33,6 @@ describe('Account Home Page', () => {
 
         fireEvent.click(logoutBtn);
         expect(mockOnActionFn).toHaveBeenCalledWith('signout');
-    });
-
-    test('can show suppressed info', () => {
-        const {mockOnActionFn, utils} = setup({member: member.suppressed});
-
-        expect(utils.queryByText('You\'re currently not receiving emails')).toBeInTheDocument();
-
-        const manageBtn = utils.queryByRole('button', {name: 'Manage'});
-        expect(manageBtn).toBeInTheDocument();
-
-        fireEvent.click(manageBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {lastPage: 'accountHome', page: 'emailSuppressed'});
     });
 
     test('can show Manage button for few newsletters', () => {

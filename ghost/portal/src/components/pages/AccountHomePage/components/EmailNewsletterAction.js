@@ -1,6 +1,6 @@
 import AppContext from 'AppContext';
 import Switch from 'components/common/Switch';
-import {getSiteNewsletters} from 'utils/helpers';
+import {getSiteNewsletters, hasMemberGotEmailSuppression} from 'utils/helpers';
 import {useContext} from 'react';
 
 function EmailNewsletterAction() {
@@ -20,7 +20,12 @@ function EmailNewsletterAction() {
         <section>
             <div className='gh-portal-list-detail'>
                 <h3>Email newsletter</h3>
-                <p>{label}</p>
+                <p>{label} {hasMemberGotEmailSuppression({member}) && subscribed && <button
+                    className='gh-portal-btn-text gh-email-faq-page-button'
+                    onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ', lastPage: 'accountHome'})}
+                >
+                    Not receiving emails?
+                </button>}</p>
             </div>
             <div>
                 <Switch

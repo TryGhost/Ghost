@@ -149,8 +149,13 @@ export default class KoenigLexicalEditor extends Component {
                         <KoenigComposer
                             initialEditorState={this.args.lexical}
                             onError={this.onError}
-                            imageUploadFunction={{imageUploader, uploadProgress}} >
-                            <KoenigEditor onChange={this.args.onChange} />
+                            imageUploadFunction={{imageUploader, uploadProgress}}
+                        >
+                            <KoenigEditor
+                                onChange={this.args.onChange}
+                                registerAPI={this.args.registerAPI}
+                                cursorDidExitAtTop={this.args.cursorDidExitAtTop}
+                            />
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

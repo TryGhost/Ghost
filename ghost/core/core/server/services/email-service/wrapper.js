@@ -14,7 +14,7 @@ class EmailServiceWrapper {
         }
 
         const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, EmailEventStorage, MailgunEmailProvider} = require('@tryghost/email-service');
-        const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
+        const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member, EmailRecipientFailure, EmailSpamComplaintEvent} = require('../../models');
         const MailgunClient = require('@tryghost/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
@@ -112,7 +112,11 @@ class EmailServiceWrapper {
 
         this.eventStorage = new EmailEventStorage({
             db,
-            membersRepository
+            membersRepository,
+            models: {
+                EmailRecipientFailure,
+                EmailSpamComplaintEvent
+            }
         });
         this.eventStorage.listen(domainEvents);
     }

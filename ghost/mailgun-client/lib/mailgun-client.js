@@ -168,16 +168,55 @@ module.exports = class MailgunClient {
         }
     }
 
+    async removeSuppression(type, email) {
+        if (!this.isConfigured()) {
+            return false;
+        }
+        const instance = this.getInstance();
+        const config = this.#getConfig();
+
+        try {
+            await instance.suppressions.destroy(
+                config.domain,
+                type,
+                email
+            );
+            return true;
+        } catch (err) {
+            logging.error(err);
+            return false;
+        }
+    }
+
+    async removeBounce(email) {
+        return this.removeSuppression('bounces', email);
+    }
+
+    async removeComplaint(email) {
+        return this.removeSuppression('complaints', email);
+    }
+
+    async removeUnsubscribe(email) {
+        return this.removeSuppression('unsubscribes', email);
+    }
+
     normalizeEvent(event) {
         const providerId = event?.message?.headers['message-id'];
 
         return {
+            id: event.id,
             type: event.event,
             severity: event.severity,
             recipientEmail: event.recipient,
             emailId: event['user-variables'] && event['user-variables']['email-id'],
             providerId: providerId,
-            timestamp: new Date(event.timestamp * 1000)
+            timestamp: new Date(event.timestamp * 1000),
+
+            error: event['delivery-status'] && (typeof (event['delivery-status'].message || event['delivery-status'].description) === 'string') ? {
+                code: event['delivery-status'].code,
+                message: (event['delivery-status'].message || event['delivery-status'].description).substring(0, 2000),
+                enhancedCode: event['delivery-status']['enhanced-code']?.toString()?.substring(0, 50) ?? null
+            } : null
         };
     }
 

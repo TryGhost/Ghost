@@ -39,6 +39,8 @@
         <KoenigLexicalEditor
             @lexical={{@body}}
             @onChange={{@onBodyChange}}
+            @registerAPI={{this.registerEditorAPI}}
+            @cursorDidExitAtTop={{this.focusTitle}}
         />
 
         {{!-- <KoenigEditor

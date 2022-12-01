@@ -1,4 +1,4 @@
-const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEvent, EmailUnsubscribedEvent} = require('@tryghost/email-events');
+const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEvent, EmailUnsubscribedEvent, EmailTemporaryBouncedEvent} = require('@tryghost/email-events');
 
 /**
  * @typedef EmailIdentification
@@ -67,22 +67,34 @@ class EmailEventProcessor {
 
     /**
      * @param {EmailIdentification} emailIdentification 
+     * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event 
      */
-    async handleTemporaryFailed(emailIdentification) {
+    async handleTemporaryFailed(emailIdentification, {timestamp, error, id}) {
         const recipient = await this.getRecipient(emailIdentification);
-        // TODO: store and emit event
+        if (recipient) {
+            this.#domainEvents.dispatch(EmailTemporaryBouncedEvent.create({
+                id, 
+                error,
+                email: emailIdentification.email,
+                memberId: recipient.memberId,
+                emailId: recipient.emailId,
+                emailRecipientId: recipient.emailRecipientId,
+                timestamp
+            }));
+        }
         return recipient;
     }
 
     /**
      * @param {EmailIdentification} emailIdentification 
-     * @param {Date} timestamp 
+     * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event 
      */
-    async handlePermanentFailed(emailIdentification, timestamp) {
-        // TODO: also read error message
+    async handlePermanentFailed(emailIdentification, {timestamp, error, id}) {
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
             this.#domainEvents.dispatch(EmailBouncedEvent.create({
+                id,
+                error,
                 email: emailIdentification.email,
                 memberId: recipient.memberId,
                 emailId: recipient.emailId,

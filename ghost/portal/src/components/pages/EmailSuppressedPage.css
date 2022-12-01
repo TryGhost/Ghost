@@ -15,6 +15,15 @@
     color: var(--grey6);
 }
 
-.gh-email-suppressed-page-text a {
-    color: var(--grey3);
+.gh-email-faq-page-button {
+    color: var(--grey6);
+    cursor: pointer;
+    font-size: 1.5rem;
+    text-decoration: underline;
+    background: none;
+    transition: color linear 100ms;
+}
+
+.gh-email-faq-page-button:hover {
+    color: var(--grey5);
 }

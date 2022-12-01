@@ -1,10 +1,10 @@
-module.exports = class EmailBouncedEvent {
+module.exports = class EmailTemporaryBouncedEvent {
     /**
      * @readonly
      * @type {string}
      */
     id;
-    
+
     /**
      * @readonly
      * @type {string}
@@ -44,7 +44,7 @@ module.exports = class EmailBouncedEvent {
     /**
      * @private
      */
-    constructor({id, email, memberId, emailId, error, emailRecipientId, timestamp}) {
+    constructor({id, email, memberId, emailId, emailRecipientId, error, timestamp}) {
         this.id = id;
         this.memberId = memberId;
         this.emailId = emailId;
@@ -55,7 +55,7 @@ module.exports = class EmailBouncedEvent {
     }
 
     static create(data) {
-        return new EmailBouncedEvent({
+        return new EmailTemporaryBouncedEvent({
             ...data,
             timestamp: data.timestamp || new Date
         });

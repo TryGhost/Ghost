@@ -3180,3 +3180,236 @@ p.theme-validation-details {
     margin: 4px 0 8px;
     border-top: none;
 }
+
+
+/* Debug screen
+/* ---------------------------------------------------------- */
+
+.gh-email-debug .gh-post-analytics-header .gh-canvas-header-content {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.gh-email-debug-error {
+    display: flex;
+    margin-top: 20px;
+    padding: 12px 16px 12px 40px;
+}
+
+.gh-email-debug-error svg {
+    height: 20px !important;
+    margin-top: -2px;
+}
+
+.gh-email-debug-errortext {
+    flex-grow: 1;
+    margin-left: 4px;
+}
+
+.gh-email-debug-error h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-email-debug-error button {
+    min-width: 80px;
+}
+
+.gh-email-debug-settingstab-icon {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 11px;
+    margin-top: 2px;
+}
+
+.gh-email-debug-settingstab-icon svg path,
+.gh-email-debug-settingstab-icon svg circle {
+    stroke-width: 2;
+}
+
+.gh-email-debug .gh-list {
+    border-bottom: none;
+}
+
+.gh-email-debug .gh-list thead,
+.gh-email-debug .gh-list tbody {
+    width: 100%;
+}
+
+.gh-email-debug .gh-list tr:first-of-type .gh-list-data {
+    border-top: none;
+}
+
+.gh-email-debug .gh-list tr .gh-list-data:first-of-type {
+    padding-left: 0;
+}
+
+.gh-email-debug-col-member {
+    padding-left: 0;
+    width: 25%;
+}
+
+.gh-email-debug-member {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.gh-email-debug-failure {
+    display: flex;
+}
+
+.gh-email-debug-failure svg {
+    height: 16px;
+    width: 16px;
+    margin-right: 4px;
+}
+
+.gh-email-debug-failure-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.gh-email-debug-failure-codes {
+    display: flex;
+    gap: 20px;
+}
+
+.gh-email-debug-failure-code {
+    color: var(--midgrey);
+}
+
+.gh-email-debug-failure-code span {
+    color: var(--darkgrey);
+    font-weight: 500;
+}
+
+.gh-email-debug .gh-list-data {
+    height: 98px;
+}
+
+.gh-email-debug-batch-col-status span {
+    display: inline-block;
+    position: relative;
+    padding-left: 16px;
+    color: var(--midlightgrey);
+}
+
+.gh-email-debug-batch-col-status span::before {
+    display: block;
+    position: absolute;
+    content: "";
+    top: 6px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--midlightgrey);
+}
+
+.gh-email-debug-batch-col-status .failed {
+    color: var(--red);
+}
+
+.gh-email-debug-batch-col-status .failed::before {
+    background: var(--red);
+}
+
+.gh-email-debug-batch-col-status .submitting {
+    color: var(--blue);
+}
+
+.gh-email-debug-batch-col-status .submitting::before {
+    background: var(--blue);
+}
+
+.gh-email-debug-batch-col-status .submitted {
+    color: var(--green);
+}
+
+.gh-email-debug-batch-col-status .submitted::before {
+    background: var(--green);
+}
+
+.gh-email-debug-batch-col-created,
+.gh-email-debug-batch-col-details {
+    color: var(--midgrey);
+}
+
+.gh-email-debug-batch-col-created span,
+.gh-email-debug-batch-col-segment span {
+    white-space: nowrap;
+}
+
+.gh-email-debug-batch-col-details .detailtext div {
+    word-break: break-all;
+}
+
+.gh-email-debug-batch-col-segment span {
+    display: inline-block;
+    border-radius: 2px;
+    background: color-mod(var(--black) a(5%));
+    padding: 1px 6px;
+    color: var(--middarkgrey);
+}
+
+.gh-email-debug-batch-col-details span {
+    color: var(--darkgrey);
+    font-weight: 500;
+}
+
+.gh-email-debug-batch-col-details .download-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: 20px;
+}
+
+.gh-email-debug-batch-col-details .download-icon path {
+    stroke: var(--midgrey);
+}
+
+.gh-email-debug-batch-col-details .detailtext {
+    flex-grow: 1;
+}
+
+.gh-email-debug-settings {
+    font-size: 1.3rem;
+    margin: 12px 0 20px;
+}
+
+.gh-email-debug-settings hr {
+    margin: 8px 0;
+    border-top-color: var(--whitegrey);
+}
+
+.gh-email-debug-settings tr td {
+    font-weight: 500;
+    padding: 6px 0;
+}
+
+.gh-email-debug-settings tr td:first-of-type {
+    width: 20%;
+    white-space: nowrap;
+    color: var(--midgrey);
+}
+
+.gh-email-debug-settings-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.gh-email-debug-settings-icon .check {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-email-debug-settings-icon .check path {
+    stroke: var(--green);
+    stroke-width: 2.5;
+}
+
+.gh-email-debug-settings-icon .x path {
+    stroke: var(--midgrey);
+}
