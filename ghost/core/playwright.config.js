@@ -1,7 +1,7 @@
 const {execSync} = require('child_process');
 
 const getWebhookSecret = () => {
-    const webhookSecret = execSync('stripe listen --print-secret');
+    const webhookSecret = execSync(`stripe listen --print-secret --api-key ${process.env.STRIPE_API_KEY}`);
     return webhookSecret.toString().trim();
 };
 
@@ -13,9 +13,10 @@ const config = {
     use: {
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
+        headless: !process.env.PLAYWRIGHT_DEBUG,
         baseURL: process.env.TEST_URL ?? 'http://localhost:2368',
         // TODO: Where to put this
-        storageState: 'state.json'
+        storageState: 'playwright-state.json'
     },
     globalSetup: './test/e2e-browser/utils/global-setup'
 };
