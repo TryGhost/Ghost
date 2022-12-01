@@ -64,6 +64,7 @@ class BatchSendingService {
      */
     scheduleEmail(email) {
         return this.#jobsService.addJob({
+            name: 'batch-sending-service-job',
             job: this.emailJob.bind(this),
             data: {emailId: email.id},
             offloaded: false
@@ -144,7 +145,7 @@ class BatchSendingService {
 
         const segments = this.#emailRenderer.getSegments(post);
         const batches = [];
-        const BATCH_SIZE = 500;
+        const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         let totalCount = 0;
 
         for (const segment of segments) {
@@ -160,7 +161,9 @@ class BatchSendingService {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
 
                 const filter = segmentFilter + (lastId ? `+id:<${lastId}` : '');
-                members = await this.#models.Member.getFilteredCollectionQuery({filter, order: 'id DESC'}).select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
+                members = await this.#models.Member.getFilteredCollectionQuery({filter})
+                    .orderByRaw('id DESC')
+                    .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
 
                 if (members.length > BATCH_SIZE) {
                     lastId = members[members.length - 2].id;
@@ -271,13 +274,13 @@ class BatchSendingService {
      * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter}} data
      * @returns {Promise<boolean>} True when succeeded, false when failed with an error
      */
-    async sendBatch({email, batch, post, newsletter}) {
-        logging.info(`Sending batch ${batch.id} for email ${email.id}`);
+    async sendBatch({email, batch: originalBatch, post, newsletter}) {
+        logging.info(`Sending batch ${originalBatch.id} for email ${email.id}`);
 
         // Check the status of the email batch in a 'for update' transaction
-        batch = await this.updateStatusLock(this.#models.EmailBatch, batch.id, 'submitting', ['pending', 'failed']);
+        const batch = await this.updateStatusLock(this.#models.EmailBatch, originalBatch.id, 'submitting', ['pending', 'failed']);
         if (!batch) {
-            logging.error(`Tried sending email batch that is not pending or failed ${batch.id}; status: ${batch.get('status')}`);
+            logging.error(`Tried sending email batch that is not pending or failed ${originalBatch.id}`);
             return true;
         }
 

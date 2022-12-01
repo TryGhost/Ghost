@@ -29,6 +29,7 @@ const ALL_STATUSES = {
 
 class JobManager {
     #domainEvents;
+    #completionPromises = new Map();
 
     /**
      * @param {Object} options
@@ -94,24 +95,37 @@ class JobManager {
     }
 
     async _jobMessageHandler({name, message}) {
-        if (this._jobsRepository && name) {
+        if (name) {
             if (message === ALL_STATUSES.started) {
-                const job = await this._jobsRepository.read(name);
+                if (this._jobsRepository) {
+                    const job = await this._jobsRepository.read(name);
 
-                if (job) {
-                    await this._jobsRepository.update(job.id, {
-                        status: ALL_STATUSES.started,
-                        started_at: new Date()
-                    });
+                    if (job) {
+                        await this._jobsRepository.update(job.id, {
+                            status: ALL_STATUSES.started,
+                            started_at: new Date()
+                        });
+                    }
                 }
             } else if (message === 'done') {
-                const job = await this._jobsRepository.read(name);
+                if (this._jobsRepository) {
+                    const job = await this._jobsRepository.read(name);
 
-                if (job) {
-                    await this._jobsRepository.update(job.id, {
-                        status: ALL_STATUSES.finished,
-                        finished_at: new Date()
-                    });
+                    if (job) {
+                        await this._jobsRepository.update(job.id, {
+                            status: ALL_STATUSES.finished,
+                            finished_at: new Date()
+                        });
+                    }
+                }
+
+                // Check completion listeners
+                if (this.#completionPromises.has(name)) {
+                    for (const listeners of this.#completionPromises.get(name)) {
+                        listeners.resolve();
+                    }
+                    // Clear the listeners
+                    this.#completionPromises.delete(name);
                 }
             } else {
                 if (typeof message === 'object' && this.#domainEvents) {
@@ -133,6 +147,15 @@ class JobManager {
                     status: ALL_STATUSES.failed
                 });
             }
+        }
+
+        // Check completion listeners and call them with error
+        if (this.#completionPromises.has(jobMeta.name)) {
+            for (const listeners of this.#completionPromises.get(jobMeta.name)) {
+                listeners.reject(error);
+            }
+            // Clear the listeners
+            this.#completionPromises.delete(jobMeta.name);
         }
     }
 
@@ -280,12 +303,12 @@ class JobManager {
     }
 
     /**
-     * Awaits completion of the offloaded job.
+     * Awaits completion of the offloaded one-off job.
      * CAUTION: it might take a long time to resolve!
      * @param {String} name one-off job name
      * @returns resolves with a Job model at current state
      */
-    async awaitCompletion(name) {
+    async awaitOneOffCompletion(name) {
         const persistedJob = await this._jobsRepository.read({
             name
         });
@@ -294,10 +317,26 @@ class JobManager {
             // NOTE: can implement exponential backoff here if that's ever needed
             await setTimeoutPromise(500);
 
-            return this.awaitCompletion(name);
+            return this.awaitOneOffCompletion(name);
         }
 
         return persistedJob;
+    }
+
+    /***
+     * Create this promise before you add the job you want to listen for. Then await the returned promise.
+     * Resolves if the job has been executed successfully.
+     * Throws an error if the job has failed execution.
+     */
+    async awaitCompletion(name) {
+        const promise = new Promise((resolve, reject) => {
+            this.#completionPromises.set(name, [
+                ...(this.#completionPromises.get(name) ?? []),
+                {resolve, reject}
+            ]);
+        });
+
+        return promise;
     }
 
     /**

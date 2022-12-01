@@ -11,6 +11,7 @@
  *
  * @typedef {object} IEmailProviderService
  * @prop {(emailData: EmailData, options: EmailSendingOptions) => Promise<EmailProviderSuccessResponse>} send
+ * @prop {() => number} getMaximumRecipients
  *
  * @typedef {object} Post
  * @typedef {object} Newsletter
@@ -63,6 +64,10 @@ class SendingService {
     }) {
         this.#emailProvider = emailProvider;
         this.#emailRenderer = emailRenderer;
+    }
+
+    getMaximumRecipients() {
+        return this.#emailProvider.getMaximumRecipients();
     }
 
     /**
