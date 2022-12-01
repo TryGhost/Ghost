@@ -529,7 +529,7 @@ const FrameStyles = `
     align-items: center;
     justify-content: space-between;
     flex-direction: column;
-    gap: 2rem;
+    gap: 12px;
 }
 
 .gh-portal-list-header {
