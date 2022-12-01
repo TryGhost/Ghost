@@ -355,5 +355,43 @@ describe('Title behaviour (ExternalControlPlugin)', async () => {
                 expect(titleHasFocus).toEqual(false);
             });
         });
+
+        describe('SHIFT+TAB', function () {
+            it('moves cursor to title when not dedenting', async function () {
+                await focusEditor(page);
+                await page.keyboard.type('Test');
+                await page.keyboard.press('Shift+Tab');
+
+                const title = page.getByTestId('post-title');
+                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                expect(titleHasFocus).toEqual(true);
+            });
+
+            it('dedents rather than moving cursor when necessary', async function () {
+                await focusEditor(page);
+                await page.keyboard.type('Test');
+                await page.keyboard.press('Tab');
+                await page.keyboard.press('Shift+Tab');
+
+                const title = page.getByTestId('post-title');
+                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                expect(titleHasFocus).toEqual(false);
+
+                await assertHTML(page, html`
+                    <p dir="ltr"><span data-lexical-text="true">Test</span></p>
+                `);
+            });
+
+            it('moves cursor to title when card is selected', async function () {
+                await focusEditor(page);
+                await page.keyboard.type('--- ');
+                await page.keyboard.press('ArrowUp');
+                await page.keyboard.press('Shift+Tab');
+
+                const title = page.getByTestId('post-title');
+                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                expect(titleHasFocus).toEqual(true);
+            });
+        });
     });
 });

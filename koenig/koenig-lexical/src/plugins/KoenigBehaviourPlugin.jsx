@@ -19,6 +19,7 @@ import {
     KEY_ARROW_RIGHT_COMMAND,
     KEY_BACKSPACE_COMMAND,
     KEY_DELETE_COMMAND,
+    KEY_TAB_COMMAND,
     PASTE_COMMAND,
     INSERT_PARAGRAPH_COMMAND
 } from 'lexical';
@@ -421,6 +422,44 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                     }
 
                     return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_TAB_COMMAND,
+                (event) => {
+                    if (event.shiftKey) {
+                        const selection = $getSelection();
+
+                        if (selection.isCollapsed) {
+                            if ($isNodeSelection(selection)) {
+                                const currentNode = selection.getNodes()[0];
+                                const previousSibling = currentNode.getPreviousSibling();
+
+                                if (!previousSibling) {
+                                    event.preventDefault();
+                                    selection.clear();
+                                    cursorDidExitAtTop();
+                                    return true;
+                                }
+
+                                return false;
+                            }
+
+                            let node = selection.anchor.getNode();
+                            if ($isTextNode(node)) {
+                                node = node.getParent();
+                            }
+
+                            if (node.getIndent()) {
+                                return false;
+                            } else {
+                                event.preventDefault();
+                                cursorDidExitAtTop();
+                                return true;
+                            }
+                        }
+                    }
                 },
                 COMMAND_PRIORITY_HIGH
             ),
