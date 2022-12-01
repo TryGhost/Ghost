@@ -8,6 +8,7 @@ import {
     $isParagraphNode,
     $isNodeSelection,
     $isRangeSelection,
+    $isTextNode,
     $setSelection,
     $createTextNode,
     $createParagraphNode,
@@ -42,7 +43,7 @@ function getTopLevelNativeElement(node) {
     return node.closest(selector);
 }
 
-function useKoenigBehaviour({editor, containerElem}) {
+function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
     // deselect cards on mousedown outside of the editor container
     React.useEffect(() => {
         const onMousedown = (event) => {
@@ -64,13 +65,14 @@ function useKoenigBehaviour({editor, containerElem}) {
         };
     }, [editor, containerElem]);
 
-    // override built-in keyboard movement around card (DecoratorNode) boundaries,
-    // cards should be selected on up/down and when deleting content around them
+    // Override built-in keyboard movement around card (DecoratorNode) boundaries,
+    // cards should be selected on up/down and when deleting content around them.
+    // Trigger `cursorDidExitAtTop` prop if present and cursor at beginning of doc
     React.useEffect(() => {
         return mergeRegister(
             editor.registerCommand(
                 KEY_ARROW_UP_COMMAND,
-                () => {
+                (event) => {
                     const selection = $getSelection();
 
                     if ($isNodeSelection(selection)) {
@@ -78,9 +80,9 @@ function useKoenigBehaviour({editor, containerElem}) {
                         const previousSibling = currentNode.getPreviousSibling();
 
                         // do nothing if decorator node is top of document and selected
-                        // TODO: handle exposing this in some way so consuming app can
-                        //   can control this behaviour
                         if (!previousSibling) {
+                            selection.clear();
+                            cursorDidExitAtTop?.();
                             return true;
                         }
 
@@ -94,6 +96,25 @@ function useKoenigBehaviour({editor, containerElem}) {
                         if (selection.isCollapsed) {
                             const topLevelElement = selection.anchor.getNode().getTopLevelElement();
                             const nativeSelection = window.getSelection();
+
+                            if (cursorDidExitAtTop) {
+                                let [selectedNode] = selection.getNodes();
+                                if ($isTextNode(selectedNode)) {
+                                    selectedNode = selectedNode.getParent();
+                                }
+                                const selectedIndex = selectedNode.getIndexWithinParent();
+                                const selectedTopLevelIndex = selectedNode.getTopLevelElement()?.getIndexWithinParent();
+
+                                if (
+                                    selectedIndex === 0 &&
+                                    selectedTopLevelIndex === 0 &&
+                                    selection.anchor.offset === 0 &&
+                                    selection.focus.offset === 0
+                                ) {
+                                    cursorDidExitAtTop();
+                                    return true;
+                                }
+                            }
 
                             // empty paragraphs are odd because the native range won't
                             // have a rect to compare positioning
@@ -208,6 +229,40 @@ function useKoenigBehaviour({editor, containerElem}) {
                 KEY_ARROW_LEFT_COMMAND,
                 (event) => {
                     const selection = $getSelection();
+
+                    if (cursorDidExitAtTop) {
+                        if ($isNodeSelection(selection)) {
+                            const currentNode = selection.getNodes()[0];
+                            const previousSibling = currentNode.getPreviousSibling();
+
+                            if (!previousSibling) {
+                                event.preventDefault();
+                                selection.clear();
+                                cursorDidExitAtTop?.();
+                                return true;
+                            }
+                        }
+
+                        if (selection.isCollapsed) {
+                            let [selectedNode] = selection.getNodes();
+                            if ($isTextNode(selectedNode)) {
+                                selectedNode = selectedNode.getParent();
+                            }
+                            const selectedIndex = selectedNode.getIndexWithinParent();
+                            const selectedTopLevelIndex = selectedNode.getTopLevelElement()?.getIndexWithinParent();
+
+                            if (
+                                selectedIndex === 0 &&
+                                selectedTopLevelIndex === 0 &&
+                                selection.anchor.offset === 0 &&
+                                selection.focus.offset === 0
+                            ) {
+                                event.preventDefault();
+                                cursorDidExitAtTop();
+                                return true;
+                            }
+                        }
+                    }
 
                     if (!$isNodeSelection(selection)) {
                         return false;
@@ -397,7 +452,7 @@ function useKoenigBehaviour({editor, containerElem}) {
     return null;
 }
 
-export default function KoenigBehaviourPlugin({containerElem = document.querySelector('.koenig-editor')}) {
+export default function KoenigBehaviourPlugin({containerElem = document.querySelector('.koenig-editor'), cursorDidExitAtTop}) {
     const [editor] = useLexicalComposerContext();
-    return useKoenigBehaviour({editor, containerElem});
+    return useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop});
 }

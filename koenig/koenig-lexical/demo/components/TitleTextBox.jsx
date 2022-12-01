@@ -1,13 +1,20 @@
 import React from 'react';
 
-const TitleTextBox = ({title, setTitle, editorAPI}) => {
+const TitleTextBox = React.forwardRef(({title, setTitle, editorAPI}, ref) => {
     const titleEl = React.useRef(null);
+
+    React.useImperativeHandle(ref, () => ({
+        focus: () => {
+            titleEl.current?.focus();
+        }
+    }));
+
     React.useEffect(() => {
         if (titleEl.current) {
             titleEl.current.style.height = '58px';
             titleEl.current.style.height = titleEl.current.scrollHeight + 'px';
         }
-    }, [title]);
+    }, [titleEl]);
 
     const handleTitleInput = (e) => {
         setTitle(e.target.value);
@@ -49,6 +56,6 @@ const TitleTextBox = ({title, setTitle, editorAPI}) => {
             placeholder="Post title"
             data-testid="post-title" />
     );
-};
+});
 
 export default TitleTextBox;

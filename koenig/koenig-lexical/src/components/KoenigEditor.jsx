@@ -21,7 +21,8 @@ import '../styles/index.css';
 const KoenigEditor = ({
     onChange,
     markdownTransformers,
-    registerAPI
+    registerAPI,
+    cursorDidExitAtTop
 }) => {
     const _onChange = React.useCallback((editorState) => {
         const json = editorState.toJSON();
@@ -52,7 +53,7 @@ const KoenigEditor = ({
             <OnChangePlugin onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}
             <ListPlugin /> {/* adds indent/outdent/remove etc support */}
-            <KoenigBehaviourPlugin containerElem={editorContainerRef} />
+            <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
             <PlusCardMenuPlugin />
             <SlashCardMenuPlugin />

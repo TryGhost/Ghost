@@ -28,6 +28,7 @@ function DemoApp() {
     const [defaultContent] = useState(query.get('content') !== 'false' ? loadContent() : undefined);
     const [title, setTitle] = useState(defaultContent ? 'Meet the Koenig editor.' : '');
     const [editorAPI, setEditorAPI] = useState(null);
+    const titleRef = React.useRef(null);
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -37,19 +38,27 @@ function DemoApp() {
         setIsSidebarOpen(true);
     }
 
+    function focusTitle() {
+        titleRef.current?.focus();
+    }
+
     return (
         <div className="koenig-lexical top">
             <KoenigComposer initialEditorState={defaultContent} imageUploadFunction={{imageUploader}}>
                 <Watermark />
                 <div className="h-full grow relative">
                     {
-                        query.get('content') !== 'false' ?
-                            <ToggleButton setTitle={setTitle} content={defaultContent}/> : null
+                        query.get('content') !== 'false'
+                            ? <ToggleButton setTitle={setTitle} content={defaultContent}/>
+                            : null
                     }
                     <div className="h-full overflow-auto">
                         <div className="mx-auto max-w-[740px] py-[15vmin]">
-                            <TitleTextBox title={title} setTitle={setTitle} editorAPI={editorAPI} />
-                            <KoenigEditor registerAPI={setEditorAPI} />
+                            <TitleTextBox title={title} setTitle={setTitle} editorAPI={editorAPI} ref={titleRef} />
+                            <KoenigEditor
+                                registerAPI={setEditorAPI}
+                                cursorDidExitAtTop={focusTitle}
+                            />
                         </div>
                     </div>
                 </div>
