@@ -436,9 +436,7 @@ class ImportManager {
 
             return importResult;
         } catch (err) {
-            logging.error(`Content import was unsuccessful`, {
-                error: err
-            });
+            logging.error(err, 'Content import was unsuccessful');
             importResult = {data: {errors: [err]}};
         } finally {
             // Step 5: Cleanup any files
