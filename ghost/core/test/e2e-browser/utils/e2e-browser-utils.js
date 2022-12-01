@@ -41,7 +41,7 @@ const setupGhost = async (page) => {
         // Fill email + password
         await page.locator('#identification').fill(ownerUser.email);
         await page.locator('#password').fill(ownerUser.password);
-        await page.locator('[data-test-button="sign-in"]').click();
+        await page.getByRole('button', {name: 'Sign in'}).click();
         // Confirm we have reached Ghost Admin
         await page.locator('.gh-nav').waitFor(options);
     } else if (action === actions.setup) {
@@ -60,48 +60,49 @@ const setupGhost = async (page) => {
     }
 };
 
-// Only ever setup Stripe once, for performance reasons
-let isStripeSetup = false;
-
 /**
- * Connect from Stripe using the UI, disconnecting if necessary
+ * Delete all members, 1 by 1, using the UI
  * @param {import('@playwright/test').Page} page
  */
-const setupStripe = async (page) => {
-    if (isStripeSetup) {
-        return;
-    }
-
+const deleteAllMembers = async (page) => {
     await page.goto('/ghost');
-    await page.locator('[data-test-nav="settings"]').click();
-    await page.locator('[data-test-nav="members-membership"]').click();
-    if (await page.isVisible('.gh-btn-stripe-status.connected')) {
-        // Disconnect if already connected
-        await page.locator('.gh-btn-stripe-status.connected').click();
-        await page.locator('.modal-content .gh-btn-stripe-disconnect').first().click();
-        // TODO: Use a better selector to achieve this
+
+    await page.locator('a[href="#/members/"]').first().click();
+
+    const firstMember = page.locator('.gh-list tbody tr').first();
+    while (await Promise.race([
+        firstMember.waitFor({state: 'visible', timeout: 1000}).then(() => true),
+        page.locator('.gh-members-empty').waitFor({state: 'visible', timeout: 1000}).then(() => false)
+    ]).catch(() => false)) {
+        await firstMember.click();
+        await page.locator('.view-actions .dropdown > button').click();
+        await page.getByRole('button', {name: 'Delete member'}).click();
         await page
             .locator('.modal-content')
-            .filter({hasText: 'Are you sure you want to disconnect?'})
+            .filter({hasText: 'Delete member'})
             .first()
-            .getByRole('button', {name: 'Disconnect'})
+            .getByRole('button', {name: 'Delete member'})
             .click();
-    } else {
-        await page.locator('.gh-setting-members-tierscontainer .stripe-connect').click();
-    }
-    await page.locator('input[data-test-checkbox="stripe-connect-test-mode"]').first().check();
-    const [stripePage] = await Promise.all([
-        page.waitForEvent('popup'),
-        page.getByRole('link', {name: 'Connect with Stripe'}).click()
-    ]);
-    await stripePage.locator('#skip-account-app').click();
-    const stripeKey = await stripePage.locator('code').innerText();
-    await stripePage.close();
-    await page.getByPlaceholder('Paste your secure key here').fill(stripeKey);
-    await page.getByRole('button', {name: 'Save Stripe settings'}).click();
-    await page.locator('[data-test-button="stripe-connect-ok"]').click();
 
-    isStripeSetup = true;
+        // TODO: This seems to be a bug - "Are you sure you want to leave this page" shows after removing member
+        if (await Promise.race([
+            page.locator('.modal-content').filter({hasText: 'Are you sure you want to leave this page'}).first().waitFor({
+                state: 'visible',
+                timeout: 1000
+            }).then(() => true),
+            page.locator('h2.gh-canvas-title').filter({hasText: 'Members'}).first().waitFor({
+                state: 'visible',
+                timeout: 1000
+            }).then(() => false)
+        ]).catch(() => false)) {
+            await page
+                .locator('.modal-content')
+                .filter({hasText: 'Are you sure you want to leave this page'})
+                .first()
+                .getByRole('button', {name: 'Leave'})
+                .click();
+        }
+    }
 };
 
 /**
@@ -113,15 +114,15 @@ const setupStripe = async (page) => {
  * @param {number} tier.yearlyPrice
  */
 const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
-    await page.locator('[data-test-nav="settings"]').click();
-    await page.locator('[data-test-nav="members-membership"]').click();
+    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
     // Expand the premium tier list
     await page.getByRole('button', {name: 'Expand'}).nth(1).click({
-        delay: 10 // Wait 10 milliseconds to ensure tier information appears correctly
+        delay: 50 // TODO: Figure out how to prevent this from opening with an empty list without using delay
     });
 
     // Archive if already exists
-    if (await page.locator('.gh-tier-card-name').getByText(name).isVisible()) {
+    while (await page.locator('.gh-tier-card').filter({hasText: name}).first().isVisible()) {
         const tierCard = page.locator('.gh-tier-card').filter({hasText: name}).first();
         await tierCard.locator('.gh-tier-card-actions-button').click();
         await tierCard.getByRole('button', {name: 'Archive'}).click();
@@ -129,11 +130,26 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
     }
 
     await page.locator('.gh-btn-add-tier').click();
-    await page.locator('input[data-test-input="tier-name"]').first().fill(name);
-    await page.locator('#monthlyPrice').fill(`${monthlyPrice}`);
-    await page.locator('#yearlyPrice').fill(`${yearlyPrice}`);
-    await page.locator('[data-test-button="save-tier"]').click();
-    await page.waitForSelector('input[data-test-input="tier-name"]', {state: 'detached'});
+    const modal = page.locator('.modal-content');
+    await modal.locator('input#name').first().fill(name);
+    await modal.locator('#monthlyPrice').fill(`${monthlyPrice}`);
+    await modal.locator('#yearlyPrice').fill(`${yearlyPrice}`);
+    await modal.getByRole('button', {name: 'Add tier'}).click();
+    await page.waitForSelector('.modal-content input#name', {state: 'detached'});
+
+    await page.getByRole('button', {name: 'Customize Portal'}).click();
+    const portalSettings = page.locator('.modal-content').filter({hasText: 'Portal settings'});
+    if (!await portalSettings.locator('label').filter({hasText: name}).locator('input').first().isChecked()) {
+        await portalSettings.locator('label').filter({hasText: name}).locator('span').first().click();
+    }
+    if (!await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('input').first().isChecked()) {
+        await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('span').first().click();
+    }
+    if (!await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('input').first().isChecked()) {
+        await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('span').first().click();
+    }
+    await portalSettings.getByRole('button', {name: 'Save and close'}).click();
+    await page.waitForSelector('.gh-portal-settings', {state: 'detached'});
 };
 
 /**
@@ -147,7 +163,7 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
  */
 const createOffer = async (page, {name, tierName, percentOff}) => {
     await page.goto('/ghost');
-    await page.locator('[data-test-nav="offers"]').click();
+    await page.locator('.gh-nav a[href="#/offers/"]').click();
 
     // Keep offer names unique & <= 40 characters
     let offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
@@ -156,11 +172,11 @@ const createOffer = async (page, {name, tierName, percentOff}) => {
     // We only need 1 offer to be active at a time
     // Either the list of active offers loads, or the CTA when no offers exist
     while (await Promise.race([
-        page.locator('.gh-offers-list .gh-list-header').filter({hasText: 'active'}).waitFor({state: 'visible', timeout: 1000}).then(() => true).catch(() => false),
-        page.locator('.gh-offers-list-cta').waitFor({state: 'visible', timeout: 1000}).then(() => false).catch(() => false)
-    ])) {
-        const listItem = page.locator('[data-test-list="offers-list-item"]').first();
-        await listItem.getByRole('link', {name: 'arrow-right'}).click();
+        page.locator('.gh-offers-list .gh-list-header').filter({hasText: 'active'}).waitFor({state: 'visible', timeout: 1000}).then(() => true),
+        page.locator('.gh-offers-list-cta').waitFor({state: 'visible', timeout: 1000}).then(() => false)
+    ]).catch(() => false)) {
+        const listItem = page.locator('.gh-offers-list .gh-list-row:not(.header)').first();
+        await listItem.locator('a[href^="#/offers/"]').last().click();
         await page.getByRole('button', {name: 'Archive offer'}).click();
         await page
             .locator('.modal-content')
@@ -170,7 +186,7 @@ const createOffer = async (page, {name, tierName, percentOff}) => {
             .click();
 
         // TODO: Use a more resilient selector
-        const statusDropdown = await page.getByRole('button', {name: 'Archived offers arrow-down-small'});
+        const statusDropdown = await page.getByRole('button', {name: 'Archived offers'});
         await statusDropdown.waitFor({
             state: 'visible',
             timeout: 1000
@@ -180,17 +196,17 @@ const createOffer = async (page, {name, tierName, percentOff}) => {
     }
 
     await page.getByRole('link', {name: 'New offer'}).click();
-    await page.locator('[data-test-input="offer-name"]').fill(offerName);
+    await page.locator('input#name').fill(offerName);
     await page.locator('input#amount').fill(`${percentOff}`);
     const priceId = await page.locator(`.gh-select-product-cadence>select>option`).getByText(`${tierName} - Monthly`).getAttribute('value');
     await page.locator('.gh-select-product-cadence>select').selectOption(priceId);
     await page.getByRole('button', {name: 'Save'}).click();
     // Wait for the "Saved" button, ensures that next clicks don't trigger the unsaved work modal
-    await page.locator('[data-test-button="save"] [data-test-task-button-state="success"]').waitFor({
+    await page.getByRole('button', {name: 'Saved'}).waitFor({
         state: 'visible',
         timeout: 1000
     });
-    await page.locator('[data-test-nav="offers"]').click();
+    await page.locator('.gh-nav a[href="#/offers/"]').click();
 
     return offerName;
 };
@@ -207,7 +223,7 @@ const completeStripeSubscription = async (page) => {
 
 module.exports = {
     setupGhost,
-    setupStripe,
+    deleteAllMembers,
     createTier,
     createOffer,
     completeStripeSubscription
