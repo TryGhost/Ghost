@@ -36,18 +36,6 @@ describe('Account Home Page', () => {
         expect(mockOnActionFn).toHaveBeenCalledWith('signout');
     });
 
-    test('can show suppressed info', () => {
-        const {mockOnActionFn, utils} = setup({member: member.suppressed});
-
-        expect(utils.queryByText('You\'re currently not receiving emails')).toBeInTheDocument();
-
-        const manageBtn = utils.queryByRole('button', {name: 'Manage'});
-        expect(manageBtn).toBeInTheDocument();
-
-        fireEvent.click(manageBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {lastPage: 'accountHome', page: 'emailSuppressed'});
-    });
-
     test('can show Manage button for few newsletters', () => {
         const {mockOnActionFn, utils} = setup({site: site});
 
