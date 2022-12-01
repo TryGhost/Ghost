@@ -5,7 +5,7 @@ import CloseButton from 'components/common/CloseButton';
 import {getSupportAddress} from 'utils/helpers';
 
 export default function EmailReceivingPage() {
-    const {brandColor, onAction, site} = useContext(AppContext);
+    const {brandColor, onAction, site, lastPage} = useContext(AppContext);
 
     const supportAddress = `mailto:${getSupportAddress({site})}`;
 
@@ -13,7 +13,11 @@ export default function EmailReceivingPage() {
         <div className="gh-email-receiving-faq">
             <header className='gh-portal-detail-header'>
                 <BackButton brandColor={brandColor} onClick={() => {
-                    onAction('switchPage', {page: 'accountEmail', lastPage: 'accountHome'});
+                    if (!lastPage) {
+                        onAction('switchPage', {page: 'accountEmail', lastPage: 'accountHome'});
+                    } else {
+                        onAction('switchPage', {page: 'accountHome'});
+                    }
                 }} />
                 <CloseButton />
             </header>
