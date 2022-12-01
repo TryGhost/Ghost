@@ -15,15 +15,15 @@ const setupStripeKeys = async () => {
     const stripeDatabaseKeys = {
         publishableKey: 'stripe_connect_publishable_key',
         secretKey: 'stripe_connect_secret_key',
-        testMode: 'stripe_connect_test_mode'
+        liveMode: 'stripe_connect_livemode'
     };
-    const publishableKey = (await knex('settings').select('value').where('key', stripeDatabaseKeys.publishableKey).first())?.value
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY ?? (await knex('settings').select('value').where('key', stripeDatabaseKeys.publishableKey).first())?.value
         ?? (await inquirer.prompt([{
             message: 'Stripe publishable key (starts "pk_test_")',
             type: 'password',
             name: 'value'
         }])).value;
-    const secretKey = (await knex('settings').select('value').where('key', stripeDatabaseKeys.secretKey).first())?.value
+    const secretKey = process.env.STRIPE_SECRET_KEY ?? (await knex('settings').select('value').where('key', stripeDatabaseKeys.secretKey).first())?.value
         ?? (await inquirer.prompt([{
             message: 'Stripe secret key (starts "sk_test_")',
             type: 'password',
@@ -37,8 +37,8 @@ const setupStripeKeys = async () => {
     await knex('settings').where('key', stripeDatabaseKeys.secretKey).update({
         value: secretKey
     });
-    await knex('settings').where('key', stripeDatabaseKeys.testMode).update({
-        value: `${true}`
+    await knex('settings').where('key', stripeDatabaseKeys.liveMode).update({
+        value: `false`
     });
 };
 

@@ -1,15 +1,20 @@
 name: Browser Tests
 on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
   workflow_dispatch:
     inputs:
       site_url:
-        description: 'Site URL to test'
-        required: true
+        description: 'Site URL to test, or blank for local'
+        required: false
         type: string
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     defaults:
       run:
         working-directory: ghost/core
@@ -20,11 +25,24 @@ jobs:
         node-version: '16.x'
         cache: yarn
 
+    - name: Install Stripe-CLI
+      run: |
+        export VERSION=1.13.5
+        wget "https://github.com/stripe/stripe-cli/releases/download/v$VERSION/stripe_${VERSION}_linux_x86_64.tar.gz"
+        tar -zxvf "stripe_${VERSION}_linux_x86_64.tar.gz"
+        mv stripe /usr/local/bin
+        stripe -v
+
     - name: Install dependencies
       run: yarn
 
     - name: Install Playwright
       run: npx playwright install --with-deps
+
+    - name: Build Admin
+      if: github.event.inputs.site_url == ''
+      working-directory: ghost/admin
+      run: yarn build:prod
 
     - name: Run Playwright tests
       run: yarn test:browser

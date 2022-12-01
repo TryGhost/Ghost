@@ -135,3 +135,6 @@ test/coverage
 
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
+
+# Playwright state with cookies it keeps across tests
+playwright-state.json
