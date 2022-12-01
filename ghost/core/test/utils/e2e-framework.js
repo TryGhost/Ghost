@@ -15,7 +15,6 @@
 const _ = require('lodash');
 const {sequence} = require('@tryghost/promise');
 const {any, stringMatching} = require('@tryghost/express-test').snapshot;
-const {anything} = require('@tryghost/jest-snapshot');
 const {AsymmetricMatcher} = require('expect');
 const fs = require('fs-extra');
 const path = require('path');
