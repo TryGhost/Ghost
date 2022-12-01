@@ -3373,3 +3373,43 @@ p.theme-validation-details {
 .gh-email-debug-batch-col-details .detailtext {
     flex-grow: 1;
 }
+
+.gh-email-debug-settings {
+    font-size: 1.3rem;
+    margin: 12px 0 20px;
+}
+
+.gh-email-debug-settings hr {
+    margin: 8px 0;
+    border-top-color: var(--whitegrey);
+}
+
+.gh-email-debug-settings tr td {
+    font-weight: 500;
+    padding: 6px 0;
+}
+
+.gh-email-debug-settings tr td:first-of-type {
+    width: 20%;
+    white-space: nowrap;
+    color: var(--midgrey);
+}
+
+.gh-email-debug-settings-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.gh-email-debug-settings-icon .check {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-email-debug-settings-icon .check path {
+    stroke: var(--green);
+    stroke-width: 2.5;
+}
+
+.gh-email-debug-settings-icon .x path {
+    stroke: var(--midgrey);
+}
