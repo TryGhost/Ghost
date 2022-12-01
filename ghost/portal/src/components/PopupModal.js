@@ -185,6 +185,10 @@ class PopupContent extends React.Component {
             }
         }
 
+        if (page === 'emailSuppressionFAQ' || page === 'emailReceivingFAQ') {
+            pageClass += ' large-size';
+        }
+
         let className = 'gh-portal-popup-container';
 
         if (hasMode(['preview'])) {

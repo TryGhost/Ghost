@@ -657,6 +657,13 @@ export const getMemberEmail = ({member}) => {
     return member.email;
 };
 
+export const hasMemberGotEmailSuppression = ({member}) => {
+    if (!member) {
+        return '';
+    }
+    return member.email_suppression;
+};
+
 export const getFirstpromoterId = ({site}) => {
     return (site && site.firstpromoter_account);
 };
