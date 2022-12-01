@@ -563,13 +563,17 @@ async function createEmailBatches({emailModel, memberRows, memberSegment, option
 
     debug('createEmailBatches: storing recipient list');
     const startOfRecipientStorage = Date.now();
-    const emails = memberRows.map(row => row.email);
-    const emailSuppressionData = await emailSuppressionList.getBulkSuppressionData(emails);
-    const emailSuppressedLookup = _.zipObject(emails, emailSuppressionData);
-    const filteredRows = memberRows.filter((row) => {
-        return emailSuppressedLookup[row.email].suppressed === false;
-    });
-    const batches = _.chunk(filteredRows, bulkEmailService.BATCH_SIZE);
+    let rowsToBatch = memberRows;
+    if (labs.isSet('suppressionList')) {
+        const emails = memberRows.map(row => row.email);
+        const emailSuppressionData = await emailSuppressionList.getBulkSuppressionData(emails);
+        const emailSuppressedLookup = _.zipObject(emails, emailSuppressionData);
+        const filteredRows = memberRows.filter((row) => {
+            return emailSuppressedLookup[row.email].suppressed === false;
+        });
+        rowsToBatch = filteredRows;
+    }
+    const batches = _.chunk(rowsToBatch, bulkEmailService.BATCH_SIZE);
     const batchIds = await Promise.mapSeries(batches, storeRecipientBatch);
     debug(`createEmailBatches: stored recipient list (${Date.now() - startOfRecipientStorage}ms)`);
     logging.info(`[createEmailBatches] stored recipient list (${Date.now() - startOfRecipientStorage}ms)`);
