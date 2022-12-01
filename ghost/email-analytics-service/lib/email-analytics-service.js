@@ -84,7 +84,7 @@ module.exports = class EmailAnalyticsService {
 
     /**
      * 
-     * @param {{type: any; severity: any; recipientEmail: any; emailId: any; providerId: string; timestamp: Date;}} event 
+     * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId: any; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event 
      * @returns {Promise<EventProcessingResult>}
      */
     async processEvent(event) {
@@ -118,7 +118,7 @@ module.exports = class EmailAnalyticsService {
 
         if (event.type === 'failed') {
             if (event.severity === 'permanent') {
-                const recipient = await this.eventProcessor.handlePermanentFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+                const recipient = await this.eventProcessor.handlePermanentFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error});
 
                 if (recipient) {
                     return new EventProcessingResult({
@@ -130,7 +130,7 @@ module.exports = class EmailAnalyticsService {
 
                 return new EventProcessingResult({unprocessable: 1});
             } else {
-                const recipient = await this.eventProcessor.handleTemporaryFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+                const recipient = await this.eventProcessor.handleTemporaryFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error});
 
                 if (recipient) {
                     return new EventProcessingResult({

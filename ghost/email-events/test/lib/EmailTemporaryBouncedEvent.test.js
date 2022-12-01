@@ -1,10 +1,10 @@
 const assert = require('assert');
 const ObjectID = require('bson-objectid').default;
-const EmailBouncedEvent = require('../../lib/EmailBouncedEvent');
+const EmailTemporaryBouncedEvent = require('../../lib/EmailTemporaryBouncedEvent');
 
-describe('EmailBouncedEvent', function () {
+describe('EmailTemporaryBouncedEvent', function () {
     it('exports a static create method to create instances', function () {
-        const event = EmailBouncedEvent.create({
+        const event = EmailTemporaryBouncedEvent.create({
             id: 'id',
             email: 'test@test.test',
             memberId: new ObjectID().toHexString(),
@@ -17,6 +17,6 @@ describe('EmailBouncedEvent', function () {
                 enhancedCode: '1.1'
             }
         });
-        assert(event instanceof EmailBouncedEvent);
+        assert(event instanceof EmailTemporaryBouncedEvent);
     });
 });
