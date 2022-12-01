@@ -21,8 +21,8 @@ const getRemoteImage = async (src) => {
 
         return response;
     } catch (error) {
-        // TODO: Log this properly
-        console.log({error});
+        // TODO: Log this properly and remove this console.log
+        console.log({error}); // eslint-disable-line no-console
     }
 };
 
@@ -92,7 +92,7 @@ const getAndSaveImage = async (src) => {
 };
 
 const imageScraper = async (modelData, type = '') => {
-    debug(`start scraping images for ${type} id ${modelData.id}`);
+    debug(`scraping images for ${type} id: ${modelData.id}`);
 
     const attributes = modelData?.attributes ?? [];
     const metaAttributes = modelData?.relations?.posts_meta?.attributes ?? [];
@@ -134,29 +134,32 @@ const imageScraper = async (modelData, type = '') => {
     return newData;
 };
 
-const tempMethodForModelTesting = (importers) => {
+const imageScraperTasks = (modelOptions, importers) => {
     const ops = [];
 
     _.forEach(importers.posts.importedData, async (importedPost) => {
         ops.push(async () => {
-            let thePost = await models.Post.findOne({id: importedPost.id}, {withRelated: ['posts_meta']});
+            let thePost = await models.Post.findOne({id: importedPost.id}, {...modelOptions, withRelated: ['posts_meta']});
 
             let newData = await imageScraper(thePost, 'post');
 
-            const resp = await models.Post.edit(newData, {id: importedPost.id});
+            const resp = await models.Post.edit(newData, {...modelOptions, id: importedPost.id});
+            return resp;
+        });
+    });
+
+    _.forEach(importers.users.importedData, async (importedUser) => {
+        ops.push(async () => {
+            let theUser = await models.User.findOne({id: importedUser.id}, {...modelOptions});
+
+            let newData = await imageScraper(theUser, 'user');
+
+            const resp = await models.User.edit(newData, {...modelOptions, id: importedUser.id});
             return resp;
         });
     });
 
     return ops;
-
-    // let theUser = await models.User.findOne({id: importedUser.id});
-
-    // let newData = await imageScraper(theUser, type);
-
-    // const resp = await models.User.edit(newData, {id: importedUser.id});
-    // return resp;
 };
 
-module.exports = imageScraper;
-module.exports.tempMethodForModelTesting = tempMethodForModelTesting;
+module.exports = imageScraperTasks;
