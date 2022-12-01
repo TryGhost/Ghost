@@ -20,6 +20,7 @@ import {OfferPageStyles} from './pages/OfferPage';
 import {FeedbackPageStyles} from './pages/FeedbackPage';
 import EmailSuppressedPage from '!!raw-loader!./pages/EmailSuppressedPage.css';
 import EmailSuppressionFAQ from '!!raw-loader!./pages/EmailSuppressionFAQ.css';
+import EmailReceivingFAQ from '!!raw-loader!./pages/EmailReceivingFAQ.css';
 
 // Global styles
 const FrameStyles = `
@@ -322,6 +323,12 @@ const FrameStyles = `
     z-index: 9999;
 }
 
+.gh-portal-popup-container.large-size {
+    width: 720px;
+    justify-content: flex-start;
+    padding: 0;
+}
+
 .gh-portal-popup-container.full-size {
     width: 100vw;
     min-height: 100vh;
@@ -499,6 +506,12 @@ const FrameStyles = `
     margin-bottom: 20px;
 }
 
+.gh-portal-section.flex {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
 .gh-portal-detail-header {
     position: relative;
     display: flex;
@@ -515,6 +528,8 @@ const FrameStyles = `
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .gh-portal-list-header {
@@ -771,8 +786,12 @@ const FrameStyles = `
 
 const MobileStyles = `
 @media (max-width: 1440px) {
-    .gh-portal-popup-container:not(.full-size):not(.preview) {
+    .gh-portal-popup-container:not(.full-size):not(.large-size):not(.preview) {
         width: 460px;
+    }
+
+    .gh-portal-popup-container.large-size {
+        width: 600px;
     }
 
     .gh-portal-input {
@@ -855,6 +874,10 @@ const MobileStyles = `
 
     .gh-portal-popup-container.full-size {
         justify-content: flex-start;
+    }
+
+    .gh-portal-popup-container.large-size {
+        padding: 0 !important;
     }
 
     .gh-portal-popup-wrapper.account-home,
@@ -1177,6 +1200,7 @@ export function getFrameStyles({site}) {
         MultipleProductsGlobalStyles +
         FeedbackPageStyles +
         EmailSuppressedPage +
-        EmailSuppressionFAQ;
+        EmailSuppressionFAQ +
+        EmailReceivingFAQ;
     return FrameStyle;
 }

@@ -3,7 +3,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
-import {getSiteNewsletters} from '../../utils/helpers';
+import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
 
@@ -151,7 +151,7 @@ export default function NewsletterManagement({
     isCommentsEnabled,
     enableCommentNotifications
 }) {
-    const {brandColor, site} = useContext(AppContext);
+    const {brandColor, onAction, member, site} = useContext(AppContext);
     const isDisabled = !subscribedNewsletters?.length && ((isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled);
     const EmptyNotification = () => {
         return null;
@@ -162,7 +162,7 @@ export default function NewsletterManagement({
             <CloseButton />
             <AccountHeader />
             <FinalNotification />
-            <div className='gh-portal-section'>
+            <div className='gh-portal-section flex'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
                         subscribedNewsletters={subscribedNewsletters}
@@ -182,7 +182,7 @@ export default function NewsletterManagement({
                     />
                 </div>
             </div>
-            <footer className='gh-portal-action-footer'>
+            <footer className={'gh-portal-action-footer' + (hasMemberGotEmailSuppression({member}) ? ' gh-feature-suppressions' : '')}>
                 <div style={{width: '100%'}}>
                     <ActionButton
                         isRunning={false}
@@ -198,6 +198,13 @@ export default function NewsletterManagement({
                     />
                     <ShowPaidMemberMessage isPaid={isPaidMember} site={site} />
                 </div>
+                {hasMemberGotEmailSuppression({member}) && !isDisabled &&
+                <button
+                    className='gh-portal-btn-text gh-email-faq-page-button'
+                    onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ'})}
+                >
+                    Not receiving emails? Learn more →
+                </button>}
             </footer>
         </div>
     );

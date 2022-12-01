@@ -29,6 +29,16 @@ export const ActionButtonStyles = `
         border-color: var(--red);
     }
 
+    .gh-feature-suppressions .gh-portal-btn-destructive:not(:disabled) {
+        color: var(--red);
+        border-color: var(--red);
+    }
+
+    .gh-feature-suppressions .gh-portal-btn-destructive:not(:disabled):hover {
+        color: var(--darkerRed);
+        border-color: var(--darkerRed);
+    }
+
     .gh-portal-btn-text {
         padding: 0;
         font-weight: 500;

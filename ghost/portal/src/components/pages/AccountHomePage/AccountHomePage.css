@@ -73,6 +73,7 @@ footer.gh-portal-account-footer {
     color: var(--red);
     font-weight: 500;
     font-size: 1.25rem;
+    letter-spacing: 0.2px;
 }
 
 .gh-portal-email-notice-icon {

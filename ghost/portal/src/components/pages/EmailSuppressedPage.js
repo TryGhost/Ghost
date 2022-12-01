@@ -44,8 +44,8 @@ export default function EmailSuppressedPage() {
                 </p>
 
                 <button
-                    className="gh-portal-btn-text gh-email-suppressed-page-button"
-                    onClick={() => onAction('switchPage', {page: 'emailSuppressionFAQ'})}
+                    className="gh-portal-btn-text gh-email-faq-page-button"
+                    onClick={() => onAction('switchPage', {page: 'emailSuppressionFAQ', lastPage: 'emailSuppressed'})}
                 >
                     Learn more about why this happens
                 </button>
