@@ -41,9 +41,8 @@ test.describe('Ghost Frontend', () => {
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            // TODO: These fail seemingly without reasons
-            expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
-            expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`);
+            await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
     });
 });
