@@ -153,7 +153,7 @@ module.exports = {
                     job: stripeService.migrations.execute.bind(stripeService.migrations)
                 });
 
-                await jobsService.awaitCompletion(membersMigrationJobName);
+                await jobsService.awaitOneOffCompletion(membersMigrationJobName);
             }
         }
 

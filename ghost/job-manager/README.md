@@ -61,7 +61,7 @@ jobsService.addOneOffJob({
 
 // optionally await completion of the one-off job in case 
 // there are state changes expected to execute the rest of the process
-await jobsService.awaitCompletion('members-migrations');
+await jobsService.awaitOneOffCompletion('members-migrations');
 
 // check if previously registered one-off job has been executed 
 // successfully - it exists and doesn't have a "failed" state.

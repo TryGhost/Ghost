@@ -15,6 +15,7 @@ let emailCount = 0;
 const mailService = require('../../core/server/services/mail/index');
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
+const settingsCache = require('../../core/shared/settings-cache');
 
 let fakedLabsFlags = {};
 const originalLabsIsSet = labs.isSet;
@@ -112,6 +113,29 @@ const emittedEvent = (name) => {
 };
 
 /**
+ * Settings Mocks
+ */
+
+let fakedSettings = {};
+const originalSettingsGetter = settingsCache.get;
+
+const fakeSettingsGetter = (setting) => {
+    if (fakedSettings.hasOwnProperty(setting)) {
+        return fakedSettings[setting];
+    }
+
+    return originalSettingsGetter(setting);
+};
+
+const mockSetting = (key, value) => {
+    if (!mocks.settings) {
+        mocks.settings = sinon.stub(settingsCache, 'get').callsFake(fakeSettingsGetter);
+    }
+
+    fakedSettings[key] = value;
+};
+
+/**
  * Labs Mocks
  */
 
@@ -154,6 +178,7 @@ const restore = () => {
     sinon.restore();
     mocks = {};
     fakedLabsFlags = {};
+    fakedSettings = {};
     emailCount = 0;
     nock.cleanAll();
     nock.enableNetConnect();
@@ -171,6 +196,7 @@ module.exports = {
     mockLabsEnabled,
     mockLabsDisabled,
     mockWebhookRequests,
+    mockSetting,
     restore,
     assert: {
         sentEmailCount,
