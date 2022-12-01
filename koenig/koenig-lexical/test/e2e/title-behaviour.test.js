@@ -160,6 +160,38 @@ describe('Title behaviour (ExternalControlPlugin)', async () => {
                 titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(false);
             });
+
+            it('selects card if that is first section in doc', async function () {
+                await focusEditor(page);
+                await page.keyboard.type('--- ');
+
+                await page.getByTestId('post-title').click();
+                await page.keyboard.press('ArrowDown');
+
+                const title = page.getByTestId('post-title');
+                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                expect(titleHasFocus).toEqual(false);
+
+                // card is selected
+                await assertHTML(page, html`
+                    <div data-lexical-decorator="true" contenteditable="false">
+                       <div data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
+                    </div>
+                    <p><br /></p>
+                `);
+
+                // editor has focus so it's possible to continue typing
+                await page.keyboard.press('Enter');
+                await page.keyboard.type('Testing');
+
+                await assertHTML(page, html`
+                    <div data-lexical-decorator="true" contenteditable="false">
+                       <div data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
+                    </div>
+                    <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+                    <p><br /></p>
+                `);
+            });
         });
     });
 

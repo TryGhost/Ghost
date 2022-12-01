@@ -12,6 +12,8 @@ import MarkdownShortcutPlugin, {
     CODE_BLOCK as CODE_BLOCK_TRANSFORMER
 } from './plugins/MarkdownShortcutPlugin';
 
+export * from './utils';
+
 export {
     DesignSandbox,
     KoenigComposer,

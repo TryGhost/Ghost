@@ -1,7 +1,8 @@
 import React from 'react';
-import {$createParagraphNode, $getRoot} from 'lexical';
+import {$createParagraphNode, $getRoot, $isDecoratorNode} from 'lexical';
 import {$canShowPlaceholder} from '@lexical/text';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
 
 // used to register a minimal API for controlling the editor from the consuming app
 // designed to allow typical behaviours without the consuming app needing to bundle the lexical library
@@ -30,6 +31,22 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                 };
 
                 editor.focus(() => {}, editorFocusOptions);
+
+                if (position === 'top') {
+                    // Lexical does not automatically select a decorator node
+                    editor.update(() => {
+                        const root = $getRoot();
+                        const firstChild = root.getFirstChild();
+
+                        if ($isDecoratorNode(firstChild)) {
+                            $selectDecoratorNode(firstChild);
+                            // selecting a decorator node does not change the
+                            // window selection (there's no caret) so we need
+                            // to manually move focus to the editor element
+                            editor.getRootElement().focus();
+                        }
+                    });
+                }
             },
             blurEditor() {
                 editor.blur();

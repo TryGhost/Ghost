@@ -1,7 +1,6 @@
 import React from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {
-    $createNodeSelection,
     $getSelection,
     $isDecoratorNode,
     $isElementNode,
@@ -23,31 +22,15 @@ import {
     PASTE_COMMAND,
     INSERT_PARAGRAPH_COMMAND
 } from 'lexical';
+import {
+    $isAtStartOfDocument,
+    $selectDecoratorNode
+} from '../utils/';
 import {$createLinkNode} from '@lexical/link';
 import {mergeRegister} from '@lexical/utils';
 import {$isListItemNode} from '@lexical/list';
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
-
-function $isAtStartOfDocument(selection) {
-    let [selectedNode] = selection.getNodes();
-    if ($isTextNode(selectedNode)) {
-        selectedNode = selectedNode.getParent();
-    }
-    const selectedIndex = selectedNode.getIndexWithinParent();
-    const selectedTopLevelIndex = selectedNode.getTopLevelElement()?.getIndexWithinParent();
-
-    return selectedIndex === 0
-        && selectedTopLevelIndex === 0
-        && selection.anchor.offset === 0
-        && selection.focus.offset === 0;
-}
-
-function $selectDecoratorNode(node) {
-    const nodeSelection = $createNodeSelection();
-    nodeSelection.add(node.getKey());
-    $setSelection(nodeSelection);
-}
 
 function getTopLevelNativeElement(node) {
     if (node.nodeType === Node.TEXT_NODE) {
