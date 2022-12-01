@@ -98,8 +98,6 @@ const imageScraper = async (importedPost) => {
         posts_meta: {}
     };
 
-    newPostData.title = `${postData.title} - default image`;
-
     if (postData.feature_image) {
         newPostData.feature_image = await getAndSaveImage(postData.feature_image);
     }
