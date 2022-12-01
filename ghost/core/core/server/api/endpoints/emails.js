@@ -11,7 +11,7 @@ const messages = {
 };
 
 const allowedBatchIncludes = ['count.recipients'];
-const allowedFailureIncludes = ['member'];
+const allowedFailureIncludes = ['member', 'email_recipient'];
 
 module.exports = {
     docName: 'emails',

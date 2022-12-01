@@ -18,6 +18,18 @@ const failureFields = [
     'event_id'
 ];
 
+const emailRecipientFields = [
+    'id',
+    'batch_id',
+    'processed_at',
+    'delivered_at',
+    'opened_at',
+    'failed_at',
+    'member_uuid',
+    'member_email',
+    'member_name'
+];
+
 const failureMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
@@ -27,6 +39,12 @@ const failureMapper = (model, frame) => {
         response.member = _.pick(jsonModel.member, memberFields);
     } else {
         response.member = null;
+    }
+
+    if (jsonModel.emailRecipient) {
+        response.email_recipient = _.pick(jsonModel.emailRecipient, emailRecipientFields);
+    } else {
+        response.email_recipient = null;
     }
 
     return response;

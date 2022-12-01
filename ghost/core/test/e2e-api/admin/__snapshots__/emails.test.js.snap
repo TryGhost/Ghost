@@ -5,6 +5,7 @@ Object {
   "failures": Array [
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -15,6 +16,7 @@ Object {
     },
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -25,6 +27,7 @@ Object {
     },
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -35,6 +38,7 @@ Object {
     },
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -45,6 +49,7 @@ Object {
     },
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -71,7 +76,7 @@ exports[`Emails API Can browse all email failures 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1207",
+  "content-length": "1322",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -196,6 +201,170 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "412",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Emails API Can browse email failures with includes 1: [body] 1`] = `
+Object {
+  "failures": Array [
+    Object {
+      "code": 555,
+      "email_recipient": Object {
+        "batch_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "delivered_at": Nullable<StringMatching>,
+        "failed_at": Nullable<StringMatching>,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member_email": "member1@test.com",
+        "member_name": "Mr Egg",
+        "member_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        "opened_at": Nullable<StringMatching>,
+        "processed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      },
+      "enhanced_code": "5.5.5",
+      "event_id": Any<String>,
+      "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "email": "member1@test.com",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "message": "Temporary failure",
+      "severity": "temporary",
+    },
+    Object {
+      "code": 555,
+      "email_recipient": Object {
+        "batch_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "delivered_at": Nullable<StringMatching>,
+        "failed_at": Nullable<StringMatching>,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member_email": "member2@test.com",
+        "member_name": null,
+        "member_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        "opened_at": Nullable<StringMatching>,
+        "processed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      },
+      "enhanced_code": "5.5.5",
+      "event_id": Any<String>,
+      "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "email": "member2@test.com",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": null,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "message": "Temporary failure",
+      "severity": "temporary",
+    },
+    Object {
+      "code": 555,
+      "email_recipient": Object {
+        "batch_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "delivered_at": Nullable<StringMatching>,
+        "failed_at": Nullable<StringMatching>,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member_email": "member1@test.com",
+        "member_name": "Mr Egg",
+        "member_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        "opened_at": Nullable<StringMatching>,
+        "processed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      },
+      "enhanced_code": "5.5.5",
+      "event_id": Any<String>,
+      "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "email": "paid@test.com",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Egon Spengler",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "message": "Temporary failure",
+      "severity": "temporary",
+    },
+    Object {
+      "code": 555,
+      "email_recipient": Object {
+        "batch_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "delivered_at": Nullable<StringMatching>,
+        "failed_at": Nullable<StringMatching>,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member_email": "member1@test.com",
+        "member_name": "Mr Egg",
+        "member_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        "opened_at": Nullable<StringMatching>,
+        "processed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      },
+      "enhanced_code": "5.5.5",
+      "event_id": Any<String>,
+      "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "email": "trialing@test.com",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Ray Stantz",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "message": "Temporary failure",
+      "severity": "temporary",
+    },
+    Object {
+      "code": 555,
+      "email_recipient": Object {
+        "batch_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "delivered_at": Nullable<StringMatching>,
+        "failed_at": Nullable<StringMatching>,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "member_email": "member5@test.com",
+        "member_name": "Mr Egg",
+        "member_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+        "opened_at": Nullable<StringMatching>,
+        "processed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      },
+      "enhanced_code": "5.5.5",
+      "event_id": Any<String>,
+      "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "email": "vip@test.com",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Winston Zeddemore",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "message": "Test failure",
+      "severity": "permanent",
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Emails API Can browse email failures with includes 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3407",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -400,6 +569,7 @@ Object {
   "failures": Array [
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -426,7 +596,7 @@ exports[`Emails API Can browse permanent email failures 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "319",
+  "content-length": "342",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -439,6 +609,7 @@ Object {
   "failures": Array [
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -449,6 +620,7 @@ Object {
     },
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -459,6 +631,7 @@ Object {
     },
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -469,6 +642,7 @@ Object {
     },
     Object {
       "code": 555,
+      "email_recipient": null,
       "enhanced_code": "5.5.5",
       "event_id": Any<String>,
       "failed_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -495,7 +669,7 @@ exports[`Emails API Can browse temporary email failures 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "990",
+  "content-length": "1082",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",

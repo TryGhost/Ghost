@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyErrorId, anyString} = matchers;
+const {nullable, anything, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyErrorId, anyString} = matchers;
 const assert = require('assert');
 
 const matchEmail = {
@@ -154,12 +154,27 @@ describe('Emails API', function () {
             });
     });
 
-    it('Can browse email failures with members', async function () {
+    it('Can browse email failures with includes', async function () {
         await agent
-            .get(`emails/${fixtureManager.get('emails', 0).id}/recipient-failures/?order=failed_at%20DESC&include=member`)
+            .get(`emails/${fixtureManager.get('emails', 0).id}/recipient-failures/?order=failed_at%20DESC&include=member,email_recipient`)
             .expectStatus(200)
             .matchBodySnapshot({
-                failures: new Array(5).fill({...matchFailure, member: {id: anyObjectId, uuid: anyUuid}})
+                failures: new Array(5).fill({
+                    ...matchFailure,
+                    member: {
+                        id: anyObjectId,
+                        uuid: anyUuid
+                    },
+                    email_recipient: {
+                        id: anyObjectId,
+                        member_uuid: anyUuid,
+                        opened_at: nullable(anyISODateTime), // Can be null or string
+                        delivered_at: nullable(anyISODateTime), // Can be null or string
+                        failed_at: nullable(anyISODateTime), // Can be null or string
+                        processed_at: anyISODateTime,
+                        batch_id: anyObjectId
+                    }
+                })
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
