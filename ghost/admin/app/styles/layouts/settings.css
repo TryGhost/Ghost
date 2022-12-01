@@ -3230,16 +3230,20 @@ p.theme-validation-details {
 }
 
 .gh-email-debug .gh-list {
-    display: block;
     border-bottom: none;
+}
+
+.gh-email-debug .gh-list thead,
+.gh-email-debug .gh-list tbody {
+    width: 100%;
 }
 
 .gh-email-debug .gh-list tr:first-of-type .gh-list-data {
     border-top: none;
 }
 
-.gh-email-debug-permanent-failures .gh-list-data {
-    vertical-align: top;
+.gh-email-debug .gh-list tr .gh-list-data:first-of-type {
+    padding-left: 0;
 }
 
 .gh-email-debug-col-member {
@@ -3279,5 +3283,93 @@ p.theme-validation-details {
 
 .gh-email-debug-failure-code span {
     color: var(--darkgrey);
-    font-weight: 600;
+    font-weight: 500;
+}
+
+.gh-email-debug .gh-list-data {
+    height: 98px;
+}
+
+.gh-email-debug-batch-col-status span {
+    display: inline-block;
+    position: relative;
+    padding-left: 16px;
+    color: var(--midlightgrey);
+}
+
+.gh-email-debug-batch-col-status span::before {
+    display: block;
+    position: absolute;
+    content: "";
+    top: 6px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--midlightgrey);
+}
+
+.gh-email-debug-batch-col-status .failed {
+    color: var(--red);
+}
+
+.gh-email-debug-batch-col-status .failed::before {
+    background: var(--red);
+}
+
+.gh-email-debug-batch-col-status .submitting {
+    color: var(--blue);
+}
+
+.gh-email-debug-batch-col-status .submitting::before {
+    background: var(--blue);
+}
+
+.gh-email-debug-batch-col-status .submitted {
+    color: var(--green);
+}
+
+.gh-email-debug-batch-col-status .submitted::before {
+    background: var(--green);
+}
+
+.gh-email-debug-batch-col-created,
+.gh-email-debug-batch-col-details {
+    color: var(--midgrey);
+}
+
+.gh-email-debug-batch-col-created span,
+.gh-email-debug-batch-col-segment span {
+    white-space: nowrap;
+}
+
+.gh-email-debug-batch-col-details .detailtext div {
+    word-break: break-all;
+}
+
+.gh-email-debug-batch-col-segment span {
+    display: inline-block;
+    border-radius: 2px;
+    background: color-mod(var(--black) a(5%));
+    padding: 1px 6px;
+    color: var(--middarkgrey);
+}
+
+.gh-email-debug-batch-col-details span {
+    color: var(--darkgrey);
+    font-weight: 500;
+}
+
+.gh-email-debug-batch-col-details .download-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: 20px;
+}
+
+.gh-email-debug-batch-col-details .download-icon path {
+    stroke: var(--midgrey);
+}
+
+.gh-email-debug-batch-col-details .detailtext {
+    flex-grow: 1;
 }
