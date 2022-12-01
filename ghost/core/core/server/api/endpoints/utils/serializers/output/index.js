@@ -97,6 +97,10 @@ module.exports = {
         return require('./email-posts');
     },
 
+    get emails() {
+        return require('./emails');
+    },
+
     get oembed() {
         return require('./oembed');
     },
