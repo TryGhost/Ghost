@@ -12,7 +12,7 @@ function PopulatedImageCard({src, alt, previewSrc, progress}) {
     };
     return (
         <div>
-            <img className={previewSrc ? `opacity-40` : ``} src={previewSrc ? previewSrc : src} alt={alt ? alt : `upload in progress, ${progress} `} />
+            <img className={`mx-auto ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : `upload in progress, ${progress} `} />
             {previewSrc && progress && !src ?
                 <div className="absolute inset-0 flex items-center min-w-full bg-white/50 justify-center overflow-hidden">
                     <div className="not-kg-prose bg-grey-200 rounded-full shadow w-[60%]">
