@@ -414,7 +414,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_TAB_COMMAND,
                 (event) => {
-                    if (event.shiftKey) {
+                    if (event.shiftKey && cursorDidExitAtTop) {
                         const selection = $getSelection();
 
                         if ($isNodeSelection(selection)) {
