@@ -3180,3 +3180,104 @@ p.theme-validation-details {
     margin: 4px 0 8px;
     border-top: none;
 }
+
+
+/* Debug screen
+/* ---------------------------------------------------------- */
+
+.gh-email-debug .gh-post-analytics-header .gh-canvas-header-content {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.gh-email-debug-error {
+    display: flex;
+    margin-top: 20px;
+    padding: 12px 16px 12px 40px;
+}
+
+.gh-email-debug-error svg {
+    height: 20px !important;
+    margin-top: -2px;
+}
+
+.gh-email-debug-errortext {
+    flex-grow: 1;
+    margin-left: 4px;
+}
+
+.gh-email-debug-error h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-email-debug-error button {
+    min-width: 80px;
+}
+
+.gh-email-debug-settingstab-icon {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 11px;
+    margin-top: 2px;
+}
+
+.gh-email-debug-settingstab-icon svg path,
+.gh-email-debug-settingstab-icon svg circle {
+    stroke-width: 2;
+}
+
+.gh-email-debug .gh-list {
+    display: block;
+    border-bottom: none;
+}
+
+.gh-email-debug .gh-list tr:first-of-type .gh-list-data {
+    border-top: none;
+}
+
+.gh-email-debug-permanent-failures .gh-list-data {
+    vertical-align: top;
+}
+
+.gh-email-debug-col-member {
+    padding-left: 0;
+    width: 25%;
+}
+
+.gh-email-debug-member {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.gh-email-debug-failure {
+    display: flex;
+}
+
+.gh-email-debug-failure svg {
+    height: 16px;
+    width: 16px;
+    margin-right: 4px;
+}
+
+.gh-email-debug-failure-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.gh-email-debug-failure-codes {
+    display: flex;
+    gap: 20px;
+}
+
+.gh-email-debug-failure-code {
+    color: var(--midgrey);
+}
+
+.gh-email-debug-failure-code span {
+    color: var(--darkgrey);
+    font-weight: 600;
+}
