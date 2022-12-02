@@ -384,11 +384,22 @@ class EmailRenderer {
                 if (definition) {
                     replacements.push({
                         id: replacementStr,
+                        originalId: recipientProperty,
                         token: new RegExp(escapeRegExp(replacementMatch), 'g'),
                         getValue: fallback ? (member => definition.getValue(member) || fallback) : definition.getValue
                     });
                 }
             }
+        }
+
+        // Now loop any replacements with possible invalid characters and replace them with a clean id
+        let counter = 1;
+        for (const replacement of replacements) {
+            if (replacement.id.match(/[^a-zA-Z0-9_]/)) {
+                counter += 1;
+                replacement.id = replacement.originalId + '_' + counter;
+            }
+            delete replacement.originalId;
         }
 
         return replacements;
