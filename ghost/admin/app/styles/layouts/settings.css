@@ -3413,3 +3413,10 @@ p.theme-validation-details {
 .gh-email-debug-settings-icon .x path {
     stroke: var(--midgrey);
 }
+
+.gh-email-debug-empty-list {
+    margin: 120px 40px;
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
