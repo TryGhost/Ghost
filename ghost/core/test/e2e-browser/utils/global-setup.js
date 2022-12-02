@@ -7,7 +7,7 @@ const {chromium} = require('@playwright/test');
 const models = require('../../../core/server/models');
 
 const startWebhookServer = () => {
-    const command = `stripe listen --forward-to ${config.getSiteUrl()}/members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_API_KEY}` : ''}`.trim();
+    const command = `stripe listen --forward-to ${config.getSiteUrl()}/members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
     spawn(command.split(' ')[0], command.split(' ').slice(1));
 };
 
