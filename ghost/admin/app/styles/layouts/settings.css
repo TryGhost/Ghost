@@ -3254,6 +3254,7 @@ p.theme-validation-details {
 .gh-email-debug-member {
     display: flex;
     flex-wrap: nowrap;
+    align-items: center;
 }
 
 .gh-email-debug-failure {
