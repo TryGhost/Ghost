@@ -30,8 +30,8 @@ export default class Debug extends Component {
             statusClass: this.post.email?.status,
             status: this.getStatusLabel(this.post.email?.status),
             recipientFilter: this.post.email?.recipientFilter,
-            createdAt: this.post.email.createdAtUTC ? moment(this.post.email.createdAtUTC).format('DD MMM, YYYY, HH:mm:ss') : '',
-            submittedAt: this.post.email.submittedAtUTC ? moment(this.post.email.submittedAtUTC).format('DD MMM, YYYY, HH:mm:ss') : '',
+            createdAt: this.post.email?.createdAtUTC ? moment(this.post.email.createdAtUTC).format('DD MMM, YYYY, HH:mm:ss') : '',
+            submittedAt: this.post.email?.submittedAtUTC ? moment(this.post.email.submittedAtUTC).format('DD MMM, YYYY, HH:mm:ss') : '',
             emailsSent: this.post.email?.emailCount,
             emailsDelivered: this.post.email?.deliveredCount,
             emailsFailed: this.post.email?.failedCount,
@@ -140,8 +140,10 @@ export default class Debug extends Component {
 
     @action
     loadData() {
-        this.fetchEmailBatches();
-        this.fetchRecipientFailures();
+        if (this.post.email) {
+            this.fetchEmailBatches();
+            this.fetchRecipientFailures();
+        }
     }
 
     async fetchEmailBatches() {
