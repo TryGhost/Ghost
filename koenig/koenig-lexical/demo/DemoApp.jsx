@@ -45,7 +45,6 @@ function DemoApp() {
     return (
         <div className="koenig-lexical top">
             <KoenigComposer initialEditorState={defaultContent} imageUploadFunction={{imageUploader}}>
-                <Watermark />
                 <div className="h-full grow relative">
                     {
                         query.get('content') !== 'false'
@@ -53,7 +52,7 @@ function DemoApp() {
                             : null
                     }
                     <div className="h-full overflow-auto">
-                        <div className="mx-auto max-w-[740px] py-[15vmin]">
+                        <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
                             <TitleTextBox title={title} setTitle={setTitle} editorAPI={editorAPI} ref={titleRef} />
                             <KoenigEditor
                                 registerAPI={setEditorAPI}
@@ -62,9 +61,10 @@ function DemoApp() {
                         </div>
                     </div>
                 </div>
-                <div className="flex h-full flex-col items-end">
+                <Watermark />
+                <div className="absolute sm:relative flex h-full flex-col items-end z-20">
                     <Sidebar isOpen={isSidebarOpen} view={sidebarView} />
-                    <FloatingButton onClick={openSidebar} />
+                    <FloatingButton isOpen={isSidebarOpen} onClick={openSidebar} />
                 </div>
             </KoenigComposer>
         </div>
