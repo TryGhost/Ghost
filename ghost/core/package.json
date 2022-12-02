@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.24.2",
+  "version": "5.25.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -204,6 +204,7 @@
     "cli-progress": "3.11.2",
     "cssnano": "5.1.14",
     "eslint": "8.28.0",
+    "expect": "^28.1.3",
     "html-validate": "7.10.0",
     "inquirer": "8.2.5",
     "jwks-rsa": "3.0.0",
@@ -218,8 +219,7 @@
     "should": "13.2.3",
     "sinon": "14.0.2",
     "supertest": "6.3.1",
-    "tmp": "0.2.1",
-    "expect": "^28.1.3"
+    "tmp": "0.2.1"
   },
   "resolutions": {
     "@tryghost/logging": "2.3.2",
