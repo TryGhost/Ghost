@@ -304,6 +304,7 @@ describe('Email renderer', function () {
     });
 
     describe('renderBody', function () {
+        let renderedPost = '<p> Lexical Test</p>';
         let emailRenderer = new EmailRenderer({
             audienceFeedbackService: {
                 buildLink: () => {
@@ -337,7 +338,7 @@ describe('Email renderer', function () {
             renderers: {
                 lexical: {
                     render: () => {
-                        return '<p> Lexical Test</p>';
+                        return renderedPost;
                     }
                 },
                 mobiledoc: {
@@ -422,6 +423,97 @@ describe('Email renderer', function () {
                     token: /%%\{unsubscribe_url\}%%/g
                 }
             ]);
+        });
+
+        it('removes data-gh-segment and renders paywall', async function () {
+            renderedPost = '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both <!--members-only--> finishing part only for members';
+            let post = {
+                url: '',
+                related: () => {
+                    return null;
+                },
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {
+                        models: [{
+                            get: (key) => {
+                                if (key === 'name') {
+                                    return 'Test Author';
+                                }
+                            }
+                        }]
+                    };
+                }
+            };
+            let newsletter = {
+                get: (key) => {
+                    if (key === 'header_image') {
+                        return null;
+                    }
+
+                    if (key === 'name') {
+                        return 'Test Newsletter';
+                    }
+
+                    if (key === 'badge') {
+                        return false;
+                    }
+
+                    if (key === 'feedback_enabled') {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+            let options = {};
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                'status:free',
+                options
+            );
+
+            response.plaintext.should.containEql('Test Post');
+            response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
+            response.plaintext.should.containEql('http://example.com');
+            response.html.should.containEql('Test Post');
+            response.html.should.containEql('Unsubscribe');
+            response.html.should.containEql('http://example.com');
+            response.replacements.length.should.eql(1);
+            response.replacements.should.match([
+                {
+                    id: 'unsubscribe_url',
+                    token: /%%\{unsubscribe_url\}%%/g
+                }
+            ]);
+            response.html.should.not.containEql('members only section');
+            response.html.should.containEql('some text for both');
+            response.html.should.not.containEql('finishing part only for members');
+            response.html.should.containEql('Become a paid member of Test Blog to get access to all');
+
+            let responsePaid = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                'status:-free',
+                options
+            );
+            responsePaid.html.should.containEql('members only section');
+            responsePaid.html.should.containEql('some text for both');
+            responsePaid.html.should.containEql('finishing part only for members');
+            responsePaid.html.should.not.containEql('Become a paid member of Test Blog to get access to all');
         });
     });
 });
