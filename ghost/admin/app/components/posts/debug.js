@@ -20,11 +20,9 @@ export default class Debug extends Component {
     }
 
     get emailError() {
-        if (this.post.email?.error) {
-            return {
-                message: this.post.email.error
-            }
-        }
+        return {
+            message: this.post.email?.error || 'Failed to send email!'
+        };
     }
 
     get emailSettings() {
