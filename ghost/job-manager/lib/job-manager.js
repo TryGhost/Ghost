@@ -39,7 +39,7 @@ class JobManager {
      * @param {Object} [options.domainEvents] - domain events emitter
      */
     constructor({errorHandler, workerMessageHandler, JobModel, domainEvents}) {
-        this.queue = fastq(this, worker, 1);
+        this.queue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
         this.#domainEvents = domainEvents;
