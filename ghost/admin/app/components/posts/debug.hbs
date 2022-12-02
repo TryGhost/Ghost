@@ -91,6 +91,13 @@
                     </div>
                 </tr>
                 {{/each}}
+                {{#unless this.permanentFailureData}}
+                <tr>
+                    <td>
+                        <div class="gh-email-debug-empty-list">No permanent failures.</div>    
+                    </td>
+                </tr>
+                {{/unless}}
                 {{!-- <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
                         <div class="gh-email-debug-member">
@@ -223,6 +230,13 @@
                     </div>
                 </tr>
                 {{/each}}
+                {{#unless this.temporaryFailureData}}
+                <tr>
+                    <td>
+                        <div class="gh-email-debug-empty-list">No temporary failures.</div>    
+                    </td>
+                </tr>
+                {{/unless}}
                 {{!-- <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
                         <div class="gh-email-debug-member">
@@ -313,6 +327,8 @@
                         <div class="gh-list-data gh-email-debug-batch-col-segment">
                             {{#if batch.segment}}
                                 <span>{{batch.segment}}</span>
+                            {{else}}
+                                <div class="dib lightgrey">N/A</div>
                             {{/if}}
                         </div>
                         <div class="gh-list-data gh-email-debug-batch-col-recipients">
@@ -320,25 +336,29 @@
                         </div>
                         <div class="gh-list-data gh-email-debug-batch-col-details">
                             <div class="flex flex-col items-center space-between w100">
-                                <div class="detailtext">
-                                    {{#if batch.providerId}}
-                                    <div>Provider id:
-                                        <span>
-                                            {{batch.providerId}}
-                                        </span>
+                                {{#if (or batch.providerId batch.errorStatusCode batch.errorMessage)}}
+                                    <div class="detailtext">
+                                        {{#if batch.providerId}}
+                                        <div>Provider id:
+                                            <span>
+                                                {{batch.providerId}}
+                                            </span>
+                                        </div>
+                                        {{/if}}
+                                        {{#if batch.errorStatusCode}}
+                                        <div>
+                                            Failure status code: <span>{{batch.errorStatusCode}}</span>
+                                        </div>
+                                        {{/if}}
+                                        {{#if batch.errorMessage}}
+                                        <code>{{batch.errorMessage}}</code>
+                                        {{/if}}
                                     </div>
-                                    {{/if}}
-                                    {{#if batch.errorStatusCode}}
-                                    <div>
-                                        Failure status code: <span>{{batch.errorStatusCode}}</span>
-                                    </div>
-                                    {{/if}}
                                     {{#if batch.errorMessage}}
-                                    <code>{{batch.errorMessage}}</code>
+                                    <div class="download-icon">{{svg-jar "download" title="Download full failure message"}}</div>
                                     {{/if}}
-                                </div>
-                                {{#if batch.errorMessage}}
-                                <div class="download-icon">{{svg-jar "download" title="Download full failure message"}}</div>
+                                {{else}}
+                                    <div class="dib lightgrey">N/A</div>
                                 {{/if}}
                             </div>
                         </div>
