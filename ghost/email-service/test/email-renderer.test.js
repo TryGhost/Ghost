@@ -56,7 +56,7 @@ describe('Email renderer', function () {
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name, "there"\\}%%/g');
-            assert.equal(replacements[0].id, 'first_name, "there"');
+            assert.equal(replacements[0].id, 'first_name_2');
             assert.equal(replacements[0].getValue(member), 'Test');
 
             // In case of empty name
@@ -68,14 +68,14 @@ describe('Email renderer', function () {
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
             assert.equal(replacements.length, 3);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name, "there"\\}%%/g');
-            assert.equal(replacements[0].id, 'first_name, "there"');
+            assert.equal(replacements[0].id, 'first_name_2');
             assert.equal(replacements[0].getValue(member), 'Test');
 
             // In case of empty name
             assert.equal(replacements[0].getValue({name: ''}), 'there');
 
             assert.equal(replacements[1].token.toString(), '/%%\\{first_name, "member"\\}%%/g');
-            assert.equal(replacements[1].id, 'first_name, "member"');
+            assert.equal(replacements[1].id, 'first_name_3');
             assert.equal(replacements[1].getValue(member), 'Test');
 
             // In case of empty name
