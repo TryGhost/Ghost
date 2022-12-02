@@ -3437,6 +3437,7 @@ p.theme-validation-details {
 
 .gh-email-debug-readmore-error label {
     order: 3;
+    cursor: pointer;
 }
 
 .gh-email-debug-readmore-error .toggle-checkbox {
