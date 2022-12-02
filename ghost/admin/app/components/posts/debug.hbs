@@ -44,8 +44,8 @@
                 <div class="gh-box gh-box-error gh-box-tip gh-email-debug-error">
                     {{svg-jar "warning"}}
                     <div class="gh-email-debug-errortext">
-                        <h4>Something went wrong!</h4>
-                        <p class="mb0">{{this.emailError.message}}</p>
+                        <h4>{{this.emailError.message}}</h4>
+                        <p class="mb0">{{this.emailError.details}}</p>
                     </div>
                     <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-btn gh-btn-primary gh-btn-icon gh-btn-red ember-view self-center">
                         <span>Retry</span>
@@ -58,7 +58,7 @@
     <Tabs::Tabs class="gh-tabs-analytics" @forceRender={{true}} as |tabs|>
         <tabs.tab>
             <h3>{{svg-jar "analytics-tab-sent-large"}} {{this.tabTotals.permanentFailures}}</h3>
-            <p><span class="analytics-tab-label">Permanent failures</span></p>
+            <p><span class="analytics-tab-label">Permanent {{gh-pluralize this.tabTotals.permanentFailures "failure" without-count=true}}</span></p>
         </tabs.tab>
 
         <tabs.tabPanel>
@@ -107,7 +107,7 @@
 
         <tabs.tab>
             <h3>{{svg-jar "analytics-tab-opened-large"}}{{this.tabTotals.temporaryFailures}}</h3>
-            <p><span class="analytics-tab-label">Temporary failures</span></p>
+            <p><span class="analytics-tab-label">Temporary {{gh-pluralize this.tabTotals.temporaryFailures "failure" without-count=true}}</span></p>
         </tabs.tab>
 
         <tabs.tabPanel>
@@ -161,7 +161,7 @@
 
         <tabs.tab>
             <h3>{{svg-jar "analytics-tab-clicked-large"}}{{this.tabTotals.erroredBatches}}</h3>
-            <p><span class="analytics-tab-label">Batches errored</span></p>
+            <p><span class="analytics-tab-label">{{gh-pluralize this.tabTotals.erroredBatches "batch" without-count=true}} errored</span></p>
         </tabs.tab>
 
         <tabs.tabPanel>
