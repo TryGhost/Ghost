@@ -15,6 +15,7 @@
 const _ = require('lodash');
 const {sequence} = require('@tryghost/promise');
 const {any, stringMatching} = require('@tryghost/express-test').snapshot;
+const {AsymmetricMatcher} = require('expect');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
@@ -348,6 +349,32 @@ const insertWebhook = ({event, url}) => {
     });
 };
 
+class Nullable extends AsymmetricMatcher {
+    constructor(sample) {
+        super(sample);
+    }
+
+    asymmetricMatch(other) {
+        if (other === null) {
+            return true;
+        }
+
+        return this.sample.asymmetricMatch(other);
+    }
+
+    toString() {
+        return `Nullable<${this.sample.toString()}>`;
+    }
+
+    getExpectedType() {
+        return `null|${this.sample.getExpectedType()}`;
+    }
+
+    toAsymmetricMatcher() {
+        return `Nullable<${this.sample.toAsymmetricMatcher ? this.sample.toAsymmetricMatcher() : this.sample.toString()}>`;
+    }
+}
+
 module.exports = {
     // request agent
     agentProvider: {
@@ -379,6 +406,7 @@ module.exports = {
         anyArray: any(Array),
         anyObject: any(Object),
         anyNumber: any(Number),
+        nullable: expectedObject => new Nullable(expectedObject), // usage: nullable(anyString)
         anyStringNumber: stringMatching(/\d+/),
         anyISODateTime: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
         anyISODate: stringMatching(/\d{4}-\d{2}-\d{2}/),

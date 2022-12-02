@@ -10,6 +10,9 @@ const messages = {
     retryNotAllowed: 'Only failed emails can be retried'
 };
 
+const allowedBatchIncludes = ['count.recipients'];
+const allowedFailureIncludes = ['member', 'email_recipient'];
+
 module.exports = {
     docName: 'emails',
 
@@ -80,6 +83,62 @@ module.exports = {
             }
 
             return await megaService.mega.retryFailedEmail(model);
+        }
+    },
+
+    browseBatches: {
+        options: [
+            'limit',
+            'fields',
+            'filter',
+            'order',
+            'page',
+            'include'
+        ],
+        data: [
+            'id'
+        ],
+        validation: {
+            options: {
+                include: {
+                    values: allowedBatchIncludes
+                }
+            }
+        },
+        permissions: {
+            method: 'browse'
+        },
+        async query(frame) {
+            const filter = `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
+            return await models.EmailBatch.findPage({...frame.options, filter});
+        }
+    },
+
+    browseFailures: {
+        options: [
+            'limit',
+            'fields',
+            'filter',
+            'order',
+            'page',
+            'include'
+        ],
+        data: [
+            'id'
+        ],
+        validation: {
+            options: {
+                include: {
+                    values: allowedFailureIncludes
+                }
+            }
+        },
+        permissions: {
+            method: 'browse'
+        },
+        async query(frame) {
+            const filter = `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
+            return await models.EmailRecipientFailure.findPage({...frame.options, filter});
         }
     }
 };
