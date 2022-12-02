@@ -13,7 +13,7 @@
     border-radius: 3px;
 }
 
-.gh-box a {
+.gh-box a:not(.gh-btn) {
     color: var(--black);
     font-weight: 500;
 }
