@@ -8,22 +8,24 @@ export default class Debug extends AuthenticatedRoute {
         let query = {
             id,
             include: [
-                'tags', 
-                'authors', 
-                'authors.roles', 
-                'email', 
-                'tiers', 
-                'newsletter', 
-                'count.conversions', 
-                'count.clicks', 
-                'sentiment', 
-                'count.positive_feedback', 
+                'tags',
+                'authors',
+                'authors.roles',
+                'email',
+                'tiers',
+                'newsletter',
+                'count.conversions',
+                'count.clicks',
+                'sentiment',
+                'count.positive_feedback',
                 'count.negative_feedback'
             ].join(',')
         };
 
         return this.store.query('post', query)
-            .then(records => records.get('firstObject'));
+            .then((records) => {
+                return records.get('firstObject');
+            });
     }
 
     // the API will return a post even if the logged in user doesn't have
