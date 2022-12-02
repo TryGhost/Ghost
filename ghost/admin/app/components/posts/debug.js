@@ -161,7 +161,9 @@ export default class Debug extends Component {
     @task
     *_fetchEmailBatches() {
         const data = {
-            include: 'count.recipients'
+            include: 'count.recipients',
+            limit: 'all',
+            order: 'status asc, created_at desc'
         };
 
         let statsUrl = this.ghostPaths.url.api(`emails/${this.post.email.id}/batches`);
@@ -186,7 +188,8 @@ export default class Debug extends Component {
     @task
     *_fetchRecipientFailures() {
         const data = {
-            include: 'member,email_recipient'
+            include: 'member,email_recipient',
+            limit: 'all'
         };
         let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/recipient-failures`);
         let result = yield this.ajax.request(statsUrl, {data});
