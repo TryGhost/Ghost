@@ -6,8 +6,20 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
       site_url:
-        description: 'Site URL to test, or blank for local'
+        description: 'Site URL (override)'
+        required: false
+        type: string
+      owner_email:
+        description: 'Owner email (override)'
+        required: false
+        type: string
+      owner_password:
+        description: 'Owner password (override)'
         required: false
         type: string
 jobs:
@@ -44,10 +56,21 @@ jobs:
       working-directory: ghost/admin
       run: yarn build:prod
 
-    - name: Run Playwright tests
+    - name: Run Playwright tests on a remote site
+      if: github.event.inputs.environment == 'browser-tests-staging'
       run: yarn test:browser
       env:
-        TEST_URL: ${{ github.event.inputs.site_url }}
+        TEST_URL: ${{ github.event.inputs.site_url || secrets.TEST_URL }}
+        TEST_OWNER_EMAIL: ${{ github.event.inputs.owner_email || secrets.TEST_OWNER_EMAIL }}
+        TEST_OWNER_PASSWORD: ${{ github.event.inputs.owner_password || secrets.TEST_OWNER_PASSWORD }}
+
+    - name: Run Playwright tests locally
+      if: github.event.inputs.environment == 'browser-tests-local'
+      run: yarn test:browser
+      env:
+        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+        STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        STRIPE_ACCOUNT_ID: ${{ secrets.STRIPE_ACCOUNT_ID }}
 
     - uses: actions/upload-artifact@v3
       if: always()
