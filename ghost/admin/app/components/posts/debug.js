@@ -19,6 +19,14 @@ export default class Debug extends Component {
         return this.args.post;
     }
 
+    get emailError() {
+        if (this.post.email?.error) {
+            return {
+                message: this.post.email.error
+            }
+        }
+    }
+
     get emailSettings() {
         return {
             statusClass: this.post.email?.status,
@@ -68,6 +76,9 @@ export default class Debug extends Component {
             return {
                 id: failure.id,
                 code: failure.code,
+                failedAt: failure.failed_at ? moment(failure.failed_at).format('DD MMM, YYYY, HH:mm:ss') : '',
+                processedAt: failure.email_recipient.processed_at ? moment(failure.email_recipient.processed_at).format('DD MMM, YYYY, HH:mm:ss') : '',
+                batchId: failure.email_recipient.batch_id,
                 enhancedCode: failure.enhanced_code,
                 message: failure.message,
                 recipient: {

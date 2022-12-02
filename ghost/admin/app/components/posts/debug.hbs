@@ -43,8 +43,8 @@
             <div class="gh-box gh-box-error gh-box-tip gh-email-debug-error">
                 {{svg-jar "warning"}}
                 <div class="gh-email-debug-errortext">
-                    <h4>Major error</h4>
-                    <p class="mb0">This is the explanation of what happened.</p>
+                    <h4>Something went wrong!</h4>
+                    <p class="mb0">{{this.emailError.message}}</p>
                 </div>
                 <button type="button" class="gh-btn gh-btn-primary gh-btn-icon gh-btn-red ember-view self-center"><span>Retry</span></button>
             </div>
