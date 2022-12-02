@@ -15,7 +15,8 @@ const Template = args => (
 
 export const Gallery = Template.bind({});
 Gallery.args = {
-    zoomedUrl: null
+    zoomedUrl: null,
+    isLoading: false
 };
 
 export const Zoomed = Template.bind({});

@@ -72,7 +72,7 @@ const divideArray = (arr, n) => {
     return out;
 };
 
-export function UnsplashSelector({toggle, insertImage, zoomedUrl, closeModal}) {
+export function UnsplashSelector({toggle, insertImage, zoomedUrl, closeModal, isLoading}) {
     const [zoomedImg, setZoomedImg] = React.useState(zoomedUrl || null);
     const selectImg = (imgUrl) => {
         setZoomedImg(imgUrl);
@@ -101,10 +101,11 @@ export function UnsplashSelector({toggle, insertImage, zoomedUrl, closeModal}) {
                     </header>
                     <div className="relative h-full overflow-hidden">
                         <div className={`overflow-auto w-full h-full px-20 flex justify-center ${zoomedImg ? 'pb-10' : ''}`}>
-                            {zoomedImg ?
-                                <UnsplashZoomed imgUrl={zoomedImg} setZoomedImg={setZoomedImg} selectImg={selectImg} insertImage={insertImage} />
-                                :
-                                <UnsplashGallery selectImg={selectImg} insertImage={insertImage} dataset={demoDataset} />
+                            {isLoading ? 
+                                <UnsplashGalleryLoading />
+                                : zoomedImg ?
+                                    <UnsplashZoomed imgUrl={zoomedImg} setZoomedImg={setZoomedImg} selectImg={selectImg} insertImage={insertImage} />
+                                    : <UnsplashGallery selectImg={selectImg} insertImage={insertImage} dataset={demoDataset} />
                             }
                         </div>
                     </div>
@@ -123,6 +124,14 @@ function UnsplashGallery({insertImage, selectImg, dataset}) {
             ))}
         </div>
     ));
+}
+
+function UnsplashGalleryLoading() {
+    return (
+        <div className="absolute flex items-center justify-center overflow-hidden inset-y-0 left-0 w-full pb-[8vh]">
+            <div className="relative inline-block w-[50px] h-[50px] border border-black/10 rounded-full animate-spin before:block before:w-[7px] before:h-[7px] before:rounded-full before:z-10 before:mt-[7px] before:bg-grey-800"></div>
+        </div>
+    );
 }
 
 function UnsplashZoomed({imgUrl, setZoomedImg, insertImage, selectImg}) {
@@ -181,7 +190,8 @@ function UnsplashButton({icon, label, ...props}) {
 UnsplashSelector.propTypes = {
     selectImg: PropTypes.func,
     insertImage: PropTypes.func,
-    zoomedUrl: PropTypes.string
+    zoomedUrl: PropTypes.string,
+    isLoading: PropTypes.bool
 };
 
 UnsplashZoomed.propTypes = {
