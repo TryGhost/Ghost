@@ -203,7 +203,7 @@
     "c8": "7.12.0",
     "cli-progress": "3.11.2",
     "cssnano": "5.1.14",
-    "eslint": "8.28.0",
+    "eslint": "8.29.0",
     "expect": "^28.1.3",
     "html-validate": "7.10.0",
     "inquirer": "8.2.5",
@@ -218,7 +218,7 @@
     "rewire": "6.0.0",
     "should": "13.2.3",
     "sinon": "14.0.2",
-    "supertest": "6.3.1",
+    "supertest": "6.3.2",
     "tmp": "0.2.1",
     "toml": "3.0.0"
   },
