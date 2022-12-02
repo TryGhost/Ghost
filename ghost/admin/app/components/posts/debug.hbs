@@ -100,7 +100,7 @@
                     </td>
                 </tr>
                 {{/unless}}
-                {{!-- <tr>
+                <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
                         <div class="gh-email-debug-member">
                             <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
@@ -124,7 +124,11 @@
                                     <span class="gh-email-debug-failure-code">Failure code: <span>402</span></span>
                                     <span class="gh-email-debug-failure-code">Enhanced code: <span>4.2.2</span></span>
                                 </div>
-                                <span class="gh-email-debug-failure-description"><code>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</code></span>
+                                <div class="gh-email-debug-readmore-error">
+                                    <input type="checkbox" id="error-1-checkbox" class="toggle-checkbox">
+                                    <label for="error-1-checkbox">{{svg-jar "dotdotdot"}}</label>
+                                    <span>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -153,40 +157,15 @@
                                     <span class="gh-email-debug-failure-code">Failure code: <span>402</span></span>
                                     <span class="gh-email-debug-failure-code">Enhanced code: <span>4.2.2</span></span>
                                 </div>
-                                <span class="gh-email-debug-failure-description"><code>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n - gsmtp</code></span>
+                                <div class="gh-email-debug-readmore-error">
+                                    <input type="checkbox" id="error-2-checkbox" class="toggle-checkbox">
+                                    <label for="error-2-checkbox">{{svg-jar "dotdotdot"}}</label>
+                                    <span>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </tr>
-                <tr>
-                    <div class="gh-list-data gh-email-debug-col-member">
-                        <div class="gh-email-debug-member">
-                            <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
-                                <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
-                                    <span class="gh-member-avatar-label gh-member-list-avatar">PD</span>
-                                </div>
-                                {{#if this.avatarImage}}
-                                    <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or @member.name @member.email}}" />
-                                {{/if}}
-                            </figure>
-                            <div>
-                                <h3 class="ma0 pa0 gh-members-list-name">Permanent Dude</h3>
-                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">dude@whofails.com</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="gh-list-data gh-email-debug-col-failure">
-                        <div class="gh-email-debug-failure">
-                            <div class="gh-email-debug-failure-details">
-                                <div class="gh-email-debug-failure-codes">
-                                    <span class="gh-email-debug-failure-code">Failure code: <span>402</span></span>
-                                    <span class="gh-email-debug-failure-code">Enhanced code: <span>4.2.2</span></span>
-                                </div>
-                                <span class="gh-email-debug-failure-description"><code>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</code></span>
-                            </div>
-                        </div>
-                    </div>
-                </tr> --}}
                 </tbody>
             </table>
         </tabs.tabPanel>
@@ -239,35 +218,6 @@
                     </td>
                 </tr>
                 {{/unless}}
-                {{!-- <tr>
-                    <div class="gh-list-data gh-email-debug-col-member">
-                        <div class="gh-email-debug-member">
-                            <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-purple">
-                                <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
-                                    <span class="gh-member-avatar-label gh-member-list-avatar">TD</span>
-                                </div>
-                                {{#if this.avatarImage}}
-                                    <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or @member.name @member.email}}" />
-                                {{/if}}
-                            </figure>
-                            <div>
-                                <h3 class="ma0 pa0 gh-members-list-name">Temporary Dude</h3>
-                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">dude@whofails.com</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="gh-list-data gh-email-debug-col-failure">
-                        <div class="gh-email-debug-failure">
-                            <div class="gh-email-debug-failure-details">
-                                <div class="gh-email-debug-failure-codes">
-                                    <span class="gh-email-debug-failure-code">Failure code: <span>402</span></span>
-                                    <span class="gh-email-debug-failure-code">Enhanced code: <span>4.2.2</span></span>
-                                </div>
-                                <span class="gh-email-debug-failure-description"><code>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</code></span>
-                            </div>
-                        </div>
-                    </div>
-                </tr>
                 <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
                         <div class="gh-email-debug-member">
@@ -292,11 +242,48 @@
                                     <span class="gh-email-debug-failure-code">Failure code: <span>402</span></span>
                                     <span class="gh-email-debug-failure-code">Enhanced code: <span>4.2.2</span></span>
                                 </div>
-                                <span class="gh-email-debug-failure-description"><code>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</code></span>
+                                <div class="gh-email-debug-readmore-error">
+                                    <input type="checkbox" id="error-3-checkbox" class="toggle-checkbox">
+                                    <label for="error-3-checkbox">{{svg-jar "dotdotdot"}}</label>
+                                    <span>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </tr> --}}
+                </tr>
+                <tr>
+                    <div class="gh-list-data gh-email-debug-col-member">
+                        <div class="gh-email-debug-member">
+                            <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-purple">
+                                <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
+                                    <span class="gh-member-avatar-label gh-member-list-avatar">TD</span>
+                                </div>
+                                {{#if this.avatarImage}}
+                                    <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or @member.name @member.email}}" />
+                                {{/if}}
+                            </figure>
+                            <div>
+                                <h3 class="ma0 pa0 gh-members-list-name">Teporary Dude</h3>
+                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">dude@whofails.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gh-list-data gh-email-debug-col-failure">
+                        <div class="gh-email-debug-failure">
+                            <div class="gh-email-debug-failure-details">
+                                <div class="gh-email-debug-failure-codes">
+                                    <span class="gh-email-debug-failure-code">Failure code: <span>402</span></span>
+                                    <span class="gh-email-debug-failure-code">Enhanced code: <span>4.2.2</span></span>
+                                </div>
+                                <div class="gh-email-debug-readmore-error">
+                                    <input type="checkbox" id="error-4-checkbox" class="toggle-checkbox">
+                                    <label for="error-4-checkbox">{{svg-jar "dotdotdot"}}</label>
+                                    <span>4.2.2 The email account that you tried to reach is over quota. Please direct\n4.2.2 the recipient to\n4.2.2 https://support.google.com/mail/?p=OverQuotaTemp bb1-20020a05622a1b0100b0039ce87e3d49si1009300qtb.292 - gsmtp</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </tr>
                 </tbody>
             </table>
         </tabs.tabPanel>
