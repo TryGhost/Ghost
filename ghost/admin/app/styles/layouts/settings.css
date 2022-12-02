@@ -3290,6 +3290,11 @@ p.theme-validation-details {
     height: 98px;
 }
 
+.gh-email-debug-permanent-failures .gh-list-data,
+.gh-email-debug-temporary-failures .gh-list-data {
+    height: 80px;
+}
+
 .gh-email-debug-batch-col-status span {
     display: inline-block;
     position: relative;
@@ -3419,4 +3424,56 @@ p.theme-validation-details {
     text-align: center;
     font-size: 1.3rem;
     color: var(--midgrey);
+}
+
+.gh-email-debug-readmore-error {
+    display: inline-flex;
+}
+
+.gh-email-debug-readmore-error label {
+    order: 3;
+}
+
+.gh-email-debug-readmore-error .toggle-checkbox {
+    display: none;
+}
+
+.gh-email-debug-readmore-error span {
+    max-width: calc(100%-100px);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    color: color-mod(var(--red) l(-8%));
+}
+
+.gh-email-debug-readmore-error .toggle-checkbox:checked ~ span {
+    display: block;
+    -webkit-box-orient: unset;
+    -webkit-line-clamp: unset;
+    overflow: unset;
+}
+
+.gh-email-debug-readmore-error .toggle-checkbox:checked ~ label {
+    display: none;
+}
+
+.gh-email-debug-readmore-error svg {
+    width: 12px;
+    height: 12px;
+    margin: 0;
+}
+
+.gh-email-debug-readmore-error svg circle {
+    fill: var(--midgrey);
+}
+
+.gh-email-debug-readmore-error label {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    border-radius: 2px;
+    height: 14px;
+    margin-top: 3px;
+    background: var(--whitegrey);
 }
