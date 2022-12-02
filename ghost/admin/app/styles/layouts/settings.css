@@ -3315,7 +3315,7 @@ p.theme-validation-details {
 }
 
 .gh-email-debug-batch-col-status .failed {
-    color: var(--red);
+    color: color-mod(var(--red) l(-2%));
 }
 
 .gh-email-debug-batch-col-status .failed::before {
@@ -3350,6 +3350,11 @@ p.theme-validation-details {
 
 .gh-email-debug-batch-col-details .detailtext div {
     word-break: break-all;
+}
+
+.gh-email-debug-batch-col-details .error {
+    color: color-mod(var(--red) l(-2%));
+    font-weight: unset;
 }
 
 .gh-email-debug-batch-col-segment span {
@@ -3439,12 +3444,12 @@ p.theme-validation-details {
 }
 
 .gh-email-debug-readmore-error span {
-    max-width: calc(100%-100px);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
-    color: color-mod(var(--red) l(-8%));
+    color: color-mod(var(--red) l(-2%));
+    word-break: break-all;
 }
 
 .gh-email-debug-readmore-error .toggle-checkbox:checked ~ span {
@@ -3452,6 +3457,7 @@ p.theme-validation-details {
     -webkit-box-orient: unset;
     -webkit-line-clamp: unset;
     overflow: unset;
+    word-break: break-word;
 }
 
 .gh-email-debug-readmore-error .toggle-checkbox:checked ~ label {
@@ -3475,5 +3481,6 @@ p.theme-validation-details {
     border-radius: 2px;
     height: 14px;
     margin-top: 3px;
+    margin-left: 8px;
     background: var(--whitegrey);
 }
