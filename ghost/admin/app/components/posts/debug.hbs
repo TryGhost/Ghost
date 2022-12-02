@@ -6,7 +6,7 @@
                     Posts
                 </LinkTo>
                 {{svg-jar "arrow-right-small"}}
-                <LinkTo @route="posts.analytics" @model={{@model.id}}>
+                <LinkTo @route="posts.analytics" @model={{this.post.id}}>
                     Analytics
                 </LinkTo>
                 {{svg-jar "arrow-right-small"}}
@@ -40,14 +40,16 @@
                     {{/let}}
                 </div>
             </div>
-            <div class="gh-box gh-box-error gh-box-tip gh-email-debug-error">
-                {{svg-jar "warning"}}
-                <div class="gh-email-debug-errortext">
-                    <h4>Something went wrong!</h4>
-                    <p class="mb0">{{this.emailError.message}}</p>
+            {{#if (eq this.post.email.status 'failed') }}
+                <div class="gh-box gh-box-error gh-box-tip gh-email-debug-error">
+                    {{svg-jar "warning"}}
+                    <div class="gh-email-debug-errortext">
+                        <h4>Something went wrong!</h4>
+                        <p class="mb0">{{this.emailError.message}}</p>
+                    </div>
+                    <button type="button" class="gh-btn gh-btn-primary gh-btn-icon gh-btn-red ember-view self-center"><span>Retry</span></button>
                 </div>
-                <button type="button" class="gh-btn gh-btn-primary gh-btn-icon gh-btn-red ember-view self-center"><span>Retry</span></button>
-            </div>
+            {{/if}}
         </div>
     </GhCanvasHeader>
 
@@ -94,7 +96,7 @@
                 {{#unless this.permanentFailureData}}
                 <tr>
                     <td>
-                        <div class="gh-email-debug-empty-list">No permanent failures.</div>    
+                        <div class="gh-email-debug-empty-list">No permanent failures.</div>
                     </td>
                 </tr>
                 {{/unless}}
@@ -233,7 +235,7 @@
                 {{#unless this.temporaryFailureData}}
                 <tr>
                     <td>
-                        <div class="gh-email-debug-empty-list">No temporary failures.</div>    
+                        <div class="gh-email-debug-empty-list">No temporary failures.</div>
                     </td>
                 </tr>
                 {{/unless}}
