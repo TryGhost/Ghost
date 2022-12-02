@@ -607,7 +607,7 @@ const fixtures = {
         });
     },
 
-    insertEmailsAndRecipients: function insertEmailsAndRecipients() {
+    insertEmailsAndRecipients: function insertEmailsAndRecipients(withFailed = false) {
         return sequence(_.cloneDeep(DataGenerator.forKnex.emails).map(email => () => {
             return models.Email.add(email, context.internal);
         })).then(function () {
@@ -615,8 +615,20 @@ const fixtures = {
                 return models.EmailBatch.add(emailBatch, context.internal);
             }));
         }).then(function () {
-            return sequence(_.cloneDeep(DataGenerator.forKnex.email_recipients).map(emailRecipient => () => {
+            const email_recipients = withFailed ?
+                DataGenerator.forKnex.email_recipients
+                : DataGenerator.forKnex.email_recipients.filter(r => r.failed_at === null);
+
+            return sequence(_.cloneDeep(email_recipients).map(emailRecipient => () => {
                 return models.EmailRecipient.add(emailRecipient, context.internal);
+            }));
+        }).then(function () {
+            if (!withFailed) {
+                return;
+            }
+
+            return sequence(_.cloneDeep(DataGenerator.forKnex.email_recipient_failures).map(failure => () => {
+                return models.EmailRecipientFailure.add(failure, context.internal);
             }));
         }).then(function () {
             const toAggregate = {
@@ -723,7 +735,10 @@ const toDoList = {
         return fixtures.insertMembersAndLabelsAndProducts(true);
     },
     'members:emails': function insertEmailsAndRecipients() {
-        return fixtures.insertEmailsAndRecipients();
+        return fixtures.insertEmailsAndRecipients(false);
+    },
+    'members:emails:failed': function insertEmailsAndRecipients() {
+        return fixtures.insertEmailsAndRecipients(true);
     },
     posts: function insertPostsAndTags() {
         return fixtures.insertPostsAndTags();

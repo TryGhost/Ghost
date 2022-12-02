@@ -19,7 +19,7 @@ class MembersEventsServiceWrapper {
             models: {
                 MemberCreatedEvent: models.MemberCreatedEvent,
                 SubscriptionCreatedEvent: models.SubscriptionCreatedEvent
-            }, 
+            },
             labsService
         });
 

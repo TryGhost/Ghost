@@ -760,6 +760,7 @@ DataGenerator.Content = {
             batch_id: null, // email_batches[0] relation added later
             processed_at: moment().toDate(),
             failed_at: null,
+            delivered_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
             member_email: 'member1@test.com',
             member_name: 'Mr Egg'
@@ -771,6 +772,7 @@ DataGenerator.Content = {
             batch_id: null, // email_batches[0] relation added later
             processed_at: moment().toDate(),
             failed_at: null,
+            delivered_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
             member_email: 'member2@test.com',
             member_name: null
@@ -782,6 +784,7 @@ DataGenerator.Content = {
             batch_id: null, // email_batches[0] relation added later
             processed_at: moment().toDate(),
             failed_at: null,
+            delivered_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342',
             member_email: 'member1@test.com',
             member_name: 'Mr Egg'
@@ -793,6 +796,7 @@ DataGenerator.Content = {
             batch_id: null, // email_batches[0] relation added later
             processed_at: moment().toDate(),
             failed_at: null,
+            delivered_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
             member_email: 'member1@test.com',
             member_name: 'Mr Egg'
@@ -808,6 +812,19 @@ DataGenerator.Content = {
             failed_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
             member_email: 'member4@test.com',
+            member_name: 'Mr Egg'
+        },
+        {
+            id: ObjectId().toHexString(),
+            email_id: null, // emails[0] relation added later
+            member_id: null, // members[5] relation added later
+            batch_id: null, // email_batches[0] relation added later
+            processed_at: moment().toDate(),
+            delivered_at: null,
+            opened_at: null,
+            failed_at: moment().toDate(),
+            member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
+            member_email: 'member5@test.com',
             member_name: 'Mr Egg'
         }
     ],
@@ -901,6 +918,9 @@ DataGenerator.Content.email_recipients[3].member_id = DataGenerator.Content.memb
 DataGenerator.Content.email_recipients[4].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[4].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[4].member_id = DataGenerator.Content.members[4].id;
+DataGenerator.Content.email_recipients[5].batch_id = DataGenerator.Content.email_batches[0].id;
+DataGenerator.Content.email_recipients[5].email_id = DataGenerator.Content.email_batches[0].email_id;
+DataGenerator.Content.email_recipients[5].member_id = DataGenerator.Content.members[5].id;
 DataGenerator.Content.members_stripe_customers[0].member_id = DataGenerator.Content.members[2].id;
 DataGenerator.Content.members_stripe_customers[1].member_id = DataGenerator.Content.members[3].id;
 DataGenerator.Content.members_stripe_customers[2].member_id = DataGenerator.Content.members[4].id;
@@ -1596,8 +1616,42 @@ DataGenerator.forKnex = (function () {
         createEmailRecipient(DataGenerator.Content.email_recipients[1]),
         createEmailRecipient(DataGenerator.Content.email_recipients[2]),
         createEmailRecipient(DataGenerator.Content.email_recipients[3]),
-        createEmailRecipient(DataGenerator.Content.email_recipients[4])
+        createEmailRecipient(DataGenerator.Content.email_recipients[4]),
+        createEmailRecipient(DataGenerator.Content.email_recipients[5])
     ];
+
+    const email_recipient_failures = email_recipients.flatMap((recipient, index) => {
+        if (recipient.failed_at === null) {
+            if (recipient.delivered_at === null) {
+                return [{
+                    id: ObjectId().toHexString(),
+                    email_recipient_id: recipient.id,
+                    email_id: recipient.email_id,
+                    member_id: recipient.member_id,
+                    code: 555,
+                    message: 'Temporary failure',
+                    enhanced_code: '5.5.5',
+                    severity: 'temporary',
+                    failed_at: recipient.processed_at,
+                    event_id: 'event-id-' + ObjectId().toHexString()
+                }];
+            }
+
+            return [];
+        }
+        return [{
+            id: ObjectId().toHexString(),
+            email_recipient_id: recipient.id,
+            email_id: recipient.email_id,
+            member_id: recipient.member_id,
+            code: 555,
+            message: 'Test failure',
+            enhanced_code: '5.5.5',
+            severity: 'permanent',
+            failed_at: recipient.failed_at,
+            event_id: 'event-id-' + ObjectId().toHexString()
+        }];
+    });
 
     const members = [
         createMember(DataGenerator.Content.members[0]),
@@ -1837,6 +1891,7 @@ DataGenerator.forKnex = (function () {
         emails,
         email_batches,
         email_recipients,
+        email_recipient_failures,
         labels,
         members,
         products,
