@@ -167,11 +167,10 @@ export default class Debug extends Component {
     @task
     *_fetchRecipientFailures() {
         const data = {
-            include: 'member'
+            include: 'member,email_recipient'
         };
         let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/recipient-failures`);
         let result = yield this.ajax.request(statsUrl, {data});
-        console.log('recipient', result);
         this.recipientFailures = result.failures;
     }
 }
