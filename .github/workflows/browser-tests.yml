@@ -27,6 +27,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    environment: ${{ github.event.inputs.environment || "browser-tests-local" }}
     defaults:
       run:
         working-directory: ghost/core
@@ -52,7 +53,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Build Admin
-      if: github.event.inputs.site_url == ''
+      if: github.event.inputs.environment == 'browser-tests-local'
       working-directory: ghost/admin
       run: yarn build:prod
 
