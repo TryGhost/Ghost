@@ -70,6 +70,11 @@ export default class Debug extends Component {
                 code: failure.code,
                 enhancedCode: failure.enhanced_code,
                 message: failure.message,
+                recipient: {
+                    name: failure.email_recipient.member_name || '',
+                    email: failure.email_recipient.member_email || '',
+                    initials: this.getInitials(failure.email_recipient?.member_name || failure.email_recipient?.member_email)
+                },
                 member: {
                     name: failure.member?.name || '',
                     email: failure.member?.email || '',
@@ -88,6 +93,11 @@ export default class Debug extends Component {
                 code: failure.code,
                 enhancedCode: failure.enhanced_code,
                 message: failure.message,
+                recipient: {
+                    name: failure.email_recipient.member_name || '',
+                    email: failure.email_recipient.member_email || '',
+                    initials: this.getInitials(failure.email_recipient?.member_name || failure.email_recipient?.member_email)
+                },
                 member: {
                     name: failure.member?.name || '',
                     email: failure.member?.email || '',

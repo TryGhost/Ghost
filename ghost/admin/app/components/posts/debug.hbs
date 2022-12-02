@@ -66,15 +66,15 @@
                         <div class="gh-email-debug-member">
                             <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
                                 <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
-                                    <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.member.initials}}</span>
+                                    <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
                                 </div>
-                                {{#if this.avatarImage}}
+                                {{!-- {{#if this.avatarImage}}
                                     <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or failure.member.name failure.member.email}}" />
-                                {{/if}}
+                                {{/if}} --}}
                             </figure>
                             <div>
-                                <h3 class="ma0 pa0 gh-members-list-name">{{failure.member.name}}</h3>
-                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.member.email}}</p>
+                                <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
                             </div>
                         </div>
                     </div>
@@ -196,15 +196,15 @@
                         <div class="gh-email-debug-member">
                             <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-purple">
                                 <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
-                                    <span class="gh-member-avatar-label gh-member-list-avatar">TD</span>
+                                    <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
                                 </div>
-                                {{#if this.avatarImage}}
-                                    <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or @member.name @member.email}}" />
-                                {{/if}}
+                                {{!-- {{#if this.avatarImage}}
+                                    <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or failure.recipient.name failure.recipient.email}}" />
+                                {{/if}} --}}
                             </figure>
                             <div>
-                                <h3 class="ma0 pa0 gh-members-list-name">{{failure.member.name}}</h3>
-                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.member.email}}</p>
+                                <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
                             </div>
                         </div>
                     </div>
