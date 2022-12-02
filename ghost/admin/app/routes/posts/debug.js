@@ -13,12 +13,7 @@ export default class Debug extends AuthenticatedRoute {
                 'authors.roles',
                 'email',
                 'tiers',
-                'newsletter',
-                'count.conversions',
-                'count.clicks',
-                'sentiment',
-                'count.positive_feedback',
-                'count.negative_feedback'
+                'newsletter'
             ].join(',')
         };
 
