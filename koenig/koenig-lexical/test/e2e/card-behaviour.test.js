@@ -378,18 +378,27 @@ describe('Card behaviour', async () => {
             await page.mouse.click(pRect.x + 1, pRect.y + pRect.height - 5);
 
             await assertSelection(page, {
-                anchorOffset: 160,
+                anchorOffset: 220,
                 anchorPath: [1, 0, 0],
-                focusOffset: 160,
+                focusOffset: 220,
                 focusPath: [1, 0, 0]
             });
 
             await page.keyboard.press('ArrowUp');
 
             await assertSelection(page, {
-                anchorOffset: 81,
+                anchorOffset: 150,
                 anchorPath: [1, 0, 0],
-                focusOffset: 81,
+                focusOffset: 150,
+                focusPath: [1, 0, 0]
+            });
+
+            await page.keyboard.press('ArrowUp');
+
+            await assertSelection(page, {
+                anchorOffset: 76,
+                anchorPath: [1, 0, 0],
+                focusOffset: 76,
                 focusPath: [1, 0, 0]
             });
 
