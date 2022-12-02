@@ -12,6 +12,18 @@ const {MailgunEmailProvider} = require('@tryghost/email-service');
 
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
 
+function sortBatches(a, b) {
+    const aId = a.get('provider_id');
+    const bId = b.get('provider_id');
+    if (aId === null) {
+        return 1;
+    }
+    if (bId === null) {
+        return -1;
+    }
+    return aId.localeCompare(bId);
+}
+
 async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
     const post = {
         title: 'A random test post',
@@ -309,8 +321,11 @@ describe('Batch sending tests', function () {
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
-        let batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`, order: 'provider_id ASC'});
+        let batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
         assert.equal(batches.models.length, 4);
+
+        // sort batches by provider_id (nullable) because findAll doesn't have order option
+        batches.models.sort(sortBatches);
 
         let emailRecipients = [];
 
@@ -334,7 +349,7 @@ describe('Batch sending tests', function () {
                 assert.equal(batch.get('error_message'), null);
                 assert.equal(batch.get('error_data'), null);
             }
-            
+
             assert.equal(batch.get('member_segment'), null);
 
             // Did we create recipients?
@@ -353,12 +368,19 @@ describe('Batch sending tests', function () {
         await completedPromise;
 
         await emailModel.refresh();
-        batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`, order: 'provider_id ASC'});
+        batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+
+        // sort batches by provider_id (nullable) because findAll doesn't have order option
+        batches.models.sort(sortBatches);
+
         assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we keep the batches?
-        batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`, order: 'provider_id ASC'});
+        batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+
+        // sort batches by provider_id (nullable) because findAll doesn't have order option
+        batches.models.sort(sortBatches);
         assert.equal(batches.models.length, 4);
 
         emailRecipients = [];

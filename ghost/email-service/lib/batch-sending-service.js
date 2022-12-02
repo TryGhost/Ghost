@@ -249,13 +249,23 @@ class BatchSendingService {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
 
         // Loop batches and send them via the EmailProvider
-        // TODO: introduce concurrency when sending (need a replacement for bluebird)
         let succeededCount = 0;
-        for (const batch of batches) {
-            if (await this.sendBatch({email, batch, post, newsletter})) {
-                succeededCount += 1;
+        const queue = batches.slice();
+
+        // Bind this
+        let runNext;
+        runNext = async () => {
+            const batch = queue.shift();
+            if (batch) {
+                if (await this.sendBatch({email, batch, post, newsletter})) {
+                    succeededCount += 1;
+                }
+                await runNext();
             }
-        }
+        };
+
+        // Run maximum 10 at the same time
+        await Promise.all(new Array(10).fill(0).map(() => runNext()));
 
         if (succeededCount < batches.length) {
             if (succeededCount > 0) {
