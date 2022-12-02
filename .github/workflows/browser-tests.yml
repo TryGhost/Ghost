@@ -53,12 +53,12 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Build Admin
-      if: github.event.inputs.environment == 'browser-tests-local'
+      if: environment == 'browser-tests-local'
       working-directory: ghost/admin
       run: yarn build:prod
 
     - name: Run Playwright tests on a remote site
-      if: github.event.inputs.environment == 'browser-tests-staging'
+      if: environment == 'browser-tests-staging'
       run: yarn test:browser
       env:
         TEST_URL: ${{ github.event.inputs.site_url || secrets.TEST_URL }}
@@ -66,7 +66,7 @@ jobs:
         TEST_OWNER_PASSWORD: ${{ github.event.inputs.owner_password || secrets.TEST_OWNER_PASSWORD }}
 
     - name: Run Playwright tests locally
-      if: github.event.inputs.environment == 'browser-tests-local'
+      if: environment == 'browser-tests-local'
       run: yarn test:browser
       env:
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
