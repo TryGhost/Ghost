@@ -77,10 +77,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         const currentNode = selection.getNodes()[0];
                         const previousSibling = currentNode.getPreviousSibling();
 
-                        // do nothing if decorator node is top of document and selected
-                        if (!previousSibling) {
+                        if (!previousSibling && cursorDidExitAtTop) {
                             selection.clear();
-                            cursorDidExitAtTop?.();
+                            cursorDidExitAtTop();
                             return true;
                         }
 
