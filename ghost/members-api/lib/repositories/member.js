@@ -431,7 +431,7 @@ module.exports = class MemberRepository {
         if (requiredRelations.length > 0) {
             initialMember = await this._Member.findOne({
                 id: options.id
-            }, {...sharedOptions, withRelated: requiredRelations});
+            }, {...sharedOptions, withRelated: requiredRelations, require: false});
 
             // Make sure we throw the right error if it doesn't exist
             if (!initialMember) {
@@ -729,7 +729,7 @@ module.exports = class MemberRepository {
                     filter: `newsletter_id:${data.newsletter}+member_id:[${membersArr}]`
                 });
                 const toUnsubscribe = unsubscribeRows.map(row => row.id);
-                
+
                 return await this._MemberNewsletter.bulkDestroy(toUnsubscribe);
             }
             if (!hasNewsletterSelected) {
