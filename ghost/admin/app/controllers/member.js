@@ -222,7 +222,7 @@ export default class MemberController extends Controller {
     _hasDirtyAttributes() {
         let member = this.member;
 
-        if (!member) {
+        if (!member || member.isDeleted || member.isDeleting) {
             return false;
         }
 

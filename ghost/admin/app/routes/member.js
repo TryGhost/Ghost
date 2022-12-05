@@ -30,6 +30,9 @@ export default class MembersRoute extends AdminRoute {
 
     setupController(controller, member, transition) {
         super.setupController(...arguments);
+
+        controller.setInitialRelationshipValues();
+
         if (this._requiresBackgroundRefresh) {
             controller.fetchMemberTask.perform(member.id);
         }
@@ -38,7 +41,7 @@ export default class MembersRoute extends AdminRoute {
         if (transition.from?.name === 'posts.analytics') {
             // Sadly transition.from.params is not reliable to use (not populated on transitions)
             const oldParams = transition.router?.oldState?.params['posts.analytics'] ?? {};
-            
+
             // We need to store analytics in 'this' to have it accessible for the member route
             this.fromAnalytics = Object.values(oldParams);
             controller.fromAnalytics = this.fromAnalytics;
