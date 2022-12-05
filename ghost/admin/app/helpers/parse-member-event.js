@@ -186,7 +186,7 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'email_complaint_event') {
-            return 'flagged as spam email';
+            return 'email flagged as spam';
         }
 
         if (event.type === 'comment_event') {
