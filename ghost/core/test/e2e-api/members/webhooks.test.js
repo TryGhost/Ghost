@@ -4,7 +4,7 @@ const nock = require('nock');
 const should = require('should');
 const stripe = require('stripe');
 const {Product} = require('../../../core/server/models/product');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
@@ -41,12 +41,6 @@ async function assertSubscription(subscriptionId, asserts) {
 
     // We use the native toJSON to prevent calling the overriden serialize method
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
-}
-
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
 }
 
 describe('Members API', function () {
