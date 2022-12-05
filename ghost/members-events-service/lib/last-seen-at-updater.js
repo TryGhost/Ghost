@@ -37,7 +37,7 @@ class LastSeenAtUpdater {
             try {
                 await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
             } catch (err) {
-                logging.error('Error in LastSeenAtUpdater.MemberPageViewEvent listener');
+                logging.error(`Error in LastSeenAtUpdater.MemberPageViewEvent listener for member ${event.data.memberId}`);
                 logging.error(err);
             }
         });
@@ -46,7 +46,7 @@ class LastSeenAtUpdater {
             try {
                 await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
             } catch (err) {
-                logging.error('Error in LastSeenAtUpdater.MemberLinkClickEvent listener');
+                logging.error(`Error in LastSeenAtUpdater.MemberLinkClickEvent listener for member ${event.data.memberId}`);
                 logging.error(err);
             }
         });
@@ -55,7 +55,7 @@ class LastSeenAtUpdater {
             try {
                 await this.updateLastCommentedAt(event.data.memberId, event.timestamp);
             } catch (err) {
-                logging.error('Error in LastSeenAtUpdater.MemberCommentEvent listener');
+                logging.error(`Error in LastSeenAtUpdater.MemberCommentEvent listener for member ${event.data.memberId}`);
                 logging.error(err);
             }
         });
@@ -64,7 +64,7 @@ class LastSeenAtUpdater {
             try {
                 await this.updateLastSeenAtWithoutKnownLastSeen(event.memberId, event.timestamp);
             } catch (err) {
-                logging.error('Error in LastSeenAtUpdater.EmailOpenedEvent listener');
+                logging.error(`Error in LastSeenAtUpdater.EmailOpenedEvent listener for member ${event.memberId}, emailRecipientId ${event.emailRecipientId}`);
                 logging.error(err);
             }
         });
