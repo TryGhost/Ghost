@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {EmailSuppressionData} = require('../../lib/email-suppression-list');
+const {EmailSuppressionData, EmailSuppressedEvent} = require('../../lib/email-suppression-list');
 
 describe('EmailSuppressionData', function () {
     it('Has null info when not suppressed', function () {
@@ -12,7 +12,7 @@ describe('EmailSuppressionData', function () {
         assert(data.suppressed === false);
         assert(data.info === null);
     });
-    it('', function () {
+    it('Has info when suppressed', function () {
         const now = new Date();
         const data = new EmailSuppressionData(true, {
             reason: 'spam',
@@ -22,5 +22,17 @@ describe('EmailSuppressionData', function () {
         assert(data.suppressed === true);
         assert(data.info.reason === 'spam');
         assert(data.info.timestamp === now);
+    });
+});
+
+describe('EmailSuppressedEvent', function () {
+    it('Exposes a create factory method', function () {
+        const event = EmailSuppressedEvent.create({
+            emailAddress: 'test@test.com',
+            emailId: '1234567890abcdef',
+            reason: 'spam'
+        });
+        assert(event instanceof EmailSuppressedEvent);
+        assert(event.timestamp);
     });
 });

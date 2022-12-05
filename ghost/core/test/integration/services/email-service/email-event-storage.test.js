@@ -741,8 +741,9 @@ describe('EmailEventStorage', function () {
         );
 
         // Check not unsubscribed
-        const {body: {events: [notSpamEvent]}} = await agent.get(eventsURI);
-        assert.notEqual(notSpamEvent.type, 'email_complaint_event', 'This test requires a member that does not have a spam event');
+        const {body: {events: eventsBefore}} = await agent.get(eventsURI);
+        const existingSpamEvent = eventsBefore.find(event => event.type === 'email_complaint_event');
+        assert.equal(existingSpamEvent, null, 'This test requires a member that does not have a spam event');
 
         events = [{
             event: 'complained',
@@ -772,7 +773,8 @@ describe('EmailEventStorage', function () {
         await sleep(200);
 
         // Check if event exists
-        const {body: {events: [spamComplaintEvent]}} = await agent.get(eventsURI);
+        const {body: {events: eventsAfter}} = await agent.get(eventsURI);
+        const spamComplaintEvent = eventsAfter.find(event => event.type === 'email_complaint_event');
         assert.equal(spamComplaintEvent.type, 'email_complaint_event');
     });
 
