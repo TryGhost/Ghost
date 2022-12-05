@@ -205,5 +205,63 @@ describe('Acceptance: Members', function () {
 
             expect(find('[data-test-modal="delete-members"]')).to.not.exist;
         });
+
+        it('can delete a member (via list)', async function () {
+            const newsletter = this.server.create('newsletter');
+            const label = this.server.create('label');
+            this.server.createList('member', 2, {newsletters: [newsletter], labels: [label]});
+
+            await visit('/members');
+
+            expect(findAll('[data-test-member]').length).to.equal(2);
+
+            await click('[data-test-member] a');
+
+            expect(currentURL()).to.match(/members\/\d+/);
+
+            await click('[data-test-button="member-actions"]');
+            await click('[data-test-button="delete-member"]');
+
+            expect(find('[data-test-modal="delete-member"]')).to.exist;
+
+            await click('[data-test-modal="delete-member"] [data-test-button="cancel"]');
+
+            expect(currentURL()).to.match(/members\/\d+/);
+            expect(find('[data-test-modal="delete-member"]')).to.not.exist;
+
+            await click('[data-test-button="member-actions"]');
+            await click('[data-test-button="delete-member"]');
+            await click('[data-test-modal="delete-member"] [data-test-button="confirm"]');
+
+            expect(currentURL()).to.equal('/members');
+            expect(findAll('[data-test-modal]')).to.have.length(0);
+            expect(findAll('[data-test-member]')).to.have.length(1);
+        });
+
+        it('can delete a member (via url)', async function () {
+            const newsletter = this.server.create('newsletter');
+            const label = this.server.create('label');
+            const [memberOne] = this.server.createList('member', 2, {newsletters: [newsletter], labels: [label]});
+
+            await visit(`/members/${memberOne.id}`);
+
+            await click('[data-test-button="member-actions"]');
+            await click('[data-test-button="delete-member"]');
+
+            expect(find('[data-test-modal="delete-member"]')).to.exist;
+
+            await click('[data-test-modal="delete-member"] [data-test-button="cancel"]');
+
+            expect(currentURL()).to.match(/members\/\d+/);
+            expect(find('[data-test-modal="delete-member"]')).to.not.exist;
+
+            await click('[data-test-button="member-actions"]');
+            await click('[data-test-button="delete-member"]');
+            await click('[data-test-modal="delete-member"] [data-test-button="confirm"]');
+
+            expect(currentURL()).to.equal('/members');
+            expect(findAll('[data-test-modal]')).to.have.length(0);
+            expect(findAll('[data-test-member]')).to.have.length(1);
+        });
     });
 });
