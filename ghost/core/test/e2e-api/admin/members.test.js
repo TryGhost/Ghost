@@ -1,4 +1,4 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
 const ObjectId = require('bson-objectid').default;
 
@@ -7,6 +7,8 @@ const nock = require('nock');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
+const configUtils = require('../../utils/configUtils');
+
 const Papa = require('papaparse');
 
 const models = require('../../../core/server/models');
@@ -14,9 +16,11 @@ const membersService = require('../../../core/server/services/members');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
+const {_updateVerificationTrigger} = require('../../../core/server/services/members');
+const settingsCache = require('../../../core/shared/settings-cache');
 
 /**
- * Assert that haystack and needles match, ignoring the order. 
+ * Assert that haystack and needles match, ignoring the order.
  */
 function matchArrayWithoutOrder(haystack, needles) {
     // Order shouldn't matter here
@@ -698,6 +702,71 @@ describe('Members API', function () {
                 }
             ]
         });
+    });
+
+    it('Can add a member and trigger host email verification limits', async function () {
+        configUtils.set('hostSettings:emailVerification', {
+            apiThreshold: 0,
+            adminThreshold: 1,
+            importThreshold: 0,
+            verified: false,
+            escalationAddress: 'test@example.com'
+        });
+        _updateVerificationTrigger();
+
+        assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
+
+        const member = {
+            name: 'pass verification',
+            email: 'memberPassVerifivation@test.com'
+        };
+
+        const {body: passBody} = await agent
+            .post(`/members/`)
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: new Array(1).fill(memberMatcherShallowIncludes)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+        const memberPassVerification = passBody.members[0];
+
+        await sleep(100);
+        assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
+
+        const memberFailLimit = {
+            name: 'fail verification',
+            email: 'memberFailVerifivation@test.com'
+        };
+
+        const {body: failBody} = await agent
+            .post(`/members/`)
+            .body({members: [memberFailLimit]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: new Array(1).fill(memberMatcherShallowIncludes)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+        const memberFailVerification = failBody.members[0];
+
+        await sleep(100);
+        assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
+        mockManager.assert.sentEmail({
+            subject: 'Email needs verification'
+        });
+
+        // state cleanup
+        await agent.delete(`/members/${memberPassVerification.id}`);
+        await agent.delete(`/members/${memberFailVerification.id}`);
+
+        configUtils.restore();
+        _updateVerificationTrigger();
     });
 
     it('Can add and send a signup confirmation email', async function () {
