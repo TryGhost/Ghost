@@ -25,6 +25,9 @@ export default function EmailSuppressedPage() {
                     page: 'accountEmail',
                     lastPage: 'accountHome'
                 });
+                onAction('showPopupNotification', {
+                    message: 'You have been successfully resubscribed'
+                });
             } else {
                 onAction('back');
             }
