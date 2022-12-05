@@ -51,6 +51,9 @@ jobs:
     - name: Install dependencies
       run: yarn
 
+    - name: Run migrations
+      run: yarn setup
+
     - name: Install Playwright
       run: npx playwright install --with-deps
 
