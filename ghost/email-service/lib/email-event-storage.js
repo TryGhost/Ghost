@@ -156,7 +156,7 @@ class EmailEventStorage {
                 enhanced_code: event.error.enhancedCode ?? null,
                 failed_at: event.timestamp,
                 event_id: event.id
-            }, {...options, patch: true});
+            }, {...options, patch: true, autoRefresh: false});
         }
     }
 
