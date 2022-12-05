@@ -93,7 +93,7 @@ class BatchSendingService {
                 status: 'submitted',
                 submitted_at: new Date(),
                 error: null
-            }, {patch: true});
+            }, {patch: true, autoRefresh: false});
         } catch (e) {
             logging.error(`Error sending email ${email.id}: ${e.message}`);
 
@@ -101,7 +101,7 @@ class BatchSendingService {
             await email.save({
                 status: 'failed',
                 error: e.message || 'Something went wrong while sending the email'
-            }, {patch: true});
+            }, {patch: true, autoRefresh: false});
         }
     }
 
@@ -188,7 +188,7 @@ class BatchSendingService {
             // between creating the email and sending it (or when the email failed initially and is retried a day later)
             await email.save({
                 email_count: totalCount
-            }, {patch: true, require: false});
+            }, {patch: true, require: false, autoRefresh: false});
         }
         return batches;
     }
@@ -316,7 +316,7 @@ class BatchSendingService {
                 error_status_code: null,
                 error_message: null,
                 error_data: null
-            }, {patch: true, require: false});
+            }, {patch: true, require: false, autoRefresh: false});
             succeeded = true;
         } catch (err) {
             logging.error(`Error sending email batch ${batch.id}`);
@@ -327,13 +327,13 @@ class BatchSendingService {
                 error_status_code: err.statusCode,
                 error_message: err.message,
                 error_data: err.errorDetails
-            }, {patch: true, require: false});
+            }, {patch: true, require: false, autoRefresh: false});
         }
 
         // Mark as processed, even when failed
         await this.#models.EmailRecipient
             .where({batch_id: batch.id})
-            .save({processed_at: new Date()}, {patch: true, require: false});
+            .save({processed_at: new Date()}, {patch: true, require: false, autoRefresh: false});
 
         return succeeded;
     }
@@ -375,7 +375,7 @@ class BatchSendingService {
             }
             await model.save({
                 status
-            }, {patch: true, transacting});
+            }, {patch: true, transacting, autoRefresh: false});
         });
         return model;
     }
