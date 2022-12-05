@@ -9,17 +9,11 @@ const configUtils = require('../../../utils/configUtils');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const models = require('../../../../core/server/models');
 
-const {mockManager} = require('../../../utils/e2e-framework');
+const {mockManager, sleep} = require('../../../utils/e2e-framework');
 const assert = require('assert');
 const {_updateVerificationTrigger} = require('../../../../core/server/services/members');
 
 let request;
-
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
 describe('Members Importer API', function () {
     before(async function () {

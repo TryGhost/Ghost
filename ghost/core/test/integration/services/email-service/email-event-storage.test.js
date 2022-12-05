@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
+const {agentProvider, fixtureManager, sleep} = require('../../../utils/e2e-framework');
 const assert = require('assert');
 const models = require('../../../../core/server/models');
 const domainEvents = require('@tryghost/domain-events');
@@ -7,12 +7,6 @@ const MailgunClient = require('@tryghost/mailgun-client');
 const {run} = require('../../../../core/server/services/email-analytics/jobs/fetch-latest/run.js');
 const membersService = require('../../../../core/server/services/members');
 const {EmailDeliveredEvent} = require('@tryghost/email-events');
-
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
 async function resetFailures(emailId) {
     await models.EmailRecipientFailure.destroy({

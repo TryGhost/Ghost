@@ -1,17 +1,11 @@
 require('should');
-const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager, sleep} = require('../../utils/e2e-framework');
 const moment = require('moment');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('assert');
 let agent;
-
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
 async function createPublishedPostEmail() {
     const post = {
