@@ -54,7 +54,8 @@ export default class SessionService extends ESASessionService {
                     return new Promise((resolve) => {
                         resolve({
                             ...event,
-                            release: `ghost@${this.config.version}`
+                            release: `ghost@${this.config.version}`,
+                            'user.role': this.session.user.role.name
                         });
                     });
                 });
