@@ -722,7 +722,6 @@ label[for="member-description"] + p {
 .gh-member-details-identity {
     display: flex;
     align-items: center;
-    margin-left: -4px;
 }
 
 .gh-member-details-meta {
