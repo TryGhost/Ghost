@@ -27,12 +27,17 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    environment: ${{ github.event.inputs.environment || "browser-tests-local" }}
+    environment: ${{ github.event.inputs.environment || 'browser-tests-local' }}
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'browser-tests-local' }}
     defaults:
       run:
         working-directory: ghost/core
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
     - uses: actions/setup-node@v3
       with:
         node-version: '16.x'
@@ -49,16 +54,19 @@ jobs:
     - name: Install dependencies
       run: yarn
 
+    - name: Run migrations
+      run: yarn setup
+
     - name: Install Playwright
       run: npx playwright install --with-deps
 
     - name: Build Admin
-      if: github.event.inputs.environment == 'browser-tests-local'
+      if: env.ENVIRONMENT == 'browser-tests-local'
       working-directory: ghost/admin
-      run: yarn build:prod
+      run: yarn build --silent
 
     - name: Run Playwright tests on a remote site
-      if: github.event.inputs.environment == 'browser-tests-staging'
+      if: env.ENVIRONMENT == 'browser-tests-staging'
       run: yarn test:browser
       env:
         TEST_URL: ${{ github.event.inputs.site_url || secrets.TEST_URL }}
@@ -66,7 +74,7 @@ jobs:
         TEST_OWNER_PASSWORD: ${{ github.event.inputs.owner_password || secrets.TEST_OWNER_PASSWORD }}
 
     - name: Run Playwright tests locally
-      if: github.event.inputs.environment == 'browser-tests-local'
+      if: env.ENVIRONMENT == 'browser-tests-local'
       run: yarn test:browser
       env:
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}

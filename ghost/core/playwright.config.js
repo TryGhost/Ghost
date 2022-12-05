@@ -30,7 +30,7 @@ if (!process.env.TEST_URL) {
             NODE_ENV: 'development',
             WEBHOOK_SECRET: getWebhookSecret()
         },
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         url: 'http://localhost:2368'
     };
 }
