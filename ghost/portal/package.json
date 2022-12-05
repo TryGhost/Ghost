@@ -93,7 +93,7 @@
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
     "source-map-explorer": "2.5.3",
-    "webpack-cli": "4.10.0"
+    "webpack-cli": "5.0.1"
   },
   "resolutions": {
     "//": "See https://github.com/facebook/create-react-app/issues/11773",
