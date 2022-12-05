@@ -2,6 +2,8 @@ const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
+const configUtils = require('../../../utils/configUtils');
+const logging = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
@@ -317,6 +319,62 @@ describe('{{#get}} helper', function () {
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             );
             browseStub.firstCall.args[0].context.member.should.eql(member);
+        });
+    });
+
+    describe('optimization', function () {
+        beforeEach(function () {
+            sinon.spy(logging, 'error');
+            sinon.spy(logging, 'warn');
+
+            sinon.stub(api, 'postsPublic').get(() => {
+                return {
+                    browse: () => {
+                        return new Promise((resolve) => {
+                            setTimeout(() => {
+                                resolve({posts: [{id: 'abcd1234'}]});
+                            }, 5);
+                        });
+                    }
+                };
+            });
+        });
+        afterEach(function () {
+            configUtils.restore();
+        });
+
+        it('should log a warning if it hits the notify threshold', async function () {
+            configUtils.set('optimization:getHelper:notify:threshold', 1);
+
+            await get.call(
+                {},
+                'posts',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // A log message will be output
+            logging.warn.calledOnce.should.be.true();
+            // The get helper will return as per usual
+            fn.calledOnce.should.be.true();
+            fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+            fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(1);
+        });
+
+        it('should log an error and return safely if it hits the timeout threshold', async function () {
+            configUtils.set('optimization:getHelper:timeout:threshold', 1);
+
+            await get.call(
+                {},
+                'posts',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // A log message will be output
+            logging.error.calledOnce.should.be.true();
+            // The get helper gets called with an empty array of results
+            fn.calledOnce.should.be.true();
+            fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+            fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(0);
         });
     });
 });

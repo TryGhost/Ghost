@@ -118,8 +118,58 @@ function parseOptions(globals, data, options) {
 }
 
 /**
+ *
+ * @param {String} resource
+ * @param {String} controllerName
+ * @param {String} action
+ * @param {Object} apiOptions
+ * @returns {Promise<Object>}
+ */
+async function makeAPICall(resource, controllerName, action, apiOptions) {
+    const controller = api[controllerName];
+
+    let timer;
+
+    try {
+        let response;
+
+        if (config.get('optimization:getHelper:timeout:threshold')) {
+            const logLevel = config.get('optimization:getHelper:timeout:level') || 'error';
+            const threshold = config.get('optimization:getHelper:timeout:threshold');
+
+            const apiResponse = controller[action](apiOptions);
+
+            const timeout = new Promise((resolve) => {
+                timer = setTimeout(() => {
+                    logging[logLevel](new errors.HelperWarning({
+                        message: `{{#get}} took longer than ${threshold}ms and was aborted`,
+                        code: 'ABORTED_GET_HELPER',
+                        errorDetails: {
+                            api: `${controllerName}.${action}`,
+                            apiOptions
+                        }
+                    }));
+
+                    resolve({[resource]: []});
+                }, threshold);
+            });
+
+            response = await Promise.race([apiResponse, timeout]);
+            clearTimeout(timer);
+        } else {
+            response = await controller[action](apiOptions);
+        }
+
+        return response;
+    } catch (err) {
+        clearTimeout(timer);
+        throw err;
+    }
+}
+
+/**
  * ## Get
- * @param {Object} resource
+ * @param {String} resource
  * @param {Object} options
  * @returns {Promise<any>}
  */
@@ -149,7 +199,6 @@ module.exports = async function get(resource, options) {
     }
 
     const controllerName = RESOURCES[resource].alias;
-    const controller = api[controllerName];
     const action = isBrowse(apiOptions) ? 'browse' : 'read';
 
     // Parse the options we're going to pass to the API
@@ -157,7 +206,7 @@ module.exports = async function get(resource, options) {
     apiOptions.context = {member: data.member};
 
     try {
-        const response = await controller[action](apiOptions);
+        const response = await makeAPICall(resource, controllerName, action, apiOptions);
 
         // prepare data properties for use with handlebars
         if (response[resource] && response[resource].length) {
@@ -185,19 +234,21 @@ module.exports = async function get(resource, options) {
         data.error = error.message;
         return options.inverse(self, {data: data});
     } finally {
-        const totalMs = Date.now() - start;
-        const logLevel = config.get('logging:slowHelper:level');
-        const threshold = config.get('logging:slowHelper:threshold');
-        if (totalMs > threshold) {
-            logging[logLevel](new errors.HelperWarning({
-                message: `{{#get}} helper took ${totalMs}ms to complete`,
-                code: 'SLOW_GET_HELPER',
-                errorDetails: {
-                    api: `${controllerName}.${action}`,
-                    apiOptions,
-                    returnedRows: returnedRowsCount
-                }
-            }));
+        if (config.get('optimization:getHelper:notify:threshold')) {
+            const totalMs = Date.now() - start;
+            const logLevel = config.get('optimization:getHelper:notify:level') || 'warn';
+            const threshold = config.get('optimization:getHelper:notify:threshold');
+            if (totalMs > threshold) {
+                logging[logLevel](new errors.HelperWarning({
+                    message: `{{#get}} helper took ${totalMs}ms to complete`,
+                    code: 'SLOW_GET_HELPER',
+                    errorDetails: {
+                        api: `${controllerName}.${action}`,
+                        apiOptions,
+                        returnedRows: returnedRowsCount
+                    }
+                }));
+            }
         }
     }
 };
