@@ -108,55 +108,60 @@ class EmailEventStorage {
      * @returns
      */
     async saveFailure(severity, event, options = {}) {
-        if (!event.error) {
-            logging.warn(`Missing error information provided for ${severity} failure event with id ${event.id}`);
-            return;
-        }
-
-        if (!options || !options.transacting) {
-            return await this.#models.EmailRecipientFailure.transaction(async (transacting) => {
-                await this.saveFailure(severity, event, {transacting});
-            });
-        }
-
-        // Create a forUpdate transaction
-        const existing = await this.#models.EmailRecipientFailure.findOne({
-            filter: `email_recipient_id:${event.emailRecipientId}`
-        }, {...options, require: false, forUpdate: true});
-
-        if (!existing) {
-            // Create a new failure
-            await this.#models.EmailRecipientFailure.add({
-                email_id: event.emailId,
-                member_id: event.memberId,
-                email_recipient_id: event.emailRecipientId,
-                severity,
-                message: event.error.message,
-                code: event.error.code,
-                enhanced_code: event.error.enhancedCode,
-                failed_at: event.timestamp,
-                event_id: event.id
-            }, options);
-        } else {
-            if (existing.get('severity') === 'permanent') {
-                // Already marked as failed, no need to change anything here
+        try {
+            if (!event.error) {
+                logging.warn(`Missing error information provided for ${severity} failure event with id ${event.id}`);
                 return;
             }
 
-            if (existing.get('failed_at') > event.timestamp) {
-                /// We can get events out of order, so only save the last one
-                return;
+            if (!options || !options.transacting) {
+                return await this.#models.EmailRecipientFailure.transaction(async (transacting) => {
+                    await this.saveFailure(severity, event, {transacting});
+                });
             }
 
-            // Update the existing failure
-            await existing.save({
-                severity,
-                message: event.error.message,
-                code: event.error.code,
-                enhanced_code: event.error.enhancedCode ?? null,
-                failed_at: event.timestamp,
-                event_id: event.id
-            }, {...options, patch: true});
+            // Create a forUpdate transaction
+            const existing = await this.#models.EmailRecipientFailure.findOne({
+                filter: `email_recipient_id:${event.emailRecipientId}`
+            }, {...options, require: false, forUpdate: true});
+
+            if (!existing) {
+                // Create a new failure
+                await this.#models.EmailRecipientFailure.add({
+                    email_id: event.emailId,
+                    member_id: event.memberId,
+                    email_recipient_id: event.emailRecipientId,
+                    severity,
+                    message: event.error.message,
+                    code: event.error.code,
+                    enhanced_code: event.error.enhancedCode,
+                    failed_at: event.timestamp,
+                    event_id: event.id
+                }, options);
+            } else {
+                if (existing.get('severity') === 'permanent') {
+                    // Already marked as failed, no need to change anything here
+                    return;
+                }
+
+                if (existing.get('failed_at') > event.timestamp) {
+                    /// We can get events out of order, so only save the last one
+                    return;
+                }
+
+                // Update the existing failure
+                await existing.save({
+                    severity,
+                    message: event.error.message,
+                    code: event.error.code,
+                    enhanced_code: event.error.enhancedCode ?? null,
+                    failed_at: event.timestamp,
+                    event_id: event.id
+                }, {...options, patch: true});
+            }
+        } catch (e) {
+            logging.error(`Failed to save ${severity} failure event with id ${event?.id}`);
+            logging.error(e);
         }
     }
 
@@ -179,7 +184,12 @@ class EmailEventStorage {
     }
 
     async unsubscribeFromNewsletters(event) {
-        await this.#membersRepository.update({newsletters: []}, {id: event.memberId});
+        try {
+            await this.#membersRepository.update({newsletters: []}, {id: event.memberId});
+        } catch (err) {
+            logging.error(`Failed to unsubscribe member - ${event?.memberId} - from newsletters`);
+            logging.error(err);
+        }
     }
 }
 
