@@ -734,7 +734,7 @@ describe('EmailEventStorage', function () {
         const emailBatch = fixtureManager.get('email_batches', 0);
         const emailId = emailBatch.email_id;
 
-        const emailRecipient = fixtureManager.get('email_recipients', 0);
+        const emailRecipient = fixtureManager.get('email_recipients', 1);
         assert(emailRecipient.batch_id === emailBatch.id);
         const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
@@ -746,6 +746,9 @@ describe('EmailEventStorage', function () {
         // Check not unsubscribed
         const {body: {events: [notSpamEvent]}} = await agent.get(eventsURI);
         assert.notEqual(notSpamEvent.type, 'email_complaint_event', 'This test requires a member that does not have a spam event');
+
+        const {body: {members: [member]}} = await agent.get(`/members/${memberId}`);
+        assert.equal(member.email_suppression.suppressed, false, 'This test requires a member that does not have a suppressed email');
 
         events = [{
             event: 'complained',
@@ -777,6 +780,10 @@ describe('EmailEventStorage', function () {
         // Check if event exists
         const {body: {events: [spamComplaintEvent]}} = await agent.get(eventsURI);
         assert.equal(spamComplaintEvent.type, 'email_complaint_event');
+
+        const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
+        assert.equal(memberAfter.email_suppression.suppressed, true, 'The member should have a suppressed email');
+        assert.equal(memberAfter.email_suppression.info.reason, 'spam');
     });
 
     it('Can handle unsubscribe events', async function () {

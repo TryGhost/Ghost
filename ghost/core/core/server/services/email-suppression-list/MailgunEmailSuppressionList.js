@@ -95,12 +95,12 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     }
 
     async init() {
-        const handleEvent = async (event) => {
+        const handleEvent = reason => async (event) => {
             try {
                 await this.Suppression.add({
                     email_address: event.email,
                     email_id: event.emailId,
-                    reason: 'bounce',
+                    reason: reason,
                     created_at: event.timestamp
                 });
             } catch (err) {
@@ -109,8 +109,8 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
                 }
             }
         };
-        DomainEvents.subscribe(EmailBouncedEvent, handleEvent);
-        DomainEvents.subscribe(SpamComplaintEvent, handleEvent);
+        DomainEvents.subscribe(EmailBouncedEvent, handleEvent('bounce'));
+        DomainEvents.subscribe(SpamComplaintEvent, handleEvent('spam'));
     }
 }
 
