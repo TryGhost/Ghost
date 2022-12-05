@@ -84,7 +84,41 @@ class AbstractEmailSuppressionList {
     }
 }
 
+class EmailSuppressedEvent {
+    /**
+     * @readonly
+     * @type {{emailId: string, emailAddress: string, reason: string}}
+     */
+    data;
+
+    /**
+     * @readonly
+     * @type {Date}
+     */
+    timestamp;
+
+    /**
+     * @private
+     */
+    constructor({emailAddress, emailId, reason, timestamp}) {
+        this.data = {
+            emailAddress,
+            emailId,
+            reason
+        };
+        this.timestamp = timestamp;
+    }
+
+    static create(data, timestamp) {
+        return new EmailSuppressedEvent({
+            ...data,
+            timestamp: timestamp || new Date
+        });
+    }
+}
+
 module.exports = {
     AbstractEmailSuppressionList,
-    EmailSuppressionData
+    EmailSuppressionData,
+    EmailSuppressedEvent
 };
