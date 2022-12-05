@@ -1,15 +1,9 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
 const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {anyErrorId} = matchers;
 
 let membersAgent, membersService;
-
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
 describe('sendMagicLink', function () {
     before(async function () {

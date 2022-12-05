@@ -432,5 +432,6 @@ module.exports = {
     configUtils: require('./configUtils'),
     dbUtils: require('./db-utils'),
     urlUtils: require('./urlUtils'),
+    sleep: require('./sleep'),
     resetRateLimits
 };

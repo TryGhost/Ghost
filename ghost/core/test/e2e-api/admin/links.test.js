@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
 const {anyObjectId, anyString, anyEtag, anyNumber} = matchers;
 
 const matchLink = {
@@ -13,12 +13,6 @@ const matchLink = {
         clicks: anyNumber
     }
 };
-
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
 describe('Links API', function () {
     let agent;
