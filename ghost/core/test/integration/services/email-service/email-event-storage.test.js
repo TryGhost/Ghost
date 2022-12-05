@@ -1,14 +1,11 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager, sleep} = require('../../../utils/e2e-framework');
 const assert = require('assert');
-const models = require('../../../../core/server/models');
 const domainEvents = require('@tryghost/domain-events');
 const MailgunClient = require('@tryghost/mailgun-client');
-const {run} = require('../../../../core/server/services/email-analytics/jobs/fetch-latest/run.js');
-const membersService = require('../../../../core/server/services/members');
 const {EmailDeliveredEvent} = require('@tryghost/email-events');
 
-async function resetFailures(emailId) {
+async function resetFailures(models, emailId) {
     await models.EmailRecipientFailure.destroy({
         destroyBy: {
             email_id: emailId
@@ -22,13 +19,19 @@ describe('EmailEventStorage', function () {
     let agent;
     let events = [];
     let jobsService;
+    let models;
+    let run;
+    let membersService;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails');
         await agent.loginAsOwner();
 
-        // Only create reference to jobsService after Ghost boot
+        // Only reference services after Ghost boot
+        models = require('../../../../core/server/models');
+        run = require('../../../../core/server/services/email-analytics/jobs/fetch-latest/run.js').run;
+        membersService = require('../../../../core/server/services/members');
         jobsService = require('../../../../core/server/services/jobs');
 
         sinon.stub(MailgunClient.prototype, 'fetchEvents').callsFake(async function (_, batchHandler) {
@@ -405,7 +408,7 @@ describe('EmailEventStorage', function () {
         await models.EmailRecipient.edit({failed_at: null}, {
             id: emailRecipient.id
         });
-        await resetFailures(emailId);
+        await resetFailures(models, emailId);
 
         events = [{
             event: 'failed',
