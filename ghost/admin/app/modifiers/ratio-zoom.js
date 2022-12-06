@@ -3,6 +3,8 @@ import {bind, throttle} from '@ember/runloop';
 import {registerDestructor} from '@ember/destroyable';
 
 export default class RatioZoom extends Modifier {
+    element = null;
+    ratio = 1;
     resizeHandler = null;
 
     constructor(owner, args) {
@@ -11,8 +13,11 @@ export default class RatioZoom extends Modifier {
     }
 
     modify(element, positional, {zoomed, ratio}) {
+        this.element = element;
+        this.ratio = ratio;
+
         if (zoomed) {
-            this.setZoomedSize(element, {ratio});
+            this.setZoomedSize();
         }
     }
 
@@ -20,7 +25,9 @@ export default class RatioZoom extends Modifier {
         this.removeResizeEventListener();
     };
 
-    setZoomedSize(element, {ratio}) {
+    setZoomedSize() {
+        const {element, ratio} = this;
+
         element.style.width = '100%';
         element.style.height = '100%';
 
