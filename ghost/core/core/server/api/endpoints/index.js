@@ -113,6 +113,10 @@ module.exports = {
         return apiFramework.pipeline(require('./tags'), localUtils);
     },
 
+    get mediaLibrary() {
+        return apiFramework.pipeline(require('./media-library'), localUtils);
+    },
+
     get users() {
         return apiFramework.pipeline(require('./users'), localUtils);
     },

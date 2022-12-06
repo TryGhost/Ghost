@@ -56,15 +56,15 @@ export default Service.extend({
             let user = yield this.session.user;
             this.set('_user', user);
 
-            let response = yield fetch('https://ghost.org/changelog.json');
-            if (!response.ok) {
-                // eslint-disable-next-line
-                return console.error('Failed to fetch changelog', {response});
-            }
+            // let response = yield fetch('https://ghost.org/changelog.json');
+            // if (!response.ok) {
+            //     // eslint-disable-next-line
+            //     return console.error('Failed to fetch changelog', {response});
+            // }
 
-            let result = yield response.json();
-            this.set('entries', result.posts || []);
-            this.set('changelogUrl', result.changelogUrl);
+            // let result = yield response.json();
+            // this.set('entries', result.posts || []);
+            // this.set('changelogUrl', result.changelogUrl);
         } catch (e) {
             console.error(e); // eslint-disable-line
         }

@@ -1,0 +1,17 @@
+{{!-- template-lint-disable no-nested-interactive --}}
+<a class="gh-unsplash-photo is-media-library" {{on "click" this.select}} data-test-unsplash-photo={{@photo.id}}>
+    <div class="gh-unsplash-photo-container" data-test-unsplash-photo-container>
+        <img src={{@photo.image}} data-test-unsplash-photo-image />
+        <div class="gh-unsplash-photo-overlay">
+            <div class="gh-unsplash-photo-header"></div>
+            <div class="gh-unsplash-photo-footer">
+                <div class="gh-unsplash-photo-author">
+                    <span class="gh-unsplash-photo-author-name">
+                        {{@photo.caption}}
+                    </span>
+                </div>
+                {{!-- <a class="gh-unsplash-button-download gh-unsplash-button" href="{{@photo.image}}" target="blank" download>{{svg-jar "download"}}</a> --}}
+            </div>
+        </div>
+    </div>
+</a>

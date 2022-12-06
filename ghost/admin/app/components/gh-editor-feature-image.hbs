@@ -82,6 +82,7 @@
                     {{#if this.settings.unsplash}}
                         <button type="button" class="gh-editor-feature-image-unsplash" {{on "click" this.toggleUnsplashSelector}}>{{svg-jar "unsplash"}}</button>
                     {{/if}}
+                    <button type="button" class="gh-editor-feature-image-unsplash" {{on "click" this.toggleMediaLibrarySelector}}>{{svg-jar "media-library"}}</button>
                 {{/if}}
             </div>
         {{/if}}
@@ -101,5 +102,12 @@
     <GhUnsplash
         @select={{this.setUnsplashImage}}
         @close={{this.toggleUnsplashSelector}}
+    />
+{{/if}}
+
+{{#if this.showMediaLibrarySelector}}
+    <GhMediaLibrary
+        @select={{this.setMediaLibraryImage}}
+        @close={{this.toggleMediaLibrarySelector}}
     />
 {{/if}}

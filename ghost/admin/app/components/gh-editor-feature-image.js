@@ -10,6 +10,7 @@ export default class GhEditorFeatureImageComponent extends Component {
     @tracked isHovered = false;
     @tracked captionInputFocused = false;
     @tracked showUnsplashSelector = false;
+    @tracked showMediaLibrarySelector = false;
     @tracked canDrop = false;
 
     get hideButton() {
@@ -32,6 +33,17 @@ export default class GhEditorFeatureImageComponent extends Component {
     @action
     toggleUnsplashSelector() {
         this.showUnsplashSelector = !this.showUnsplashSelector;
+    }
+    
+    @action
+    setMediaLibraryImage({src, caption}) {
+        this.args.updateImage(src);
+        this.args.updateCaption(caption);
+    }
+
+    @action
+    toggleMediaLibrarySelector() {
+        this.showMediaLibrarySelector = !this.showMediaLibrarySelector;
     }
 
     @action

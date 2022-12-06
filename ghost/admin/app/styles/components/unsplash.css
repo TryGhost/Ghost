@@ -131,11 +131,19 @@
     cursor: zoom-in;
 }
 
-.gh-unsplash-photo-container > img {
+.gh-unsplash-photo.is-media-library {
+    cursor: crosshair;
+}
+
+.gh-unsplash-photo-container>img {
     position: absolute;
     display: block;
     height: auto;
     width: 100%;
+}
+
+.gh-unsplash-photo.is-media-library .gh-unsplash-photo-container>img {
+    position: unset !important;
 }
 
 /* Hover overlay */
@@ -150,7 +158,7 @@
     justify-content: space-between;
     padding: 20px;
     color: #fff;
-    background-image: linear-gradient(180deg,rgba(0,0,0,0.2) 0,transparent 40%,transparent 60%,rgba(0,0,0,0.3));
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0, transparent 40%, transparent 60%, rgba(0, 0, 0, 0.3));
     opacity: 0;
     transition: all 0.15s ease-in-out;
 }
@@ -254,7 +262,7 @@
     align-items: center;
     overflow: auto;
     padding: 25px;
-    background: rgba(255,255,255,0.8);
+    background: rgba(255, 255, 255, 0.8);
 
     backdrop-filter: blur(2px);
 }
@@ -269,10 +277,10 @@
     color: #fff;
     cursor: zoom-out;
     background: var(--darkgrey);
-    box-shadow: rgba(39,44,49,0.1) 8px 14px 38px, rgba(39, 44, 49, 0.08) 1px 3px 8px;
+    box-shadow: rgba(39, 44, 49, 0.1) 8px 14px 38px, rgba(39, 44, 49, 0.08) 1px 3px 8px;
 }
 
-.gh-unsplash-zoom .gh-unsplash-photo-container > img {
+.gh-unsplash-zoom .gh-unsplash-photo-container>img {
     position: static;
     display: block;
     width: auto;

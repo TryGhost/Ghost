@@ -628,6 +628,11 @@
                     "name": "Edit links",
                     "action_type": "edit",
                     "object_type": "link"
+                },
+                {
+                    "name": "Browse media library",
+                    "action_type": "browse",
+                    "object_type": "media_library"
                 }
             ]
         },

@@ -89,6 +89,9 @@ module.exports = function apiRoutes() {
     router.put('/tags/:id', mw.authAdminApi, http(api.tags.edit));
     router.del('/tags/:id', mw.authAdminApi, http(api.tags.destroy));
 
+    // ## MediaLibrary
+    router.get('/media-library', mw.authAdminApi, http(api.mediaLibrary.browse));
+
     // Tiers
     router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
     router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
