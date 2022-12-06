@@ -69,7 +69,7 @@
     "element-resize-detector": "1.2.4",
     "ember-ajax": "5.1.2",
     "ember-assign-helper": "0.4.0",
-    "ember-auto-import": "2.4.3",
+    "ember-auto-import": "2.5.0",
     "ember-classic-decorator": "3.0.1",
     "ember-cli": "3.24.0",
     "ember-cli-app-version": "5.0.0",

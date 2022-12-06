@@ -2363,6 +2363,20 @@
     semver "^7.3.5"
     typescript-memoize "^1.0.1"
 
+"@embroider/shared-internals@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@embroider/shared-internals/-/shared-internals-2.0.0.tgz#d8205ec6944362aeecfbb51143db352430ced316"
+  integrity sha512-qZ2/xky9mWm5YC6noOa6AiAwgISEQ78YTZNv4SNu2PFgEK/H+Ha/3ddngzGSsnXkVnIHZyxIBzhxETonQYHY9g==
+  dependencies:
+    babel-import-util "^1.1.0"
+    ember-rfc176-data "^0.3.17"
+    fs-extra "^9.1.0"
+    js-string-escape "^1.0.1"
+    lodash "^4.17.21"
+    resolve-package-path "^4.0.1"
+    semver "^7.3.5"
+    typescript-memoize "^1.0.1"
+
 "@embroider/util@^0.39.1 || ^0.40.0 || ^0.41.0":
   version "0.41.0"
   resolved "https://registry.yarnpkg.com/@embroider/util/-/util-0.41.0.tgz#5324cb4742aa4ed8d613c4f88a466f73e4e6acc1"
@@ -10998,17 +11012,17 @@ ember-assign-polyfill@^2.6.0:
     ember-cli-babel "^7.20.5"
     ember-cli-version-checker "^2.0.0"
 
-ember-auto-import@2.4.3, "ember-auto-import@^1.12.1 || ^2.4.3", ember-auto-import@^2.2.3:
-  version "2.4.3"
-  resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-2.4.3.tgz#0ff8ebe37a2016dbad2ccc10c0ef2dfbd0289b55"
-  integrity sha512-yqtXDixgtBgaNIiz3DIIjJgpPoV5/UWBnsYIR/IxwDYpsGswyRWQ4D+IamkCDtaGDkZ7dNE9QZDBOrJCAG6KNA==
+ember-auto-import@2.5.0, "ember-auto-import@^1.12.1 || ^2.4.3", ember-auto-import@^2.2.3:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-2.5.0.tgz#627607648e87d154f75cd3f70c435355ef7cced9"
+  integrity sha512-fKERUmpZLn4RJiCwTjS7D5zJxgnbF4E6GiSp1GYh53K96S+5UBs06r7ScDI52rq34z0+qdSrA6qiDJ3i/lWqKg==
   dependencies:
     "@babel/core" "^7.16.7"
     "@babel/plugin-proposal-class-properties" "^7.16.7"
     "@babel/plugin-proposal-decorators" "^7.16.7"
     "@babel/preset-env" "^7.16.7"
     "@embroider/macros" "^1.0.0"
-    "@embroider/shared-internals" "^1.0.0"
+    "@embroider/shared-internals" "^2.0.0"
     babel-loader "^8.0.6"
     babel-plugin-ember-modules-api-polyfill "^3.5.0"
     babel-plugin-htmlbars-inline-precompile "^5.2.1"
