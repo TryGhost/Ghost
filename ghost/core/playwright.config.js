@@ -15,7 +15,7 @@ const config = {
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
         headless: !process.env.PLAYWRIGHT_DEBUG,
-        baseURL: process.env.TEST_URL ?? 'http://localhost:2368',
+        baseURL: process.env.TEST_URL ?? 'http://localhost:2369',
         // TODO: Where to put this
         storageState: 'playwright-state.json'
     },
@@ -31,7 +31,7 @@ if (!process.env.TEST_URL) {
             WEBHOOK_SECRET: getWebhookSecret()
         },
         reuseExistingServer: false,
-        url: 'http://localhost:2368'
+        url: 'http://localhost:2369'
     };
 }
 
