@@ -18,7 +18,7 @@ async function resetFailures(emailId) {
     await models.EmailRecipientFailure.destroy({
         destroyBy: {
             email_id: emailId
-        }   
+        }
     });
 }
 
@@ -282,9 +282,9 @@ describe('EmailEventStorage', function () {
         }, {require: true});
 
         assert.equal(updatedEmailRecipient.get('failed_at').toUTCString(), timestamp.toUTCString());
-        
-        // Check delivered at is reset back to null
-        assert.equal(updatedEmailRecipient.get('delivered_at'), null);
+
+        // Check delivered at is NOT reset back to null
+        assert.notEqual(updatedEmailRecipient.get('delivered_at'), null);
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
@@ -300,31 +300,6 @@ describe('EmailEventStorage', function () {
         assert.equal(permanentFailures.models[0].get('event_id'), 'pl271FzxTTmGRW8Uj3dUWw');
         assert.equal(permanentFailures.models[0].get('severity'), 'permanent');
         assert.equal(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
-
-        // Sometimes we emit events outside of order beacuse of the TRUST_THRESHOLD of the provider-mailgun class.
-        // Check if we handle this correctly.
-        // Manually emit the delivered event again, and see if it is ignored correctly
-        // @ts-ignore
-        domainEvents.dispatch(EmailDeliveredEvent.create({
-            email: emailRecipient.member_email,
-            emailRecipientId: emailRecipient.id,
-            memberId: memberId,
-            emailId: emailId,
-            timestamp
-        }));
-
-        // Now wait for events processed
-        await sleep(200);
-
-        // Check delivered at is not set again
-        const updatedEmailRecipient2 = await models.EmailRecipient.findOne({
-            id: emailRecipient.id
-        }, {require: true});
-
-        assert.equal(updatedEmailRecipient2.get('failed_at').toUTCString(), timestamp.toUTCString());
-        
-        // Check delivered at is reset back to null
-        assert.equal(updatedEmailRecipient2.get('delivered_at'), null, 'A delivered event after a permanent failure event should be ignored');
     });
 
     it('Ignores permanent failures if already failed', async function () {
