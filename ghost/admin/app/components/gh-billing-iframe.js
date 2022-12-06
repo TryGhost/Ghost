@@ -6,15 +6,15 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhBillingIframe extends Component {
+    @service ajax;
     @service billing;
     @service ghostPaths;
-    @service ajax;
     @service notifications;
+    @service session;
 
     @inject config;
 
     @tracked isOwner = null;
-    @tracked fetchingSubscription = false;
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -50,12 +50,25 @@ export default class GhBillingIframe extends Component {
     }
 
     _handleTokenRequest() {
-        this.fetchingSubscription = false;
-        let token;
-        const ghostIdentityUrl = this.ghostPaths.url.api('identities');
+        const handleNoPermission = () => {
+            // no permission means the current user requesting the token is not the owner of the site.
+            this.isOwner = false;
 
+            // Avoid letting the BMA waiting for a message and send an empty token response instead
+            this.billing.getBillingIframe().contentWindow.postMessage({
+                request: 'token',
+                response: null
+            }, '*');
+        };
+
+        if (!this.session.user?.isOwnerOnly) {
+            handleNoPermission();
+            return;
+        }
+
+        const ghostIdentityUrl = this.ghostPaths.url.api('identities');
         this.ajax.request(ghostIdentityUrl).then((response) => {
-            token = response && response.identities && response.identities[0] && response.identities[0].token;
+            const token = response?.identities?.[0]?.token;
             this.billing.getBillingIframe().contentWindow.postMessage({
                 request: 'token',
                 response: token
@@ -63,29 +76,12 @@ export default class GhBillingIframe extends Component {
 
             this.isOwner = true;
         }).catch((error) => {
-            if (error.payload?.errors && error.payload.errors[0]?.type === 'NoPermissionError') {
-                // no permission means the current user requesting the token is not the owner of the site.
-                this.isOwner = false;
-
-                // Avoid letting the BMA waiting for a message and send an empty token response instead
-                this.billing.getBillingIframe().contentWindow.postMessage({
-                    request: 'token',
-                    response: null
-                }, '*');
+            if (error.payload?.errors?.[0]?.type === 'NoPermissionError') {
+                handleNoPermission();
             } else {
                 throw error;
             }
         });
-
-        // NOTE: the handler is placed here to avoid additional logic to check if iframe has loaded
-        //       receiving a 'token' request is an indication that page is ready
-        if (!this.fetchingSubscription && !this.billing.subscription && token) {
-            this.fetchingSubscription = true;
-            this.billing.getBillingIframe().contentWindow.postMessage({
-                query: 'getSubscription',
-                response: 'subscription'
-            }, '*');
-        }
     }
 
     _handleForceUpgradeRequest() {
