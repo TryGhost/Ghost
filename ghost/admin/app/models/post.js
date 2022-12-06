@@ -234,6 +234,7 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     hasAnalyticsPage: computed('isPost', 'showEmailOpenAnalytics', 'showEmailClickAnalytics', 'showAttributionAnalytics', function () {
         return this.isPost
+            && this.session.user.isAdmin
             && (
                 this.showEmailOpenAnalytics
                 || this.showEmailClickAnalytics
