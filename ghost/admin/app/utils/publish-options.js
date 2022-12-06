@@ -285,7 +285,9 @@ export default class PublishOptions {
         promises.push(this._checkPublishingLimit());
 
         // newsletters
-        promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'}));
+        if (!this.user.isContributor) {
+            promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'}));
+        }
 
         yield Promise.all(promises);
     }
