@@ -914,6 +914,13 @@ module.exports = class MemberRepository {
             }
         } else if (offerId) {
             offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});
+            if (offer) {
+                offerId = offer.id;
+            } else {
+                // Reset offer id to null as it is not valid
+                offerId = null;
+                logging.error(`Received an unknown offer id (${offerId}) for subscription - ${subscription.id}.`);
+            }
         }
 
         const subscriptionData = {
@@ -1033,7 +1040,7 @@ module.exports = class MemberRepository {
                 tierId: ghostProduct?.get('id'),
                 memberId: member.id,
                 subscriptionId: subscriptionModel.get('id'),
-                offerId: data.offerId,
+                offerId: offerId,
                 attribution: data.attribution,
                 batchId: options.batch_id
             });
