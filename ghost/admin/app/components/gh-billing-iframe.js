@@ -50,7 +50,7 @@ export default class GhBillingIframe extends Component {
     }
 
     _handleTokenRequest() {
-        function handleNoPermission() {
+        const handleNoPermission = () => {
             // no permission means the current user requesting the token is not the owner of the site.
             this.isOwner = false;
 
@@ -59,9 +59,9 @@ export default class GhBillingIframe extends Component {
                 request: 'token',
                 response: null
             }, '*');
-        }
+        };
 
-        if (!this.session.user?.isOwner) {
+        if (!this.session.user?.isOwnerOnly) {
             handleNoPermission();
             return;
         }
