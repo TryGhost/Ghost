@@ -8,13 +8,11 @@ class MasonryLayout {
     reset() {
         let columns = [];
         let columnHeights = [];
-
         // pre-fill column arrays based on columnCount
         for (let i = 0; i < this.columnCount; i += 1) {
             columns[i] = [];
             columnHeights[i] = 0;
         }
-
         this.columns = columns;
         this.columnHeights = columnHeights;
     }

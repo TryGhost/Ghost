@@ -9,29 +9,23 @@ import UnsplashService from '../../utils/services/unsplash';
 import UnsplashGallery from './file-selectors/Unsplash/UnsplashGallery';
 import {useMemo} from 'react';
 
-const UnsplashModal = ({service, container, nodeKey, handleModalClose}) => {
+const API_URL = 'https://api.unsplash.com';
+
+const UnsplashModal = ({container, nodeKey, handleModalClose}) => {
+    const [editor] = useLexicalComposerContext();
+    const {unsplashConf} = React.useContext(KoenigComposerContext);
+    const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf}), [unsplashConf]);
+
     const galleryRef = React.useRef(null);
     const [scrollPos, setScrollPos] = React.useState(0);
     const [lastScrollPos, setLastScrollPos] = React.useState(0);
-    const [isLoading, setIsLoading] = React.useState(true);
+    const [isLoading, setIsLoading] = React.useState(UnsplashLib.search_is_running || true);
     const initLoadRef = React.useRef(false);
     const [searchTerm, setSearchTerm] = React.useState('');
-    const [editor] = useLexicalComposerContext();
-    const {unsplashConf} = React.useContext(KoenigComposerContext);
     const [zoomedImg, setZoomedImg] = React.useState(null);
+    const [dataset, setDataset] = React.useState(UnsplashLib.getColumns() || []);
 
-    const selectImg = (payload) => {
-        // set the scroll position to the last position
-        if (payload) {
-            setZoomedImg(payload);
-            setLastScrollPos(scrollPos);
-        }
-
-        if (payload === null) {
-            galleryRef.current.scrollTop = lastScrollPos;
-            setZoomedImg(null);
-        }
-    };
+    // const dataset = UnsplashLib.getColumns();
 
     React.useEffect(() => {
         if (zoomedImg === null && lastScrollPos !== 0) {
@@ -39,10 +33,6 @@ const UnsplashModal = ({service, container, nodeKey, handleModalClose}) => {
             setLastScrollPos(0);
         }
     }, [zoomedImg, scrollPos, lastScrollPos]);
-
-    const API_URL = 'https://api.unsplash.com';
-
-    const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf}), [unsplashConf]);
 
     const portalContainer = container || document.querySelector('.koenig-lexical');
 
@@ -76,6 +66,84 @@ const UnsplashModal = ({service, container, nodeKey, handleModalClose}) => {
         }
     }, [galleryRef, zoomedImg]);
 
+    const loadInitPhotos = React.useCallback(async () => {
+        if (initLoadRef.current === false || searchTerm.length === 0) {
+            setDataset([]);
+            await UnsplashLib.clearPhotos();
+            await UnsplashLib.loadNew();
+            const columns = UnsplashLib.getColumns();
+            setDataset(columns);
+            if (galleryRef.current.scrollTop !== 0) {
+                galleryRef.current.scrollTop = 0;
+            }
+            setIsLoading(false);
+        }
+    }, [UnsplashLib, searchTerm]);
+
+    const handleSearch = async (e) => {
+        const query = e.target.value;
+        if (query.length > 2) {
+            setZoomedImg(null);
+            setSearchTerm(query);
+        }
+        if (query.length === 0) {
+            setSearchTerm('');
+            initLoadRef.current = false;
+            await loadInitPhotos();
+        }
+    };
+
+    const search = React.useCallback(async () => {
+        if (searchTerm) {
+            setIsLoading(true);
+            UnsplashLib.clearPhotos();
+            await UnsplashLib.updateSearch(searchTerm);
+            const columns = UnsplashLib.getColumns();
+            setDataset(columns);
+            if (galleryRef.current.scrollTop !== 0) {
+                galleryRef.current.scrollTop = 0;
+            }
+            setIsLoading(false);
+        }
+    }, [searchTerm, UnsplashLib]);
+
+    React.useEffect(() => {
+        const timeoutId = setTimeout(async () => {
+            if (searchTerm.length > 2) {
+                await search();
+            } else {
+                await loadInitPhotos();
+            }
+        }, 300);
+        return () => {
+            initLoadRef.current = true;
+            clearTimeout(timeoutId);
+        };
+    }, [searchTerm, search, loadInitPhotos]);
+
+    const loadMorePhotos = React.useCallback(async () => {
+        setIsLoading(true);
+        await UnsplashLib.loadNextPage();
+        const columns = UnsplashLib.getColumns();
+        setDataset(columns);
+        setIsLoading(false);
+    }, [UnsplashLib]);
+
+    React.useEffect(() => {
+        const ref = galleryRef.current;
+        if (ref) {
+            const handleScroll = async () => {
+                if (zoomedImg === null && ref.scrollTop + ref.clientHeight >= ref.scrollHeight - 1000) {
+                    await loadMorePhotos();
+                }
+            };
+            ref.addEventListener('scroll', handleScroll);
+            return () => {
+                ref.removeEventListener('scroll', handleScroll);
+            };
+        }
+    }, [galleryRef, loadMorePhotos, zoomedImg]);
+
     const insertImageToNode = async (image) => {
         if (image.src) {
             UnsplashLib.triggerDownload(image);
@@ -91,69 +159,20 @@ const UnsplashModal = ({service, container, nodeKey, handleModalClose}) => {
                 $setSelection(nodeSelection);
             });
             handleModalClose(false);
-            // should send api request to tell unsplash we used the image
         }
     };
 
-    const loadInitPhotos = React.useCallback(async () => {
-        if (initLoadRef.current === false || searchTerm.length === 0) {
-            UnsplashLib.clearPhotos();
-            await UnsplashLib.loadNew();
-            setIsLoading(false);
+    const selectImg = (payload) => {
+        if (payload) {
+            setZoomedImg(payload);
+            setLastScrollPos(scrollPos);
         }
-    }, [UnsplashLib, searchTerm]);
 
-    const handleSearch = async (e) => {
-        const query = e.target.value;
-        setSearchTerm(query);
+        if (payload === null) {
+            galleryRef.current.scrollTop = lastScrollPos;
+            setZoomedImg(null);
+        }
     };
-
-    const search = React.useCallback(async () => {
-        if (searchTerm) {
-            setIsLoading(true);
-            UnsplashLib.clearPhotos();
-            await UnsplashLib.updateSearch(searchTerm);
-            setIsLoading(false);
-        }
-    }, [searchTerm, UnsplashLib]);
-
-    React.useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (searchTerm.length > 0 && searchTerm.length < 3) {
-                galleryRef.current.scrollTop = 0;
-            }
-            if (searchTerm.length > 2) {
-                search();
-            } else {
-                loadInitPhotos();
-            }
-        }, 300);
-        return () => {
-            initLoadRef.current = true;
-            clearTimeout(timeoutId);
-        };
-    }, [searchTerm, search, loadInitPhotos]);
-
-    const loadMorePhotos = React.useCallback(async () => {
-        setIsLoading(true);
-        await UnsplashLib.loadNextPage();
-        setIsLoading(false);
-    }, [UnsplashLib]);
-
-    React.useEffect(() => {
-        const ref = galleryRef.current;
-        if (ref) {
-            const handleScroll = () => {
-                if (ref.scrollTop + ref.clientHeight >= ref.scrollHeight - 1000) {
-                    loadMorePhotos();
-                }
-            };
-            ref.addEventListener('scroll', handleScroll);
-            return () => {
-                ref.removeEventListener('scroll', handleScroll);
-            };
-        }
-    }, [galleryRef, loadMorePhotos]);
 
     if (!portalContainer) {
         return null;
@@ -168,7 +187,7 @@ const UnsplashModal = ({service, container, nodeKey, handleModalClose}) => {
                 galleryRef={galleryRef}
                 zoomed={zoomedImg}
                 isLoading={isLoading}
-                dataset={UnsplashLib.getColumns()}
+                dataset={dataset}
                 selectImg={selectImg}
                 insertImage={insertImageToNode} 
                 error={UnsplashGallery.error}

@@ -198,6 +198,10 @@ class UnsplashService {
         masonry.reset();
         this.pagination = [];
     }
+
+    setSearchTerm(term) {
+        this.search_term = term;
+    }
 }
 
 export default UnsplashService;
