@@ -34,6 +34,7 @@
     "@tryghost/color-utils": "0.1.21",
     "@tryghost/html-to-plaintext": "0.0.0",
     "juice": "8.1.0",
-    "cheerio": "0.22.0"
+    "cheerio": "0.22.0",
+    "@tryghost/logging": "2.3.2"
   }
 }
