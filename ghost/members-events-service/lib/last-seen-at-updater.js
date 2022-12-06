@@ -2,6 +2,7 @@ const {MemberPageViewEvent, MemberCommentEvent, MemberLinkClickEvent} = require(
 const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const {EmailOpenedEvent} = require('@tryghost/email-events');
+const logging = require('@tryghost/logging');
 
 /**
  * Listen for `MemberViewEvent` to update the `member.last_seen_at` timestamp
@@ -33,19 +34,39 @@ class LastSeenAtUpdater {
      */
     subscribe(domainEvents) {
         domainEvents.subscribe(MemberPageViewEvent, async (event) => {
-            await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+            try {
+                await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+            } catch (err) {
+                logging.error(`Error in LastSeenAtUpdater.MemberPageViewEvent listener for member ${event.data.memberId}`);
+                logging.error(err);
+            }
         });
 
         domainEvents.subscribe(MemberLinkClickEvent, async (event) => {
-            await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+            try {
+                await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+            } catch (err) {
+                logging.error(`Error in LastSeenAtUpdater.MemberLinkClickEvent listener for member ${event.data.memberId}`);
+                logging.error(err);
+            }
         });
 
         domainEvents.subscribe(MemberCommentEvent, async (event) => {
-            await this.updateLastCommentedAt(event.data.memberId, event.timestamp);
+            try {
+                await this.updateLastCommentedAt(event.data.memberId, event.timestamp);
+            } catch (err) {
+                logging.error(`Error in LastSeenAtUpdater.MemberCommentEvent listener for member ${event.data.memberId}`);
+                logging.error(err);
+            }
         });
 
         domainEvents.subscribe(EmailOpenedEvent, async (event) => {
-            await this.updateLastSeenAtWithoutKnownLastSeen(event.memberId, event.timestamp);
+            try {
+                await this.updateLastSeenAtWithoutKnownLastSeen(event.memberId, event.timestamp);
+            } catch (err) {
+                logging.error(`Error in LastSeenAtUpdater.EmailOpenedEvent listener for member ${event.memberId}, emailRecipientId ${event.emailRecipientId}`);
+                logging.error(err);
+            }
         });
     }
 
@@ -61,8 +82,10 @@ class LastSeenAtUpdater {
         // Fetch manually
         const membersApi = this._getMembersApi();
         const member = await membersApi.members.get({id: memberId}, {require: true});
-        const memberLastSeenAt = member.get('last_seen_at');
-        await this.updateLastSeenAt(memberId, memberLastSeenAt, timestamp);
+        if (member) {
+            const memberLastSeenAt = member.get('last_seen_at');
+            await this.updateLastSeenAt(memberId, memberLastSeenAt, timestamp);
+        }
     }
 
     /**
