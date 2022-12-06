@@ -180,9 +180,10 @@ const updateMemberData = async function (req, res) {
                 id: member.id,
                 withRelated: ['stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'newsletters']
             };
-            const updatedMember = await membersService.api.members.update(data, options);
+            await membersService.api.members.update(data, options);
+            const updatedMember = await membersService.ssr.getMemberDataFromSession(req, res);
 
-            res.json(formattedMemberResponse(updatedMember.toJSON()));
+            res.json(formattedMemberResponse(updatedMember));
         } else {
             res.json(null);
         }
