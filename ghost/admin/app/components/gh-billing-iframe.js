@@ -68,7 +68,7 @@ export default class GhBillingIframe extends Component {
 
         const ghostIdentityUrl = this.ghostPaths.url.api('identities');
         this.ajax.request(ghostIdentityUrl).then((response) => {
-            const token = response && response.identities && response.identities[0] && response.identities[0].token;
+            const token = response?.identities?.[0]?.token;
             this.billing.getBillingIframe().contentWindow.postMessage({
                 request: 'token',
                 response: token
@@ -76,7 +76,7 @@ export default class GhBillingIframe extends Component {
 
             this.isOwner = true;
         }).catch((error) => {
-            if (error.payload?.errors && error.payload.errors[0]?.type === 'NoPermissionError') {
+            if (error.payload?.errors?.[0]?.type === 'NoPermissionError') {
                 handleNoPermission();
             } else {
                 throw error;
