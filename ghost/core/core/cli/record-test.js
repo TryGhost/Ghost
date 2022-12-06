@@ -11,7 +11,7 @@ module.exports = class RecordTest extends Command {
     }
 
     permittedEnvironments() {
-        return ['development', 'testing'];
+        return ['testing-browser'];
     }
 
     async handle(argv) {
