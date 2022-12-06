@@ -385,7 +385,8 @@ module.exports = {
         getGhostAPIAgent,
         getAgentsWithFrontend
     },
-
+    // @NOTE: startGhost only exposed for playwright tests
+    startGhost,
     // Mocks and Stubs
     mockManager,
 

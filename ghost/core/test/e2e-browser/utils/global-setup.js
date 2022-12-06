@@ -5,10 +5,18 @@ const {knex} = require('../../../core/server/data/db');
 const {setupGhost, setupStripe} = require('./e2e-browser-utils');
 const {chromium} = require('@playwright/test');
 const models = require('../../../core/server/models');
+const {startGhost} = require('../../utils/e2e-framework');
+const {stopGhost} = require('../../utils/e2e-utils');
 
 const startWebhookServer = () => {
     const command = `stripe listen --forward-to ${config.getSiteUrl()}/members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
     spawn(command.split(' ')[0], command.split(' ').slice(1));
+};
+
+const getWebhookSecret = async () => {
+    const command = `stripe listen --print-secret ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
+    const webhookSecret = (await promisify(exec)(command)).stdout;
+    return webhookSecret.toString().trim();
 };
 
 const generateStripeIntegrationToken = async () => {
@@ -51,6 +59,14 @@ const setup = async (playwrightConfig) => {
     if (!usingRemoteServer) {
         startWebhookServer();
         stripeConnectIntegrationToken = await generateStripeIntegrationToken();
+
+        process.env.WEBHOOK_SECRET = await getWebhookSecret();
+
+        await startGhost({
+            frontend: true,
+            server: true,
+            backend: true
+        });
     }
 
     const {baseURL, storageState} = playwrightConfig.projects[0].use;
@@ -64,6 +80,10 @@ const setup = async (playwrightConfig) => {
     }
     await page.context().storageState({path: storageState});
     await browser.close();
+
+    if (!usingRemoteServer) {
+        await stopGhost();
+    }
 };
 
 module.exports = setup;
