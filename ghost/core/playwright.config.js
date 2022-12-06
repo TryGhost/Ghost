@@ -1,11 +1,3 @@
-const {execSync} = require('child_process');
-
-const getWebhookSecret = () => {
-    const command = `stripe listen --print-secret ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
-    const webhookSecret = execSync(command);
-    return webhookSecret.toString().trim();
-};
-
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 
 const config = {
@@ -19,20 +11,8 @@ const config = {
         // TODO: Where to put this
         storageState: 'playwright-state.json'
     },
-    globalSetup: './test/e2e-browser/utils/global-setup'
+    globalSetup: './test/e2e-browser/utils/global-setup',
+    globalTeardown: './test/e2e-browser/utils/global-teardown'
 };
-
-if (!process.env.TEST_URL) {
-    config.webServer = {
-        // TODO: Replace yarn start
-        command: 'yarn start',
-        env: {
-            NODE_ENV: 'development',
-            WEBHOOK_SECRET: getWebhookSecret()
-        },
-        reuseExistingServer: false,
-        url: 'http://localhost:2369'
-    };
-}
 
 module.exports = config;
