@@ -128,7 +128,6 @@ describe('Email event storage', function () {
         await waitPromise;
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(db.update.firstCall.args[0].delivered_at === null);
         assert(existing.save.calledOnce);
     });
 
@@ -174,7 +173,6 @@ describe('Email event storage', function () {
         await waitPromise;
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(db.update.firstCall.args[0].delivered_at === null);
         assert(EmailRecipientFailure.add.calledOnce);
     });
 
@@ -231,7 +229,6 @@ describe('Email event storage', function () {
         await waitPromise;
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(db.update.firstCall.args[0].delivered_at === null);
         assert(EmailRecipientFailure.findOne.called);
         assert(!existing.save.called);
     });

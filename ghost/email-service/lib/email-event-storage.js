@@ -68,17 +68,17 @@ class EmailEventStorage {
 
     async handleDelivered(event) {
         // To properly handle events that are received out of order (this happens because of polling)
-        // we only can set an email recipient to delivered if they are not already marked as failed
-        // Why handle this her?  An email can be 'delivered' and later have a delayed bounce event. So we need to prevent that delivered_at is set again.
+        // only set if delivered_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
-            .whereNull('failed_at')
             .update({
                 delivered_at: this.#db.knex.raw('COALESCE(delivered_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
             });
     }
 
     async handleOpened(event) {
+        // To properly handle events that are received out of order (this happens because of polling)
+        // only set if opened_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
             .update({
@@ -87,11 +87,12 @@ class EmailEventStorage {
     }
 
     async handlePermanentFailed(event) {
+        // To properly handle events that are received out of order (this happens because of polling)
+        // only set if failed_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
             .update({
-                failed_at: this.#db.knex.raw('COALESCE(failed_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')]),
-                delivered_at: null // Reset in case we have a delayed bounce event
+                failed_at: this.#db.knex.raw('COALESCE(failed_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
             });
         await this.saveFailure('permanent', event);
     }
@@ -156,7 +157,7 @@ class EmailEventStorage {
                 enhanced_code: event.error.enhancedCode ?? null,
                 failed_at: event.timestamp,
                 event_id: event.id
-            }, {...options, patch: true});
+            }, {...options, patch: true, autoRefresh: false});
         }
     }
 
