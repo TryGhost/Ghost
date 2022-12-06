@@ -21,6 +21,7 @@ const KoenigComposer = ({
     nodes = [...DEFAULT_NODES],
     onError = defaultOnError,
     imageUploadFunction,
+    unsplashConfig,
     children
 }) => {
     const initialConfig = React.useMemo(() => {
@@ -38,9 +39,14 @@ const KoenigComposer = ({
         return;
     };
 
+    const unsplashConf = unsplashConfig || function () {
+        console.error('requires unsplashConfig to be passed to KoenigComposer component, eg <KoenigComposer unsplashConfig={config} />'); // eslint-disable-line no-console
+        return;
+    };
+
     return (
         <LexicalComposer initialConfig={initialConfig}>
-            <KoenigComposerContext.Provider value={{imageUploader, editorContainerRef}}>
+            <KoenigComposerContext.Provider value={{imageUploader, editorContainerRef, unsplashConf}}>
                 {children}
             </KoenigComposerContext.Provider>
         </LexicalComposer>
