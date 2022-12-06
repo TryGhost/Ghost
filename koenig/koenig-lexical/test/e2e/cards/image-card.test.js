@@ -457,7 +457,7 @@ describe('Image card', async () => {
         `);
     });
 
-    test('can select unsplash image', async () => {
+    test('can insert unsplash image', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await page.click('button[data-kg-card-menu-item="Unsplash"]');

@@ -9,6 +9,7 @@ import content from './content/content.json';
 import ToggleButton from './components/ToggleButton';
 import {useLocation} from 'react-router-dom';
 import TitleTextBox from './components/TitleTextBox';
+import {defaultHeaders as unsplashConfig} from './utils/unsplashConfig';
 
 const loadContent = () => {
     const cnt = JSON.stringify(content);
@@ -44,7 +45,10 @@ function DemoApp() {
 
     return (
         <div className="koenig-lexical top">
-            <KoenigComposer initialEditorState={defaultContent} imageUploadFunction={{imageUploader}}>
+            <KoenigComposer 
+                initialEditorState={defaultContent} 
+                imageUploadFunction={{imageUploader}}
+                unsplashConfig={unsplashConfig}>
                 <div className="h-full grow relative">
                     {
                         query.get('content') !== 'false'

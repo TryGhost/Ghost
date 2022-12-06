@@ -65,6 +65,7 @@
     "@vitest/ui": "0.25.4",
     "autoprefixer": "10.4.13",
     "babel-loader": "9.1.0",
+    "cross-fetch": "^3.1.5",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "27.1.5",
     "eslint-plugin-tailwindcss": "3.6.2",
