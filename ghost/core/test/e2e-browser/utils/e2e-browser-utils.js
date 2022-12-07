@@ -160,10 +160,11 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
  * @param {object} options
  * @param {string} options.name
  * @param {string} options.tierName
- * @param {number} options.percentOff
+ * @param {string} options.offerType
+ * @param {number} options.amount
  * @returns {Promise<string>} Unique offer name
  */
-const createOffer = async (page, {name, tierName, percentOff}) => {
+const createOffer = async (page, {name, tierName, offerType, amount}) => {
     await page.goto('/ghost');
     await page.locator('.gh-nav a[href="#/offers/"]').click();
 
@@ -199,9 +200,17 @@ const createOffer = async (page, {name, tierName, percentOff}) => {
 
     await page.getByRole('link', {name: 'New offer'}).click();
     await page.locator('input#name').fill(offerName);
-    await page.locator('input#amount').fill(`${percentOff}`);
+
+    if (offerType === 'freeTrial') {
+        await page.getByRole('button', {name: 'Free trial Give free access for a limited time.'}).click();
+        await page.locator('input#trial-duration').fill(`${amount}`);
+    } else if (offerType === 'discount') {
+        await page.locator('input#amount').fill(`${amount}`);
+    }
+
     const priceId = await page.locator(`.gh-select-product-cadence>select>option`).getByText(`${tierName} - Monthly`).getAttribute('value');
     await page.locator('.gh-select-product-cadence>select').selectOption(priceId);
+
     await page.getByRole('button', {name: 'Save'}).click();
     // Wait for the "Saved" button, ensures that next clicks don't trigger the unsaved work modal
     await page.getByRole('button', {name: 'Saved'}).waitFor({

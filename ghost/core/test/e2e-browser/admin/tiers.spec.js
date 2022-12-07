@@ -14,7 +14,8 @@ test.describe('Admin', () => {
             const offerName = await createOffer(page, {
                 name: 'Get 5% Off!',
                 tierName,
-                percentOff: 5
+                offerType: 'discount',
+                amount: 5
             });
 
             await page.locator('.gh-nav a[href="#/offers/"]').click();
