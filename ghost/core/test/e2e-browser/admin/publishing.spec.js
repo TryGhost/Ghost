@@ -1,4 +1,5 @@
 const {expect, test} = require('@playwright/test');
+const {DateTime} = require('luxon');
 
 /**
  * Start a post draft with a filled in title and body. We can consider to move this to utils later.
@@ -104,17 +105,25 @@ test.describe('Publishing', () => {
         test('Can update a published post', async ({page: adminPage, browser}) => {
             await adminPage.goto('/ghost');
 
+            const date = DateTime.now();
+
             await createPost(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
             const frontendPage = await publishPost(adminPage);
             const frontendBody = frontendPage.getByRole('main');
 
             // check front-end post has the initial body text
             await expect(frontendBody).toContainText('This is the initial published text.');
+            await expect(frontendBody).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
             await adminPage.locator('[data-kg="editor"]').click();
             await adminPage.keyboard.press('Enter');
             await adminPage.keyboard.type('This is some updated text.');
+
+            // change some post settings
+            await adminPage.locator('[data-test-psm-trigger]').click();
+            await adminPage.fill('[data-test-date-time-picker-date-input]', '2022-01-07');
+            await adminPage.fill('[data-test-field="custom-excerpt"]', 'Short description and meta');
 
             // save
             await adminPage.locator('[data-test-button="publish-save"]').click();
@@ -123,6 +132,9 @@ test.describe('Publishing', () => {
             await frontendPage.waitForTimeout(100); // let save go through
             await frontendPage.reload();
             await expect(frontendBody).toContainText('This is some updated text.');
+            await expect(frontendBody).toContainText('Jan 7, 2022');
+            const metaDescription = frontendPage.locator('meta[name="description"]');
+            await expect(metaDescription).toHaveAttribute('content', 'Short description and meta');
         });
     });
 
