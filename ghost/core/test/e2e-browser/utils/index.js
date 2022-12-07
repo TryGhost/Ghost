@@ -1,1 +1,4 @@
-module.exports = require('./e2e-browser-utils');
+module.exports = {
+    ...require('./e2e-browser-utils'),
+    globalSetup: require('./global-setup')
+};
