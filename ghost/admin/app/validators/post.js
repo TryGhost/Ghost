@@ -193,7 +193,7 @@ export default BaseValidator.create({
                 model.errors.add('publishedAtBlogDate', 'Must be in the past');
                 this.invalidate();
 
-            // scheduled must be at least 2 mins in the future when first scheduling
+            // scheduled must be in the future when first scheduling
             } else if ((model.changedAttributes().status || model.changedAttributes().publishedAtUTC) && status === 'scheduled' && !isInFuture) {
                 model.errors.add('publishedAtBlogDate', 'Must be in the future');
                 this.invalidate();
