@@ -943,10 +943,10 @@ describe('Post Model', function () {
                 });
             });
 
-            it('add scheduled post with published_at not in future-> we expect an error', function (done) {
+            it('add scheduled post with published_at more than 2 minutes in the past -> we expect an error', function (done) {
                 models.Post.add({
                     status: 'scheduled',
-                    published_at: moment().subtract(1, 'minute'),
+                    published_at: moment().subtract(3, 'minute'),
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
@@ -957,17 +957,19 @@ describe('Post Model', function () {
                 });
             });
 
-            it('add scheduled post with published_at 1 minutes in future -> we expect an error', function (done) {
-                models.Post.add({
+            it('add scheduled post with published_at 1 minutes in past -> we expect success', async function () {
+                const post = await models.Post.add({
                     status: 'scheduled',
                     published_at: moment().add(1, 'minute'),
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
-                }, context).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
-                    Object.keys(eventsTriggered).length.should.eql(0);
-                    done();
-                });
+                }, context);
+                should.exist(post);
+
+                Object.keys(eventsTriggered).length.should.eql(3);
+                should.exist(eventsTriggered['post.added']);
+                should.exist(eventsTriggered['post.scheduled']);
+                should.exist(eventsTriggered['user.attached']);
             });
 
             it('add scheduled post with published_at 10 minutes in future -> we expect success', function (done) {

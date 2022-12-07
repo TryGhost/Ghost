@@ -186,16 +186,16 @@ export default BaseValidator.create({
             let status = model.statusScratch || model.status;
             let now = moment();
             let publishedAtBlogTZ = model.publishedAtBlogTZ;
-            let isInFuture = publishedAtBlogTZ.isSameOrAfter(now.add(2, 'minutes'));
+            let isInFuture = publishedAtBlogTZ.isSameOrAfter(now);
 
             // draft/published must be in past
             if ((status === 'draft' || status === 'published') && publishedAtBlogTZ.isSameOrAfter(now)) {
                 model.errors.add('publishedAtBlogDate', 'Must be in the past');
                 this.invalidate();
 
-            // scheduled must be at least 2 mins in the future when first scheduling
+            // scheduled must be in the future when first scheduling
             } else if ((model.changedAttributes().status || model.changedAttributes().publishedAtUTC) && status === 'scheduled' && !isInFuture) {
-                model.errors.add('publishedAtBlogDate', 'Must be at least 2 mins in the future');
+                model.errors.add('publishedAtBlogDate', 'Must be in the future');
                 this.invalidate();
             }
         }

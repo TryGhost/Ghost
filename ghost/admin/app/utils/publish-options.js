@@ -47,7 +47,11 @@ export default class PublishOptions {
     @tracked scheduledAtUTC = this.minScheduledAt;
 
     get minScheduledAt() {
-        return moment.utc().add(5, 'minutes').milliseconds(0);
+        return moment.utc().add(5, 'seconds').milliseconds(0);
+    }
+
+    get defaultScheduledAt() {
+        return moment.utc().add(10, 'minutes').milliseconds(0);
     }
 
     @action
@@ -58,8 +62,8 @@ export default class PublishOptions {
 
         this.isScheduled = shouldSchedule;
 
-        if (shouldSchedule && (!this.scheduledAtUTC || this.scheduledAtUTC.isBefore(this.minScheduledAt))) {
-            this.scheduledAtUTC = this.minScheduledAt;
+        if (shouldSchedule && (!this.scheduledAtUTC || this.scheduledAtUTC.isBefore(this.defaultScheduledAt))) {
+            this.scheduledAtUTC = this.defaultScheduledAt;
         }
     }
 
