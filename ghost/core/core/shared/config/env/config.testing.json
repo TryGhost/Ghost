@@ -54,10 +54,5 @@
         "fixtures": "test/utils/fixtures/fixtures",
         "defaultSettings": "test/utils/fixtures/default-settings.json",
         "urlCache": "test/utils/fixtures/urls"
-    },
-    "sodoSearch": {
-        "url": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/sodo-search.min.js",
-        "styles": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/main.css",
-        "version": "1.0"
     }
 }
