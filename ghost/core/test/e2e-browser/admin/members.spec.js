@@ -56,6 +56,24 @@ test.describe('Admin', () => {
             await expect(memberEmail).toHaveText(email);
         });
 
+        test('A member can be impersonated', async ({page}) => {
+            await page.goto('/ghost');
+            await page.locator('.gh-nav a[href="#/members/"]').click();
+            await page.locator('tbody > tr > a').nth(0).click();
+            await page.waitForSelector('[data-test-button="member-actions"]');
+            await page.locator('[data-test-button="member-actions"]').click();
+            await page.getByRole('button', {name: 'Impersonate'}).click();
+            await page.getByRole('button', {name: 'Copy link'}).click();
+            await page.waitForSelector('button span:has-text("Link copied")');
+            // get value from input because we don't have access to the clipboard during headless testing
+            const elem = await page.$('input[name="member-signin-url"]');
+            const link = await elem.inputValue();
+            await page.goto(link);            
+            await page.frameLocator('#ghost-portal-root iframe[title="portal-trigger"]').locator('div').nth(1).click();
+            const title = await page.frameLocator('#ghost-portal-root div iframe[title="portal-popup"]').locator('h2').innerText();
+            await expect(title).toEqual('Your account'); // this is the title of the popup when member is logged in
+        });
+
         test('A member can be deleted', async ({page}) => {
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
