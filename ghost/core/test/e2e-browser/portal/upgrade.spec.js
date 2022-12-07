@@ -7,7 +7,7 @@ test.describe('Portal', () => {
             // create a new free member
             await createMember(page, {
                 name: 'Testy McTest',
-                email: 'testy@example.com',
+                email: 'testy+upgradeportal@example.com',
                 note: 'Testy McTest is a test member'
             });
             //get the url of the current member on admin
@@ -30,7 +30,8 @@ test.describe('Portal', () => {
             await portalTriggerButton.click();
             // view plans button only shows for free member
             await portalFrame.getByRole('button', {name: 'View plans'}).click();
-            await portalFrame.getByRole('button', {name: 'Continue'}).click();
+            // select the first tier for checkout
+            await portalFrame.locator('.gh-portal-btn-product .gh-portal-btn').first().click();
 
             // complete stripe checkout
             await completeStripeSubscription(page);
