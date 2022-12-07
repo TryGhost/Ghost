@@ -22,5 +22,8 @@
         "admin": {
             "maxAge": 0
         }
+    },
+    "editor": {
+        "url": "http://127.0.0.1:4173/koenig-lexical.umd.js"
     }
 }
