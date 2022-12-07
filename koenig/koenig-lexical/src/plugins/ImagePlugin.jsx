@@ -91,7 +91,6 @@ export const ImagePlugin = () => {
 
     if (showModal && selector) {
         return (<UnsplashModal
-            service={selector} 
             nodeKey={selectedKey}
             handleModalClose={setShowModal}
         />);

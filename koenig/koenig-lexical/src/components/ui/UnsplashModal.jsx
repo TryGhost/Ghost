@@ -11,7 +11,7 @@ import {useMemo} from 'react';
 
 const API_URL = 'https://api.unsplash.com';
 
-const UnsplashModal = ({container, nodeKey, handleModalClose}) => {
+const UnsplashModal = ({nodeKey, handleModalClose}) => {
     const [editor] = useLexicalComposerContext();
     const {unsplashConf} = React.useContext(KoenigComposerContext);
     const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf}), [unsplashConf]);
@@ -34,7 +34,8 @@ const UnsplashModal = ({container, nodeKey, handleModalClose}) => {
         }
     }, [zoomedImg, scrollPos, lastScrollPos]);
 
-    const portalContainer = container || document.querySelector('.koenig-lexical');
+    // Add selector for consuming apps to render into
+    const portalContainer = document.querySelector('.koenig-lexical');
 
     const closeModalHandler = () => {
         // remove the image node from the editor
@@ -190,7 +191,7 @@ const UnsplashModal = ({container, nodeKey, handleModalClose}) => {
                 dataset={dataset}
                 selectImg={selectImg}
                 insertImage={insertImageToNode} 
-                error={UnsplashGallery.error}
+                error={UnsplashLib.error}
             />
         </UnsplashSelector>
         , portalContainer);
