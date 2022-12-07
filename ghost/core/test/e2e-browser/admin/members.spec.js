@@ -55,5 +55,17 @@ test.describe('Admin', () => {
             const memberEmail = page.locator('tbody > tr > a > div > div > p').nth(0);
             await expect(memberEmail).toHaveText(email);
         });
+
+        test('A member can be deleted', async ({page}) => {
+            await page.goto('/ghost');
+            await page.locator('.gh-nav a[href="#/members/"]').click();
+            await page.locator('tbody > tr > a').nth(0).click();
+            await page.waitForSelector('[data-test-button="member-actions"]');
+            await page.locator('[data-test-button="member-actions"]').click();
+            await page.getByRole('button', {name: 'Delete member'}).click();
+            await page.locator('button[data-test-button="confirm"] span:has-text("Delete member")').click();
+            // should have no members now, so we should see the empty state
+            expect(await page.locator('div h4:has-text("Start building your audience")')).not.toBeNull();
+        });
     });
 });
