@@ -21,6 +21,7 @@
     <fieldset>
         <div class="gh-input-group">
             <GhTextInput
+                data-test-input="member-signin-url"
                 @id="member-signin-url"
                 @name="member-signin-url"
                 @disabled={{true}}
@@ -29,12 +30,14 @@
             />
             {{#if this.signinUrl}}
                 <GhTaskButton
+                data-test-button="copy-impersonate-link"
                 @buttonText="Copy link"
                 @task={{this.copySigninUrl}}
                 @successText="Link copied"
                 @class="gh-btn gh-btn-black gh-btn-icon" />
             {{else}}
                 <GhTaskButton
+                data-test-button="impersonate-link-copied"
                 @buttonText="Copy link"
                 @task={{this.copySigninUrl}}
                 @successText="Link copied"

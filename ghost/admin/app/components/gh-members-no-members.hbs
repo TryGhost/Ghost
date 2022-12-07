@@ -3,7 +3,7 @@
     <h4>Start building your audience</h4>
     {{#if (not-eq this.settings.membersSignupAccess "none")}}
         <p>Use memberships to allow your readers to sign up and subscribe to your content.</p>
-        <button class="gh-btn gh-btn-green" type="button" {{on "click" this.addYourself}}>
+        <button class="gh-btn gh-btn-green" type="button" {{on "click" this.addYourself}} data-test-button="add-yourself">
             <span>Add yourself as a member to test</span>
         </button>
         <p class="gh-members-empty-secondary-cta">Have members already? <LinkTo @route="member.new">Add them manually</LinkTo> or <LinkTo @route="members.import">import from CSV</LinkTo></p>
