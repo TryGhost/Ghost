@@ -20,11 +20,14 @@ test.describe('Portal', () => {
                 amount: 14
             });
 
+            await expect(page.getByRole('link', {name: offerName}), 'Should have free-trial offer').toBeVisible();
+
             await page.locator('.gh-offers-list .gh-list-row').filter({hasText: offerName}).click();
             const portalUrl = await page.locator('input#url').inputValue();
 
             await page.goto(portalUrl);
             const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
             await portalFrame.locator('#input-email').fill('testy@example.com');
             await portalFrame.getByRole('button', {name: 'Start 14-day free trial'}).click();
@@ -61,11 +64,14 @@ test.describe('Portal', () => {
                 amount: 10
             });
 
+            await expect(page.getByRole('link', {name: offerName}), 'Should have discount offer').toBeVisible();
+
             await page.locator('.gh-offers-list .gh-list-row').filter({hasText: offerName}).click();
             const portalUrl = await page.locator('input#url').inputValue();
 
             await page.goto(portalUrl);
             const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
             await portalFrame.locator('#input-email').fill('testy@example.com');
             await portalFrame.getByRole('button', {name: 'Continue'}).click();
