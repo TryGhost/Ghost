@@ -4,7 +4,6 @@ const {spawn, exec} = require('child_process');
 const {knex} = require('../../../core/server/data/db');
 const {setupGhost, setupStripe} = require('./e2e-browser-utils');
 const {chromium} = require('@playwright/test');
-const models = require('../../../core/server/models');
 const {startGhost} = require('../../utils/e2e-framework');
 const {stopGhost} = require('../../utils/e2e-utils');
 
