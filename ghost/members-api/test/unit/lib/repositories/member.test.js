@@ -141,6 +141,7 @@ describe('MemberRepository', function () {
         let MemberProductEvent;
         let stripeAPIService;
         let productRepository;
+        let offerRepository;
         let labsService;
         let subscriptionData;
 
@@ -221,6 +222,12 @@ describe('MemberRepository', function () {
             labsService = {
                 isSet: sinon.stub().returns(true)
             };
+
+            offerRepository = {
+                getById: sinon.stub().resolves({
+                    id: 'offer_123'
+                })
+            };
         });
 
         it('dispatches paid subscription event', async function (){
@@ -248,6 +255,42 @@ describe('MemberRepository', function () {
             });
 
             notifySpy.calledOnce.should.be.true();
+        });
+
+        it('attaches offer information to subscription event', async function (){
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offerRepository,
+                labsService,
+                Member
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            DomainEvents.subscribe(SubscriptionCreatedEvent, notifySpy);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData,
+                offerId: 'offer_123'
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            notifySpy.calledOnce.should.be.true();
+            notifySpy.calledWith(sinon.match((event) => {
+                if (event.data.offerId === 'offer_123') {
+                    return true;
+                }
+                return false;
+            })).should.be.true();
         });
 
         afterEach(function () {
