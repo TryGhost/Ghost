@@ -257,6 +257,14 @@ const completeStripeSubscription = async (page) => {
     await page.getByTestId('hosted-payment-submit-button').click();
 };
 
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {String} options.email
+ * @param {String} [options.name]
+ * @param {String} [options.note]
+ * @param {String} [options.label]
+ */
 const createMember = async (page, {email, name, note, label = ''}) => {
     await page.goto('/ghost');
     await page.locator('.gh-nav a[href="#/members/"]').click();

@@ -1,5 +1,6 @@
 const {expect, test} = require('@playwright/test');
 const {DateTime} = require('luxon');
+const {createMember} = require('../utils');
 
 /**
  * Start a post draft with a filled in title and body. We can consider to move this to utils later.
@@ -40,6 +41,13 @@ const closePublishFlow = async (page) => {
 };
 
 /**
+ * @param {import('@playwright/test').Page} page
+ */
+const openUpdateFlow = async (page) => {
+    await page.locator('[data-test-button="update-flow"]').click();
+};
+
+/**
  * @typedef {Object} PublishOptions
  * @property {'publish'|'publish+send'|'send'} [type]
  * @property {String} [recipientFilter]
@@ -58,7 +66,7 @@ const publishPost = async (page, {type = 'publish', time} = {}) => {
 
     // set the publish type
     await page.locator('[data-test-setting="publish-type"] > button').click();
-    await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true);
+    await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true, {timeout: 50});
 
     if (time) {
         await page.locator('[data-test-setting="publish-at"] > button').click();
@@ -86,6 +94,18 @@ const publishPost = async (page, {type = 'publish', time} = {}) => {
 
     await closePublishFlow(page);
     return frontendPage;
+};
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+const unpublishPost = async (page) => {
+    await openUpdateFlow(page);
+    const unpublishButton = page.locator('[data-test-modal="update-flow"] [data-test-button="revert-to-draft"]');
+    await unpublishButton.click();
+
+    await expect(page.locator('[data-test-modal="update-flow"]')).not.toBeVisible();
+    await expect(page.locator('[data-test-editor-post-status]')).toContainText('Draft');
 };
 
 test.describe('Publishing', () => {
@@ -135,6 +155,38 @@ test.describe('Publishing', () => {
             await expect(frontendBody).toContainText('Jan 7, 2022');
             const metaDescription = frontendPage.locator('meta[name="description"]');
             await expect(metaDescription).toHaveAttribute('content', 'Short description and meta');
+        });
+
+        test('Can unpublish a published post and re-publish with send', async ({page: adminPage, browser}) => {
+            await adminPage.goto('/ghost');
+
+            // create a member so publish+send option is available
+            await createMember(adminPage, {email: 'test@example.com'});
+
+            // TODO: enable mailgun - publish+send isn't available without it
+
+            // publish a post
+            await createPost(adminPage);
+            const frontendPage = await publishPost(adminPage);
+
+            // unpublish it
+            await unpublishPost(adminPage);
+
+            // check post is no longer available on frontend
+            const afterUnpubResponse = await frontendPage.reload();
+            await expect(afterUnpubResponse.status()).toBe(404);
+
+            // re-publish with publish+send
+            await publishPost(adminPage, {type: 'publish+send'});
+
+            // admin shows correct post status
+            await expect(adminPage.locator('[data-test-editor-post-status]')).toContainText('Published and sent');
+
+            // page is available on the frontend again
+            const afterRepubResponse = await frontendPage.reload();
+            await expect(afterRepubResponse.status()).toBe(200);
+
+            // TODO: check email was sent
         });
     });
 
