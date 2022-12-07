@@ -20,8 +20,7 @@ const createPost = async (page, {title = 'Hello world', body = 'This is my post 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
 
-    // We need to check focused because otherwise it will start typing too soon and we'll lose a part of the text
-    await expect(page.locator('[data-kg="editor"]')).toBeFocused();
+    await page.waitForTimeout(100); // allow new->draft switch to occur fully, without this some initial typing events can be missed
     await page.keyboard.type(body);
 };
 
