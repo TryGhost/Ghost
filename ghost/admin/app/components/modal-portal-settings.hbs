@@ -43,7 +43,7 @@
                                         </div>
                                     </GhFormGroup>
                                     {{#if this.membersUtils.isStripeEnabled}}
-                                        <div {{did-insert this.refreshAfterStripeConnected}}>
+                                        <div {{did-insert this.refreshAfterStripeConnected}} data-test-tiers-at-signup>
                                             <div class="mb3 mt5">
                                                 <h4 class="gh-portal-setting-title">Tiers available at signup</h4>
                                             </div>
@@ -69,7 +69,7 @@
                                                 </label>
                                             </div>
                                             {{#each this.tiers as |tier|}}
-                                                <div class="form-group mb0 for-checkbox">
+                                                <div class="form-group mb0 for-checkbox" data-test-tier-at-signup>
                                                     <label
                                                         class="checkbox"
                                                         for={{tier.id}}
