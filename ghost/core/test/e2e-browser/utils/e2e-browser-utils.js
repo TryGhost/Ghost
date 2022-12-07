@@ -114,11 +114,13 @@ const deleteAllMembers = async (page) => {
  * @param {number} tier.monthlyPrice
  * @param {number} tier.yearlyPrice
  */
-const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
+const createTier = async (page, {name, monthlyPrice, yearlyPrice}, enableInPortal = true) => {
+    // Navigate to the member settings
     await page.locator('.gh-nav a[href="#/settings/"]').click();
     await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+
     // Expand the premium tier list
-    await page.getByRole('button', {name: 'Expand'}).nth(1).click({
+    await page.locator('[data-test-toggle-pub-info]').click({
         delay: 500 // TODO: Figure out how to prevent this from opening with an empty list without using delay
     });
 
@@ -131,6 +133,7 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
         await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
     }
 
+    // Add the tier
     await page.locator('.gh-btn-add-tier').click();
     const modal = page.locator('.modal-content');
     await modal.locator('input#name').first().fill(name);
@@ -139,19 +142,30 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}) => {
     await modal.getByRole('button', {name: 'Add tier'}).click();
     await page.waitForSelector('.modal-content input#name', {state: 'detached'});
 
-    await page.getByRole('button', {name: 'Customize Portal'}).click();
-    const portalSettings = page.locator('.modal-content').filter({hasText: 'Portal settings'});
-    if (!await portalSettings.locator('label').filter({hasText: name}).locator('input').first().isChecked()) {
-        await portalSettings.locator('label').filter({hasText: name}).locator('span').first().click();
+    // Close the premium tier list
+    await page.locator('[data-test-toggle-pub-info]').click({
+        delay: 500 // TODO: Figure out if we need this delay
+    });
+
+    // Enable the tier in portal
+    if (enableInPortal) {
+        await page.getByRole('button', {name: 'Customize Portal'}).click();
+        const portalSettings = page.locator('.modal-content').filter({hasText: 'Portal settings'});
+        if (!await portalSettings.locator('label').filter({hasText: name}).locator('input').first().isChecked()) {
+            await portalSettings.locator('label').filter({hasText: name}).locator('span').first().click();
+        }
+        if (!await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('input').first().isChecked()) {
+            await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('span').first().click();
+        }
+        if (!await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('input').first().isChecked()) {
+            await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('span').first().click();
+        }
+        await portalSettings.getByRole('button', {name: 'Save and close'}).click();
+        await page.waitForSelector('.gh-portal-settings', {state: 'detached'});
     }
-    if (!await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('input').first().isChecked()) {
-        await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('span').first().click();
-    }
-    if (!await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('input').first().isChecked()) {
-        await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('span').first().click();
-    }
-    await portalSettings.getByRole('button', {name: 'Save and close'}).click();
-    await page.waitForSelector('.gh-portal-settings', {state: 'detached'});
+
+    // Navigate back to the dashboard
+    await page.goto('/ghost');
 };
 
 /**
