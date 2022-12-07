@@ -236,6 +236,12 @@ const createOffer = async (page, {name, tierName, offerType, amount}) => {
     return offerName;
 };
 
+const fillInputIfExists = async (page, selector, value) => {
+    if (await page.isVisible(selector)) {
+        await page.locator(selector).fill(value);
+    }
+};
+
 const completeStripeSubscription = async (page) => {
     await page.locator('#cardNumber').fill('4242 4242 4242 4242');
     await page.locator('#cardExpiry').fill('04 / 24');
@@ -243,7 +249,38 @@ const completeStripeSubscription = async (page) => {
     await page.locator('#billingName').fill('Testy McTesterson');
     await page.getByRole('combobox', {name: 'Country or region'}).selectOption('US');
     await page.locator('#billingPostalCode').fill('42424');
+
+    await fillInputIfExists(page, '#billingAddressLine1', '123 Test St');
+    await fillInputIfExists(page, '#billingAddressLine2', 'Apt 1');
+    await fillInputIfExists(page, '#billingLocality', 'Testville');
+
     await page.getByTestId('hosted-payment-submit-button').click();
+};
+
+const createMember = async (page, {email, name, note, label = ''}) => {
+    await page.goto('/ghost');
+    await page.locator('.gh-nav a[href="#/members/"]').click();
+    await page.waitForSelector('a[href="#/members/new/"] span');
+    await page.locator('a[href="#/members/new/"] span:has-text("New member")').click();
+    await page.waitForSelector('input[name="name"]');
+
+    await page.fill('input[name="email"]', email);
+
+    if (name) {
+        await page.fill('input[name="name"]', name);
+    }
+
+    if (note) {
+        await page.fill('textarea[name="note"]', note);
+    }
+
+    if (label) {
+        await page.locator('label:has-text("Labels") + div').click();
+        await page.keyboard.type(label);
+        await page.keyboard.press('Tab');
+    }
+    await page.locator('button span:has-text("Save")').click();
+    await page.waitForSelector('button span:has-text("Saved")');
 };
 
 module.exports = {
@@ -252,5 +289,6 @@ module.exports = {
     deleteAllMembers,
     createTier,
     createOffer,
+    createMember,
     completeStripeSubscription
 };
