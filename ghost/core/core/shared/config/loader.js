@@ -30,7 +30,7 @@ function loadNconf(options) {
 
     // Now load various config json files
     nconf.file('custom-env', path.join(customConfigPath, 'config.' + env + '.json'));
-    if (env !== 'testing') {
+    if (!env.startsWith('testing')) {
         nconf.file('local-env', path.join(customConfigPath, 'config.local.json'));
     }
     nconf.file('default-env', path.join(baseConfigPath, 'env', 'config.' + env + '.json'));
