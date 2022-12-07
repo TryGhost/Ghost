@@ -52,11 +52,9 @@ const invalidInputs = [
     {currency: 25},
     {currency: 'USD', type: 'free'},
     {monthlyPrice: 2000, type: 'free', trialDays: null, currency: null, yearlyPrice: null},
-    {monthlyPrice: null},
     {monthlyPrice: -20},
     {monthlyPrice: 10000000000},
     {yearlyPrice: 2000, type: 'free', trialDays: null, monthlyPrice: null, currency: null},
-    {yearlyPrice: null},
     {yearlyPrice: -20},
     {yearlyPrice: 10000000000},
     {createdAt: 'Today'},
@@ -85,6 +83,17 @@ describe('Tier', function () {
                     await Tier.create(input);
                 });
             }
+        });
+
+        it('Uses default monthly and yearly price if they are set to 0', async function () {
+            const tier = await Tier.create({
+                ...validInput,
+                monthlyPrice: 0,
+                yearlyPrice: 0
+            });
+
+            assert.equal(tier.getPrice('month'), 500);
+            assert.equal(tier.getPrice('year'), 5000);
         });
 
         it('Does not error for valid inputs', async function () {
