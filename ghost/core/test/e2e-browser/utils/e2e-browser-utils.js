@@ -103,25 +103,6 @@ const deleteAllMembers = async (page) => {
             .first()
             .getByRole('button', {name: 'Delete member'})
             .click();
-
-        // TODO: This seems to be a bug - "Are you sure you want to leave this page" shows after removing member
-        if (await Promise.race([
-            page.locator('.modal-content').filter({hasText: 'Are you sure you want to leave this page'}).first().waitFor({
-                state: 'visible',
-                timeout: 1000
-            }).then(() => true),
-            page.locator('h2.gh-canvas-title').filter({hasText: 'Members'}).first().waitFor({
-                state: 'visible',
-                timeout: 1000
-            }).then(() => false)
-        ]).catch(() => false)) {
-            await page
-                .locator('.modal-content')
-                .filter({hasText: 'Are you sure you want to leave this page'})
-                .first()
-                .getByRole('button', {name: 'Leave'})
-                .click();
-        }
     }
 };
 
