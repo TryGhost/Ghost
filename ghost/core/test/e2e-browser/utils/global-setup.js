@@ -9,7 +9,7 @@ const {startGhost} = require('../../utils/e2e-framework');
 const {stopGhost} = require('../../utils/e2e-utils');
 
 const startWebhookServer = () => {
-    const command = `stripe listen --forward-to ${config.getSiteUrl()}/members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
+    const command = `stripe listen --forward-to ${config.getSiteUrl()}members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
     spawn(command.split(' ')[0], command.split(' ').slice(1));
 };
 
