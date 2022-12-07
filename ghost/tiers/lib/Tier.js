@@ -419,6 +419,9 @@ function validateMonthlyPrice(value, type) {
         }
         return null;
     }
+    if (!value) {
+        return 500;
+    }
     if (!Number.isSafeInteger(value)) {
         throw new ValidationError({
             message: 'Tier prices must be an integer.'
@@ -445,6 +448,9 @@ function validateYearlyPrice(value, type) {
             });
         }
         return null;
+    }
+    if (!value) {
+        return 5000;
     }
     if (!Number.isSafeInteger(value)) {
         throw new ValidationError({
