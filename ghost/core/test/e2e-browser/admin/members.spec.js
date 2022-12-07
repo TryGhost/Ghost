@@ -12,9 +12,13 @@ test.describe('Admin', () => {
             let name = 'Test Member';
             let email = 'tester@testmember.com';
             let note = 'This is a test member';
+            let label = 'Test Label';
             await page.fill('input[name="name"]', name);
             await page.fill('input[name="email"]', email);
             await page.fill('textarea[name="note"]', note);
+            await page.locator('label:has-text("Labels") + div').click();
+            await page.keyboard.type(label);
+            await page.keyboard.press('Tab');
             await page.locator('button span:has-text("Save")').click();
             await page.waitForSelector('button span:has-text("Saved")');
             await page.locator('.gh-nav a[href="#/members/"]').click();
@@ -37,6 +41,10 @@ test.describe('Admin', () => {
             await page.fill('input[name="name"]', name);
             await page.fill('input[name="email"]', email);
             await page.fill('textarea[name="note"]', note);
+            await page.locator('label:has-text("Labels") + div').click();
+            await page.keyboard.press('Backspace');
+            await page.locator('body').click(); // this is to close the dropdown & lose focus
+            await page.locator('input[name="subscribed"] + span').click();
             await page.locator('button span:has-text("Save")').click();
             await page.waitForSelector('button span:has-text("Saved")');
             await page.locator('.gh-nav a[href="#/members/"]').click();
