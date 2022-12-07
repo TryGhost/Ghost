@@ -38,6 +38,11 @@ test.describe('Portal', () => {
             // 1 member, should be Testy, on Portal Tier
             await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
+
+            // Ensure the offer redemption count was bumped
+            await page.locator('.gh-nav a[href="#/offers/"]').click();
+            const locator = page.locator('.gh-offers-list > tr:nth-child(2) > a > span').last();
+            await expect(locator).toContainText('1');
         });
 
         test('Creates and uses a discount Offer', async ({page}) => {
