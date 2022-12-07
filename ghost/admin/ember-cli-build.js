@@ -234,6 +234,9 @@ module.exports = function (defaults) {
                     })
                 ]
             }
+        },
+        'ember-test-selectors': {
+            strip: false
         }
     });
 
