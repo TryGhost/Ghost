@@ -186,6 +186,9 @@ module.exports = class RouterController {
             offer = await this._offersAPI.getOffer({id: offerId});
             tier = await this._tiersService.api.read(offer.tier.id);
             cadence = offer.cadence;
+            // Attach offer information to stripe metadata for free trial offers
+            // free trial offers don't have associated stripe coupons
+            metadata.offer = offer.id;
         } else {
             offer = null;
             tier = await this._tiersService.api.read(tierId);

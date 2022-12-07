@@ -1033,7 +1033,7 @@ module.exports = class MemberRepository {
                 tierId: ghostProduct?.get('id'),
                 memberId: member.id,
                 subscriptionId: subscriptionModel.get('id'),
-                offerId: data.offerId,
+                offerId: offerId,
                 attribution: data.attribution,
                 batchId: options.batch_id
             });
