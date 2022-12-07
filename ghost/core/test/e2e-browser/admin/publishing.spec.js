@@ -35,7 +35,7 @@ const openPublishFlow = async (page) => {
  * @param {import('@playwright/test').Page} page
  */
 const closePublishFlow = async (page) => {
-    await page.locator('[data-test-modal="publish-flow"] [data-test-button="back-to-editor"]').click();
+    await page.locator('[data-test-button="close-publish-flow"]').click();
 };
 
 /**
@@ -44,6 +44,7 @@ const closePublishFlow = async (page) => {
  * @property {String} [recipientFilter]
  * @property {String} [newsletter]
  * @property {String} [date]
+ * @property {String} [time]
  */
 
 /**
@@ -51,12 +52,18 @@ const closePublishFlow = async (page) => {
  * @param {import('@playwright/test').Page} page
  * @param {PublishOptions} options
  */
-const publishPost = async (page, {type = 'publish'} = {}) => {
+const publishPost = async (page, {type = 'publish', time} = {}) => {
     await openPublishFlow(page);
 
     // set the publish type
     await page.locator('[data-test-setting="publish-type"] > button').click();
     await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true);
+
+    if (time) {
+        await page.locator('[data-test-setting="publish-at"] > button').click();
+        await page.locator('[data-test-radio="schedule"] + label').click();
+        await page.locator('[data-test-date-time-picker-time-input]').fill(time);
+    }
 
     // TODO: set other publish options
 
@@ -77,7 +84,6 @@ const publishPost = async (page, {type = 'publish'} = {}) => {
     ]);
 
     await closePublishFlow(page);
-
     return frontendPage;
 };
 
@@ -117,6 +123,40 @@ test.describe('Publishing', () => {
             await frontendPage.waitForTimeout(100); // let save go through
             await frontendPage.reload();
             await expect(frontendBody).toContainText('This is some updated text.');
+        });
+    });
+
+    test.describe('Schedule post', () => {
+        test('Post should be published to web only at the scheduled time', async ({page}) => {
+            await page.goto('/ghost');
+            await createPost(page, {
+                title: 'Scheduled post test',
+                body: 'This is my scheduled post body.'
+            });
+
+            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
+            await publishPost(page, {time: '00:00'});
+
+            // Go to the homepage and check if the post is not yet visible there
+            await page.goto('/');
+
+            let lastPost = await page.locator('.post-card-content-link').first();
+            await expect(lastPost).not.toHaveAttribute('href', '/scheduled-post-test/');
+
+            // Now wait for 5 seconds
+            await page.waitForTimeout(5000);
+
+            // Check again, now it should have been added to the page
+            await page.reload();
+            lastPost = await page.locator('.post-card-content-link').first();
+            await expect(lastPost).toHaveAttribute('href', '/scheduled-post-test/');
+
+            // Go to the page
+            await lastPost.click();
+
+            // Check if the title and body are present on this page
+            await expect(page.locator('.gh-canvas .article-title')).toHaveText('Scheduled post test');
+            await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText('This is my scheduled post body.');
         });
     });
 });
