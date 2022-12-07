@@ -1,19 +1,26 @@
 const {expect, test} = require('@playwright/test');
-const {completeStripeSubscription} = require('../utils');
+const {completeStripeSubscription, createMember} = require('../utils');
 
 test.describe('Portal', () => {
     test.describe('Upgrade', () => {
         test('allows free member upgrade to paid tier', async ({page}) => {
-            await page.goto('/ghost');
-
+            // await page.goto('/ghost');
+            // create a new member
+            await createMember(page, {
+                name: 'Testy McTest',
+                email: 'testy@example.com',
+                note: 'Testy McTest is a test member'
+            });
+            //get the url of the current member on admin
+            const memberUrl = await page.url();
             // add yourself as a free member so you can impersonate
-            await page.locator('.gh-nav a[href="#/members/"]').click();
-            await page.locator('[data-test-button="add-yourself"]').click();
+            // await page.locator('.gh-nav a[href="#/members/"]').click();
+            // await page.locator('[data-test-button="add-yourself"]').click();
 
             // open first member in list which should be yourself
-            await page.locator('[data-test-list="members-list-item"]').first().click();
+            // await page.locator('[data-test-list="members-list-item"]').first().click();
             //get the url of the current page
-            const memberUrl = await page.url();
+            // const memberUrl = await page.url();
 
             // open member impersonation modal
             await page.locator('[data-test-button="member-actions"]').click();

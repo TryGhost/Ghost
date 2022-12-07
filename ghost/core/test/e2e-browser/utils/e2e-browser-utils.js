@@ -257,11 +257,38 @@ const completeStripeSubscription = async (page) => {
     await page.getByTestId('hosted-payment-submit-button').click();
 };
 
+const createMember = async (page, {email, name, note, label = ''}) => {
+    await page.goto('/ghost');
+    await page.locator('.gh-nav a[href="#/members/"]').click();
+    await page.waitForSelector('a[href="#/members/new/"] span');
+    await page.locator('a[href="#/members/new/"] span:has-text("New member")').click();
+    await page.waitForSelector('input[name="name"]');
+
+    await page.fill('input[name="email"]', email);
+
+    if (name) {
+        await page.fill('input[name="name"]', name);
+    }
+
+    if (note) {
+        await page.fill('textarea[name="note"]', note);
+    }
+
+    if (label) {
+        await page.locator('label:has-text("Labels") + div').click();
+        await page.keyboard.type(label);
+        await page.keyboard.press('Tab');
+    }
+    await page.locator('button span:has-text("Save")').click();
+    await page.waitForSelector('button span:has-text("Saved")');
+};
+
 module.exports = {
     setupGhost,
     setupStripe,
     deleteAllMembers,
     createTier,
     createOffer,
+    createMember,
     completeStripeSubscription
 };
