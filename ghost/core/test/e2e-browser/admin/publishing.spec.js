@@ -172,3 +172,68 @@ test.describe('Publishing', () => {
         });
     });
 });
+
+test.describe('Updating post access', () => {
+    test.describe('Change post visibility to members-only', () => {
+        test('Only logged-in members (free or paid) can see', async ({page}) => {
+            await page.goto('/ghost');
+
+            // Create a post
+            await createPost(page);
+
+            // Open the Post Settings Menu
+            await page.locator('[data-test-psm-trigger]').click();
+
+            // Change the Post access setting to 'Members only'
+            await page.locator('[data-test-select="post-visibility"]').selectOption('members');
+
+            // Publish the post
+            const frontendPage = await publishPost(page);
+
+            // Check if content gate for members is present on front-end            
+            await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for subscribers only');
+        });
+    });
+
+    test.describe('Change post visibility to paid-members-only', () => {
+        test('Only logged-in, paid members can see', async ({page}) => {
+            await page.goto('/ghost');
+
+            // Create a post
+            await createPost(page);
+
+            // Open the Post Settings Menu
+            await page.locator('[data-test-psm-trigger]').click();
+
+            // Change the Post access setting to 'Paid-members only'
+            await page.locator('[data-test-select="post-visibility"]').selectOption('paid');
+
+            // Publish the post
+            const frontendPage = await publishPost(page);
+
+            // Check if content gate for paid members is present on front-end            
+            await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for paying subscribers only');
+        });
+    });
+
+    test.describe('Change post visibility to public', () => {
+        test('Everyone can see', async ({page}) => {
+            await page.goto('/ghost');
+
+            // Create a post
+            await createPost(page);
+
+            // Open the Post Settings Menu
+            await page.locator('[data-test-psm-trigger]').click();
+
+            // Change the Post access setting to 'Public'
+            await page.locator('[data-test-select="post-visibility"]').selectOption('public');
+
+            // Publish the post
+            const frontendPage = await publishPost(page);
+
+            // Check if post content is publicly visible on front-end            
+            await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
+        });
+    });
+});
