@@ -58,7 +58,16 @@ const publishPost = async (page, {type = 'publish', time} = {}) => {
 
     // set the publish type
     await page.locator('[data-test-setting="publish-type"] > button').click();
-    await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true);
+
+    // NOTE: the if/else below should be reworked into data-test-publish style selectors
+    // await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true);
+    if (type === 'publish') {
+        await page.getByText('Publish only').click();
+    } else if (type === 'publish+send') {
+        await page.getByText('Publish and email').click();
+    } else if (type === 'send') {
+        await page.getByText('Email only').click();
+    }
 
     if (time) {
         await page.locator('[data-test-setting="publish-at"] > button').click();
