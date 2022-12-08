@@ -3,6 +3,7 @@ const {completeStripeSubscription, createMember} = require('../utils');
 
 test.describe('Portal', () => {
     test.describe('Upgrade', () => {
+        let memberUrl;
         test('allows free member upgrade to paid tier', async ({page}) => {
             // create a new free member
             await createMember(page, {
@@ -11,7 +12,7 @@ test.describe('Portal', () => {
                 note: 'Testy McTest is a test member'
             });
             //get the url of the current member on admin
-            const memberUrl = await page.url();
+            memberUrl = await page.url();
 
             // open member impersonation modal
             await page.locator('[data-test-button="member-actions"]').click();
@@ -45,6 +46,43 @@ test.describe('Portal', () => {
             // check that member has been upgraded in admin and a tier exists for them
             await page.goto(memberUrl);
             await expect(page.locator('[data-test-tier]').first()).toBeVisible();
+        });
+
+        test('allows member to switch to monthly plan', async ({page}) => {
+            // go to member detail page in admin
+            await page.goto(memberUrl);
+
+            // open member impersonation modal
+            await page.locator('[data-test-button="member-actions"]').click();
+            await page.locator('[data-test-button="impersonate"]').click();
+            await page.locator('[data-test-button="copy-impersonate-link"]').click();
+            await page.waitForSelector('[data-test-button="copy-impersonate-link"] span:has-text("Link copied")');
+
+            // get impersonation link from input and redirect to it
+            const link = await page.locator('[data-test-input="member-signin-url"]').inputValue();
+            await page.goto(link);
+
+            const portalTriggerButton = page.frameLocator('#ghost-portal-root iframe.gh-portal-triggerbtn-iframe').locator('div').nth(1);
+            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+
+            // open portal
+            await portalTriggerButton.click();
+
+            // test member can switch to monthly plan from yearly
+            // TODO: Update to use data-test-* attributes when ready
+            await portalFrame.getByRole('button', {name: 'Change'}).click();
+            await portalFrame.getByRole('button', {name: 'Monthly'}).click();
+            await portalFrame.locator('.gh-portal-btn-product .gh-portal-btn').first().click();
+            await portalFrame.getByRole('button', {name: 'Confirm'}).click();
+            await expect(await portalFrame.getByText('/month')).toBeVisible();
+
+            // test member can switch to yearly plan again from monthly
+            // TODO: Update to use data-test-* attributes when ready
+            await portalFrame.getByRole('button', {name: 'Change'}).click();
+            await portalFrame.getByRole('button', {name: 'Yearly'}).click();
+            await portalFrame.locator('.gh-portal-btn-product .gh-portal-btn').first().click();
+            await portalFrame.getByRole('button', {name: 'Confirm'}).click();
+            await expect(await portalFrame.getByText('/year')).toBeVisible();
         });
     });
 });
