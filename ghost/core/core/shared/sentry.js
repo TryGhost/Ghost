@@ -10,6 +10,7 @@ if (sentryConfig && !sentryConfig.disabled) {
         dsn: sentryConfig.dsn,
         release: 'ghost@' + version,
         environment: environment,
+        maxValueLength: 1000,
         beforeSend: function (event, hint) {
             const exception = hint.originalException;
 
