@@ -85,6 +85,7 @@
                                             @type="number"
                                             @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
                                             @focus-out={{this.validateStripePlans}}
+                                            data-test-input="monthly-price"
                                         />
                                         <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
                                     </div>
@@ -97,6 +98,7 @@
                                             @focus-out={{this.validateStripePlans}}
                                             @placeholder=''
                                             data-test-title-input={{true}}
+                                            data-test-input="yearly-price"
                                         />
                                         <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
                                     </div>
