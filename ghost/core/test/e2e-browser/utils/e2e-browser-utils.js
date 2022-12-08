@@ -362,6 +362,30 @@ const createMember = async (page, {email, name, note, label = '', compedPlan}) =
     }
 };
 
+/**
+ * Start a post draft with a filled in title and body.
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {String} [options.title]
+ * @param {String} [options.body]
+ */
+const createPostDraft = async (page, {title = 'Hello world', body = 'This is my post body.'} = {}) => {
+    await page.locator('.gh-nav a[href="#/posts/"]').click();
+
+    // Create a new post
+    await page.locator('[data-test-new-post-button]').click();
+
+    // Fill in the post title
+    await page.locator('[data-test-editor-title-input]').click();
+    await page.locator('[data-test-editor-title-input]').fill(title);
+
+    // Continue to the body by pressing enter
+    await page.keyboard.press('Enter');
+
+    await page.waitForTimeout(100); // allow new->draft switch to occur fully, without this some initial typing events can be missed
+    await page.keyboard.type(body);
+};
+
 module.exports = {
     setupGhost,
     setupStripe,
@@ -371,6 +395,7 @@ module.exports = {
     archiveAllTiers,
     createOffer,
     createMember,
+    createPostDraft,
     completeStripeSubscription,
     impersonateMember
 };
