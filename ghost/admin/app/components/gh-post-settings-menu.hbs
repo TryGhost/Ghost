@@ -80,7 +80,7 @@
                     </GhFormGroup>
 
                     {{#if (eq this.post.visibility "tiers")}}
-                        <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" @class="nt3">
+                        <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" class="nt3">
                             <GhPostSettingsMenu::VisibilitySegmentSelect
                                 @tiers={{this.post.tiers}}
                                 @onChange={{action "setVisibility"}}
@@ -109,7 +109,7 @@
                 </GhFormGroup>
 
                 {{#unless this.session.user.isAuthorOrContributor}}
-                    <GhFormGroup @class="for-select" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
+                    <GhFormGroup class="for-select" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
                         <label for="author-list">Authors</label>
                         <GhPsmAuthorsInput @selectedAuthors={{this.post.authors}} @updateAuthors={{action "changeAuthors"}} @triggerId="author-list" />
                         <GhErrorMessage @errors={{this.post.errors}} @property="authors" data-test-error="authors" />

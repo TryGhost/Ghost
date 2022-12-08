@@ -6,6 +6,11 @@ import {observer} from '@ember/object';
 import {on} from '@ember/object/evented';
 import {run} from '@ember/runloop';
 
+/**
+ * Adds `success` or `error` classes to the element based on the passed
+ * in `DS.Errors` object, the `property` to inspect, and an array of
+ * validated property names in `hasValidated`
+ */
 export default Mixin.create({
 
     errors: null,
