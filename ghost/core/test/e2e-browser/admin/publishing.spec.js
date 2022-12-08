@@ -197,7 +197,7 @@ const openPublishedPostBookmark = async (page) => {
     return frontendPage;
 };
 
-test.describe.only('Publishing', () => {
+test.describe('Publishing', () => {
     test.describe('Publish post', () => {
         // Post should be available on web and sent as a newsletter
         test('Publish and Email', async ({page}) => {
