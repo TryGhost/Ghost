@@ -86,7 +86,6 @@ test.describe('Admin', () => {
             expect(await page.locator('div h4:has-text("Start building your audience")')).not.toBeNull();
         });
 
-        // load 3 members
         const membersFixture = [
             {
                 name: 'Test Member 1',
@@ -115,6 +114,28 @@ test.describe('Admin', () => {
             await page.locator('.gh-nav a[href="#/members/"]').click();
             await page.waitForSelector('button[data-test-button="members-actions"]');
             await page.locator('button[data-test-button="members-actions"]').click();
+            await page.waitForSelector('button[data-test-button="export-members"]');
+            const [download] = await Promise.all([
+                page.waitForEvent('download'),
+                page.locator('button[data-test-button="export-members"]').click()
+            ]);
+            const filename = await download.suggestedFilename();
+            expect(filename).toContain('.csv');
+        });
+
+        test('A filtered list of members can be exported', async ({page}) => {
+            await page.goto('/ghost');
+            await page.locator('.gh-nav a[href="#/members/"]').click();
+            await page.waitForSelector('button[data-test-button="members-actions"]');
+            await page.locator('button[data-test-button="members-actions"]').click();
+            await page.waitForSelector('div[data-test-button="members-filter-actions"]');
+            await page.locator('div[data-test-button="members-filter-actions"]').click();
+            await page.locator('select[data-test-select="members-filter"]').click();
+            await page.locator('select[data-test-select="members-filter"]').selectOption('subscribed');
+            await page.locator('button[data-test-button="members-apply-filter"]').click();
+            await page.locator('button[data-test-button="members-actions"]').click();
+            const exportButton = await page.locator('button[data-test-button="export-members"] > span').innerText();
+            expect(exportButton).toEqual('Export selected members (3)');
             await page.waitForSelector('button[data-test-button="export-members"]');
             const [download] = await Promise.all([
                 page.waitForEvent('download'),
