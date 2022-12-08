@@ -26,6 +26,30 @@ const createPost = async (page, {title = 'Hello world', body = 'This is my post 
 };
 
 /**
+ * Start a page draft with a filled in title and body. We can consider to move this to utils later.
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {String} [options.title]
+ * @param {String} [options.body]
+ */
+const createPage = async (page, {title = 'Hello world', body = 'This is my post body.'} = {}) => {
+    await page.locator('.gh-nav a[href="#/pages/"]').click();
+
+    // Create a new post
+    await page.locator('[data-test-new-page-button]').click();
+
+    // Fill in the post title
+    await page.locator('[data-test-editor-title-input]').click();
+    await page.locator('[data-test-editor-title-input]').fill(title);
+
+    // Continue to the body by pressing enter
+    await page.keyboard.press('Enter');
+
+    await page.waitForTimeout(100); // allow new->draft switch to occur fully, without this some initial typing events can be missed
+    await page.keyboard.type(body);
+};
+
+/**
  * @param {import('@playwright/test').Page} page
  */
 const openPublishFlow = async (page) => {
@@ -57,16 +81,20 @@ const publishPost = async (page, {type = 'publish', time} = {}) => {
     await openPublishFlow(page);
 
     // set the publish type
-    await page.locator('[data-test-setting="publish-type"] > button').click();
+    if (type) {
+        // Type is nullable because Pages don't have a publish type button
 
-    // NOTE: the if/else below should be reworked into data-test-publish style selectors
-    // await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true);
-    if (type === 'publish') {
-        await page.getByText('Publish only').click();
-    } else if (type === 'publish+send') {
-        await page.getByText('Publish and email').click();
-    } else if (type === 'send') {
-        await page.getByText('Email only').click();
+        await page.locator('[data-test-setting="publish-type"] > button').click();
+
+        // NOTE: the if/else below should be reworked into data-test-publish style selectors
+        // await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true);
+        if (type === 'publish') {
+            await page.getByText('Publish only').click();
+        } else if (type === 'publish+send') {
+            await page.getByText('Publish and email').click();
+        } else if (type === 'send') {
+            await page.getByText('Email only').click();
+        }
     }
 
     if (time) {
@@ -103,6 +131,18 @@ test.describe('Publishing', () => {
             await page.goto('/ghost');
             await createPost(page);
             const frontendPage = await publishPost(page);
+
+            // Check if 'This is my post body.' is present on page1
+            await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
+            await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
+        });
+    });
+
+    test.describe('Publish page', () => {
+        test('Page can be published and become visible on web', async ({page}) => {
+            await page.goto('/ghost');
+            await createPage(page);
+            const frontendPage = await publishPost(page, {type: null});
 
             // Check if 'This is my post body.' is present on page1
             await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
