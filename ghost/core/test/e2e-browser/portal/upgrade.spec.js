@@ -94,7 +94,7 @@ test.describe('Portal', () => {
             });
 
             //get the url of the current member on admin
-            const memberUrl = await page.url();
+            memberUrl = await page.url();
 
             // Give member comped subscription
             await page.locator('[data-test-button="add-complimentary"]').click();
