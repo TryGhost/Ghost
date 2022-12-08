@@ -274,8 +274,6 @@ test.describe('Publishing', () => {
             const response = await testPage.goto('/unschedule-post-test/');
             expect(response.status()).toBe(404);
 
-            await page.pause();
-
             // Now unschedule this post
             await page.locator('[data-test-button="update-flow"]').click();
             await page.locator('[data-test-button="revert-to-draft"]').click();
