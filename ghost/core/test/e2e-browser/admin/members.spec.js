@@ -1,5 +1,5 @@
 const {expect, test} = require('@playwright/test');
-const e = require('express');
+const {createMember} = require('../utils/e2e-browser-utils');
 
 test.describe('Admin', () => {
     test.describe('Members', () => {
@@ -84,6 +84,44 @@ test.describe('Admin', () => {
             await page.locator('button[data-test-button="confirm"] span:has-text("Delete member")').click();
             // should have no members now, so we should see the empty state
             expect(await page.locator('div h4:has-text("Start building your audience")')).not.toBeNull();
+        });
+
+        // load 3 members
+        const membersFixture = [
+            {
+                name: 'Test Member 1',
+                email: 'test@member1.com',
+                note: 'This is a test member',
+                label: 'Test Label'
+            },
+            {
+                name: 'Test Member 2',
+                email: 'test@member2.com',
+                note: 'This is a test member',
+                label: 'Test Label'
+            },
+            {
+                name: 'Test Member 3',
+                email: 'test@member3.com',
+                note: 'This is a test member',
+                label: 'Test Label'
+            }
+        ];
+
+        test('All members can be exported', async ({page}) => {
+            for (let member of membersFixture) {
+                await createMember(page, member);
+            }
+            await page.locator('.gh-nav a[href="#/members/"]').click();
+            await page.waitForSelector('button[data-test-button="members-actions"]');
+            await page.locator('button[data-test-button="members-actions"]').click();
+            await page.waitForSelector('button[data-test-button="export-members"]');
+            const [download] = await Promise.all([
+                page.waitForEvent('download'),
+                page.locator('button[data-test-button="export-members"]').click()
+            ]);
+            const filename = await download.suggestedFilename();
+            expect(filename).toContain('.csv');
         });
     });
 });
