@@ -40,6 +40,7 @@ const supertest = require('supertest');
  * @param {Boolean} [options.backend] Boot the backend
  * @param {Boolean} [options.frontend] Boot the frontend
  * @param {Boolean} [options.server] Start a server
+ * @param {Boolean} [options.mockMailgun] Mock mailgun client module
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
@@ -56,13 +57,20 @@ const startGhost = async (options = {}) => {
     const defaults = {
         backend: true,
         frontend: false,
-        server: false
+        server: false,
+        mockMailgun: false
     };
 
     // Ensure the state of all data, including DB and caches
     await resetData();
 
     const bootOptions = Object.assign({}, defaults, options);
+    if (bootOptions.mockMailgun) {
+        const rewire = require('rewire');
+        const bulkEmail = rewire('../../core/server/services/bulk-email');
+        let mockMailgunClient = require('./mocks/MailgunClientMock');
+        bulkEmail.__set__('_mailgunClient', mockMailgunClient);
+    }
 
     const ghostServer = await boot(bootOptions);
 
