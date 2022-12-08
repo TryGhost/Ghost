@@ -15,17 +15,19 @@ test.describe('Portal', () => {
             await portalTriggerButton.click();
 
             // fill out signup form and submit
-            await portalFrame.locator('#input-name').fill('Testy McTesterson');
-            await portalFrame.locator('#input-email').fill('testy@example.com');
-            await portalFrame.locator('.gh-portal-btn-product .gh-portal-btn').nth(1).click();
+            await portalFrame.locator('[data-test-input="input-name"]').fill('Testy McTesterson');
+            await portalFrame.locator('[data-test-input="input-email"]').fill('testy@example.com');
+            await portalFrame.locator('[data-test-button="select-tier"]').nth(1).click();
 
             // complete the stripe checkout flow
             await completeStripeSubscription(page);
 
-            // come back to the website, open portal and check member is logged in
+            // come back to the website, open portal and check member is logged in and has paid
             await page.waitForSelector('h1.site-title', {state: 'visible'});
             await portalTriggerButton.click();
             await expect(portalFrame.getByText('testy@example.com')).toBeVisible();
+            await expect(portalFrame.getByRole('heading', {name: 'Billing info'})).toBeVisible();
+            await expect(portalFrame.getByText('**** **** **** 4242')).toBeVisible();
         });
     });
 });
