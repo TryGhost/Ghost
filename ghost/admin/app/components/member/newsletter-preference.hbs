@@ -3,7 +3,7 @@
     {{#unless this.suppressionData.suppressed}}
         <div class="gh-member-newsletters">
             {{#each this.newsletters as |newsletter|}}
-                <div class="gh-member-newsletter-row">
+                <div class="gh-member-newsletter-row" data-test-member-settings-switch>
                     <div>
                         <h4 class="gh-member-newsletter-title">{{newsletter.name}}</h4>
                     </div>
