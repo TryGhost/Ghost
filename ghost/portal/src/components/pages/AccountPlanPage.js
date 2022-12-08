@@ -86,6 +86,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
     return (
         <div className="gh-portal-expire-container">
             <ActionButton
+                dataTestId={'cancel-subscription'}
                 onClick={(e) => {
                     onCancelSubscription({
                         subscriptionId: subscription.id,
@@ -141,6 +142,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
                     </section>
                 </div>
                 <ActionButton
+                    dataTestId={'confirm-action'}
                     onClick={e => onConfirm(e, plan)}
                     isRunning={isRunning}
                     isPrimary={true}
@@ -162,6 +164,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
                         <label className='gh-portal-input-label'>Cancellation reason</label>
                     </div>
                     <textarea
+                        data-test-input='cancellation-reason'
                         className='gh-portal-input'
                         key='cancellation_reason'
                         label='Cancellation reason'
@@ -175,6 +178,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
                     />
                 </section>
                 <ActionButton
+                    dataTestId={'confirm-cancel-subscription'}
                     onClick={e => onConfirm(e, reason)}
                     isRunning={isRunning}
                     isPrimary={true}

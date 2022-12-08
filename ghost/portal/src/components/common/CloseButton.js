@@ -13,8 +13,10 @@ export default class CloseButton extends React.Component {
         const {onClick} = this.props;
 
         return (
-            <div className='gh-portal-closeicon-container'>
-                <CloseIcon className='gh-portal-closeicon' alt='Close' onClick = {onClick || this.closePopup} />
+            <div className='gh-portal-closeicon-container' data-test-button='close-popup'>
+                <CloseIcon
+                    className='gh-portal-closeicon' alt='Close' onClick = {onClick || this.closePopup}
+                />
             </div>
         );
     }

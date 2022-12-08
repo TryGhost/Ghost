@@ -29,6 +29,7 @@ function EmailNewsletterAction() {
             </div>
             <div>
                 <Switch
+                    dataTestId="default-newsletter-toggle"
                     id="default-newsletter-toggle"
                     onToggle={(e) => {
                         onToggleSubscription(e, subscribed);

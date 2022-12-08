@@ -28,7 +28,9 @@ function EmailPreferencesAction() {
                     page,
                     lastPage: 'accountHome'
                 });
-            }}>Manage</button>
+            }} data-test-button='manage-newsletters'>
+                Manage
+            </button>
         </section>
     );
 }
