@@ -73,6 +73,21 @@ const closePublishFlow = async (page) => {
 };
 
 /**
+ * @param {import('@playwright/test').Page} page
+ */
+const openPostSettingsMenu = async (page) => {
+    await page.locator('[data-test-psm-trigger]').click();
+};
+
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {'public'|'members'|'paid'|'tiers'} visibility
+ */
+const setPostVisibility = async (page, visibility) => {
+    await page.locator('[data-test-select="post-visibility"]').selectOption(visibility);
+};
+
+/**
  * @typedef {Object} PublishOptions
  * @property {'publish'|'publish+send'|'send'|null} [type]
  * @property {String} [recipientFilter]
@@ -177,12 +192,12 @@ test.describe('Publishing', () => {
 
             await createPost(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
             const frontendPage = await publishPost(adminPage);
-            const frontendBody = frontendPage.locator('main > article > section > p');
-            const frontendHeader = frontendPage.locator('main > article > header');
+            const publishedBody = frontendPage.locator('main > article > section > p');
+            const publishedHeader = frontendPage.locator('main > article > header');
 
             // check front-end post has the initial body text
-            await expect(frontendBody).toContainText('This is the initial published text.');
-            await expect(frontendHeader).toContainText(date.toFormat('LLL d, yyyy'));
+            await expect(publishedBody).toContainText('This is the initial published text.');
+            await expect(publishedHeader).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
             await adminPage.locator('[data-kg="editor"]').click();
@@ -190,7 +205,7 @@ test.describe('Publishing', () => {
             await adminPage.keyboard.type(' This is some updated text.');
 
             // change some post settings
-            await adminPage.locator('[data-test-psm-trigger]').click();
+            await openPostSettingsMenu(adminPage);
             await adminPage.fill('[data-test-date-time-picker-date-input]', '2022-01-07');
             await adminPage.fill('[data-test-field="custom-excerpt"]', 'Short description and meta');
 
@@ -200,8 +215,8 @@ test.describe('Publishing', () => {
             // check front-end has new text after reloading
             await frontendPage.waitForTimeout(300); // let save go through
             await frontendPage.reload();
-            await expect(frontendBody).toContainText('This is some updated text.');
-            await expect(frontendHeader).toContainText('Jan 7, 2022');
+            await expect(publishedBody).toContainText('This is some updated text.');
+            await expect(publishedHeader).toContainText('Jan 7, 2022');
             const metaDescription = frontendPage.locator('meta[name="description"]');
             await expect(metaDescription).toHaveAttribute('content', 'Short description and meta');
         });
@@ -225,7 +240,7 @@ test.describe('Publishing', () => {
             let lastPost = await page.locator('.post-card-content-link').first();
             await expect(lastPost).not.toHaveAttribute('href', '/scheduled-post-test/');
 
-            // Now wait for 5 seconds
+            // Now wait 5 seconds for the scheduled post to be published
             await page.waitForTimeout(5000);
 
             // Check again, now it should have been added to the page
@@ -308,16 +323,10 @@ test.describe('Updating post access', () => {
         test('Only logged-in members (free or paid) can see', async ({page}) => {
             await page.goto('/ghost');
 
-            // Create a post
             await createPost(page);
+            await openPostSettingsMenu(page);
+            await setPostVisibility(page, 'members');
 
-            // Open the Post Settings Menu
-            await page.locator('[data-test-psm-trigger]').click();
-
-            // Change the Post access setting to 'Members only'
-            await page.locator('[data-test-select="post-visibility"]').selectOption('members');
-
-            // Publish the post
             const frontendPage = await publishPost(page);
 
             // Check if content gate for members is present on front-end
@@ -329,16 +338,10 @@ test.describe('Updating post access', () => {
         test('Only logged-in, paid members can see', async ({page}) => {
             await page.goto('/ghost');
 
-            // Create a post
             await createPost(page);
+            await openPostSettingsMenu(page);
+            await setPostVisibility(page, 'paid');
 
-            // Open the Post Settings Menu
-            await page.locator('[data-test-psm-trigger]').click();
-
-            // Change the Post access setting to 'Paid-members only'
-            await page.locator('[data-test-select="post-visibility"]').selectOption('paid');
-
-            // Publish the post
             const frontendPage = await publishPost(page);
 
             // Check if content gate for paid members is present on front-end
@@ -350,16 +353,10 @@ test.describe('Updating post access', () => {
         test('Everyone can see', async ({page}) => {
             await page.goto('/ghost');
 
-            // Create a post
             await createPost(page);
+            await openPostSettingsMenu(page);
+            await setPostVisibility(page, 'public');
 
-            // Open the Post Settings Menu
-            await page.locator('[data-test-psm-trigger]').click();
-
-            // Change the Post access setting to 'Public'
-            await page.locator('[data-test-select="post-visibility"]').selectOption('public');
-
-            // Publish the post
             const frontendPage = await publishPost(page);
 
             // Check if post content is publicly visible on front-end
