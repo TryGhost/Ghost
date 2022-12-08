@@ -42,7 +42,7 @@
                                 <p>The name of your site</p>
                             </GhFormGroup>
 
-                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="description" @class="description-container">
+                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="description" class="description-container">
                                 <GhTextInput
                                     @value={{readonly this.settings.description}}
                                     @input={{action (mut this.settings.description) value="target.value"}}
@@ -419,7 +419,7 @@
                                     A private RSS feed is available at
                                     <a href="{{this.privateRSSUrl}}" target="_blank" rel="noopener noreferrer">{{this.privateRSSUrl}}</a>
                                 </span>
-                                <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
+                                <GhFormGroup class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
                                     <GhTextInput
                                         @value={{readonly this.settings.password}}
                                         @name="general[password]"
