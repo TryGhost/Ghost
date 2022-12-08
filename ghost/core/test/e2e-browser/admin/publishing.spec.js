@@ -166,9 +166,8 @@ test.describe('Publishing', () => {
 
             // add some extra text to the post
             await adminPage.locator('[data-kg="editor"]').click();
-            await adminPage.waitForTimeout(100);
-            await adminPage.keyboard.press('Enter');
-            await adminPage.keyboard.type('This is some updated text.');
+            await adminPage.waitForTimeout(200); //
+            await adminPage.keyboard.type(' This is some updated text.');
 
             // change some post settings
             await adminPage.locator('[data-test-psm-trigger]').click();
