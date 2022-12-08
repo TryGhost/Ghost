@@ -136,6 +136,7 @@ function InputField({
                 <InputError message={errorMessage} name={name} />
             </div>
             <input
+                data-test-input={id}
                 ref={fieldNode}
                 id={id}
                 className={inputClasses}

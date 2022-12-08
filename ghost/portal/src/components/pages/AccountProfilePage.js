@@ -63,6 +63,7 @@ export default class AccountProfilePage extends React.Component {
         const disabled = isRunning ? true : false;
         return (
             <ActionButton
+                dataTestId={'save-button'}
                 isRunning={isRunning}
                 onClick={e => this.onProfileSave(e)}
                 disabled={disabled}

@@ -72,7 +72,7 @@ export const SwitchStyles = `
     }
 `;
 
-function Switch({id, label = '', onToggle, checked = false}) {
+function Switch({id, label = '', onToggle, checked = false, dataTestId = 'switch-input'}) {
     const {action} = useContext(AppContext);
     const [isChecked, setIsChecked] = useState(checked);
     const isActionChanged = ['updateNewsletter:failed', 'updateNewsletter:success'].includes(action);
@@ -92,7 +92,7 @@ function Switch({id, label = '', onToggle, checked = false}) {
                 <span className="input-toggle-component" onClick={(e) => {
                     setIsChecked(!isChecked);
                     onToggle(e, !isChecked);
-                }} data-testid="switch-input"></span>
+                }} data-testid={dataTestId}></span>
             </label>
         </div>
     );
