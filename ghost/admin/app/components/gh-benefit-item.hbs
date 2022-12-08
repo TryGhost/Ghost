@@ -7,12 +7,9 @@
 
 <div class="gh-blognav-line {{unless this.name "placeholder"}}">
     {{svg-jar "check-2"}}
-    <GhValidationStatusContainer
-        @tagName="span"
-        @class="gh-blognav-label"
-        @errors={{this.benefitItem.errors}}
-        @property="name"
-        @hasValidated={{this.benefitItem.hasValidated}}
+    <span
+        class="gh-blognav-label"
+        {{validation-status errors=this.benefitItem.errors property="name" hasValidated=this.benefitItem.hasValidated}}
     >
         <GhTrimFocusInput
             @shouldFocus={{this.benefitItem.last}}
@@ -28,7 +25,7 @@
             @errors={{this.benefitItem.errors}}
             @property="name"
             data-test-error="benefit-label" />
-    </GhValidationStatusContainer>
+    </span>
 </div>
 
 {{#if this.benefitItem.isNew}}

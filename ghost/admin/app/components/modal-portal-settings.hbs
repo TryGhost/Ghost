@@ -19,7 +19,7 @@
                                     {{#unless this.membersUtils.isStripeEnabled}}
                                         <button class="gh-btn gh-btn-link {{unless this.session.user.isAdmin "disabled"}}" type="button" {{on "click" (action "openStripeConnect")}}>Connect to Stripe</button>
                                     {{/unless}}
-                                    <GhFormGroup @classNames="gh-members-subscribed-checkbox gh-portal-setting-first mb0">
+                                    <GhFormGroup class="gh-members-subscribed-checkbox gh-portal-setting-first mb0">
                                         <div class="flex justify-between items-center">
                                             <div class="mr3">
                                                 <h4 class="gh-portal-setting-title">Display name in signup form</h4>
@@ -153,7 +153,7 @@
                             </button>
                             {{#liquid-if isOpen}}
                                 <div class="modal-fullsettings-tab-expanded" onclick={{action "switchPreviewPage" "signup"}}>
-                                    <GhFormGroup @classNames="gh-members-subscribed-checkbox gh-portal-setting-first mb0 b--whitegrey">
+                                    <GhFormGroup class="gh-members-subscribed-checkbox gh-portal-setting-first mb0 b--whitegrey">
                                         <div class="flex justify-between items-center">
                                             <h4 class="gh-portal-setting-title">Show Portal button</h4>
                                             <div class="for-switch small">
@@ -175,7 +175,7 @@
                                     </GhFormGroup>
                                     {{#if this.settings.portalButton}}
                                         <div class="mt5">
-                                            <GhFormGroup @classNames="space-l">
+                                            <GhFormGroup class="space-l">
                                                 <h4 class="gh-portal-setting-title mb1">Portal button style</h4>
                                                 <span
                                                     class="gh-select mt2"
@@ -195,7 +195,7 @@
                                                 </span>
                                             </GhFormGroup>
                                             {{#if this.showIconSetting}}
-                                                <GhFormGroup @classNames="space-l">
+                                                <GhFormGroup class="space-l">
                                                     <h4 class="gh-portal-setting-title">Icon</h4>
                                                     <GhUploader
                                                         @extensions={{this.iconExtensions}}
@@ -251,7 +251,7 @@
                                             {{/if}}
                                         </div>
                                         {{#if this.showButtonTextSetting}}
-                                        <GhFormGroup @classNames="space-l">
+                                        <GhFormGroup class="space-l">
                                             <h4 class="gh-portal-setting-title">Signup button text</h4>
 
                                             <div class="flex items-center mt2">
@@ -275,7 +275,7 @@
                             </button>
                             {{#liquid-if isOpen}}
                                 <div class="modal-fullsettings-tab-expanded" onclick={{action "switchPreviewPage" "accountHome"}}>
-                                    <GhFormGroup @classNames="space-l mt5" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="members_support_address">
+                                    <GhFormGroup class="space-l mt5" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="members_support_address">
                                         <h4 class="gh-portal-setting-title">Support email address</h4>
                                         <div class="mt2">
                                             <GhTextInput

@@ -11,7 +11,7 @@
             {{#liquid-if isOpen}}
                 <div class="modal-fullsettings-tab-expanded">
                     <div class="gh-stack">
-                        <GhFormGroup @classNames="gh-stack-item gh-setting">
+                        <GhFormGroup class="gh-stack-item gh-setting">
                             <GhUploader
                                 @extensions={{this.imageExtensions}}
                                 @paramsHash={{hash purpose="image"}}
@@ -58,7 +58,7 @@
                         </GhFormGroup>
 
                         {{#if this.settings.icon}}
-                            <GhFormGroup @classNames="gh-stack-item gh-setting">
+                            <GhFormGroup class="gh-stack-item gh-setting">
                                 <label class="modal-fullsettings-title {{unless this.settings.icon "disabled"}}">Publication icon</label>
                                 <div class="for-switch small {{unless this.settings.icon "disabled"}}">
                                     <label class="switch" for="show-header">
@@ -76,7 +76,7 @@
                             </GhFormGroup>
                         {{/if}}
 
-                        <GhFormGroup @classNames="gh-stack-item gh-setting">
+                        <GhFormGroup class="gh-stack-item gh-setting">
                             <label class="modal-fullsettings-title">Publication title</label>
                             <div class="for-switch small">
                                 <label class="switch" for="show-title" data-test-toggle="showHeaderTitle">
@@ -91,7 +91,7 @@
                                 </label>
                             </div>
                         </GhFormGroup>
-                        <GhFormGroup @classNames="gh-stack-item gh-setting">
+                        <GhFormGroup class="gh-stack-item gh-setting">
                             <label class="modal-fullsettings-title">Newsletter name</label>
                             <div class="for-switch small">
                                 <label class="switch" for="show-header-name" data-test-toggle="showHeaderName">
@@ -119,7 +119,7 @@
             {{#liquid-if isOpen}}
                 <div class="modal-fullsettings-tab-expanded">
                     <div class="gh-stack">
-                        <GhFormGroup @classNames="gh-stack-item">
+                        <GhFormGroup class="gh-stack-item">
                             <label class="modal-fullsettings-title">Newsletter title style</label>
                             <div class="gh-email-design-typography-wrapper header">
                                 <div class="modal-fullsettings-radiogroup gh-email-design-typography" data-test-input="titleFontCategory">
@@ -134,7 +134,7 @@
                                 </div>
                             </div>
                         </GhFormGroup>
-                        <GhFormGroup @classNames="gh-stack-item">
+                        <GhFormGroup class="gh-stack-item">
                             <label class="modal-fullsettings-title">Body style</label>
                             <div class="gh-email-design-typography-wrapper">
                                 <div class="modal-fullsettings-radiogroup gh-email-design-typography" data-test-input="bodyFontCategory">
@@ -145,7 +145,7 @@
                                 </div>
                             </div>
                         </GhFormGroup>
-                        <GhFormGroup @classNames="gh-stack-item gh-setting">
+                        <GhFormGroup class="gh-stack-item gh-setting">
                             <label class="modal-fullsettings-title">Feature image</label>
                             <div class="for-switch small">
                                 <label class="switch" for="show-feature-image">
@@ -175,7 +175,7 @@
                     <div class="gh-stack">
 
                         {{#if (feature "audienceFeedback")}}
-                            <GhFormGroup @classNames="gh-stack-item gh-setting gh-setting-extra">
+                            <GhFormGroup class="gh-stack-item gh-setting gh-setting-extra">
                                 <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Ask your readers for feedback</label>
                                 <div class="for-switch small">
                                     <div class="container">
@@ -191,7 +191,7 @@
                             </GhFormGroup>
                         {{/if}}
 
-                        <GhFormGroup @classNames="gh-stack-item">
+                        <GhFormGroup class="gh-stack-item">
                             <label class="modal-fullsettings-title">Email footer</label>
                             <KoenigBasicHtmlInput
                                 @name="footer"

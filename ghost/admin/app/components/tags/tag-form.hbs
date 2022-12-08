@@ -76,7 +76,7 @@
                     <GhErrorMessage @errors={{@tag.errors}} @property="slug" />
                 </GhFormGroup>
 
-                <GhFormGroup @class="no-margin" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="description">
+                <GhFormGroup class="no-margin" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="description">
                     <label for="tag-description">Description</label>
                     <textarea
                         id="tag-description"
@@ -91,7 +91,7 @@
                     <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters @tag.description 500}}</p>
                 </GhFormGroup>
             </div>
-            <GhFormGroup @class="gh-tag-image-uploader no-margin" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="featureImage">
+            <GhFormGroup class="gh-tag-image-uploader no-margin" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="featureImage">
                 <label for="tag-image">Tag image</label>
                 <GhImageUploaderWithPreview
                     @image={{@tag.featureImage}}
@@ -197,7 +197,7 @@
             <div class="gh-setting-content-extended">
                 <div class="gh-twitter-settings">
                     <div class="gh-twitter-settings-left flex-basis-1-2-m flex-basis-2-3-l">
-                        <GhFormGroup @class="gh-tag-image-uploader" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="twitterImage">
+                        <GhFormGroup class="gh-tag-image-uploader" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="twitterImage">
                             <label for="twitter-image">Twitter image</label>
                             <GhImageUploaderWithPreview
                                 @image={{@tag.twitterImage}}
@@ -294,7 +294,7 @@
             <div class="gh-setting-content-extended">
                 <div class="gh-og-settings">
                     <div class="gh-og-settings-left flex-basis-1-2-m flex-basis-2-3-l">
-                        <GhFormGroup @class="gh-tag-image-uploader" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="ogImage">
+                        <GhFormGroup class="gh-tag-image-uploader" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="ogImage">
                             <label for="og-image">Facebook image</label>
                             <GhImageUploaderWithPreview
                                 @image={{@tag.ogImage}}
@@ -390,7 +390,7 @@
         <div class="gh-expandable-content">
             {{#liquid-if this.codeInjectionOpen}}
             <div class="gh-main-section">
-                <GhFormGroup @class="gh-main-section-block settings-code" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="codeinjectionHead">
+                <GhFormGroup class="gh-main-section-block settings-code" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="codeinjectionHead">
                     <label for="codeinjection-head" class="gh-tag-setting-codeheader">Tag header <code class="fw4 ml1">\{{ghost_head}}</code></label>
                     <GhCmEditor
                         @value={{@tag.codeinjectionHead}}
@@ -404,7 +404,7 @@
                     <GhErrorMessage @errors={{@tag.errors}} @property="codeinjectionHead"/>
                 </GhFormGroup>
 
-                <GhFormGroup @class="gh-main-section-block settings-code" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="codeinjectionFoot">
+                <GhFormGroup class="gh-main-section-block settings-code" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="codeinjectionFoot">
                     <label for="codeinjection-foot"class="gh-tag-setting-codeheader">Tag footer <code class="fw4 ml1">\{{ghost_foot}}</code></label>
                     <GhCmEditor @value={{@tag.codeinjectionFoot}}
                         @id="tag-setting-codeinjection-foot"
