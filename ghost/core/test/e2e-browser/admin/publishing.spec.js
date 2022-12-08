@@ -177,7 +177,6 @@ test.describe('Publishing', () => {
 
             await createPost(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
             const frontendPage = await publishPost(adminPage);
-            await frontendPage.pause();
             const frontendBody = frontendPage.locator('main > article > section > p');
             const frontendHeader = frontendPage.locator('main > article > header');
 
