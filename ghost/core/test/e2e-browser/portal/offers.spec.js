@@ -80,5 +80,47 @@ test.describe('Portal', () => {
             await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
+
+        test('Archiving an offer', async ({page}) => {
+            page.goto('/ghost');
+            await deleteAllMembers(page);
+
+            // Create a new tier to attach offer to
+            const tierName = 'Portal Tier';
+            await createTier(page, {
+                name: tierName,
+                monthlyPrice: 6,
+                yearlyPrice: 60
+            });
+
+            // Create an offer. This will be archived
+            const offerName = await createOffer(page, {
+                name: 'Black Friday Special to be archived',
+                tierName: tierName,
+                offerType: 'discount',
+                amount: 10
+            });
+
+            // Archive all existing offers by creating a new offer. Using the createOffer util auto-archives all existing offers
+            await createOffer(page, {
+                name: 'Dummy Active Offer',
+                tierName: tierName,
+                offerType: 'discount',
+                amount: 10
+            });
+
+            // Check if the offer appears in the archive list
+            await page.locator('.gh-contentfilter-menu-trigger').click();
+            await page.getByRole('option', {name: 'Archived offers'}).click();
+            await expect(page.getByRole('link', {name: offerName}), 'Should have an archived offer').toBeVisible();
+
+            // Go to the offer and grab the offer URL
+            await page.locator('.gh-offers-list .gh-list-row').filter({hasText: offerName}).click();
+            const portalUrl = await page.locator('input#url').inputValue();
+
+            // Open the offer URL and make sure portal popup doesn't load
+            await page.goto(portalUrl);
+            await expect(page.locator('#ghost-portal-root .portal-popup')).not.toBeVisible();
+        });
     });
 });
