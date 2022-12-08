@@ -64,7 +64,8 @@ const setup = async (playwrightConfig) => {
         await startGhost({
             frontend: true,
             server: true,
-            backend: true
+            backend: true,
+            mockMailgun: true
         });
     }
 
