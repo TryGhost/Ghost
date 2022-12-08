@@ -1,6 +1,6 @@
 const {expect, test} = require('@playwright/test');
 const {DateTime} = require('luxon');
-const {createMember} = require('../utils');
+const {createMember, createPostDraft} = require('../utils');
 const {slugify} = require('@tryghost/string');
 
 /**
@@ -57,30 +57,6 @@ const checkPostPublished = async (page, {slug, title, body}) => {
     // Check if the title and body are present on this page
     await expect(page.locator('.gh-canvas .article-title')).toHaveText(title);
     await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText(body);
-};
-
-/**
- * Start a post draft with a filled in title and body. We can consider to move this to utils later.
- * @param {import('@playwright/test').Page} page
- * @param {Object} options
- * @param {String} [options.title]
- * @param {String} [options.body]
- */
-const createPost = async (page, {title = 'Hello world', body = 'This is my post body.'} = {}) => {
-    await page.locator('.gh-nav a[href="#/posts/"]').click();
-
-    // Create a new post
-    await page.locator('[data-test-new-post-button]').click();
-
-    // Fill in the post title
-    await page.locator('[data-test-editor-title-input]').click();
-    await page.locator('[data-test-editor-title-input]').fill(title);
-
-    // Continue to the body by pressing enter
-    await page.keyboard.press('Enter');
-
-    await page.waitForTimeout(100); // allow new->draft switch to occur fully, without this some initial typing events can be missed
-    await page.keyboard.type(body);
 };
 
 /**
@@ -210,7 +186,7 @@ test.describe('Publishing', () => {
             await createMember(page, {email: 'example@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
-            await createPost(page, postData);
+            await createPostDraft(page, postData);
             await publishPost(page, {type: 'publish+send'});
             await closePublishFlow(page);
 
@@ -226,7 +202,7 @@ test.describe('Publishing', () => {
             };
 
             await page.goto('/ghost');
-            await createPost(page, postData);
+            await createPostDraft(page, postData);
             await publishPost(page);
             await closePublishFlow(page);
 
@@ -243,7 +219,7 @@ test.describe('Publishing', () => {
             };
 
             await page.goto('/ghost');
-            await createPost(page, postData);
+            await createPostDraft(page, postData);
             await publishPost(page, {type: 'send'});
             await closePublishFlow(page);
             await checkPostStatus(page, 'Sent to '); // can't test for 1 member for now, because depends on test ordering :( (sometimes 2 members are created)
@@ -304,7 +280,7 @@ test.describe('Publishing', () => {
 
             const date = DateTime.now();
 
-            await createPost(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
+            await createPostDraft(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
             await publishPost(adminPage);
             const frontendPage = await openPublishedPostBookmark(adminPage);
             await closePublishFlow(adminPage);
@@ -349,7 +325,7 @@ test.describe('Publishing', () => {
             };
 
             await page.goto('/ghost');
-            await createPost(page, postData);
+            await createPostDraft(page, postData);
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(page, {time: '00:00', type: 'publish+send'});
@@ -380,7 +356,7 @@ test.describe('Publishing', () => {
             };
 
             await page.goto('/ghost');
-            await createPost(page, postData);
+            await createPostDraft(page, postData);
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(page, {time: '00:00'});
@@ -410,7 +386,7 @@ test.describe('Publishing', () => {
             };
 
             await page.goto('/ghost');
-            await createPost(page, postData);
+            await createPostDraft(page, postData);
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(page, {type: 'send', time: '00:00'});
@@ -440,7 +416,7 @@ test.describe('Publishing', () => {
             };
 
             await page.goto('/ghost');
-            await createPost(page, postData);
+            await createPostDraft(page, postData);
 
             // Schedule far in the future
             await publishPost(page, {date: '2050-01-01', time: '10:09'});
@@ -473,7 +449,7 @@ test.describe('Updating post access', () => {
         test('Only logged-in members (free or paid) can see', async ({page}) => {
             await page.goto('/ghost');
 
-            await createPost(page);
+            await createPostDraft(page);
             await openPostSettingsMenu(page);
             await setPostVisibility(page, 'members');
 
@@ -489,7 +465,7 @@ test.describe('Updating post access', () => {
         test('Only logged-in, paid members can see', async ({page}) => {
             await page.goto('/ghost');
 
-            await createPost(page);
+            await createPostDraft(page);
             await openPostSettingsMenu(page);
             await setPostVisibility(page, 'paid');
 
@@ -505,7 +481,7 @@ test.describe('Updating post access', () => {
         test('Everyone can see', async ({page}) => {
             await page.goto('/ghost');
 
-            await createPost(page);
+            await createPostDraft(page);
             await openPostSettingsMenu(page);
             await setPostVisibility(page, 'public');
 
