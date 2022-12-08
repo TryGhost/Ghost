@@ -166,6 +166,7 @@ test.describe('Publishing', () => {
 
             // add some extra text to the post
             await adminPage.locator('[data-kg="editor"]').click();
+            await adminPage.waitForTimeout(100);
             await adminPage.keyboard.press('Enter');
             await adminPage.keyboard.type('This is some updated text.');
 
