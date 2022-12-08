@@ -257,7 +257,16 @@ const completeStripeSubscription = async (page) => {
     await page.getByTestId('hosted-payment-submit-button').click();
 };
 
-const createMember = async (page, {email, name, note, label = ''}) => {
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {String} options.email
+ * @param {String} [options.name]
+ * @param {String} [options.note]
+ * @param {String} [options.label]
+ * @param {String} [options.compedPlan]
+ */
+const createMember = async (page, {email, name, note, label = '', compedPlan}) => {
     await page.goto('/ghost');
     await page.locator('.gh-nav a[href="#/members/"]').click();
     await page.waitForSelector('a[href="#/members/new/"] span');
@@ -279,8 +288,16 @@ const createMember = async (page, {email, name, note, label = ''}) => {
         await page.keyboard.type(label);
         await page.keyboard.press('Tab');
     }
+
     await page.locator('button span:has-text("Save")').click();
     await page.waitForSelector('button span:has-text("Saved")');
+
+    if (compedPlan) {
+        await page.locator('[data-test-button="add-complimentary"]').click();
+        // TODO: switch [data-test-modal="add-complimentary"] and better plan selector once modal is refactored
+        await page.locator('.fullscreen-modal h4').getByText(compedPlan).click();
+        await page.locator('[data-test-button="save-comp-tier"]').click();
+    }
 };
 
 module.exports = {
