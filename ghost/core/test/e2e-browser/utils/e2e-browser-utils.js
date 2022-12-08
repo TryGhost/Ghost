@@ -2,6 +2,14 @@ const DataGenerator = require('../../utils/fixtures/data-generator');
 const ObjectID = require('bson-objectid').default;
 
 /**
+ * Tier
+ * @typedef {object} Tier
+ * @property {string} tier.name
+ * @property {number} tier.monthlyPrice
+ * @property {number} tier.yearlyPrice
+ */
+
+/**
  * Setup Ghost Admin, or login if there's a login prompt
  * @param {import('@playwright/test').Page} page
  */
@@ -116,6 +124,48 @@ const deleteAllMembers = async (page) => {
             .getByRole('button', {name: 'Delete member'})
             .click();
     }
+};
+
+/**
+ * Archive all tiers, 1 by 1, using the UI
+ * @param {import('@playwright/test').Page} page
+ */
+const archiveAllTiers = async (page) => {
+    // Navigate to the member settings
+    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+
+    // Expand the premium tier list
+    await page.locator('[data-test-toggle-pub-info]').click({
+        delay: 500 // TODO: Figure out how to prevent this from opening with an empty list without using delay
+    });
+
+    // Archive if already exists
+    while (await page.locator('.gh-tier-card').first().isVisible()) {
+        const tierCard = page.locator('.gh-tier-card').first();
+        await tierCard.locator('.gh-tier-card-actions-button').click();
+        await tierCard.getByRole('button', {name: 'Archive'}).click();
+        await page.locator('.modal-content').getByRole('button', {name: 'Archive'}).click();
+        await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
+    }
+};
+
+/**
+ * Allows impersonating a member by copying the impersonate link
+ * opens site with member logged in via the link
+ * Expects starting at member detail page
+ * @param {import('@playwright/test').Page} page
+ */
+const impersonateMember = async (page) => {
+    // open member impersonation modal and copy link
+    await page.locator('[data-test-button="member-actions"]').click();
+    await page.locator('[data-test-button="impersonate"]').click();
+    await page.locator('[data-test-button="copy-impersonate-link"]').click();
+    await page.waitForSelector('[data-test-button="copy-impersonate-link"] span:has-text("Link copied")');
+
+    // get impersonation link from input and redirect to it
+    const link = await page.locator('[data-test-input="member-signin-url"]').inputValue();
+    await page.goto(link);
 };
 
 /**
@@ -318,7 +368,9 @@ module.exports = {
     setupMailgun,
     deleteAllMembers,
     createTier,
+    archiveAllTiers,
     createOffer,
     createMember,
-    completeStripeSubscription
+    completeStripeSubscription,
+    impersonateMember
 };
