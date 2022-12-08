@@ -65,7 +65,7 @@ const closePublishFlow = async (page) => {
 
 /**
  * @typedef {Object} PublishOptions
- * @property {'publish'|'publish+send'|'send'} [type]
+ * @property {'publish'|'publish+send'|'send'|null} [type]
  * @property {String} [recipientFilter]
  * @property {String} [newsletter]
  * @property {String} [date]
@@ -220,6 +220,33 @@ test.describe('Publishing', () => {
             await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText('This is my scheduled post body.');
         });
     });
+
+    test.describe('Schedule page', () => {
+        test('Page should be published at the scheduled time', async ({page}) => {
+            await page.goto('/ghost');
+            await createPage(page, {
+                title: 'Scheduled page test',
+                body: 'This is my scheduled page body.'
+            });
+
+            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
+            await publishPost(page, {time: '00:00', type: null});
+
+            // Go to the page and check if the status code is 404
+            const response = await page.goto('/scheduled-page-test/');
+            expect(response.status()).toBe(404);
+
+            // Now wait for 5 seconds
+            await page.waitForTimeout(5000);
+
+            // Check again, now it should have been added to the page
+            await page.reload();
+
+            // Check if the title and body are present on this page
+            await expect(page.locator('.gh-canvas .article-title')).toHaveText('Scheduled page test');
+            await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText('This is my scheduled page body.');
+        });
+    });
 });
 
 test.describe('Updating post access', () => {
@@ -239,7 +266,7 @@ test.describe('Updating post access', () => {
             // Publish the post
             const frontendPage = await publishPost(page);
 
-            // Check if content gate for members is present on front-end            
+            // Check if content gate for members is present on front-end
             await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for subscribers only');
         });
     });
@@ -260,7 +287,7 @@ test.describe('Updating post access', () => {
             // Publish the post
             const frontendPage = await publishPost(page);
 
-            // Check if content gate for paid members is present on front-end            
+            // Check if content gate for paid members is present on front-end
             await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for paying subscribers only');
         });
     });
@@ -281,7 +308,7 @@ test.describe('Updating post access', () => {
             // Publish the post
             const frontendPage = await publishPost(page);
 
-            // Check if post content is publicly visible on front-end            
+            // Check if post content is publicly visible on front-end
             await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
         });
     });
