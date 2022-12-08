@@ -82,6 +82,18 @@ const setupStripe = async (page, stripConnectIntegrationToken) => {
     await page.getByRole('button', {name: 'OK'}).click();
 };
 
+// Setup Mailgun with fake data, for Ghost Admin to allow bulk sending
+const setupMailgun = async (page) => {
+    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('.gh-setting-group').filter({hasText: 'Email newsletter'}).click();
+    await page.locator('.gh-expandable-block').filter({hasText: 'Mailgun configuration'}).getByRole('button', {name: 'Expand'}).click();
+
+    await page.locator('[data-test-mailgun-domain-input]').fill('api.testgun.com');
+    await page.locator('[data-test-mailgun-api-key-input]').fill('Not an API key');
+    await page.locator('[data-test-button="save-members-settings"]').click();
+    await page.waitForSelector('[data-test-button="save-members-settings"] [data-test-task-button-state="success"]');
+};
+
 /**
  * Delete all members, 1 by 1, using the UI
  * @param {import('@playwright/test').Page} page
@@ -303,6 +315,7 @@ const createMember = async (page, {email, name, note, label = '', compedPlan}) =
 module.exports = {
     setupGhost,
     setupStripe,
+    setupMailgun,
     deleteAllMembers,
     createTier,
     createOffer,
