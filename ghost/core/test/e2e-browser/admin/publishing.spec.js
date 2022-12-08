@@ -1,5 +1,6 @@
 const {expect, test} = require('@playwright/test');
 const {DateTime} = require('luxon');
+const {createMember} = require('../utils');
 
 const checkPostStatus = async (page, status, hoverStatus) => {
     await expect(page.locator('[data-test-editor-post-status]')).toContainText(status);
@@ -112,13 +113,7 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
 
         // NOTE: the if/else below should be reworked into data-test-publish style selectors
         // await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true);
-        if (type === 'publish') {
-            await page.getByText('Publish only').click();
-        } else if (type === 'publish+send') {
-            await page.getByText('Publish and email').click();
-        } else if (type === 'send') {
-            await page.getByText('Email only').click();
-        }
+        await page.locator(`[data-test-publish-type="${type}"] + label`).click();
     }
 
     // Schedule the post
@@ -146,28 +141,60 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
     await page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]').click({force: true});
 
     // TODO: assert publish flow has expected completion details
+};
 
+const openPublishedPostBookmark = async (page) => {
     // open the published post in a new tab
     const [frontendPage] = await Promise.all([
         page.waitForEvent('popup'),
         page.locator('[data-test-complete-bookmark]').click()
     ]);
 
-    await closePublishFlow(page);
     return frontendPage;
 };
 
 test.describe('Publishing', () => {
     test.describe('Publish post', () => {
-        test('Post should only be available on web', async ({page}) => {
+        // Post should be available on web and sent as a newsletter
+        test('Publish and Email', async ({page}) => {
+            // Create a member to send and email to
+            await createMember(page, {email: 'example@example.com', name: 'Publishing member'});
+
             await page.goto('/ghost');
             await createPost(page);
-            const frontendPage = await publishPost(page);
+            await publishPost(page, {type: 'publish+send'});
+            const frontendPage = await openPublishedPostBookmark(page);
+            await closePublishFlow(page);
             await checkPostStatus(page, 'Published');
 
             // Check if 'This is my post body.' is present on page1
             await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
             await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
+        });
+
+        // Post should only be available on web
+        test('Publish only', async ({page}) => {
+            await page.goto('/ghost');
+            await createPost(page);
+            await publishPost(page);
+            const frontendPage = await openPublishedPostBookmark(page);
+            await closePublishFlow(page);
+            await checkPostStatus(page, 'Published');
+
+            // Check if 'This is my post body.' is present on page1
+            await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
+            await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
+        });
+
+        // Post should be available on web and sent as a newsletter
+        test('Email only', async ({page}) => {
+            // Note: this currently depends on 'Publish and Email' to create a member!
+
+            await page.goto('/ghost');
+            await createPost(page);
+            await publishPost(page, {type: 'send'});
+            await closePublishFlow(page);
+            await checkPostStatus(page, 'Sent to '); // can't test for 1 member for now, because depends on test ordering :( (sometimes 2 members are created)
         });
     });
 
@@ -175,7 +202,9 @@ test.describe('Publishing', () => {
         test('Page can be published and become visible on web', async ({page}) => {
             await page.goto('/ghost');
             await createPage(page);
-            const frontendPage = await publishPost(page, {type: null});
+            await publishPost(page, {type: null});
+            const frontendPage = await openPublishedPostBookmark(page);
+            await closePublishFlow(page);
             await checkPostStatus(page, 'Published');
 
             // Check if 'This is my post body.' is present on page1
@@ -191,7 +220,9 @@ test.describe('Publishing', () => {
             const date = DateTime.now();
 
             await createPost(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
-            const frontendPage = await publishPost(adminPage);
+            await publishPost(adminPage);
+            const frontendPage = await openPublishedPostBookmark(adminPage);
+            await closePublishFlow(adminPage);
             const publishedBody = frontendPage.locator('main > article > section > p');
             const publishedHeader = frontendPage.locator('main > article > header');
 
@@ -232,6 +263,7 @@ test.describe('Publishing', () => {
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(page, {time: '00:00'});
+            await closePublishFlow(page);
             await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
 
             // Go to the homepage and check if the post is not yet visible there
@@ -265,6 +297,7 @@ test.describe('Publishing', () => {
 
             // Schedule far in the future
             await publishPost(page, {date: '2050-01-01', time: '10:09'});
+            await closePublishFlow(page);
 
             // Check status
             await checkPostStatus(page, 'Scheduled', 'Scheduled to be published at 10:09 (UTC) on 01 Jan 2050');
@@ -297,6 +330,7 @@ test.describe('Publishing', () => {
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(page, {time: '00:00', type: null});
+            await closePublishFlow(page);
             await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
 
             // Go to the page and check if the status code is 404
@@ -325,7 +359,8 @@ test.describe('Updating post access', () => {
             await openPostSettingsMenu(page);
             await setPostVisibility(page, 'members');
 
-            const frontendPage = await publishPost(page);
+            await publishPost(page);
+            const frontendPage = await openPublishedPostBookmark(page);
 
             // Check if content gate for members is present on front-end
             await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for subscribers only');
@@ -340,7 +375,8 @@ test.describe('Updating post access', () => {
             await openPostSettingsMenu(page);
             await setPostVisibility(page, 'paid');
 
-            const frontendPage = await publishPost(page);
+            await publishPost(page);
+            const frontendPage = await openPublishedPostBookmark(page);
 
             // Check if content gate for paid members is present on front-end
             await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for paying subscribers only');
@@ -355,7 +391,8 @@ test.describe('Updating post access', () => {
             await openPostSettingsMenu(page);
             await setPostVisibility(page, 'public');
 
-            const frontendPage = await publishPost(page);
+            await publishPost(page);
+            const frontendPage = await openPublishedPostBookmark(page);
 
             // Check if post content is publicly visible on front-end
             await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
