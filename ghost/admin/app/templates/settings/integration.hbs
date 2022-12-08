@@ -64,11 +64,13 @@
                             </figure>
                         </div>
                         <div class="flex-auto">
-                            <GhValidationStatusContainer
-                                @class="flex flex-column w-100 mr3"
-                                @errors={{this.integration.errors}}
-                                @hasValidated={{this.integration.hasValidated}}
-                                @property="name"
+                            <div
+                                class="flex flex-column w-100 mr3"
+                                {{validation-status
+                                    errors=this.integration.errors
+                                    hasValidated=this.integration.hasValidated
+                                    property="name"
+                                }}
                             >
                                 <label for="integration_name">Name</label>
                                 <GhTextInput
@@ -81,13 +83,15 @@
                                     data-test-input="name"
                                 />
                                 <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="name" class="ma0" />
-                            </GhValidationStatusContainer>
+                            </div>
 
-                            <GhValidationStatusContainer
-                                @class="flex flex-column w-100 mr3"
-                                @errors={{this.integration.errors}}
-                                @hasValidated={{this.integration.hasValidated}}
-                                @property="description"
+                            <div
+                                class="flex flex-column w-100 mr3"
+                                {{validation-status
+                                    errors=this.integration.errors
+                                    hasValidated=this.integration.hasValidated
+                                    property="description"
+                                }}
                             >
                                 <label for="integration_description" class="mt3">Description</label>
                                 <GhTextInput
@@ -100,7 +104,7 @@
                                     data-test-input="description"
                                 />
                                 <GhErrorMessage @errors={{this.integration.errors}} @property="description" data-test-error="description" class="ma0" />
-                            </GhValidationStatusContainer>
+                            </div>
 
                             <table class="app-custom-api-table list" style="table-layout: fixed">
                                 <tbody>

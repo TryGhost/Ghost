@@ -6,13 +6,7 @@
 {{/unless}}
 
 <div class="gh-blognav-line">
-    <GhValidationStatusContainer
-        @tagName="span"
-        @class="gh-blognav-label"
-        @errors={{this.navItem.errors}}
-        @property="label"
-        @hasValidated={{this.navItem.hasValidated}}
-    >
+    <span class="gh-blognav-label" {{validation-status errors=this.navItem.errors property="label" hasValidated=this.navItem.hasValidated}}>
         <GhTrimFocusInput
             @shouldFocus={{this.navItem.last}}
             @placeholder="Label"
@@ -23,14 +17,8 @@
         <GhErrorMessage
             @errors={{this.navItem.errors}}
             @property="label" data-test-error="label" />
-    </GhValidationStatusContainer>
-    <GhValidationStatusContainer
-        @tagName="span"
-        @class="gh-blognav-url"
-        @errors={{this.navItem.errors}}
-        @property="url"
-        @hasValidated={{this.navItem.hasValidated}}
-    >
+    </span>
+    <span class="gh-blognav-url" {{validation-status errors=this.navItem.errors property="url" hasValidated=this.navItem.hasValidated}}>
         <Settings::Navigation::NavItemUrlInput
             @baseUrl={{this.baseUrl}}
             @isNew={{this.navItem.isNew}}
@@ -40,7 +28,7 @@
         <GhErrorMessage
             @errors={{this.navItem.errors}}
             @property="url" data-test-error="url" />
-    </GhValidationStatusContainer>
+    </span>
 </div>
 
 {{#if this.navItem.isNew}}

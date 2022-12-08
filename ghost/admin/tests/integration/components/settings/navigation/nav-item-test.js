@@ -18,10 +18,10 @@ describe('Integration: Component: settings/navigation/nav-item', function () {
         await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} />`);
         let item = find('.gh-blognav-item');
 
-        expect(item.querySelector('.gh-blognav-grab')).to.exist;
-        expect(item.querySelector('.gh-blognav-label')).to.exist;
-        expect(item.querySelector('.gh-blognav-url')).to.exist;
-        expect(item.querySelector('.gh-blognav-delete')).to.exist;
+        expect(item.querySelector('.gh-blognav-grab'), 'grab').to.exist;
+        expect(item.querySelector('.gh-blognav-label'), 'label').to.exist;
+        expect(item.querySelector('.gh-blognav-url'), 'url').to.exist;
+        expect(item.querySelector('.gh-blognav-delete'), 'delete').to.exist;
 
         // doesn't show any errors
         expect(find('.gh-blognav-item--error')).to.not.exist;

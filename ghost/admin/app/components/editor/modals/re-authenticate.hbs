@@ -6,7 +6,7 @@
 
     <div class="modal-body {{if this.authenticationError 'error'}}">
         <form id="login" class="login-form" method="post" novalidate="novalidate" {{on "submit" (perform this.reauthenticateTask)}}>
-            <GhValidationStatusContainer @class="password-wrap" @errors={{this.signup.errors}} @property="password" @hasValidated={{this.signup.hasValidated}}>
+            <div class="password-wrap" {{validation-status errors=this.signup.errors property="password" hasValidated=this.signup.hasValidated}}>
                 <input
                     type="password"
                     class="gh-input password"
@@ -16,7 +16,7 @@
                     aria-label="Your password"
                     {{on "input" this.setPassword}}
                 />
-            </GhValidationStatusContainer>
+            </div>
 
             <div>
                 <GhTaskButton

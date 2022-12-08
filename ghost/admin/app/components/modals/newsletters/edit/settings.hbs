@@ -10,7 +10,7 @@
             {{#liquid-if isOpen}}
                 <div class="modal-fullsettings-tab-expanded">
                     <div class="gh-stack">
-                        <GhFormGroup @classNames="gh-stack-item" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="name">
+                        <GhFormGroup class="gh-stack-item" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="name">
                             <label for="newsletter-title" class="modal-fullsettings-title">Name</label>
                             <input
                                 id="newsletter-title"
@@ -23,7 +23,7 @@
                             <GhErrorMessage @errors={{@newsletter.errors}} @property="name" />
                         </GhFormGroup>
 
-                        <GhFormGroup @classNames="gh-stack-item" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="description">
+                        <GhFormGroup class="gh-stack-item" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="description">
                             <label for="newsletter-description" class="modal-fullsettings-title">Description</label>
                             <textarea
                                 id="newsletter-description"
@@ -45,7 +45,7 @@
             {{#liquid-if isOpen}}
                 <div class="modal-fullsettings-tab-expanded">
                     <div class="gh-stack">
-                        <GhFormGroup @classNames="gh-stack-item" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderName">
+                        <GhFormGroup class="gh-stack-item" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderName">
                             <label for="newsletter-sender-name" class="modal-fullsettings-title">Sender name</label>
                             <input
                                 id="newsletter-sender-name"
@@ -58,7 +58,7 @@
                             <GhErrorMessage @errors={{@newsletter.errors}} @property="senderName" />
                         </GhFormGroup>
 
-                        <GhFormGroup @classNames="gh-stack-item"  @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderEmail">
+                        <GhFormGroup class="gh-stack-item"  @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderEmail">
                             <span class="flex items-center justify-between">
                                 <label for="newsletter-sender-email" class="modal-fullsettings-title ml2">Sender email address</label>
                                 <span class="tooltip-top-left" data-tooltip="Defaults to {{full-email-address "noreply"}} if empty">{{svg-jar "info" class="w4 h4"}}</span>
@@ -74,7 +74,7 @@
                             <GhErrorMessage @errors={{@newsletter.errors}} @property="senderEmail" />
                         </GhFormGroup>
 
-                        <GhFormGroup @classNames="gh-stack-item" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderReplyTo">
+                        <GhFormGroup class="gh-stack-item" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderReplyTo">
                             <label for="newsletter-reply-to" class="modal-fullsettings-title">Reply-to email</label>
                             <Inputs::Select
                                 id="newsletter-reply-to"
@@ -100,7 +100,7 @@
             {{#liquid-if isOpen}}
                 <div class="modal-fullsettings-tab-expanded">
                     <div class="gh-stack">
-                        <GhFormGroup @classNames="gh-stack-item gh-setting">
+                        <GhFormGroup class="gh-stack-item gh-setting">
                             <label for="subscribe-on-signup" class="modal-fullsettings-title" data-test-toggle="subscribeOnSignup">Subscribe new members on signup</label>
                             <div class="for-switch small">
                                 <div class="container">
