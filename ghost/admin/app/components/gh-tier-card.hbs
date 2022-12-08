@@ -82,7 +82,7 @@
                     @classNames="gh-tier-actions-menu dropdown-menu dropdown-triangle-top-right"
                 >
                     <li>
-                        <button class="mr2" type="button" {{on "click" (fn this.openEditTier @tier)}}>
+                        <button class="mr2" type="button" data-test-button="edit-tier" {{on "click" (fn this.openEditTier @tier)}}>
                             <span>Edit</span>
                         </button>
                     </li>
