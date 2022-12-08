@@ -7,7 +7,7 @@ class MockMailgunClient {
 
     /**
      *
-     * @param {Promise<{id}>}
+     * @returns {Promise<{id: string}>}
      */
     async send() {
         return {

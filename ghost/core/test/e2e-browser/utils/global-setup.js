@@ -48,6 +48,13 @@ const generateStripeIntegrationToken = async () => {
     })).toString('base64');
 };
 
+const stubMailgun = () => {
+    const rewire = require('rewire');
+    const mockMailgunClient = require('../../utils/mocks/MailgunClientMock');
+    const bulkEmail = rewire('../../../core/server/services/bulk-email/bulk-email-processor');
+    bulkEmail.__set__('mailgunClient', mockMailgunClient);
+};
+
 /**
  * Setup the environment
  */
@@ -61,11 +68,13 @@ const setup = async (playwrightConfig) => {
 
         process.env.WEBHOOK_SECRET = await getWebhookSecret();
 
+        // Stub out NodeMailer
+        stubMailgun();
+
         await startGhost({
             frontend: true,
             server: true,
-            backend: true,
-            mockMailgun: true
+            backend: true
         });
     }
 
