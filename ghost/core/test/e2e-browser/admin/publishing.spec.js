@@ -158,11 +158,13 @@ test.describe('Publishing', () => {
 
             await createPost(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
             const frontendPage = await publishPost(adminPage);
-            const frontendBody = frontendPage.getByRole('main');
+            await frontendPage.pause();
+            const frontendBody = frontendPage.locator('main > article > section > p');
+            const frontendHeader = frontendPage.locator('main > article > header');
 
             // check front-end post has the initial body text
             await expect(frontendBody).toContainText('This is the initial published text.');
-            await expect(frontendBody).toContainText(date.toFormat('LLL d, yyyy'));
+            await expect(frontendHeader).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
             await adminPage.locator('[data-kg="editor"]').click();
@@ -178,10 +180,10 @@ test.describe('Publishing', () => {
             await adminPage.locator('[data-test-button="publish-save"]').click();
 
             // check front-end has new text after reloading
-            await frontendPage.waitForTimeout(100); // let save go through
+            await frontendPage.waitForTimeout(300); // let save go through
             await frontendPage.reload();
             await expect(frontendBody).toContainText('This is some updated text.');
-            await expect(frontendBody).toContainText('Jan 7, 2022');
+            await expect(frontendHeader).toContainText('Jan 7, 2022');
             const metaDescription = frontendPage.locator('meta[name="description"]');
             await expect(metaDescription).toHaveAttribute('content', 'Short description and meta');
         });
