@@ -1,14 +1,62 @@
 const {expect, test} = require('@playwright/test');
 const {DateTime} = require('luxon');
 const {createMember} = require('../utils');
+const {slugify} = require('@tryghost/string');
 
+/**
+ * Test the status of a post in the post editor.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} status The status you expect to see
+ * @param {string} [hoverStatus] Optional different status when you hover the status
+ */
 const checkPostStatus = async (page, status, hoverStatus) => {
-    await expect(page.locator('[data-test-editor-post-status]')).toContainText(status);
+    await expect(page.locator('[data-test-editor-post-status]')).toContainText(status, {timeout: 5000});
 
     if (hoverStatus) {
         await page.locator('[data-test-editor-post-status]').hover();
-        await expect(page.locator('[data-test-editor-post-status]')).toContainText(hoverStatus);
+        await expect(page.locator('[data-test-editor-post-status]')).toContainText(hoverStatus, {timeout: 5000});
     }
+};
+
+/**
+ * Checks the post or page doesn't exist and returns a 404 page
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {String} [options.slug]
+ * @param {String} [options.title]
+ */
+const checkPostNotPublished = async (page, {slug, title}) => {
+    if (!slug) {
+        slug = slugify(title);
+    }
+    const url = `/${slug}/`;
+
+    // Go to the page and check if the status code is 404
+    const response = await page.goto(url);
+    expect(response.status()).toBe(404);
+};
+
+/**
+ * Checks the post or page doesn't exist and returns a 404 page
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {String} [options.slug]
+ * @param {String} options.title
+ * @param {String} options.body
+ */
+const checkPostPublished = async (page, {slug, title, body}) => {
+    if (!slug) {
+        slug = slugify(title);
+    }
+    const url = `/${slug}/`;
+
+    // Check again, now it should have been added to the page
+    const response = await page.goto(url);
+    expect(response.status()).toBe(200);
+
+    // Check if the title and body are present on this page
+    await expect(page.locator('.gh-canvas .article-title')).toHaveText(title);
+    await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText(body);
 };
 
 /**
@@ -108,12 +156,8 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
     // set the publish type
     if (type) {
         // Type is nullable because Pages don't have a publish type button
-
         await page.locator('[data-test-setting="publish-type"] > button').click();
-
-        // NOTE: the if/else below should be reworked into data-test-publish style selectors
-        // await page.locator(`[data-test-publish-type="${type}"]`).setChecked(true);
-        await page.locator(`[data-test-publish-type="${type}"] + label`).click();
+        await page.locator(`[data-test-publish-type="${type}"] + label`).click({timeout: 1000}); // If this times out, it is likely that there are no members (running a single test).
     }
 
     // Schedule the post
@@ -153,63 +197,104 @@ const openPublishedPostBookmark = async (page) => {
     return frontendPage;
 };
 
-test.describe('Publishing', () => {
+test.describe.only('Publishing', () => {
     test.describe('Publish post', () => {
         // Post should be available on web and sent as a newsletter
         test('Publish and Email', async ({page}) => {
+            const postData = {
+                title: 'Publish and email post',
+                body: 'This is my post body.'
+            };
+
             // Create a member to send and email to
             await createMember(page, {email: 'example@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
-            await createPost(page);
+            await createPost(page, postData);
             await publishPost(page, {type: 'publish+send'});
-            const frontendPage = await openPublishedPostBookmark(page);
             await closePublishFlow(page);
-            await checkPostStatus(page, 'Published');
 
-            // Check if 'This is my post body.' is present on page1
-            await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
-            await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
+            await checkPostStatus(page, 'Published');
+            await checkPostPublished(page, postData);
         });
 
         // Post should only be available on web
         test('Publish only', async ({page}) => {
-            await page.goto('/ghost');
-            await createPost(page);
-            await publishPost(page);
-            const frontendPage = await openPublishedPostBookmark(page);
-            await closePublishFlow(page);
-            await checkPostStatus(page, 'Published');
+            const postData = {
+                title: 'Publish post only',
+                body: 'This is my post body.'
+            };
 
-            // Check if 'This is my post body.' is present on page1
-            await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
-            await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
+            await page.goto('/ghost');
+            await createPost(page, postData);
+            await publishPost(page);
+            await closePublishFlow(page);
+
+            await checkPostStatus(page, 'Published');
+            await checkPostPublished(page, postData);
         });
 
         // Post should be available on web and sent as a newsletter
         test('Email only', async ({page}) => {
             // Note: this currently depends on 'Publish and Email' to create a member!
+            const postData = {
+                title: 'Email only post',
+                body: 'This is my post body.'
+            };
 
             await page.goto('/ghost');
-            await createPost(page);
+            await createPost(page, postData);
             await publishPost(page, {type: 'send'});
             await closePublishFlow(page);
             await checkPostStatus(page, 'Sent to '); // can't test for 1 member for now, because depends on test ordering :( (sometimes 2 members are created)
+
+            await checkPostNotPublished(page, postData);
         });
     });
 
     test.describe('Publish page', () => {
-        test('Page can be published and become visible on web', async ({page}) => {
+        // A page can be published and become visible on web
+        test('Immediately', async ({page}) => {
+            const pageData = {
+                // Title should be unique to avoid slug duplicates
+                title: 'Published page test',
+                body: 'This is my scheduled page body.'
+            };
+
             await page.goto('/ghost');
-            await createPage(page);
+            await createPage(page, pageData);
             await publishPost(page, {type: null});
-            const frontendPage = await openPublishedPostBookmark(page);
             await closePublishFlow(page);
             await checkPostStatus(page, 'Published');
 
-            // Check if 'This is my post body.' is present on page1
-            await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
-            await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
+            // Check published
+            await checkPostPublished(page, pageData);
+        });
+
+        // Page should be published at the scheduled time
+        test('At the scheduled time', async ({page}) => {
+            const pageData = {
+                // Title should be unique to avoid slug duplicates
+                title: 'Scheduled page test',
+                body: 'This is my scheduled page body.'
+            };
+
+            await page.goto('/ghost');
+            await createPage(page, pageData);
+
+            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
+            await publishPost(page, {time: '00:00', type: null});
+            await closePublishFlow(page);
+            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
+
+            // Go to the page and check if the status code is 404
+            await checkPostNotPublished(page, pageData);
+
+            // Now wait for 5 seconds
+            await page.waitForTimeout(5000);
+
+            // Check again, now it should have been added to the page
+            await checkPostPublished(page, pageData);
         });
     });
 
@@ -254,46 +339,108 @@ test.describe('Publishing', () => {
     });
 
     test.describe('Schedule post', () => {
-        test('Post should be published to web only at the scheduled time', async ({page}) => {
-            await page.goto('/ghost');
-            await createPost(page, {
-                title: 'Scheduled post test',
+        // Post should be published to web and sent as a newsletter at the scheduled time
+        test('Publish and Email', async ({page}) => {
+            // Note: this currently depends on the first 'Publish and Email' to create a member!
+            const postData = {
+                // This title should be unique
+                title: 'Scheduled post publish+email test',
                 body: 'This is my scheduled post body.'
-            });
+            };
+
+            await page.goto('/ghost');
+            await createPost(page, postData);
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(page, {time: '00:00'});
+            await publishPost(page, {time: '00:00', type: 'publish+send'});
             await closePublishFlow(page);
-            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
+            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
+            await checkPostStatus(page, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
+            const editorUrl = await page.url();
 
             // Go to the homepage and check if the post is not yet visible there
-            await page.goto('/');
-
-            let lastPost = await page.locator('.post-card-content-link').first();
-            await expect(lastPost).not.toHaveAttribute('href', '/scheduled-post-test/');
+            await checkPostNotPublished(page, postData);
 
             // Now wait 5 seconds for the scheduled post to be published
             await page.waitForTimeout(5000);
 
             // Check again, now it should have been added to the page
-            await page.reload();
-            lastPost = await page.locator('.post-card-content-link').first();
-            await expect(lastPost).toHaveAttribute('href', '/scheduled-post-test/');
+            await checkPostPublished(page, postData);
 
-            // Go to the page
-            await lastPost.click();
-
-            // Check if the title and body are present on this page
-            await expect(page.locator('.gh-canvas .article-title')).toHaveText('Scheduled post test');
-            await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText('This is my scheduled post body.');
+            // Check status
+            await page.goto(editorUrl);
+            await checkPostStatus(page, 'Published');
         });
 
-        test('A previously scheduled post can be unscheduled, which resets it to a draft', async ({page, context}) => {
+        // Post should be published to web only at the scheduled time
+        test('Publish only', async ({page}) => {
+            const postData = {
+                title: 'Scheduled post test',
+                body: 'This is my scheduled post body.'
+            };
+
             await page.goto('/ghost');
-            await createPost(page, {
+            await createPost(page, postData);
+
+            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
+            await publishPost(page, {time: '00:00'});
+            await closePublishFlow(page);
+            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
+            const editorUrl = await page.url();
+
+            // Check not published yet
+            await checkPostNotPublished(page, postData);
+
+            // Now wait 5 seconds for the scheduled post to be published
+            await page.waitForTimeout(5000);
+
+            // Check published
+            await checkPostPublished(page, postData);
+
+            // Check status
+            await page.goto(editorUrl);
+            await checkPostStatus(page, 'Published');
+        });
+
+        // Post should be published to web only at the scheduled time
+        test('Email only', async ({page}) => {
+            const postData = {
+                title: 'Scheduled email only test',
+                body: 'This is my scheduled post body.'
+            };
+
+            await page.goto('/ghost');
+            await createPost(page, postData);
+
+            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
+            await publishPost(page, {type: 'send', time: '00:00'});
+            await closePublishFlow(page);
+            await checkPostStatus(page, 'Scheduled', 'Scheduled to be sent to');
+            const editorUrl = await page.url();
+
+            // Check not published yet
+            await checkPostNotPublished(page, postData);
+
+            // Now wait 5 seconds for the scheduled post to be published
+            await page.waitForTimeout(5000);
+
+            // Check status
+            await page.goto(editorUrl);
+            await checkPostStatus(page, 'Sent', 'Sent to');
+
+            // Stil not published yet (email only)
+            await checkPostNotPublished(page, postData);
+        });
+
+        // A previously scheduled post can be unscheduled, which resets it to a draft
+        test('A scheduled post should be able to be unscheduled', async ({page, context}) => {
+            const postData = {
                 title: 'Unschedule post test',
                 body: 'This is my unscheduled post body.'
-            });
+            };
+
+            await page.goto('/ghost');
+            await createPost(page, postData);
 
             // Schedule far in the future
             await publishPost(page, {date: '2050-01-01', time: '10:09'});
@@ -304,8 +451,9 @@ test.describe('Publishing', () => {
 
             // Check not published
             const testPage = await context.newPage();
-            const response = await testPage.goto('/unschedule-post-test/');
-            expect(response.status()).toBe(404);
+
+            // Check not published
+            await checkPostNotPublished(testPage, postData);
 
             // Now unschedule this post
             await page.locator('[data-test-button="update-flow"]').click();
@@ -315,37 +463,7 @@ test.describe('Publishing', () => {
             await checkPostStatus(page, 'Draft - Saved');
 
             // Check not published
-            const response2 = await testPage.goto('/unschedule-post-test/');
-            expect(response2.status()).toBe(404);
-        });
-    });
-
-    test.describe('Schedule page', () => {
-        test('Page should be published at the scheduled time', async ({page}) => {
-            await page.goto('/ghost');
-            await createPage(page, {
-                title: 'Scheduled page test',
-                body: 'This is my scheduled page body.'
-            });
-
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(page, {time: '00:00', type: null});
-            await closePublishFlow(page);
-            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
-
-            // Go to the page and check if the status code is 404
-            const response = await page.goto('/scheduled-page-test/');
-            expect(response.status()).toBe(404);
-
-            // Now wait for 5 seconds
-            await page.waitForTimeout(5000);
-
-            // Check again, now it should have been added to the page
-            await page.reload();
-
-            // Check if the title and body are present on this page
-            await expect(page.locator('.gh-canvas .article-title')).toHaveText('Scheduled page test');
-            await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText('This is my scheduled page body.');
+            await checkPostNotPublished(testPage, postData);
         });
     });
 });
