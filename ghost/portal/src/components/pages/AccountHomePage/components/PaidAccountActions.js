@@ -89,7 +89,12 @@ const PaidAccountActions = () => {
             return null;
         }
         return (
-            <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}>Change</button>
+            <button
+                className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}
+                data-test-button='change-plan'
+            >
+                Change
+            </button>
         );
     };
 
@@ -120,7 +125,13 @@ const PaidAccountActions = () => {
                     <h3>Billing info</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
                 </div>
-                <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>{label}</button>
+                <button
+                    className='gh-portal-btn gh-portal-btn-list'
+                    onClick={e => onEditBilling(e)}
+                    data-test-button='update-billing'
+                >
+                    {label}
+                </button>
             </section>
         );
     };
@@ -193,4 +204,3 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
 }
 
 export default PaidAccountActions;
-

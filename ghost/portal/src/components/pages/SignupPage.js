@@ -473,6 +473,7 @@ class SignupPage extends React.Component {
                 <div className='gh-portal-signup-message'>
                     <div>Already a member?</div>
                     <button
+                        data-test-button='signin-switch'
                         className='gh-portal-btn gh-portal-btn-link'
                         style={{color: brandColor}}
                         onClick={() => onAction('switchPage', {page: 'signin'})}

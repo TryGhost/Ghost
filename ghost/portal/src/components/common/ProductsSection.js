@@ -661,7 +661,7 @@ function FreeProductCard({products, handleChooseSignup}) {
             <div className={cardClass} onClick={(e) => {
                 e.stopPropagation();
                 setSelectedProduct('free');
-            }}>
+            }} data-test-tier="free">
                 <div className='gh-portal-product-card-header'>
                     <h4 className="gh-portal-product-name">{getFreeTierTitle({site})}</h4>
                     {(!hasOnlyFree ?
@@ -683,6 +683,7 @@ function FreeProductCard({products, handleChooseSignup}) {
                         <div className='gh-portal-btn-product'>
                             {}
                             <button
+                                data-test-button='select-tier'
                                 className='gh-portal-btn'
                                 disabled={disabled}
                                 onClick={(e) => {
@@ -738,7 +739,7 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
             <div className={cardClass} key={product.id} onClick={(e) => {
                 e.stopPropagation();
                 setSelectedProduct(product.id);
-            }}>
+            }} data-test-tier="paid">
                 <div className='gh-portal-product-card-header'>
                     <h4 className="gh-portal-product-name">{product.name}</h4>
                     <ProductCardPrice product={product} />
@@ -752,6 +753,7 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
                     </div>
                     <div className='gh-portal-btn-product'>
                         <button
+                            data-test-button='select-tier'
                             disabled={disabled}
                             className='gh-portal-btn'
                             onClick={(e) => {
@@ -815,12 +817,24 @@ function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
     return (
         <div className='gh-portal-logged-out-form-container'>
             <div className={'gh-portal-products-pricetoggle' + (selectedInterval === 'month' ? ' left' : '')}>
-                <button className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')} onClick={(e) => {
-                    setSelectedInterval('month');
-                }}>Monthly</button>
-                <button className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')} onClick={(e) => {
-                    setSelectedInterval('year');
-                }}>Yearly</button>
+                <button
+                    data-test-button='switch-monthly'
+                    className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
+                    onClick={(e) => {
+                        setSelectedInterval('month');
+                    }}
+                >
+                    Monthly
+                </button>
+                <button
+                    data-test-button='switch-yearly'
+                    className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
+                    onClick={(e) => {
+                        setSelectedInterval('year');
+                    }}
+                >
+                    Yearly
+                </button>
             </div>
         </div>
     );
@@ -1006,7 +1020,7 @@ function ChangeProductCard({product, onPlanSelect}) {
         <div className={cardClass + (currentPlan ? ' disabled' : '')} key={product.id} onClick={(e) => {
             e.stopPropagation();
             setSelectedProduct(product.id);
-        }}>
+        }} data-test-tier="paid">
             <div className='gh-portal-product-card-header'>
                 <h4 className="gh-portal-product-name">{product.name}</h4>
                 <ProductCardPrice product={product} />
@@ -1023,6 +1037,7 @@ function ChangeProductCard({product, onPlanSelect}) {
                     :
                     <div className='gh-portal-btn-product'>
                         <button
+                            data-test-button='select-tier'
                             className='gh-portal-btn'
                             onClick={() => {
                                 onPlanSelect(null, selectedPrice?.id);
