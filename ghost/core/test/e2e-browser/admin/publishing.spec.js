@@ -1,6 +1,15 @@
 const {expect, test} = require('@playwright/test');
 const {DateTime} = require('luxon');
 
+const checkPostStatus = async (page, status, hoverStatus) => {
+    await expect(page.locator('[data-test-editor-post-status]')).toContainText(status);
+
+    if (hoverStatus) {
+        await page.locator('[data-test-editor-post-status]').hover();
+        await expect(page.locator('[data-test-editor-post-status]')).toContainText(hoverStatus);
+    }
+};
+
 /**
  * Start a post draft with a filled in title and body. We can consider to move this to utils later.
  * @param {import('@playwright/test').Page} page
@@ -77,7 +86,7 @@ const closePublishFlow = async (page) => {
  * @param {import('@playwright/test').Page} page
  * @param {PublishOptions} options
  */
-const publishPost = async (page, {type = 'publish', time} = {}) => {
+const publishPost = async (page, {type = 'publish', time, date} = {}) => {
     await openPublishFlow(page);
 
     // set the publish type
@@ -97,9 +106,17 @@ const publishPost = async (page, {type = 'publish', time} = {}) => {
         }
     }
 
-    if (time) {
+    // Schedule the post
+    if (date || time) {
         await page.locator('[data-test-setting="publish-at"] > button').click();
         await page.locator('[data-test-radio="schedule"] + label').click();
+    }
+
+    if (date) {
+        await page.locator('[data-test-date-time-picker-date-input]').fill(date);
+    }
+
+    if (time) {
         await page.locator('[data-test-date-time-picker-time-input]').fill(time);
     }
 
@@ -131,6 +148,7 @@ test.describe('Publishing', () => {
             await page.goto('/ghost');
             await createPost(page);
             const frontendPage = await publishPost(page);
+            await checkPostStatus(page, 'Published');
 
             // Check if 'This is my post body.' is present on page1
             await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
@@ -143,6 +161,7 @@ test.describe('Publishing', () => {
             await page.goto('/ghost');
             await createPage(page);
             const frontendPage = await publishPost(page, {type: null});
+            await checkPostStatus(page, 'Published');
 
             // Check if 'This is my post body.' is present on page1
             await expect(frontendPage.locator('.gh-canvas .article-title')).toHaveText('Hello world');
@@ -197,6 +216,7 @@ test.describe('Publishing', () => {
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(page, {time: '00:00'});
+            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
 
             // Go to the homepage and check if the post is not yet visible there
             await page.goto('/');
@@ -219,6 +239,38 @@ test.describe('Publishing', () => {
             await expect(page.locator('.gh-canvas .article-title')).toHaveText('Scheduled post test');
             await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText('This is my scheduled post body.');
         });
+
+        test('A previously scheduled post can be unscheduled, which resets it to a draft', async ({page, context}) => {
+            await page.goto('/ghost');
+            await createPost(page, {
+                title: 'Unschedule post test',
+                body: 'This is my unscheduled post body.'
+            });
+
+            // Schedule far in the future
+            await publishPost(page, {date: '2050-01-01', time: '10:09'});
+
+            // Check status
+            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published at 10:09 (UTC) on 01 Jan 2050');
+
+            // Check not published
+            const testPage = await context.newPage();
+            const response = await testPage.goto('/unschedule-post-test/');
+            expect(response.status()).toBe(404);
+
+            await page.pause();
+
+            // Now unschedule this post
+            await page.locator('[data-test-button="update-flow"]').click();
+            await page.locator('[data-test-button="revert-to-draft"]').click();
+
+            // Check status
+            await checkPostStatus(page, 'Draft - Saved');
+
+            // Check not published
+            const response2 = await testPage.goto('/unschedule-post-test/');
+            expect(response2.status()).toBe(404);
+        });
     });
 
     test.describe('Schedule page', () => {
@@ -231,6 +283,7 @@ test.describe('Publishing', () => {
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(page, {time: '00:00', type: null});
+            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
 
             // Go to the page and check if the status code is 404
             const response = await page.goto('/scheduled-page-test/');
