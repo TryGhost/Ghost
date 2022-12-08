@@ -1,5 +1,5 @@
 const {expect, test} = require('@playwright/test');
-const {createMember} = require('../utils/e2e-browser-utils');
+const {createMember, deleteAllMembers} = require('../utils/e2e-browser-utils');
 const fs = require('fs');
 
 test.describe('Admin', () => {
@@ -69,7 +69,7 @@ test.describe('Admin', () => {
             // get value from input because we don't have access to the clipboard during headless testing
             const elem = await page.$('input[name="member-signin-url"]');
             const link = await elem.inputValue();
-            await page.goto(link);            
+            await page.goto(link);
             await page.frameLocator('#ghost-portal-root iframe[title="portal-trigger"]').locator('div').nth(1).click();
             const title = await page.frameLocator('#ghost-portal-root div iframe[title="portal-popup"]').locator('h2').innerText();
             await expect(title).toEqual('Your account'); // this is the title of the popup when member is logged in
@@ -206,6 +206,39 @@ test.describe('Admin', () => {
             expect(countRows).toEqual(3);
             const csvRegex = /^[^",]+((?<=[,\n])|(?=[,\n]))|[^",]+/gm;
             expect(csvContents).toMatch(csvRegex);
+        });
+
+        test('A member can be granted a comp in admin', async ({page}) => {
+            page.goto('/ghost');
+            await deleteAllMembers(page);
+
+            // create a new member with a comped plan
+            await createMember(page, {
+                name: 'Test Member 1',
+                email: 'test@member1.com',
+                note: 'This is a test member',
+                label: 'Test Label',
+                compedPlan: 'The Local Test'
+            });
+
+            // open the impersonate modal
+            await page.locator('[data-test-button="member-actions"]').click();
+            await page.getByRole('button', {name: 'Impersonate'}).click();
+            await page.getByRole('button', {name: 'Copy link'}).click();
+            await page.waitForSelector('button span:has-text("Link copied")');
+
+            // get value from input because we don't have access to the clipboard during headless testing
+            const elem = await page.$('input[name="member-signin-url"]');
+            const link = await elem.inputValue();
+
+            // go to the frontend with the impersonate link
+            await page.goto(link);
+
+            // click the paid-only post
+            await page.locator('.post-card-image-link[href="/sell/"]').click();
+
+            // check for content CTA and expect it to be zero
+            await expect(page.locator('.gh-post-upgrade-cta')).toHaveCount(0);
         });
     });
 });
