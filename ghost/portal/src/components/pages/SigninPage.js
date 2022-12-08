@@ -84,6 +84,7 @@ export default class SigninPage extends React.Component {
         }
         return (
             <ActionButton
+                dataTestId='signin'
                 retry={retry}
                 style={{width: '100%'}}
                 onClick={e => this.handleSignin(e)}
@@ -100,7 +101,14 @@ export default class SigninPage extends React.Component {
         return (
             <div className='gh-portal-signup-message'>
                 <div>Don't have an account?</div>
-                <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => this.context.onAction('switchPage', {page: 'signup'})}><span>Sign up</span></button>
+                <button
+                    data-test-button='signup-switch'
+                    className='gh-portal-btn gh-portal-btn-link'
+                    style={{color: brandColor}}
+                    onClick={() => this.context.onAction('switchPage', {page: 'signup'})}
+                >
+                    <span>Sign up</span>
+                </button>
             </div>
         );
     }
