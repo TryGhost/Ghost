@@ -10,7 +10,7 @@ const mobiledocLib = require('../../lib/mobiledoc');
 const lexicalLib = require('../../lib/lexical');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const membersService = require('../members');
-const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
+const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
 const urlService = require('../../services/url');
@@ -19,6 +19,7 @@ const linkTracking = require('../link-tracking');
 const memberAttribution = require('../member-attribution');
 const feedbackButtons = require('./feedback-buttons');
 const labs = require('../../../shared/labs');
+const storageUtils = require('../../adapters/storage/utils');
 
 const ALLOWED_REPLACEMENTS = ['first_name', 'uuid'];
 
@@ -261,7 +262,7 @@ const PostEmailSerializer = {
                         templateSettings.headerImageWidth = 600;
                     }
 
-                    if (isLocalContentImage(templateSettings.headerImage, urlUtils.getSiteUrl())) {
+                    if (storageUtils.isLocalImage(templateSettings.headerImage)) {
                         // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                         templateSettings.headerImage = templateSettings.headerImage.replace(/\/content\/images\//, '/content/images/size/w1200/');
                     }
@@ -348,7 +349,7 @@ const PostEmailSerializer = {
                         post.feature_image_width = 600;
                     }
 
-                    if (isLocalContentImage(post.feature_image, urlUtils.getSiteUrl())) {
+                    if (storageUtils.isLocalImage(post.feature_image)) {
                         // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                         post.feature_image = post.feature_image.replace(/\/content\/images\//, '/content/images/size/w1200/');
                     }
