@@ -83,7 +83,6 @@ test.describe('Portal', () => {
 
         test('Archiving an offer', async ({page}) => {
             page.goto('/ghost');
-            await deleteAllMembers(page);
 
             // Create a new tier to attach offer to
             const tierName = 'Portal Tier';
@@ -95,7 +94,7 @@ test.describe('Portal', () => {
 
             // Create an offer. This will be archived
             const offerName = await createOffer(page, {
-                name: 'Black Friday Special to be archived',
+                name: 'To be archived',
                 tierName: tierName,
                 offerType: 'discount',
                 amount: 10
