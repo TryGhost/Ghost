@@ -97,6 +97,11 @@ class PaymentsService {
             coupon: coupon?.id
         };
 
+        // If we already have a coupon, we don't want to give trial days over it
+        if (data.coupon) {
+            delete data.trialDays;
+        }
+
         if (!customer && email) {
             data.customerEmail = email;
         }

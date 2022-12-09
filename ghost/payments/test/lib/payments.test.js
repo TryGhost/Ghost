@@ -164,5 +164,138 @@ describe('PaymentsService', function () {
 
             assert(url);
         });
+
+        it('Can remove trial days in case of an existing coupon', async function () {
+            const BaseModel = Bookshelf.Model.extend({}, {
+                async add() {},
+                async edit() {}
+            });
+            const Offer = BaseModel.extend({
+                tableName: 'offers',
+                where: () => {
+                    return {
+                        query: () => {
+                            return {
+                                select: () => {
+                                    return {
+                                        first: sinon.stub().resolves({
+                                            stripe_coupon_id: 'stripe_coupon_1'
+                                        })
+                                    };
+                                }
+                            };
+                        }
+                    };
+                }
+            });
+            const StripeProduct = BaseModel.extend({
+                tableName: 'stripe_products'
+            });
+            const StripePrice = BaseModel.extend({
+                tableName: 'stripe_prices'
+            });
+            const StripeCustomer = BaseModel.extend({
+                tableName: 'stripe_customers'
+            });
+
+            const offersAPI = {};
+
+            const stripeAPIService = {
+                createCheckoutSession: sinon.fake.resolves({
+                    url: 'https://checkout.session'
+                }),
+                getCustomer: sinon.fake(),
+                createCustomer: sinon.fake(),
+                getProduct: sinon.fake.resolves({
+                    id: 'prod_1',
+                    active: true
+                }),
+                editProduct: sinon.fake(),
+                createProduct: sinon.fake.resolves({
+                    id: 'prod_1',
+                    active: true
+                }),
+                getPrice: sinon.fake(function () {
+                    return Promise.resolve({
+                        id: 'price_1'
+                    });
+                }),
+                createPrice: sinon.fake(function (data) {
+                    return Promise.resolve({
+                        id: 'price_1',
+                        active: data.active,
+                        unit_amount: data.amount,
+                        currency: data.currency,
+                        nickname: data.nickname,
+                        recurring: {
+                            interval: data.interval
+                        }
+                    });
+                }),
+                createCoupon: sinon.fake()
+            };
+            const service = new PaymentsService({
+                Offer,
+                StripeProduct,
+                StripePrice,
+                StripeCustomer,
+                offersAPI,
+                stripeAPIService
+            });
+
+            const tier = await Tier.create({
+                name: 'Test tier',
+                slug: 'test-tier',
+                currency: 'usd',
+                monthlyPrice: 1000,
+                yearlyPrice: 10000,
+                trialDays: 7
+            });
+
+            const price = StripePrice.forge({
+                id: 'id_1',
+                stripe_price_id: 'price_1',
+                stripe_product_id: 'prod_1',
+                active: true,
+                interval: 'month',
+                nickname: 'Monthly',
+                currency: 'usd',
+                amount: 1000,
+                type: 'recurring'
+            });
+
+            const product = StripeProduct.forge({
+                id: 'id_1',
+                stripe_product_id: 'prod_1',
+                product_id: tier.id.toHexString()
+            });
+
+            await price.save(null, {method: 'insert'});
+            await product.save(null, {method: 'insert'});
+
+            const cadence = 'month';
+            const offer = {
+                id: 'discount_offer_1',
+                tier: {
+                    id: tier.id.toHexString()
+                }
+            };
+            const member = null;
+            const metadata = {};
+            const options = {};
+
+            await service.getPaymentLink({
+                tier,
+                cadence,
+                offer,
+                member,
+                metadata,
+                options
+            });
+
+            // assert trialDays should not be set when coupon is present for checkout session
+            assert.strictEqual(stripeAPIService.createCheckoutSession.getCall(0).args[2].coupon, 'stripe_coupon_1');
+            assert.strictEqual(stripeAPIService.createCheckoutSession.getCall(0).args[2].trialDays, undefined);
+        });
     });
 });
