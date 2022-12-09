@@ -56,12 +56,6 @@ export default function EmailSuppressedPage() {
                 <p>
                     You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address. 
                 </p>
-                {/* <button
-                    className="gh-portal-btn-text gh-email-faq-page-button"
-                    onClick={() => onAction('switchPage', {page: 'emailSuppressionFAQ', lastPage: 'emailSuppressed'})}
-                >
-                    Learn more about why this happens
-                </button> */}
             </div>
 
             <ActionButton
@@ -69,7 +63,7 @@ export default function EmailSuppressedPage() {
                 onClick={handleSubmit}
                 disabled={isRunning}
                 brandColor={brandColor}
-                label="Resubscribe your email"
+                label="Re-enable emails"
                 isRunning={isRunning}
             />
         </div>
