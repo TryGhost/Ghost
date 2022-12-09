@@ -92,19 +92,19 @@ test.describe('Admin', () => {
                 name: 'Test Member 1',
                 email: 'test@member1.com',
                 note: 'This is a test member',
-                label: 'Test Label'
+                label: 'old'
             },
             {
                 name: 'Test Member 2',
                 email: 'test@member2.com',
                 note: 'This is a test member',
-                label: 'Test Label'
+                label: 'old'
             },
             {
                 name: 'Test Member 3',
                 email: 'test@member3.com',
                 note: 'This is a test member',
-                label: 'Test Label'
+                label: 'old'
             },
             {
                 name: 'Sashi',
@@ -206,6 +206,31 @@ test.describe('Admin', () => {
             expect(countRows).toEqual(3);
             const csvRegex = /^[^",]+((?<=[,\n])|(?=[,\n]))|[^",]+/gm;
             expect(csvContents).toMatch(csvRegex);
+        });
+
+        test('A filtered list of members can have a label added to them', async ({page}) => {
+            await page.goto('/ghost');
+            await page.locator('.gh-nav a[href="#/members/"]').click();
+            await page.waitForSelector('button[data-test-button="members-actions"]');
+            await page.locator('button[data-test-button="members-actions"]').click();
+            await page.waitForSelector('div[data-test-button="members-filter-actions"]');
+            await page.locator('div[data-test-button="members-filter-actions"]').click();
+            await page.locator('select[data-test-select="members-filter"]').click();
+            await page.locator('select[data-test-select="members-filter"]').selectOption('label');
+            await page.locator('div[data-test-members-filter="0"] > div > div').click();
+            await page.locator('span[data-test-label-filter="old"]').click(); // this label should only be on 3 members
+            await page.keyboard.press('Tab');
+            await page.locator('button[data-test-button="members-apply-filter"]').click();
+            await page.waitForSelector('button[data-test-button="members-actions"]');
+            await page.locator('button[data-test-button="members-actions"]').click();
+            await page.locator('button[data-test-button="add-label-selected"]').click();
+            await page.locator('div[data-test-state="add-label-unconfirmed"] > span > select').selectOption({label: 'Test Label'});
+            const members = await page.locator('div[data-test-state="add-label-unconfirmed"] > p > span[data-test-text="member-count"]').innerText();
+            expect(members).toEqual('3 members');
+            await page.locator('button[data-test-button="confirm"]').click();
+            await page.waitForSelector('div[data-test-state="add-complete"]');
+            const success = await page.locator('div[data-test-state="add-complete"] > div > p').innerText();
+            expect(success).toEqual('Label added to 3 members successfully');
         });
 
         test('A member can be granted a comp in admin', async ({page}) => {
