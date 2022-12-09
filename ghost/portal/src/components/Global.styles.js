@@ -121,22 +121,37 @@ export const GlobalStyles = `
     }
 
     .gh-longform {
-        padding: 6vmin 10vmin 4vmin 6vmin;
+        padding: 6vmin;
+    }
+
+    .gh-longform p {
+        margin-bottom: 1.2em;
     }
 
     .gh-longform h3 {
+        font-size: 27px;
         margin-top: 0;
-        margin-bottom: 1em;
+        margin-bottom: 0.4em;
     }
 
     .gh-longform h4 {
+        font-size: 17.5px;
         margin-top: 2.5em;
-        margin-bottom: 1.25em;
+        margin-bottom: 0.4em;
     }
 
     .gh-longform h5 {
-        margin-top: 0;
-        margin-bottom: 0.5em;
+        margin-top: 0.8em;
+        margin-bottom: 0.2em;
+    }
+
+    .gh-longform a {
+        color: var(--brandcolor);
+        font-weight: 500;
+    }
+
+    .gh-longform .ul {
+        text-decoration: underline;
     }
 
     .gh-longform .gh-portal-btn {

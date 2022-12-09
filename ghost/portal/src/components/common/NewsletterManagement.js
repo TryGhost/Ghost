@@ -199,12 +199,16 @@ export default function NewsletterManagement({
                     <ShowPaidMemberMessage isPaid={isPaidMember} site={site} />
                 </div>
                 {hasMemberGotEmailSuppression({member}) && !isDisabled &&
-                <button
-                    className='gh-portal-btn-text gh-email-faq-page-button'
-                    onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ'})}
-                >
-                    Not receiving emails? Learn more →
-                </button>}
+                    <div className="gh-portal-footer-secondary">
+                        <span className="gh-portal-footer-secondary-light">Not receiving emails?</span>
+                        <button
+                            className="gh-portal-btn-text gh-email-faq-page-button"
+                            onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ'})}
+                        >
+                            Learn more &rarr;
+                        </button>
+                    </div>
+                }
             </footer>
         </div>
     );

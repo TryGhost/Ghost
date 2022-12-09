@@ -532,6 +532,20 @@ const FrameStyles = `
     gap: 12px;
 }
 
+.gh-portal-footer-secondary {
+    display: flex;
+    font-size: 14.5px;
+    letter-spacing: 0.3px;
+}
+
+.gh-portal-footer-secondary button {
+    font-size: 14.5px;
+}
+
+.gh-portal-footer-secondary-light {
+    color: var(--grey7);
+}
+
 .gh-portal-list-header {
     font-size: 1.25rem;
     font-weight: 500;
