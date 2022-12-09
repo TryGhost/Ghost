@@ -116,7 +116,9 @@ test.describe('Portal', () => {
 
             // Give member comped subscription
             await page.locator('[data-test-button="add-complimentary"]').click();
-            await page.locator('[data-test-button="save-comp-tier"]').first().click();
+            await page.locator('[data-test-button="save-comp-tier"]').first().click({
+                delay: 500
+            });
 
             // open member impersonation modal
             await page.locator('[data-test-button="member-actions"]').click();
@@ -134,7 +136,7 @@ test.describe('Portal', () => {
             // open portal, go to plans and click continue to select the first plan(yearly)
             await portalTriggerButton.click();
             await portalFrame.getByRole('button', {name: 'Change'}).click();
-            await portalFrame.getByRole('button', {name: 'Choose'}).first().click();
+            await portalFrame.locator('[data-test-button="select-tier"]').first().click();
 
             // complete stripe checkout
             await completeStripeSubscription(page);
