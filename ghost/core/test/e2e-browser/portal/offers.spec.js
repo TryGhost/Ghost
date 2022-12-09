@@ -27,7 +27,7 @@ test.describe('Portal', () => {
 
             await page.goto(portalUrl);
             const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
-            await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
             await portalFrame.locator('#input-email').fill('testy@example.com');
             await portalFrame.getByRole('button', {name: 'Start 14-day free trial'}).click();
