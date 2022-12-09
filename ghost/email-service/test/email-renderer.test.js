@@ -516,4 +516,66 @@ describe('Email renderer', function () {
             responsePaid.html.should.not.containEql('Become a paid member of Test Blog to get access to all');
         });
     });
+
+    describe('limitImageWidth', function () {
+        it('Limits width of local images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getImageSizeFromUrl() {
+                        return {
+                            width: 2000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage(url) {
+                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200/2017/01/02/example.png');
+        });
+
+        it('Limits width of unsplash images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getImageSizeFromUrl() {
+                        return {
+                            width: 2000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage(url) {
+                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
+            assert.equal(response.width, 600);
+            assert.equal(response.href, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=1200');
+        });
+
+        it('Does not increase width of images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getImageSizeFromUrl() {
+                        return {
+                            width: 300
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage(url) {
+                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('https://example.com/image.png');
+            assert.equal(response.width, 300);
+            assert.equal(response.href, 'https://example.com/image.png');
+        });
+    });
 });

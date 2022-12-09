@@ -50,6 +50,7 @@ class EmailRenderer {
     #imageSize;
     #urlUtils;
     #getPostUrl;
+    #storageUtils;
 
     #handlebars;
     #renderTemplate;
@@ -67,6 +68,7 @@ class EmailRenderer {
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
      * @param {{getImageSizeFromUrl(url: string): Promise<{width: number}>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
+     * @param {{isLocalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
      * @param {object} dependencies.linkReplacer
      * @param {object} dependencies.linkTracking
@@ -79,6 +81,7 @@ class EmailRenderer {
         renderers,
         imageSize,
         urlUtils,
+        storageUtils,
         getPostUrl,
         linkReplacer,
         linkTracking,
@@ -90,6 +93,7 @@ class EmailRenderer {
         this.#renderers = renderers;
         this.#imageSize = imageSize;
         this.#urlUtils = urlUtils;
+        this.#storageUtils = storageUtils;
         this.#getPostUrl = getPostUrl;
         this.#linkReplacer = linkReplacer;
         this.#linkTracking = linkTracking;
@@ -633,9 +637,7 @@ class EmailRenderer {
                     size.width = 600;
                 }
 
-                // WARNING:
-                // TODO: this whole `isLocalContentImage` can never ever work (always false), this is old code that needs a rewrite!
-                if (isLocalContentImage(href, this.#urlUtils.urlFor('home', true))) {
+                if (this.#storageUtils.isLocalImage(href)) {
                     // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                     return {
                         href: href.replace(/\/content\/images\//, '/content/images/size/w1200/'),

@@ -34,6 +34,7 @@ class EmailServiceWrapper {
         const linkReplacer = require('@tryghost/link-replacer');
         const linkTracking = require('../link-tracking');
         const audienceFeedback = require('../audience-feedback');
+        const storageUtils = require('../../adapters/storage/utils');
 
         // capture errors from mailgun client and log them in sentry
         const errorHandler = (error) => {
@@ -60,6 +61,7 @@ class EmailServiceWrapper {
             },
             imageSize: null,
             urlUtils,
+            storageUtils,
             getPostUrl: this.getPostUrl,
             linkReplacer,
             linkTracking,
