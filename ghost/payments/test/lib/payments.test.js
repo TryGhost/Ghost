@@ -215,7 +215,7 @@ describe('PaymentsService', function () {
                     id: 'prod_1',
                     active: true
                 }),
-                getPrice: sinon.fake(function (data) {
+                getPrice: sinon.fake(function () {
                     return Promise.resolve({
                         id: 'price_1'
                     });
@@ -284,7 +284,7 @@ describe('PaymentsService', function () {
             const metadata = {};
             const options = {};
 
-            const url = await service.getPaymentLink({
+            await service.getPaymentLink({
                 tier,
                 cadence,
                 offer,
