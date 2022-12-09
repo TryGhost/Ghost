@@ -52,19 +52,16 @@ export default function EmailSuppressedPage() {
             <EmailDeliveryFailedIcon className="gh-email-suppressed-page-icon" />
 
             <div className="gh-email-suppressed-page-text">
-                <h3 className="gh-portal-main-title gh-email-suppressed-page-title">Email disabled</h3>
-
+                <h3 className="gh-portal-main-title gh-email-suppressed-page-title">Emails disabled</h3>
                 <p>
-                    All newsletters have been disabled on your account. <br/> This can happen due to a spam complaint or
-                    permanent failure (bounce).
+                    You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address. 
                 </p>
-
-                <button
+                {/* <button
                     className="gh-portal-btn-text gh-email-faq-page-button"
                     onClick={() => onAction('switchPage', {page: 'emailSuppressionFAQ', lastPage: 'emailSuppressed'})}
                 >
                     Learn more about why this happens
-                </button>
+                </button> */}
             </div>
 
             <ActionButton
