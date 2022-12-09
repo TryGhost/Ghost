@@ -6,8 +6,8 @@ const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
         <EmailSuppressedPage />
     );
-    const resubscribeBtn = utils.queryByRole('button', {name: 'Resubscribe your email'});
-    const title = utils.queryByText('Email disabled');
+    const resubscribeBtn = utils.queryByRole('button', {name: 'Re-enable emails'});
+    const title = utils.queryByText('Emails disabled');
 
     return {
         resubscribeBtn,

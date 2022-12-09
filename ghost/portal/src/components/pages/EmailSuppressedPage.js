@@ -59,6 +59,7 @@ export default function EmailSuppressedPage() {
             </div>
 
             <ActionButton
+                dataTestId={'resubscribe-email'}
                 classes="gh-portal-confirm-button"
                 onClick={handleSubmit}
                 disabled={isRunning}
