@@ -188,10 +188,17 @@ export default class KoenigCardVideoComponent extends Component {
 
     @action
     async videoUploadCompleted([video]) {
-        this.previewPayload.src = video.url;
-        this.previewPayload.fileName = video.fileName;
-
-        // upload can complete before thumbnail is extracted when running locally
+        if (!video?.url && !video?.fileName || !video) {
+            return; // prevents undefined error when upload fails, due to connection or server error.
+        }
+        try {
+            this.previewPayload.src = video.url;
+            this.previewPayload.fileName = video.fileName;
+        } catch (e) {
+            // in case there's an error slipping through that isn't handled above.
+            console.error(e); // eslint-disable-line
+            return; // if an upload failed, don't try to upload the thumbnail & card.
+        }
         await this.extractVideoMetadataTask.last;
 
         if (this._thumbnailBlob) {

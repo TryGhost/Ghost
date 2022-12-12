@@ -198,9 +198,17 @@ export default class KoenigCardAudioComponent extends Component {
 
     @action
     async audioUploadCompleted([audio]) {
-        this.previewPayload.src = audio.url;
-        this.previewPayload.title = prettifyFileName(audio.fileName);
-
+        if (!audio.url && !audio.fileName) {
+            return; // prevents undefined error when upload fails due to connection or server error
+        }
+        try {
+            this.previewPayload.src = audio.url;
+            this.previewPayload.title = prettifyFileName(audio.fileName);
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error(e);
+            return;
+        }
         // upload can complete before metadata is extracted when running locally
         await this.extractAudioMetadataTask.last;
 
