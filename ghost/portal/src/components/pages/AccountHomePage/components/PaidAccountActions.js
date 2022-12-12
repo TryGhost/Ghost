@@ -187,7 +187,7 @@ function FreeTrialLabel({subscription, priceLabel}) {
 function getOfferLabel({offer, price, subscriptionStartDate}) {
     let offerLabel = '';
 
-    if (offer) {
+    if (offer && offer?.duration !== 'once') {
         const discountDuration = offer.duration;
         let durationLabel = '';
         if (discountDuration === 'forever') {
