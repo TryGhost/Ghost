@@ -88,6 +88,6 @@ if (DASH_DASH_ARGS.includes('portal')) {
     try {
         await result;
     } catch (err) {
-        console.error('Executing dev command failed, ensure dependencies are up-to-date by running `yarn`');
+        console.error('\nExecuting dev command failed, ensure dependencies are up-to-date by running `yarn fix`\n');
     }
 })();
