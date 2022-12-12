@@ -210,7 +210,7 @@
     "html-validate": "7.10.1",
     "inquirer": "8.2.5",
     "jwks-rsa": "3.0.0",
-    "mocha": "10.1.0",
+    "mocha": "10.2.0",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682",
     "nock": "13.2.9",
