@@ -2,14 +2,14 @@ import AppContext from 'AppContext';
 import {useContext} from 'react';
 import BackButton from 'components/common/BackButton';
 import CloseButton from 'components/common/CloseButton';
-import {getSupportAddress} from 'utils/helpers';
+import {getDefaultNewsletterSender, getSupportAddress} from 'utils/helpers';
 
 export default function EmailReceivingPage() {
     const {brandColor, onAction, site, lastPage, member} = useContext(AppContext);
 
     const supportAddressEmail = getSupportAddress({site});
     const supportAddress = `mailto:${supportAddressEmail}`;
-
+    const defaultNewsletterSenderEmail = getDefaultNewsletterSender({site});
     return (
         <div className="gh-email-receiving-faq">
             <header className='gh-portal-detail-header'>
@@ -38,15 +38,15 @@ export default function EmailReceivingPage() {
 
                 <h4>Create a new contact</h4>
 
-                <p>In your email client add <strong className="ul">%newsletter@fromaddress.com%</strong> to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.</p>
+                <p>In your email client add <strong className="ul">{defaultNewsletterSenderEmail}</strong> to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.</p>
 
                 <h4>Send an email and say hi!</h4>
 
-                <p>Send an email to <strong className="ul">%newsletter@fromaddress.com%</strong> and say hello. This can also help signal to your mail provider that emails to-and-from this address should be trusted.</p>
+                <p>Send an email to <strong className="ul">{defaultNewsletterSenderEmail}</strong> and say hello. This can also help signal to your mail provider that emails to-and-from this address should be trusted.</p>
 
                 <h4>Check with your mail provider</h4>
 
-                <p>If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from <strong className="ul">%newsletter@fromaddress.com%</strong></p>
+                <p>If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from <strong className="ul">{defaultNewsletterSenderEmail}</strong></p>
 
                 <h4>Get in touch for help</h4>
 
