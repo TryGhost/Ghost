@@ -10,6 +10,7 @@ module.exports = (model, frame) => {
             name: jsonModel.name,
             description: jsonModel.description,
             slug: jsonModel.slug,
+            sender_email: jsonModel.sender_email,
             subscribe_on_signup: jsonModel.subscribe_on_signup,
             visibility: jsonModel.visibility,
             sort_order: jsonModel.sort_order,
