@@ -323,7 +323,8 @@ const FrameStyles = `
 }
 
 .gh-portal-popup-container.large-size {
-    width: 720px;
+    width: 100%;
+    max-width: 720px;
     justify-content: flex-start;
     padding: 0;
 }
@@ -804,7 +805,8 @@ const MobileStyles = `
     }
 
     .gh-portal-popup-container.large-size {
-        width: 600px;
+        width: 100%;
+        max-width: 600px;
     }
 
     .gh-portal-input {
