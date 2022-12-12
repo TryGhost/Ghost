@@ -61,8 +61,8 @@
     "@types/react-dom": "18.0.9",
     "@uiw/react-textarea-code-editor": "2.0.6",
     "@vitejs/plugin-react": "2.2.0",
-    "@vitest/coverage-c8": "0.25.6",
-    "@vitest/ui": "0.25.6",
+    "@vitest/coverage-c8": "0.25.7",
+    "@vitest/ui": "0.25.7",
     "autoprefixer": "10.4.13",
     "babel-loader": "9.1.0",
     "cross-fetch": "^3.1.5",
@@ -80,6 +80,6 @@
     "typescript": "4.9.4",
     "vite": "3.0.8",
     "vite-plugin-svgr": "2.2.2",
-    "vitest": "0.25.6"
+    "vitest": "0.25.7"
   }
 }
