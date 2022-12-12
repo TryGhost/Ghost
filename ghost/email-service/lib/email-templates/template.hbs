@@ -31,9 +31,9 @@
                                         {{#if headerImage}}
                                             <tr>
                                                 <td class="header-image" width="100%" align="center">
-                                                    <img 
-                                                        src="{{headerImage}}" 
-                                                        {{#if headerImageWidth}} 
+                                                    <img
+                                                        src="{{headerImage}}"
+                                                        {{#if headerImageWidth}}
                                                             width="{{headerImageWidth}}"
                                                         {{/if}}
                                                     >
@@ -81,7 +81,7 @@
                                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                                     <tr>
                                                         <td class="{{classes.meta}}">
-                                                            By {{post.authors}} – {{post.publishedAt}} – <a href="{{post.url}}" class="view-online-link">View online →</a>
+                                                            By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -90,10 +90,10 @@
                                         {{#if showFeatureImage }}
                                             <tr>
                                                 <td class="feature-image
-                                                    {{#if post.feature_image_caption }} 
+                                                    {{#if post.feature_image_caption }}
                                                         feature-image-with-caption
                                                     {{/if}}
-                                                "><img 
+                                                "><img
                                                     src="{{post.feature_image}}"
                                                     {{#if post.feature_image_width }}
                                                         width="{{post.feature_image_width}}"
