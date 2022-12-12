@@ -14,6 +14,10 @@ const changeSubscriptionAccess = async (page, access) => {
 
     // Save settings
     await page.locator('[data-test-button="save-settings"]').click();
+    await page.getByRole('button', {name: 'Saved'}).waitFor({
+        state: 'visible',
+        timeout: 1000
+    });
 };
 
 const checkPortalScriptLoaded = async (page, loaded = true) => {
@@ -66,6 +70,9 @@ test.describe('Site Settings', () => {
             await page.locator('[data-test-button="publish-flow"]').click();
             await expect(page.locator('[data-test-setting="publish-type"] > button')).toHaveCount(0);
             await expect(page.locator('[data-test-setting="email-recipients"]')).toHaveCount(0);
+            // reset back to all
+            await page.goto('/ghost');
+            await changeSubscriptionAccess(page, 'all');
         });
     });
 });

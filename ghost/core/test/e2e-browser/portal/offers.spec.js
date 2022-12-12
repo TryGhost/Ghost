@@ -31,7 +31,10 @@ test.describe('Portal', () => {
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
             await portalFrame.locator('#input-email').fill('testy@example.com');
             await portalFrame.getByRole('button', {name: 'Start 14-day free trial'}).click();
-
+            const hasContinueBtn = await portalFrame.locator('text="Continue"').isVisible();
+            if (hasContinueBtn) {
+                await portalFrame.getByRole('button', {name: 'Continue'}).click();
+            }
             await completeStripeSubscription(page);
 
             await page.waitForSelector('h1.site-title', {state: 'visible'});
@@ -75,7 +78,10 @@ test.describe('Portal', () => {
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
             await portalFrame.locator('#input-email').fill('testy@example.com');
             await portalFrame.getByRole('button', {name: 'Continue'}).click();
-
+            const hasContinueBtn = await portalFrame.locator('text="Continue"').isVisible();
+            if (hasContinueBtn) {
+                await portalFrame.getByRole('button', {name: 'Continue'}).click();
+            }
             await completeStripeSubscription(page);
 
             await page.waitForSelector('h1.site-title', {state: 'visible'});
