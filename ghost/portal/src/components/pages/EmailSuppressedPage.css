@@ -19,15 +19,39 @@
     color: var(--grey8);
 }
 
+.gh-portal-list-detail.email-newsletter .gh-email-faq-page-button {
+    display: block;
+    margin-top: 3px;
+}
+
+.accountEmail .gh-email-faq-page-button {
+    margin-left: 4px;
+}
+
+.emailReceivingFAQ .gh-portal-btn-back, 
+.emailReceivingFAQ .gh-portal-btn-back:hover {
+    left: calc(6vmin - 14px);
+}
+
+.emailReceivingFAQ .gh-portal-closeicon-container {
+    right: calc(6vmin - 20px);
+}
+
+@media (max-width: 480px) {
+    .emailReceivingFAQ .gh-portal-btn-back, 
+    .emailReceivingFAQ .gh-portal-btn-back:hover {
+        left: 16px;
+    }
+
+    .emailReceivingFAQ .gh-portal-closeicon-container {
+        right: 24px;
+    }
+}
+
 .gh-email-faq-page-button {
     color: var(--brandcolor);
     cursor: pointer;
     background: none;
     transition: color linear 100ms;
-    margin-left: 6px;
     font-size: 1.45rem;
-}
-
-.gh-email-faq-page-button:hover {
-    color: var(--grey5);
 }

@@ -18,7 +18,7 @@ function EmailNewsletterAction() {
 
     return (
         <section>
-            <div className='gh-portal-list-detail'>
+            <div className='gh-portal-list-detail email-newsletter'>
                 <h3>Email newsletter</h3>
                 <p>{label} {hasMemberGotEmailSuppression({member}) && subscribed && <button
                     className='gh-portal-btn-text gh-email-faq-page-button'
