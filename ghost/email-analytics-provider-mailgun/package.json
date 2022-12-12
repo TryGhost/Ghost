@@ -16,7 +16,7 @@
     "lib"
   ],
   "devDependencies": {
-    "mocha": "10.1.0",
+    "mocha": "10.2.0",
     "sinon": "14.0.2"
   },
   "dependencies": {
