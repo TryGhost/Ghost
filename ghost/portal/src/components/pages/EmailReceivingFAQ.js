@@ -30,7 +30,7 @@ export default function EmailReceivingPage() {
 
                 <h4>Verify your email address is correct</h4>
 
-                <p>The email address we have for you is <strong className="ul">{member.email}</strong> &mdash; if that's not correct, you can update it in your <a onClick={() => onAction('switchPage', {lastPage: 'emailReceivingFAQ', page: 'accountProfile'})}>account settings area</a>.</p>
+                <p>The email address we have for you is <strong>{member.email}</strong> &mdash; if that's not correct, you can update it in your <button className="gh-portal-btn-text" onClick={() => onAction('switchPage', {lastPage: 'emailReceivingFAQ', page: 'accountProfile'})}>account settings area</button>.</p>
 
                 <h4>Check spam & promotions folders</h4>
 
@@ -38,15 +38,15 @@ export default function EmailReceivingPage() {
 
                 <h4>Create a new contact</h4>
 
-                <p>In your email client add <strong className="ul">{defaultNewsletterSenderEmail}</strong> to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.</p>
+                <p>In your email client add <strong>{defaultNewsletterSenderEmail}</strong> to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.</p>
 
                 <h4>Send an email and say hi!</h4>
 
-                <p>Send an email to <strong className="ul">{defaultNewsletterSenderEmail}</strong> and say hello. This can also help signal to your mail provider that emails to-and-from this address should be trusted.</p>
+                <p>Send an email to <strong>{defaultNewsletterSenderEmail}</strong> and say hello. This can also help signal to your mail provider that emails to-and-from this address should be trusted.</p>
 
                 <h4>Check with your mail provider</h4>
 
-                <p>If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from <strong className="ul">{defaultNewsletterSenderEmail}</strong></p>
+                <p>If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from <strong>{defaultNewsletterSenderEmail}</strong></p>
 
                 <h4>Get in touch for help</h4>
 
