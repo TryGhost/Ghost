@@ -11,7 +11,6 @@ import AccountHomePageStyles from '!!raw-loader!./pages/AccountHomePage/AccountH
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
-import {PlanSectionStyles} from './common/PlansSection';
 import {ProductsSectionStyles} from './common/ProductsSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
@@ -1200,7 +1199,6 @@ export function getFrameStyles({site}) {
         AccountHomePageStyles +
         AccountPlanPageStyles +
         InputFieldStyles +
-        PlanSectionStyles +
         ProductsSectionStyles({site}) +
         SwitchStyles +
         ActionButtonStyles +
