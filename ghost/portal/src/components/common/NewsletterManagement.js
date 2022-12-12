@@ -48,7 +48,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     const [showUpdated, setShowUpdated] = useState(false);
     const [timeoutId, setTimeoutId] = useState(null);
     return (
-        <section className='gh-portal-list-toggle-wrapper'>
+        <section className='gh-portal-list-toggle-wrapper' data-test-toggle-wrapper>
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter?.description}</p>
@@ -96,7 +96,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     }
 
     return (
-        <section className='gh-portal-list-toggle-wrapper'>
+        <section className='gh-portal-list-toggle-wrapper' data-test-toggle-wrapper>
             <div className='gh-portal-list-detail'>
                 <h3>Comments</h3>
                 <p>Get notified when someone replies to your comment</p>
@@ -175,7 +175,7 @@ export default function NewsletterManagement({
                             updateSubscribedNewsletters(newsletters);
                         }}
                     />
-                    <CommentsSection 
+                    <CommentsSection
                         isCommentsEnabled={isCommentsEnabled}
                         enableCommentNotifications={enableCommentNotifications}
                         updateCommentNotifications={updateCommentNotifications}
@@ -195,6 +195,7 @@ export default function NewsletterManagement({
                         label='Unsubscribe from all emails'
                         isDestructive={true}
                         style={{width: '100%'}}
+                        dataTestId="unsubscribe-from-all-emails"
                     />
                     <ShowPaidMemberMessage isPaid={isPaidMember} site={site} />
                 </div>
