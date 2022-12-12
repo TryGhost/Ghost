@@ -195,7 +195,7 @@
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "1.8.19",
-    "sqlite3": "5.1.2"
+    "sqlite3": "5.1.4"
   },
   "devDependencies": {
     "@playwright/test": "1.28.1",
