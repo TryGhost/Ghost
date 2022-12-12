@@ -23,8 +23,10 @@ test.describe('Admin', () => {
             await page.locator('button span:has-text("Save")').click();
             await page.waitForSelector('button span:has-text("Saved")');
             await page.locator('.gh-nav a[href="#/members/"]').click();
-            const count = await page.locator('tbody > tr').count();
-            expect(count).toBe(1);
+
+            // check number of members
+            await expect(page.locator('[data-test-list="members-list-item"]')).toHaveCount(1);
+
             const member = page.locator('tbody > tr > a > div > div > h3').nth(0);
             await expect(member).toHaveText(name);
             const memberEmail = page.locator('tbody > tr > a > div > div > p').nth(0);
@@ -49,8 +51,10 @@ test.describe('Admin', () => {
             await page.locator('button span:has-text("Save")').click();
             await page.waitForSelector('button span:has-text("Saved")');
             await page.locator('.gh-nav a[href="#/members/"]').click();
-            const count = await page.locator('tbody > tr').count();
-            expect(count).toBe(1);
+
+            // check number of members
+            await expect(page.locator('[data-test-list="members-list-item"]')).toHaveCount(1);
+
             const member = page.locator('tbody > tr > a > div > div > h3').nth(0);
             await expect(member).toHaveText(name);
             const memberEmail = page.locator('tbody > tr > a > div > div > p').nth(0);
