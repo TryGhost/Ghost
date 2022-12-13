@@ -858,6 +858,9 @@ module.exports = {
         token: {type: 'string', maxlength: 32, nullable: false, index: true},
         data: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        first_used_at: {type: 'dateTime', nullable: true},
+        used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         created_by: {type: 'string', maxlength: 24, nullable: false}
     },
     snippets: {
