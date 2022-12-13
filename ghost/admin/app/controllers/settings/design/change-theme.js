@@ -40,6 +40,20 @@ export default class ChangeThemeController extends Controller {
         ref: 'TryGhost/Solo',
         image: 'assets/img/themes/Solo.png'
     }, {
+        name: 'Taste',
+        category: 'Food',
+        url: 'https://github.com/TryGhost/Taste',
+        previewUrl: 'https://taste.ghost.io',
+        ref: 'TryGhost/Taste',
+        image: 'assets/img/themes/Taste.png'
+    }, {
+        name: 'Episode',
+        category: 'Podcast',
+        url: 'https://github.com/TryGhost/Episode',
+        previewUrl: 'https://episode.ghost.io',
+        ref: 'TryGhost/Episode',
+        image: 'assets/img/themes/Episode.png'
+    }, {
         name: 'Digest',
         category: 'Newsletter',
         url: 'https://github.com/TryGhost/Digest',
