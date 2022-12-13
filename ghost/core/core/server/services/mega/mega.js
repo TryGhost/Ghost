@@ -571,19 +571,25 @@ async function createEmailBatches({emailModel, memberRows, memberSegment, option
     return batchIds;
 }
 
-const statusChangedHandler = (emailModel, options) => {
+const statusChangedHandler = async (emailModel, options) => {
     const emailRetried = emailModel.wasChanged()
         && emailModel.get('status') === 'pending'
         && emailModel.previous('status') === 'failed';
 
     if (emailRetried) {
-        pendingEmailHandler(emailModel, options);
+        await pendingEmailHandler(emailModel, options);
     }
 };
 
 function listen() {
-    events.on('email.added', pendingEmailHandler);
-    events.on('email.edited', statusChangedHandler);
+    events.on('email.added', (emailModel, options) => pendingEmailHandler(emailModel, options).catch((e) => {
+        logging.error('Error in email.added event handler');
+        logging.error(e);
+    }));
+    events.on('email.edited', (emailModel, options) => statusChangedHandler(emailModel, options).catch((e) => {
+        logging.error('Error in email.edited event handler');
+        logging.error(e);
+    }));
 }
 
 // Public API
