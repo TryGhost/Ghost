@@ -19,10 +19,10 @@
   ],
   "devDependencies": {
     "c8": "7.12.0",
-    "mocha": "10.1.0"
+    "mocha": "10.2.0"
   },
   "dependencies": {
-    "fs-extra": "10.1.0",
+    "fs-extra": "11.1.0",
     "html-to-text": "5.1.1",
     "lodash": "4.17.21"
   }

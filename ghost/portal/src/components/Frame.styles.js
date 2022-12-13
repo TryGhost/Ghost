@@ -11,7 +11,6 @@ import AccountHomePageStyles from '!!raw-loader!./pages/AccountHomePage/AccountH
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
-import {PlanSectionStyles} from './common/PlansSection';
 import {ProductsSectionStyles} from './common/ProductsSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
@@ -324,7 +323,8 @@ const FrameStyles = `
 }
 
 .gh-portal-popup-container.large-size {
-    width: 720px;
+    width: 100%;
+    max-width: 720px;
     justify-content: flex-start;
     padding: 0;
 }
@@ -805,7 +805,8 @@ const MobileStyles = `
     }
 
     .gh-portal-popup-container.large-size {
-        width: 600px;
+        width: 100%;
+        max-width: 600px;
     }
 
     .gh-portal-input {
@@ -1200,7 +1201,6 @@ export function getFrameStyles({site}) {
         AccountHomePageStyles +
         AccountPlanPageStyles +
         InputFieldStyles +
-        PlanSectionStyles +
         ProductsSectionStyles({site}) +
         SwitchStyles +
         ActionButtonStyles +

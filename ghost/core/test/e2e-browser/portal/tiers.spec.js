@@ -18,7 +18,10 @@ test.describe('Portal', () => {
             await portalFrame.locator('[data-test-input="input-name"]').fill('Testy McTesterson');
             await portalFrame.locator('[data-test-input="input-email"]').fill('testy@example.com');
             await portalFrame.locator('[data-test-button="select-tier"]').nth(1).click();
-
+            const hasContinueBtn = await portalFrame.locator('text="Continue"').isVisible();
+            if (hasContinueBtn) {
+                await portalFrame.getByRole('button', {name: 'Continue'}).click();
+            }
             // complete the stripe checkout flow
             await completeStripeSubscription(page);
 

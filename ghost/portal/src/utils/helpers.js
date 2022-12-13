@@ -692,6 +692,14 @@ export const getSupportAddress = ({site}) => {
     return supportAddress || '';
 };
 
+export const getDefaultNewsletterSender = ({site}) => {
+    const newsletters = getSiteNewsletters({site});
+    const defaultNewsletter = newsletters?.[0];
+    if (defaultNewsletter) {
+        return defaultNewsletter.sender_email || `noreply@${getSiteDomain({site})}`;
+    }
+};
+
 export const getSiteDomain = ({site}) => {
     try {
         return ((new URL(site.url)).origin).replace(/^http(s?):\/\//, '').replace(/\/$/, '');

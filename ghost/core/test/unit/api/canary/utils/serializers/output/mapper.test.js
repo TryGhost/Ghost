@@ -239,6 +239,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 name: newsletter.name,
                 description: newsletter.description,
                 slug: newsletter.slug,
+                sender_email: newsletter.sender_email,
                 subscribe_on_signup: newsletter.subscribe_on_signup,
                 visibility: newsletter.visibility,
                 sort_order: newsletter.sort_order,
