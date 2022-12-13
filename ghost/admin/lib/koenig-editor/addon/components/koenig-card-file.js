@@ -137,18 +137,13 @@ export default class KoenigCardFileComponent extends Component {
 
     @action
     async fileUploadCompleted([uploadedFile]) {
-        if (!uploadedFile) {
+        if (!uploadedFile || !uploadedFile.url && !uploadedFile.fileName) {
             return; // upload failed
         }
-        try {
-            this.previewPayload.src = uploadedFile.url;
-            this.previewPayload.fileName = uploadedFile.fileName;
-            this.previewPayload.fileTitle = prettifyFileName(uploadedFile.fileName);
-            this.previewPayload.fileCaption = '';   
-        } catch (e) {
-            console.error(e); // eslint-disable-line no-console
-            return;
-        }
+        this.previewPayload.src = uploadedFile.url;
+        this.previewPayload.fileName = uploadedFile.fileName;
+        this.previewPayload.fileTitle = prettifyFileName(uploadedFile.fileName);
+        this.previewPayload.fileCaption = '';   
 
         // save preview payload attrs into actual payload and create undo snapshot
         this.args.editor.run(() => {
