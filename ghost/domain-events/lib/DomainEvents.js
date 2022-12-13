@@ -1,4 +1,5 @@
 const EventEmitter = require('events').EventEmitter;
+const logging = require('@tryghost/logging');
 
 /**
  * @template T
@@ -23,12 +24,19 @@ class DomainEvents {
      * @template Data
      * @template {IEvent<Data>} EventClass
      * @param {ConstructorOf<EventClass>} Event
-     * @param {(event: EventClass) => void} handler
+     * @param {(event: EventClass) => Promise<void> | void} handler
      *
      * @returns {void}
      */
     static subscribe(Event, handler) {
-        DomainEvents.ee.on(Event.name, handler);
+        DomainEvents.ee.on(Event.name, async (event) => {
+            try {
+                await handler(event);
+            } catch (e) {
+                logging.error('Unhandled error in event handler for event: ' + Event.name);
+                logging.error(e);
+            }
+        });
     }
 
     /**
