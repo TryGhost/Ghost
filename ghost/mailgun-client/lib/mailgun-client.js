@@ -71,7 +71,7 @@ module.exports = class MailgunClient {
                 messageData['v:email-id'] = message.id;
             }
 
-            const tags = ['bulk-email'];
+            const tags = ['bulk-email', 'ghost-email'];
             if (bulkEmailConfig?.mailgun?.tag) {
                 tags.push(bulkEmailConfig.mailgun.tag);
             }
