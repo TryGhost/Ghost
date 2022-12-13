@@ -41,7 +41,7 @@ export default class ChangeThemeController extends Controller {
         image: 'assets/img/themes/Solo.png'
     }, {
         name: 'Taste',
-        category: 'Food',
+        category: 'Blog',
         url: 'https://github.com/TryGhost/Taste',
         previewUrl: 'https://taste.ghost.io',
         ref: 'TryGhost/Taste',
