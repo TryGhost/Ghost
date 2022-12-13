@@ -25,7 +25,7 @@ function getDomain() {
 function getFromAddress(requestedFromAddress) {
     const configAddress = config.get('mail') && config.get('mail').from;
 
-    const address = requestedFromAddress || configAddress;
+    const address = configAddress || requestedFromAddress;
     // If we don't have a from address at all
     if (!address) {
         // Default to noreply@[blog.url]
@@ -33,8 +33,8 @@ function getFromAddress(requestedFromAddress) {
     }
 
     // If we do have a from address, and it's just an email
-    if (validator.isEmail(address, {require_tld: false})) {
-        const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : tpl(messages.title, {domain: getDomain()});
+    if (validator.isEmail(address, { require_tld: false })) {
+        const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : tpl(messages.title, { domain: getDomain() });
         return `"${defaultSiteTitle}" <${address}>`;
     }
 
@@ -59,8 +59,8 @@ function createMessage(message) {
     });
 }
 
-function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
-    const helpMessage = tpl(messages.checkEmailConfigInstructions, {url: 'https://ghost.org/docs/config/#mail'});
+function createMailError({ message, err, ignoreDefaultMessage } = { message: '' }) {
+    const helpMessage = tpl(messages.checkEmailConfigInstructions, { url: 'https://ghost.org/docs/config/#mail' });
     const defaultErrorMessage = tpl(messages.failedSendingEmailError);
 
     const fullErrorMessage = defaultErrorMessage + message;
@@ -143,7 +143,7 @@ module.exports = class GhostMailer {
                 });
             }
             throw createMailError({
-                message: tpl(messages.reason, {reason: err.message || err}),
+                message: tpl(messages.reason, { reason: err.message || err }),
                 err
             });
         }
@@ -156,13 +156,13 @@ module.exports = class GhostMailer {
 
         if (response.pending.length > 0) {
             throw createMailError({
-                message: tpl(messages.reason, {reason: 'Email has been temporarily rejected'})
+                message: tpl(messages.reason, { reason: 'Email has been temporarily rejected' })
             });
         }
 
         if (response.errors.length > 0) {
             throw createMailError({
-                message: tpl(messages.reason, {reason: response.errors[0].message})
+                message: tpl(messages.reason, { reason: response.errors[0].message })
             });
         }
 
