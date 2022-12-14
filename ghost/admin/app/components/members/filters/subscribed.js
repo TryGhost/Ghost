@@ -22,13 +22,12 @@ export const OPTIONS = [
     {label: 'is not', name: '-'}
 ];
 
-export const multipleNewslettersFilter = (newsletterList) => {
+export const NEWSLETTERS_FILTER = (newsletterList) => {
     let newsletters = [];
     newsletterList.forEach((newsletter) => {
         const filter = {
-            columnLabel: 'Subscribed',
             label: newsletter.name,
-            name: `newsletters.slug: ${newsletter.slug}`,
+            name: `newsletters.slug:${newsletter.slug}`,
             relationOptions: OPTIONS,
             group: 'Newsletters',
             valueType: 'options',
@@ -39,15 +38,16 @@ export const multipleNewslettersFilter = (newsletterList) => {
                 }
                 return query;
             },
+            parseNqlFilter: (flt) => {
+                if (!flt['newsletters.slug']) {
+                    return;
+                }
+                return flt;
+            },
             options: [
                 {label: 'Subscribed', name: `${newsletter.slug}`},
                 {label: 'Unsubscribed', name: `-${newsletter.slug}`}
-            ],
-            getColumnValue: (member) => {
-                return {
-                    text: member.subscribed ? 'Subscribed' : 'Unsubscribed'
-                };
-            }
+            ]
         };
         newsletters.push(filter); 
     });
