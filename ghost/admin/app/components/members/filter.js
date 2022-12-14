@@ -342,7 +342,6 @@ export default class MembersFilter extends Component {
      * Parses an array of filters
      */
     parseNqlFilters(filters) {
-        console.log(filters);
         const parsedFilters = [];
 
         for (const filter of filters) {
