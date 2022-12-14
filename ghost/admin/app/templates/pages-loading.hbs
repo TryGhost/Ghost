@@ -1,0 +1,32 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
+        <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
+
+        <section class="view-actions">
+            <PostsList::ContentFilter
+                @currentUser={{this.session.user}}
+                @selectedType={{this.selectedType}}
+                @availableTypes={{this.availableTypes}}
+                @onTypeChange={{optional null}}
+                @selectedVisibility={{this.selectedVisibility}}
+                @availableVisibilities={{this.availableVisibilities}}
+                @onVisibilityChange={{optional null}}
+                @selectedAuthor={{this.selectedAuthor}}
+                @availableAuthors={{this.availableAuthors}}
+                @onAuthorChange={{optional null}}
+                @selectedTag={{this.selectedTag}}
+                @availableTags={{this.availableTags}}
+                @onTagChange={{optional null}}
+                @selectedOrder={{this.selectedOrder}}
+                @availableOrders={{this.availableOrders}}
+                @onOrderChange={{optional null}}
+            />
+
+            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary view-actions-top-row" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
+        </section>
+    </GhCanvasHeader>
+
+    <div class="gh-content">
+        <GhLoadingList />
+    </div>
+</section>

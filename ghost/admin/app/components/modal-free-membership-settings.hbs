@@ -1,0 +1,66 @@
+<header class="modal-header" data-test-modal="webhook-form">
+    <h1 data-test-text="title">Free membership settings</h1>
+</header>
+<button class="close" href title="Close" type="button" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    {{svg-jar "close"}}
+</button>
+
+<form>
+<div class="modal-body">
+    <div class="gh-main-section-block">
+        <div class="gh-main-section-content grey gh-tier-priceform-block">
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="name">
+                <label for="name" class="fw6">Portal display name</label>
+                <GhTextInput
+                    @value={{readonly this.settings.membersFreePriceName}}
+                    @input={{action "updateName" value="target.value"}}
+                    @name="name"
+                    @id="name"
+                    @class="gh-input" />
+                <GhErrorMessage @errors={{this.price.errors}} @property="name" />
+            </GhFormGroup>
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="description">
+                <label for="description" class="fw6">Description</label>
+                <GhTextInput
+                    @value={{readonly this.settings.membersFreePriceDescription}}
+                    @input={{action "updateDescription" value="target.value"}}
+                    @name="description"
+                    @id="description"
+                    @class="gh-input" />
+                <GhErrorMessage @errors={{this.price.errors}} @property="description" />
+            </GhFormGroup>
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="welcome-page">
+                <label for="welcome-page" class="fw6">Welcome page</label>
+                <GhUrlInput
+                    @value={{readonly this.settings.membersFreeSignupRedirect}}
+                    @baseUrl={{readonly this.siteUrl}}
+                    @setResult={{action "setFreeSignupRedirect"}}
+                    @validateUrl={{action "validateFreeSignupRedirect"}}
+                    @placeholder={{readonly this.siteUrl}}
+                />
+                <GhErrorMessage
+                    @errors={{this.settings.errors}}
+                    @property="membersFreeSignupRedirect"
+                />
+                <p>Redirect to this URL after signing up for a free membership</p>
+                <GhErrorMessage @errors={{this.price.errors}} @property="welcome-page" />
+            </GhFormGroup>
+        </div>
+    </div>
+</div>
+</form>
+
+<div class="modal-footer">
+    <button
+        class="gh-btn" data-test-button="cancel-webhook" type="button" {{action "closeModal"}}
+        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+        {{!-- {{action (optional this.noop) on="mouseDown"}} --}}
+    >
+        <span>Cancel</span>
+    </button>
+    <GhTaskButton @buttonText="Save"
+        {{!-- @successText={{this.successText}} --}}
+        @task={{this.save}}
+        @class="gh-btn gh-btn-black gh-btn-icon"
+        data-test-button="save-price" />
+</div>

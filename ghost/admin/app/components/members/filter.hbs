@@ -1,0 +1,96 @@
+<GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @onClose={{this.onDropdownClose}} as |dd|>
+
+    <dd.Trigger
+        class="gh-btn gh-btn-icon gh-btn-action-icon"
+        data-test-button="members-filter-actions"
+    >
+        <span class="{{if @isFiltered "gh-btn-label-green"}}" {{did-update this.parseDefaultFilters @parseFilterParamCounter}}>
+            {{svg-jar "filter"}}
+            Filter
+            {{#if @isFiltered}}
+            ({{this.totalFilters}})
+            {{/if}}
+        </span>
+    </dd.Trigger>
+
+    <dd.Content>
+        <div class="gh-member-actions-menu gh-filter-builder gh-members-filter-builder dropdown-menu dropdown-triangle-top-right"  {{css-transition "anim-fade-in-scale"}}>
+            <h3>Filter list</h3>
+            <section class="gh-filters">
+                {{#each this.filters as |filter index|}}
+                    <div class="gh-filter-block">
+                        <div class="form-group max-width" data-test-members-filter={{index}}>
+                            <div class="gh-filter-inputgroup">
+                                <span class="gh-select">
+                                    <OneWaySelect
+                                        @value={{filter.type}}
+                                        @options={{this.availableFilterProperties}}
+                                        @optionValuePath="name"
+                                        @optionLabelPath="label"
+                                        @optionTargetPath="name"
+                                        @groupLabelPath="group"
+                                        @update={{fn this.setFilterType filter}}
+                                        data-test-select="members-filter"
+                                    />
+                                    {{svg-jar "arrow-down-small"}}
+                                </span>
+                                <span class="gh-select">
+                                    <OneWaySelect
+                                        @value={{filter.relation}}
+                                        @options={{filter.relationOptions}}
+                                        @optionValuePath="name"
+                                        @optionLabelPath="label"
+                                        @optionTargetPath="name"
+                                        @update={{fn this.setFilterRelation filter}}
+                                        data-test-select="members-filter-operator"
+                                    />
+                                    {{svg-jar "arrow-down-small"}}
+                                </span>
+                                <Members::FilterValue
+                                    @index={{index}}
+                                    @filter={{filter}}
+                                    @setFilterValue={{this.setFilterValue}}
+                                    @setResourceValue={{this.setResourceValue}}
+                                    @onLabelEdit={{@onLabelEdit}}
+                                />
+                                <button
+                                    type="button"
+                                    class="gh-btn gh-btn-text gh-btn-link gh-btn-icon gh-delete-filter"
+                                    title="Delete filter"
+                                    {{on "click" (fn this.deleteFilter filter)}}
+                                    data-test-delete-members-filter={{index}}
+                                >
+                                    {{svg-jar "close"}} <span class="hidden">Delete filter</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {{/each}}
+                <div>
+                    <button type="button"
+                        class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter"
+                        {{on "click" this.addFilter}}
+                        data-test-button="add-members-filter"
+                    >
+                        <span>{{svg-jar "plus"}} Add filter</span>
+                    </button>
+                </div>
+            </section>
+            <div class="gh-filter-builder-footer">
+                <button
+                    class="gh-btn" type="button" {{on "click" this.resetFilter}}
+                    data-test-button="reset-members-filter"
+                >
+                    <span>Reset all</span>
+                </button>
+                <button
+                    class="gh-btn gh-btn-primary"
+                    data-test-button="members-apply-filter" type="button" {{on "click" (fn this.applyFiltersPressed dd)}} {{on "keyup" this.handleSubmitKeyup}}
+                >
+                    <span>Apply filters</span>
+                </button>
+            </div>
+        </div>
+    </dd.Content>
+
+</GhBasicDropdown>

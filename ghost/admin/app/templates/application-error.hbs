@@ -1,0 +1,15 @@
+<div class="gh-view">
+    <section class="error-content error-404 js-error-container">
+        <section class="error-details">
+            <img class="error-ghost" src="assets/img/404-ghost@2x.png" srcset="assets/img/404-ghost.png 1x, assets/img/404-ghost@2x.png 2x" />
+            <section class="error-message">
+                <h1 class="error-code">{{this.model.code}}</h1>
+                <h2 class="error-description">
+                    {{or this.model.payload.errors.firstObject.message this.model.message}}
+                </h2>
+            </section>
+        </section>
+    </section>
+</div>
+
+<EmberLoadRemover />

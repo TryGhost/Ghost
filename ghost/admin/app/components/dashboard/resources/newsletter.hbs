@@ -1,0 +1,24 @@
+<section class="gh-dashboard-resource gh-dashboard-newsletter" {{did-insert this.load}}>
+    <article class="gh-dashboard-resource-box">
+        <div class="gh-dashboard-resource-title">
+            <h4>The Ghost Newsletter</h4>
+        </div>
+        <div class="gh-dashboard-resource-body">
+            {{#if (not (or this.loading this.error))}}
+                <div class="gh-dashboard-resource-bigarticle">
+                    {{#each this.newsletters as |entry|}}
+                        <a class="gh-dashboard-resource-smallarticle" href={{set-query-params entry.url utm_source='admin'}} target="_blank" rel="noopener noreferrer">
+                            <div class="gh-dashboard-resource-text">
+                                <h3>{{entry.title}}</h3>
+                                <p>{{entry.excerpt}}</p>
+                            </div>
+                        </a>
+                    {{/each}}
+                </div>
+            {{/if}}
+        </div>
+        <div class="gh-dashboard-resource-footer">
+            <a href="https://ghost.org/resources/newsletter/" target="_blank" class="gh-dashboard-subscribe-button" rel="noopener noreferrer">Get weekly tips in your inbox &rarr;</a>
+        </div>
+    </article>
+</section>

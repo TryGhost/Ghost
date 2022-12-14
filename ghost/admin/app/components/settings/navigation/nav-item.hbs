@@ -1,0 +1,42 @@
+{{#unless this.navItem.isNew}}
+    <span class="gh-blognav-grab">
+        {{svg-jar "grab"}}
+        <span class="sr-only">Reorder</span>
+    </span>
+{{/unless}}
+
+<div class="gh-blognav-line">
+    <span class="gh-blognav-label" {{validation-status errors=this.navItem.errors property="label" hasValidated=this.navItem.hasValidated}}>
+        <GhTrimFocusInput
+            @shouldFocus={{this.navItem.last}}
+            @placeholder="Label"
+            @value={{readonly this.label}}
+            @input={{action "updateLabel" value="target.value"}}
+            @keyPress={{action "clearLabelErrors"}}
+            @focus-out={{action "updateLabel" this.label}} data-test-input="label" />
+        <GhErrorMessage
+            @errors={{this.navItem.errors}}
+            @property="label" data-test-error="label" />
+    </span>
+    <span class="gh-blognav-url" {{validation-status errors=this.navItem.errors property="url" hasValidated=this.navItem.hasValidated}}>
+        <Settings::Navigation::NavItemUrlInput
+            @baseUrl={{this.baseUrl}}
+            @isNew={{this.navItem.isNew}}
+            @url={{readonly this.url}}
+            @update={{action "updateUrl"}}
+            @clearErrors={{action "clearUrlErrors"}} data-test-input="url" />
+        <GhErrorMessage
+            @errors={{this.navItem.errors}}
+            @property="url" data-test-error="url" />
+    </span>
+</div>
+
+{{#if this.navItem.isNew}}
+    <button type="button" class="gh-blognav-add" {{action "addItem" this.navItem}}>
+        {{svg-jar "plus"}}<span class="sr-only">Add</span>
+    </button>
+{{else}}
+    <button type="button" class="gh-blognav-delete" {{action "deleteItem" this.navItem}}>
+        {{svg-jar "trash"}}<span class="sr-only">Delete</span>
+    </button>
+{{/if}}

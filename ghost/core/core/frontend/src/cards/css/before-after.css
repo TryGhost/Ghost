@@ -1,0 +1,81 @@
+.kg-before-after-card > div {
+    position: relative;
+    margin: 0 auto;
+}
+
+.kg-before-after-card-image-before {
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    left: 0;
+    height: 100%;
+}
+
+.kg-before-after-card .kg-before-after-card-image-after img {
+    width: 100%;
+}
+
+.kg-before-after-card .kg-before-after-card-image-before img {
+    max-width: none;
+    object-fit: cover;
+}
+
+.kg-before-after-card input {
+    position: absolute;
+    top: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    outline: none;
+    margin: 0;
+}
+
+.kg-before-after-card input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 5px;
+    height: 100%;
+    background: white;
+    cursor: pointer;
+}
+
+.kg-before-after-card input::-moz-range-thumb {
+    width: 5px;
+    height: 100%;
+    background: white;
+    cursor: pointer;
+}
+
+.kg-before-after-card-slider-handle {
+    pointer-events: none;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: white;
+    left: calc(50% - 18px);
+    top: calc(50% - 18px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.kg-before-after-card-slider-handle:after {
+    transform: rotate(-45deg);
+    content: '';
+    padding: 3px;
+    display: inline-block;
+    border: solid #5D5D5D;
+    border-width: 0 2px 2px 0;
+}
+
+.kg-before-after-card-slider-handle:before {
+    transform: rotate(135deg);
+    content: '';
+    padding: 3px;
+    display: inline-block;
+    border: solid #5D5D5D;
+    border-width: 0 2px 2px 0;
+}

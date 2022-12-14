@@ -1,0 +1,57 @@
+.gh-email-suppressed-page-title {
+    margin-bottom: 14px;
+}
+
+.gh-email-suppressed-page-icon {
+    display: block;
+    width: 38px;
+    height: 38px;
+    margin: 0 auto 18px;
+}
+
+.gh-email-suppressed-page-text {
+    padding: 0 14px;
+    text-align: center;
+    color: var(--grey6);
+}
+
+.gh-email-faq-footer-text {
+    color: var(--grey8);
+}
+
+.gh-portal-list-detail.email-newsletter .gh-email-faq-page-button {
+    display: block;
+    margin-top: 3px;
+}
+
+.accountEmail .gh-email-faq-page-button {
+    margin-left: 4px;
+}
+
+.emailReceivingFAQ .gh-portal-btn-back, 
+.emailReceivingFAQ .gh-portal-btn-back:hover {
+    left: calc(6vmin - 14px);
+}
+
+.emailReceivingFAQ .gh-portal-closeicon-container {
+    right: calc(6vmin - 20px);
+}
+
+@media (max-width: 480px) {
+    .emailReceivingFAQ .gh-portal-btn-back, 
+    .emailReceivingFAQ .gh-portal-btn-back:hover {
+        left: 16px;
+    }
+
+    .emailReceivingFAQ .gh-portal-closeicon-container {
+        right: 24px;
+    }
+}
+
+.gh-email-faq-page-button {
+    color: var(--brandcolor);
+    cursor: pointer;
+    background: none;
+    transition: color linear 100ms;
+    font-size: 1.45rem;
+}

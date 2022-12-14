@@ -1,0 +1,159 @@
+<div class="gh-publish-title" data-test-publish-flow="options">
+    <div class="green">Ready, set, publish.</div>
+    <div>Share it with the world.</div>
+</div>
+
+<div class="gh-publish-settings">
+    <div class="gh-publish-setting" data-test-setting="publish-type">
+        {{#if (or @publishOptions.emailUnavailable @publishOptions.publishDisabledError)}}
+            <div class="gh-publish-setting-title {{if @publishOptions.publishDisabledError "disabled"}}" data-test-setting-title>
+                {{svg-jar "send-email"}}
+                <div class="gh-publish-setting-trigger">Publish on site</div>
+
+                {{#if @publishOptions.publishDisabledError}}
+                    <span>{{svg-jar "arrow-down" class="icon-expand"}}</span>
+                {{/if}}
+            </div>
+            {{#if @publishOptions.publishDisabledError}}
+                <p class="gh-box gh-content-box pa" data-test-publish-type-error="publish-disabled">
+                    {{@publishOptions.publishDisabledError}}
+                </p>
+            {{/if}}
+        {{else}}
+            <button type="button" class="gh-publish-setting-title" {{on "click" (fn this.toggleSection "publishType")}} data-test-setting-title>
+                {{svg-jar "send-email"}}
+                <div class="gh-publish-setting-trigger">
+                    <span>{{@publishOptions.selectedPublishTypeOption.display}}</span>
+                </div>
+                <span class="{{if (eq this.openSection "publishType") "expanded"}}">
+                    {{svg-jar "arrow-down" class="icon-expand"}}
+                </span>
+            </button>
+        {{/if}}
+        {{#liquid-if (eq this.openSection "publishType")}}
+            <div class="gh-publish-setting-form">
+                <Editor::PublishOptions::PublishType
+                    @publishOptions={{@publishOptions}}
+                />
+            </div>
+        {{/liquid-if}}
+    </div>
+
+    {{#unless @publishOptions.emailUnavailable}}
+        <div class="gh-publish-setting" data-test-setting="email-recipients">
+            {{#if (or (eq @publishOptions.publishType "publish") @publishOptions.publishDisabledError)}}
+                <button
+                    type="button"
+                    class="gh-publish-setting-title disabled"
+                    data-test-setting-title
+                >
+                    {{svg-jar "member"}}
+                    <div class="gh-publish-setting-trigger">
+                        Not sent as newsletter
+                    </div>
+                    <span>
+                        {{svg-jar "arrow-down" class="icon-expand"}}
+                    </span>
+                </button>
+            {{else}}
+                <button
+                    type="button"
+                    class="gh-publish-setting-title"
+                    {{on "click" (fn this.toggleSection "emailRecipients")}}
+                    data-test-setting-title
+                >
+                    {{svg-jar "member"}}
+                    <div class="gh-publish-setting-trigger">
+                        {{#if @publishOptions.recipientFilter}}
+                            {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
+                                {{#if (or (gt countFetcher.count 1) (is-empty countFetcher.count))}}
+                                    {{if (eq @recipientType "all") "All"}}
+                                {{/if}}
+
+                                {{format-number countFetcher.count}}
+
+                                {{!-- @recipientType = all/free/paid/all/specific --}}
+                                {{#if (not-eq @recipientType "all")}}
+                                    {{if (is-empty countFetcher.count) (capitalize @recipientType) @recipientType}}
+                                {{/if}}
+
+                                {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+
+                                {{#unless @publishOptions.onlyDefaultNewsletter}}
+                                    of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
+                                {{/unless}}
+                            {{/let}}
+                        {{else}}
+                            Not sent as newsletter
+                        {{/if}}
+                    </div>
+                    <span class="{{if (eq this.openSection "emailRecipients") "expanded"}}">
+                        {{svg-jar "arrow-down" class="icon-expand"}}
+                    </span>
+                </button>
+            {{/if}}
+            {{#liquid-if (eq this.openSection "emailRecipients")}}
+                <div class="gh-publish-setting-form">
+                    <Editor::PublishOptions::EmailRecipients
+                        @publishOptions={{@publishOptions}}
+                    />
+                </div>
+            {{/liquid-if}}
+        </div>
+    {{/unless}}
+
+    {{#if (and @publishOptions.post.email (not @publishOptions.emailDisabledInSettings))}}
+        <div class="gh-publish-setting" data-test-setting="email-recipients">
+            <div class="gh-publish-setting-title disabled" data-test-setting-title>
+                {{svg-jar "member"}}
+                <div class="gh-publish-setting-trigger">
+                    {{#if (eq @publishOptions.post.email.status "failed") }}
+                        Retry sending to
+                    {{else}}
+                        Already sent to
+                    {{/if}}
+                    {{format-number @publishOptions.post.email.emailCount}}
+                    {{if (not-eq @recipientType "all") @recipientType}} {{!-- free/paid/specific --}}
+                    {{gh-pluralize @publishOptions.post.email.emailCount "subscriber" without-count=true}}
+                    {{#unless @publishOptions.onlyDefaultNewsletter}}
+                        of {{@publishOptions.post.newsletter.name}}
+                    {{/unless}}
+                </div>
+            </div>
+        </div>
+    {{/if}}
+
+    <div class="gh-publish-setting last" data-test-setting="publish-at">
+        <button type="button" class="gh-publish-setting-title {{if @publishOptions.publishDisabledError "disabled"}}" {{on "click" (if @publishOptions.publishDisabledError (optional) (fn this.toggleSection "publishAt"))}} data-test-setting-title>
+            {{svg-jar "clock"}}
+            <div class="gh-publish-setting-trigger">
+                <span>
+                    {{#if @publishOptions.isScheduled}}
+                        {{capitalize (gh-format-post-time @publishOptions.scheduledAtUTC draft=true)}}
+                    {{else}}
+                        Right now
+                    {{/if}}
+                </span>
+            </div>
+            <span class="{{if (eq this.openSection "publishAt") "expanded"}}">
+                {{svg-jar "arrow-down" class="icon-expand"}}
+            </span>
+        </button>
+        {{#liquid-if (eq this.openSection "publishAt")}}
+            <div class="gh-publish-setting-form last">
+                <Editor::PublishOptions::PublishAt
+                    @publishOptions={{@publishOptions}}
+                />
+            </div>
+        {{/liquid-if}}
+    </div>
+
+</div>
+
+{{#unless @publishOptions.publishDisabledError}}
+    <div class="gh-publish-cta">
+        <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}} data-test-button="continue">
+            <span>Continue, final review &rarr;</span>
+        </button>
+    </div>
+{{/unless}}

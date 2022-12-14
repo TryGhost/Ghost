@@ -1,0 +1,91 @@
+<div class="gh-flow">
+
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content">
+            <header>
+                <div class="gh-site-icon" style={{site-icon-style}}></div>
+                <h1>Create your account.</h1>
+            </header>
+
+            <form id="signup" class="gh-signup" method="post" novalidate="novalidate" {{on "submit" this.submit}}>
+                <GhFormGroup @errors={{this.signupDetails.errors}} @hasValidated={{this.signupDetails.hasValidated}} @property="name">
+                    <label for="name">Full name</label>
+                    <span class="gh-input-icon gh-icon-user">
+                        <input
+                            type="text"
+                            id="display-name"
+                            name="display-name"
+                            class="gh-input"
+                            placeholder="Jamie Larson"
+                            autocorrect="off"
+                            autocomplete="name"
+                            value={{this.signupDetails.name}}
+                            {{on "input" (fn this.setSignupProperty "name")}}
+                            {{on "blur" (fn this.trimSignupProperty "name")}}
+                            {{on "blur" (fn this.validate "name")}}
+                            data-test-input="name"
+                        />
+                    </span>
+                    <GhErrorMessage @errors={{this.signupDetails.errors}} @property="name" />
+                </GhFormGroup>
+
+                <GhFormGroup @errors={{this.signupDetails.errors}} @hasValidated={{this.signupDetails.hasValidated}} @property="email">
+                    <label for="email">Email address</label>
+                    <span class="gh-input-icon gh-icon-mail">
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            class="gh-input"
+                            placeholder="jamie@example.com"
+                            autocorrect="off"
+                            autocomplete="username email"
+                            value={{this.signupDetails.email}}
+                            {{on "input" (fn this.setSignupProperty "email")}}
+                            {{on "blur" (fn this.validate "email")}}
+                            data-test-input="email"
+                        />
+                    </span>
+                    <GhErrorMessage @errors={{this.signupDetails.errors}} @property="email" />
+                </GhFormGroup>
+
+                <GhFormGroup @errors={{this.signupDetails.errors}} @hasValidated={{this.signupDetails.hasValidated}} @property="password">
+                    <label for="password">Password</label>
+                    <span class="gh-input-icon gh-icon-lock">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="gh-input"
+                            placeholder="At least 10 characters"
+                            autocorrect="off"
+                            autocomplete="new-password"
+                            value={{this.signupDetails.password}}
+                            {{on "input" (fn this.setSignupProperty "password")}}
+                            {{on "blur" (fn this.validate "password")}}
+                            data-test-input="password"
+                        />
+                    </span>
+                    <GhErrorMessage @errors={{this.signupDetails.errors}} @property="password" />
+                </GhFormGroup>
+
+                <GhTaskButton
+                    @buttonText="Create Account &rarr;"
+                    @runningText="Creating"
+                    @task={{this.signupTask}}
+                    @defaultClick={{true}}
+                    @showSuccess={{false}}
+                    type="submit"
+                    form="signup"
+                    class="gh-btn gh-btn-signup gh-btn-block gh-btn-icon"
+                    style={{accent-color-background}}
+                    data-test-button="signup"
+                />
+            </form>
+            {{#if this.flowErrors}}
+                <p class="main-error">{{this.flowErrors}}&nbsp;</p>
+            {{/if}}
+        </section>
+    </div>
+
+</div>

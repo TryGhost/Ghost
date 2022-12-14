@@ -1,0 +1,127 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`tag.* events tag.added event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
+}
+`;
+
+exports[`tag.* events tag.added event is triggered 2: [body] 1`] = `
+Object {
+  "tag": Object {
+    "current": Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": Any<String>,
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Test Tag",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "test-tag",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": StringMatching /http:\\\\/\\\\/127\\.0\\.0\\.1:2369\\\\/\\[A-Za-z0-9_-\\]\\+\\\\//,
+      "visibility": "public",
+    },
+    "previous": Object {},
+  },
+}
+`;
+
+exports[`tag.* events tag.deleted event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
+}
+`;
+
+exports[`tag.* events tag.deleted event is triggered 2: [body] 1`] = `
+Object {
+  "tag": Object {
+    "current": Object {},
+    "previous": Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": Any<String>,
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Test Tag 2",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "test-tag-2",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "visibility": "public",
+    },
+  },
+}
+`;
+
+exports[`tag.* events tag.edited event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
+}
+`;
+
+exports[`tag.* events tag.edited event is triggered 2: [body] 1`] = `
+Object {
+  "tag": Object {
+    "current": Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": Any<String>,
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Updated Tag 3",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "updated-tag-3",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": StringMatching /http:\\\\/\\\\/127\\.0\\.0\\.1:2369\\\\/\\[A-Za-z0-9_-\\]\\+\\\\//,
+      "visibility": "public",
+    },
+    "previous": Object {
+      "name": "Test Tag 3",
+      "slug": "test-tag-3",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  },
+}
+`;

@@ -1,0 +1,287 @@
+<section class="gh-canvas">
+    <form {{on "submit" (perform this.saveTask)}}>
+        <GhCanvasHeader class="gh-canvas-header">
+            <div class="flex flex-column">
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="settings">
+                        Settings
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}}
+                    <LinkTo @route="settings.integrations" data-test-link="integrations-back">
+                        Integrations
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}} Edit integration
+                </div>
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    {{this.integration.name}}
+                </h2>
+            </div>
+            <section class="view-actions">
+                <GhTaskButton @task={{this.saveTask}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-button="save" />
+            </section>
+        </GhCanvasHeader>
+
+        <div class="gh-main-section" {{scroll-top}}>
+            <h4 class="gh-main-section-header small bn">Configuration</h4>
+            <section class="gh-main-section-block">
+                <div class="gh-main-section-content padding-top-s grey">
+                    <div class="flex">
+                        <div class="flex flex-column items-start app-custom-icon-container">
+                            <label class="mb1">Icon</label>
+                            <figure class="app-custom-icon hide-child" style={{this.iconImageStyle}}>
+                                <AspectRatioBox @class="flex items-center h-100 justify-center" @ratio="1/1" @base="height">
+                                    {{#unless this.integration.iconImage}}
+                                        {{svg-jar "integration" class="w11 h11"}}
+                                    {{/unless}}
+                                </AspectRatioBox>
+
+                                <GhUploader
+                                    @extensions={{this.imageExtensions}}
+                                    @onComplete={{this.setIconImage}}
+                                    as |uploader|
+                                >
+                                    {{#if uploader.isUploading}}
+                                        <div class="absolute top-0 left-0 w-100 h-100 br4 bg-black-70 flex items-center">
+                                            {{uploader.progressBar}}
+                                            </div>
+                                    {{else}}
+                                        <button
+                                            type="button"
+                                            class="child app-custom-icon-uploadlabel"
+                                            {{on "click" this.triggerIconFileDialog}}
+                                        >
+                                            Upload
+                                        </button>
+                                    {{/if}}
+                                    <div style="display:none">
+                                        <GhFileInput
+                                            @name="iconImage"
+                                            @multiple={{false}}
+                                            @action={{uploader.setFiles}}
+                                            @accept={{this.imageMimeTypes}} data-test-file-input="icon" />
+                                    </div>
+                                </GhUploader>
+                            </figure>
+                        </div>
+                        <div class="flex-auto">
+                            <div
+                                class="flex flex-column w-100 mr3"
+                                {{validation-status
+                                    errors=this.integration.errors
+                                    hasValidated=this.integration.hasValidated
+                                    property="name"
+                                }}
+                            >
+                                <label for="integration_name">Name</label>
+                                <GhTextInput
+                                    @id="integration_name"
+                                    @class="gh-input mt1 mb1"
+                                    @type="text"
+                                    @value={{readonly this.integration.name}}
+                                    @on-input={{fn this.updateProperty "name"}}
+                                    @focus-out={{fn this.validateProperty "name"}}
+                                    data-test-input="name"
+                                />
+                                <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="name" class="ma0" />
+                            </div>
+
+                            <div
+                                class="flex flex-column w-100 mr3"
+                                {{validation-status
+                                    errors=this.integration.errors
+                                    hasValidated=this.integration.hasValidated
+                                    property="description"
+                                }}
+                            >
+                                <label for="integration_description" class="mt3">Description</label>
+                                <GhTextInput
+                                    @id="integration_description"
+                                    @class="gh-input mt1"
+                                    @type="text"
+                                    @value={{readonly this.integration.description}}
+                                    @on-input={{fn this.updateProperty "description"}}
+                                    @focus-out={{fn this.validateProperty "description"}}
+                                    data-test-input="description"
+                                />
+                                <GhErrorMessage @errors={{this.integration.errors}} @property="description" data-test-error="description" class="ma0" />
+                            </div>
+
+                            <table class="app-custom-api-table list" style="table-layout: fixed">
+                                <tbody>
+                                    <tr>
+                                        <td class="data-label">Content API key</td>
+                                        <td class="data highlight-hover">
+                                            <div class="relative flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
+                                                <span class="truncate" data-test-text="content-key">
+                                                    {{this.integration.contentKey.secret}}
+                                                </span>
+                                                <div class="app-api-buttons child">
+                                                    <button type="button" {{on "click" (fn this.confirmRegenerateKey this.integration.contentKey)}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                        {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                                    </button>
+                                                    <button type="button" {{on "click" (perform this.copyContentKey)}} class="app-button-copy">
+                                                        {{#if this.copyContentKey.isRunning}}
+                                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                        {{else}}
+                                                            Copy
+                                                        {{/if}}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {{#if (eq this.regeneratedApiKey.type this.integration.contentKey.type)}}
+                                                <div class="green"> Content API Key was successfully regenerated </div>
+                                            {{/if}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="data-label">Admin API key</td>
+                                        <td class="data highlight-hover">
+                                            <div class="relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
+                                                <span class="truncate" data-test-text="admin-key">
+                                                    {{this.integration.adminKey.secret}}
+                                                </span>
+                                                <div class="app-api-buttons child">
+                                                    <button type="button" {{on "click" (fn this.confirmRegenerateKey this.integration.adminKey)}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                        {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                                    </button>
+                                                    <button type="button" {{on "click" (perform this.copyAdminKey)}} class="app-button-copy">
+                                                        {{#if this.copyAdminKey.isRunning}}
+                                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                        {{else}}
+                                                            Copy
+                                                        {{/if}}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {{#if (eq this.regeneratedApiKey.type this.integration.adminKey.type)}}
+                                                <div class="green"> Admin API key was successfully regenerated </div>
+                                            {{/if}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="data-label">API URL</td>
+                                        <td class="data highlight-hover truncate">
+                                            <div class="relative flex items-center {{unless this.copyApiUrl.isRunning "hide-child-instant"}}">
+                                                <span data-test-text="api-url">
+                                                    {{this.apiUrl}}
+                                                </span>
+                                                <div class="app-api-buttons child">
+                                                    <button type="button" {{on "click" (perform this.copyApiUrl)}} class="app-button-copy">
+                                                        {{#if this.copyApiUrl.isRunning}}
+                                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                        {{else}}
+                                                        Copy
+                                                        {{/if}}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </form>
+
+    <section class="gh-main-section">
+            <h4 class="gh-main-section-header small">Webhooks</h4>
+            <div class="gh-main-section-block p0">
+            <table class="gh-list small">
+                <thead>
+                    <tr class="gh-list-row header">
+                        <th class="gh-list-header">Name</th>
+                        <th class="gh-list-header">Event</th>
+                        <th class="gh-list-header">URL</th>
+                        <th class="gh-list-header">Last triggered</th>
+                        <th class="gh-list-header"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each this.filteredWebhooks as |webhook|}}
+                        <tr class="gh-list-row hide-child" data-test-webhook-row="{{webhook.id}}">
+                            <td class="gh-list-data" data-test-text="name">{{webhook.name}}</td>
+                            <td class="gh-list-data" data-test-text="event">{{event-name webhook.event}}</td>
+                            <td class="gh-list-data" data-test-text="targetUrl">{{webhook.targetUrl}}</td>
+                            <td class="gh-list-data" data-test-text="last-triggered">{{or webhook.lastTriggeredAtUTC "Not triggered"}}</td>
+                            <td class="w1 gh-list-data nowrap">
+                                {{!-- <div class="child flex items-center">
+                                    <LinkTo @route="settings.integration.webhooks.edit" @models={{array this.integration webhook}} data-test-link="edit-webhook">
+                                        {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
+                                    </LinkTo>
+                                    <button data-test-button="delete-webhook" type="button" {{on "click" (fn this.confirmWebhookDeletion webhook)}}>
+                                        {{svg-jar "trash" class="w6 fill-red pa1"}}
+                                    </button>
+                                </div> --}}
+                                <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @renderInPlace={{true}} as |dd|>
+                                    <dd.Trigger class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline fill gh-tier-card-actions-button icon-only">
+                                        <span data-test-newsletter-menu-trigger>
+                                            {{svg-jar "dotdotdot"}}
+                                            <span class="hidden">Actions</span>
+                                        </span>
+                                    </dd.Trigger>
+                                    <dd.Content class="relative-dropdown-menu gh-newsletter-actions-menu">
+                                        <ul class="dropdown-menu dropdown-triangle-top-right" role="listbox" {{css-transition "anim-fade-in-scale"}}>
+                                            <li>
+                                                <LinkTo @route="settings.integration.webhooks.edit" @models={{array this.integration webhook}} data-test-link="edit-webhook">
+                                                    Edit
+                                                </LinkTo>
+                                            </li>
+                                            <li>
+                                                <button data-test-button="delete-webhook" type="button" {{on "click" (fn this.confirmWebhookDeletion webhook)}}>
+                                                    Delete
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </dd.Content>
+                                </GhBasicDropdown>
+                            </td>
+                        </tr>
+                    {{else}}
+                    <tr class="bt b--whitegrey" data-test-webhooks-blank-slate>
+                        <td colspan="5" class="pa5 pt15 pb15 tc midgrey f7">
+                            <div class="flex flex-column items-center">
+                                <p class="ma0 pa0 tc midgrey lh-title mb2">
+                                    No webhooks configured
+                                </p>
+                                <LinkTo @route="settings.integration.webhooks.new" @model={{this.integration}} class="flex items-center" data-test-link="add-webhook">
+                                <div class="gh-btn-text green-d1 gh-btn-icon">
+                                    {{svg-jar "plus"}}
+                                    <span>Add webhook</span>
+                                </div>
+                                </LinkTo>
+                            </div>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+                {{#if this.filteredWebhooks}}
+                <tfoot>
+                    <tr class="gh-list-row new-webhook-cell">
+                        <td colspan="5" class="gh-list-data">
+                            <LinkTo @route="settings.integration.webhooks.new" @model={{this.integration}} class="flex items-center" data-test-link="add-webhook">
+                            <div class="gh-btn-text green-d1 gh-btn-icon">
+                                {{svg-jar "plus"}}
+                                <span class="f7">Add webhook</span>
+                            </div>
+                            </LinkTo>
+                        </td>
+                    </tr>
+                </tfoot>
+                {{/if}}
+            </table>
+        </div>
+    </section>
+
+    <section class="gh-main-section">
+        <div class="gh-main-section-block">
+            <button class="gh-btn gh-btn-red gh-btn-icon" type="button" {{on "click" this.confirmIntegrationDeletion}} data-test-button="delete-integration">
+                <span> Delete integration </span>
+            </button>
+        </div>
+    </section>
+</section>
+
+{{outlet}}

@@ -1,0 +1,115 @@
+<section class="gh-canvas" {{scroll-top}}>
+    <div class="gh-dashboard">
+        {{#if (feature 'sourceAttribution')}}
+        <GhCanvasHeader class="gh-canvas-header sticky">
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                Dashboard
+            </h2>
+            {{#unless this.isTotalMembersZero}}
+                <div class="gh-dashboard-select">
+                    <PowerSelect
+                        @selected={{this.selectedDaysOption}}
+                        @options={{this.daysOptions}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.onDaysChange}}
+                        @triggerComponent={{component "gh-power-select/trigger"}}
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                        @matchTriggerWidth={{false}}
+                        @horizontalPosition="right"
+                        as |option|
+                    >
+                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                    </PowerSelect>
+                </div>
+            {{/unless}}
+        </GhCanvasHeader>
+        {{else}}
+        <div class="gh-dashboard-inner">
+            <GhCanvasHeader class="gh-canvas-header">
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    Dashboard
+                </h2>
+            </GhCanvasHeader>
+        </div>
+        {{/if}}
+        <section class="gh-dashboard-layout">
+            {{#if this.isLoading }}
+                <GhLoadingSpinner />
+            {{else}}
+                {{#if this.areMembersEnabled}}
+                    {{#if this.hasPaidTiers}}
+                        <Dashboard::Charts::Overview />
+                    {{/if}}
+
+                    <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
+                        {{#if (feature 'sourceAttribution')}}
+                            <Dashboard::Charts::AnchorAttribution />
+                        {{else}}
+                            <Dashboard::Charts::Anchor />
+                        {{/if}}
+                        {{#if (feature 'sourceAttribution')}}
+                            {{#if this.hasPaidTiers}}
+                                <section class="gh-dashboard-section">
+                                    <article class="gh-dashboard-box gh-dashboard-minicharts-attribution">
+                                        <Dashboard::Charts::PaidBreakdown />
+                                        <Dashboard::Charts::PaidMix />
+                                    </article>
+                                </section>
+                            {{/if}}
+                            {{#unless this.membersUtils.isMembersInviteOnly}}
+                                <Dashboard::Charts::Attribution />
+                            {{/unless}}
+                        {{/if}}
+                        {{#if this.areNewslettersEnabled}}
+                            <Dashboard::Charts::Engagement />
+                        {{/if}}
+
+                        {{#if this.isTotalMembersZero}}
+                            <Dashboard::Parts::Zero />
+                        {{/if}}
+                    </div>
+                {{/if}}
+
+                <Dashboard::Charts::Recents />
+
+                <div class="gh-dashboard-split gh-dashboard-box is-secondary">
+                    <Dashboard::Resources::Resources />
+                    <Dashboard::Resources::Newsletter />
+                </div>
+
+                <Dashboard::Resources::ExploreFeed />
+
+                <div class="gh-dashboard-split gh-dashboard-box no-boarder">
+                    <Dashboard::Resources::Community />
+                    <Dashboard::Resources::WhatsNew />
+                </div>
+            {{/if}}
+
+            {{#if (not (feature 'sourceAttribution'))}}
+                {{#unless this.isTotalMembersZero}}
+                    <div class="gh-dashboard-select">
+                        <PowerSelect
+                            @selected={{this.selectedDaysOption}}
+                            @options={{this.daysOptions}}
+                            @searchEnabled={{false}}
+                            @onChange={{this.onDaysChange}}
+                            @triggerComponent={{component "gh-power-select/trigger"}}
+                            @triggerClass="gh-contentfilter-menu-trigger"
+                            @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                            @matchTriggerWidth={{false}}
+                            @horizontalPosition="right"
+                            as |option|
+                        >
+                            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                        </PowerSelect>
+                    </div>
+                {{/unless}}
+            {{/if}}
+        </section>
+
+        {{#if (enable-developer-experiments)}}
+            <Dashboard::Prototype::ControlPanel />
+        {{/if}}
+    </div>
+</section>

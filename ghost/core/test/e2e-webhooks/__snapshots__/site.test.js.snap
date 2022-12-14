@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`site.* events site.changed event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
+}
+`;
+
+exports[`site.* events site.changed event is triggered 2: [body] 1`] = `Object {}`;

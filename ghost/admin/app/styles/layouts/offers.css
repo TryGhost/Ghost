@@ -1,0 +1,558 @@
+.fullscreen-modal-edit-offer {
+    max-width: 1220px;
+}
+
+.gh-offers .view-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 0;
+    min-height: calc(100vh - 195px);
+}
+
+.gh-offers-list-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4vw;
+}
+
+.gh-offers-list-cta h4 {
+    color: var(--black);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.gh-offers-list-cta.missing-tiers h4 {
+    margin-bottom: 20px;
+}
+
+.gh-offers-list-cta p {
+    max-width: 390px;
+    color: var(--midgrey);
+    text-align: center;
+    line-height: 1.45em;
+    margin: 0 0 20px;
+    padding: 0;
+}
+
+.gh-offers-list-cta .discount-bubble {
+    color: var(--lightgrey);
+    width: 68px;
+    height: 68px;
+    margin-bottom: 20px;
+}
+
+.gh-offers-list-cta .discount-bubble path,
+.gh-offers-list-cta .discount-bubble circle {
+    stroke-width: 1px;
+}
+
+.gh-offers-list-cta button {
+    min-width: 140px;
+}
+
+.gh-offers-list-cta .gh-btn-icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.gh-offers-list {
+    padding: 0;
+}
+
+.gh-offers-list .offer-value {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    color: var(--green);
+}
+
+.gh-offers-list .offer-value svg {
+    width: 11px;
+    height: 11px;
+    margin-right: 6px;
+}
+
+.gh-offers-list .offer-value svg path {
+    stroke-width: 2px;
+}
+
+.gh-offers-list-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+}
+
+.gh-offers-list-footer a svg path {
+    stroke-width: 1.5px;
+}
+
+.gh-offer-link-button {
+    opacity: 0;
+    cursor: pointer;
+    margin-bottom: 1px;
+}
+
+.gh-offers .gh-list-row:hover .gh-offer-link-button {
+    opacity: 1;
+}
+
+.gh-offer-link-button,
+.gh-offer-link-button:hover {
+    margin-right: 16px;
+}
+
+.gh-offer-link-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-offer-link-button svg path {
+    stroke: var(--darkgrey);
+    stroke-width: 1.4px;
+}
+
+.gh-offer-link-button:hover svg path {
+    stroke: var(--black);
+}
+
+.gh-offer-type {
+    width: 160px;
+    margin-bottom: 23px;
+}
+
+.gh-offer-type select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none !important;
+}
+
+.gh-offer-value {
+    flex: auto;
+}
+
+.gh-offer-value .gh-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.gh-offer-form {
+    max-width: 680px;
+}
+
+.gh-offer-form textarea {
+    max-width: unset;
+}
+
+.gh-offer-form .form-group {
+    max-width: unset;
+}
+
+.gh-offer-discount {
+    width: 100%;
+    margin-left: 24px;
+}
+
+.gh-offer-duration {
+    display: flex;
+}
+
+.gh-offer-duration .form-group {
+    position: relative;
+    margin-bottom: 0;
+}
+
+.gh-offer-duration .form-group:not(:first-of-type) {
+    margin-left: 24px;
+}
+
+.gh-offer-duration .duration-months::before {
+    position: absolute;
+    content: "months";
+    top: 31px;
+    right: 12px;
+    color: var(--midgrey);
+    font-size: 1.5rem;
+    letter-spacing: 0;
+}
+
+.gh-offer-trial-duration {
+    width: 100%;
+    margin-left: 24px;
+}
+
+.gh-offer-trial-duration .form-group {
+    margin-bottom: 0;
+}
+
+.gh-offer-trial-duration .trial-duration::before {
+    position: absolute;
+    content: "days";
+    top: 31px;
+    right: 12px;
+    color: var(--midgrey);
+    font-size: 1.5rem;
+    letter-spacing: 0;
+}
+
+.gh-offer-trial-info {
+    margin: 8px 0 0;
+    color: #738393;
+    font-size: 1.25rem;
+    font-weight: 400;
+}
+
+.gh-offer-url .gh-input {
+    background: var(--main-color-content-greybg);
+    border-color: var(--lightgrey-l1);
+    color: var(--midgrey);
+}
+
+.gh-offer-type-container {
+    display: flex;
+    width: 100%;
+    border: 1px solid var(--whitegrey-d2);
+    background: #fff;
+    color: #394047;
+    border-radius: 4px;
+}
+
+.gh-offer-type-container.disabled {
+    border: 1px solid var(--whitegrey);
+}
+
+.gh-offer-tier-and-trial {
+    display: flex;
+}
+
+.gh-offer-tier-and-trial .form-group {
+    margin-bottom: 0;
+}
+
+.gh-select-product-cadence select {
+    text-overflow: ellipsis;
+    padding-right: 32px;
+}
+
+.gh-offer-type-container .gh-radio {
+    width: 100%;
+    padding: 16px;
+    margin: 0;
+    align-items: center;
+    text-align: left;
+}
+
+.gh-offer-type-container .gh-radio[disabled] {
+    opacity: .5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.gh-offer-type-container .gh-radio:not(:first-child) {
+    border-left: 1px solid var(--whitegrey);
+}
+
+.gh-offer-type-container .gh-radio-button {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-offer-type-container .gh-radio.active .gh-radio-button:before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 3px;
+    width: 10px;
+    height: 5px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-right: none;
+    border-radius: 0px;
+    background: transparent;
+    opacity: 1;
+    transition: opacity .15s ease-in-out;
+    transform: rotate(-45deg);
+}
+
+/* Offers – Portal preview */
+.gh-offer-portal-preview {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.gh-offer-portal-preview-mock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--midgrey);
+    border-radius: 5px;
+    height: 640px;
+    width: 420px;
+    background: #fff;
+    box-shadow: var(--box-shadow-preview-box);
+}
+
+.gh-offers-help {
+    margin-top: 5vmin;
+    margin-bottom: 0;
+}
+
+.gh-offers-help .gh-main-section-content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 32px;
+    padding: 32px;
+}
+
+.gh-offers-help-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: var(--white);
+    border-radius: 3px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.07);
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    padding: 32px;
+    transition: all 0.3s ease-in-out;
+}
+
+.gh-offers-help-card p {
+    line-height: 1.4em;
+    margin-top: 12px;
+}
+
+.gh-offers-help-card .thumbnail {
+    width: 100%;
+    height: 160px;
+    background-size: cover;
+    margin-bottom: 16px;
+}
+
+.gh-offers-help-card .gh-btn {
+    width: 100%;
+}
+
+.gh-offers-help-card:hover {
+    box-shadow:
+        0px 54px 80px rgba(0, 0, 0, 0.07),
+        0px 19.7109px 29.2013px rgba(0, 0, 0, 0.0482987),
+        0px 9.56927px 14.1767px rgba(0, 0, 0, 0.0389404),
+        0px 4.69103px 6.94968px rgba(0, 0, 0, 0.0310596),
+        0px 1.85484px 2.74791px rgba(0, 0, 0, 0.0217013);
+    transition: all 0.3s ease-in-out;
+    transform: translateY(-4px);
+}
+
+.gh-offers-actions .gh-contentfilter-menu {
+    margin-left: 0;
+    margin-right: 6px;
+}
+
+.gh-offer-archive-container {
+    display: flex;
+    align-items: center;
+    max-width: 680px;
+}
+
+.gh-offer-archive-container p {
+    display: flex;
+    color: var(--middarkgrey);
+    font-size: 1.3rem;
+    margin: 0;
+    border-left: 1px solid var(--whitegrey);
+    padding-left: 16px;
+    margin-left: 16px;
+    line-height: 1.5em;
+}
+
+.gh-offer-archive-container p svg {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin-right: 4px;
+    margin-top: 2px;
+}
+
+.gh-offer-archive-container p svg path,
+.gh-offer-archive-container p svg circle {
+    fill: var(--midgrey);
+}
+
+.gh-offer-form .gh-main-section-header-with-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: -2px;
+}
+
+.gh-offer-form .gh-main-section-header-info svg {
+    height: 16px;
+    width: 16px;
+}
+
+@media (max-width: 1440px) {
+    .gh-offer-tier-and-trial, .gh-offer-duration {
+        flex-direction: column;
+    }
+
+    .gh-offer-discount, .gh-offer-trial-duration, .gh-offer-duration .form-group:not(:first-of-type) {
+        margin-left: 0;
+    }
+
+    .gh-offer-type-container {
+        flex-direction: column;
+    }
+
+    .gh-offer-type-container .gh-radio:not(:first-child) {
+        border-left: none;
+        border-top: 1px solid #f6f6f6;
+    }
+
+    .gh-offer-title-and-code {
+        grid-template-rows: 1fr 1fr;
+        grid-template-columns: none;
+        grid-column-gap: 0px;
+    }
+
+    .gh-offer-duration .form-group, .gh-offer-tier-and-trial > .form-group {
+        margin-bottom: 1.6em;
+    }
+
+    .gh-offer-trial-duration .form-group {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 1280px) {
+    .gh-offer-portal-preview {
+        display: none;
+    }
+
+    .gh-offer.circle-bg::before {
+        display: none;
+    }
+
+    .gh-offer .gh-main-layout.content-preview {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gh-offers-help-card {
+        padding: 24px;
+    }
+
+    .gh-offers-help-card h3 {
+        font-size: 1.6rem;
+    }
+
+    .gh-offers-help-card p {
+        font-size: 1.3rem;
+    }
+
+    .gh-offer-tier-and-trial, .gh-offer-duration {
+        flex-direction: row;
+    }
+
+    .gh-offer-discount, .gh-offer-trial-duration, .gh-offer-duration .form-group:not(:first-of-type) {
+        margin-left: 24px;
+    }
+
+    .gh-offer-type-container {
+        flex-direction: row;
+    }
+
+    .gh-offer-type-container .gh-radio:not(:first-child) {
+        border-top: none;
+        border-left: 1px solid #f6f6f6;
+    }
+
+    .gh-offer-title-and-code {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
+        grid-column-gap: 24px;
+    }
+
+    .gh-offer-duration .form-group, .gh-offer-tier-and-trial > .form-group {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 1080px) {
+    .gh-offers-help .gh-main-section-content {
+        grid-template-columns: 1fr;
+    }
+
+    .gh-offers-help-card .gh-btn {
+        display: none;
+    }
+
+    .gh-offers-help-card h3 {
+        font-size: 1.9rem;
+    }
+
+    .gh-offers-help-card p {
+        margin-bottom: 0;
+    }
+
+    .gh-offers-help-card .gh-offers-help-content {
+        display: grid;
+        grid-template-columns: 0.33fr 1fr;
+        grid-gap: 20px;
+    }
+
+    .gh-offers-help-card .gh-offers-help-content p {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+    }
+
+    .gh-offers-help-card .thumbnail {
+        font-size: 1.6rem;
+        margin: 0;
+        padding: 0;
+        min-width: 200px;
+        height: 120px;
+    }
+
+    .gh-offer-tier-and-trial, .gh-offer-duration {
+        flex-direction: column;
+    }
+
+    .gh-offer-discount, .gh-offer-trial-duration, .gh-offer-duration .form-group:not(:first-of-type) {
+        margin-left: 0px;
+    }
+
+    .gh-offer-type-container {
+        flex-direction: column;
+    }
+
+    .gh-offer-type-container .gh-radio:not(:first-child) {
+        border-left: none;
+        border-top: 1px solid #f6f6f6;
+    }
+
+    .gh-offer-title-and-code {
+        grid-template-rows: 1fr 1fr;
+        grid-template-columns: none;
+        grid-column-gap: 0px;
+    }
+
+    .gh-offer-duration .form-group, .gh-offer-tier-and-trial > .form-group {
+        margin-bottom: 1.6em;
+    }
+
+    .gh-offer-trial-duration .form-group {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 1000px) {
+    .gh-offers-list .gh-list-header {
+        display: table-cell !important;
+    }
+}

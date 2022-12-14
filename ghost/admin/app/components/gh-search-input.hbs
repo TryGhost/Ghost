@@ -1,0 +1,23 @@
+<div ...attributes>
+    <div class="ember-power-select-search">
+        <PowerSelect
+            @search={{perform this.searchTask}}
+            @onChange={{this.openSelected}}
+            @onClose={{this.onClose}}
+            @placeholder="Search site"
+            @searchEnabled={{false}}
+            @triggerComponent={{component "gh-input-with-select/trigger"}}
+            @renderInPlace={{true}}
+            @loadingMessage="Loading"
+            @extra={{hash
+                autofocus=true
+                inputType="search"
+                inputIcon="search"
+                inputIconClass="gh-nav-search-icon"
+            }}
+            as |name select|
+        >
+            {{highlighted-text name.title select.searchText}}
+        </PowerSelect>
+    </div>
+</div>

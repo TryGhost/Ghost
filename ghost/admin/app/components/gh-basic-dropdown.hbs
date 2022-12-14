@@ -1,0 +1,39 @@
+{{!-- no changes from upstream --}}
+{{#let
+  (hash
+    uniqueId=this.publicAPI.uniqueId
+    isOpen=this.publicAPI.isOpen
+    disabled=this.publicAPI.disabled
+    actions=this.publicAPI.actions
+    Trigger=(component
+      (or @triggerComponent "basic-dropdown-trigger")
+      dropdown=(readonly this.publicAPI)
+      hPosition=(readonly this.hPosition)
+      renderInPlace=(readonly this.renderInPlace)
+      vPosition=(readonly this.vPosition)
+    )
+    Content=(component
+      (or @contentComponent "basic-dropdown-content")
+      dropdown=(readonly this.publicAPI)
+      hPosition=(readonly this.hPosition)
+      renderInPlace=(readonly this.renderInPlace)
+      preventScroll=(readonly @preventScroll)
+      rootEventType=(or @rootEventType "click")
+      vPosition=(readonly this.vPosition)
+      destination=(readonly this.destination)
+      top=(readonly this.top)
+      left=(readonly this.left)
+      right=(readonly this.right)
+      width=(readonly this.width)
+      height=(readonly this.height)
+      otherStyles=(readonly this.otherStyles)
+    )
+  )
+as |api|
+}}
+  {{#if this.renderInPlace}}
+    <div class="ember-basic-dropdown" ...attributes>{{yield api}}</div>
+  {{else}}
+    {{yield api}}
+  {{/if}}
+{{/let}}

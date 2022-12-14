@@ -1,0 +1,37 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header sticky">
+        {{!-- Remove breadcrumbs for Authors and Contributors --}}
+        {{#if this.currentUser.isAuthorOrContributor}}
+            <h2 class="gh-canvas-title" data-test-screen-title>Your profile</h2>
+        {{else}}
+            <div class="flex flex-column">
+                <div class="gh-canvas-breadcrumb">
+                    {{#unless this.session.user.isEditor}}
+                        <LinkTo @route="settings">
+                            Settings
+                        </LinkTo>
+                        {{svg-jar "arrow-right-small"}}
+                    {{/unless}}
+                    <LinkTo @route="settings.staff" data-test-staff-link={{true}}>
+                        Staff
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}} Profile
+                </div>
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    {{this.user.name}}
+                    {{#if this.user.isSuspended}}
+                        <span class="gh-badge suspended" data-test-suspended-badge>Suspended</span>
+                    {{/if}}
+                </h2>
+            </div>
+        {{/if}}
+
+        <section class="view-actions">
+            <div class="gh-btn gh-btn-primary"><span>Save</span></div>
+        </section>
+    </GhCanvasHeader>
+
+    <div class="gh-content">
+        <GhLoadingSpinner />
+    </div>
+</section>

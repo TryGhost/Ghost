@@ -1,0 +1,89 @@
+<div class="gh-content-import-wrapper">
+    {{#if (eq this.state 'INIT')}}
+        <header class="modal-header" data-test-modal="import-content">
+            <h1>Import content</h1>
+        </header>
+    {{/if}}
+
+    {{#if (eq this.state 'UPLOADING')}}
+        <header class="modal-header" data-test-modal="import-content">
+            <h1>Uploading</h1>
+        </header>
+    {{/if}}
+
+    {{#if (eq this.state 'PROCESSING')}}
+        <header class="modal-header icon-center" data-test-modal="import-content">
+            {{svg-jar "import-in-progress" class="gh-import-content-icon"}}
+            <h1>Import in progress</h1>
+        </header>
+    {{/if}}
+
+    {{#if (eq this.state 'ERROR')}}
+        <header class="modal-header" data-test-modal="import-content">
+            <h1>{{this.errorHeader}}</h1>
+        </header>
+    {{/if}}
+
+    <button class="close" data-test-button="close-import-content" type="button" {{on "click" @close}}>
+        {{svg-jar "close"}}
+        <span class="hidden">Close</span>
+    </button>
+
+    <div class="modal-body">
+        {{#if (eq this.state 'INIT')}}
+            <ModalImportContent::ContentFileSelect @setFile={{action "setFile"}} />
+        {{/if}}
+
+        {{#if (eq this.state 'UPLOADING')}}
+            <div class="gh-import-content-spinner">
+                <GhLoadingSpinner />
+            </div>
+        {{/if}}
+
+        {{#if (eq this.state 'PROCESSING')}}
+        <div class="gh-content-import-resultcontainer">
+            <div class="gh-content-import-result-summary">
+                <p>Your import is being processed, and you&apos;ll receive a confirmation email as soon as it&apos;s complete. Usually this only takes a few minutes, but larger imports may take longer.</p>
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if (eq this.state 'ERROR')}}
+            <div class="failed flex items-start gh-content-upload-errorcontainer error">
+                <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w4 h4 fill-red"}}</div>
+                <p class="ma0 pa0">{{this.errorMessage}}</p>
+            </div>
+        {{/if}}
+    </div>
+
+    <div class="modal-footer">
+        {{#if (eq this.state 'INIT')}}
+            <button class="gh-btn" data-test-button="close-import-content" type="button" {{on "click" @close}}>
+                <span>Close</span>
+            </button>
+        {{/if}}
+
+        {{#if (eq this.state 'UPLOADING')}}
+            <button class="gh-btn" data-test-button="close-import-content" type="button" {{on "click" @close}}>
+                <span>Cancel</span>
+            </button>
+        {{/if}}
+
+        {{#if (eq this.state 'PROCESSING')}}
+            <button class="gh-btn gh-btn-black" data-test-button="close-import-content" type="button" {{on "click" @close}}>
+                <span>Got it</span>
+            </button>
+        {{/if}}
+
+        {{#if (eq this.state 'ERROR')}}
+            {{#if this.showTryAgainButton}}
+                <button class="gh-btn" data-test-button="restart-import-content" type="button" {{action "reset"}}>
+                    <span>Try again</span>
+                </button>
+            {{/if}}
+            <button class="gh-btn gh-btn-black" data-test-button="close-import-content" type="button" {{on "click" @close}}>
+                <span>OK</span>
+            </button>
+        {{/if}}
+    </div>
+</div>

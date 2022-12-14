@@ -1,0 +1,38 @@
+<section class="gh-dashboard-section gh-dashboard-attribution">
+    <article class="gh-dashboard-box" {{did-insert this.loadData}}>
+        {{#if (is-empty this.sources)}}
+            <h3 class="gh-dashboard-metric-label">Top sources</h3>
+            <div class="attribution-list-empty">
+                {{svg-jar "members-outline"}}
+                <h4>No new members in the past {{this.chartPeriod}} days</h4>
+                <p>Once someone signs up, you’ll be able to see where they came from here.</p>
+            </div>
+        {{else}}
+        <div class="gh-dashboard-attribution-grid">
+            <div>
+                <h3 class="gh-dashboard-metric-label">Top sources</h3>
+                <MemberAttribution::SourceAttributionTable
+                    @sources={{this.sources}}
+                    @sortColumn={{this.selectedSortColumn}}
+                    @setSortColumn={{this.setSortColumn}}
+                    class="gh-dashboard-attribution-list gh-dashboard-list"
+                />
+            </div>
+            <div class="gh-dashboard-attribution-chart">
+                <div class="gh-dashboard-attribution-chart-container">
+                    <MemberAttribution::SourceAttributionChart
+                        @sources={{this.chartSources}}
+                        @sortColumn={{this.selectedSortColumn}}
+                    />
+                    <span class="gh-dashboard-attribution-chart-label">{{if (eq this.selectedSortColumn "signups") "Free" "Paid"}}</span>
+                </div>
+                <div id="gh-dashboard-attribution-tooltip" class="gh-dashboard-tooltip">
+                    <div class="gh-dashboard-tooltip-value">
+                        -
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/if}}
+    </article>
+</section>

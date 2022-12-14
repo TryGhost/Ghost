@@ -1,102 +1,103 @@
-# [Ghost](https://github.com/TryGhost/Ghost) [![Build Status](https://travis-ci.org/TryGhost/Ghost.svg?branch=master)](https://travis-ci.org/TryGhost/Ghost)
+&nbsp;
+<p align="center">
+  <a href="https://ghost.org/#gh-light-mode-only" target="_blank">
+    <img src="https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png" alt="Ghost" width="200px">
+  </a>
+  <a href="https://ghost.org/#gh-dark-mode-only" target="_blank">
+    <img src="https://user-images.githubusercontent.com/65487235/157849205-aa24152c-4610-4d7d-b752-3a8c4f9319e6.png" alt="Ghost" width="200px">
+  </a>
+</p>
+&nbsp;
 
-![Ghost Screenshot](https://cloud.githubusercontent.com/assets/120485/4828504/9e832764-5f80-11e4-8ac1-0332bcc67a35.png)
+<p align="center">
+    <a href="https://ghost.org/">Ghost.org</a> •
+    <a href="https://forum.ghost.org">Forum</a> •
+    <a href="https://ghost.org/docs/">Docs</a> •
+    <a href="https://github.com/TryGhost/Ghost/blob/main/.github/CONTRIBUTING.md">Contributing</a> •
+    <a href="https://twitter.com/ghost">Twitter</a>
+    <br /><br />
+    <a href="https://ghost.org/">
+        <img src="https://img.shields.io/badge/downloads-3M-brightgreen.svg" alt="Downloads" />
+    </a>
+    <a href="https://github.com/TryGhost/Ghost/releases/">
+        <img src="https://img.shields.io/github/release/TryGhost/Ghost.svg" alt="Latest release" />
+    </a>
+    <a href="https://github.com/TryGhost/Ghost/actions">
+        <img src="https://github.com/TryGhost/Ghost/workflows/Test%20Suite/badge.svg?branch=main" alt="Build status" />
+    </a>
+    <a href="https://github.com/TryGhost/Ghost/contributors/">
+        <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
+    </a>
+</p>
+<p align="center">
+  Love open source? <a href="https://careers.ghost.org">We're hiring</a> JavaScript engineers to work on Ghost full-time.
+</p>
 
-Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
+&nbsp;
 
-Visit the project's website at <http://ghost.org> &bull; docs on <http://support.ghost.org>.
+<a href="https://ghost.org/"><img src="https://user-images.githubusercontent.com/353959/169805900-66be5b89-0859-4816-8da9-528ed7534704.png" alt="Fiercely independent, professional publishing. Ghost is the most popular open source, headless Node.js CMS which already works with all the tools you know and love." /></a>
 
-## Getting Involved
+&nbsp;
 
-Want to report a bug, request a feature, contribute or translate Ghost? Check out our in-depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get! You can also join in with our [community](https://github.com/TryGhost/Ghost#community) to keep up-to-date and meet other Ghosters.
+<a href="https://ghost.org/pricing/#gh-light-mode-only" target="_blank"><img src="https://user-images.githubusercontent.com/65487235/157849437-9b8fcc48-1920-4b26-a1e8-5806db0e6bb9.png" alt="Ghost(Pro)" width="165px" /></a>
+<a href="https://ghost.org/pricing/#gh-dark-mode-only" target="_blank"><img src="https://user-images.githubusercontent.com/65487235/157849438-79889b04-b7b6-4ba7-8de6-4c1e4b4e16a5.png" alt="Ghost(Pro)" width="165px" /></a>
 
-## Getting Started
+The easiest way to get a production instance deployed is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you.
 
-There are a few different ways to install Ghost, take care to use the method which best suits your needs.
+For most people this ends up being the best value option cause of [how much time it saves](https://ghost.org/docs/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software *and* getting a great service!
 
-**Please note** - the downloadable zip files we provide on [Ghost.org](http://ghost.org/download), the [GitHub releases page](https://github.com/TryGhost/Ghost/releases), and via npm are pre-built packages designed for getting setup quickly. Cloning from the git repository requires you to install several dependencies and build the assets yourself. 
+&nbsp;
 
-### Install from zip (fastest & best for bloggers)
+# Quickstart install
 
-If you just want to get a Ghost blog running in the fastest time possible, this method is for you.
+If you want to run your own instance of Ghost, in most cases the best way is to use our **CLI tool**
 
-For detailed instructions for various platforms visit the [Ghost Installation Guide](http://support.ghost.org/installation/). If you get stuck, help is available on [our support site](http://support.ghost.org/).
+```
+npm install ghost-cli -g
+```
 
-1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**
-1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
-1. Create a new directory where you would like to run the code, and un-zip the package to that location.
-1. Fire up a Terminal, the Node Command Prompt or shell and change directory to the root of the Ghost application (where config.example.js and index.js are)
-1. run `npm install --production` to install the node dependencies. If you see `error Error: ENOENT` on this step, make sure you are in the project directory and try again.
-1. To start ghost, run `npm start`
-1. Visit `http://localhost:2368/` in your web browser or go to `http://localhost:2368/ghost` to log in
+&nbsp;
 
-Check out the [Documentation](http://support.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
+Then, if installing locally add the `local` flag to get up and running in under a minute - [Local install docs](https://ghost.org/docs/install/local/)
 
+```
+ghost install local
+```
 
+&nbsp;
 
-### Install from git
+or on a server run the full install, including automatic SSL setup using LetsEncrypt - [Production install docs](https://ghost.org/docs/install/ubuntu/)
 
-If you're a developer or someone comfortable getting up and running from a `git clone`, this method is for you.
+```
+ghost install
+```
 
-If you clone the GitHub repository, you will need to build a number of assets using grunt.
+&nbsp;
 
-Please do **NOT** use the master branch of Ghost in production. If you are using git to deploy to production, please use the latest [release](https://github.com/TryGhost/Ghost/releases) or the [stable](https://github.com/TryGhost/Ghost/tree/stable) branch which contains the latest release.
+Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/hosting/) & properly [upgrading Ghost](https://ghost.org/docs/update/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/themes/) or work with [our API](https://ghost.org/docs/content-api/).
 
-#### Quickstart:
+### Contributors & advanced developers
 
-1. `npm install -g grunt-cli`
-1. `npm install`
-1. `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
-1. `npm start`
+For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor guide](https://ghost.org/docs/contributing/) • [Developer setup](https://ghost.org/docs/install/source/)
 
-Full instructions & troubleshooting tips can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
+&nbsp;
 
-Check out the [Documentation](http://support.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
+# Ghost sponsors
 
-### Install from npm
+We'd like to extend big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub sponsors](https://github.com/sponsors/TryGhost) :heart:
 
-If you want to build Ghost into a larger node app, or are familiar with using `npm` packages, then this method might be for you.
+**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)**
 
-`npm install ghost`
+&nbsp;
 
-Further setup instructions can be found in the [using Ghost as a NPM module](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-NPM-module) wiki entry.
+# Getting help
 
+You can find answers to a huge variety of questions, along with a large community of helpful developers over on the [Ghost forum](https://forum.ghost.org/) - replies are generally very quick. **Ghost(Pro)** customers also have access to 24/7 email support.
 
-### Upgrading to The Latest Version
+To stay up to date with all the latest news and product updates, make sure you [subscribe to our blog](https://ghost.org/blog/) — or you can always follow us [on Twitter](https://twitter.com/Ghost), if you prefer your updates bite-sized and facetious. :saxophone::turtle:
 
-Upgrade instructions can be found on the [Ghost Support Site](http://support.ghost.org/how-to-upgrade/)
+&nbsp;
 
-### Logging in For The First Time
+# Copyright & license
 
-Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost/` from a web browser, where you will be prompted to setup your blog and user account. Once you have entered your desired credentials you will be automatically logged in to the admin area. The setup screen will not be accessible once the process has been completed.
-
-
-## Community
-
-Keep track of Ghost development and Ghost community activity.
-
-* Follow Ghost on [Twitter](http://twitter.com/TryGhost), [Facebook](https://www.facebook.com/ghost) and [Google+](https://plus.google.com/114465948129362706086).
-* Read and subscribe to the [Official Ghost Blog](http://blog.ghost.org) and the [Ghost Development Blog](http://dev.ghost.org).
-* Join in discussions on the [Ghost Forum](http://ghost.org/forum/)
-* Chat with Ghost developers on IRC. We're on `irc.freenode.net`, in the `#Ghost` channel. We have a public meeting every Tuesday at 5:30pm London time.
-
-
-## Versioning
-
-For transparency and insight into our release cycle, and for striving to maintain backward compatibility, Ghost will be maintained according to the [Semantic Versioning](http://semver.org/) guidelines as much as possible.
-
-Releases will be numbered with the following format:
-
-`<major>.<minor>.<patch>-<build>`
-
-Constructed with the following guidelines:
-
-* A new *major* release indicates a large change where backwards compatibility is broken.
-* A new *minor* release indicates a normal change that maintains backwards compatibility.
-* A new *patch* release indicates a bugfix or small change which does not affect compatibility.
-* A new *build* release indicates this is a pre-release of the version.
-
-
-## Copyright & License
-
-Copyright (c) 2013-2014 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2022 Ghost Foundation - Released under the [MIT license](LICENSE). Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.

@@ -1,0 +1,84 @@
+<div class="flex flex-column h-100">
+    <header class="modal-header gh-post-preview-header" data-test-modal="preview-email">
+        <div class="left">
+            <button class="gh-btn-editor gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
+                <span>{{svg-jar "arrow-left"}} Editor</span>
+            </button>
+        </div>
+        <div class="gh-post-preview-btn-group">
+            <div class="gh-contentfilter gh-btn-group">
+                <button type="button" class="gh-btn {{if (eq this.tab "browser") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "desktop"}}</span></button>
+                <button type="button" class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
+                {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
+                    {{#if (and @data.publishOptions.post.isPost (not @data.publishOptions.user.isContributor))}}
+                        <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "email")}}><span>{{svg-jar "email-unread"}}</span></button>
+                    {{/if}}
+                {{/if}}
+                <button type="button" class="gh-btn {{if (eq this.tab "social") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "social")}}><span>{{svg-jar "twitter"}}</span></button>
+            </div>
+        </div>
+        <div class="right">
+            <button
+                type="button"
+                class="gh-btn gh-btn-editor gh-editor-preview-trigger active"
+                {{on "click" @close}}
+            >
+                <span>Preview</span>
+            </button>
+
+            {{#if @data.publishOptions.user.isContributor}}
+                <GhTaskButton
+                    @buttonText="Save"
+                    @task={{@data.saveTask}}
+                    @runningText="Saving"
+                    @class="gh-btn gh-btn-icon gh-btn-editor gh-editor-save-trigger contributor-save-button"
+                    data-test-preview-contributor-save />
+            {{else}}
+                <button
+                    type="button"
+                    class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+                    {{on "click" @data.togglePreviewPublish}}
+                >
+                    <span>Publish</span>
+                </button>
+            {{/if}}
+
+            <div class="settings-menu-toggle-spacer"></div>
+        </div>
+    </header>
+
+    {{#if this.saveFirstTask.isRunning}}
+        <GhLoadingSpinner />
+    {{else}}
+        {{#if (eq this.tab "browser")}}
+            <Editor::Modals::Preview::Browser
+                @post={{@data.publishOptions.post}}
+                @skipAnimation={{this.skipAnimation}}
+            />
+        {{/if}}
+
+        {{#if (and (eq this.tab "mobile"))}}
+            <Editor::Modals::Preview::Mobile
+                @post={{@data.publishOptions.post}}
+                @skipAnimation={{this.skipAnimation}}
+            />
+        {{/if}}
+
+        {{#unless @data.publishOptions.user.isContributor}}
+            {{#if (and (eq this.tab "email") @data.publishOptions.post.isPost)}}
+                <Editor::Modals::Preview::Email
+                    @post={{@data.publishOptions.post}}
+                    @newsletter={{@data.publishOptions.newsletter}}
+                    @skipAnimation={{this.skipAnimation}}
+                />
+            {{/if}}
+        {{/unless}}
+
+        {{#if (eq this.tab "social")}}
+            <Editor::Modals::Preview::Social
+                @post={{@data.publishOptions.post}}
+                @skipAnimation={{this.skipAnimation}}
+            />
+        {{/if}}
+    {{/if}}
+</div>

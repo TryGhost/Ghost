@@ -1,7 +1,9 @@
-# Reporting Security Issues
+# Reporting Security Vulnerabilities
 
-If you discover a security issue in Ghost, please report it by sending an email to security[at]ghost[dot]org
+Potential security vulnerabilities can be reported directly us at `security@ghost.org`. The Ghost Security Team communicates privately and works in a secured, isolated repository for tracking, testing, and resolving security-related issues.
 
-This will allow us to assess the risk, and make a fix available before we add a bug report to the GitHub repository.
+The full, up-to-date details of our security policy and procedure can always be found in our documentation:
 
-Thanks for helping make Ghost safe for everyone.
+https://ghost.org/docs/security/
+
+Please refer to this before emailing us. Thanks for helping make Ghost safe for everyone 🙏.

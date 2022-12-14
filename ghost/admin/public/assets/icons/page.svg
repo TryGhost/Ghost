@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <title>page</title>
+  <defs>
+    <style>
+      .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <path class="a" d="M16.5 21.513a1.5 1.5 0 0 1-1.9 1.446L4.1 20.042A1.5 1.5 0 0 1 3 18.6V2.487a1.5 1.5 0 0 1 1.9-1.446l10.5 3.391a1.5 1.5 0 0 1 1.1 1.445Z"/>
+  <path class="a" d="M4.5.987h15a1.5 1.5 0 0 1 1.5 1.5v15.75a1.5 1.5 0 0 1-1.5 1.5h-3"/>
+</svg>

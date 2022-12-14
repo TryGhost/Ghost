@@ -1,0 +1,137 @@
+.kg-file-card,
+.kg-file-card * {
+    box-sizing: border-box;
+}
+
+.kg-file-card {
+    display: flex;
+}
+
+.kg-file-card a.kg-file-card-container {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    color: inherit;
+    padding: 6px;
+    min-height: 92px;
+    border: 1px solid rgb(124 139 154 / 25%);
+    border-radius: 3px;
+    transition: all ease-in-out 0.35s;
+    text-decoration: none;
+    width: 100%;
+}
+
+.kg-file-card a.kg-file-card-container:hover {
+    border: 1px solid rgb(124 139 154 / 35%);
+}
+
+.kg-file-card-contents {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 4px 8px;
+    width: 100%
+}
+
+.kg-file-card-title {
+    font-size: 1.15em;
+    font-weight: 700;
+    line-height: 1.3em;
+}
+
+.kg-file-card-caption {
+    font-size: 0.95em;
+    line-height: 1.3em;
+    opacity: 0.6;
+}
+
+.kg-file-card-title + .kg-file-card-caption {
+    margin-top: -3px;
+}
+
+.kg-file-card-metadata {
+    display: inline;
+    font-size: 0.825em;
+    line-height: 1.3em;
+    margin-top: 2px;
+}
+
+.kg-file-card-filename {
+    display: inline;
+    font-weight: 500;
+}
+
+.kg-file-card-filesize {
+    display: inline-block;
+    font-size: 0.925em;
+    opacity: 0.6;
+}
+
+.kg-file-card-filesize:before {
+    display: inline-block;
+    content: "\2022";
+    margin-right: 4px;
+}
+
+.kg-file-card-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    min-width: 80px;
+    height: 100%;
+}
+
+.kg-file-card-icon:before {
+    position: absolute;
+    display: block;
+    content: "";
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0.06;
+    transition: opacity ease-in-out 0.35s;
+    border-radius: 2px;
+}
+
+.kg-file-card a.kg-file-card-container:hover .kg-file-card-icon:before {
+    opacity: 0.08;
+}
+
+.kg-file-card-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--ghost-accent-color);
+}
+
+/* Size variations */
+.kg-file-card-medium a.kg-file-card-container {
+    min-height: 72px;
+}
+
+.kg-file-card-medium .kg-file-card-caption {
+    opacity: 1.0;
+    font-weight: 500;
+}
+
+.kg-file-card-small a.kg-file-card-container {
+    align-items: center;
+    min-height: 52px;
+}
+
+.kg-file-card-small .kg-file-card-metadata {
+    font-size: 1.0em;
+    margin-top: 0;
+}
+
+.kg-file-card-small .kg-file-card-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.kg-file-card + .kg-file-card {
+    margin-top: 1em;
+}

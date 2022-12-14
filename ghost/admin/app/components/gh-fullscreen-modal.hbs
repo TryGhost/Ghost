@@ -1,0 +1,18 @@
+<LiquidWormhole @class="fullscreen-modal-container">
+    <div class="fullscreen-modal-background" {{action "clickOverlay"}}></div>
+    <div class={{this.modalClasses}}>
+        {{#if (has-block)}}
+          {{yield}}
+        {{else}}
+            {{#let (component this.modalPath) as |ModalComponent|}}
+                <ModalComponent
+                    @model={{this.model}}
+                    @confirm={{action "confirm"}}
+                    @closeModal={{action "close"}}
+                    @modifier={{this.modifier}}
+                    @updateModifier={{action (mut this.modifier)}}
+                />
+            {{/let}}
+        {{/if}}
+    </div>
+</LiquidWormhole>

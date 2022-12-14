@@ -1,0 +1,73 @@
+/* Splitbuttons
+/* ---------------------------------------------------------- */
+
+.splitbtn {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    /* Flatten out the right side */
+    /* Flatten out the left side */
+}
+
+.splitbtn .gh-btn {
+    position: relative;
+    float: left;
+    /* Prevent double border between buttons */
+    /* Make sure the hovered element is always on
+    // top so overlap from .gh-btn + btn. invisible */
+}
+
+.splitbtn .gh-btn + .gh-btn {
+    margin-left: -1px;
+}
+
+.splitbtn .gh-btn:hover,
+.splitbtn .gh-btn:focus,
+.splitbtn .gh-btn:active,
+.splitbtn .gh-btn.active {
+    z-index: 2;
+}
+
+.splitbtn .gh-btn:first-child {
+    margin-left: 0;
+}
+
+.splitbtn .gh-btn:first-child:not(:last-child):not(.dropdown-toggle) {
+    height: 31px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.splitbtn .dropdown-toggle {
+    padding-right: 12px;
+    padding-left: 12px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    /* This is the additional dropdown arrow, to the right of the button. */
+}
+
+.splitbtn .dropdown-toggle.gh-btn-sm {
+    padding-right: 10px;
+    padding-left: 10px;
+    height: 31px;
+}
+
+.splitbtn .dropdown-toggle.gh-btn-lg {
+    padding-right: 16px;
+    padding-left: 16px;
+}
+
+.splitbtn .dropdown-toggle .options {
+    color: #fff;
+    text-align: center;
+}
+
+.splitbtn .dropdown-toggle svg {
+    height: 10px;
+    fill: #fff;
+}
+
+.splitbtn .dropdown-toggle svg path {
+    stroke: #fff;
+    stroke-width: 2px;
+}

@@ -1,0 +1,3 @@
+email,name,note,subscribed_to_emails,labels,created_at
+jbloggs@example.com,joe,,true,,
+test@example.com,test,"test note",false,"test-label","1991-10-02T20:30:31.000Z"

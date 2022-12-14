@@ -1,0 +1,129 @@
+<div class="koenig-editor__editor-wrapper" data-kg="editor-wrapper">
+    <div class="koenig-editor__editor" data-kg="editor"></div>
+</div>
+
+{{!-- pop-up markup toolbar is shown when there's a selection --}}
+<KoenigToolbar
+    @editor={{this.editor}}
+    @editorRange={{this.selectedRange}}
+    @activeMarkupTagNames={{this.activeMarkupTagNames}}
+    @activeSectionTagNames={{this.activeSectionTagNames}}
+    @toggleMarkup={{action "toggleMarkup"}}
+    @toggleSection={{action "toggleSection"}}
+    @toggleHeaderSection={{action "toggleHeaderSection"}}
+    @editLink={{action "editLink"}}
+    @addSnippet={{this.addSnippetIfPossible}}
+/>
+
+{{!-- pop-up link hover toolbar --}}
+<KoenigLinkToolbar
+    @editor={{this.editor}}
+    @container={{this.element}}
+    @linkRange={{this.linkRange}}
+    @selectedRange={{this.selectedRange}}
+    @editLink={{action "editLink"}}
+/>
+
+{{!-- pop-up link editing toolbar --}}
+{{#if this.linkRange}}
+    <KoenigLinkInput
+        @editor={{this.editor}}
+        @linkRange={{this.linkRange}}
+        @linkRect={{this.linkRect}}
+        @selectedRange={{this.selectedRange}}
+        @cancel={{action "cancelEditLink"}}
+    />
+{{/if}}
+
+{{!-- pop-up snippet editing toolbar --}}
+{{#if this.snippetRange}}
+    <KoenigSnippetInput
+        @editor={{this.editor}}
+        @snippetRange={{this.snippetRange}}
+        @snippetRect={{this.snippetRect}}
+        @snippets={{@snippets}}
+        @save={{@saveSnippet}}
+        @update={{@updateSnippet}}
+        @cancel={{this.cancelAddSnippet}}
+    />
+{{/if}}
+
+{{!-- pop-up media selector --}}
+{{#if this.activeSelectorComponent}}
+    <KoenigMediaSelector
+        @editor={{this.editor}}
+        @editorRange={{this.selectedRange}}
+        @replaceWithCardSection={{action "replaceWithCardSection"}}
+        @scrollContainerSelector={{this.scrollContainerSelector}}
+        @close={{action "closeSelectorComponent"}}
+        as |selector|
+    >
+        {{component this.activeSelectorComponent selector=selector}}
+    </KoenigMediaSelector>
+{{/if}}
+
+{{!-- (+) icon and pop-up menu --}}
+<KoenigPlusMenu
+    @editor={{this.editor}}
+    @editorRange={{this.selectedRange}}
+    @snippets={{this.snippets}}
+    @deleteSnippet={{this.deleteSnippet}}
+    @replaceWithCardSection={{action "replaceWithCardSection"}}
+    @replaceWithPost={{action "replaceWithPost"}}
+    @openSelectorComponent={{action "openSelectorComponent"}}
+    @postType={{@postType}}
+/>
+
+{{!-- slash menu popup --}}
+<KoenigSlashMenu
+    @editor={{this.editor}}
+    @editorRange={{this.selectedRange}}
+    @snippets={{this.snippets}}
+    @deleteSnippet={{this.deleteSnippet}}
+    @replaceWithCardSection={{action "replaceWithCardSection"}}
+    @replaceWithPost={{action "replaceWithPost"}}
+    @openSelectorComponent={{action "openSelectorComponent"}}
+    @postType={{@postType}}
+/>
+
+{{!-- all component cards wormholed into the editor canvas --}}
+{{#each this.componentCards as |card|}}
+    {{#in-element card.destinationElement}}
+        {{component card.componentName
+            editor=this.editor
+            postModel=card.postModel
+            cardName=card.cardName
+            payload=card.payload
+            env=card.env
+            options=card.options
+            headerOffset=this.headerOffset
+            saveCard=(action card.env.save)
+            cancelCard=(action card.env.cancel)
+            removeCard=(action card.env.remove)
+            scrollToCard=(action "_scrollToCard" card)
+            isSelected=card.isSelected
+            isEditing=card.isEditing
+            selectCard=(action "_selectCard" card)
+            deselectCard=(action "_deselectCard" card)
+            editCard=(action "_editCard" card)
+            deleteCard=(action "_deleteCard" card)
+            saveAsSnippet=(if this.saveCardAsSnippetIfPossible (fn (optional this.saveCardAsSnippetIfPossible) card))
+            moveCursorToPrevSection=(action "moveCursorToPrevSection" card)
+            moveCursorToNextSection=(action "moveCursorToNextSection" card)
+            addParagraphAfterCard=(action "addParagraphAfterCard" card)
+            registerComponent=(action (mut card.component))
+        }}
+    {{/in-element}}
+{{/each}}
+
+{{!-- all component atoms wormholed into the editor canvas --}}
+{{#each this.componentAtoms as |atom|}}
+    {{#in-element atom.destinationElement}}
+        {{component atom.componentName
+            editor=this.editor
+            atom=atom
+            saveAtom=(fn atom.env.save atom.env.value atom.env.payload)
+            registerComponent=(action (mut atom.component))
+        }}
+    {{/in-element}}
+{{/each}}

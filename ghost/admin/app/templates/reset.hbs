@@ -1,0 +1,45 @@
+<div class="gh-flow">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content fade-in">
+            <form id="reset" class="gh-signin" method="post" novalidate="novalidate" {{on "submit" (perform this.resetPasswordTask)}}>
+                <header>
+                    <div class="gh-site-icon" style={{site-icon-style}}></div>
+                    <h1>Reset your password.</h1>
+                </header>
+                <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="newPassword">
+                    <span class="gh-input-icon gh-icon-lock">
+                        <input
+                            type="password"
+                            name="newPassword"
+                            placeholder="New password"
+                            aria-label="New password"
+                            class="gh-input password reset-password"
+                            autocorrect="off"
+                            value={{this.newPassword}}
+                            {{autofocus}}
+                            {{on "input" this.handleInput}}
+                        />
+                    </span>
+                </GhFormGroup>
+                <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="ne2Password">
+                    <span class="gh-input-icon gh-icon-lock">
+                        <input
+                            type="password"
+                            name="ne2Password"
+                            placeholder="Confirm new password"
+                            aria-label="Confirm new password"
+                            class="gh-input password reset-password"
+                            autocorrect="off"
+                            value={{this.ne2Password}}
+                            {{on "input" this.handleInput}}
+                        />
+                    </span>
+                </GhFormGroup>
+
+                <GhTaskButton @buttonText="Save new password" @task={{this.resetPasswordTask}} @class="gh-btn gh-btn-reset gh-btn-block gh-btn-icon" @type="submit" @autoWidth="false" />
+            </form>
+
+            <p class="main-error">{{this.flowErrors}}&nbsp;</p>
+        </section>
+    </div>
+</div>

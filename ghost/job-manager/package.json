@@ -1,0 +1,36 @@
+{
+  "name": "@tryghost/job-manager",
+  "private": true,
+  "version": "0.0.0",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test": "yarn test:unit",
+    "lint": "eslint . --ext .js --cache"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "devDependencies": {
+    "@sinonjs/fake-timers": "10.0.0",
+    "c8": "7.12.0",
+    "date-fns": "2.29.3",
+    "delay": "5.0.0",
+    "mocha": "10.2.0",
+    "should": "13.2.3",
+    "sinon": "14.0.2"
+  },
+  "dependencies": {
+    "@breejs/later": "4.1.0",
+    "@tryghost/errors": "1.2.19",
+    "@tryghost/logging": "2.3.5",
+    "bree": "6.5.0",
+    "cron-validate": "1.4.5",
+    "fastq": "1.14.0",
+    "p-wait-for": "3.2.0"
+  }
+}

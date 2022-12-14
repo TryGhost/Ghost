@@ -1,0 +1,18 @@
+301:
+  /my-old-blog-post/: /revamped-url/
+  /test-params/: /result?q=abc
+
+302:
+  ^/post/[0-9]+/([a-z0-9\-]+): /$1
+  ^/what(/?)$: /what-does-god-say
+  ^/search/label/([^\%20]+)$: /tag/$1
+  ^/topic/: /
+  ^/resources/download(/?)$: /shubal-stearns
+  ^\/(?:capture1|capture2)\/([A-Za-z0-9\-]+): /$1
+  ^/[0-9]{4}/[0-9]{2}/([a-z0-9\-]+)(\.html)?(/)?$: /$1
+  ^/prefix/([a-z0-9\-]+)?: /blog/$1
+  /^/case-insensitive/i: /redirected-insensitive
+  ^/Case-Sensitive: /redirected-sensitive
+  ^/Default-Sensitive: /redirected-default
+  /external-url: https://ghost.org
+  /external-url/(.*): https://ghost.org/$1

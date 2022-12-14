@@ -1,0 +1,34 @@
+<div class="{{this.visibilityClass}}">
+    <div class="explore-close">
+        <a href="javascript:void(0)" {{on "click" this.closeConnect}} data-test-button="close-explore">
+            {{svg-jar "close"}}<span class="hidden">Close</span>
+        </a>
+    </div>
+    <div class="explore-content">
+
+        <div class="explore-header">
+            {{svg-jar "ghost-orb-pink" alt="Ghost" class="w25 v-mid"}}
+            <h1>Connect to Ghost Explore.</h1>
+            <p class="explore-api">{{this.apiUrl}}</p>
+        </div>
+
+        <div class="explore-permissions">
+            <div>
+                <span>{{svg-jar "check-circle" class="w6 v-mid" alt="checkmark"}}</span>
+                <p>Allow read-only access to your site data to create a directory listing.</p>
+            </div>
+            <div>
+                <span>{{svg-jar "check-circle" class="w6 v-mid" alt="checkmark"}}</span>
+                <p>You’ll be able to choose what data is shown publicly or hidden.</p>
+            </div>
+            <div>
+                <span>{{svg-jar "check-circle" class="w6 v-mid" alt="checkmark"}}</span>
+                <p>Your site will be promoted across the entire Ghost ecosystem.</p>
+            </div>
+        </div>
+
+        <button type="button" class="gh-btn gh-btn-black gh-btn-large gh-btn-icon-right" {{on "click" this.submitExploreSite}} data-test-button="submit-explore">
+            <span>Connect data &amp; edit listing {{svg-jar "arrow-right-tail"}}</span>
+        </button>
+    </div>
+</div>

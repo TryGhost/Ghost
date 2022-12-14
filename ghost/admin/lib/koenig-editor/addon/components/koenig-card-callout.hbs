@@ -1,0 +1,86 @@
+<KoenigCard
+    @env={{@env}}
+    @class={{concat (kg-style "container-card") " kg-callout-card-container"}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{true}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @onLeaveEdit={{this.leaveEditMode}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.registerElement}}
+    as |card|
+>
+    {{#if @isEditing}}
+
+        <div class="kg-card kg-callout-card kg-callout-card-{{@payload.backgroundColor}}">
+            {{#if @payload.calloutEmoji}}
+            <button type="button" class="kg-callout-emoji {{if this.isPickerVisible "kg-emoji-picker-active"}}" {{on "click" this.changeEmoji}}>{{@payload.calloutEmoji}}</button>
+            {{/if}}
+            <KoenigBasicHtmlInput
+                @html={{@payload.calloutText}}
+                @placeholder="Callout text..."
+                @autofocus={{true}}
+                @class="w-100 bn bg-transparent"
+                @onChange={{this.setCalloutText}}
+                @onFocus={{fn (mut this.isFocused) true}}
+                @onBlur={{fn (mut this.isFocused) false}}
+                @didCreateEditor={{this.registerEditor}}
+                @allowBr={{true}}
+            />
+            <KoenigSettingsPanel>
+                <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                    <div class="kg-settings-panel-control-label">Emoji</div>
+                    <div class="kg-settings-panel-control-input">
+                        <div class="for-switch x-small">
+                            <label class="switch" for="has-emoji">
+                                <input
+                                    type="checkbox"
+                                    checked={{@payload.calloutEmoji}}
+                                    id="has-emoji"
+                                    {{on "click" this.toggleEmoji}}
+                                    data-test-has-emoji
+                                >
+                                <span class="input-toggle-component mt1"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kg-settings-panel-control">
+                    <div class="kg-settings-panel-control-label">Background color</div>
+                    <div class="kg-settings-panel-control-input">
+                        <div class="kg-callout-palette">
+                            {{#each this.backgroundColors as |option| }}
+                                <span class="kg-callout-palette-swatch {{if (eq this.selectedBackgroundColor option) "selected-swatch"}}" title={{option.name}} {{on "click" (fn this.setBackgroundColor option)}}>
+                                    <div class="kg-callout-palette-swatch-{{option.color}} w-100 h-100 br2"></div>
+                                </span>
+                            {{/each}}
+                        </div>
+                    </div>
+
+                </div>
+            </KoenigSettingsPanel>
+        </div>
+
+    {{else}}
+
+        <div class="kg-card kg-callout-card kg-callout-card-{{@payload.backgroundColor}}">
+            {{#if @payload.calloutEmoji}}
+            <div class="kg-callout-emoji {{if this.isPickerVisible "kg-emoji-picker-active"}}">{{@payload.calloutEmoji}}</div>
+            {{/if}}
+            <div><p>{{{@payload.calloutText}}}</p></div>
+        </div>
+        <div class="koenig-card-click-overlay"></div>
+
+    {{/if}}
+</KoenigCard>

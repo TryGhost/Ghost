@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <title>paint-palette</title>
+  <defs>
+    <style>
+      .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <circle class="a" cx="5.288" cy="5.25" r="1.5"/>
+  <circle class="a" cx="5.288" cy="11.25" r="1.5"/>
+  <circle class="a" cx="5.288" cy="17.25" r="1.5"/>
+  <path class="a" d="M9.2 19.337a3.913 3.913 0 0 1-7.826 0V2.707A1.957 1.957 0 0 1 3.331.75h3.913A1.957 1.957 0 0 1 9.2 2.707Z"/>
+  <path class="a" d="m8.643 21.352 8.349-14.461a1.957 1.957 0 0 0-.716-2.673l-3.389-1.956A1.951 1.951 0 0 0 11.87 2"/>
+  <path class="a" d="m7.293 22.7 14.354-8.29a1.957 1.957 0 0 0 .716-2.672l-1.957-3.389a1.945 1.945 0 0 0-.5-.57"/>
+</svg>

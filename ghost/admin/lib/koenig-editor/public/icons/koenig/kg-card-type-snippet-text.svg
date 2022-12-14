@@ -1,0 +1,7 @@
+<svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path data-selector="bg" d="M2 24h13l9-9V2a2 2 0 00-2-2H2a2 2 0 00-2 2v20a2 2 0 002 2z" fill="#F0F6F9"/>
+<path data-selector="fold" d="M15 16v8l9-9h-8a1 1 0 00-1 1z" fill="#DAE8F1"/>
+<rect data-selector="line" x="5.25" y="4.5" width="10.5" height="1.5" rx=".75" fill="#738A94"/>
+<rect data-selector="line" x="5.25" y="8.25" width="13.5" height="1.5" rx=".75" fill="#738A94"/>
+<rect data-selector="line" x="5.25" y="12" width="7.5" height="1.5" rx=".75" fill="#738A94"/>
+</svg>

@@ -1,0 +1,126 @@
+/*
+
+   Ghost color variables
+   Modifications use PostCSS color mod function: https://github.com/postcss/postcss-color-mod-function
+
+*/
+
+:root {
+    /* Base colors */
+    --black: #fff;
+    --white: #263238;
+    --lime: #B5FF18;
+    --blue: #3eb0ef;
+    --green: #a4d037;
+    --purple: #ad26b4;
+    --yellow: #fecd35;
+    --red: #f05230;
+    --pink: #fa3a57;
+    --white: #15171a;
+    --extra-darkgrey: #191b1f;
+
+    --black-10: rgba(255, 255, 255, 0.1);
+    --black-20: rgba(255, 255, 255, 0.2);
+    --black-30: rgba(255, 255, 255, 0.3);
+    --black-40: rgba(255, 255, 255, 0.4);
+    --black-50: rgba(255, 255, 255, 0.5);
+    --black-60: rgba(255, 255, 255, 0.6);
+    --black-70: rgba(255, 255, 255, 0.7);
+    --black-80: rgba(255, 255, 255, 0.8);
+    --black-90: rgba(255, 255, 255, 0.9);
+
+    --white-10: rgba(21, 23, 26, 0.1);
+    --white-20: rgba(21, 23, 26, 0.2);
+    --white-30: rgba(21, 23, 26, 0.3);
+    --white-40: rgba(21, 23, 26, 0.4);
+    --white-50: rgba(21, 23, 26, 0.5);
+    --white-60: rgba(21, 23, 26, 0.6);
+    --white-70: rgba(21, 23, 26, 0.7);
+    --white-80: rgba(21, 23, 26, 0.8);
+    --white-90: rgba(21, 23, 26, 0.9);
+
+    --whitegrey: #1f2328;
+    --lightgrey: #2a3037;
+    --midlightgrey: #586574;
+    --midgrey: #7f8d9f;
+    --middarkgrey: #c2cbd6;
+    --darkgrey: #e5eff5;
+
+    --transparent:transparent;
+
+    /* Tone variations */
+    --blue-d3: color-mod(var(--blue) l(+15%));
+    --blue-d2: color-mod(var(--blue) l(+10%));
+    --blue-d1: color-mod(var(--blue) l(+5%));
+    --blue-l1: color-mod(var(--blue) l(-5%));
+    --blue-l2: color-mod(var(--blue) l(-10%));
+    --blue-l3: color-mod(var(--blue) l(-15%));
+
+    --green-d3: color-mod(var(--green) l(+15%));
+    --green-d2: color-mod(var(--green) l(+10%));
+    --green-d1: color-mod(var(--green) l(+5%));
+    --green-l1: color-mod(var(--green) l(-5%));
+    --green-l2: color-mod(var(--green) l(-10%));
+    --green-l3: color-mod(var(--green) l(-15%));
+
+    --purple-d3: color-mod(var(--purple) l(+15%));
+    --purple-d2: color-mod(var(--purple) l(+10%));
+    --purple-d1: color-mod(var(--purple) l(+5%));
+    --purple-l1: color-mod(var(--purple) l(-5%));
+    --purple-l2: color-mod(var(--purple) l(-10%));
+    --purple-l3: color-mod(var(--purple) l(-15%));
+
+    --yellow-d3: color-mod(var(--yellow) l(+15%));
+    --yellow-d2: color-mod(var(--yellow) l(+10%));
+    --yellow-d1: color-mod(var(--yellow) l(+5%));
+    --yellow-l1: color-mod(var(--yellow) l(-5%));
+    --yellow-l2: color-mod(var(--yellow) l(-10%));
+    --yellow-l3: color-mod(var(--yellow) l(-13%));
+
+    --red-d3: color-mod(var(--red) l(+15%));
+    --red-d2: color-mod(var(--red) l(+10%));
+    --red-d1: color-mod(var(--red) l(+5%));
+    --red-l1: color-mod(var(--red) l(-5%));
+    --red-l2: color-mod(var(--red) l(-10%));
+    --red-l3: color-mod(var(--red) l(-15%));
+
+    --pink-d3: color-mod(var(--pink) l(+15%));
+    --pink-d2: color-mod(var(--pink) l(+10%));
+    --pink-d1: color-mod(var(--pink) l(+5%));
+    --pink-l1: color-mod(var(--pink) l(-5%));
+    --pink-l2: color-mod(var(--pink) l(-10%));
+    --pink-l3: color-mod(var(--pink) l(-15%));
+
+    --darkgrey-d2: color-mod(var(--darkgrey) h(-1) l(+7%));
+    --darkgrey-d1: color-mod(var(--darkgrey) h(+1) l(+3%));
+    --darkgrey-l1: color-mod(var(--darkgrey) l(-3%));
+    --darkgrey-l2: color-mod(var(--darkgrey) l(-6%));
+
+    --middarkgrey-d2: color-mod(var(--middarkgrey) h(+1) l(+7%));
+    --middarkgrey-d1: color-mod(var(--middarkgrey) h(+2) l(+4%));
+    --middarkgrey-l1: color-mod(var(--middarkgrey) h(+2) l(-3%));
+    --middarkgrey-l2: color-mod(var(--middarkgrey) h(+1) l(-7%));
+
+    --midgrey-d2: color-mod(var(--midgrey) h(+2) s(+2%) l(+7%));
+    --midgrey-d1: color-mod(var(--midgrey) h(+1) s(+1%) l(+4%));
+    --midgrey-l1: color-mod(var(--midgrey) h(+1) l(-3%));
+    --midgrey-l2: color-mod(var(--midgrey) l(-7%));
+
+    --midlightgrey-d2: color-mod(var(--midlightgrey) h(-3) s(+2%) l(+8%));
+    --midlightgrey-d1: color-mod(var(--midlightgrey) h(-1) s(+1%) l(+4%));
+    --midlightgrey-l1: color-mod(var(--midlightgrey) h(+1) s(-1%) l(-3%));
+    --midlightgrey-l2: color-mod(var(--midlightgrey) h(-3) s(-2%) l(-7%));
+
+    --lightgrey-d2: color-mod(var(--lightgrey) h(+1) s(+14%) l(+8%));
+    --lightgrey-d1: color-mod(var(--lightgrey) h(+1) s(+12%) l(+6%));
+    --lightgrey-l1: color-mod(var(--lightgrey) s(-1%) l(-4%));
+    --lightgrey-l2: color-mod(var(--lightgrey) h(-2) s(-2%) l(-7%));
+
+    --whitegrey-d2: color-mod(var(--whitegrey) h(+7) s(-4%) l(+5%));
+    --whitegrey-d1: color-mod(var(--whitegrey) h(+1) s(-2%) l(+3%));
+    --whitegrey-l1: color-mod(var(--whitegrey) h(-1) s(-7%) l(-3%));
+    --whitegrey-l2: color-mod(var(--whitegrey) h(-1) s(-11%) l(-6%));
+
+    /* Special colors */
+    --errorbg-lightred: rgba(240, 82, 48, 0.05);
+}

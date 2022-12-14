@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+        <title>{{post.title}}</title>
+        {{>styles}}
+    </head>
+    <body>
+        <span class="preheader">{{preheader}}</span>
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border="0" cellpadding="0" cellspacing="0" width="600">
+            <![endif]-->
+            <tr>
+                <td>&nbsp;</td>
+                <td class="container">
+                    <div class="content">
+                        <!-- START CENTERED WHITE CONTAINER -->
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
+
+                            <!-- START MAIN CONTENT AREA -->
+                            <tr>
+                                <td class="wrapper">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        {{#if headerImage}}
+                                            <tr>
+                                                <td class="header-image" width="100%" align="center">
+                                                    <img
+                                                        src="{{headerImage}}"
+                                                        {{#if headerImageWidth}}
+                                                            width="{{headerImageWidth}}"
+                                                        {{/if}}
+                                                    >
+                                                </td>
+                                            </tr>
+                                        {{/if}}
+
+                                        {{#if (or showHeaderIcon showHeaderTitle showHeaderName) }}
+                                            <tr>
+                                                <td class="{{#if showHeaderTitle}}site-info-bordered{{else}}site-info{{/if}}" width="100%" align="center">
+                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                        {{#if (and showHeaderIcon site.iconUrl) }}
+                                                            <tr>
+                                                                <td class="site-icon"><a href="{{site.url}}"><img src="{{site.iconUrl}}" alt="{{site.title}}" border="0"></a></td>
+                                                            </tr>
+                                                        {{/if}}
+                                                        {{#if showHeaderTitle }}
+                                                            <tr>
+                                                                <td class="site-url {{#unless showHeaderName}}site-url-bottom-padding{{/unless}}"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-title">{{site.title}}</a></div></td>
+                                                            </tr>
+                                                        {{/if}}
+                                                        {{#if (and showHeaderName showHeaderTitle) }}
+                                                            <tr>
+                                                                <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-subtitle">{{newsletter.name}}</a></div></td>
+                                                            </tr>
+                                                        {{/if}}
+                                                        {{#if (and showHeaderName (not showHeaderTitle)) }}
+                                                            <tr>
+                                                                <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-title">{{newsletter.name}}</a></div></td>
+                                                            </tr>
+                                                        {{/if}}
+
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        {{/if}}
+
+                                        <tr>
+                                            <td class="{{classes.title}}">
+                                                <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                    <tr>
+                                                        <td class="{{classes.meta}}">
+                                                            By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        {{#if showFeatureImage }}
+                                            <tr>
+                                                <td class="feature-image
+                                                    {{#if post.feature_image_caption }}
+                                                        feature-image-with-caption
+                                                    {{/if}}
+                                                "><img
+                                                    src="{{post.feature_image}}"
+                                                    {{#if post.feature_image_width }}
+                                                        width="{{post.feature_image_width}}"
+                                                    {{/if}}
+                                                    {{#if post.feature_image_alt }}
+                                                        alt="{{post.feature_image_alt}}"
+                                                    {{/if}}
+                                                ></td>
+                                            </tr>
+                                            {{#if post.feature_image_caption }}
+                                                <tr>
+                                                    <td class="feature-image-caption" align="center">{{post.feature_image_caption}}</td>
+                                                </tr>
+                                            {{/if}}
+                                        {{/if}}
+                                        <tr>
+                                            <td class="{{classes.body}}">
+                                                <!-- POST CONTENT START -->
+                                                {{{html}}}
+                                                <!-- POST CONTENT END -->
+
+                                                {{#if paywall}}
+                                                    {{>paywall}}
+                                                {{/if}}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <!-- END MAIN CONTENT AREA -->
+
+                            {{#if feedbackButtons }}
+                                <tr>
+                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 40px 4px; border-bottom: 1px solid #e5eff5" align="center">
+                                        <h3 style="text-align: center; margin-bottom: 22px; font-size: 17px; letter-spacing: -0.2px; margin-top: 0 !important;">Give feedback on this post</h3>
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: auto; width: auto !important;">
+                                            <tr>
+                                                {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' className="like-icon" iconUrl="https://static.ghost.org/v5.0.0/images/thumbs-up.png" }}
+                                                {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' className="dislike-icon" iconUrl="https://static.ghost.org/v5.0.0/images/thumbs-down.png" }}
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {{/if}}
+
+                            <tr>
+                                <td class="wrapper" align="center">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px; padding-bottom: 30px;">
+                                        {{#if footerContent }}
+                                            <tr><td class="footer">{{{footerContent}}}</td></tr>
+                                        {{/if}}
+                                        <tr>
+                                            <td class="footer">{{site.title}} &copy; {{year}} – <a href="%%{unsubscribe_url}%%">Unsubscribe</a></td>
+                                        </tr>
+
+                                        {{#if showBadge }}
+                                            <tr>
+                                                <td class="footer-powered"><a href="https://ghost.org/"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
+                                            </tr>
+                                        {{/if}}
+                                    </table>
+                                </td>
+                            </tr>
+
+                        </table>
+                        <!-- END CENTERED WHITE CONTAINER -->
+                    </div>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+
+            <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+            <![endif]-->
+        </table>
+    </body>
+</html>

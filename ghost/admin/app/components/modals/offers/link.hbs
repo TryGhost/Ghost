@@ -1,0 +1,26 @@
+<div class="modal-content">
+    <header class="modal-header">
+        <h1>Offer link</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            You can share this link anywhere. In your newsletter, social media, a podcast, or in-person. It all just works.
+        </p>
+        <div class="gh-input-group">
+            <GhTextInput
+                @name="url"
+                @value={{this.offerUrl}}
+                @id="url"
+                @disabled="disabled"
+                @class="gh-input" />
+
+            <GhTaskButton
+                @buttonText="Copy link"
+                @task={{this.copyOfferUrl}}
+                @successText="Link copied"
+                @class="gh-btn gh-btn-black gh-btn-icon" />
+        </div>
+    </div>
+</div>

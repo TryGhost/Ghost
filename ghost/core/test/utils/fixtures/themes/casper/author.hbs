@@ -1,0 +1,57 @@
+{{!< default}}
+{{!-- The tag above means - insert everything in this file into the {body} of the default.hbs template --}}
+
+
+<section class="outer">
+    <div class="inner posts">
+
+        <header class="author-profile">
+            {{#author}}
+            {{!-- Everything inside the #author tags pulls data from the author --}}
+
+            <div class="author-profile-content">
+
+                {{#if profile_image}}
+                <img class="author-profile-pic" src="{{profile_image}}" alt="{{name}}" />
+                {{else}}
+                <span class="author-profile-pic">{{> "icons/avatar"}}</span>
+                {{/if}}
+
+                <h1>{{name}}</h1>
+                <p>
+                    {{#if bio}}
+                        {{bio}}
+                    {{else}}
+                        {{plural ../pagination.total empty='No posts' singular='% post' plural='% posts'}} published
+                    {{/if}}
+                </p>
+
+                <div class="author-profile-meta">
+                    {{#if location}}
+                    <div class="author-profile-location">📍 {{location}}</div>
+                    {{/if}}
+                    {{#if website}}
+                    <span><a class="author-profile-social-link" href="{{website}}" target="_blank" rel="noopener">{{website}}</a></span>
+                    {{/if}}
+                    {{#if twitter}}
+                    <span><a class="author-profile-social-link" href="{{twitter_url}}" target="_blank" rel="noopener">{{twitter_url}}</a></span>
+                    {{/if}}
+                    {{#if facebook}}
+                    <span><a class="author-profile-social-link" href="{{facebook_url}}" target="_blank" rel="noopener">{{facebook_url}}</a></span>
+                    {{/if}}
+                </div>
+
+            </div>
+
+            {{/author}}
+        </header>
+
+        <div class="post-feed">
+            {{#foreach posts}}
+                {{!-- The tag below includes the markup for each post - partials/post-card.hbs --}}
+                {{> "post-card"}}
+            {{/foreach}}
+        </div>
+
+    </div>
+</section>

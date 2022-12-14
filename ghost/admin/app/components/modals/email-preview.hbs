@@ -1,0 +1,46 @@
+<div class="modal-content">
+    <header class="modal-header gh-pe-header gh-pe-header-border" data-test-modal="preview-email" style="display:flex">
+        <h2 class="f6 fw6">{{this.subject}}</h2>
+        <div>
+            <div class="gh-contentfilter gh-btn-group gh-pe-btn-group" style="display:flex;flex-grow:1;justify-content:center">
+                <button class="gh-btn {{if (eq this.tab "desktop") "gh-btn-group-selected"}}" type="button" {{on "click" (fn this.changeTab "desktop")}}><span>Desktop</span></button>
+                <button class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}}" type="button" {{on "click" (fn this.changeTab "mobile")}}><span>Mobile</span></button>
+            </div>
+        </div>
+        <div class="gh-pe-close">
+            <button class="close" href title="Close" type="button" {{on "click" @close}}>
+                {{svg-jar "close"}}
+            </button>
+        </div>
+    </header>
+
+    {{#if (eq this.tab "mobile")}}
+        <div class="modal-body modal-preview-email-content gh-pe-mobile-container">
+            <div class="gh-pe-mobile-bezel center mt4">
+                <div class="gh-pe-mobile-screen">
+                    <div class="gh-pe-emailclient-sender">
+                        <p>
+                            <span class="strong">{{or this.newsletter.senderName this.settings.title}}</span> &lt;{{full-email-address (or this.newsletter.senderEmail "noreply")}}&gt;
+                        </p>
+                        <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
+                    </div>
+                    <iframe class="bn gh-pe-iframe" {{did-insert this.renderEmailPreview}} sandbox="allow-same-origin"></iframe>
+                </div>
+            </div>
+        </div>
+    {{/if}}
+
+    {{#if (eq this.tab "desktop")}}
+        <div class="modal-body modal-preview-email-content gh-pe-desktop-container">
+            <div class="gh-pe-emailclient-mockup">
+                <div class="gh-pe-emailclient-sender">
+                    <p>
+                        <span class="strong">{{or this.newsletter.senderName this.settings.title}}</span> &lt;{{full-email-address (or this.newsletter.senderEmail "noreply")}}&gt;
+                    </p>
+                    <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
+                </div>
+                <iframe class="gh-pe-iframe" {{did-insert this.renderEmailPreview}} sandbox="allow-same-origin"></iframe>
+            </div>
+        </div>
+    {{/if}}
+</div>

@@ -1,0 +1,8 @@
+<div class="slug">{{tag.slug}}</div>
+
+{{#foreach posts}}
+
+{{!-- The tag below includes the markup for each post - partials/post-card.hbs --}}
+<article class="post-card {{post_class}}{{#unless feature_image}} no-image{{/unless}}">{{title}}</article>
+
+{{/foreach}}

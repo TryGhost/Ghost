@@ -1,0 +1,188 @@
+<KoenigCard
+    @env={{@env}}
+    @class={{concat "kg-card kg-video-card kg-card-hover mih10 miw-100 relative ba b--transparent" (kg-style "breakout" size=@payload.cardWidth)}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{not this.isEmpty}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.didInsert}}
+    {{on "dragover" this.dragOver}}
+    {{on "dragleave" this.dragLeave}}
+    {{on "drop" this.drop}}
+    as |card|
+>
+    <GhUploader
+        @uploadUrl="/media/upload/"
+        @resourceName="media"
+        @files={{this.files}}
+        @accept={{this.videoMimeTypes}}
+        @extensions={{this.videoExtensions}}
+        @onStart={{this.videoUploadStarted}}
+        @onComplete={{this.videoUploadCompleted}}
+        @onFailed={{this.videoUploadFailed}}
+        as |uploader|
+    >
+        <div class="relative{{unless (or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc) " bg-whitegrey-l2"}}">
+            {{#if (or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc)}}
+                <div class="aspect-ratio" style={{this.aspectRatioPaddingStyle}}>
+                    <img src={{or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc}} class="aspect-ratio--object" style="object-fit: cover">
+                </div>
+                {{#unless (or uploader.isUploading uploader.errors)}}
+                    <div class="image-overlay">
+                        <button class="kg-large-play-icon" type="button">{{svg-jar "play"}}</button>
+                    </div>
+                {{/unless}}
+                {{#if this.isDraggedOver}}
+                    <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
+                        <span class="db center sans-serif fw7 f7 white">
+                            Drop to replace video
+                        </span>
+                    </div>
+                {{/if}}
+            {{/if}}
+
+            {{#if (or uploader.errors uploader.isUploading (not @payload.src))}}
+                <div class="relative miw-100 flex items-center justify-center {{unless @payload.src "kg-media-placeholder ba b--whitegrey bg-whitegrey-l2" "absolute absolute--fill bg-white-50"}}">
+                    {{#if uploader.errors}}
+                    <span class="kg-upload-error">
+                            {{uploader.errors.firstObject.message}}
+                        </span>
+                    {{/if}}
+
+                    {{#if this.isDraggedOver}}
+                        <span class="db center sans-serif fw7 f7 middarkgrey">
+                            Drop it like it's hot 🔥
+                        </span>
+                    {{else if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else if (not this.previewThumbnailSrc @payload.src)}}
+                        <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" type="button" {{on "click" this.triggerVideoFileDialog}}>
+                            {{svg-jar "film-camera" class="kg-placeholder-video"}}
+                            <span class="mt4 kg-upload-placeholder-text">Click to select a video</span>
+                        </button>
+                    {{/if}}
+                </div>
+            {{else}}
+                <div class="kg-player-container">
+                    <div class="kg-player {{if (eq @payload.cardWidth "full") "kg-player-full"}}">
+                        <button class="kg-player-play-icon" type="button">{{svg-jar "play"}}</button>
+                        <span class="kg-player-current-time">0:00</span>
+                        <div class="kg-player-time">
+                            /<span class="kg-player-duration">{{this.totalDuration}}</span>
+                        </div>
+                        <input type="range" class="kg-player-seek-slider" max="100" value="0">
+                        <button class="kg-player-playback-rate" type="button">1&#215;</button>
+                        <button class="kg-player-unmute-icon" type="button">{{svg-jar "unmute"}}</button>
+                        <input type="range" class="kg-player-volume-slider" max="100" value="70">
+                    </div>
+                </div>
+            {{/if}}
+        </div>
+
+        <div style="display:none">
+            <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.videoMimeTypes}} @onInsert={{this.registerVideoFileInput}} />
+        </div>
+    </GhUploader>
+
+    {{#if (or @isSelected (clean-basic-html @payload.caption))}}
+        <card.CaptionInput
+            @caption={{@payload.caption}}
+            @update={{fn this.updatePayloadAttr "caption"}}
+            @placeholder="Type caption for video (optional)" />
+    {{/if}}
+</KoenigCard>
+
+{{#if (and @isEditing @payload.src)}}
+    <KoenigSettingsPanel>
+        <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+            <div class="kg-settings-panel-control-label">Video width</div>
+            <div class="kg-settings-panel-control-input">
+                <div class="gh-btn-group icons">
+                    <button type="button" title="Regular" class="gh-btn gh-btn-icon {{unless @payload.cardWidth "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" null)}}><span>{{svg-jar "koenig/kg-img-regular" class="fill-darkgrey"}}</span></button>
+                    <button type="button" title="Wide" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "wide") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "wide")}}><span>{{svg-jar "koenig/kg-img-wide" class="fill-darkgrey"}}</span></button>
+                    <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "full")}}><span>{{svg-jar "koenig/kg-img-full" class="fill-darkgrey"}}</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+            <label class="kg-settings-panel-control-label" for="loop-toggle">Loop</label>
+            <div class="kg-settings-panel-control-input">
+                <div class="for-switch x-small">
+                    <label class="switch">
+                        <input type="checkbox" class="gh-input" id="loop-toggle" checked={{@payload.loop}} {{on "input" this.toggleLoop}}>
+                        <span class="input-toggle-component mt1"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="kg-settings-panel-control-info video">Autoplay your video on a loop without sound.</div>
+
+        <GhUploader
+            @uploadUrl="/images/upload/"
+            @accept={{this.imageMimeTypes}}
+            @extensions={{this.imageExtensions}}
+            @onStart={{this.customThumbnailUploadStarted}}
+            @onComplete={{this.customThumbnailUploadCompleted}}
+            as |uploader|
+        >
+
+            {{#unless @payload.loop}}
+                <div class="kg-settings-panel-control">
+                    <label class="kg-settings-panel-control-label">Custom thumbnail</label>
+                    <div class="kg-settings-panel-control-input">
+                            <div class="relative w-100">
+                                {{#if uploader.isUploading}}
+                                    {{!-- {{uploader.progressBar}} --}}
+                                    <div class="kg-upload-thumbnail-xl">
+                                        {{uploader.progressBar}}
+                                    </div>
+                                {{else if @payload.customThumbnailSrc}}
+                                    <div class="kg-thumbnail-xl-container">
+                                        <img class="kg-thumbnail-xl" src={{@payload.customThumbnailSrc}} {{on "click" uploader.triggerFileDialog}}>
+                                        <div class="image-overlay">
+                                            <div class="flex flex-row-reverse">
+                                                <button class="bg-white-90 br3 pe-auto" type="button" {{on "click" this.deleteCustomThumbnail}}>
+                                                    {{svg-jar "koenig/kg-trash" class="kg-replace-icon fill-darkgrey"}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{else}}
+                                    <button type="button" class="gh-btn kg-upload-thumbnail-xl" {{on "click" uploader.triggerFileDialog}}>
+                                        {{svg-jar "upload-fill"}}
+                                    </button>
+                                {{/if}}
+                            </div>
+                            <div style="display:none">
+                                <GhFileInput
+                                    @multiple={{false}}
+                                    @action={{uploader.setFiles}}
+                                    @accept={{this.imageMimeTypes}}
+                                    @onInsert={{uploader.registerFileInput}}
+                                />
+                            </div>
+                    </div>
+                    {{#if uploader.errors}}
+                        <div class="kg-settings-panel-control-info">
+                            {{#each uploader.errors as |error|}}
+                                <span class="red">{{error.message}}</span>
+                            {{/each}}
+                        </div>
+                    {{/if}}
+                </div>
+            {{/unless}}
+        </GhUploader>
+    </KoenigSettingsPanel>
+{{/if}}

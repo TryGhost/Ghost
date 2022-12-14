@@ -1,0 +1,105 @@
+<div
+    class="gh-editor-feature-image-container"
+    {{on "mouseover" (fn (mut this.isHovered) true)}}
+    {{on "mouseleave" (fn (mut this.isHovered) false)}}
+>
+    <GhUploader
+        @extensions={{this.imageExtensions}}
+        @onComplete={{this.setUploadedImage}}
+        as |uploader|
+    >
+        {{#unless @image}}
+            <div
+                class="gh-editor-feature-image-dropzone"
+                {{on "dragover" this.dragOver}}
+                {{on "dragleave" this.dragLeave}}
+                {{on "drop" (fn this.drop uploader.setFiles)}}
+            ></div>
+        {{/unless}}
+
+        {{#if this.canDrop}}
+            <div class="gh-editor-feature-image-drop-indicator bg-green br-pill pe-none"></div>
+        {{/if}}
+
+        {{#if uploader.isUploading}}
+            {{!-- upload in progress --}}
+            {{uploader.progressBar}}
+        {{else if uploader.errors}}
+            {{!-- upload failed --}}
+            {{#each uploader.errors as |error|}}
+                <div class="gh-setting-error" data-test-error="feature-image">
+                    {{or error.context error.message}}
+                    <button type="button" class="ml2 b" {{on "click" uploader.cancel}}>Retry</button>
+                </div>
+            {{/each}}
+        {{else if @image}}
+            {{!-- image is present --}}
+            <span class="gh-editor-feature-image-indicator" data-tooltip="A feature image is publicly visible to anyone">
+                {{svg-jar "feature-image"}}
+            </span>
+            <div class="gh-editor-feature-image">
+                <img src={{@image}}>
+                <button type="button" class="image-delete" title="Delete image" {{on "click" @clearImage}}>
+                    {{svg-jar "trash"}}
+                </button>
+            </div>
+            <div class="flex justify-between align-center">
+                {{#if this.isEditingAlt}}
+                    <input
+                        type="text"
+                        placeholder="Add alt text to the feature image"
+                        class="gh-editor-feature-image-alttext"
+                        name="alt"
+                        value={{@alt}}
+                        {{autofocus}}
+                        {{on "input" this.onAltInput}}
+                    >
+                {{else}}
+                    <KoenigBasicHtmlInput
+                        @html={{@caption}}
+                        @placeholder={{if this.captionInputFocused "" "Add a caption to the feature image"}}
+                        @class="gh-editor-feature-image-caption"
+                        @name="caption"
+                        @onChange={{@updateCaption}}
+                        @onFocus={{fn (mut this.captionInputFocused) true}}
+                        @onBlur={{fn (mut this.captionInputFocused) false}}
+                    />
+                {{/if}}
+                <button
+                    title="Toggle between editing alt text and caption"
+                    class="h-100 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-green b--green white" "bg-white b--midlightgrey midlightgrey"}}" type="button" {{on "click" this.toggleAltEditing passive=true}}
+                >
+                    Alt
+                </button>
+            </div>
+        {{else}}
+            {{!-- no-image state --}}
+            <div class="flex flex-row items-center {{if this.hideButton "invisible"}}">
+                {{#if this.canDrop}}
+                    <div class="gh-editor-feature-image-add-button"><span>Drop to upload feature image</span></div>
+                {{else}}
+                    <button type="button" class="gh-editor-feature-image-add-button" {{on "click" uploader.triggerFileDialog}}>{{svg-jar "plus"}}<span>Add feature image</span></button>
+                    {{#if this.settings.unsplash}}
+                        <button type="button" class="gh-editor-feature-image-unsplash" {{on "click" this.toggleUnsplashSelector}}>{{svg-jar "unsplash"}}</button>
+                    {{/if}}
+                {{/if}}
+            </div>
+        {{/if}}
+
+        <div style="display:none">
+            <GhFileInput
+                @multiple={{false}}
+                @action={{uploader.setFiles}}
+                @accept={{uploader.imageMimeTypes}}
+                @onInsert={{uploader.registerFileInput}}
+                data-test-file-input="feature-image" />
+        </div>
+    </GhUploader>
+</div>
+
+{{#if this.showUnsplashSelector}}
+    <GhUnsplash
+        @select={{this.setUnsplashImage}}
+        @close={{this.toggleUnsplashSelector}}
+    />
+{{/if}}

@@ -1,0 +1,12 @@
+{
+  "include": ["core/**/*.js", "test/**/*.js"],
+  "compilerOptions": {
+     "checkJs": true,
+     "module": "commonjs",
+     "target": "es2018",
+     "moduleResolution": "node"
+  },
+  "exclude": [
+    "core/built"
+  ]
+}

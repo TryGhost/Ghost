@@ -1,0 +1,43 @@
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+    <div class="flex flex-grow-1 justify-between">
+        <div class="flex justify-between items-center relative">
+            <span class="gh-setting-title" for={{this.inputId}}>
+                {{humanize-setting-key @setting.key}}
+            </span>
+        </div>
+        <div>
+            <div class="input-color">
+                <input
+                    type="text"
+                    id={{this.inputId}}
+                    name={{this.inputName}}
+                    autocorrect="off"
+                    maxlength="6"
+                    value={{this.colorWithoutHash}}
+                    class="gh-input"
+                    {{on "input" (perform this.debounceValueUpdate)}}
+                    {{on "blur" this.updateValue}}
+                    {{on-key "Enter" this.blurElement}}
+                    data-test-input="accentColor"
+                />
+                <div class="color-picker-horizontal-divider"></div>
+                <div
+                    class="color-box-container"
+                    style={{this.this.colorPickerBgStyle}}
+                >
+                    <input
+                        type="color"
+                        name={{this.inputName}}
+                        class="color-picker"
+                        value={{@setting.value}}
+                        {{on "input" (perform this.debounceValueUpdate)}}
+                    >
+                </div>
+            </div>
+
+            {{#if this.isInvalid}}
+                <div class="w-100 red">Please enter a color in hex format</div>
+            {{/if}}
+        </div>
+    </div>
+</div>

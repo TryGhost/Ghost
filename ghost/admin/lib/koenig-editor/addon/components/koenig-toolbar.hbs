@@ -1,0 +1,93 @@
+<KgActionBar @class="relative" @instantClose={{true}} @isVisible={{this.showToolbar}}>
+    <li class="ma0 lh-solid">
+        <button
+            type="button"
+            title="Bold"
+            class="dib dim-lite link h9 w9 nudge-top--1"
+            {{on "click" (fn this._toggleMarkup "strong")}}
+        >
+            {{svg-jar "koenig/kg-bold" class=(concat (if this.activeMarkupTagNames.isStrong "fill-green-l2" "fill-white") " w4 h4")}}
+        </button>
+    </li>
+    <li class="ma0 lh-solid">
+        <button
+            type="button"
+            title="Italic"
+            class="dib dim-lite link h9 w9 nudge-top--1"
+            {{on "click" (fn this._toggleMarkup "em")}}
+        >
+            {{svg-jar "koenig/kg-italic" class=(concat (if (or this.activeMarkupTagNames.isEm this.activeMarkupTagNames.isI) "fill-green-l2" "fill-white") " w4 h4")}}
+        </button>
+    </li>
+    {{#unless this.basicOnly}}
+        <li class="ma0 lh-solid">
+            <button
+                type="button"
+                title="Heading 2"
+                class="dib dim-lite link h9 w9 nudge-top--1"
+                {{on "click" (fn this._toggleHeaderSection "h2")}}
+            >
+                {{svg-jar "koenig/kg-heading-1" class=(concat (if this.activeSectionTagNames.isH2 "fill-green-l2" "fill-white") " w4 h4")}}
+            </button>
+        </li>
+        <li class="ma0 lh-solid">
+            <button
+                type="button"
+                title="Heading 3"
+                class="dib dim-lite link h9 w9 nudge-top--1"
+                {{on "click" (fn this._toggleHeaderSection "h3")}}
+                data-test-button="toolbar-h3"
+            >
+                {{svg-jar "koenig/kg-heading-2" class=(concat (if this.activeSectionTagNames.isH3 "fill-green-l2" "fill-white") " w4 h4")}}
+            </button>
+        </li>
+    {{/unless}}
+
+    <li class="ma0 ml1 mr1 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
+
+    {{#unless this.basicOnly}}
+        <li class="ma0 lh-solid">
+            <button
+                type="button"
+                title="Quote"
+                class="dib dim-lite link h9 w9 nudge-top--1"
+                {{on "click" this.toggleQuoteSection}}
+            >
+                {{#if this.activeSectionTagNames.isBlockquote}}
+                    {{svg-jar "koenig/kg-quote-1" class="fill-green w4 h4"}}
+                {{else if this.activeSectionTagNames.isAside}}
+                    {{svg-jar "koenig/kg-quote-2" class="fill-green w4 h4"}}
+                {{else}}
+                    {{svg-jar "koenig/kg-quote" class="fill-white w4 h4"}}
+                {{/if}}
+            </button>
+        </li>
+    {{/unless}}
+    <li class="ma0 lh-solid">
+        <button
+            type="button"
+            title="Link"
+            class="dib dim-lite link h9 w9 nudge-top--1"
+            {{on "click" this._editLink}}
+        >
+            {{svg-jar "koenig/kg-link" class=(concat (if this.activeMarkupTagNames.isA "fill-green-l2" "fill-white") " w4 h4")}}
+        </button>
+    </li>
+
+    {{#if @addSnippet}}
+        {{#unless this.basicOnly}}
+            <li class="ma0 ml1 mr1 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
+            <li class="ma0 lh-solid">
+                <button
+                    type="button"
+                    title="Create snippet"
+                    class="dib dim-lite link h9 w9 nudge-top--1"
+                    {{on "click" @addSnippet}}
+                >
+                    {{svg-jar "koenig/kg-snippet" class="w4 h4"}}
+                </button>
+            </li>
+        {{/unless}}
+    {{/if}}
+
+</KgActionBar>
