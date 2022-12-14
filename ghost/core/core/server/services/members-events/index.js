@@ -23,13 +23,16 @@ class MembersEventsServiceWrapper {
             labsService
         });
 
+        const db = require('../../data/db');
+
         this.lastSeenAtUpdater = new LastSeenAtUpdater({
             services: {
                 settingsCache
             },
             getMembersApi() {
                 return members.api;
-            }
+            },
+            db
         });
 
         this.eventStorage.subscribe(DomainEvents);
