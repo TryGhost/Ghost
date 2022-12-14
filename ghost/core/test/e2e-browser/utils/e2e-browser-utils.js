@@ -237,10 +237,12 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}, enableInPorta
  * @param {string} options.name
  * @param {string} options.tierName
  * @param {string} options.offerType
+ * @param {string} [options.discountType]
+ * @param {number} [options.discountDuration]
  * @param {number} options.amount
  * @returns {Promise<string>} Unique offer name
  */
-const createOffer = async (page, {name, tierName, offerType, amount}) => {
+const createOffer = async (page, {name, tierName, offerType, amount, discountType = null, discountDuration = 3}) => {
     await page.goto('/ghost');
     await page.locator('.gh-nav a[href="#/offers/"]').click();
 
@@ -282,6 +284,14 @@ const createOffer = async (page, {name, tierName, offerType, amount}) => {
         await page.locator('input#trial-duration').fill(`${amount}`);
     } else if (offerType === 'discount') {
         await page.locator('input#amount').fill(`${amount}`);
+        if (discountType === 'multiple-months') {
+            await page.locator('[data-test-select="offer-duration"]').selectOption('repeating');
+            await page.locator('input#duration-months').fill(discountDuration.toString());
+        }
+
+        if (discountType === 'forever') {
+            await page.locator('[data-test-select="offer-duration"]').selectOption('forever');
+        }
     }
 
     const priceId = await page.locator(`.gh-select-product-cadence>select>option`).getByText(`${tierName} - Monthly`).getAttribute('value');
