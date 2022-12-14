@@ -169,10 +169,10 @@ class EmailService {
     }
 
     /**
-     * 
-     * @param {*} post 
-     * @param {*} newsletter 
-     * @param {import('./email-renderer').Segment} segment 
+     *
+     * @param {*} post
+     * @param {*} newsletter
+     * @param {import('./email-renderer').Segment} segment
      * @returns {Promise<{subject: string, html: string, plaintext: string}>} Email preview
      */
     async previewEmail(post, newsletter, segment) {
@@ -195,10 +195,10 @@ class EmailService {
     }
 
     /**
-     * 
-     * @param {*} post 
-     * @param {*} newsletter 
-     * @param {import('./email-renderer').Segment} segment 
+     *
+     * @param {*} post
+     * @param {*} newsletter
+     * @param {import('./email-renderer').Segment} segment
      * @param {string[]} emails
      */
     async sendTestEmail(post, newsletter, segment, emails) {
