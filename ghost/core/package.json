@@ -174,7 +174,7 @@
     "juice": "8.1.0",
     "keypair": "1.0.4",
     "knex": "2.3.0",
-    "knex-migrator": "5.0.7",
+    "knex-migrator": "5.0.8",
     "lodash": "4.17.21",
     "luxon": "3.0.3",
     "moment": "2.24.0",

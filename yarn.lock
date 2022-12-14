@@ -4373,19 +4373,19 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.17":
-  version "1.2.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.17.tgz#f6383952342afa2168c8e8b977cfbe09116ce390"
-  integrity sha512-YHs+laS0j8MpZlREgU459SJA4RHaulqki9mg1VgYGgircqGE+ny7H0vBu8m1nDk1Nyu69K7MWMYH0fWPr7ajEA==
+"@tryghost/errors@1.2.18":
+  version "1.2.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.18.tgz#beb71d794a25af01f1a0c79b4a4afc903fa963a7"
+  integrity sha512-4XKfiVQe6GgRCcCvLE6LmeMwWNQAowuNwV58rPI8rnFgsDp49gTsMqL/1HOqK/L2x2BIETbYt1kFHO5ai4qa0Q==
   dependencies:
     "@stdlib/utils" "^0.0.12"
     lodash "^4.17.21"
     uuid "^9.0.0"
 
-"@tryghost/errors@1.2.18", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.17", "@tryghost/errors@^1.2.18", "@tryghost/errors@^1.2.3":
-  version "1.2.18"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.18.tgz#beb71d794a25af01f1a0c79b4a4afc903fa963a7"
-  integrity sha512-4XKfiVQe6GgRCcCvLE6LmeMwWNQAowuNwV58rPI8rnFgsDp49gTsMqL/1HOqK/L2x2BIETbYt1kFHO5ai4qa0Q==
+"@tryghost/errors@1.2.19", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.17", "@tryghost/errors@^1.2.18", "@tryghost/errors@^1.2.3":
+  version "1.2.19"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.19.tgz#626f14e54f97def2468cee4029dcad224350300f"
+  integrity sha512-9Yh6cwPVXfWpqwVyCTJIhkfHca70V61wQuNmHUOaxV8KTKIgHbykx9KZ70oIQuNUPrRcdkb2a7oNlPXtmDiBOA==
   dependencies:
     "@stdlib/utils" "^0.0.12"
     lodash "^4.17.21"
@@ -4545,7 +4545,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.2.3", "@tryghost/logging@2.3.2", "@tryghost/logging@^2.2.3":
+"@tryghost/logging@2.2.3", "@tryghost/logging@2.3.2", "@tryghost/logging@2.3.5", "@tryghost/logging@^2.2.3":
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.3.2.tgz#31559c2f6eebb481a0ee8e9a958b2a2d8d55f82e"
   integrity sha512-XIKSNwcG1ARNzSakXXk0jX2Pph3LMHSXQAKAm9q50fKgvX5kMdyHlunmu/NikkFsctOF8MTBGm6BJ97QW3F5IA==
@@ -17592,14 +17592,14 @@ klona@^2.0.4, klona@^2.0.5:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.5.tgz#d166574d90076395d9963aa7a928fabb8d76afbc"
   integrity sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==
 
-knex-migrator@5.0.7:
-  version "5.0.7"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.7.tgz#270f369ba2217744d0162b75f797ca63de2118dc"
-  integrity sha512-53ycXsT7k02ofWezDb6eJ670RrhVhSr5QbJNCv5XFEy8Z/AGyvCFfm1V/iYfIZ+r6ZX9c7nH6iasGDAlBfp78Q==
+knex-migrator@5.0.8:
+  version "5.0.8"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.8.tgz#540be9bb0ea0a88fd748a2cffe1b6f6e8958b20c"
+  integrity sha512-xHBeoHgH0o8cL/Ay9Hh/58wr/gRW1OBzWt+UJxgKP/Af82pYQr6/RgLADMHEQhUxNKGTQUjfKvryiHO4aEGUpw==
   dependencies:
     "@tryghost/database-info" "0.3.10"
-    "@tryghost/errors" "1.2.17"
-    "@tryghost/logging" "2.3.2"
+    "@tryghost/errors" "1.2.19"
+    "@tryghost/logging" "2.3.5"
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
@@ -17611,7 +17611,7 @@ knex-migrator@5.0.7:
     nconf "0.12.0"
     resolve "1.22.1"
   optionalDependencies:
-    sqlite3 "5.1.2"
+    sqlite3 "5.1.4"
 
 knex@2.3.0:
   version "2.3.0"
@@ -24210,17 +24210,6 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
-
-sqlite3@5.1.2:
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.1.2.tgz#f50d5b1482b6972fb650daf6f718e6507c6cfb0f"
-  integrity sha512-D0Reg6pRWAFXFUnZKsszCI67tthFD8fGPewRddDCX6w4cYwz3MbvuwRICbL+YQjBAh9zbw+lJ/V9oC8nG5j6eg==
-  dependencies:
-    "@mapbox/node-pre-gyp" "^1.0.0"
-    node-addon-api "^4.2.0"
-    tar "^6.1.11"
-  optionalDependencies:
-    node-gyp "8.x"
 
 sqlite3@5.1.4:
   version "5.1.4"
