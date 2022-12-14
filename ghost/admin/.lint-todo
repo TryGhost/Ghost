@@ -1092,3 +1092,12 @@ remove|ember-template-lint|no-action|254|15|254|15|20eb710122c95e74c9293fe14e11f
 remove|ember-template-lint|require-valid-alt-text|18|24|18|24|c1c041ff951875c8cf87ba24bd45d2a2a7597969|1662681600000|1673053200000|1678237200000|app/templates/settings/integrations/zapier.hbs
 remove|ember-template-lint|no-action|58|103|58|103|7e581bf2ffd5254ae851201e1f23cb9eaa9b198b|1668643200000|1679011200000|1684195200000|app/components/modal-import-content.hbs
 remove|ember-template-lint|no-action|71|95|71|95|031d04576149d3034549aa3d14bc26da704cd70c|1668643200000|1679011200000|1684195200000|app/components/modal-import-content.hbs
+remove|ember-template-lint|no-action|21|19|21|19|1cf358e2bf9d6fbb6abdc967c327ac9236e817dc|1662681600000|1673053200000|1678237200000|app/components/gh-benefit-item.hbs
+remove|ember-template-lint|no-action|22|22|22|22|b05a3bfe0536cd1cacb3a5803246be6f16857425|1662681600000|1673053200000|1678237200000|app/components/gh-benefit-item.hbs
+remove|ember-template-lint|no-action|24|23|24|23|cb8946eb596d861488d6f957a8cb9d8be47d6dbd|1662681600000|1673053200000|1678237200000|app/components/gh-benefit-item.hbs
+remove|ember-template-lint|no-action|35|49|35|49|3b24461a9c5dc4b6f39e0fcce071fcfde7944812|1662681600000|1673053200000|1678237200000|app/components/gh-benefit-item.hbs
+remove|ember-template-lint|no-action|39|52|39|52|2c005989f1aa2542a49c3a89330e445d0016efef|1662681600000|1673053200000|1678237200000|app/components/gh-benefit-item.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|21|12|21|12|4069dec45ac2a31d440780c914b2307ad1c6ea5f|1662681600000|1673053200000|1678237200000|app/components/gh-benefit-item.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|22|12|22|12|e53f64794fdd0fe8c8b027d1831942d7c78c503b|1662681600000|1673053200000|1678237200000|app/components/gh-benefit-item.hbs
+add|ember-template-lint|no-passed-in-event-handlers|23|16|23|16|d47dcf0c8eea7584639b48d5a99b7db07436c259|1670976000000|1681340400000|1686524400000|app/components/gh-benefit-item.hbs
+add|ember-template-lint|no-passed-in-event-handlers|24|16|24|16|14a806b3f993ec777b1a5ff7e00887e5840bbb77|1670976000000|1681340400000|1686524400000|app/components/gh-benefit-item.hbs
