@@ -788,6 +788,14 @@ export default class EditorController extends Controller {
             this._koenig.cleanup();
         }
 
+        // user can enter the slug name and then leave the post page,
+        // in such case we should wait until the slug would be saved on backend
+        if (this.updateSlugTask.isRunning) {
+            transition.abort();
+            await this.updateSlugTask.last;
+            return transition.retry();
+        }
+
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
