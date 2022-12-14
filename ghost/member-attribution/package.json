@@ -23,6 +23,6 @@
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/member-events": "0.0.0",
     "@tryghost/referrers": "0.0.0",
-    "@tryghost/string": "0.2.1"
+    "@tryghost/string": "0.2.2"
   }
 }

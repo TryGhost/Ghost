@@ -24,17 +24,17 @@
     "sinon": "14.0.2"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.18",
-    "@tryghost/tpl": "0.1.19",
+    "@tryghost/errors": "1.2.19",
+    "@tryghost/tpl": "0.1.20",
     "bson-objectid": "2.0.4",
     "@tryghost/email-events": "0.0.0",
     "moment-timezone": "0.5.23",
     "handlebars": "4.7.7",
-    "@tryghost/kg-default-cards": "5.18.5",
-    "@tryghost/color-utils": "0.1.21",
+    "@tryghost/kg-default-cards": "5.18.7",
+    "@tryghost/color-utils": "0.1.22",
     "@tryghost/html-to-plaintext": "0.0.0",
     "juice": "8.1.0",
     "cheerio": "0.22.0",
-    "@tryghost/logging": "2.3.2"
+    "@tryghost/logging": "2.3.5"
   }
 }
