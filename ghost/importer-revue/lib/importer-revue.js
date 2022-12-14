@@ -13,7 +13,7 @@ const RevueImporter = {
         }
 
         const csvData = papaparse.parse(importData.revue.revue.issues, {header: true});
-        const jsonData = importData.revue.revue.items;
+        // const jsonData = importData.revue.revue.items;
 
         csvData.data.forEach((postMeta) => {
             // Convert issues to posts
@@ -26,12 +26,12 @@ const RevueImporter = {
             const revuePostID = postMeta.id;
             let postHTML = postMeta.description;
 
-            const postItems = _.filter(jsonData, {issue_id: revuePostID});
-            const sortedPostItems = (postItems) ? _.sortBy(postItems, o => o.order) : [];
-            if (postItems) {
-                const convertedItems = convertItemToHTML(sortedPostItems);
-                postHTML = `${postMeta.description}${convertedItems}`;
-            }
+            // const postItems = _.filter(jsonData, {issue_id: revuePostID});
+            // const sortedPostItems = (postItems) ? _.sortBy(postItems, o => o.order) : [];
+            // if (postItems) {
+            //     const convertedItems = convertItemToHTML(sortedPostItems);
+            //     postHTML = `${postMeta.description}${convertedItems}`;
+            // }
 
             posts.push({
                 comment_id: revuePostID,
