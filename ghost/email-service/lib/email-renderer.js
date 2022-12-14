@@ -477,6 +477,25 @@ class EmailRenderer {
     }
 
     /**
+     * Get email preheader text from post model
+     * @param {object} postModel
+     * @returns
+     */
+    #getEmailPreheader(postModel) {
+        let plaintext = postModel.get('plaintext');
+        let customExcerpt = postModel.get('custom_excerpt');
+        if (customExcerpt) {
+            return customExcerpt;
+        } else {
+            if (plaintext) {
+                return plaintext.substring(0, 500);
+            } else {
+                return `${postModel.get('title')} – `;
+            }
+        }
+    }
+
+    /**
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall}) {
@@ -535,7 +554,7 @@ class EmailRenderer {
                         image: this.#settingsCache.get('icon')
                     }, true) : null
             },
-            preheader: post.get('excerpt') ? post.get('excerpt') : `${post.get('title')} – `,
+            preheader: this.#getEmailPreheader(post),
             html,
 
             post: {
