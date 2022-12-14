@@ -293,7 +293,8 @@ export default class KoenigPlusMenu extends Component {
                 // from positionAtPoint(x,y) whilst dragging a selection
                 // TypeError: Failed to execute 'compareDocumentPosition' on 'Node': parameter 1 is not of type 'Node'.
                 if (e instanceof TypeError === false) {
-                    throw e;
+                    // don't throw because this isn't fatal
+                    console.error(e); // eslint-disable-line
                 }
             }
 

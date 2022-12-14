@@ -131,14 +131,20 @@ export default class KoenigLinkToolbar extends Component {
             return;
         }
 
-        let editor = this.editor;
-        let x = this._targetRect.x + this._targetRect.width / 2;
-        let y = this._targetRect.y + this._targetRect.height / 2;
-        let position = editor.positionAtPoint(x, y);
-        let linkMarkup = position.marker && position.marker.markups.findBy('tagName', 'a');
-        if (linkMarkup) {
-            let linkRange = position.toRange().expandByMarker(marker => !!marker.markups.includes(linkMarkup));
-            return linkRange;
+        const editor = this.editor;
+        const x = this._targetRect.x + this._targetRect.width / 2;
+        const y = this._targetRect.y + this._targetRect.height / 2;
+
+        try {
+            const position = editor.positionAtPoint(x, y);
+            const linkMarkup = position.marker && position.marker.markups.findBy('tagName', 'a');
+            if (linkMarkup) {
+                const linkRange = position.toRange().expandByMarker(marker => !!marker.markups.includes(linkMarkup));
+                return linkRange;
+            }
+        } catch (e) {
+            // don't throw because this isn't fatal
+            console.error(e); // eslint-disable-line
         }
     }
 
