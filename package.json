@@ -59,7 +59,8 @@
       "normalize.css",
       "validator",
       "codemirror",
-      "faker"
+      "faker",
+      "@sentry/node"
     ],
     "ignorePaths": [
       "test",
