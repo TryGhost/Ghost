@@ -476,17 +476,21 @@ class EmailRenderer {
         return this.#renderTemplate(data);
     }
 
-    #getPostExcerpt(postModel) {
+    /**
+     * Get email preheader text from post model
+     * @param {object} postModel
+     * @returns
+     */
+    #getEmailPreheader(postModel) {
         let plaintext = postModel.get('plaintext');
         let customExcerpt = postModel.get('custom_excerpt');
-
         if (customExcerpt !== null){
             return customExcerpt;
         } else {
             if (plaintext) {
                 return plaintext.substring(0, 500);
             } else {
-                return null;
+                return `${postModel.get('title')} – `;
             }
         }
     }
@@ -541,7 +545,6 @@ class EmailRenderer {
             0
         ).href.replace('--uuid--', '%%{uuid}%%');
 
-        const postExcerpt = this.#getPostExcerpt(post);
         const data = {
             site: {
                 title: this.#settingsCache.get('title'),
@@ -551,7 +554,7 @@ class EmailRenderer {
                         image: this.#settingsCache.get('icon')
                     }, true) : null
             },
-            preheader: postExcerpt ? postExcerpt : `${post.get('title')} – `,
+            preheader: this.#getEmailPreheader(post),
             html,
 
             post: {
