@@ -13,6 +13,7 @@ class MembersEventsServiceWrapper {
         // Wire up all the dependencies
         const {EventStorage, LastSeenAtUpdater} = require('@tryghost/members-events-service');
         const models = require('../../models');
+        const db = require('../../data/db');
 
         // Listen for events and store them in the database
         this.eventStorage = new EventStorage({
@@ -29,7 +30,8 @@ class MembersEventsServiceWrapper {
             },
             getMembersApi() {
                 return members.api;
-            }
+            },
+            db
         });
 
         this.eventStorage.subscribe(DomainEvents);
