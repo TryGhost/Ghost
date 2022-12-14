@@ -66,6 +66,8 @@ test.describe('Portal', () => {
                 monthlyPrice: 6,
                 yearlyPrice: 60
             });
+
+            // Creates a one-time discount offer for 10% off
             const offerName = await createOffer(page, {
                 name: 'Black Friday Special',
                 tierName: tierName,
@@ -93,7 +95,9 @@ test.describe('Portal', () => {
 
             await page.waitForSelector('h1.site-title', {state: 'visible'});
             await portalTriggerButton.click();
-            await expect(portalFrame.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
+
+            // Discounted price should not be visible for member for one-time offers
+            await expect(portalFrame.locator('text=$5.40/month'), 'Portal should show discounted price').not.toBeVisible();
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
