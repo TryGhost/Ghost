@@ -11,9 +11,11 @@ const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
+const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
 const ImageImporter = require('./importers/image');
+const RevueImporter = require('@tryghost/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
@@ -49,12 +51,12 @@ class ImportManager {
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [ImageImporter, DataImporter];
+        this.importers = [ImageImporter, RevueImporter, DataImporter];
 
         /**
          * @type {Handler[]}
          */
-        this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
+        this.handlers = [ImageHandler, RevueHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
         /**
@@ -230,6 +232,8 @@ class ImportManager {
     async processZip(file) {
         const zipDirectory = await this.extractZip(file.path);
 
+        debug('processing file', zipDirectory);
+
         /**
          * @type {ImportData}
          */
@@ -238,8 +242,13 @@ class ImportManager {
         this.isValidZip(zipDirectory);
         const baseDir = this.getBaseDirectory(zipDirectory);
 
+        debug('is valid zip baseDir', baseDir);
+
         for (const handler of this.handlers) {
+            debug('handler', handler.type);
             const files = this.getFilesFromZip(handler, zipDirectory);
+
+            debug('got files', files);
 
             if (files.length > 0) {
                 if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
