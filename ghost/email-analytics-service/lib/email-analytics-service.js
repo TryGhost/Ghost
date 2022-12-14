@@ -13,7 +13,7 @@ module.exports = class EmailAnalyticsService {
     providers;
 
     /**
-     * @param {object} dependencies 
+     * @param {object} dependencies
      * @param {EmailEventProcessor} dependencies.eventProcessor
      */
     constructor({config, settings, queries, eventProcessor, providers}) {
@@ -83,8 +83,8 @@ module.exports = class EmailAnalyticsService {
     }
 
     /**
-     * 
-     * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId: any; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event 
+     *
+     * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId: any; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
      * @returns {Promise<EventProcessingResult>}
      */
     async processEvent(event) {
