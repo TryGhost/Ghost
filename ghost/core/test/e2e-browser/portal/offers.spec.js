@@ -27,7 +27,10 @@ test.describe('Portal', () => {
 
             await page.goto(portalUrl);
             const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            const portalTriggerButton = page.frameLocator('#ghost-portal-root iframe.gh-portal-triggerbtn-iframe').locator('div').nth(1);
             await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
+            await expect(portalFrame.getByRole('heading', {name: offerName}), 'URL should open Portal with free-trial offer').toBeVisible();
+
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
             await portalFrame.locator('#input-email').fill('testy@example.com');
             await portalFrame.getByRole('button', {name: 'Start 14-day free trial'}).click();
@@ -38,6 +41,9 @@ test.describe('Portal', () => {
             await completeStripeSubscription(page);
 
             await page.waitForSelector('h1.site-title', {state: 'visible'});
+            await portalTriggerButton.click();
+            await expect(portalFrame.locator('text=Free Trial – Ends'), 'Portal should show free trial info').toBeVisible();
+
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
@@ -74,6 +80,7 @@ test.describe('Portal', () => {
 
             await page.goto(portalUrl);
             const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            const portalTriggerButton = page.frameLocator('#ghost-portal-root iframe.gh-portal-triggerbtn-iframe').locator('div').nth(1);
             await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
             await portalFrame.locator('#input-email').fill('testy@example.com');
@@ -85,6 +92,8 @@ test.describe('Portal', () => {
             await completeStripeSubscription(page);
 
             await page.waitForSelector('h1.site-title', {state: 'visible'});
+            await portalTriggerButton.click();
+            await expect(portalFrame.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
