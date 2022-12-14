@@ -1,5 +1,5 @@
 import AppContext from 'AppContext';
-import {allowCompMemberUpgrade, getCompExpiry, getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from 'utils/helpers';
+import {allowCompMemberUpgrade, getCompExpiry, getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isInThePast, subscriptionHasFreeTrial} from 'utils/helpers';
 import {getDateString} from 'utils/date-time';
 import {ReactComponent as LoaderIcon} from 'images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from 'images/icons/offer-tag.svg';
@@ -187,7 +187,15 @@ function FreeTrialLabel({subscription, priceLabel}) {
 function getOfferLabel({offer, price, subscriptionStartDate}) {
     let offerLabel = '';
 
-    if (offer && offer?.duration !== 'once') {
+    if (offer?.type === 'trial') {
+        return '';
+    }
+
+    if (offer?.duration === 'once') {
+        return '';
+    }
+
+    if (offer) {
         const discountDuration = offer.duration;
         let durationLabel = '';
         if (discountDuration === 'forever') {
@@ -196,6 +204,10 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
             const durationInMonths = offer.duration_in_months || 0;
             let offerStartDate = new Date(subscriptionStartDate);
             let offerEndDate = new Date(offerStartDate.setMonth(offerStartDate.getMonth() + durationInMonths));
+            // don't show expired offers if the offer is not forever
+            if (isInThePast(offerEndDate)) {
+                return '';
+            }
             durationLabel = `Ends ${getDateString(offerEndDate)}`;
         }
         offerLabel = `${getUpdatedOfferPrice({offer, price, useFormatted: true})}/${price.interval}${durationLabel ? ` — ${durationLabel}` : ``}`;
