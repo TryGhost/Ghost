@@ -4431,7 +4431,7 @@
   optionalDependencies:
     sharp "^0.30.0"
 
-"@tryghost/jest-snapshot@^0.4.7":
+"@tryghost/jest-snapshot@0.4.7", "@tryghost/jest-snapshot@^0.4.7":
   version "0.4.7"
   resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.4.7.tgz#e5ac393af3a080ce1688c97479a957a2e9373ae9"
   integrity sha512-e8snqd3WF8HS7RY7zhhUdCqTWGx1eO86WVbHrJ0xzSxXet2vnToPtaRkNQkM8kNecxjyf9An5wUFBTNsKUUZlA==
