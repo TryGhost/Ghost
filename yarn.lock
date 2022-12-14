@@ -4580,7 +4580,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-3.1.4.tgz#58916cbd350e865246f95143d14ba62a06f7a1a7"
   integrity sha512-LBDW1uD70Wh27LiYzpctvIv6MExcgq7KkGy/RWUo0K/1EExtyEjLhNeeBrJ9taPouW2AQVwkqu69RHQ7NJW6eA==
 
-"@tryghost/kg-default-cards@5.18.7":
+"@tryghost/kg-default-cards@5.18.7", "@tryghost/kg-default-cards@^5.18.7":
   version "5.18.7"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.18.7.tgz#2e1882cc543818cdbe9913f0b40891541369cdfa"
   integrity sha512-Fezi9DnAkuxuBEYErJi2FC3xXoqsdKHTutEvHMVMAFO38Ns3FQtDaoxBhDxBsmQawboS+ZfpaaTOJquEDtmoQg==
