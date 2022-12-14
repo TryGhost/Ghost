@@ -18,7 +18,7 @@
             mouseDown=this.handleOptionMouseDown
             touchStart=this.handleOptionTouchStart
         }}
-            <span class="ember-power-select-multiple-inner-text">
+            <span class="ember-power-select-multiple-inner-text" data-test-selected-token>
                 {{#if @selectedItemComponent}}
                     {{component @selectedItemComponent option=(readonly opt) select=(readonly @select)}}
                 {{else}}
