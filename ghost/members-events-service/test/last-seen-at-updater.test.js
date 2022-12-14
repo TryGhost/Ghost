@@ -44,14 +44,19 @@ describe('LastSeenAtUpdater', function () {
 
     it('Calls updateLastSeenAt on email opened events', async function () {
         const now = moment('2022-02-28T18:00:00Z').utc();
-        const previousLastSeen = moment('2022-02-27T23:00:00Z').toISOString();
-        const stub = sinon.stub().resolves();
-        const getStub = sinon.stub().resolves({
-            get() {
-                return previousLastSeen;
-            }
-        });
         const settingsCache = sinon.stub().returns('Etc/UTC');
+        const db = {
+            knex() {
+                return this;
+            },
+            where() {
+                return this;
+            },
+            andWhere() {
+                return this;
+            },
+            update: sinon.stub()
+        };
         const updater = new LastSeenAtUpdater({
             services: {
                 settingsCache: {
@@ -59,13 +64,9 @@ describe('LastSeenAtUpdater', function () {
                 }
             },
             getMembersApi() {
-                return {
-                    members: {
-                        update: stub,
-                        get: getStub
-                    }
-                };
-            }
+                return {};
+            },
+            db
         });
         updater.subscribe(DomainEvents);
         sinon.spy(updater, 'updateLastSeenAt');
@@ -73,10 +74,8 @@ describe('LastSeenAtUpdater', function () {
         DomainEvents.dispatch(EmailOpenedEvent.create({memberId: '1', emailRecipientId: '1', emailId: '1', timestamp: now.toDate()}));
         // Wait for next tick
         await sleep(50);
-        assert(updater.updateLastSeenAt.calledOnceWithExactly('1', previousLastSeen, now.toDate()));
         assert(updater.updateLastSeenAtWithoutKnownLastSeen.calledOnceWithExactly('1', now.toDate()));
-        assert(getStub.calledOnce);
-        assert(stub.calledOnce);
+        assert(db.update.calledOnce);
     });
 
     it('Calls updateLastCommentedAt on MemberCommentEvents', async function () {
@@ -369,7 +368,7 @@ describe('LastSeenAtUpdater', function () {
 
     it('throws if getMembersApi is not passed to LastSeenAtUpdater', async function () {
         const settingsCache = sinon.stub().returns('Asia/Bangkok');
-        
+
         should.throws(() => {
             new LastSeenAtUpdater({
                 services: {

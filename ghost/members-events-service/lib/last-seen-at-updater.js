@@ -14,12 +14,14 @@ class LastSeenAtUpdater {
      * @param {Object} deps.services The list of service dependencies
      * @param {any} deps.services.settingsCache The settings service
      * @param {() => object} deps.getMembersApi - A function which returns an instance of members-api
+     * @param {any} deps.db Database connection
      */
     constructor({
         services: {
             settingsCache
         },
-        getMembersApi
+        getMembersApi,
+        db
     }) {
         if (!getMembersApi) {
             throw new IncorrectUsageError({message: 'Missing option getMembersApi'});
@@ -27,6 +29,7 @@ class LastSeenAtUpdater {
 
         this._getMembersApi = getMembersApi;
         this._settingsCacheService = settingsCache;
+        this._db = db;
     }
     /**
      * Subscribe to events of this domainEvents service
@@ -79,13 +82,20 @@ class LastSeenAtUpdater {
      * @param {Date} timestamp The event timestamp
      */
     async updateLastSeenAtWithoutKnownLastSeen(memberId, timestamp) {
-        // Fetch manually
-        const membersApi = this._getMembersApi();
-        const member = await membersApi.members.get({id: memberId}, {require: true});
-        if (member) {
-            const memberLastSeenAt = member.get('last_seen_at');
-            await this.updateLastSeenAt(memberId, memberLastSeenAt, timestamp);
-        }
+        // Note: we are not using Bookshelf / member repository to prevent firing webhooks + to prevent deadlock issues
+        // If we would use the member repostiory, we would create a forUpdate lock when editing the member, including when fetching the member labels. Creating a possible deadlock if somewhere else we do the reverse in a transaction.
+        const timezone = this._settingsCacheService.get('timezone') || 'Etc/UTC';
+        const startOfDayInSiteTimezone = moment.utc(timestamp).tz(timezone).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+        const formattedTimestamp = moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss');
+        await this._db.knex('members')
+            .where('id', '=', memberId)
+            .andWhere(builder => builder
+                .where('last_seen_at', '<', startOfDayInSiteTimezone)
+                .orWhereNull('last_seen_at')
+            )
+            .update({
+                last_seen_at: formattedTimestamp
+            });
     }
 
     /**
