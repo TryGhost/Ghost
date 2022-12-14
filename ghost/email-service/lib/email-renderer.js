@@ -484,7 +484,7 @@ class EmailRenderer {
     #getEmailPreheader(postModel) {
         let plaintext = postModel.get('plaintext');
         let customExcerpt = postModel.get('custom_excerpt');
-        if (customExcerpt !== null){
+        if (customExcerpt) {
             return customExcerpt;
         } else {
             if (plaintext) {
