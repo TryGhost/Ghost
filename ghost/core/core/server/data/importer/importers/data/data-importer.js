@@ -55,7 +55,7 @@ DataImporter = {
             importData.data.tags.push({
                 id: tagId,
                 name: importOptions.importTag,
-                slug: slugify(importOptions.importTag)
+                slug: slugify(importOptions.importTag.replace(/^#/, 'hash-'))
             });
             if (!('posts_tags' in importData.data)) {
                 importData.data.posts_tags = [];

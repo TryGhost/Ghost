@@ -83,7 +83,7 @@ module.exports = {
         permissions: true,
         query(frame) {
             const siteTimezone = settingsCache.get('timezone');
-            const importTag = `Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`;
+            const importTag = `#Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`;
             return importer.importFromFile(frame.file, {
                 user: {
                     email: frame.user.get('email')
