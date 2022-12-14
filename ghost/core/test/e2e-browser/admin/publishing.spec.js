@@ -1,7 +1,7 @@
 const {expect, test} = require('@playwright/test');
 const {DateTime} = require('luxon');
-const {createMember, createPostDraft} = require('../utils');
 const {slugify} = require('@tryghost/string');
+const {createTier, createMember, createPostDraft, impersonateMember} = require('../utils');
 
 /**
  * Test the status of a post in the post editor.
@@ -163,6 +163,11 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
     // TODO: assert publish flow has expected completion details
 };
 
+/**
+ * When on the publish flow completed step, click the bookmark
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<import('@playwright/test').Page>}
+ */
 const openPublishedPostBookmark = async (page) => {
     // open the published post in a new tab
     const [frontendPage] = await Promise.all([
@@ -491,5 +496,57 @@ test.describe('Updating post access', () => {
             // Check if post content is publicly visible on front-end
             await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
         });
+    });
+
+    test('specific tiers', async ({page}) => {
+        await page.goto('/ghost');
+
+        // tiers and members are needed to test the access levels
+        await createTier(page, {name: 'Silver', monthlyPrice: 5, yearlyPrice: 50});
+        await createTier(page, {name: 'Gold', monthlyPrice: 10, yearlyPrice: 100});
+        await createMember(page, {email: 'silver@example.com', compedPlan: 'Silver'});
+        const silverMember = await page.url();
+        await createMember(page, {email: 'gold@example.com', compedPlan: 'Gold'});
+        const goldMember = await page.url();
+
+        await createPostDraft(page, {body: 'Only gold members can see this'});
+
+        await openPostSettingsMenu(page);
+        await setPostVisibility(page, 'tiers');
+
+        // backspace removes existing tiers
+        expect(page.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(3);
+        await page.locator('[data-test-visibility-segment-select] input').click();
+        await page.keyboard.press('Backspace');
+        await page.waitForTimeout(50);
+        await page.keyboard.press('Backspace');
+        await page.waitForTimeout(50);
+        await page.keyboard.press('Backspace');
+        expect(page.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(0);
+
+        // specific tier can be added back on
+        await page.keyboard.type('Go');
+        const goldOption = page.locator('[data-test-visibility-segment-option="Gold"]');
+        await goldOption.click();
+
+        // publish
+        await publishPost(page);
+        const frontendPage = await openPublishedPostBookmark(page);
+
+        // non-member doesn't have access
+        await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toContainText('on the Gold tier only');
+
+        // member on wrong tier doesn't have access
+        await page.goto(silverMember);
+        await impersonateMember(page);
+        await frontendPage.reload();
+        await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toContainText('on the Gold tier only');
+
+        // member on selected tier has access
+        await page.goto(goldMember);
+        await impersonateMember(page);
+        await frontendPage.reload();
+        await expect(frontendPage.locator('.gh-post-upgrade-cta-content')).not.toBeVisible();
+        await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('Only gold members can see this');
     });
 });
