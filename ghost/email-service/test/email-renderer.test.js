@@ -1,5 +1,6 @@
 const EmailRenderer = require('../lib/email-renderer');
 const assert = require('assert');
+const cheerio = require('cheerio');
 
 describe('Email renderer', function () {
     describe('buildReplacementDefinitions', function () {
@@ -367,6 +368,14 @@ describe('Email renderer', function () {
                     if (key === 'title') {
                         return 'Test Post';
                     }
+
+                    if (key === 'plaintext') {
+                        return 'Test plaintext for post';
+                    }
+
+                    if (key === 'custom_excerpt') {
+                        return null;
+                    }
                 },
                 getLazyRelation: () => {
                     return {
@@ -410,9 +419,12 @@ describe('Email renderer', function () {
                 options
             );
 
+            const $ = cheerio.load(response.html);
+
             response.plaintext.should.containEql('Test Post');
             response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
             response.plaintext.should.containEql('http://example.com');
+            should($('.preheader').text()).eql('Test plaintext for post');
             response.html.should.containEql('Test Post');
             response.html.should.containEql('Unsubscribe');
             response.html.should.containEql('http://example.com');
