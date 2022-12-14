@@ -15,7 +15,7 @@ const RevueHandler = {
 
     loadFile: function (files, startDir) {
         const startDirRegex = startDir ? new RegExp('^' + startDir + '/') : new RegExp('');
-        const idRegex = /_[^_]*?\./;
+        const idRegex = /_.*?\./;
         const ops = [];
         const revue = {};
 
@@ -27,7 +27,6 @@ const RevueHandler = {
             ops.push(fs.readFile(file.path).then(function (content) {
                 // normalize the file name
                 file.name = file.name.replace(startDirRegex, '').replace(idRegex, '.');
-
                 const name = file.name.split('.')[0];
 
                 revue[name] = content.toString();
