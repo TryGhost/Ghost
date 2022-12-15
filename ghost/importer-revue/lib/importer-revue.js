@@ -47,7 +47,7 @@ const fetchPostsFromData = (revueData) => {
         posts.push({
             comment_id: revuePostID,
             title: postMeta.subject,
-            status: JSONToHTML.getStatus(postMeta),
+            status: JSONToHTML.getPostStatus(postMeta),
             visibility: 'public',
             created_at: postDate,
             published_at: postDate,

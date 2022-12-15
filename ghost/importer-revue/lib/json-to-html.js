@@ -84,7 +84,7 @@ const getPostDate = (data) => {
     return postDate.toISOString();
 };
 
-const getStatus = (data) => {
+const getPostStatus = (data) => {
     const isPublished = (data.sent_at) ? true : false; // This is how we determine is a post is published or not
     return (isPublished) ? 'published' : 'draft';
 };
@@ -92,5 +92,5 @@ const getStatus = (data) => {
 module.exports = {
     itemsToHtml,
     getPostDate,
-    getStatus
+    getPostStatus
 };

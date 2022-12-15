@@ -5,6 +5,10 @@ const RevueImporter = require('../index');
 const JSONToHTML = require('../lib/json-to-html');
 
 describe('Revue Importer', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     describe('preProcess', function () {
         it('marks any object as processed', function () {
             let result;
@@ -134,6 +138,34 @@ describe('Revue Importer', function () {
     });
 
     describe('JSONToHTML helpers', function () {
+        describe('getPostData', function () {
+            it('can get date for published post', function () {
+                const result = JSONToHTML.getPostDate({sent_at: '2022-12-01 01:01:30 UTC'});
+
+                assert.deepEqual(result, '2022-12-01T01:01:30.000Z');
+            });
+
+            it('can get date for draft post', function () {
+                const result = JSONToHTML.getPostDate({});
+
+                assert.equal(result, new Date().toISOString());
+            });
+        });
+
+        describe('getPostStatus', function () {
+            it('can get date for published post', function () {
+                const result = JSONToHTML.getPostStatus({sent_at: '2022-12-01 01:01:30 UTC'});
+
+                assert.deepEqual(result, 'published');
+            });
+
+            it('can get date for draft post', function () {
+                const result = JSONToHTML.getPostStatus({});
+
+                assert.deepEqual(result, 'draft');
+            });
+        });
+
         describe('itemsToHtml', function () {
             it('can handle header item', function () {
                 const result = JSONToHTML.itemsToHtml([{title: 'Hello World',issue_id: 123456,item_type: 'header',url: '',description: '',order: 0}]);
