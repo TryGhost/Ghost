@@ -272,7 +272,11 @@ class PostsImporter extends BaseImporter {
 
                 model.mobiledoc = JSON.stringify(mobiledoc);
                 model.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(model.mobiledoc));
+            } else if (model.html) {
+                model.mobiledoc = JSON.stringify(mobiledocLib.htmlToMobiledocConverter(model.html));
+                model.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(model.mobiledoc));
             }
+
             this.sanitizePostsMeta(model);
         });
 
