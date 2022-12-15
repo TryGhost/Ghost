@@ -25,6 +25,11 @@ class RevueSubscriberImporter extends BaseImporter {
     async doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
+        // Don't do anything if there is no data to import
+        if (this.dataToImport.length === 0) {
+            return Promise.resolve();
+        }
+
         const importLabel = importOptions.importTag ? importOptions.importTag.replace(/^#/, '') : null;
 
         const outputFileName = `Converted ${importLabel}.csv`;
