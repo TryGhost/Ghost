@@ -54,9 +54,7 @@ const fetchPostsFromData = (revueData) => {
             created_at: postDate,
             published_at: postDate,
             updated_at: postDate,
-            html: postHTML,
-            tags: ['#revue']
-
+            html: postHTML
         });
     });
 

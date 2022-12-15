@@ -68,8 +68,7 @@ describe('Revue Importer', function () {
                     created_at: '2022-12-01T01:01:30.000Z',
                     published_at: '2022-12-01T01:01:30.000Z',
                     updated_at: '2022-12-01T01:01:30.000Z',
-                    html: '<p>Hello World!</p>',
-                    tags: ['#revue']
+                    html: '<p>Hello World!</p>'
                 }
             ]);
         });
@@ -88,9 +87,6 @@ describe('Revue Importer', function () {
                     html: '<p>Hello World!</p><p>Goodbye World!</p>',
                     published_at: '2022-12-01T01:01:30.000Z',
                     status: 'published',
-                    tags: [
-                        '#revue'
-                    ],
                     title: 'Hello World - Issue #8',
                     slug: 'hello-world-issue-8',
                     updated_at: '2022-12-01T01:01:30.000Z',
@@ -113,8 +109,7 @@ describe('Revue Importer', function () {
                     created_at: '2022-12-01T01:02:03.123Z',
                     published_at: '2022-12-01T01:02:03.123Z',
                     updated_at: '2022-12-01T01:02:03.123Z',
-                    html: '<p>Hello World!</p><p>Goodbye World!</p>',
-                    tags: ['#revue']
+                    html: '<p>Hello World!</p><p>Goodbye World!</p>'
                 }
             ]);
         });
