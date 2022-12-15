@@ -7,6 +7,7 @@ const uuid = require('uuid');
 const config = require('../../../shared/config');
 const {extract} = require('@tryghost/zip');
 const tpl = require('@tryghost/tpl');
+const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
@@ -276,6 +277,8 @@ class ImportManager {
             return _.includes(handler.extensions, ext);
         });
 
+        debug('fileHandler', fileHandler.type);
+
         return fileHandler.loadFile([_.pick(file, 'name', 'path')]).then(function (loadedData) {
             // normalize the returned data
             const importData = {};
@@ -410,6 +413,8 @@ class ImportManager {
             // Has to be completed outside of job to ensure file is processed before being deleted
             importData = await this.loadFile(file);
         }
+
+        debug('importFromFile completed file load', importData);
 
         const env = config.get('env');
         if (!env?.startsWith('testing') && !importOptions.runningInJob) {
