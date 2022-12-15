@@ -176,7 +176,15 @@ describe('Revue Importer', function () {
             it('can handle link item', function () {
                 const result = JSONToHTML.itemsToHtml([{title: 'Google',issue_id: 123456,item_type: 'link',url: 'https://google.com/',description: 'A search engine.',order: 0,image: 'https://s3.amazonaws.com/revue/items/images/012/345/678/web/google.png?1234556'}]);
 
-                assert.deepEqual(result, '<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://google.com/"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Google</div><div class="kg-bookmark-description">A search engine.</div><div class="kg-bookmark-metadata"></div></div><div class="kg-bookmark-thumbnail"><img src="https://s3.amazonaws.com/revue/items/images/012/345/678/web/google.png?1234556" alt=""></div></a></figure>');
+                assert.deepEqual(result, '<figure class="kg-card kg-image-card kg-card-hascaption"><a href="https://google.com/"><img src="https://s3.amazonaws.com/revue/items/images/012/345/678/web/google.png?1234556" class="kg-image" alt loading="lazy"></a><figcaption>Google</figcaption></figure>\n' +
+                '<h4><a href="https://google.com/">Google</a></h4>A search engine.');
+            });
+
+            it('can handle link item with html in description', function () {
+                const result = JSONToHTML.itemsToHtml([{title: 'Google',issue_id: 123456,item_type: 'link',url: 'https://google.com/',description: '<p>A <b>search</b> engine.</p>',order: 0,image: 'https://s3.amazonaws.com/revue/items/images/012/345/678/web/google.png?1234556'}]);
+
+                assert.deepEqual(result, '<figure class="kg-card kg-image-card kg-card-hascaption"><a href="https://google.com/"><img src="https://s3.amazonaws.com/revue/items/images/012/345/678/web/google.png?1234556" class="kg-image" alt loading="lazy"></a><figcaption>Google</figcaption></figure>\n' +
+                '<h4><a href="https://google.com/">Google</a></h4><p>A <b>search</b> engine.</p>');
             });
 
             it('can handle image item', function () {

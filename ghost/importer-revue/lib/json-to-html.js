@@ -9,6 +9,7 @@ const itemsToHtml = (items) => {
     let itemHTMLChunks = [];
     items.forEach((item) => {
         let type = item.item_type;
+
         if (type === 'header') {
             itemHTMLChunks.push(`<h3>${item.title}</h3>`);
         } else if (type === 'text') {
@@ -27,21 +28,20 @@ const itemsToHtml = (items) => {
 
             itemHTMLChunks.push(serializer.serialize(imageCard.render(cardOpts)));
         } else if (type === 'link') {
-            // Embedded link card
+            // This could be a bookmark, or it could be a paragraph of text with a linked header, there's no way to tell
+            // The safest option here is to output an image with text under it
             let cardOpts = {
                 env: {dom: new SimpleDom.Document()},
                 payload: {
-                    url: item.url,
-                    metadata: {
-                        url: item.url,
-                        title: item.title,
-                        description: item.description,
-                        thumbnail: item.image
-                    }
+                    src: item.image,
+                    caption: item.title,
+                    href: item.url
                 }
             };
+            itemHTMLChunks.push(serializer.serialize(imageCard.render(cardOpts)));
 
-            itemHTMLChunks.push(serializer.serialize(bookmarkCard.render(cardOpts)));
+            let linkHTML = `<h4><a href="${item.url}">${item.title}</a></h4>${item.description}`;
+            itemHTMLChunks.push(linkHTML);
         } else if (type === 'tweet') {
             // Should this be an oEmbed call? Probably.
             itemHTMLChunks.push(`<figure class="kg-card kg-embed-card">
