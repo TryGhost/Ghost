@@ -223,5 +223,19 @@ describe('Revue Importer', function () {
                 assert.deepEqual(result, '<figure class="kg-card kg-embed-card kg-card-hascaption"><iframe src="https://player.vimeo.com/video/789123" width="200" height="113" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe><figcaption>Hello world</figcaption></figure>');
             });
         });
+
+        describe('cleanCsvHTML', function () {
+            it('can wrap blockquote content in p tags', function () {
+                const result = JSONToHTML.cleanCsvHTML('<p>Hello World!</p><blockquote>Try <a href="https://example.com">This</a>!</blockquote>');
+
+                assert.deepEqual(result, '<p>Hello World!</p><blockquote><p>Try <a href="https://example.com">This</a>!</p></blockquote>');
+            });
+
+            it('can remove unwanted blank paragraphs', function () {
+                const result = JSONToHTML.cleanCsvHTML('<p>Hello World!</p><p><br></p><p>Goodbye World!</p>');
+
+                assert.deepEqual(result, '<p>Hello World!</p><p>Goodbye World!</p>');
+            });
+        });
     });
 });

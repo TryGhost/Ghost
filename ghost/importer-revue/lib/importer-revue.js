@@ -33,14 +33,14 @@ const fetchPostsFromData = (revueData) => {
         }
 
         const revuePostID = postMeta.id;
-        let postHTML = postMeta.description;
+        let postHTML = JSONToHTML.cleanCsvHTML(postMeta.description);
 
         const postItems = _.filter(itemData, {issue_id: revuePostID});
         const sortedPostItems = _.sortBy(postItems, o => o.order);
 
         if (postItems) {
             const convertedItems = JSONToHTML.itemsToHtml(sortedPostItems);
-            postHTML = `${postMeta.description}${convertedItems}`;
+            postHTML = `${postHTML}${convertedItems}`;
         }
 
         const postDate = JSONToHTML.getPostDate(postMeta);
