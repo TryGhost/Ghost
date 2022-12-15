@@ -312,6 +312,7 @@ class ImportManager {
      * @returns {Promise<ImportData>}
      */
     async preProcess(importData) {
+        debug('preProcess');
         for (const importer of this.importers) {
             importData = importer.preProcess(importData);
         }
@@ -328,10 +329,12 @@ class ImportManager {
      * @returns {Promise<Object.<string, ImportResult>>} importResults
      */
     async doImport(importData, importOptions) {
+        debug('doImport', this.importers);
         importOptions = importOptions || {};
         const importResults = {};
 
         for (const importer of this.importers) {
+            debug('importer', importer, 'looking for', importer.type, 'in', Object.keys(importData));
             if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
                 importResults[importer.type] = await importer.doImport(importData[importer.type], importOptions);
             }

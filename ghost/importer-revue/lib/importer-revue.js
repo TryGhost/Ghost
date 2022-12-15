@@ -138,12 +138,37 @@ const fetchPostsFromData = (revueData) => {
     return posts;
 };
 
+/**
+ *
+ * @param {*} revueData
+ */
+const buildSubscriberList = (revueData) => {
+    const subscribers = [];
+
+    const subscriberData = papaparse.parse(revueData.subscribers, {
+        header: true,
+        skipEmptyLines: true
+    });
+
+    subscriberData.data.forEach((subscriber) => {
+        subscribers.push({
+            email: subscriber.email,
+            name: `${subscriber.first_name} ${subscriber.last_name}`.trim(),
+            created_at: subscriber.created_at
+
+        });
+    });
+
+    return subscribers;
+};
+
 const RevueImporter = {
     type: 'revue',
     preProcess: function (importData) {
         debug('preProcess');
         importData.preProcessedByRevue = true;
 
+        // This processed data goes to the data importer
         importData.data = {
             meta: {version: '5.0.0'},
             data: {}
@@ -156,6 +181,13 @@ const RevueImporter = {
         }
 
         importData.data.data.posts = fetchPostsFromData(importData.revue.revue);
+
+        // No subscribers to import, we're done
+        if (!importData?.revue?.revue?.subscribers) {
+            return importData;
+        }
+
+        importData.data.data.revue_subscribers = buildSubscriberList(importData.revue.revue);
 
         return importData;
     },
