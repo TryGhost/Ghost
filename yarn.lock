@@ -24048,6 +24048,18 @@ sinon@14.0.2:
     nise "^5.1.2"
     supports-color "^7.2.0"
 
+sinon@15.0.0:
+  version "15.0.0"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-15.0.0.tgz#651a641b45c0a57aabc8275343c7108cffc9c062"
+  integrity sha512-pV97G1GbslaSJoSdy2F2z8uh5F+uPGp3ddOzA4JsBOUBLEQRz2OAqlKGRFTSh2KiqUCmHkzyAeu7R4x1Hx0wwg==
+  dependencies:
+    "@sinonjs/commons" "^2.0.0"
+    "@sinonjs/fake-timers" "^9.1.2"
+    "@sinonjs/samsam" "^7.0.1"
+    diff "^5.0.0"
+    nise "^5.1.2"
+    supports-color "^7.2.0"
+
 sinon@^9.0.0:
   version "9.2.4"
   resolved "https://registry.yarnpkg.com/sinon/-/sinon-9.2.4.tgz#e55af4d3b174a4443a8762fa8421c2976683752b"
