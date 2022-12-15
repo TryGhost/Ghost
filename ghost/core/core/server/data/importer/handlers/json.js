@@ -2,6 +2,7 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const debug = require('@tryghost/debug')('importer:handler:data');
 
 const messages = {
     invalidJsonFormat: 'Invalid JSON format, expected `{ db: [exportedData] }`',
@@ -17,6 +18,7 @@ JSONHandler = {
     directories: [],
 
     loadFile: async function (files, startDir) { // eslint-disable-line no-unused-vars
+        debug('loadFile', files);
         // @TODO: Handle multiple JSON files
         const filePath = files[0].path;
 

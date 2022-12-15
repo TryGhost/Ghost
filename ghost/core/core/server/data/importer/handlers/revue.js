@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
+const debug = require('@tryghost/debug')('importer:handler:revue');
 
 const hasIssuesCSV = (files) => {
     return _.some(files, (file) => {
@@ -14,13 +15,14 @@ const RevueHandler = {
     directories: [],
 
     loadFile: function (files, startDir) {
+        debug('loadFile', files);
         const startDirRegex = startDir ? new RegExp('^' + startDir + '/') : new RegExp('');
         const idRegex = /_.*?\./;
         const ops = [];
         const revue = {};
 
         if (!hasIssuesCSV(files)) {
-            return;
+            return Promise.resolve();
         }
 
         _.each(files, function (file) {
