@@ -6,7 +6,6 @@ const path = require('path');
 const fs = require('fs-extra');
 
 const config = require('../../../../../shared/config');
-const membersService = require('../../../../services/members');
 const models = require('../../../../models');
 
 class RevueSubscriberImporter extends BaseImporter {
@@ -29,6 +28,9 @@ class RevueSubscriberImporter extends BaseImporter {
         if (this.dataToImport.length === 0) {
             return Promise.resolve();
         }
+
+        // required here rather than top-level to avoid pulling in before it's initialized during boot
+        const membersService = require('../../../../services/members');
 
         const importLabel = importOptions.importTag ? importOptions.importTag.replace(/^#/, '') : null;
 
