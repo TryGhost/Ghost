@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
-import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEXT_BILLING_DATE_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
+import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEWSLETTERS_FILTER, NEXT_BILLING_DATE_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -144,8 +144,21 @@ export default class MembersFilter extends Component {
         })
     ]);
 
+    newsletters;
+
     get filterProperties() {
         let availableFilters = FILTER_PROPERTIES;
+
+        // find list of newsletters from store and add them to filter list if there are more than one newsletter
+        // it also removes the 'subscribed' filter from the list as that would unsubscribe members from all newsletters, instead replace it with a filter for each newsletter
+        if (this.newsletters.length > 1) {
+            // remove the 'subscribed' filter from the list
+            availableFilters = availableFilters.filter(prop => prop.name !== 'subscribed');
+            // find the index of the 'basic' group and insert the 'multiple newsletters' filter after it
+            const indexes = availableFilters.map((obj, index) => (obj.group === 'Basic' ? index : null)).filter(i => i !== null);
+            const lastIndex = indexes.pop();
+            availableFilters.splice(lastIndex + 1, 0, ...NEWSLETTERS_FILTER(this.newsletters));
+        }
 
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
@@ -184,9 +197,7 @@ export default class MembersFilter extends Component {
 
     constructor(...args) {
         super(...args);
-
         this.parseDefaultFilters();
-        this.fetchTiers.perform();
     }
 
     /**
@@ -198,7 +209,11 @@ export default class MembersFilter extends Component {
      * -> better future proof solution: move the filter parsing logic elsewhere so it can be parsed in the members controller
      */
     @action
-    parseDefaultFilters() {
+    async parseDefaultFilters() {
+        // we need to make sure all the filters are loaded before parsing the default filter
+        // otherwise the filter will be parsed with the wrong properties
+        await this.fetchTiers.perform();
+        await this.fetchNewsletters.perform();
         if (this.args.defaultFilterParam) {
             // check if it is different before parsing
             const validFilters = this.validFilters;
@@ -233,7 +248,6 @@ export default class MembersFilter extends Component {
         let query = '';
         filters.forEach((filter) => {
             const filterProperty = this.filterProperties.find(prop => prop.name === filter.type);
-
             if (filterProperty.buildNqlFilter) {
                 query += `${filterProperty.buildNqlFilter(filter)}+`;
                 return;
@@ -276,7 +290,6 @@ export default class MembersFilter extends Component {
 
     parseNqlFilterString(filterParam) {
         let filters;
-
         try {
             filters = nql.parse(filterParam);
         } catch (e) {
@@ -289,8 +302,6 @@ export default class MembersFilter extends Component {
 
     parseNqlFilter(filter) {
         const parsedFilters = [];
-
-        // Check custom parsing
         for (const filterProperties of this.filterProperties) {
             if (filterProperties.parseNqlFilter) {
                 // This filter has a custom parsing function
@@ -571,6 +582,13 @@ export default class MembersFilter extends Component {
     *fetchTiers() {
         const response = yield this.store.query('tier', {filter: 'type:paid'});
         this.tiersList = response;
+    }
+
+    @task({drop: true})
+    *fetchNewsletters() {
+        const response = yield this.store.query('newsletter', {filter: 'status:active'});
+        this.newsletters = response;
+        return response;
     }
 
     @task({restartable: true})
