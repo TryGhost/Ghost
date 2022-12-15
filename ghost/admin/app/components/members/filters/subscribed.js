@@ -17,36 +17,61 @@ export const SUBSCRIBED_FILTER = {
     }
 };
 
-export const OPTIONS = [
-    {label: 'is', name: ''},
-    {label: 'is not', name: '-'}
-];
-
 export const NEWSLETTERS_FILTER = (newsletterList) => {
     let newsletters = [];
     newsletterList.forEach((newsletter) => {
         const filter = {
             label: newsletter.name,
             name: `newsletters.slug:${newsletter.slug}`,
-            relationOptions: OPTIONS,
+            relationOptions: MATCH_RELATION_OPTIONS,
             group: 'Newsletters',
             valueType: 'options',
             buildNqlFilter: (flt) => {
-                let query = `newsletters.slug:${flt.relation}${flt.value}`;
-                if (query.includes('--')) {
-                    query = query.replace('--', '');
+                const relation = flt.relation;
+                const value = flt.value;
+
+                if (relation === 'is' && value === 'true') {
+                    return `newsletters.slug:${newsletter.slug}`;
                 }
-                return query;
+
+                if (relation === 'is' && value === 'false') {
+                    return `newsletters.slug:-${newsletter.slug}`;
+                }
+                
+                if (relation === 'is-not' && value === 'true') {
+                    return `newsletters.slug:-${newsletter.slug}`;
+                }
+
+                if (relation === 'is-not' && value === 'false') {
+                    return `newsletters.slug:${newsletter.slug}`;
+                }
             },
             parseNqlFilter: (flt) => {
                 if (!flt['newsletters.slug']) {
                     return;
                 }
-                return flt;
+                let value = flt['newsletters.slug'];
+                let invert = false;
+                if (typeof value === 'object') {
+                    if (!value.$ne) {
+                        // Unsupported relation type
+                        return;
+                    }
+                    invert = true;
+                    value = value.$ne;
+                }
+                if (value !== newsletter.slug) {
+                    // This filter is for a different newsletter
+                    return;
+                }
+                return {
+                    value: invert ? 'false' : 'true',
+                    relation: 'is'
+                };
             },
             options: [
-                {label: 'Subscribed', name: `${newsletter.slug}`},
-                {label: 'Unsubscribed', name: `-${newsletter.slug}`}
+                {label: 'Subscribed', name: 'true'},
+                {label: 'Unsubscribed', name: 'false'}
             ]
         };
         newsletters.push(filter); 
