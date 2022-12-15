@@ -168,17 +168,17 @@ const RevueImporter = {
         debug('preProcess');
         importData.preProcessedByRevue = true;
 
+        // TODO: this should really be in doImport
+        // No posts to prePprocess, return early
+        if (!importData?.revue?.revue?.issues) {
+            return importData;
+        }
+
         // This processed data goes to the data importer
         importData.data = {
             meta: {version: '5.0.0'},
             data: {}
         };
-
-        // TODO: this should really be in doImport
-        // No posts to process, quit early
-        if (!importData?.revue?.revue?.issues) {
-            return importData;
-        }
 
         importData.data.data.posts = fetchPostsFromData(importData.revue.revue);
 

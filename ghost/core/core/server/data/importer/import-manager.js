@@ -276,19 +276,19 @@ class ImportManager {
      * @param {File} file
      * @returns {Promise<ImportData>}
      */
-    processFile(file, ext) {
-        const fileHandler = _.find(this.handlers, function (handler) {
+    async processFile(file, ext) {
+        const fileHandlers = _.filter(this.handlers, function (handler) {
             return _.includes(handler.extensions, ext);
         });
 
-        debug('fileHandler', fileHandler.type);
+        const importData = {};
 
-        return fileHandler.loadFile([_.pick(file, 'name', 'path')]).then(function (loadedData) {
-            // normalize the returned data
-            const importData = {};
-            importData[fileHandler.type] = loadedData;
-            return importData;
-        });
+        await Promise.all(fileHandlers.map(async (fileHandler) => {
+            debug('fileHandler', fileHandler.type);
+            importData[fileHandler.type] = await fileHandler.loadFile([_.pick(file, 'name', 'path')]);
+        }));
+
+        return importData;
     }
 
     /**
