@@ -2333,13 +2333,14 @@ describe('Members API', function () {
     });
 
     it('Setting subscribed when editing a member won\'t reset to default newsletters', async function () {
+        // First check that this newsletter is off by default, or this test would not make sense
+        const newsletter = await models.Newsletter.findOne({id: testUtils.DataGenerator.Content.newsletters[0].id}, {require: true});
+        assert.equal(newsletter.get('subscribe_on_signup'), false, 'This test expects the newsletter to be off by default');
+
         // Add custom newsletter list to new member
         const member = {
             name: 'test newsletter',
             email: 'memberTestChangeSubscribedAttribute@test.com',
-            note: 'test note',
-            subscribed: false,
-            labels: ['test-label'],
             newsletters: [
                 {
                     id: testUtils.DataGenerator.Content.newsletters[0].id // This is off by default
