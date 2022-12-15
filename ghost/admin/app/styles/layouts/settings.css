@@ -1893,6 +1893,11 @@ p.theme-validation-details {
     background: var(--mainmenu-color-hover-bg);
 }
 
+.gh-nav-bottom .gh-nav-design-tab > a {
+    position: absolute;
+    inset: 0;
+}
+
 .gh-nav-bottom .gh-nav-design-tab .active-theme {
     color: var(--midgrey);
     font-size: 1.3rem;
@@ -1960,6 +1965,24 @@ p.theme-validation-details {
     height: 96px;
     margin-bottom: -24px;
     background: var(--white);
+}
+
+.gh-theme-docs {
+    position: relative;
+    z-index: 10;
+    padding: 4px 8px;
+    line-height: 0;
+    color: var(--midgrey);
+}
+
+.gh-theme-docs:hover {
+    color: #15171a;
+}
+
+.gh-theme-docs svg {
+    width: 12px;
+    height: 12px;
+    fill: currentColor;
 }
 
 .gh-nav-design-tabicon {
