@@ -58,11 +58,7 @@
         },
         "transports": [
             "stdout"
-        ],
-        "slowHelper": {
-            "level": "warn",
-            "threshold": 200
-        }
+        ]
     },
     "spam": {
         "user_login": {
@@ -145,6 +141,18 @@
             "maxAge": 0
         }
     },
+    "optimization": {
+        "getHelper": {
+            "timeout": {
+                "threshold": 5000,
+                "level": "error"
+            },
+            "notify": {
+                "threshold": 200,
+                "level": "warn"
+            }
+        }
+    },
     "imageOptimization": {
         "resize": true,
         "srcsets": true
@@ -161,7 +169,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.21"
+        "version": "2.22"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
