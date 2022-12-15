@@ -68,8 +68,7 @@ describe('Revue Importer', function () {
                     created_at: '2022-12-01T01:01:30.000Z',
                     published_at: '2022-12-01T01:01:30.000Z',
                     updated_at: '2022-12-01T01:01:30.000Z',
-                    html: '<p>Hello World!</p>',
-                    tags: ['#revue']
+                    html: '<p>Hello World!</p>'
                 }
             ]);
         });
@@ -88,9 +87,6 @@ describe('Revue Importer', function () {
                     html: '<p>Hello World!</p><p>Goodbye World!</p>',
                     published_at: '2022-12-01T01:01:30.000Z',
                     status: 'published',
-                    tags: [
-                        '#revue'
-                    ],
                     title: 'Hello World - Issue #8',
                     slug: 'hello-world-issue-8',
                     updated_at: '2022-12-01T01:01:30.000Z',
@@ -113,8 +109,7 @@ describe('Revue Importer', function () {
                     created_at: '2022-12-01T01:02:03.123Z',
                     published_at: '2022-12-01T01:02:03.123Z',
                     updated_at: '2022-12-01T01:02:03.123Z',
-                    html: '<p>Hello World!</p><p>Goodbye World!</p>',
-                    tags: ['#revue']
+                    html: '<p>Hello World!</p><p>Goodbye World!</p>'
                 }
             ]);
         });
@@ -221,6 +216,20 @@ describe('Revue Importer', function () {
                 const result = JSONToHTML.itemsToHtml([{title: '', issue_id: 123456, item_type: 'video', url: 'https://vimeo.com/789123', description: 'Hello world', order: 2, image: 'https://s3.amazonaws.com/revue/items/images/006/606/464/web/maxresdefault.jpg?1601883862'}]);
 
                 assert.deepEqual(result, '<figure class="kg-card kg-embed-card kg-card-hascaption"><iframe src="https://player.vimeo.com/video/789123" width="200" height="113" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe><figcaption>Hello world</figcaption></figure>');
+            });
+        });
+
+        describe('cleanCsvHTML', function () {
+            it('can wrap blockquote content in p tags', function () {
+                const result = JSONToHTML.cleanCsvHTML('<p>Hello World!</p><blockquote>Try <a href="https://example.com">This</a>!</blockquote>');
+
+                assert.deepEqual(result, '<p>Hello World!</p><blockquote><p>Try <a href="https://example.com">This</a>!</p></blockquote>');
+            });
+
+            it('can remove unwanted blank paragraphs', function () {
+                const result = JSONToHTML.cleanCsvHTML('<p>Hello World!</p><p><br></p><p>Goodbye World!</p>');
+
+                assert.deepEqual(result, '<p>Hello World!</p><p>Goodbye World!</p>');
             });
         });
     });
