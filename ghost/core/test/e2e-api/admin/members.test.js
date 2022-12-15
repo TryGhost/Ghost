@@ -2332,6 +2332,75 @@ describe('Members API', function () {
             .expectStatus(422);
     });
 
+    it('Setting subscribed when editing a member won\'t reset to default newsletters', async function () {
+        // First check that this newsletter is off by default, or this test would not make sense
+        const newsletter = await models.Newsletter.findOne({id: testUtils.DataGenerator.Content.newsletters[0].id}, {require: true});
+        assert.equal(newsletter.get('subscribe_on_signup'), false, 'This test expects the newsletter to be off by default');
+
+        // Add custom newsletter list to new member
+        const member = {
+            name: 'test newsletter',
+            email: 'memberTestChangeSubscribedAttribute@test.com',
+            newsletters: [
+                {
+                    id: testUtils.DataGenerator.Content.newsletters[0].id // This is off by default
+                },
+                {
+                    id: testUtils.DataGenerator.Content.newsletters[1].id
+                }
+            ]
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(2).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        const memberId = body.members[0].id;
+        const editedMember = {
+            subscribed: true // no change
+        };
+
+        // Edit member
+        const {body: body2} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(2).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+        const changedMember = body2.members[0];
+        assert.equal(changedMember.newsletters.length, 2);
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member is still subscribed for a newsletter that is off by default');
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed for the newsletter it subscribed to');
+    });
+
     it('Can add and send a signup confirmation email (old)', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
         filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
