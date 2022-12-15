@@ -62,6 +62,7 @@ describe('Revue Importer', function () {
                 {
                     comment_id: 123456,
                     title: 'Hello World - Issue #8',
+                    slug: 'hello-world-issue-8',
                     status: 'published',
                     visibility: 'public',
                     created_at: '2022-12-01T01:01:30.000Z',
@@ -91,6 +92,7 @@ describe('Revue Importer', function () {
                         '#revue'
                     ],
                     title: 'Hello World - Issue #8',
+                    slug: 'hello-world-issue-8',
                     updated_at: '2022-12-01T01:01:30.000Z',
                     visibility: 'public'
                 }
@@ -105,6 +107,7 @@ describe('Revue Importer', function () {
                 {
                     comment_id: 123456,
                     title: 'Hello World - Issue #8',
+                    slug: 'hello-world-issue-8',
                     status: 'draft',
                     visibility: 'public',
                     created_at: '2022-12-01T01:02:03.123Z',

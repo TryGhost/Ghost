@@ -1,4 +1,5 @@
 const debug = require('@tryghost/debug')('importer:revue');
+const {slugify} = require('@tryghost/string');
 const papaparse = require('papaparse');
 const _ = require('lodash');
 
@@ -47,6 +48,7 @@ const fetchPostsFromData = (revueData) => {
         posts.push({
             comment_id: revuePostID,
             title: postMeta.subject,
+            slug: slugify(postMeta.subject),
             status: JSONToHTML.getPostStatus(postMeta),
             visibility: 'public',
             created_at: postDate,

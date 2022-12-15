@@ -23,6 +23,7 @@
   "dependencies": {
     "@tryghost/debug": "^0.1.20",
     "@tryghost/kg-default-cards": "^5.18.7",
+    "@tryghost/string": "0.2.2",
     "lodash": "^4.17.21",
     "papaparse": "^5.3.2",
     "simple-dom": "^1.4.0"
