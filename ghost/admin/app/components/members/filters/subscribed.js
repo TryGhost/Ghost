@@ -30,21 +30,9 @@ export const NEWSLETTERS_FILTER = (newsletterList) => {
                 const relation = flt.relation;
                 const value = flt.value;
 
-                if (relation === 'is' && value === 'true') {
-                    return `newsletters.slug:${newsletter.slug}`;
-                }
-
-                if (relation === 'is' && value === 'false') {
-                    return `newsletters.slug:-${newsletter.slug}`;
-                }
-                
-                if (relation === 'is-not' && value === 'true') {
-                    return `newsletters.slug:-${newsletter.slug}`;
-                }
-
-                if (relation === 'is-not' && value === 'false') {
-                    return `newsletters.slug:${newsletter.slug}`;
-                }
+                return (relation === 'is' && value === 'true') || (relation === 'is-not' && value === 'false')
+                    ? `newsletters.slug:${newsletter.slug}`
+                    : `newsletters.slug:-${newsletter.slug}`;
             },
             parseNqlFilter: (flt) => {
                 if (!flt['newsletters.slug']) {
