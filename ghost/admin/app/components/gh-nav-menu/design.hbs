@@ -45,10 +45,10 @@
         <div class="gh-nav-bottom">
             <div class="gh-change-theme">
                 <div class="gh-nav-design-tab">
-                    <LinkTo @route="settings.design.change-theme" {{on "click" this.closeAllSections}} data-test-nav="change-theme"></LinkTo>
+                    <LinkTo @route="settings.design.change-theme" {{on "click" this.closeAllSections}} aria-label="Change theme" data-test-nav="change-theme"></LinkTo>
                     <div>
                         <span>Change theme</span>
-                        <span class="active-theme" data-test-text="current-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}{{#if this.activeTheme.package.docs}}<a class="gh-theme-docs" href="{{this.activeTheme.package.docs}}" target="_blank">{{svg-jar "book-open" width="12" height="12"}}</a>{{/if}}</span>
+                        <span class="active-theme" data-test-text="current-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}{{#if this.activeTheme.package.docs}}<a class="gh-theme-docs" href="{{this.activeTheme.package.docs}}" target="_blank" rel="noopener noreferrer">{{svg-jar "book-open" width="12" height="12"}}</a>{{/if}}</span>
                     </div>
                     <div class="gh-nav-design-tabicon">{{svg-jar "sync"}}</div>
                 </div>
