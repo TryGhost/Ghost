@@ -124,19 +124,19 @@ describe('Revue Importer', function () {
         it('can process a subscriber with only first name', function () {
             const result = RevueImporter.importSubscribers({subscribers: 'email,first_name,last_name,created_at\njoe@bloggs.me,Joe,"",2022-12-01 01:02:03.123457'});
 
-            assert.deepEqual(result, [{email: 'joe@bloggs.me', name: 'Joe', created_at: '2022-12-01 01:02:03.123457'}]);
+            assert.deepEqual(result, [{email: 'joe@bloggs.me', name: 'Joe', created_at: '2022-12-01 01:02:03.123457', subscribed: true}]);
         });
 
         it('can process a subscriber with first and last name', function () {
             const result = RevueImporter.importSubscribers({subscribers: 'email,first_name,last_name,created_at\njoe@bloggs.me,Joe,Bloggs,2022-12-01 01:02:03.123457'});
 
-            assert.deepEqual(result, [{email: 'joe@bloggs.me', name: 'Joe Bloggs', created_at: '2022-12-01 01:02:03.123457'}]);
+            assert.deepEqual(result, [{email: 'joe@bloggs.me', name: 'Joe Bloggs', created_at: '2022-12-01 01:02:03.123457', subscribed: true}]);
         });
 
         it('can process multiple subscribers', function () {
             const result = RevueImporter.importSubscribers({subscribers: 'email,first_name,last_name,created_at\njoe@bloggs.me,Joe,Bloggs,2022-12-01 01:02:03.123457\njo@bloggs.me,Jo,Bloggs,2022-12-01 01:02:04.123457'});
 
-            assert.deepEqual(result, [{email: 'joe@bloggs.me', name: 'Joe Bloggs', created_at: '2022-12-01 01:02:03.123457'},{email: 'jo@bloggs.me', name: 'Jo Bloggs', created_at: '2022-12-01 01:02:04.123457'}]);
+            assert.deepEqual(result, [{email: 'joe@bloggs.me', name: 'Joe Bloggs', created_at: '2022-12-01 01:02:03.123457', subscribed: true},{email: 'jo@bloggs.me', name: 'Jo Bloggs', created_at: '2022-12-01 01:02:04.123457', subscribed: true}]);
         });
     });
 

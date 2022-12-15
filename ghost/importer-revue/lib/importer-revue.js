@@ -79,8 +79,8 @@ const buildSubscriberList = (revueData) => {
         subscribers.push({
             email: subscriber.email,
             name: `${subscriber.first_name} ${subscriber.last_name}`.trim(),
-            created_at: subscriber.created_at
-
+            created_at: subscriber.created_at,
+            subscribed: true
         });
     });
 

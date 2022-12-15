@@ -1,6 +1,14 @@
 const debug = require('@tryghost/debug')('importer:revue-subscriber');
 const BaseImporter = require('./base');
 
+const papaparse = require('papaparse');
+const path = require('path');
+const fs = require('fs-extra');
+
+const config = require('../../../../../shared/config');
+const membersService = require('../../../../services/members');
+const models = require('../../../../models');
+
 class RevueSubscriberImporter extends BaseImporter {
     constructor(allDataFromFile) {
         super(allDataFromFile, {
@@ -17,7 +25,23 @@ class RevueSubscriberImporter extends BaseImporter {
     async doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
-        return super.doImport(options, importOptions);
+        const importLabel = importOptions.importTag ? importOptions.importTag.replace(/^#/, '') : null;
+
+        const outputFileName = `Converted ${importLabel}.csv`;
+        const outputFilePath = path.join(config.getContentPath('data'), '/', outputFileName);
+        const csvData = papaparse.unparse(this.dataToImport);
+
+        const memberImporterOptions = {
+            pathToCSV: outputFilePath,
+            globalLabels: [{name: importLabel}],
+            importLabel: {name: importLabel},
+            LabelModel: models.Label,
+            forceInline: true
+        };
+
+        await fs.writeFile(outputFilePath, csvData);
+
+        return membersService.processImport(memberImporterOptions);
     }
 }
 
