@@ -7,12 +7,15 @@ const uuid = require('uuid');
 const config = require('../../../shared/config');
 const {extract} = require('@tryghost/zip');
 const tpl = require('@tryghost/tpl');
+const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
+const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
 const ImageImporter = require('./importers/image');
+const RevueImporter = require('@tryghost/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
@@ -48,12 +51,12 @@ class ImportManager {
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [ImageImporter, DataImporter];
+        this.importers = [ImageImporter, RevueImporter, DataImporter];
 
         /**
          * @type {Handler[]}
          */
-        this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
+        this.handlers = [ImageHandler, RevueHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
         /**
@@ -240,6 +243,8 @@ class ImportManager {
         for (const handler of this.handlers) {
             const files = this.getFilesFromZip(handler, zipDirectory);
 
+            debug('handler', handler.type, files);
+
             if (files.length > 0) {
                 if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
                     // This limitation is here to reduce the complexity of the importer for now
@@ -271,17 +276,19 @@ class ImportManager {
      * @param {File} file
      * @returns {Promise<ImportData>}
      */
-    processFile(file, ext) {
-        const fileHandler = _.find(this.handlers, function (handler) {
+    async processFile(file, ext) {
+        const fileHandlers = _.filter(this.handlers, function (handler) {
             return _.includes(handler.extensions, ext);
         });
 
-        return fileHandler.loadFile([_.pick(file, 'name', 'path')]).then(function (loadedData) {
-            // normalize the returned data
-            const importData = {};
-            importData[fileHandler.type] = loadedData;
-            return importData;
-        });
+        const importData = {};
+
+        await Promise.all(fileHandlers.map(async (fileHandler) => {
+            debug('fileHandler', fileHandler.type);
+            importData[fileHandler.type] = await fileHandler.loadFile([_.pick(file, 'name', 'path')]);
+        }));
+
+        return importData;
     }
 
     /**
@@ -305,6 +312,7 @@ class ImportManager {
      * @returns {Promise<ImportData>}
      */
     async preProcess(importData) {
+        debug('preProcess');
         for (const importer of this.importers) {
             importData = importer.preProcess(importData);
         }
@@ -321,10 +329,12 @@ class ImportManager {
      * @returns {Promise<Object.<string, ImportResult>>} importResults
      */
     async doImport(importData, importOptions) {
+        debug('doImport', this.importers);
         importOptions = importOptions || {};
         const importResults = {};
 
         for (const importer of this.importers) {
+            debug('importer looking for', importer.type, 'in', Object.keys(importData));
             if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
                 importResults[importer.type] = await importer.doImport(importData[importer.type], importOptions);
             }
@@ -410,6 +420,8 @@ class ImportManager {
             // Has to be completed outside of job to ensure file is processed before being deleted
             importData = await this.loadFile(file);
         }
+
+        debug('importFromFile completed file load', importData);
 
         const env = config.get('env');
         if (!env?.startsWith('testing') && !importOptions.runningInJob) {

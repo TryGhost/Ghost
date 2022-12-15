@@ -14,8 +14,10 @@ const ImportManager = require('../../../../../core/server/data/importer');
 const JSONHandler = require('../../../../../core/server/data/importer/handlers/json');
 let ImageHandler = rewire('../../../../../core/server/data/importer/handlers/image');
 const MarkdownHandler = require('../../../../../core/server/data/importer/handlers/markdown');
+const RevueHandler = require('../../../../../core/server/data/importer/handlers/revue');
 const DataImporter = require('../../../../../core/server/data/importer/importers/data');
 const ImageImporter = require('../../../../../core/server/data/importer/importers/image');
+const RevueImporter = require('@tryghost/importer-revue');
 const storage = require('../../../../../core/server/adapters/storage');
 const configUtils = require('../../../../utils/configUtils');
 
@@ -28,8 +30,8 @@ describe('Importer', function () {
 
     describe('ImportManager', function () {
         it('has the correct interface', function () {
-            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(3);
-            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(2);
+            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(4);
+            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(3);
             ImportManager.loadFile.should.be.instanceof(Function);
             ImportManager.preProcess.should.be.instanceof(Function);
             ImportManager.doImport.should.be.instanceof(Function);
@@ -37,7 +39,8 @@ describe('Importer', function () {
         });
 
         it('gets the correct extensions', function () {
-            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(12);
+            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(13);
+            ImportManager.getExtensions().should.containEql('.csv');
             ImportManager.getExtensions().should.containEql('.json');
             ImportManager.getExtensions().should.containEql('.zip');
             ImportManager.getExtensions().should.containEql('.jpg');
@@ -72,7 +75,7 @@ describe('Importer', function () {
 
         it('globs extensions correctly', function () {
             ImportManager.getGlobPattern(ImportManager.getExtensions())
-                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
+                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getGlobPattern(ImportManager.getDirectories())
                 .should.equal('+(images|content)');
             ImportManager.getGlobPattern(JSONHandler.extensions)
@@ -80,19 +83,19 @@ describe('Importer', function () {
             ImportManager.getGlobPattern(ImageHandler.extensions)
                 .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions())
-                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories())
                 .should.equal('+(images|content)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 0)
-                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 0)
                 .should.equal('+(images|content)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 1)
-                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
+                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 1)
                 .should.equal('{*/,}+(images|content)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 2)
-                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
+                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 2)
                 .should.equal('**/+(images|content)');
         });
@@ -142,8 +145,8 @@ describe('Importer', function () {
             // We need to make sure we don't actually extract a zip and leave temporary files everywhere!
             it('knows when to process a zip', function (done) {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
-                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve({}));
-                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve({}));
+                const zipSpy = sinon.stub(ImportManager, 'processZip').resolves({});
+                const fileSpy = sinon.stub(ImportManager, 'processFile').resolves({});
 
                 ImportManager.loadFile(testZip).then(function () {
                     zipSpy.calledOnce.should.be.true();
@@ -157,26 +160,29 @@ describe('Importer', function () {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
 
                 // need to stub out the extract and glob function for zip
-                const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve('/tmp/dir/'));
+                const extractSpy = sinon.stub(ImportManager, 'extractZip').resolves('/tmp/dir/');
 
                 const validSpy = sinon.stub(ImportManager, 'isValidZip').returns(true);
                 const baseDirSpy = sinon.stub(ImportManager, 'getBaseDirectory').returns('');
                 const getFileSpy = sinon.stub(ImportManager, 'getFilesFromZip');
-                const jsonSpy = sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
+                const revueSpy = sinon.stub(RevueHandler, 'loadFile').resolves();
+                const jsonSpy = sinon.stub(JSONHandler, 'loadFile').resolves({posts: []});
                 const imageSpy = sinon.stub(ImageHandler, 'loadFile');
                 const mdSpy = sinon.stub(MarkdownHandler, 'loadFile');
 
                 getFileSpy.returns([]);
                 getFileSpy.withArgs(JSONHandler, sinon.match.string).returns([{path: '/tmp/dir/myFile.json', name: 'myFile.json'}]);
+                getFileSpy.withArgs(RevueHandler, sinon.match.string).returns([{path: '/tmp/dir/myFile.json', name: 'myFile.json'}]);
 
                 ImportManager.processZip(testZip).then(function (zipResult) {
                     extractSpy.calledOnce.should.be.true();
                     validSpy.calledOnce.should.be.true();
                     baseDirSpy.calledOnce.should.be.true();
-                    getFileSpy.calledThrice.should.be.true();
+                    getFileSpy.callCount.should.eql(4);
                     jsonSpy.calledOnce.should.be.true();
                     imageSpy.called.should.be.false();
                     mdSpy.called.should.be.false();
+                    revueSpy.called.should.be.true();
 
                     ImportManager.processFile(testFile, '.json').then(function (fileResult) {
                         jsonSpy.calledTwice.should.be.true();
@@ -234,6 +240,7 @@ describe('Importer', function () {
                 this.beforeEach(() => {
                     sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
                     sinon.stub(ImageHandler, 'loadFile');
+                    sinon.stub(RevueHandler, 'loadFile');
                     sinon.stub(MarkdownHandler, 'loadFile');
                 });
 
@@ -353,8 +360,11 @@ describe('Importer', function () {
 
                 const dataSpy = sinon.spy(DataImporter, 'preProcess');
                 const imageSpy = sinon.spy(ImageImporter, 'preProcess');
+                const revueSpy = sinon.spy(RevueImporter, 'preProcess');
 
                 ImportManager.preProcess(inputCopy).then(function (output) {
+                    revueSpy.calledOnce.should.be.true();
+                    revueSpy.calledWith(inputCopy).should.be.true();
                     dataSpy.calledOnce.should.be.true();
                     dataSpy.calledWith(inputCopy).should.be.true();
                     imageSpy.calledOnce.should.be.true();
