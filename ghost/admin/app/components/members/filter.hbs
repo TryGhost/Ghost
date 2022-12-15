@@ -4,7 +4,7 @@
         class="gh-btn gh-btn-icon gh-btn-action-icon"
         data-test-button="members-filter-actions"
     >
-        <span class="{{if @isFiltered "gh-btn-label-green"}}" {{did-update this.parseDefaultFilters @parseFilterParamCounter }}>
+        <span class="{{if @isFiltered "gh-btn-label-green"}}" {{did-update this.parseDefaultFilters @parseFilterParamCounter}}>
             {{svg-jar "filter"}}
             Filter
             {{#if @isFiltered}}
