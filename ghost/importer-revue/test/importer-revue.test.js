@@ -163,21 +163,21 @@ describe('Revue Importer', function () {
             });
 
             it('can handle long youtube video item', function () {
-                const result = JSONToHTML.itemsToHtml([{title: '',issue_id: 123456,item_type: 'video',url: 'https://www.youtube.com/watch?v=ABCDEF',description: 'Hello World',order: 0,image: 'https://s3.amazonaws.com/revue/items/images/012/345/678/web/maxresdefault.jpg?1667924432'}]);
+                const result = JSONToHTML.itemsToHtml([{title: '', issue_id: 123456, item_type: 'video', url: 'https://www.youtube.com/watch?v=ABCDEF', description: 'Hello World', order: 0, image: 'https://s3.amazonaws.com/revue/items/images/012/345/678/web/maxresdefault.jpg?1667924432'}]);
 
                 assert.deepEqual(result, '<figure class="kg-card kg-embed-card kg-card-hascaption"><iframe width="200" height="113" src="https://www.youtube.com/embed/ABCDEF?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Hello World</figcaption></figure>');
             });
 
             it('can handle short youtube video item', function () {
-                const result = JSONToHTML.itemsToHtml([]);
+                const result = JSONToHTML.itemsToHtml([{title: '', issue_id: 123456, item_type: 'video', url: 'https://youtu.be/ABCDEF', description: 'Hello World', order: 2, image: 'https://s3.amazonaws.com/revue/items/images/006/606/464/web/maxresdefault.jpg?1601883862'}]);
 
-                assert.deepEqual(result, '');
+                assert.deepEqual(result, '<figure class="kg-card kg-embed-card kg-card-hascaption"><iframe width="200" height="113" src="https://www.youtube.com/embed/ABCDEF?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Hello World</figcaption></figure>');
             });
 
             it('can handle vimeo video item', function () {
-                const result = JSONToHTML.itemsToHtml([]);
+                const result = JSONToHTML.itemsToHtml([{title: '', issue_id: 123456, item_type: 'video', url: 'https://vimeo.com/789123', description: 'Hello world', order: 2, image: 'https://s3.amazonaws.com/revue/items/images/006/606/464/web/maxresdefault.jpg?1601883862'}]);
 
-                assert.deepEqual(result, '');
+                assert.deepEqual(result, '<figure class="kg-card kg-embed-card kg-card-hascaption"><iframe src="https://player.vimeo.com/video/789123" width="200" height="113" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe><figcaption>Hello world</figcaption></figure>');
             });
         });
     });

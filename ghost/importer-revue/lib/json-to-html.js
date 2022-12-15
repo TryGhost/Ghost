@@ -60,7 +60,7 @@ const itemsToHtml = (items) => {
                 let videoID = item.url.replace(/https?:\/\/(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]*)/gi, '$1');
                 videoHTML = `<iframe width="200" height="113" src="https://www.youtube.com/embed/${videoID}?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
             } else if (isVimeo) {
-                let videoID = item.url.replace(/vimeo.com\/([0-9]+)/gm, '$1');
+                let videoID = item.url.replace(/https?:\/\/(?:www\.)?vimeo\.com\/([0-9]+)/gi, '$1');
                 videoHTML = `<iframe src="https://player.vimeo.com/video/${videoID}" width="200" height="113" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
             }
             let cardOpts = {
