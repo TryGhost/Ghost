@@ -1,3 +1,4 @@
+const debug = require('@tryghost/debug')('importer:revue');
 const papaparse = require('papaparse');
 const _ = require('lodash');
 const SimpleDom = require('simple-dom');
@@ -81,70 +82,86 @@ const convertItemToHTML = (items) => {
     return itemHTMLChunks.join('\n');
 };
 
+/**
+ * Build posts out of the issue and item data
+ *
+ * @param {Object} revueData
+ * @return {Array}
+ */
+const fetchPostsFromData = (revueData) => {
+    const itemData = JSON.parse(revueData.items);
+    const issueData = papaparse.parse(revueData.issues, {
+        header: true,
+        skipEmptyLines: true,
+        transform(value, header) {
+            if (header === 'id') {
+                return parseInt(value);
+            }
+            return value;
+        }
+    });
+
+    const posts = [];
+
+    issueData.data.forEach((postMeta) => {
+        // Convert issues to posts
+        if (!postMeta.subject) {
+            return;
+        }
+
+        const isPublished = (postMeta.sent_at) ? true : false; // This is how we determine is a post is published or not
+        const postDate = (isPublished) ? new Date(postMeta.sent_at) : new Date();
+        const revuePostID = postMeta.id;
+        let postHTML = postMeta.description;
+
+        const postItems = _.filter(itemData, {issue_id: revuePostID});
+        const sortedPostItems = (postItems) ? _.sortBy(postItems, o => o.order) : [];
+        if (postItems) {
+            const convertedItems = convertItemToHTML(sortedPostItems);
+            postHTML = `${postMeta.description}${convertedItems}`;
+        }
+
+        posts.push({
+            comment_id: revuePostID,
+            title: postMeta.subject,
+            status: (isPublished) ? 'published' : 'draft',
+            visibility: 'public',
+            created_at: postDate.toISOString(),
+            published_at: postDate.toISOString(),
+            updated_at: postDate.toISOString(),
+            html: postHTML,
+            tags: ['#revue']
+
+        });
+    });
+
+    return posts;
+};
+
 const RevueImporter = {
     type: 'revue',
     preProcess: function (importData) {
+        debug('preProcess');
         importData.preProcessedByRevue = true;
 
-        const posts = [];
+        importData.data = {
+            meta: {version: '5.0.0'},
+            data: {}
+        };
 
+        // TODO: this should really be in doImport
+        // No posts to process, quit early
         if (!importData?.revue?.revue?.issues) {
             return importData;
         }
 
-        const csvData = papaparse.parse(importData.revue.revue.issues, {
-            header: true,
-            skipEmptyLines: true,
-            transform(value, header) {
-                if (header === 'id') {
-                    return parseInt(value);
-                }
-                return value;
-            }
-        });
-
-        const jsonData = JSON.parse(importData.revue.revue.items);
-
-        csvData.data.forEach((postMeta) => {
-            // Convert issues to posts
-            if (!postMeta.subject) {
-                return;
-            }
-
-            const isPublished = (postMeta.sent_at) ? true : false; // This is how we determine is a post is published or not
-            const postDate = (isPublished) ? new Date(postMeta.sent_at) : new Date();
-            const revuePostID = postMeta.id;
-            let postHTML = postMeta.description;
-
-            const postItems = _.filter(jsonData, {issue_id: revuePostID});
-            const sortedPostItems = (postItems) ? _.sortBy(postItems, o => o.order) : [];
-            if (postItems) {
-                const convertedItems = convertItemToHTML(sortedPostItems);
-                postHTML = `${postMeta.description}${convertedItems}`;
-            }
-
-            posts.push({
-                comment_id: revuePostID,
-                title: postMeta.subject,
-                status: (isPublished) ? 'published' : 'draft',
-                visibility: 'public',
-                created_at: postDate.toISOString(),
-                published_at: postDate.toISOString(),
-                updated_at: postDate.toISOString(),
-                html: postHTML,
-                tags: ['#revue']
-
-            });
-        });
-
-        importData.data.meta = {version: '5.0.0'};
-        importData.data.data = {
-            posts
-        };
+        importData.data.data.posts = fetchPostsFromData(importData.revue.revue);
 
         return importData;
     },
     doImport: function (importData) {
+        debug('doImport');
+
         return importData;
     }
 };

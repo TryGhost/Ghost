@@ -24,6 +24,7 @@ DataImporter = {
     type: 'data',
 
     preProcess: function preProcess(importData) {
+        debug('preProcess');
         importData.preProcessedByData = true;
         return importData;
     },
@@ -45,6 +46,7 @@ DataImporter = {
 
     // Allow importing with an options object that is passed through the importer
     doImport: async function doImport(importData, importOptions) {
+        debug('doImport');
         importOptions = importOptions || {};
 
         if (importOptions.importTag && importData?.data?.posts) {

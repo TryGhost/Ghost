@@ -232,8 +232,6 @@ class ImportManager {
     async processZip(file) {
         const zipDirectory = await this.extractZip(file.path);
 
-        debug('processing file', zipDirectory);
-
         /**
          * @type {ImportData}
          */
@@ -242,13 +240,10 @@ class ImportManager {
         this.isValidZip(zipDirectory);
         const baseDir = this.getBaseDirectory(zipDirectory);
 
-        debug('is valid zip baseDir', baseDir);
-
         for (const handler of this.handlers) {
-            debug('handler', handler.type);
             const files = this.getFilesFromZip(handler, zipDirectory);
 
-            debug('got files', files);
+            debug('handler', handler.type, files);
 
             if (files.length > 0) {
                 if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
