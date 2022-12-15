@@ -13,7 +13,9 @@ const db = require('../../../core/server/data/db');
 
 const models = require('../../../core/server/models');
 const importer = require('../../../core/server/data/importer');
-const dataImporter = importer.importers[1];
+const dataImporter = importer.importers.find((instance) => {
+    return instance.type === 'data';
+});
 
 const importOptions = {
     returnImportedData: true
