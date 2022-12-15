@@ -102,7 +102,8 @@ const RevueImporter = {
                 return value;
             }
         });
-        const jsonData = importData.revue.revue.items;
+
+        const jsonData = JSON.parse(importData.revue.revue.items);
 
         csvData.data.forEach((postMeta) => {
             // Convert issues to posts
