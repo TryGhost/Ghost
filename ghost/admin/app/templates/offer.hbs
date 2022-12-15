@@ -192,6 +192,7 @@
                                     <label for="product-cadence" class="fw6">Duration</label>
                                     <span class="gh-select">
                                         <OneWaySelect
+                                            @data-test-select="offer-duration"
                                             @value={{this.offer.duration}}
                                             @options={{this.durations}}
                                             @optionValuePath="duration"

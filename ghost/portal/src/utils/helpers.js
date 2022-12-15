@@ -523,7 +523,7 @@ export function subscriptionHasFreeTrial({sub} = {}) {
     return false;
 }
 
-function isInThePast(date) {
+export function isInThePast(date) {
     const today = new Date();
 
     // 👇️ OPTIONAL!
