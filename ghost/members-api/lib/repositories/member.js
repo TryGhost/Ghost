@@ -250,7 +250,7 @@ module.exports = class MemberRepository {
         const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters']);
 
         // Throw error if email is invalid using latest validator
-        if (!validator.isEmail(memberData.email, {latest: true})) {
+        if (!validator.isEmail(memberData.email, {legacy: false})) {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidEmail),
                 property: 'email'
@@ -452,7 +452,7 @@ module.exports = class MemberRepository {
         // Throw error if email is invalid and it's been changed
         if (
             initialMember.get('email') !== memberData.email &&
-            !validator.isEmail(memberData.email, {latest: true})
+            !validator.isEmail(memberData.email, {legacy: false})
         ) {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidEmail),
