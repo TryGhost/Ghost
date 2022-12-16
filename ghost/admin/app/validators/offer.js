@@ -16,8 +16,6 @@ export default BaseValidator.create({
     },
 
     amount(model) {
-        console.log(model.type);
-
         if (!model.amount) {
             if (model.type === 'trial') {
                 model.errors.add('amount', 'Free trial must be at least 1 day.');
