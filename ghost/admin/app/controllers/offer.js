@@ -267,6 +267,16 @@ export default class OffersController extends Controller {
     }
 
     @action
+    validateProperty(property) {
+        this.offer.validate({property});
+    }
+
+    @action
+    clearPropertyValidations(property) {
+        this.offer.errors.remove(property);
+    }
+
+    @action
     setDiscountType(discountType) {
         if (!this.isDiscountSectionDisabled) {
             const amount = this.offer.amount || 0;
@@ -278,6 +288,8 @@ export default class OffersController extends Controller {
             } else if (this.offer.amount !== '') {
                 this.offer.amount = amount / 100;
             }
+
+            this.validateProperty('amount');
 
             this.updatePortalPreview({forceRefresh: false});
         }
@@ -297,9 +309,6 @@ export default class OffersController extends Controller {
     @action
     setTrialDuration(e) {
         let amount = e.target.value;
-        if (amount !== '') {
-            amount = parseInt(amount);
-        }
         this._updateOfferProperty('amount', amount);
     }
 
@@ -420,10 +429,14 @@ export default class OffersController extends Controller {
             this._updateOfferProperty('type', 'trial');
             this._updateOfferProperty('amount', 7);
             this._updateOfferProperty('duration', 'trial');
+
+            this.validateProperty('amount');
         } else {
             this._updateOfferProperty('type', 'percent');
             this._updateOfferProperty('amount', 0);
             this._updateOfferProperty('duration', 'once');
+
+            this.clearPropertyValidations('amount');
         }
     }
 

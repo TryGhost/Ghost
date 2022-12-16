@@ -74,6 +74,7 @@
                                     </div>
                                 </div>
                             </GhFormGroup>
+
                             {{#if this.isTrialOffer}}
                                 <div class="gh-offer-tier-and-trial">
                                     <GhFormGroup @errors={{this.errors}} @property="product-cadence">
@@ -97,15 +98,15 @@
                                         <GhFormGroup @errors={{this.offer.errors}} @property="trialDuration">
                                             <label for="trial-duration" class="fw6">Trial duration</label>
                                             <div class="trial-duration">
-                                                <GhTextInput
-                                                    @name="trial-duration"
-                                                    @type="number"
-                                                    @placeholder=""
-                                                    @disabled={{this.isDiscountSectionDisabled}}
-                                                    @value={{readonly this.offer.amount}}
+                                                <input
+                                                    type="number"
+                                                    id="trial-duration"
+                                                    class="gh-input"
+                                                    name="trial-duration"
+                                                    value={{this.offer.amount}}
+                                                    disabled={{this.isDiscountSectionDisabled}}
                                                     {{on "input" this.setTrialDuration}}
-                                                    @id="trial-duration"
-                                                    @class="gh-input"
+                                                    {{on "blur" (fn this.validateProperty "amount")}}
                                                 />
                                             </div>
                                             <span class="error">
@@ -139,29 +140,16 @@
                                         <div class="flex items-start">
                                             <GhFormGroup @errors={{this.offer.errors}} @property="amount" @hasValidated={{this.offer.hasValidated}}>
                                                 <div class="gh-offer-value percentage">
-                                                    {{#if (eq this.offer.type 'fixed')}}
-                                                        <GhTextInput
-                                                            @name="amount"
-                                                            @type="number"
-                                                            @placeholder=""
-                                                            @disabled={{this.isDiscountSectionDisabled}}
-                                                            @value={{readonly (gh-price-amount this.offer.amount)}}
-                                                            @input={{this.setDiscountAmount}}
-                                                            @id="amount"
-                                                            @class="gh-input"
-                                                        />
-                                                    {{else}}
-                                                        <GhTextInput
-                                                            @name="amount"
-                                                            @type="number"
-                                                            @placeholder=""
-                                                            @disabled={{this.isDiscountSectionDisabled}}
-                                                            @value={{readonly this.offer.amount}}
-                                                            @input={{this.setDiscountAmount}}
-                                                            @id="amount"
-                                                            @class="gh-input"
-                                                        />
-                                                    {{/if}}
+                                                    <input
+                                                        type="number"
+                                                        id="amount"
+                                                        class="gh-input"
+                                                        name="amount"
+                                                        value={{if (eq this.offer.type 'fixed') (gh-price-amount this.offer.amount) this.offer.amount}}
+                                                        disabled={{this.isDiscountSectionDisabled}}
+                                                        {{on "input" this.setDiscountAmount}}
+                                                        {{on "blur" (fn this.validateProperty "amount")}}
+                                                    />
                                                 </div>
                                                 <span class="error">
                                                     <GhErrorMessage @errors={{this.offer.errors}} @property="amount" />
@@ -177,7 +165,7 @@
                                                             @disabled={{this.isDiscountSectionDisabled}}
                                                             @optionLabelPath="label"
                                                             @optionTargetPath="offertype"
-                                                            @update = {{this.setDiscountType}}
+                                                            @update={{this.setDiscountType}}
                                                         />
                                                         {{svg-jar "arrow-down-small"}}
                                                     </span>
@@ -199,7 +187,7 @@
                                                 @disabled={{this.isDiscountSectionDisabled}}
                                                 @optionLabelPath="label"
                                                 @optionTargetPath="duration"
-                                                @update = {{this.updateDuration}}
+                                                @update={{this.updateDuration}}
                                             />
                                             {{svg-jar "arrow-down-small"}}
                                         </span>
