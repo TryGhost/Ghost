@@ -4389,6 +4389,15 @@
     lodash "^4.17.21"
     uuid "^9.0.0"
 
+"@tryghost/errors@^1.2.20":
+  version "1.2.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.20.tgz#bd5c96bb815f7b49cacee1bd0ce235c3a5f25e82"
+  integrity sha512-9QGLj3jrslEo4BEByMn/vT65d4fUHSz22p0R5ixiYVtHsuXjdKJm0oDBt8wtKXxdgE/h3CCFI709TW6hLyk+7w==
+  dependencies:
+    "@stdlib/utils" "^0.0.12"
+    lodash "^4.17.21"
+    uuid "^9.0.0"
+
 "@tryghost/express-test@0.11.7":
   version "0.11.7"
   resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.11.7.tgz#586cc0537a944f4e908736dff46617d4b391c52d"
@@ -4720,6 +4729,13 @@
   dependencies:
     lodash.template "^4.5.0"
 
+"@tryghost/tpl@^0.1.21":
+  version "0.1.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.21.tgz#60ba975d0acc7af6911e7b021b2235d6338ab6c7"
+  integrity sha512-ED0SR09+v7SglL+JOD1+q7QaZU4cRa+XemymQomob8hc9PNqE8Gzw0Rd4fqtMD9v91OHvg5rS/MrKvUHn6eTfw==
+  dependencies:
+    lodash.template "^4.5.0"
+
 "@tryghost/url-utils@4.3.0", "@tryghost/url-utils@^4.0.0":
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.3.0.tgz#f276ea0963f34547dca8f8f8a6c7bd4e6d4bb6e3"
@@ -4739,6 +4755,17 @@
   dependencies:
     "@tryghost/errors" "^1.2.19"
     "@tryghost/tpl" "^0.1.20"
+    lodash "^4.17.21"
+    moment-timezone "^0.5.23"
+    validator "7.2.0"
+
+"@tryghost/validator@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.2.0.tgz#cfb0b9447cfb50901b2a2fbf8519de4d5b992f12"
+  integrity sha512-sKAcyZwOCdCe7jG6B1UxzOijHjvwqwj9G9l+hQhRScT1gMT4C8zhyq7BrEQmFUvsLUXVBlpph5wn95E34oqCDw==
+  dependencies:
+    "@tryghost/errors" "^1.2.20"
+    "@tryghost/tpl" "^0.1.21"
     lodash "^4.17.21"
     moment-timezone "^0.5.23"
     validator "7.2.0"
