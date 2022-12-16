@@ -234,15 +234,16 @@ describe('Members Importer API', function () {
                 should.exist(jsonResponse.meta.stats);
 
                 jsonResponse.meta.stats.imported.should.equal(1);
-                jsonResponse.meta.stats.invalid.length.should.equal(1);
+                jsonResponse.meta.stats.invalid.length.should.equal(2);
 
-                jsonResponse.meta.stats.invalid[0].error.should.match(/Validation \(isEmail\) failed for email/);
+                jsonResponse.meta.stats.invalid[0].error.should.match(/Invalid Email/);
+                jsonResponse.meta.stats.invalid[1].error.should.match(/Invalid Email/);
 
                 should.exist(jsonResponse.meta.import_label);
                 jsonResponse.meta.import_label.slug.should.match(/^import-/);
             });
     });
-    
+
     it('Can import members with host emailVerification limits', async function () {
         // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
         configUtils.set('hostSettings:emailVerification', {
