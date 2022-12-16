@@ -451,8 +451,9 @@ module.exports = class MemberRepository {
 
         // Throw error if email is invalid and it's been changed
         if (
-            initialMember.get('email') !== memberData.email &&
-            !validator.isEmail(memberData.email, {legacy: false})
+            initialMember?.get('email') && memberData.email
+            && initialMember.get('email') !== memberData.email
+            && !validator.isEmail(memberData.email, {legacy: false})
         ) {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidEmail),
