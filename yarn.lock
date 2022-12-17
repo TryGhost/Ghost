@@ -4673,10 +4673,10 @@
   dependencies:
     bluebird "^3.7.2"
 
-"@tryghost/promise@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.2.1.tgz#78d922e6e9c99e52f472ff53cf4afd60049ee0f7"
-  integrity sha512-XfrwP69eXPM8ebIS/oWtprsox+ufV+n3R3+UsEN6OmijXm9wGZInX0dZ45gERbLDJOzbvyl1qvbGGt1fsFoynw==
+"@tryghost/promise@0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.1.tgz#b2feac2a446e43015565572546b14d90ef1ded45"
+  integrity sha512-Qy3yWE3unJCms3DcQNcATNDWlDGnXBMuH4UHglei3GPrxjg5zPznD8zk/bh0he7ajE11LWlPmFtSlFHzpqo0vw==
 
 "@tryghost/request@0.1.33", "@tryghost/request@^0.1.33":
   version "0.1.33"

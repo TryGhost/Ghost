@@ -3,6 +3,7 @@ const dbBackup = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
 const importer = require('../../data/importer');
 const errors = require('@tryghost/errors');
+const {pool} = require('@tryghost/promise');
 const models = require('../../models');
 const settingsCache = require('../../../shared/settings-cache');
 
@@ -118,15 +119,15 @@ module.exports = {
 
                     return models.Post.findAll(queryOpts)
                         .then((response) => {
-                            return Promise.all(response.models.map((post) => {
+                            return pool(response.models.map(post => () => {
                                 return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
-                            }));
+                            }), 100);
                         })
                         .then(() => models.Tag.findAll(queryOpts))
                         .then((response) => {
-                            return Promise.all(response.models.map((tag) => {
+                            return pool(response.models.map(tag => () => {
                                 return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
-                            }));
+                            }), 100);
                         })
                         .catch((err) => {
                             throw new errors.InternalServerError({
