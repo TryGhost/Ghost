@@ -1,0 +1,27 @@
+version: '3.7'
+
+x-uffizzi:
+  ingress:
+    service: ghost
+    port: 10000
+
+services:
+
+  ghost:
+    image: "${APP_IMAGE}"
+    deploy:
+      resources:
+        limits:
+          memory: 2000m  
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "10000:10000"
+    volumes: 
+      - ./uffizzi/nginx:/etc/nginx
+    deploy:
+      resources:
+        limits:
+          memory: 500m
