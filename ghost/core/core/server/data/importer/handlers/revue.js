@@ -2,9 +2,10 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const debug = require('@tryghost/debug')('importer:handler:revue');
 
-const hasIssuesCSV = (files) => {
+const hasIssuesCSV = (files, startDirRegex) => {
     return _.some(files, (file) => {
-        return file.name.match(/^issues.*?\.csv/);
+        const name = file.name.replace(startDirRegex, '');
+        return name.match(/^issues.*?\.csv/);
     });
 };
 
@@ -21,7 +22,8 @@ const RevueHandler = {
         const ops = [];
         const revue = {};
 
-        if (!hasIssuesCSV(files)) {
+        if (!hasIssuesCSV(files, startDirRegex)) {
+            debug('No issue CSV');
             return Promise.resolve();
         }
 
