@@ -22,7 +22,9 @@ async function configureApi() {
 }
 
 const debouncedConfigureApi = _.debounce(() => {
-    configureApi();
+    configureApi().catch((err) => {
+        logging.error(err);
+    });
 }, 600);
 
 module.exports = new StripeService({

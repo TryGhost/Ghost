@@ -3,7 +3,9 @@ const {exportedBodyV1} = require('../../utils/fixtures/export/body-generator');
 
 const models = require('../../../core/server/models');
 const importer = require('../../../core/server/data/importer');
-const dataImporter = importer.importers[1];
+const dataImporter = importer.importers.find((instance) => {
+    return instance.type === 'data';
+});
 
 const importOptions = {
     returnImportedData: true
@@ -74,7 +76,7 @@ describe('Importer 1.0', function () {
                 });
         });
 
-        it('mobiledoc is null, html field is set', function () {
+        it('mobiledoc is null, html field is set, convert html -> mobiledoc', function () {
             const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -95,8 +97,8 @@ describe('Importer 1.0', function () {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(1);
-                    should(posts[0].html).eql(null);
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                    should(posts[0].html).eql('<h1 id="this-is-my-post-content">This is my post content.</h1>');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"h1",[[0,[],0,"This is my post content."]]]]}');
                 });
         });
 

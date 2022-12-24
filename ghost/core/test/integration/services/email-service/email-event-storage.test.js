@@ -35,7 +35,7 @@ describe('EmailEventStorage', function () {
         jobsService = require('../../../../core/server/services/jobs');
 
         sinon.stub(MailgunClient.prototype, 'fetchEvents').callsFake(async function (_, batchHandler) {
-            const normalizedEvents = events.map(this.normalizeEvent) || [];
+            const normalizedEvents = (events.map(this.normalizeEvent) || []).filter(e => !!e);
             return [await batchHandler(normalizedEvents)];
         });
     });
@@ -872,6 +872,25 @@ describe('EmailEventStorage', function () {
             domainEvents
         });
         assert.equal(result.unhandled, 1);
+        assert.deepEqual(result.emailIds, []);
+        assert.deepEqual(result.memberIds, []);
+    });
+
+    it('Ignores invalid events', async function () {
+        const emailBatch = fixtureManager.get('email_batches', 0);
+        const emailRecipient = fixtureManager.get('email_recipients', 0);
+        assert(emailRecipient.batch_id === emailBatch.id);
+
+        events = [{
+            event: 'ceci-nest-pas-un-event'
+        }];
+
+        // Fire event processing
+        // We use offloading to have correct coverage and usage of worker thread
+        const {eventStats: result} = await run({
+            domainEvents
+        });
+        assert.equal(result.unhandled, 0);
         assert.deepEqual(result.emailIds, []);
         assert.deepEqual(result.memberIds, []);
     });

@@ -6,6 +6,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
+const validator = require('@tryghost/validator');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -16,7 +17,8 @@ const messages = {
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
-    tierArchived: 'Cannot use archived Tiers'
+    tierArchived: 'Cannot use archived Tiers',
+    invalidEmail: 'Invalid Email'
 };
 
 /**
@@ -247,6 +249,14 @@ module.exports = class MemberRepository {
 
         const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters']);
 
+        // Throw error if email is invalid using latest validator
+        if (!validator.isEmail(memberData.email, {legacy: false})) {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidEmail),
+                property: 'email'
+            });
+        }
+
         if (memberData.products && memberData.products.length > 1) {
             throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
         }
@@ -439,6 +449,18 @@ module.exports = class MemberRepository {
             }
         }
 
+        // Throw error if email is invalid and it's been changed
+        if (
+            initialMember?.get('email') && memberData.email
+            && initialMember.get('email') !== memberData.email
+            && !validator.isEmail(memberData.email, {legacy: false})
+        ) {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidEmail),
+                property: 'email'
+            });
+        }
+
         const memberStatusData = {};
 
         let productsToAdd = [];
@@ -522,7 +544,7 @@ module.exports = class MemberRepository {
             if (!memberData.newsletters) {
                 if (memberData.subscribed === false) {
                     memberData.newsletters = [];
-                } else if (memberData.subscribed === true && !existingNewsletters.find(n => n.status === 'active')) {
+                } else if (memberData.subscribed === true && !existingNewsletters.find(n => n.get('status') === 'active')) {
                     const browseOptions = _.pick(options, 'transacting');
                     memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
                 }

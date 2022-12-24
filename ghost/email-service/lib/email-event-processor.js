@@ -30,8 +30,8 @@ class EmailEventProcessor {
     }
 
     /**
-     * @param {EmailIdentification} emailIdentification 
-     * @param {Date} timestamp 
+     * @param {EmailIdentification} emailIdentification
+     * @param {Date} timestamp
      */
     async handleDelivered(emailIdentification, timestamp) {
         const recipient = await this.getRecipient(emailIdentification);
@@ -48,8 +48,8 @@ class EmailEventProcessor {
     }
 
     /**
-     * @param {EmailIdentification} emailIdentification 
-     * @param {Date} timestamp 
+     * @param {EmailIdentification} emailIdentification
+     * @param {Date} timestamp
      */
     async handleOpened(emailIdentification, timestamp) {
         const recipient = await this.getRecipient(emailIdentification);
@@ -66,14 +66,14 @@ class EmailEventProcessor {
     }
 
     /**
-     * @param {EmailIdentification} emailIdentification 
-     * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event 
+     * @param {EmailIdentification} emailIdentification
+     * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
      */
     async handleTemporaryFailed(emailIdentification, {timestamp, error, id}) {
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
             this.#domainEvents.dispatch(EmailTemporaryBouncedEvent.create({
-                id, 
+                id,
                 error,
                 email: emailIdentification.email,
                 memberId: recipient.memberId,
@@ -86,8 +86,8 @@ class EmailEventProcessor {
     }
 
     /**
-     * @param {EmailIdentification} emailIdentification 
-     * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event 
+     * @param {EmailIdentification} emailIdentification
+     * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
      */
     async handlePermanentFailed(emailIdentification, {timestamp, error, id}) {
         const recipient = await this.getRecipient(emailIdentification);
@@ -106,8 +106,8 @@ class EmailEventProcessor {
     }
 
     /**
-     * @param {EmailIdentification} emailIdentification 
-     * @param {Date} timestamp 
+     * @param {EmailIdentification} emailIdentification
+     * @param {Date} timestamp
      */
     async handleUnsubscribed(emailIdentification, timestamp) {
         const recipient = await this.getRecipient(emailIdentification);
@@ -123,8 +123,8 @@ class EmailEventProcessor {
     }
 
     /**
-     * @param {EmailIdentification} emailIdentification 
-     * @param {Date} timestamp 
+     * @param {EmailIdentification} emailIdentification
+     * @param {Date} timestamp
      */
     async handleComplained(emailIdentification, timestamp) {
         const recipient = await this.getRecipient(emailIdentification);
@@ -141,10 +141,15 @@ class EmailEventProcessor {
 
     /**
      * @private
-     * @param {EmailIdentification} emailIdentification 
+     * @param {EmailIdentification} emailIdentification
      * @returns {Promise<EmailRecipientInformation|undefined>}
      */
     async getRecipient(emailIdentification) {
+        if (!emailIdentification.emailId && !emailIdentification.providerId) {
+            // Protection if both are null or undefined
+            return;
+        }
+
         // With the provider_id and email address we can look for the EmailRecipient
         const emailId = emailIdentification.emailId ?? await this.getEmailId(emailIdentification.providerId);
         if (!emailId) {
@@ -157,7 +162,7 @@ class EmailEventProcessor {
             .where('member_email', emailIdentification.email)
             .where('email_id', emailId)
             .first() || {};
-        
+
         if (emailRecipientId && memberId) {
             return {
                 emailRecipientId,
@@ -169,7 +174,7 @@ class EmailEventProcessor {
 
     /**
      * @private
-     * @param {string} providerId 
+     * @param {string} providerId
      * @returns {Promise<string|undefined>}
      */
     async getEmailId(providerId) {

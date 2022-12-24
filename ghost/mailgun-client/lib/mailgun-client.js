@@ -71,7 +71,7 @@ module.exports = class MailgunClient {
                 messageData['v:email-id'] = message.id;
             }
 
-            const tags = ['bulk-email'];
+            const tags = ['bulk-email', 'ghost-email'];
             if (bulkEmailConfig?.mailgun?.tag) {
                 tags.push(bulkEmailConfig.mailgun.tag);
             }
@@ -125,7 +125,7 @@ module.exports = class MailgunClient {
                 value: Date.now() - startTime,
                 statusCode: 200
             });
-            let events = page?.items?.map(this.normalizeEvent) || [];
+            let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e);
             debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
@@ -152,7 +152,7 @@ module.exports = class MailgunClient {
                     value: Date.now() - startTime,
                     statusCode: 200
                 });
-                events = page?.items?.map(this.normalizeEvent) || [];
+                events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e);
                 debug(`fetchEvents: finished fetching next page with ${events.length} events`);
             }
 
@@ -202,6 +202,12 @@ module.exports = class MailgunClient {
 
     normalizeEvent(event) {
         const providerId = event?.message?.headers['message-id'];
+
+        if (!providerId && !(event['user-variables'] && event['user-variables']['email-id'])) {
+            logging.error('Received invalid event from Mailgun');
+            logging.error(event);
+            return null;
+        }
 
         return {
             id: event.id,
