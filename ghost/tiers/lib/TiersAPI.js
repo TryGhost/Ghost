@@ -41,13 +41,18 @@ module.exports = class TiersAPI {
     }
 
     /**
+     * @param {boolean} [paidMembershipEnabled] - if payment method is setup for receiving payments
      * @param {object} [options]
      * @param {string} [options.filter] - An NQL filter string
      *
      * @returns {Promise<Page<Tier>>}
      */
-    async browse(options = {}) {
-        const tiers = await this.#repository.getAll(options);
+    async browse(paidMembershipEnabled, options = {}) {
+        let tiers = [];
+
+        if (paidMembershipEnabled) {
+            tiers = await this.#repository.getAll(options);
+        }
 
         return {
             data: tiers,

@@ -82,11 +82,18 @@ describe('TiersAPI', function () {
         assert(updated.status === 'archived');
     });
 
-    it('Can browse tiers', async function () {
-        const page = await api.browse();
+    it('Browse tiers if paid membership is enabled', async function () {
+        const page = await api.browse(true);
 
         assert(page.data.length === 3);
         assert(page.meta.pagination.total === 3);
+    });
+
+    it('Browse 0 tiers if paid membership is not enabled', async function () {
+        const page = await api.browse();
+
+        assert(page.data.length === 0);
+        assert(page.meta.pagination.total === 0);
     });
 
     it('Can read a default tier', async function () {
