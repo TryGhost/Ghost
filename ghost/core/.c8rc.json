@@ -29,6 +29,7 @@
     "core/server/web/shared/**",
     "!core/server/web/shared/middleware/**",
     "core/server/api/endpoints/**",
-    "!core/server/api/endpoints/utils"
+    "!core/server/api/endpoints/utils",
+    "core/server/services/members/jobs/**"
   ]
 }

@@ -150,6 +150,9 @@ module.exports = {
 
         // Schedule daily cron job to clean expired comp subs
         memberJobs.scheduleExpiredCompCleanupJob();
+
+        // Schedule daily cron job to clean expired tokens
+        memberJobs.scheduleTokenCleanupJob();
     },
     contentGating: require('./content-gating'),
 
