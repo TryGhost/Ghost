@@ -32,7 +32,9 @@ const messages = {
     noContentToImport: 'Zip did not include any content to import.',
     invalidZipStructure: 'Invalid zip file structure.',
     invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
-    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.'
+    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.',
+    // The following error is whitelisted and shown in the frontend. It should be carefully worded.
+    invalidZipFileNameEncoding: 'The uploaded zip is not readable. Try re-zipping the zip with a different archiving tool (not MacOS Archive Utility) or remove the special characters from the file names.'
 };
 
 // Glob levels
@@ -170,13 +172,25 @@ class ImportManager {
      * @param {string} filePath
      * @returns {Promise<string>} full path to the extracted folder
      */
-    extractZip(filePath) {
+    async extractZip(filePath) {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
         this.fileToDelete = tmpDir;
 
-        return extract(filePath, tmpDir).then(function () {
-            return tmpDir;
-        });
+        try {
+            await extract(filePath, tmpDir);
+        } catch (err) {
+            if (err.message.startsWith('ENAMETOOLONG:')) {
+                // The file was probably zipped with MacOS zip utility. Which doesn't correctly set UTF-8 encoding flag.
+                // This causes ENAMETOOLONG error on Linux, because the resulting filename length is too long when decoded using the default string encoder.
+                throw new errors.UnsupportedMediaTypeError({
+                    message: tpl(messages.invalidZipFileNameEncoding),
+                    context: err.message,
+                    code: 'INVALID_ZIP_FILE_NAME_ENCODING'
+                });
+            }
+            throw err;
+        }
+        return tmpDir;
     }
 
     /**
