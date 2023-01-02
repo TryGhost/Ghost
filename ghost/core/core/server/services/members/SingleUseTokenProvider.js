@@ -42,8 +42,17 @@ class SingleUseTokenProvider {
      *
      * @returns {Promise<Object<string, any>>}
      */
-    async validate(token) {
-        const model = await this.model.findOne({token});
+    async validate(token, options = {}) {
+        if (!options.transacting) {
+            return await this.model.transaction((transacting) => {
+                return this.validate(token, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        const model = await this.model.findOne({token}, {transacting: options.transacting, forUpdate: true});
 
         if (!model) {
             throw new ValidationError({
@@ -51,7 +60,7 @@ class SingleUseTokenProvider {
             });
         }
 
-        if (model.get('used_count') >= 3) {
+        if (model.get('used_count') >= this.maxUsageCount) {
             throw new ValidationError({
                 message: 'Token expired'
             });
@@ -83,12 +92,12 @@ class SingleUseTokenProvider {
                 first_used_at: new Date(),
                 updated_at: new Date(),
                 used_count: model.get('used_count') + 1
-            }, {autoRefresh: false, patch: true});
+            }, {autoRefresh: false, patch: true, transacting: options.transacting});
         } else {
             await model.save({
                 used_count: model.get('used_count') + 1,
                 updated_at: new Date()
-            }, {autoRefresh: false, patch: true});
+            }, {autoRefresh: false, patch: true, transacting: options.transacting});
         }
 
         try {
