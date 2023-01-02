@@ -55,7 +55,9 @@ const selectRenderer = function (options) {
             .use(require('markdown-it-lazy-headers'))
             .use(require('markdown-it-mark'))
             .use(require('markdown-it-image-lazy-loading'))
-            .use(namedHeaders(options));
+            .use(namedHeaders(options))
+            .use(require('markdown-it-sub'))
+            .use(require('markdown-it-sup'));
 
         markdownIt.linkify.set({
             fuzzyLink: false
@@ -73,7 +75,9 @@ const selectRenderer = function (options) {
             .use(require('markdown-it-lazy-headers'))
             .use(require('markdown-it-mark'))
             .use(require('markdown-it-image-lazy-loading'))
-            .use(namedHeaders(options));
+            .use(namedHeaders(options))
+            .use(require('markdown-it-sub'))
+            .use(require('markdown-it-sup'));
 
         markdownIt.linkify.set({
             fuzzyLink: false
