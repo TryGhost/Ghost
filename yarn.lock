@@ -3686,13 +3686,6 @@
   dependencies:
     type-detect "4.0.8"
 
-"@sinonjs/fake-timers@10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-10.0.0.tgz#b6fe200d1d44f70d430d200d4dd85c640e576e2e"
-  integrity sha512-OjRc0IcyLLGLmu/vkJmqEYULU2mG/S7dLxPD+aONYWvTX7yia4mxKHs8Lz1ymfDv8KX3Adp/kRWUxi19ouaPsg==
-  dependencies:
-    "@sinonjs/commons" "^2.0.0"
-
 "@sinonjs/fake-timers@10.0.2", "@sinonjs/fake-timers@^10.0.2":
   version "10.0.2"
   resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-10.0.2.tgz#d10549ed1f423d80639c528b6c7f5a1017747d0c"
