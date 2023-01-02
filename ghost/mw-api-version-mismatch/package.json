@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@tryghost/errors": "1.2.19",
+    "@tryghost/errors": "1.2.20",
     "c8": "7.12.0",
     "mocha": "10.2.0",
     "sinon": "14.0.2"

@@ -22,9 +22,9 @@
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.19",
+    "@tryghost/errors": "1.2.20",
     "@tryghost/string": "0.2.2",
-    "@tryghost/tpl": "0.1.20",
+    "@tryghost/tpl": "0.1.21",
     "bson-objectid": "2.0.4"
   }
 }
