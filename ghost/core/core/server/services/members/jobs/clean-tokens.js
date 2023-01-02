@@ -31,7 +31,7 @@ if (parentPort) {
     // We delete all tokens that are older than 24 hours.
     const d = moment.utc().subtract(24, 'hours');
     const deletedTokens = await db.knex('tokens')
-        .where('created_at', '<', d.format('YYYY-MM-DD HH:mm:ss'))
+        .where('created_at', '<', d.format('YYYY-MM-DD HH:mm:ss')) // we need to be careful about the type here. .format() is the only thing that works across SQLite and MySQL
         .delete();
 
     const cleanupEndDate = new Date();
