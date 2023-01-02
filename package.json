@@ -36,7 +36,7 @@
     "prepare": "husky install .github/hooks"
   },
   "resolutions": {
-    "@tryghost/logging": "2.3.5",
+    "@tryghost/logging": "2.3.6",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   },
