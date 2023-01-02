@@ -3,7 +3,6 @@ const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
 const assert = require('assert');
 const models = require('../../../../core/server/models');
 
-// Test the whole E2E flow from Mailgun events -> handling and storage
 describe('Job: Clean tokens', function () {
     let agent;
     let jobsService;

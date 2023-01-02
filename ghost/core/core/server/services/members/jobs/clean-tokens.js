@@ -2,8 +2,6 @@ const {parentPort} = require('worker_threads');
 const debug = require('@tryghost/debug')('jobs:clean-tokens');
 const moment = require('moment');
 
-// recurring job to clean expired complimentary subscriptions
-
 // Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
 // where it left off on next run
 function cancel() {
@@ -31,9 +29,9 @@ if (parentPort) {
     debug(`Starting cleanup of tokens`);
 
     // We delete all tokens that are older than 24 hours.
-    const d = moment.utc().subtract(24, 'hours').toDate();
+    const d = moment.utc().subtract(24, 'hours');
     const deletedTokens = await db.knex('tokens')
-        .where('created_at', '<', d)
+        .where('created_at', '<', d.format('YYYY-MM-DD HH:mm:ss'))
         .delete();
 
     const cleanupEndDate = new Date();
