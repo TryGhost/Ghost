@@ -112,17 +112,6 @@ export function getErrorCode(errorOrStatus) {
     return null;
 }
 
-/**
- * Returns the message (from the payload) from an error object.
- * @returns {string|null} error message
- */
-export function getErrorMessage(errorOrStatus) {
-    if (isAjaxError(errorOrStatus) && errorOrStatus.payload && errorOrStatus.payload.errors && Array.isArray(errorOrStatus.payload.errors) && errorOrStatus.payload.errors.length > 0) {
-        return errorOrStatus.payload.errors[0].message ?? '';
-    }
-    return null;
-}
-
 /* Maintenance error */
 
 export class MaintenanceError extends AjaxError {

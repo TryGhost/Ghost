@@ -33,8 +33,9 @@ const messages = {
     invalidZipStructure: 'Invalid zip file structure.',
     invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
     zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.',
-    // The following error is whitelisted and shown in the frontend. It should be carefully worded.
-    invalidZipFileNameEncoding: 'The uploaded zip is not readable. Try re-zipping the zip with a different archiving tool (not MacOS Archive Utility) or remove the special characters from the file names.'
+    invalidZipFileNameEncoding: 'The uploaded zip could not be read',
+    invalidZipFileNameEncodingContext: 'The filename was too long or contained invalid characters',
+    invalidZipFileNameEncodingHelp: 'Remove any special characters from the file name, or alternatively try another archiving tool if using MacOS Archive Utility',
 };
 
 // Glob levels
@@ -184,7 +185,8 @@ class ImportManager {
                 // This causes ENAMETOOLONG error on Linux, because the resulting filename length is too long when decoded using the default string encoder.
                 throw new errors.UnsupportedMediaTypeError({
                     message: tpl(messages.invalidZipFileNameEncoding),
-                    context: err.message,
+                    context: tpl(messages.invalidZipFileNameEncodingContext),
+                    help: tpl(messages.invalidZipFileNameEncodingHelp),
                     code: 'INVALID_ZIP_FILE_NAME_ENCODING'
                 });
             }
