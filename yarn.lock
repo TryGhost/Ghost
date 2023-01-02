@@ -25076,42 +25076,7 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testem@3.10.0:
-  version "3.10.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.10.0.tgz#df3f43839892c17f35f4c5994c50c99aa8242bb0"
-  integrity sha512-2BMbPkAJT5xNojNxQGKT8CU9ix4EYDmHjjKFpUeeSW6tBVfFVgOi2vfrpJ5Hwdq4HsfnOALNAWN8/yjuFTgQfA==
-  dependencies:
-    "@xmldom/xmldom" "^0.8.0"
-    backbone "^1.1.2"
-    bluebird "^3.4.6"
-    charm "^1.0.0"
-    commander "^2.6.0"
-    compression "^1.7.4"
-    consolidate "^0.16.0"
-    execa "^1.0.0"
-    express "^4.10.7"
-    fireworm "^0.7.0"
-    glob "^7.0.4"
-    http-proxy "^1.13.1"
-    js-yaml "^3.2.5"
-    lodash.assignin "^4.1.0"
-    lodash.castarray "^4.4.0"
-    lodash.clonedeep "^4.4.1"
-    lodash.find "^4.5.1"
-    lodash.uniqby "^4.7.0"
-    mkdirp "^1.0.4"
-    mustache "^4.2.0"
-    node-notifier "^10.0.0"
-    npmlog "^6.0.0"
-    printf "^0.6.1"
-    rimraf "^3.0.2"
-    socket.io "^4.1.2"
-    spawn-args "^0.2.0"
-    styled_string "0.0.1"
-    tap-parser "^7.0.0"
-    tmp "0.0.33"
-
-testem@^3.2.0:
+testem@3.10.1, testem@^3.2.0:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/testem/-/testem-3.10.1.tgz#bab8a83bec11e975f7d1e47e924eed6135957e5b"
   integrity sha512-42c4e7qlAelwMd8O3ogtVGRbgbr6fJnX6H51ACOIG1V1IjsKPlcQtxPyOwaL4iikH22Dfh+EyIuJnMG4yxieBQ==
