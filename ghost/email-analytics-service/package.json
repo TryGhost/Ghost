@@ -21,7 +21,7 @@
     "sinon": "14.0.2"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.20",
+    "@tryghost/debug": "0.1.21",
     "lodash": "4.17.21"
   }
 }
