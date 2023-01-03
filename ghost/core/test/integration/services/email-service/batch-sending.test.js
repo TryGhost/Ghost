@@ -9,7 +9,6 @@ const jobManager = require('../../../../core/server/services/jobs/job-service');
 let agent;
 const _ = require('lodash');
 const {MailgunEmailProvider} = require('@tryghost/email-service');
-const members = require('../../../../core/server/services/members');
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
 const configUtils = require('../../../utils/configUtils');
 const {settingsCache} = require('../../../../core/server/services/settings-helpers');
@@ -479,6 +478,7 @@ describe('Batch sending tests', function () {
 
         // We stub a lot of imported members to mimic a large import that is in progress but is not yet finished
         // the current verification required value is off. But when creating an email, we need to update that check to avoid this issue.
+        const members = require('../../../../core/server/services/members');
         const events = members.api.events;
         const getSignupEvents = sinon.stub(events, 'getSignupEvents').resolves({
             meta: {
@@ -518,6 +518,8 @@ describe('Batch sending tests', function () {
             .expectStatus(403);
         sinon.assert.calledOnce(getSignupEvents);
         assert.equal(settingsCache.get('email_verification_required'), true);
+
+        configUtils.restore();
     });
 
     // TODO: Link tracking

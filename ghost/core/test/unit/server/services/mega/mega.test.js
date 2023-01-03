@@ -14,6 +14,10 @@ describe('MEGA', function () {
             };
         });
 
+        after(function () {
+            membersService.verificationTrigger = null;
+        });
+
         afterEach(function () {
             sinon.restore();
         });
