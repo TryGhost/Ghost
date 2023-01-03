@@ -113,6 +113,24 @@ describe('Revue Importer', function () {
                 }
             ]);
         });
+
+        it('can trim generated post slug length', function () {
+            const result = RevueImporter.importPosts({items: '[]', issues: 'id,description,sent_at,subject,preheader\n123456,"<p>Hello World!</p>",2022-12-01 01:01:30 UTC,Lorem Ipsum Dolor Sit Amet Consectetur Adipiscing Elit Mauris Convallis Et Metus Eu Blandit Lorem Ipsum Dolor Sit Amet Consectetur Adipiscing Elit Ut Porta Dapibus Massa Condimentum Malesuada Ipsum Scelerisque Nec Vestibulum Sed Placerat Cras,'});
+
+            assert.deepEqual(result, [
+                {
+                    comment_id: 123456,
+                    title: 'Lorem Ipsum Dolor Sit Amet Consectetur Adipiscing Elit Mauris Convallis Et Metus Eu Blandit Lorem Ipsum Dolor Sit Amet Consectetur Adipiscing Elit Ut Porta Dapibus Massa Condimentum Malesuada Ipsum Scelerisque Nec Vestibulum Sed Placerat Cras',
+                    slug: 'lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-mauris-convallis-et-metus-eu-blandit-lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-ut-porta-dapibus-massa-condimentum-malesuad',
+                    status: 'published',
+                    visibility: 'public',
+                    created_at: '2022-12-01T01:01:30.000Z',
+                    published_at: '2022-12-01T01:01:30.000Z',
+                    updated_at: '2022-12-01T01:01:30.000Z',
+                    html: '<p>Hello World!</p>'
+                }
+            ]);
+        });
     });
 
     describe('importSubscribers', function () {
