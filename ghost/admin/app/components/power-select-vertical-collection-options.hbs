@@ -2,7 +2,7 @@
 <ul role="listbox" aria-controls="ember-power-select-trigger-{{@select.uniqueId}}" {{did-insert this.addHandlers}} ...attributes>
     {{#if @select.loading}}
         {{#if @loadingMessage}}
-            <li class="ember-power-select-option ember-power-select-option--loading-message" role="option">{{@loadingMessage}}</li>
+            <li class="ember-power-select-option ember-power-select-option--loading-message" role="option" aria-selected="false" aria-disabled="true">{{@loadingMessage}}</li>
         {{/if}}
     {{/if}}
 
