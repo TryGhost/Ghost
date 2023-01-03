@@ -12179,17 +12179,12 @@ ember-raf-scheduler@^0.3.0:
   dependencies:
     ember-cli-babel "^7.26.6"
 
-ember-resolver@8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/ember-resolver/-/ember-resolver-8.1.0.tgz#8ada162746fde3e6ea6a703bbb9910fbe62ab1e5"
-  integrity sha512-MGD7X2ztZVswGqs1mLgzhZJRhG7XiF6Mg4DgC7xJFWRYQQUHyGJpGdNWY9nXyrYnRIsCrQoL1do41zpxbrB/cg==
+ember-resolver@9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/ember-resolver/-/ember-resolver-9.0.1.tgz#a4d0e958abdb3b40ef18b120e542765963a5a9be"
+  integrity sha512-vFdaxDuwp0xptxa4uhJE8mNLQf6/8Mz+mBohsF4721hz03ieW+zdSSR04fCetFVCLxtNhGmmrIZrClDcA5dB9w==
   dependencies:
-    babel-plugin-debug-macros "^0.3.4"
-    broccoli-funnel "^3.0.8"
-    broccoli-merge-trees "^4.2.0"
-    ember-cli-babel "^7.26.6"
-    ember-cli-version-checker "^5.1.2"
-    resolve "^1.20.0"
+    ember-cli-babel "^7.26.11"
 
 ember-rfc176-data@^0.3.1, ember-rfc176-data@^0.3.13, ember-rfc176-data@^0.3.15, ember-rfc176-data@^0.3.17:
   version "0.3.17"
