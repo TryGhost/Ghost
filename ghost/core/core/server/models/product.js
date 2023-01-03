@@ -143,7 +143,7 @@ const Product = ghostBookshelf.Model.extend({
     }
 }, {
     orderDefaultRaw() {
-        return 'stripe_prices.amount asc';
+        return 'monthly_price ASC';
     }
 });
 
