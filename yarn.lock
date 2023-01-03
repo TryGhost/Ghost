@@ -2183,7 +2183,7 @@
   resolved "https://registry.yarnpkg.com/@ember/edition-utils/-/edition-utils-1.2.0.tgz#a039f542dc14c8e8299c81cd5abba95e2459cfa6"
   integrity sha512-VmVq/8saCaPdesQmftPqbFtxJWrzxNGSQ+e8x8LLe3Hjm36pJ04Q8LeORGZkAeOhldoUX9seLGmSaHeXkIqoog==
 
-"@ember/jquery@2.0.0":
+"@ember/jquery@2.0.0", "@ember/jquery@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@ember/jquery/-/jquery-2.0.0.tgz#083a1de32333b3fc938fad246a6f3ea7eefe5b10"
   integrity sha512-f8+WNqzXBNxl96jo0IwJBO5QCi0bnUlba9I7WbZcGhgnzszC76INJkw6l8UepZ1PMGG1H1wYpoIGoBBp5ZVmFA==
@@ -2448,7 +2448,7 @@
     broccoli-funnel "^3.0.5"
     ember-cli-babel "^7.23.1"
 
-"@embroider/util@^0.39.1 || ^0.40.0 || ^0.41.0 || ^1.0.0", "@embroider/util@^1.0.0", "@embroider/util@^1.2.0", "@embroider/util@^1.6.0":
+"@embroider/util@^0.39.1 || ^0.40.0 || ^0.41.0 || ^1.0.0", "@embroider/util@^1.0.0", "@embroider/util@^1.2.0", "@embroider/util@^1.6.0", "@embroider/util@^1.9.0":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@embroider/util/-/util-1.9.0.tgz#331c46bdf106c44cb1dd6baaa9030d322c13cfca"
   integrity sha512-9I63iJK6N01OHJafmS/BX0msUkTlmhFMIEmDl/SRNACVi0nS6QfNyTgTTeji1P/DALf6eobg/9t/N4VhS9G9QA==
@@ -11202,7 +11202,7 @@ ember-cli-babel@7.26.11, "ember-cli-babel@>= 6.17.2", ember-cli-babel@^7.0.0, em
     rimraf "^3.0.1"
     semver "^5.5.0"
 
-ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.12.0, ember-cli-babel@^6.6.0, ember-cli-babel@^6.8.1, ember-cli-babel@^6.8.2:
+ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.6.0, ember-cli-babel@^6.8.1:
   version "6.18.0"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-6.18.0.tgz#3f6435fd275172edeff2b634ee7b29ce74318957"
   integrity sha512-7ceC8joNYxY2wES16iIBlbPSxwKDBhYwC8drU3ZEvuPDMwVv1KzxCNu1fvxyFEBWhwaRNTUxSCsEVoTd9nosGA==
@@ -11314,16 +11314,6 @@ ember-cli-htmlbars@6.1.1, ember-cli-htmlbars@^6.0.0, ember-cli-htmlbars@^6.0.1, 
     semver "^7.3.4"
     silent-error "^1.1.1"
     walk-sync "^2.2.0"
-
-ember-cli-htmlbars@^2.0.3:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-2.0.5.tgz#b5a105429a6bce4f7c9c97b667e3b8926e31397f"
-  integrity sha512-3f3PAxdnQ/fhQa8XP/3z4RLRgLHxV8j4Ln75aHbRdemOCjBa048KxL9l+acRLhCulbGQCMnLiIUIC89PAzLrcA==
-  dependencies:
-    broccoli-persistent-filter "^1.4.3"
-    hash-for-dep "^1.2.3"
-    json-stable-stringify "^1.0.0"
-    strip-bom "^3.0.0"
 
 ember-cli-htmlbars@^3.0.0:
   version "3.1.0"
@@ -11947,7 +11937,7 @@ ember-get-config@^2.1.1:
     "@embroider/macros" "^0.50.0 || ^1.0.0"
     ember-cli-babel "^7.26.6"
 
-"ember-getowner-polyfill@^1.1.0 || ^2.0.0", ember-getowner-polyfill@^2.0.1:
+"ember-getowner-polyfill@^1.1.0 || ^2.0.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/ember-getowner-polyfill/-/ember-getowner-polyfill-2.2.0.tgz#38e7dccbcac69d5ec694000329ec0b2be651d2b2"
   integrity sha512-rwGMJgbGzxIAiWYjdpAh04Abvt0s3HuS/VjHzUFhVyVg2pzAuz45B9AzOxYXzkp88vFC7FPaiA4kE8NxNk4A4Q==
@@ -17792,15 +17782,20 @@ liquid-fire@0.34.0:
     match-media "^0.2.0"
     velocity-animate "^1.5.2"
 
-liquid-wormhole@2.1.5:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/liquid-wormhole/-/liquid-wormhole-2.1.5.tgz#23ebdd85dd40d1dad424ab346f755baebc2d93d8"
-  integrity sha512-dmnXYkxF+N8JUibDS937ucClQ+ApMLht7CCv09tWZLCFonuRPzt98pisuUxRVnFo95+kdwEVR+S2guB3JUny7A==
+liquid-wormhole@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/liquid-wormhole/-/liquid-wormhole-3.0.0.tgz#21699d25f3b39ca4f11f9f5f8bfd28d01fb8af15"
+  integrity sha512-PhQkLcB9LofT02gl3pJdQaJAWPiy+9+o89X0CY7ZzOLsPjrKufqDXa7bM3+fbAcHpWceigRocwa4pl1MoUYIlA==
   dependencies:
-    ember-cli-babel "^6.12.0"
-    ember-cli-htmlbars "^2.0.3"
-    ember-getowner-polyfill "^2.0.1"
-    perf-primitives "^0.0.6"
+    "@ember/jquery" "^2.0.0"
+    "@ember/render-modifiers" "^2.0.4"
+    "@embroider/util" "^1.9.0"
+    "@glimmer/component" "^1.1.2"
+    "@glimmer/tracking" "^1.1.2"
+    ember-cli-babel "^7.26.11"
+    ember-cli-htmlbars "^6.1.0"
+    ember-decorators "^6.1.1"
+    perf-primitives "github:rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b"
 
 listr2@^5.0.5:
   version "5.0.6"
@@ -20736,12 +20731,12 @@ pend@~1.2.0:
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
   integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
 
-perf-primitives@^0.0.6:
+"perf-primitives@github:rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b":
   version "0.0.6"
-  resolved "https://registry.yarnpkg.com/perf-primitives/-/perf-primitives-0.0.6.tgz#ceee069f3d7a49f83fe34b67e6b15a6d482825d8"
-  integrity sha512-vtjFuJI+oYKGb9p/x/LUsu9h36DTUzNfrveGzzwilKIupshpjyDUBM6V+isHl9MBlH9cnVe5Iu0MzpgscwCxyA==
+  uid a6a26f11497ca27be3763a88a5f20744e424756b
+  resolved "https://codeload.github.com/rwwagner90/perf-primitives/tar.gz/a6a26f11497ca27be3763a88a5f20744e424756b"
   dependencies:
-    ember-cli-babel "^6.8.2"
+    ember-cli-babel "^7.26.6"
 
 performance-now@^2.1.0:
   version "2.1.0"
