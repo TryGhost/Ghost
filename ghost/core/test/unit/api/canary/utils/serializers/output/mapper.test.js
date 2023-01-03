@@ -7,14 +7,16 @@ const cleanUtil = require('../../../../../../../core/server/api/endpoints/utils/
 const extraAttrsUtils = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
 
+function createJsonModel(data) {
+    return Object.assign(data, {toJSON: sinon.stub().returns(data)});
+}
+
 describe('Unit: utils/serializers/output/mappers', function () {
     afterEach(function () {
         sinon.restore();
     });
 
     describe('Posts Mapper', function () {
-        let postModel;
-
         beforeEach(function () {
             sinon.stub(dateUtil, 'forPost').returns({});
 
@@ -27,12 +29,6 @@ describe('Unit: utils/serializers/output/mappers', function () {
             sinon.stub(cleanUtil, 'post').returns({});
             sinon.stub(cleanUtil, 'tag').returns({});
             sinon.stub(cleanUtil, 'author').returns({});
-
-            postModel = (data) => {
-                return Object.assign(data, {
-                    toJSON: sinon.stub().returns(data)
-                });
-            };
         });
 
         it('calls mapper on relations', function () {
@@ -47,7 +43,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 apiType: 'content'
             };
 
-            const post = postModel(testUtils.DataGenerator.forKnex.createPost({
+            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
                 id: 'id1',
                 feature_image: 'value',
                 page: true,
@@ -81,15 +77,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
     });
 
     describe('User Mapper', function () {
-        let userModel;
-
         beforeEach(function () {
             sinon.stub(urlUtil, 'forUser').returns({});
             sinon.stub(cleanUtil, 'author').returns({});
-
-            userModel = (data) => {
-                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-            };
         });
 
         it('calls utils', function () {
@@ -99,7 +89,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 }
             };
 
-            const user = userModel(testUtils.DataGenerator.forKnex.createUser({
+            const user = createJsonModel(testUtils.DataGenerator.forKnex.createUser({
                 id: 'id1',
                 name: 'Ghosty'
             }));
@@ -113,15 +103,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
     });
 
     describe('Tag Mapper', function () {
-        let tagModel;
-
         beforeEach(function () {
             sinon.stub(urlUtil, 'forTag').returns({});
             sinon.stub(cleanUtil, 'tag').returns({});
-
-            tagModel = (data) => {
-                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-            };
         });
 
         it('calls utils', function () {
@@ -131,7 +115,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 }
             };
 
-            const tag = tagModel(testUtils.DataGenerator.forKnex.createTag({
+            const tag = createJsonModel(testUtils.DataGenerator.forKnex.createTag({
                 id: 'id3',
                 feature_image: 'value'
             }));
@@ -145,19 +129,11 @@ describe('Unit: utils/serializers/output/mappers', function () {
     });
 
     describe('Integration Mapper', function () {
-        let integrationModel;
-
-        beforeEach(function () {
-            integrationModel = (data) => {
-                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-            };
-        });
-
         it('formats admin keys', function () {
             const frame = {
             };
 
-            const integration = integrationModel(testUtils.DataGenerator.forKnex.createIntegration({
+            const integration = createJsonModel(testUtils.DataGenerator.forKnex.createIntegration({
                 api_keys: testUtils.DataGenerator.Content.api_keys
             }));
 
@@ -180,19 +156,11 @@ describe('Unit: utils/serializers/output/mappers', function () {
     });
 
     describe('Snippet Mapper', function () {
-        let snippetModel;
-
-        beforeEach(function () {
-            snippetModel = (data) => {
-                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-            };
-        });
-
         it('returns only allowed keys', function () {
             const frame = {
             };
 
-            const snippet = snippetModel(testUtils.DataGenerator.forKnex.createBasic({
+            const snippet = createJsonModel(testUtils.DataGenerator.forKnex.createBasic({
                 name: 'test snippet',
                 mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Hello World'),
                 foo: 'bar'
@@ -213,20 +181,12 @@ describe('Unit: utils/serializers/output/mappers', function () {
     });
 
     describe('Newsletter Mapper', function () {
-        let newsletterModel;
-
-        beforeEach(function () {
-            newsletterModel = (data) => {
-                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
-            };
-        });
-
         it('returns only allowed keys for content API', function () {
             const frame = {
                 apiType: 'content'
             };
 
-            const newsletter = newsletterModel(testUtils.DataGenerator.forKnex.createNewsletter({
+            const newsletter = createJsonModel(testUtils.DataGenerator.forKnex.createNewsletter({
                 name: 'Basic newsletter',
                 slug: 'basic-newsletter'
             }));
@@ -251,13 +211,394 @@ describe('Unit: utils/serializers/output/mappers', function () {
         it('returns all keys for admin API', function () {
             const frame = {};
 
-            const newsletter = newsletterModel(testUtils.DataGenerator.forKnex.createNewsletter({
+            const newsletter = createJsonModel(testUtils.DataGenerator.forKnex.createNewsletter({
                 name: 'Full newsletter',
                 slug: 'full-newsletter'
             }));
 
             const mapped = mappers.newsletters(newsletter, frame);
             mapped.should.eql(newsletter.toJSON());
+        });
+    });
+
+    describe('Email Batch Mapper', function () {
+        it('returns only mapped keys', function () {
+            const frame = {};
+
+            const model = createJsonModel({
+                id: 'id1',
+                provider_id: 'provider_id1',
+                status: 'status1',
+                member_segment: 'member_segment1',
+                created_at: 'created_at1',
+                updated_at: 'updated_at1',
+                error_status_code: 'error_status_code1',
+                error_message: 'error_message1',
+                error_data: 'error_data1',
+                foo: 'bar',
+                count: {
+                    recipients: 12,
+                    foo: 1
+                }
+            });
+
+            const mapped = mappers.emailBatches(model, frame);
+            mapped.should.eql({
+                id: 'id1',
+                provider_id: 'provider_id1',
+                status: 'status1',
+                member_segment: 'member_segment1',
+                created_at: 'created_at1',
+                updated_at: 'updated_at1',
+                error_status_code: 'error_status_code1',
+                error_message: 'error_message1',
+                error_data: 'error_data1',
+                count: {
+                    recipients: 12
+                }
+            });
+        });
+    });
+
+    describe('Email Failure Mapper', function () {
+        it('returns only mapped keys', function () {
+            const frame = {};
+
+            const model = createJsonModel({
+                id: 'id1',
+                code: 'code1',
+                enhanced_code: 'enhanced_code1',
+                message: 'message1',
+                severity: 'severity1',
+                failed_at: 'failed_at1',
+                event_id: 'event_id1',
+                foo: 'bar',
+                member: {
+                    id: 'id1',
+                    uuid: 'uuid1',
+                    name: 'name1',
+                    email: 'email1',
+                    avatar_image: 'avatar_image1',
+                    foo: 'bar'
+                },
+                emailRecipient: {
+                    id: 'id1',
+                    batch_id: 'batch_id1',
+                    processed_at: 'processed_at1',
+                    delivered_at: 'delivered_at1',
+                    opened_at: 'opened_at1',
+                    failed_at: 'failed_at1',
+                    member_uuid: 'member_uuid1',
+                    member_email: 'member_email1',
+                    member_name: 'member_name1',
+                    foo: 'bar'
+                }
+            });
+
+            const mapped = mappers.emailFailures(model, frame);
+            mapped.should.eql({
+                id: 'id1',
+                code: 'code1',
+                enhanced_code: 'enhanced_code1',
+                message: 'message1',
+                severity: 'severity1',
+                failed_at: 'failed_at1',
+                event_id: 'event_id1',
+                member: {
+                    id: 'id1',
+                    uuid: 'uuid1',
+                    name: 'name1',
+                    email: 'email1',
+                    avatar_image: 'avatar_image1'
+                },
+                email_recipient: {
+                    id: 'id1',
+                    batch_id: 'batch_id1',
+                    processed_at: 'processed_at1',
+                    delivered_at: 'delivered_at1',
+                    opened_at: 'opened_at1',
+                    failed_at: 'failed_at1',
+                    member_uuid: 'member_uuid1',
+                    member_email: 'member_email1',
+                    member_name: 'member_name1'
+                }
+            });
+        });
+
+        it('returns null for missing relations', function () {
+            const frame = {};
+
+            const model = createJsonModel({
+                id: 'id1',
+                code: 'code1',
+                enhanced_code: 'enhanced_code1',
+                message: 'message1',
+                severity: 'severity1',
+                failed_at: 'failed_at1',
+                event_id: 'event_id1',
+                foo: 'bar'
+            });
+
+            const mapped = mappers.emailFailures(model, frame);
+            mapped.should.eql({
+                id: 'id1',
+                code: 'code1',
+                enhanced_code: 'enhanced_code1',
+                message: 'message1',
+                severity: 'severity1',
+                failed_at: 'failed_at1',
+                event_id: 'event_id1',
+                member: null,
+                email_recipient: null
+            });
+        });
+    });
+
+    describe('Activity Feed Mapper', function () {
+        beforeEach(function () {
+            sinon.stub(urlUtil, 'forPost').callsFake((_, a) => {
+                a.url = 'https://generatedurl';
+            });
+        });
+
+        it('maps comment_event', function () {
+            const frame = {};
+
+            const model = {
+                foo: 'bar',
+                type: 'comment_event',
+                data: {
+                    id: 'id1',
+                    status: 'status1',
+                    html: 'html1',
+                    created_at: 'created_at1',
+                    edited_at: 'edited_at1',
+                    foo: 'bar',
+                    member: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        name: 'name1',
+                        expertise: 'expertise1',
+                        avatar_image: 'avatar_image1',
+                        foo: 'bar'
+                    },
+                    post: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        title: 'title1',
+                        url: 'url1',
+                        foo: 'bar'
+                    },
+                    count: {
+                        replies: 12,
+                        likes: 13,
+                        foo: 1
+                    }
+                }
+            };
+
+            const mapped = mappers.activityFeedEvents(model, frame);
+            mapped.should.eql({
+                foo: 'bar',
+                type: 'comment_event',
+                data: {
+                    // same except the remove foo keys
+                    id: 'id1',
+                    status: 'status1',
+                    html: 'html1',
+                    created_at: 'created_at1',
+                    edited_at: 'edited_at1',
+                    member: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        name: 'name1',
+                        expertise: 'expertise1',
+                        avatar_image: 'avatar_image1'
+                    },
+                    post: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        title: 'title1',
+                        url: 'https://generatedurl'
+                    },
+                    count: {
+                        replies: 12,
+                        likes: 13
+                    }
+                }
+            });
+        });
+
+        it('maps click_event', function () {
+            const frame = {};
+
+            const model = {
+                foo: 'bar',
+                type: 'click_event',
+                data: {
+                    id: 'id1',
+                    created_at: 'created_at1',
+                    foo: 'bar',
+                    link: {
+                        from: 'from',
+                        to: 'to',
+                        foo: 'bar',
+                        post: {
+                            id: 'id1',
+                            uuid: 'uuid1',
+                            title: 'title1',
+                            url: 'url1',
+                            foo: 'bar'
+                        }
+                    },
+                    member: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        name: 'name1',
+                        avatar_image: 'avatar_image1',
+                        foo: 'bar'
+                    }
+                }
+            };
+
+            const mapped = mappers.activityFeedEvents(model, frame);
+            mapped.should.eql({
+                foo: 'bar',
+                type: 'click_event',
+                data: {
+                    // same except the remove foo keys
+                    id: 'id1',
+                    created_at: 'created_at1',
+                    link: {
+                        from: 'from',
+                        to: 'to'
+                    },
+                    post: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        title: 'title1',
+                        url: 'https://generatedurl'
+                    },
+                    member: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        name: 'name1',
+                        avatar_image: 'avatar_image1'
+                    }
+                }
+            });
+        });
+
+        it('maps aggregated_click_event', function () {
+            const frame = {};
+
+            const model = {
+                foo: 'bar',
+                type: 'aggregated_click_event',
+                data: {
+                    id: 'id1',
+                    created_at: 'created_at1',
+                    foo: 'bar',
+                    member: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        name: 'name1',
+                        avatar_image: 'avatar_image1',
+                        foo: 'bar'
+                    },
+                    count: {
+                        clicks: 12,
+                        foo: 1
+                    }
+                }
+            };
+
+            const mapped = mappers.activityFeedEvents(model, frame);
+            mapped.should.eql({
+                foo: 'bar',
+                type: 'aggregated_click_event',
+                data: {
+                    // same except the remove foo keys
+                    id: 'id1',
+                    created_at: 'created_at1',
+                    member: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        name: 'name1',
+                        avatar_image: 'avatar_image1'
+                    },
+                    count: {
+                        clicks: 12
+                    }
+                }
+            });
+        });
+
+        it('maps feedback_event', function () {
+            const frame = {};
+
+            const model = {
+                foo: 'bar',
+                type: 'feedback_event',
+                data: {
+                    id: 'id1',
+                    score: 5,
+                    created_at: 'created_at1',
+                    foo: 'bar',
+                    member: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        name: 'name1',
+                        avatar_image: 'avatar_image1',
+                        foo: 'bar'
+                    },
+                    post: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        title: 'title1',
+                        url: 'url1',
+                        foo: 'bar'
+                    }
+                }
+            };
+
+            const mapped = mappers.activityFeedEvents(model, frame);
+            mapped.should.eql({
+                foo: 'bar',
+                type: 'feedback_event',
+                data: {
+                    // same except the remove foo keys
+                    id: 'id1',
+                    score: 5,
+                    created_at: 'created_at1',
+                    member: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        name: 'name1',
+                        avatar_image: 'avatar_image1'
+                    },
+                    post: {
+                        id: 'id1',
+                        uuid: 'uuid1',
+                        title: 'title1',
+                        url: 'https://generatedurl'
+                    }
+                }
+            });
+
+            const mapped2 = mappers.activityFeedEvents({...model, data: {...model.data, member: undefined, post: undefined}}, frame);
+            mapped2.should.eql({
+                foo: 'bar',
+                type: 'feedback_event',
+                data: {
+                    // same except the remove foo keys
+                    id: 'id1',
+                    score: 5,
+                    created_at: 'created_at1',
+                    member: null,
+                    post: null
+                }
+            });
         });
     });
 });
