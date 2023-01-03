@@ -44,11 +44,12 @@ const fetchPostsFromData = (revueData) => {
         }
 
         const postDate = JSONToHTML.getPostDate(postMeta);
+        const postSlug = slugify(postMeta.subject).slice(0, 190);
 
         posts.push({
             comment_id: revuePostID,
             title: postMeta.subject,
-            slug: slugify(postMeta.subject),
+            slug: postSlug,
             status: JSONToHTML.getPostStatus(postMeta),
             visibility: 'public',
             created_at: postDate,
