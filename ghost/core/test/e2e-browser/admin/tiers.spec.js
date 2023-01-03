@@ -29,18 +29,18 @@ test.describe('Admin', () => {
             const enableInPortal = false;
             await createTier(page, {
                 name: tierName,
-                monthlyPrice: 5,
-                yearlyPrice: 50
+                monthlyPrice: 100, // ordered by price, this should be the most expensive so we know it's last
+                yearlyPrice: 1000
             }, enableInPortal);
-        
+
             // Open Portal settings
             await page.locator('.gh-nav a[href="#/settings/"]').click();
             await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
             await page.locator('[data-test-toggle="portal-settings"]').click();
-        
+
             // Wait until the list of tiers available at signup is visible
             await page.locator('[data-test-tiers-at-signup]').first().waitFor({state: 'visible', timeout: 1000});
-        
+
             // Make sure newly created tier is in the list
             await expect(page.locator('[data-test-tier-at-signup] > label > p').last()).toContainText(tierName);
 
@@ -76,7 +76,7 @@ test.describe('Admin', () => {
 
             // Enter edit mode
             await tierCard.locator('[data-test-button="tiers-actions"]').click();
-            await tierCard.locator('[data-test-button="edit-tier"]').click();            
+            await tierCard.locator('[data-test-button="edit-tier"]').click();
             const modal = page.locator('.modal-content');
 
             // Edit tier information
@@ -84,7 +84,7 @@ test.describe('Admin', () => {
             await modal.locator('[data-test-input="tier-description"]').first().fill(updatedDescription);
             await modal.locator('[data-test-input="monthly-price"]').fill(updatedMonthlyPrice);
             await modal.locator('[data-test-input="yearly-price"]').fill(updatedYearlyPrice);
-            await modal.locator('[data-test-button="save-tier"]').click();            
+            await modal.locator('[data-test-button="save-tier"]').click();
 
             // Go to website and open portal
             await page.goto('/');
