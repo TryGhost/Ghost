@@ -1101,3 +1101,5 @@ remove|ember-template-lint|no-passed-in-event-handlers|21|12|21|12|4069dec45ac2a
 remove|ember-template-lint|no-passed-in-event-handlers|22|12|22|12|e53f64794fdd0fe8c8b027d1831942d7c78c503b|1662681600000|1673053200000|1678237200000|app/components/gh-benefit-item.hbs
 add|ember-template-lint|no-passed-in-event-handlers|23|16|23|16|d47dcf0c8eea7584639b48d5a99b7db07436c259|1670976000000|1681340400000|1686524400000|app/components/gh-benefit-item.hbs
 add|ember-template-lint|no-passed-in-event-handlers|24|16|24|16|14a806b3f993ec777b1a5ff7e00887e5840bbb77|1670976000000|1681340400000|1686524400000|app/components/gh-benefit-item.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|150|56|150|56|37bf29e93ffc35c71cdddd0ab98edeb60097e826|1662681600000|1673053200000|1678237200000|app/templates/offer.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|161|56|161|56|37bf29e93ffc35c71cdddd0ab98edeb60097e826|1662681600000|1673053200000|1678237200000|app/templates/offer.hbs

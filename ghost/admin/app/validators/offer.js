@@ -22,10 +22,39 @@ export default BaseValidator.create({
             } else {
                 model.errors.add('amount', 'Please enter the amount.');
             }
-            this.invalidate();
-        } else if (model.type === 'trial' && model.amount < 0) {
-            model.errors.add('amount', 'Free trial must be at least 1 day.');
-            this.invalidate();
+
+            return this.invalidate();
+        }
+
+        if (model.type === 'trial') {
+            if (model.amount < 1) {
+                model.errors.add('amount', 'Free trial must be at least 1 day.');
+                return this.invalidate();
+            }
+
+            if (!model.amount.toString().match(/^\d+$/)) {
+                model.errors.add('amount', 'Trial days must be a whole number.');
+                return this.invalidate();
+            }
+        }
+
+        if (model.type === 'percent') {
+            if (model.amount < 0 || model.amount > 100) {
+                model.errors.add('amount', 'Amount must be between 0 and 100%.');
+                return this.invalidate();
+            }
+
+            if (!model.amount.toString().match(/^\d+$/)) {
+                model.errors.add('amount', 'Amount must be a whole number.');
+                return this.invalidate();
+            }
+        }
+
+        if (model.type === 'fixed') {
+            if (model.amount < 0) {
+                model.errors.add('amount', 'Amount must be greater than 0.');
+                return this.invalidate();
+            }
         }
     },
 
