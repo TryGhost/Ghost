@@ -69,7 +69,7 @@ describe('Integration: Component: gh-unsplash-photo', function () {
     });
 
     it('sets background-color style', async function () {
-        await render(hbs`{{gh-unsplash-photo photo=photo}}`);
+        await render(hbs`<GhUnsplashPhoto @photo={{this.photo}} />`);
 
         expect(
             find('[data-test-unsplash-photo-container]').attributes.style.value
@@ -77,7 +77,7 @@ describe('Integration: Component: gh-unsplash-photo', function () {
     });
 
     it('sets padding-bottom style', async function () {
-        await render(hbs`{{gh-unsplash-photo photo=photo}}`);
+        await render(hbs`<GhUnsplashPhoto @photo={{this.photo}} />`);
 
         // don't check full padding-bottom value as it will likely vary across
         // browsers
@@ -87,7 +87,7 @@ describe('Integration: Component: gh-unsplash-photo', function () {
     });
 
     it('uses correct image size url', async function () {
-        await render(hbs`{{gh-unsplash-photo photo=photo}}`);
+        await render(hbs`<GhUnsplashPhoto @photo={{this.photo}} />`);
 
         expect(
             find('[data-test-unsplash-photo-image]').attributes.src.value
@@ -95,7 +95,7 @@ describe('Integration: Component: gh-unsplash-photo', function () {
     });
 
     it('calculates image width/height', async function () {
-        await render(hbs`{{gh-unsplash-photo photo=photo}}`);
+        await render(hbs`<GhUnsplashPhoto @photo={{this.photo}} />`);
 
         expect(
             find('[data-test-unsplash-photo-image]').attributes.width.value

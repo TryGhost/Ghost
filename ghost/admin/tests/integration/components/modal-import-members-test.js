@@ -49,7 +49,7 @@ describe('Integration: Component: modal-import-members-test', function () {
     });
 
     it('renders', async function () {
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
 
         expect(find('h1').textContent.trim(), 'default header')
             .to.equal('Import members');
@@ -60,7 +60,7 @@ describe('Integration: Component: modal-import-members-test', function () {
     it('generates request to supplied endpoint', async function () {
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
         await waitFor('table', {timeout: 50});
@@ -77,7 +77,7 @@ describe('Integration: Component: modal-import-members-test', function () {
 
     it('displays server error', async function () {
         stubFailedUpload(server, 415, 'UnsupportedMediaTypeError');
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
         // Wait for async CSV parsing to finish
@@ -90,7 +90,7 @@ describe('Integration: Component: modal-import-members-test', function () {
 
     it('displays file too large for server error', async function () {
         stubFailedUpload(server, 413, 'RequestEntityTooLargeError');
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
         // Wait for async CSV parsing to finish
@@ -105,7 +105,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         server.post(`${ghostPaths().apiRoot}/members/upload/`, function () {
             return [413, {}, ''];
         });
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
         // Wait for async CSV parsing to finish
@@ -118,7 +118,7 @@ describe('Integration: Component: modal-import-members-test', function () {
 
     it('displays other server-side error with message', async function () {
         stubFailedUpload(server, 400, 'UnknownError');
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
         // Wait for async CSV parsing to finish
@@ -133,7 +133,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         server.post(`${ghostPaths().apiRoot}/members/upload/`, function () {
             return [500, {'Content-Type': 'application/json'}, ''];
         });
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
         // Wait for async CSV parsing to finish
@@ -151,7 +151,7 @@ describe('Integration: Component: modal-import-members-test', function () {
 
         stubFailedUpload(server, 400, 'VersionMismatchError');
 
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
         // Wait for async CSV parsing to finish
@@ -167,7 +167,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         notifications.set('showAPIError', showAPIError);
 
         stubFailedUpload(server, 400, 'UnknownError');
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
         // Wait for async CSV parsing to finish
@@ -180,7 +180,7 @@ describe('Integration: Component: modal-import-members-test', function () {
     it('validates extension by default', async function () {
         stubFailedUpload(server, 415);
 
-        await render(hbs`{{modal-import-members}}`);
+        await render(hbs`<ModalImportMembers />`);
 
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
 
