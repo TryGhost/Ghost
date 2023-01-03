@@ -207,7 +207,7 @@
     "c8": "7.12.0",
     "cli-progress": "3.11.2",
     "cssnano": "5.1.14",
-    "eslint": "8.29.0",
+    "eslint": "8.31.0",
     "expect": "^29.0.0",
     "html-validate": "7.10.1",
     "inquirer": "8.2.5",
