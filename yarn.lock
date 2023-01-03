@@ -17547,10 +17547,10 @@ klona@^2.0.4, klona@^2.0.5:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.5.tgz#d166574d90076395d9963aa7a928fabb8d76afbc"
   integrity sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==
 
-knex-migrator@5.0.9:
-  version "5.0.9"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.9.tgz#df6010719dde07002fb0cb1b295071c446c7fb42"
-  integrity sha512-V6UPKNd99ffjME7nAj27Y/bZtX1OwbAmCxBKWMCwcRZBna3kYo1tM32B1S0zYAKNnXUzJ/azJ/Pigs0E+Y8OUA==
+knex-migrator@5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.1.0.tgz#5bbb3c171379a8845eab4744b4d248200dccf6c4"
+  integrity sha512-+/2Ny/MwobwpD/2jnZlNwDswn2+0i+Wx/RKTlrA3YZr30KDz+9XyM0r5SPXcMfbeD7zXw7RVUIsGUcUrT05Mzg==
   dependencies:
     "@tryghost/database-info" "0.3.14"
     "@tryghost/errors" "1.2.20"
