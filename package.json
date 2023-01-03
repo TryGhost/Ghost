@@ -117,7 +117,7 @@
   "devDependencies": {
     "concurrently": "7.6.0",
     "eslint-plugin-ghost": "2.16.0",
-    "husky": "8.0.2",
+    "husky": "8.0.3",
     "lint-staged": "13.1.0",
     "nodemon": "2.0.20"
   }
