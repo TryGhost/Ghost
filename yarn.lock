@@ -2358,7 +2358,7 @@
     resolve "^1.20.0"
     semver "^7.3.2"
 
-"@embroider/macros@1.10.0", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.2.0", "@embroider/macros@^1.6.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.9.0":
+"@embroider/macros@1.10.0", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.2.0", "@embroider/macros@^1.6.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.10.0.tgz#af3844d5db48f001b85cfb096c76727c72ad6c1e"
   integrity sha512-LMbfQGk/a+f6xtvAv5fq/wf2LRxETnbgSCLUf/z6ebzmuskOUxrke+uP55chF/loWrARi9g6erFQ7RDOUoBMSg==
@@ -11965,14 +11965,16 @@ ember-in-element-polyfill@^1.0.1:
     ember-cli-htmlbars "^5.3.1"
     ember-cli-version-checker "^5.1.2"
 
-ember-in-viewport@4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-4.0.2.tgz#09243f6921cc0b62d7ea0d399e349466a45b26f3"
-  integrity sha512-Uor/fSk53/wASJDpnXEP6RQFeEIjC5uGt64I7tjtr6aPT/jLRg0SKKRuImqUbbsHHoBDWUbkxzryexTda6LhCA==
+ember-in-viewport@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-4.1.0.tgz#a9359a1e4a99d9d6ab32e926749dc131084ed896"
+  integrity sha512-3y6qWXuJPPc6vX2GfxWgtr+sDjb+bdZF9babstr0lTd8t8c1b42gJ13GaJqlylZIyZz2dEXFCimX9WAeudPv9g==
   dependencies:
+    "@embroider/macros" "^1.8.3"
     ember-auto-import "^2.2.3"
     ember-cli-babel "^7.26.6"
-    ember-modifier "^2.1.2 || ^3.0.0"
+    ember-destroyable-polyfill "^2.0.3"
+    ember-modifier "^2.1.2 || ^3.0.0 || ^4.0.0"
     fast-deep-equal "^2.0.1"
     intersection-observer-admin "~0.3.2"
     raf-pool "~0.1.4"
@@ -12082,7 +12084,7 @@ ember-modifier-manager-polyfill@^1.2.0:
     ember-cli-version-checker "^2.1.2"
     ember-compatibility-helpers "^1.2.0"
 
-ember-modifier@3.2.7, "ember-modifier@^2.1.2 || ^3.0.0", ember-modifier@^3.0.0, ember-modifier@^3.2.7:
+ember-modifier@3.2.7, ember-modifier@^3.0.0, ember-modifier@^3.2.7:
   version "3.2.7"
   resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-3.2.7.tgz#f2d35b7c867cbfc549e1acd8d8903c5ecd02ea4b"
   integrity sha512-ezcPQhH8jUfcJQbbHji4/ZG/h0yyj1jRDknfYue/ypQS8fM8LrGcCMo0rjDZLzL1Vd11InjNs3BD7BdxFlzGoA==
@@ -12106,7 +12108,7 @@ ember-modifier@^2.1.0:
     ember-destroyable-polyfill "^2.0.2"
     ember-modifier-manager-polyfill "^1.2.0"
 
-"ember-modifier@^2.1.2 || ^3.1.0 || ^4.0.0":
+"ember-modifier@^2.1.2 || ^3.0.0 || ^4.0.0", "ember-modifier@^2.1.2 || ^3.1.0 || ^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-4.0.0.tgz#0bb3fae11435fcbe0d3dfa852ce224d81d75ddb2"
   integrity sha512-OdconmrqKP2haK4kBwNmtnA2NiC2MFmIJC3LgJ1WhwZ49GaktM+bRIuFxF/S5W0oaegzKs1qH2ZDlqMeO2L3nw==
