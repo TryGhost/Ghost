@@ -365,6 +365,7 @@ module.exports = class StripeAPI {
     async createCheckoutSession(priceId, customer, options) {
         const metadata = options.metadata || undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
+        const customerId = customer ? customer.id : null;
         await this._rateLimitBucket.throttle();
         let discounts;
         if (options.coupon) {
@@ -390,6 +391,7 @@ module.exports = class StripeAPI {
             payment_method_types: ['card'],
             success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
+            customer: customerId,
             customer_email: customerEmail,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
             allow_promotion_codes: discounts ? undefined : this._config.enablePromoCodes,

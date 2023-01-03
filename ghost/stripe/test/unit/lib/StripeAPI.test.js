@@ -80,4 +80,21 @@ describe('StripeAPI', function () {
         should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan, true);
         should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days);
     });
+
+    it('createCheckoutSession passes customer ID successfully to Stripe', async function (){
+        const mockCustomer = {
+          id: "cust_mock_123456",
+          customer_email: "foo@example.com",
+          name: "Example Customer",
+        };
+
+        await api.createCheckoutSession('priceId', mockCustomer, {
+            trialDays: null
+        });
+
+        should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
+        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, "cust_mock_123456");
+    });
+
+
 });
