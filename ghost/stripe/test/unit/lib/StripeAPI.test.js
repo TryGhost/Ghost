@@ -83,9 +83,9 @@ describe('StripeAPI', function () {
 
     it('createCheckoutSession passes customer ID successfully to Stripe', async function (){
         const mockCustomer = {
-          id: "cust_mock_123456",
-          customer_email: "foo@example.com",
-          name: "Example Customer",
+            id: 'cust_mock_123456',
+            customer_email: 'foo@example.com',
+            name: 'Example Customer'
         };
 
         await api.createCheckoutSession('priceId', mockCustomer, {
@@ -93,8 +93,6 @@ describe('StripeAPI', function () {
         });
 
         should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
-        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, "cust_mock_123456");
+        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, 'cust_mock_123456');
     });
-
-
 });
