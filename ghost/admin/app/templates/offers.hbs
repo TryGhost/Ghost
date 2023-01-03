@@ -4,7 +4,7 @@
         <section class="gh-offers-actions view-actions">
             {{#if this.membersUtils.hasActiveTiers}}
                 <div>
-                    <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
+                    <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not-eq this.selectedType.value "active") "gh-contentfilter-selected"}}" data-test-type-select="true">
                         <PowerSelect
                             @selected={{this.selectedType}}
                             @options={{this.availableTypes}}
@@ -74,7 +74,7 @@
                                         <span class="pink">{{svg-jar "offer"}}</span>
                                         <span class="pink fw6"><span class="ttu">{{offer.amount}}</span> DAYS FREE</span>
                                     {{/if}}
-                                {{#if (not (eq offer.type 'trial'))}}
+                                {{#if (not-eq offer.type 'trial')}}
                                     <span class="dib ml1 midgrey ttc"> –
                                         {{if (eq offer.duration 'once') "First-payment" "Repeating"}}
                                     </span>

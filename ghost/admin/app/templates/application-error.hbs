@@ -5,7 +5,7 @@
             <section class="error-message">
                 <h1 class="error-code">{{this.model.code}}</h1>
                 <h2 class="error-description">
-                    {{or this.model.payload.errors.firstObject.message this.model.message}}
+                    {{or (get this.model.payload.errors "0.message") this.model.message}}
                 </h2>
             </section>
         </section>
