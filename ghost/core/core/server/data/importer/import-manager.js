@@ -35,7 +35,7 @@ const messages = {
     zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.',
     invalidZipFileNameEncoding: 'The uploaded zip could not be read',
     invalidZipFileNameEncodingContext: 'The filename was too long or contained invalid characters',
-    invalidZipFileNameEncodingHelp: 'Remove any special characters from the file name, or alternatively try another archiving tool if using MacOS Archive Utility',
+    invalidZipFileNameEncodingHelp: 'Remove any special characters from the file name, or alternatively try another archiving tool if using MacOS Archive Utility'
 };
 
 // Glob levels
