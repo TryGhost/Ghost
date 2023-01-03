@@ -7493,10 +7493,10 @@ bonjour-service@^1.0.11:
     fast-deep-equal "^3.1.3"
     multicast-dns "^7.2.5"
 
-bookshelf-relations@2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-2.5.0.tgz#889446aa4afa54abb2d829e3a27f93aa447d7414"
-  integrity sha512-yiJ1uTWF3HVBuGhgHyZfjBo+JRDAvOOnAEabuAfWrYksCfvLFTk+B3hp4ZCPATZC5Jq6mzDUD0jz6etdI999pA==
+bookshelf-relations@2.5.1:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-2.5.1.tgz#7e3ae0dec200170fe7ccc45cfb74e6ed75143c77"
+  integrity sha512-PH4DXw6RboAdPhwr4/Q2q734x7EmgPHeHnwjl+DnefmPJpf96gF05cQ/n9It7CPwlR9QS3ExvOYnr5MGHKcYow==
   dependencies:
     "@tryghost/debug" "^0.1.13"
     "@tryghost/errors" "^1.2.3"
