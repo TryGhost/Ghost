@@ -51,6 +51,9 @@ const Member = ghostBookshelf.Model.extend({
             // Currently we cannot expand on values such as null or a string in mongo-knex
             // But the line below is essentially the same as: `email_recipients.opened_at:-null`
             expansion: 'email_recipients.opened_at:>=0' 
+        }, {
+            key: 'offer_redemptions',
+            replacement: 'offer_redemptions.offer_id'
         }];
     },
 
@@ -119,11 +122,16 @@ const Member = ghostBookshelf.Model.extend({
                 tableNameAs: 'feedback',
                 type: 'oneToOne',
                 joinFrom: 'member_id'
+            },
+            offer_redemptions: {
+                tableName: 'offer_redemptions',
+                type: 'oneToOne',
+                joinFrom: 'member_id'
             }
         };
     },
 
-    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients', 'newsletters'],
+    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients', 'newsletters', 'offer_redemptions'],
 
     // do not delete email_recipients records when a member is destroyed. Recipient
     // records are used for analytics and historical records
@@ -144,7 +152,8 @@ const Member = ghostBookshelf.Model.extend({
         newsletters: 'newsletters',
         labels: 'labels',
         stripeCustomers: 'members_stripe_customers',
-        email_recipients: 'email_recipients'
+        email_recipients: 'email_recipients',
+        offers: 'offers'
     },
 
     productEvents() {
