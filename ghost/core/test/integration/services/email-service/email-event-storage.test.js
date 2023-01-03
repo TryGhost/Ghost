@@ -81,7 +81,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(100);
+        await sleep(400);
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -135,7 +135,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(100);
+        await sleep(400);
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -186,7 +186,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(100);
+        await sleep(400);
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -271,7 +271,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(200);
+        await sleep(400);
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -371,7 +371,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(200);
+        await sleep(400);
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -490,7 +490,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(200);
+        await sleep(400);
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -597,7 +597,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(200);
+        await sleep(400);
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -776,7 +776,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(200);
+        await sleep(400);
 
         // Check if event exists
         const {body: {events: eventsAfter}} = await agent.get(eventsURI);
@@ -834,7 +834,7 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.memberIds, [memberId]);
 
         // Now wait for events processed
-        await sleep(200);
+        await sleep(400);
 
         // Check if unsubscribed
         const member = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});

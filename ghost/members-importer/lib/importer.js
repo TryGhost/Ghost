@@ -11,7 +11,7 @@ const messages = {
     filenameCollision: 'Filename already exists, please try again.'
 };
 
-// The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan') 
+// The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
 // the value should represent an allowed field name coming from user input
 const DEFAULT_CSV_HEADER_MAPPING = {
     email: 'email',
@@ -33,7 +33,7 @@ module.exports = class MembersCSVImporter {
      * @param {() => Promise<import('@tryghost/tiers/lib/Tier')>} options.getDefaultTier - async function returning default Member Tier
      * @param {Function} options.sendEmail - function sending an email
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
-     * @param {({job, offloaded}) => void} options.addJob - Method registering an async job
+     * @param {({job, offloaded, name}) => void} options.addJob - Method registering an async job
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
      * @param {Object} options.context
@@ -334,7 +334,8 @@ module.exports = class MembersCSVImporter {
                         logging.error(e);
                     }
                 },
-                offloaded: false
+                offloaded: false,
+                name: 'members-import'
             });
 
             return {

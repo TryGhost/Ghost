@@ -14,9 +14,9 @@ class VerificationTrigger {
     /**
      *
      * @param {object} deps
-     * @param {number} deps.apiTriggerThreshold Threshold for triggering API&Import sourced verifications
-     * @param {number} deps.adminTriggerThreshold Threshold for triggering Admin sourced verifications
-     * @param {number} deps.importTriggerThreshold Threshold for triggering Import sourced verifications
+     * @param {() => number} deps.getApiTriggerThreshold Threshold for triggering API&Import sourced verifications
+     * @param {() => number} deps.getAdminTriggerThreshold Threshold for triggering Admin sourced verifications
+     * @param {() => number} deps.getImportTriggerThreshold Threshold for triggering Import sourced verifications
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
      * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
      * @param {(content: {subject: string, message: string, amountTriggered: number}) => Promise<void>} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
@@ -25,9 +25,9 @@ class VerificationTrigger {
      * @param {any} deps.eventRepository For querying events
      */
     constructor({
-        apiTriggerThreshold,
-        adminTriggerThreshold,
-        importTriggerThreshold,
+        getApiTriggerThreshold,
+        getAdminTriggerThreshold,
+        getImportTriggerThreshold,
         isVerified,
         isVerificationRequired,
         sendVerificationEmail,
@@ -35,9 +35,9 @@ class VerificationTrigger {
         Settings,
         eventRepository
     }) {
-        this._apiTriggerThreshold = apiTriggerThreshold;
-        this._adminTriggerThreshold = adminTriggerThreshold;
-        this._importTriggerThreshold = importTriggerThreshold;
+        this._getApiTriggerThreshold = getApiTriggerThreshold;
+        this._getAdminTriggerThreshold = getAdminTriggerThreshold;
+        this._getImportTriggerThreshold = getImportTriggerThreshold;
         this._isVerified = isVerified;
         this._isVerificationRequired = isVerificationRequired;
         this._sendVerificationEmail = sendVerificationEmail;
@@ -47,6 +47,18 @@ class VerificationTrigger {
 
         this._handleMemberCreatedEvent = this._handleMemberCreatedEvent.bind(this);
         DomainEvents.subscribe(MemberCreatedEvent, this._handleMemberCreatedEvent);
+    }
+
+    get _apiTriggerThreshold() {
+        return this._getApiTriggerThreshold();
+    }
+
+    get _adminTriggerThreshold() {
+        return this._getAdminTriggerThreshold();
+    }
+
+    get _importTriggerThreshold() {
+        return this._getImportTriggerThreshold();
     }
 
     /**
@@ -93,9 +105,29 @@ class VerificationTrigger {
         }
     }
 
+    /**
+     * Returns false if email verification is required to send an email. It also updates the verification check and might activate email verification.
+     * Use this when sending emails.
+     */
+    async checkVerificationRequired() {
+        // Check if import threshold is reached (could happen that a long import is in progress and we didn't check the threshold yet)
+        await this.testImportThreshold();
+        return this._isVerificationRequired() && !this._isVerified();
+    }
+
     async testImportThreshold() {
         if (!isFinite(this._importTriggerThreshold)) {
             // Infinite threshold, quick path
+            return;
+        }
+
+        if (this._isVerified()) {
+            // Already verified, no need to check limits
+            return;
+        }
+
+        if (this._isVerificationRequired()) {
+            // Already requested verification, no need to calculate again
             return;
         }
 

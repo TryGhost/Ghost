@@ -8,6 +8,12 @@ const membersService = require('../../../../../core/server/services/members');
 
 describe('MEGA', function () {
     describe('addEmail', function () {
+        before(function () {
+            membersService.verificationTrigger = {
+                checkVerificationRequired: sinon.stub().resolves(false)
+            };
+        });
+
         afterEach(function () {
             sinon.restore();
         });
