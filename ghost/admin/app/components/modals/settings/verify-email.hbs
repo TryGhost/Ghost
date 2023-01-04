@@ -2,7 +2,7 @@
     <header class="modal-header" data-test-modal="verify-email">
         <h1>Verifying email address</h1>
     </header>
-    <button type="button" class="close" role="button" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
         {{#if this.verifyEmailTask.isRunning}}

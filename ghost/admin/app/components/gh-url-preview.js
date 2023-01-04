@@ -6,7 +6,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 
 /*
 Example usage:
-{{gh-url-preview prefix="tag" slug=theSlugValue tagName="p" classNames="description"}}
+<GhUrlPreview @prefix="tag" @slug={{theSlugValue}} @tagName="p" @classNames="description" />
 */
 @classic
 @classNames('ghost-url-preview')

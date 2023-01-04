@@ -4,7 +4,7 @@
         <section class="gh-offers-actions view-actions">
             {{#if this.membersUtils.hasActiveTiers}}
                 <div>
-                    <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
+                    <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not-eq this.selectedType.value "active") "gh-contentfilter-selected"}}" data-test-type-select="true">
                         <PowerSelect
                             @selected={{this.selectedType}}
                             @options={{this.availableTypes}}
@@ -36,78 +36,84 @@
                 </div>
         {{else if (and this.offersExist this.filteredOffers.length)}}
             <table class="gh-list gh-offers-list">
-                <tr class="gh-list-row header">
-                    <th class="gh-list-header">
-                        {{#if (eq this.selectedType.value "active")}}
-                            {{gh-pluralize this.filteredOffers.length "active offer"}}
-                        {{else}}
-                            {{gh-pluralize this.filteredOffers.length "archived offer"}}
-                        {{/if}}
-                    </th>
-                    <th class="gh-list-header">Tier</th>
-                    <th class="gh-list-header">Terms</th>
-                    <th class="gh-list-header">Price</th>
-                    <th class="gh-list-header">Redemptions</th>
-                    <th class="gh-list-header gh-list-cellwidth-10"></th>
-                </tr>
-                {{#each this.filteredOffers as |offer|}}
-                    <tr class="gh-list-row" data-test-list="offers-list-item">
-                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data" data-test-list="offer-name">
-                            <h3>{{offer.name}}</h3>
-                        </LinkTo>
-                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
-                            <span>{{offer.tier.name}}</span>
-                            <span class="midgrey">-</span>
-                            <span class="midgrey">{{if (eq offer.cadence 'month') 'Monthly' 'Yearly'}} </span>
-                        </LinkTo>
-                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
-                            <span class="offer-value">
-                                {{#if (eq offer.type 'percent')}}
-                                    {{svg-jar "offer"}}
-                                    <span class="green fw6">{{offer.amount}}% OFF</span>
-                                {{/if}}
-                                {{#if (eq offer.type 'fixed')}}
-                                    <span class="blue">{{svg-jar "offer"}}</span>
-                                    <span class="blue fw6">{{gh-price-amount offer.amount}} <span class="ttu">{{offer.currency}}</span> OFF</span>
-                                {{/if}}
-                                    {{#if (eq offer.type 'trial')}}
-                                        <span class="pink">{{svg-jar "offer"}}</span>
-                                        <span class="pink fw6"><span class="ttu">{{offer.amount}}</span> DAYS FREE</span>
-                                    {{/if}}
-                                {{#if (not (eq offer.type 'trial'))}}
-                                    <span class="dib ml1 midgrey ttc"> –
-                                        {{if (eq offer.duration 'once') "First-payment" "Repeating"}}
-                                    </span>
-                                {{/if}}
-                            </span>
-                        </LinkTo>
-                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
-                            {{#if (eq offer.type 'trial')}}
-                                <span>{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span>
+                <thead>
+                    <tr class="gh-list-row header">
+                        <th class="gh-list-header">
+                            {{#if (eq this.selectedType.value "active")}}
+                                {{gh-pluralize this.filteredOffers.length "active offer"}}
                             {{else}}
-                                <span>{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.updatedPrice}}</span>
-                                <span class="midgrey strike ml2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span>
+                                {{gh-pluralize this.filteredOffers.length "archived offer"}}
                             {{/if}}
-                        </LinkTo>
-                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
-                            <span class="midgrey">{{offer.redemptionCount}}</span>
-                        </LinkTo>
-                        <div class="gh-list-data gh-list-cellwidth-10 gh-list-chevron">
-                            <div class="flex items-center justify-end w-100 h-100">
-                                <div
-                                    class="gh-btn gh-btn-icon gh-btn-text gh-offer-link-button"
-                                    data-tooltip="Get shareable link"
-                                    {{on "click" (fn this.openLinkDialog offer)}}
-                                >
-                                    <span>{{svg-jar "link"}}</span>
-                                </div>
-                                <LinkTo @route="offer" @model={{offer}}>
-                                    <span class="nr2 lh-1">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
-                                </LinkTo>
-                            </div>
-                        </div>
+                        </th>
+                        <th class="gh-list-header">Tier</th>
+                        <th class="gh-list-header">Terms</th>
+                        <th class="gh-list-header">Price</th>
+                        <th class="gh-list-header">Redemptions</th>
+                        <th class="gh-list-header gh-list-cellwidth-10"></th>
                     </tr>
-                {{/each}}
+                </thead>
+                <tbody>
+                    {{#each this.filteredOffers as |offer|}}
+                        <tr class="gh-list-row" data-test-list="offers-list-item">
+                            <LinkTo @route="offer" @model={{offer}} class="gh-list-data" data-test-list="offer-name">
+                                <h3>{{offer.name}}</h3>
+                            </LinkTo>
+                            <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
+                                <span>{{offer.tier.name}}</span>
+                                <span class="midgrey">-</span>
+                                <span class="midgrey">{{if (eq offer.cadence 'month') 'Monthly' 'Yearly'}} </span>
+                            </LinkTo>
+                            <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
+                                <span class="offer-value">
+                                    {{#if (eq offer.type 'percent')}}
+                                        {{svg-jar "offer"}}
+                                        <span class="green fw6">{{offer.amount}}% OFF</span>
+                                    {{/if}}
+                                    {{#if (eq offer.type 'fixed')}}
+                                        <span class="blue">{{svg-jar "offer"}}</span>
+                                        <span class="blue fw6">{{gh-price-amount offer.amount}} <span class="ttu">{{offer.currency}}</span> OFF</span>
+                                    {{/if}}
+                                        {{#if (eq offer.type 'trial')}}
+                                            <span class="pink">{{svg-jar "offer"}}</span>
+                                            <span class="pink fw6"><span class="ttu">{{offer.amount}}</span> DAYS FREE</span>
+                                        {{/if}}
+                                    {{#if (not-eq offer.type 'trial')}}
+                                        <span class="dib ml1 midgrey ttc"> –
+                                            {{if (eq offer.duration 'once') "First-payment" "Repeating"}}
+                                        </span>
+                                    {{/if}}
+                                </span>
+                            </LinkTo>
+                            <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
+                                {{#if (eq offer.type 'trial')}}
+                                    <span>{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span>
+                                {{else}}
+                                    <span>{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.updatedPrice}}</span>
+                                    <span class="midgrey strike ml2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span>
+                                {{/if}}
+                            </LinkTo>
+                            <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
+                                <span class="midgrey">{{offer.redemptionCount}}</span>
+                            </LinkTo>
+                            <div class="gh-list-data gh-list-cellwidth-10 gh-list-chevron">
+                                <div class="flex items-center justify-end w-100 h-100">
+                                    <button
+                                        type="button"
+                                        class="gh-btn gh-btn-icon gh-btn-text gh-offer-link-button"
+                                        data-tooltip="Get shareable link"
+                                        aria-label="Get shareable link"
+                                        {{on "click" (fn this.openLinkDialog offer)}}
+                                    >
+                                        <span>{{svg-jar "link"}}</span>
+                                    </button>
+                                    <LinkTo @route="offer" @model={{offer}}>
+                                        <span class="nr2 lh-1">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+                                    </LinkTo>
+                                </div>
+                            </div>
+                        </tr>
+                    {{/each}}
+                </tbody>
             </table>
         {{else}}
             {{#if (eq this.selectedType.value "active")}}

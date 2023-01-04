@@ -12,9 +12,12 @@ describe('Integration: Component: gh-cm-editor', function () {
     setupRenderingTest();
 
     it('handles change event', async function () {
+        this.set('onUpdate', (value) => {
+            this.set('text', value);
+        });
         this.set('text', '');
 
-        await render(hbs`{{gh-cm-editor text class="gh-input" update=(action (mut text))}}`);
+        await render(hbs`<GhCmEditor @value={{this.text}} @classNames="gh-input" @update={{this.onUpdate}} />`);
         // access CodeMirror directly as it doesn't pick up changes to the textarea
         let cm = find('.gh-input .CodeMirror').CodeMirror;
         cm.setValue('Testing');
@@ -36,9 +39,12 @@ describe('Integration: Component: gh-cm-editor', function () {
                 .to.be.true;
         };
 
+        this.set('onUpdate', (value) => {
+            this.set('text', value);
+        });
         this.set('onFocus', onFocus);
         this.set('text', '');
 
-        await render(hbs`{{gh-cm-editor text class="gh-input" update=(action (mut text)) autofocus=true focus-in=(action onFocus)}}`);
+        await render(hbs`<GhCmEditor @value={{this.text}} @classNames="gh-input" @update={{this.onUpdate}} @autofocus={{true}} @focus-in={{this.onFocus}} />`);
     });
 });

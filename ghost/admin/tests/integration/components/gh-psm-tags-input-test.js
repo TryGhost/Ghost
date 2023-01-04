@@ -51,7 +51,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
 
     it('shows selected tags on render', async function () {
         await assignPostWithTags(this, 'one', 'three');
-        await render(hbs`{{gh-psm-tags-input post=post}}`);
+        await render(hbs`<GhPsmTagsInput @post={{post}} />`);
 
         let selected = findAll('.tag-token');
         expect(selected.length).to.equal(2);
@@ -65,7 +65,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         this.set('post', this.store.findRecord('post', 1));
         await settled();
 
-        await render(hbs`{{gh-psm-tags-input post=post}}`);
+        await render(hbs`<GhPsmTagsInput @post={{post}} />`);
         await clickTrigger();
         await settled();
         // unsure why settled() is sometimes not catching the update
@@ -83,7 +83,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         this.set('post', this.store.findRecord('post', 1));
         await settled();
 
-        await render(hbs`{{gh-psm-tags-input post=post}}`);
+        await render(hbs`<GhPsmTagsInput @post={{post}} />`);
         await clickTrigger();
         await typeInSearch('2');
         await settled();
@@ -100,7 +100,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         this.set('post', this.store.findRecord('post', 1));
         await settled();
 
-        await render(hbs`{{gh-psm-tags-input post=post}}`);
+        await render(hbs`<GhPsmTagsInput @post={{post}} />`);
         await clickTrigger();
         await typeInSearch('#Tag 2');
         await settled();
@@ -114,7 +114,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
 
     it('highlights internal tags', async function () {
         await assignPostWithTags(this, 'two', 'three');
-        await render(hbs`{{gh-psm-tags-input post=post}}`);
+        await render(hbs`<GhPsmTagsInput @post={{post}} />`);
 
         let selected = findAll('.tag-token');
         expect(selected.length).to.equal(2);
@@ -125,7 +125,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
     describe('updateTags', function () {
         it('modifies post.tags', async function () {
             await assignPostWithTags(this, 'two', 'three');
-            await render(hbs`{{gh-psm-tags-input post=post}}`);
+            await render(hbs`<GhPsmTagsInput @post={{post}} />`);
             await selectChoose('.ember-power-select-trigger', 'Tag 1');
 
             expect(
@@ -138,7 +138,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         // https://github.com/TryGhost/Ghost/issues/10308
         it.skip('destroys new tag records when not selected', async function () {
             await assignPostWithTags(this, 'two', 'three');
-            await render(hbs`{{gh-psm-tags-input post=post}}`);
+            await render(hbs`<GhPsmTagsInput @post={{post}} />`);
             await clickTrigger();
             await typeInSearch('New');
             await settled();
@@ -158,7 +158,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
     describe('createTag', function () {
         it('creates new records', async function () {
             await assignPostWithTags(this, 'two', 'three');
-            await render(hbs`{{gh-psm-tags-input post=post}}`);
+            await render(hbs`<GhPsmTagsInput @post={{post}} />`);
             await clickTrigger();
             await typeInSearch('New One');
             await settled();

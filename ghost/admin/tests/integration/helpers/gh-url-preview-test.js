@@ -16,21 +16,23 @@ describe('Unit: Component: gh-url-preview', function () {
 
     it('generates the correct preview URL with a prefix', async function () {
         await render(hbs`
-            {{gh-url-preview
-                prefix="tag"
-                slug="test-slug"
-                tagName="p"
-                classNames="test-class"}}`);
+            <GhUrlPreview
+                @prefix="tag"
+                @slug="test-slug"
+                @tagName="p"
+                @classNames="test-class"
+            />`);
 
         expect(this.element).to.have.trimmed.text('my-ghost-blog.com/tag/test-slug/');
     });
 
     it('generates the correct preview URL without a prefix', async function () {
         await render(hbs`
-            {{gh-url-preview
-                slug="test-slug"
-                tagName="p"
-                classNames="test-class"}}`);
+            <GhUrlPreview
+                @slug="test-slug"
+                @tagName="p"
+                @classNames="test-class"
+            />`);
 
         expect(this.element).to.have.trimmed.text('my-ghost-blog.com/test-slug/');
     });

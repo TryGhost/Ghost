@@ -8789,6 +8789,11 @@ chalk@^3.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
+chalk@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-5.2.0.tgz#249623b7d66869c673699fb66d65723e54dfcfb3"
+  integrity sha512-ree3Gqw/nazQAPuJJEy+avdl7QfZMcUvmHIKgEZkGL+xOBzRvup5Hxo6LHuMceSxOabuJLJm5Yp/92R9eMmMvA==
+
 char-regex@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/char-regex/-/char-regex-1.0.2.tgz#d744358226217f981ed58f479b1d6bcc29545dcf"
@@ -9006,7 +9011,7 @@ ci-info@^2.0.0:
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-2.0.0.tgz#67a9e964be31a51e15e5010d58e6f12834002f46"
   integrity sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==
 
-ci-info@^3.2.0, ci-info@^3.3.0, ci-info@^3.4.0:
+ci-info@^3.2.0, ci-info@^3.3.0, ci-info@^3.7.0:
   version "3.7.1"
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.7.1.tgz#708a6cdae38915d597afdf3b145f2f8e1ff55f3f"
   integrity sha512-4jYS4MOAaCIStSRwiuxc4B8MYhIe676yO1sYGzARnjXkWpmzZMMYxY6zu8WYWDhSuth5zhrQ1rhNSibyyvv4/w==
@@ -11117,9 +11122,9 @@ ember-basic-dropdown@^3.0.11:
     ember-truth-helpers "^2.1.0 || ^3.0.0"
 
 ember-basic-dropdown@^6.0.0:
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/ember-basic-dropdown/-/ember-basic-dropdown-6.0.2.tgz#af47dbd544c605cf9cbc62225185616356aeef52"
-  integrity sha512-JgI/cy7eS/Y2WoQl7B2Mko/1aFTAlxr5d+KpQeH7rBKOFml7IQtLvhiDQrpU/FLkrQ9aLNEJtzwtDZV1xQxAKA==
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/ember-basic-dropdown/-/ember-basic-dropdown-6.0.1.tgz#9844b8b263033c916e193fb15b91517a00192db0"
+  integrity sha512-8cmqHvho7fToAv2pauzLd3y9fUVtMu0+eBwsevjiuTdWUPLvkIvn745NbT5aempVmxfMq0oQLhjzK8VUd4gxaw==
   dependencies:
     "@ember/render-modifiers" "^2.0.4"
     "@embroider/macros" "^1.2.0"
@@ -11130,10 +11135,10 @@ ember-basic-dropdown@^6.0.0:
     ember-cli-htmlbars "^6.0.1"
     ember-cli-typescript "^4.2.1"
     ember-element-helper "^0.6.0"
-    ember-get-config "^2.1.1"
+    ember-get-config "^1.0.2 || ^2.0.0"
     ember-maybe-in-element "^2.0.3"
     ember-modifier "^3.2.7"
-    ember-style-modifier "^0.8.0 || ^1.0.0"
+    ember-style-modifier "^0.8.0"
     ember-truth-helpers "^2.1.0 || ^3.0.0"
 
 ember-classic-decorator@3.0.1:
@@ -11923,7 +11928,7 @@ ember-fetch@8.1.2:
     ember-cli-babel "^7.26.6"
     ember-cli-htmlbars "^5.7.1"
 
-ember-get-config@^2.1.1:
+"ember-get-config@^1.0.2 || ^2.0.0":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/ember-get-config/-/ember-get-config-2.1.1.tgz#bede76c25d95dbefab8d30064abf7aa00bc19235"
   integrity sha512-uNmv1cPG/4qsac8oIf5txJ2FZ8p88LEpG4P3dNcjsJS98Y8hd0GPMFwVqpnzI78Lz7VYRGQWY4jnE4qm5R3j4g==
@@ -12260,12 +12265,12 @@ ember-style-modifier@^0.7.0:
     ember-cli-babel "^7.26.6"
     ember-modifier "^3.0.0"
 
-"ember-style-modifier@^0.8.0 || ^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ember-style-modifier/-/ember-style-modifier-1.0.0.tgz#96e5d342a255d8c1cba1637779dbb1949322e139"
-  integrity sha512-ANkYpOeI3/tkRxVz750ymb8cQBqfBTKOUOz4RPRsNys8rlaBiaKEa95XLz1JWfCXCzjmqe8i2cIdnAMix+nb3A==
+ember-style-modifier@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/ember-style-modifier/-/ember-style-modifier-0.8.0.tgz#ef46b3f288e63e3d850418ea8dc6f7b12edde721"
+  integrity sha512-I7M+oZ+poYYOP7n521rYv7kkYZbxotL8VbtHYxLQ3tasRZYQJ21qfu3vVjydSjwyE3w7EZRgKngBoMhKSAEZnw==
   dependencies:
-    ember-cli-babel "^7.26.11"
+    ember-cli-babel "^7.26.6"
     ember-modifier "^3.2.7"
 
 ember-svg-jar@2.4.2:
@@ -12303,24 +12308,25 @@ ember-template-imports@^3.4.0:
     string.prototype.matchall "^4.0.6"
     validate-peer-dependencies "^1.1.0"
 
-ember-template-lint@4.18.2:
-  version "4.18.2"
-  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.18.2.tgz#18e5e5fc6ea7301e7a075e024008271d2a781e1e"
-  integrity sha512-yI8kQ8IQ2x5HVq0tQAISXABOHr0Is5sAg6rwceO6M8CYozq7HMxUPEj0VbdcbyIE70SWw/8d24M1rBI4km544Q==
+ember-template-lint@5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-5.3.0.tgz#da91f704d0055db8e69ff13b5f98488cc76a8322"
+  integrity sha512-P4GsqYDN3bvTgN8+v3LQsBQVfDnu/EJJzZH8LqAYZxFfRQmBeZMcMFjB6I8QS9NYkYKOXO4I4ApiJYtFHRXsUw==
   dependencies:
     "@lint-todo/utils" "^13.0.3"
     aria-query "^5.0.2"
-    chalk "^4.1.2"
-    ci-info "^3.4.0"
+    chalk "^5.2.0"
+    ci-info "^3.7.0"
     date-fns "^2.29.2"
     ember-template-imports "^3.4.0"
     ember-template-recast "^6.1.3"
+    eslint-formatter-kakoune "^1.0.0"
     find-up "^6.3.0"
     fuse.js "^6.5.3"
     get-stdin "^9.0.0"
     globby "^13.1.2"
     is-glob "^4.0.3"
-    language-tags "^1.0.5"
+    language-tags "^1.0.6"
     micromatch "^4.0.5"
     resolve "^1.22.1"
     v8-compile-cache "^2.3.0"
@@ -12725,6 +12731,11 @@ eslint-config-react-app@^7.0.1:
     eslint-plugin-react "^7.27.1"
     eslint-plugin-react-hooks "^4.3.0"
     eslint-plugin-testing-library "^5.0.1"
+
+eslint-formatter-kakoune@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-formatter-kakoune/-/eslint-formatter-kakoune-1.0.0.tgz#a95cc4fe1fbc06b84e0f2397e83f5f0b68340125"
+  integrity sha512-Uk/TVLt6Nf6Xoz7C1iYuZjOSdJxe5aaauGRke8JhKeJwD66Y61/pY2FjtLP04Ooq9PwV34bzrkKkU2UZ5FtDRA==
 
 eslint-import-resolver-node@^0.3.6:
   version "0.3.6"
@@ -17614,7 +17625,7 @@ language-subtag-registry@^0.3.20:
   resolved "https://registry.yarnpkg.com/language-subtag-registry/-/language-subtag-registry-0.3.22.tgz#2e1500861b2e457eba7e7ae86877cbd08fa1fd1d"
   integrity sha512-tN0MCzyWnoz/4nHS6uxdlFWoUZT7ABptwKPQ52Ea7URk6vll88bWBVhodtnlfEuCcKWNGoc+uGbw1cwa9IKh/w==
 
-language-tags@^1.0.5:
+language-tags@^1.0.5, language-tags@^1.0.6:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/language-tags/-/language-tags-1.0.7.tgz#41cc248730f3f12a452c2e2efe32bc0bbce67967"
   integrity sha512-bSytju1/657hFjgUzPAPqszxH62ouE8nQFoFaVlIQfne4wO/wXC9A4+m8jYve7YBBvi59eq0SUpcshvG8h5Usw==
@@ -17784,7 +17795,7 @@ liquid-wormhole@3.0.0:
     ember-cli-babel "^7.26.11"
     ember-cli-htmlbars "^6.1.0"
     ember-decorators "^6.1.1"
-    perf-primitives "github:rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b"
+    perf-primitives rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b
 
 listr2@^5.0.5:
   version "5.0.6"
@@ -20722,7 +20733,6 @@ pend@~1.2.0:
 
 "perf-primitives@github:rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b":
   version "0.0.6"
-  uid a6a26f11497ca27be3763a88a5f20744e424756b
   resolved "https://codeload.github.com/rwwagner90/perf-primitives/tar.gz/a6a26f11497ca27be3763a88a5f20744e424756b"
   dependencies:
     ember-cli-babel "^7.26.6"

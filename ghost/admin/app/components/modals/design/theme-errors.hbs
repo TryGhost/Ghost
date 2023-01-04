@@ -2,11 +2,11 @@
     <div class="theme-validation-container" data-test-modal="theme-errors">
         <header class="modal-header">
             <h1 data-test-theme-warnings-title>
-                {{#unless @data.canActivate}}
-                    {{@data.title}}
-                {{else}}
+                {{#if @data.canActivate}}
                     {{@data.title}} with {{#if @data.errors}}errors{{else}}warnings{{/if}}
-                {{/unless}}
+                {{else}}
+                    {{@data.title}}
+                {{/if}}
             </h1>
         </header>
         <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>

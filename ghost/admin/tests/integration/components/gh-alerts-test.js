@@ -26,7 +26,7 @@ describe('Integration: Component: gh-alerts', function () {
     it('renders', async function () {
         let notifications = this.owner.lookup('service:notifications');
 
-        await render(hbs`{{gh-alerts}}`);
+        await render(hbs`<GhAlerts />`);
         expect(findAll('.gh-alerts').length).to.equal(1);
         expect(find('.gh-alerts').children.length).to.equal(2);
 
@@ -42,7 +42,7 @@ describe('Integration: Component: gh-alerts', function () {
         // test double for notify action
         this.set('notify', count => expect(count).to.equal(expectedCount));
 
-        await render(hbs`{{gh-alerts notify=(action notify)}}`);
+        await render(hbs`<GhAlerts @notify={{this.notify}} />`);
 
         expectedCount = 3;
         notifications.alerts.pushObject({message: 'Third', type: 'success'});

@@ -2,7 +2,6 @@
     <header class="modal-header" data-test-modal="webhook-form">
         <h1 data-test-text="title">{{if @data.webhook.isNew "New" "Edit"}} webhook</h1>
     </header>
-    {{!-- template-lint-disable no-down-event-binding --}}
     <button class="close" href title="Close" type="button" {{on "click" @close}} {{on "mousedown" this.noop}}>
         {{svg-jar "close"}}
     </button>

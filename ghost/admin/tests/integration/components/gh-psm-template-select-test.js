@@ -64,7 +64,7 @@ describe('Integration: Component: gh-psm-template-select', function () {
             }
         });
 
-        await render(hbs`{{gh-psm-template-select post=post}}`);
+        await render(hbs`<GhPsmTemplateSelect @post={{this.post}} />`);
 
         expect(find('select').disabled, 'select is disabled').to.be.true;
         expect(find('p')).to.contain.text('post-one.hbs');
@@ -78,7 +78,7 @@ describe('Integration: Component: gh-psm-template-select', function () {
             }
         });
 
-        await render(hbs`{{gh-psm-template-select post=post}}`);
+        await render(hbs`<GhPsmTemplateSelect @post={{this.post}} />`);
 
         expect(find('select').disabled, 'select is disabled').to.be.true;
         expect(find('p')).to.contain.text('page-about.hbs');

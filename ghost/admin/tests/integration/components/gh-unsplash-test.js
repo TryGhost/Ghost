@@ -17,7 +17,7 @@ describe('Integration: Component: gh-unsplash', function () {
         //   {{/gh-unsplash}}
         // `);
 
-        await render(hbs`{{gh-unsplash}}`);
+        await render(hbs`<GhUnsplash />`);
         expect(this.element).to.exist;
     });
 

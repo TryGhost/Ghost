@@ -56,7 +56,7 @@
                 <div class="relative miw-100 flex items-center justify-center {{unless @payload.src "kg-media-placeholder ba b--whitegrey bg-whitegrey-l2" "absolute absolute--fill bg-white-50"}}">
                     {{#if uploader.errors}}
                     <span class="kg-upload-error">
-                            {{uploader.errors.firstObject.message}}
+                            {{get uploader.errors "0.message"}}
                         </span>
                     {{/if}}
 

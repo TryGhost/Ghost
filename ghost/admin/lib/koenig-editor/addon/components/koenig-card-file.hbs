@@ -20,7 +20,6 @@
     {{on "dragover" this.dragOver}}
     {{on "dragleave" this.dragLeave}}
     {{on "drop" this.drop}}
-    as |card|
 >
     {{#if @payload.src}}
         <div class="kg-upload-container {{if (and (not @isEditing) (or (not @payload.fileTitle) (not @payload.fileCaption))) "medium"}} {{if (and (not @isEditing) (and (not @payload.fileTitle) (not @payload.fileCaption))) "small"}}">
@@ -70,7 +69,7 @@
                 {{#if (or uploader.errors uploader.isUploading)}}
                     {{#if uploader.errors}}
                         <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
-                            {{uploader.errors.firstObject.message}}
+                            {{get uploader.errors "0.message"}}
                         </span>
                     {{/if}}
 

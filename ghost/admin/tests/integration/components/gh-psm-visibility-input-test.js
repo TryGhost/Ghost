@@ -13,7 +13,7 @@ describe('Integration: Component: gh-psm-visibility-input', function () {
             visibility: 'members'
         });
 
-        await render(hbs`{{gh-psm-visibility-input post=post}}`);
+        await render(hbs`<GhPsmVisibilityInput @post={{this.post}} />`);
 
         expect(this.element, 'top-level elements').to.exist;
         expect(findAll('option'), 'number of options').to.have.length(4);
@@ -28,7 +28,7 @@ describe('Integration: Component: gh-psm-visibility-input', function () {
             set: setVisibility
         });
 
-        await render(hbs`{{gh-psm-visibility-input post=post}}`);
+        await render(hbs`<GhPsmVisibilityInput @post={{this.post}} />`);
 
         expect(this.element, 'top-level elements').to.exist;
         expect(findAll('option'), 'number of options').to.have.length(4);

@@ -49,7 +49,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
 
     it('has the correct title', async function () {
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
         expect(find('.tag-settings-pane h4').textContent, 'existing tag title').to.equal('Tag settings');
 
@@ -59,7 +59,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
 
     it('renders main settings', async function () {
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
         expect(findAll('.gh-image-uploader').length, 'displays image uploader').to.equal(1);
@@ -72,7 +72,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
 
     it('can switch between main/meta settings', async function () {
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
         expect(find('.tag-settings-pane').classList.contains('settings-menu-pane-in'), 'main settings are displayed by default').to.be.true;
@@ -95,7 +95,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         });
 
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
         await fillIn('input[name="name"]', 'New name');
@@ -129,7 +129,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         };
 
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
         await testSetProperty('input[name="name"]', 'name', 'New name');
@@ -159,7 +159,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         hasValidated.push('metaDescription');
 
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
         let nameFormGroup = find('input[name="name"]').closest('.form-group');
@@ -184,7 +184,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
 
     it('displays char count for text fields', async function () {
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
         let descriptionFormGroup = find('textarea[name="description"]').closest('.form-group');
@@ -196,7 +196,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
 
     it('renders SEO title preview', async function () {
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
         expect(find('.seo-preview-title').textContent, 'displays meta title if present').to.equal('Meta Title');
 
@@ -210,7 +210,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
 
     it('renders SEO URL preview', async function () {
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
         expect(find('.seo-preview-link').textContent, 'adds url and tag prefix').to.equal('http://localhost:2368/tag/test/');
 
@@ -221,7 +221,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
 
     it('renders SEO description preview', async function () {
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
         expect(find('.seo-preview-description').textContent, 'displays meta description if present').to.equal('Meta description');
 
@@ -235,7 +235,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
 
     it('resets if a new tag is received', async function () {
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
         await click('.meta-data-button');
         expect(find('.tag-meta-settings-pane').classList.contains('settings-menu-pane-in'), 'meta data pane is shown').to.be.true;
@@ -252,7 +252,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         });
 
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProper}} /> showDeleteTagModal=(action openModal)}}
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} @showDeleteTagModal={{this.openModal}} />
         `);
         await click('.settings-menu-delete-button');
 
@@ -264,7 +264,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         mediaQueries.set('maxWidth600', true);
 
         await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{action setProperty}} />
+            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
         expect(findAll('.tag-settings-pane .settings-menu-header .settings-menu-header-action').length, 'tags link is shown').to.equal(1);

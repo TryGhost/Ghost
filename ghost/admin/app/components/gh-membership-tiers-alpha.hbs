@@ -1,7 +1,7 @@
 <div class="flex justify-between items-center">
     <label>Tiers</label>
     <div>
-        <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
+        <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not-eq this.selectedType.value "active") "gh-contentfilter-selected"}}" data-test-type-select="true">
             <PowerSelect
                 @selected={{this.selectedType}}
                 @options={{this.availableTypes}}

@@ -50,7 +50,7 @@
                     <div class="relative miw-100 flex items-center {{if this.previewSrc "absolute absolute--fill bg-white-50" "kg-media-placeholder ba b--whitegrey"}}">
                         {{#if uploader.errors}}
                             <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
-                                {{uploader.errors.firstObject.message}}
+                                {{get uploader.errors "0.message"}}
                             </span>
                         {{/if}}
 
