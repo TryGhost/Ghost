@@ -13,14 +13,14 @@ describe('Integration: Component: gh-image-uploader-with-preview', function () {
         this.set('remove', remove);
         this.set('image', 'http://example.com/test.png');
 
-        await render(hbs`{{gh-image-uploader-with-preview image=image remove=(action remove)}}`);
+        await render(hbs`<GhImageUploaderWithPreview @image={{this.image}} @remove={{this.remove}} />`);
 
         expect(findAll('.gh-image-uploader.-with-image').length).to.equal(1);
         expect(find('img').getAttribute('src')).to.equal('http://example.com/test.png');
     });
 
     it('renders upload form when no image provided', async function () {
-        await render(hbs`{{gh-image-uploader-with-preview image=image}}`);
+        await render(hbs`<GhImageUploaderWithPreview @image={{this.image}} />`);
 
         expect(findAll('input[type="file"]').length).to.equal(1);
     });
@@ -30,7 +30,7 @@ describe('Integration: Component: gh-image-uploader-with-preview', function () {
         this.set('remove', remove);
         this.set('image', 'http://example.com/test.png');
 
-        await render(hbs`{{gh-image-uploader-with-preview image=image remove=(action remove)}}`);
+        await render(hbs`<GhImageUploaderWithPreview @image={{this.image}} @remove={{this.remove}} />`);
         await click('.image-delete');
 
         expect(remove.calledOnce).to.be.true;
