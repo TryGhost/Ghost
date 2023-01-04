@@ -208,6 +208,9 @@ describe('EmailEventStorage', function () {
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
 
+        const {body: {members: [member]}} = await agent.get(`/members/${memberId}`);
+        assert.equal(member.email_suppression.suppressed, false, 'This test requires a member that does not have a suppressed email');
+
         events = [{
             event: 'failed',
             id: 'pl271FzxTTmGRW8Uj3dUWw',
@@ -297,6 +300,10 @@ describe('EmailEventStorage', function () {
         assert.equal(permanentFailures.models[0].get('event_id'), 'pl271FzxTTmGRW8Uj3dUWw');
         assert.equal(permanentFailures.models[0].get('severity'), 'permanent');
         assert.equal(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
+
+        const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
+        assert.equal(memberAfter.email_suppression.suppressed, false, 'The member should not have a suppressed email');
+        assert.equal(memberAfter.email_suppression.info, null);
     });
 
     it('Ignores permanent failures if already failed', async function () {

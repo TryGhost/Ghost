@@ -97,6 +97,14 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     async init() {
         const handleEvent = reason => async (event) => {
             try {
+                if (reason === 'bounce') {
+                    if (!Number.isInteger(event.error?.code)) {
+                        return;
+                    }
+                    if (event.error.code < 500 || event.error.code > 599) {
+                        return;
+                    }
+                }
                 await this.Suppression.add({
                     email_address: event.email,
                     email_id: event.emailId,
