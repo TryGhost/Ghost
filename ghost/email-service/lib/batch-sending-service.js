@@ -155,7 +155,10 @@ class BatchSendingService {
 
             // Avoiding Bookshelf for performance reasons
             let members;
-            let lastId = null;
+
+            // Start with the id of the email, which is an objectId. We'll only fetch members that are created before the email. This is a special property of ObjectIds.
+            // Note: we use ID and not created_at, because imported members could set a created_at in the future or past and avoid limit checking.
+            let lastId = email.id;
 
             while (!members || lastId) {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
@@ -165,16 +168,16 @@ class BatchSendingService {
                     .orderByRaw('id DESC')
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
 
-                if (members.length > BATCH_SIZE) {
-                    lastId = members[members.length - 2].id;
-                } else {
-                    lastId = null;
-                }
-
                 if (members.length > 0) {
                     totalCount += Math.min(members.length, BATCH_SIZE);
                     const batch = await this.createBatch(email, segment, members.slice(0, BATCH_SIZE));
                     batches.push(batch);
+                }
+
+                if (members.length > BATCH_SIZE) {
+                    lastId = members[members.length - 2].id;
+                } else {
+                    break;
                 }
             }
         }
@@ -184,8 +187,8 @@ class BatchSendingService {
         if (email.get('email_count') !== totalCount) {
             logging.error(`Email ${email.id} has wrong recipient count ${totalCount}, expected ${email.get('email_count')}. Updating the model.`);
 
-            // We update the email model because this will probably happen a few times because of the time difference
-            // between creating the email and sending it (or when the email failed initially and is retried a day later)
+            // We update the email model because this might happen in rare cases where the initial member count changed (e.g. deleted members)
+            // between creating the email and sending it
             await email.save({
                 email_count: totalCount
             }, {patch: true, require: false, autoRefresh: false});
