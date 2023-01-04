@@ -7,6 +7,7 @@ const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const settingsService = require('../../../core/server/services/settings/settings-service');
+const DomainEvents = require('@tryghost/domain-events');
 
 let membersAgent, membersAgent2, postId, postTitle, commentId;
 
@@ -83,7 +84,7 @@ async function testCanCommentOnPost(member) {
     });
 
     // Wait for the dispatched events (because this happens async)
-    await sleep(200);
+    await DomainEvents.allSettled();
 
     // Check last_updated_at changed?
     member = await models.Member.findOne({id: member.id});
@@ -126,7 +127,7 @@ async function testCanReply(member, emailMatchers = {}) {
     });
 
     // Wait for the dispatched events (because this happens async)
-    await sleep(250);
+    await DomainEvents.allSettled();
 
     // Check last_updated_at changed?
     member = await models.Member.findOne({id: member.id});
@@ -348,7 +349,7 @@ describe('Comments API', function () {
                 });
 
                 // Wait for the dispatched events (because this happens async)
-                await sleep(200);
+                await DomainEvents.allSettled();
 
                 // Check last updated_at is not changed?
                 member = await models.Member.findOne({id: member.id});

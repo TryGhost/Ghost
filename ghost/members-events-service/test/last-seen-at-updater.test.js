@@ -72,8 +72,7 @@ describe('LastSeenAtUpdater', function () {
         sinon.spy(updater, 'updateLastSeenAt');
         sinon.spy(updater, 'updateLastSeenAtWithoutKnownLastSeen');
         DomainEvents.dispatch(EmailOpenedEvent.create({memberId: '1', emailRecipientId: '1', emailId: '1', timestamp: now.toDate()}));
-        // Wait for next tick
-        await sleep(50);
+        await DomainEvents.allSettled();
         assert(updater.updateLastSeenAtWithoutKnownLastSeen.calledOnceWithExactly('1', now.toDate()));
         assert(db.update.calledOnce);
     });
