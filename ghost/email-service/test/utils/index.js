@@ -1,4 +1,5 @@
 const ObjectId = require('bson-objectid').default;
+const sinon = require('sinon');
 
 const createModel = (propertiesAndRelations) => {
     return {
@@ -36,7 +37,33 @@ const createModelClass = (options = {}) => {
     };
 };
 
+const createDb = ({first}) => {
+    const db = {
+        knex: function () {
+            return this;
+        },
+        where: function () {
+            return this;
+        },
+        whereNull: function () {
+            return this;
+        },
+        select: function () {
+            return this;
+        },
+        update: sinon.stub().resolves(),
+        first: () => {
+            return Promise.resolve(first);
+        }
+    };
+    db.knex.raw = function () {
+        return this;
+    };
+    return db;
+};
+
 module.exports = {
     createModel,
-    createModelClass
+    createModelClass,
+    createDb
 };
