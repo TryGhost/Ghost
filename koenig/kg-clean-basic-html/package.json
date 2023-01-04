@@ -17,7 +17,7 @@
     "posttest": "yarn lint"
   },
   "engines": {
-    "node": "^14.17.0 || ^16.13.0"
+    "node": "^14.18.0 || ^16.13.0 || ^18.12.1"
   },
   "files": [
     "LICENSE",
