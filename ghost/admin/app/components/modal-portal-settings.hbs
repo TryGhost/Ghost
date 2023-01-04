@@ -39,33 +39,30 @@
                                             </div>
                                         </div>
                                     </GhFormGroup>
-                                    {{#if this.membersUtils.isStripeEnabled}}
-                                        <div {{did-insert this.refreshAfterStripeConnected}} data-test-tiers-at-signup>
-                                            <div class="mb3 mt5">
-                                                <h4 class="gh-portal-setting-title">Tiers available at signup</h4>
-                                            </div>
-                                            <div class="form-group mb0 for-checkbox">
-                                                <label
-                                                    class="checkbox"
-                                                    for="free-plan"
+                                    <div {{did-insert this.refreshAfterStripeConnected}} data-test-tiers-at-signup>
+                                        <div class="mb3 mt5">
+                                            <h4 class="gh-portal-setting-title">Tiers available at signup</h4>
+                                        </div>
+                                        <div class="form-group mb0 for-checkbox" data-test-free-tier-at-signup>
+                                            <label
+                                                class="checkbox"
+                                                for="free-plan"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={{this.membersUtils.isFreeChecked}}
+                                                    id="free-plan"
+                                                    name="free-plan"
+                                                    data-test-settings-tier-input="Free"
+                                                    disabled={{(not-eq this.settings.membersSignupAccess "all")}}
+                                                    class="gh-input post-settings-featured"
+                                                    {{on "click" (action "togglePlan" "free")}}
                                                 >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={{this.membersUtils.isFreeChecked}}
-                                                        id="free-plan"
-                                                        name="free-plan"
-                                                        disabled={{or
-                                                            (not this.membersUtils.isStripeEnabled)
-                                                            (not-eq this.settings.membersSignupAccess "all")
-                                                        }}
-                                                        class="gh-input post-settings-featured"
-                                                        data-test-settings-tier-input="Free"
-                                                        {{on "click" (action "togglePlan" "free")}}
-                                                    >
-                                                    <span class="input-toggle-component"></span>
-                                                    <p data-test-settings-tier-label="Free">Free</p>
-                                                </label>
-                                            </div>
+                                                <span class="input-toggle-component"></span>
+                                                <p data-test-settings-tier-label="Free">Free</p>
+                                            </label>
+                                        </div>
+                                        {{#if this.membersUtils.isStripeEnabled}}
                                             {{#each this.tiers as |tier|}}
                                                 <div class="form-group mb0 for-checkbox" data-test-tier-at-signup>
                                                     <label
@@ -139,8 +136,8 @@
                                                     </label>
                                                 </div>
                                             {{/if}}
-                                        </div>
-                                    {{/if}}
+                                        {{/if}}
+                                    </div>
                                 </div>
                             {{/liquid-if}}
                         {{/let}}

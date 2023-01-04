@@ -1,6 +1,7 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const {test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
+const {promisify} = require('util');
 
 /**
  * Tier
@@ -66,6 +67,23 @@ const setupGhost = async (page) => {
         await page.getByPlaceholder('At least 10 characters').press('Enter');
         await page.locator('.gh-done-pink').click();
         await page.locator('.gh-nav').waitFor(options);
+    }
+};
+
+const disconnectStripe = async (page) => {
+    await deleteAllMembers(page);
+    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+    if (await page.isVisible('.gh-btn-stripe-status.connected')) {
+        // Disconnect if already connected
+        await page.locator('.gh-btn-stripe-status.connected').click();
+        await page.locator('.modal-content .gh-btn-stripe-disconnect').first().click();
+        await page
+            .locator('.modal-content')
+            .filter({hasText: 'Are you sure you want to disconnect?'})
+            .first()
+            .getByRole('button', {name: 'Disconnect'})
+            .click();
     }
 };
 
@@ -433,9 +451,43 @@ const getTierCardById = async (page, {id}) => {
     });
 };
 
+const generateStripeIntegrationToken = async () => {
+    const inquirer = require('inquirer');
+    const {knex} = require('../../../core/server/data/db');
+
+    const stripeDatabaseKeys = {
+        publishableKey: 'stripe_connect_publishable_key',
+        secretKey: 'stripe_connect_secret_key',
+        liveMode: 'stripe_connect_livemode'
+    };
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY ?? (await knex('settings').select('value').where('key', stripeDatabaseKeys.publishableKey).first())?.value
+        ?? (await inquirer.prompt([{
+            message: 'Stripe publishable key (starts "pk_test_")',
+            type: 'password',
+            name: 'value'
+        }])).value;
+    const secretKey = process.env.STRIPE_SECRET_KEY ?? (await knex('settings').select('value').where('key', stripeDatabaseKeys.secretKey).first())?.value
+        ?? (await inquirer.prompt([{
+            message: 'Stripe secret key (starts "sk_test_")',
+            type: 'password',
+            name: 'value'
+        }])).value;
+
+    const accountId = process.env.STRIPE_ACCOUNT_ID ?? JSON.parse((await promisify(exec)('stripe get account')).stdout).id;
+
+    return Buffer.from(JSON.stringify({
+        a: secretKey,
+        p: publishableKey,
+        l: false,
+        i: accountId
+    })).toString('base64');
+};
+
 module.exports = {
     setupGhost,
     setupStripe,
+    disconnectStripe,
+    generateStripeIntegrationToken,
     setupMailgun,
     deleteAllMembers,
     createTier,
