@@ -52,7 +52,7 @@
     "prepack": "yarn workspace ghost-admin run build:prod && yarn build:css && npx --yes daniellockyer/monobundle"
   },
   "engines": {
-    "node": "^14.17.0 || ^16.13.0 || ^18.0.0",
+    "node": "^14.18.0 || ^16.13.0 || ^18.0.0",
     "cli": "^1.17.0"
   },
   "dependencies": {
@@ -142,7 +142,7 @@
     "bluebird": "3.7.2",
     "body-parser": "1.20.1",
     "bookshelf": "1.2.0",
-    "bookshelf-relations": "2.5.0",
+    "bookshelf-relations": "2.5.1",
     "brute-knex": "4.0.1",
     "bson-objectid": "2.0.4",
     "chalk": "4.1.2",
@@ -175,7 +175,7 @@
     "juice": "8.1.0",
     "keypair": "1.0.4",
     "knex": "2.3.0",
-    "knex-migrator": "5.0.9",
+    "knex-migrator": "5.1.0",
     "lodash": "4.17.21",
     "luxon": "3.0.3",
     "moment": "2.24.0",
@@ -199,7 +199,7 @@
     "sqlite3": "5.1.4"
   },
   "devDependencies": {
-    "@playwright/test": "1.28.1",
+    "@playwright/test": "1.29.1",
     "@tryghost/express-test": "0.11.8",
     "@tryghost/jest-snapshot": "0.4.8",
     "@tryghost/webhook-mock-receiver": "0.2.3",
@@ -207,9 +207,9 @@
     "c8": "7.12.0",
     "cli-progress": "3.11.2",
     "cssnano": "5.1.14",
-    "eslint": "8.29.0",
+    "eslint": "8.31.0",
     "expect": "^29.0.0",
-    "html-validate": "7.10.1",
+    "html-validate": "7.12.0",
     "inquirer": "8.2.5",
     "jwks-rsa": "3.0.0",
     "mocha": "10.2.0",

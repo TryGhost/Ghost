@@ -17,6 +17,8 @@ const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
+const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
+const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 3;
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
@@ -27,7 +29,12 @@ const getSettingsBREADServiceInstance = () => {
         settingsCache: SettingsCache,
         labsService: labs,
         mail,
-        singleUseTokenProvider: new SingleUseTokenProvider(models.SingleUseToken, MAGIC_LINK_TOKEN_VALIDITY),
+        singleUseTokenProvider: new SingleUseTokenProvider({
+            SingleUseTokenModel: models.SingleUseToken,
+            validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
+            validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
+            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+        }),
         urlUtils
     });
 };

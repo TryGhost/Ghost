@@ -19,6 +19,8 @@ const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
+const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
+const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 3;
 
 const ghostMailer = new mail.GhostMailer();
 
@@ -30,7 +32,12 @@ function createApiInstance(config) {
         auth: {
             getSigninURL: config.getSigninURL.bind(config),
             allowSelfSignup: config.getAllowSelfSignup.bind(config),
-            tokenProvider: new SingleUseTokenProvider(models.SingleUseToken, MAGIC_LINK_TOKEN_VALIDITY)
+            tokenProvider: new SingleUseTokenProvider({
+                SingleUseTokenModel: models.SingleUseToken,
+                validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
+                validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
+                maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+            })
         },
         mail: {
             transporter: {
