@@ -1,31 +1,7 @@
 const EmailService = require('../lib/email-service');
 const assert = require('assert');
-const ObjectId = require('bson-objectid').default;
 const sinon = require('sinon');
-
-const createModel = (propertiesAndRelations) => {
-    return {
-        id: ObjectId().toHexString(),
-        getLazyRelation: async (relation) => {
-            return propertiesAndRelations[relation];
-        },
-        get: (property) => {
-            return propertiesAndRelations[property];
-        },
-        save: (properties) => {
-            Object.assign(propertiesAndRelations, properties);
-            return Promise.resolve();
-        }
-    };
-};
-
-const createModelClass = () => {
-    return {
-        add: async (properties) => {
-            return Promise.resolve(createModel(properties));
-        }
-    };
-};
+const {createModel, createModelClass} = require('./utils');
 
 describe('Email Service', function () {
     let memberCount, limited, verificicationRequired, service;
