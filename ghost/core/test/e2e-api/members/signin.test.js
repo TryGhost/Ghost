@@ -120,7 +120,7 @@ describe('Members Signin', function () {
         });
     });
 
-    it('Allows a signin via a signup link', async function () {        
+    it('Allows a signin via a signup link', async function () {
         // This member should be created by the previous test
         const email = 'not-existent-member@test.com';
 
@@ -148,6 +148,139 @@ describe('Members Signin', function () {
 
         const member = await getMemberByEmail(email, false);
         assert(!member, 'Member should not have been created');
+    });
+
+    describe('Validity Period', function () {
+        let clock;
+        let startDate = new Date();
+        const email = 'validity-period-member1@test.com';
+
+        beforeEach(async function () {
+            // Remove ms precision (not supported by MySQL)
+            startDate.setMilliseconds(0);
+
+            clock = sinon.useFakeTimers(startDate);
+        });
+
+        afterEach(function () {
+            clock.restore();
+        });
+
+        it('Expires a token after 10 minutes of first usage', async function () {
+            const magicLink = await membersService.api.getMagicLink(email, 'signup');
+            const magicLinkUrl = new URL(magicLink);
+            const token = magicLinkUrl.searchParams.get('token');
+
+            // Use a first time
+            await membersAgent.get(`/?token=${token}&action=signup`)
+                .expectStatus(302)
+                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Set-Cookie', /members-ssr.*/);
+
+            // Fetch token in the database
+            const model = await models.SingleUseToken.findOne({token});
+            assert(!!model, 'Token should exist in the database');
+
+            assert.equal(model.get('used_count'), 1, 'used_count should be 1');
+            assert.equal(model.get('first_used_at').getTime(), startDate.getTime(), 'first_used_at should be set after first usage');
+            assert.equal(model.get('updated_at').getTime(), startDate.getTime(), 'updated_at should be set on changes');
+
+            // Use a second time, after 5 minutes
+            clock.tick(5 * 60 * 1000);
+
+            await membersAgent.get(`/?token=${token}&action=signup`)
+                .expectStatus(302)
+                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Set-Cookie', /members-ssr.*/);
+
+            await model.refresh();
+
+            assert.equal(model.get('used_count'), 2, 'used_count should be 2');
+
+            // Not changed
+            assert.equal(model.get('first_used_at').getTime(), startDate.getTime(), 'first_used_at should not be changed on second usage');
+
+            // Updated at should be changed
+            assert.equal(model.get('updated_at').getTime(), new Date().getTime(), 'updated_at should be set on changes');
+            const lastChangedAt = new Date();
+
+            // Wait another 6 minutes, and the usage of the token should be blocked now
+            clock.tick(6 * 60 * 1000);
+
+            await membersAgent.get('/?token=blah')
+                .expectStatus(302)
+                .expectHeader('Location', /\?\w*success=false/);
+
+            // No changes expected
+            await model.refresh();
+
+            assert.equal(model.get('used_count'), 2, 'used_count should not be changed');
+            assert.equal(model.get('first_used_at').getTime(), startDate.getTime(), 'first_used_at should not be changed');
+            assert.equal(model.get('updated_at').getTime(), lastChangedAt.getTime(), 'updated_at should not be changed');
+        });
+
+        it('Expires a token after 3 uses', async function () {
+            const magicLink = await membersService.api.getMagicLink(email, 'signup');
+            const magicLinkUrl = new URL(magicLink);
+            const token = magicLinkUrl.searchParams.get('token');
+
+            // Use a first time
+            await membersAgent.get(`/?token=${token}&action=signup`)
+                .expectStatus(302)
+                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Set-Cookie', /members-ssr.*/);
+
+            await membersAgent.get(`/?token=${token}&action=signup`)
+                .expectStatus(302)
+                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Set-Cookie', /members-ssr.*/);
+
+            await membersAgent.get(`/?token=${token}&action=signup`)
+                .expectStatus(302)
+                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Set-Cookie', /members-ssr.*/);
+
+            // Fetch token in the database
+            const model = await models.SingleUseToken.findOne({token});
+            assert(!!model, 'Token should exist in the database');
+
+            assert.equal(model.get('used_count'), 3, 'used_count should be 3');
+            assert.equal(model.get('first_used_at').getTime(), startDate.getTime(), 'first_used_at should be set after first usage');
+            assert.equal(model.get('updated_at').getTime(), startDate.getTime(), 'updated_at should be set on changes');
+
+            // Failed 4th usage
+            await membersAgent.get('/?token=blah')
+                .expectStatus(302)
+                .expectHeader('Location', /\?\w*success=false/);
+
+            // No changes expected
+            await model.refresh();
+
+            assert.equal(model.get('used_count'), 3, 'used_count should be 3');
+            assert.equal(model.get('first_used_at').getTime(), startDate.getTime(), 'first_used_at should be set after first usage');
+            assert.equal(model.get('updated_at').getTime(), startDate.getTime(), 'updated_at should be set on changes');
+        });
+
+        it('Expires a token after 24 hours if never used', async function () {
+            const magicLink = await membersService.api.getMagicLink(email, 'signup');
+            const magicLinkUrl = new URL(magicLink);
+            const token = magicLinkUrl.searchParams.get('token');
+
+            // Wait 24 hours
+            clock.tick(24 * 60 * 60 * 1000);
+
+            await membersAgent.get('/?token=blah')
+                .expectStatus(302)
+                .expectHeader('Location', /\?\w*success=false/);
+
+            // No changes expected
+            const model = await models.SingleUseToken.findOne({token});
+            assert(!!model, 'Token should exist in the database');
+
+            assert.equal(model.get('used_count'), 0, 'used_count should be 0');
+            assert.equal(model.get('first_used_at'), null, 'first_used_at should not be set');
+            assert.equal(model.get('updated_at').getTime(), startDate.getTime(), 'updated_at should not be set');
+        });
     });
 
     describe('Rate limiting', function () {
@@ -216,7 +349,7 @@ describe('Members Signin', function () {
 
             // Wait 10 minutes and check if we are still rate limited
             clock.tick(10 * 60 * 1000);
-            
+
             // We should be able to send a new email
             await membersAgent.post('/api/send-magic-link')
                 .body({
@@ -376,7 +509,7 @@ describe('Members Signin', function () {
 
             // Wait 10 minutes and check if we are still rate limited
             clock.tick(10 * 60 * 1000);
-            
+
             // We should be able to send a new email
             await membersAgent.post('/api/send-magic-link')
                 .body({

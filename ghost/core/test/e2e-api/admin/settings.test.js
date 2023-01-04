@@ -301,7 +301,12 @@ describe('Settings API', function () {
 
     describe('verify key update', function () {
         it('can update members_support_address via token', async function () {
-            const token = await (new SingleUseTokenProvider(models.SingleUseToken, 24 * 60 * 60 * 1000)).create({key: 'members_support_address', value: 'support@example.com'});
+            const token = await (new SingleUseTokenProvider({
+                SingleUseTokenModel: models.SingleUseToken,
+                validityPeriod: 24 * 60 * 60 * 1000,
+                validityPeriodAfterUsage: 10 * 60 * 1000,
+                maxUsageCount: 1
+            })).create({key: 'members_support_address', value: 'support@example.com'});
             await agent.put('settings/verifications/')
                 .body({
                     token
@@ -324,7 +329,12 @@ describe('Settings API', function () {
         });
 
         it('cannot update invalid keys via token', async function () {
-            const token = await (new SingleUseTokenProvider(models.SingleUseToken, 24 * 60 * 60 * 1000)).create({key: 'members_support_address_invalid', value: 'support@example.com'});
+            const token = await (new SingleUseTokenProvider({
+                SingleUseTokenModel: models.SingleUseToken,
+                validityPeriod: 24 * 60 * 60 * 1000,
+                validityPeriodAfterUsage: 10 * 60 * 1000,
+                maxUsageCount: 1
+            })).create({key: 'members_support_address_invalid', value: 'support@example.com'});
             await agent.put('settings/verifications/')
                 .body({
                     token
