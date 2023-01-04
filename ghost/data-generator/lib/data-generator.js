@@ -115,6 +115,7 @@ class DataGenerator {
 
             await transaction('posts_authors').delete();
             await transaction('posts_tags').delete();
+            await transaction('posts_meta').delete();
 
             await transaction('posts').delete();
             const postsImporter = new PostsImporter(transaction, {

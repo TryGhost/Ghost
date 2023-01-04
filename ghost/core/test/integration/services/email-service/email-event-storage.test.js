@@ -1,9 +1,10 @@
 const sinon = require('sinon');
-const {agentProvider, fixtureManager, sleep} = require('../../../utils/e2e-framework');
+const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
 const assert = require('assert');
 const domainEvents = require('@tryghost/domain-events');
 const MailgunClient = require('@tryghost/mailgun-client');
 const {EmailDeliveredEvent} = require('@tryghost/email-events');
+const DomainEvents = require('@tryghost/domain-events');
 
 async function resetFailures(models, emailId) {
     await models.EmailRecipientFailure.destroy({
@@ -80,8 +81,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(100);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -134,8 +135,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(100);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -185,8 +186,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(100);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -207,6 +208,9 @@ describe('EmailEventStorage', function () {
         const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
+
+        const {body: {members: [member]}} = await agent.get(`/members/${memberId}`);
+        assert.equal(member.email_suppression.suppressed, false, 'This test requires a member that does not have a suppressed email');
 
         events = [{
             event: 'failed',
@@ -270,8 +274,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(200);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -297,6 +301,10 @@ describe('EmailEventStorage', function () {
         assert.equal(permanentFailures.models[0].get('event_id'), 'pl271FzxTTmGRW8Uj3dUWw');
         assert.equal(permanentFailures.models[0].get('severity'), 'permanent');
         assert.equal(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
+
+        const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
+        assert.equal(memberAfter.email_suppression.suppressed, false, 'The member should not have a suppressed email');
+        assert.equal(memberAfter.email_suppression.info, null);
     });
 
     it('Ignores permanent failures if already failed', async function () {
@@ -370,8 +378,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(200);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -489,8 +497,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(200);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -596,8 +604,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(200);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -703,8 +711,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(200);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if status has changed to delivered, with correct timestamp
         const updatedEmailRecipient = await models.EmailRecipient.findOne({
@@ -775,8 +783,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(200);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if event exists
         const {body: {events: eventsAfter}} = await agent.get(eventsURI);
@@ -833,8 +841,8 @@ describe('EmailEventStorage', function () {
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
 
-        // Now wait for events processed
-        await sleep(200);
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
 
         // Check if unsubscribed
         const member = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});

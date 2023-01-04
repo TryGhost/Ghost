@@ -50,7 +50,7 @@ const Member = ghostBookshelf.Model.extend({
             replacement: 'emails.post_id',
             // Currently we cannot expand on values such as null or a string in mongo-knex
             // But the line below is essentially the same as: `email_recipients.opened_at:-null`
-            expansion: 'email_recipients.opened_at:>=0' 
+            expansion: 'email_recipients.opened_at:>=0'
         }];
     },
 
@@ -165,6 +165,7 @@ const Member = ghostBookshelf.Model.extend({
 
     newsletters() {
         return this.belongsToMany('Newsletter', 'members_newsletters', 'member_id', 'newsletter_id')
+            .query('orderBy', 'newsletters.sort_order', 'ASC')
             .query((qb) => {
                 // avoids bookshelf adding a `DISTINCT` to the query
                 // we know the result set will already be unique and DISTINCT hurts query performance

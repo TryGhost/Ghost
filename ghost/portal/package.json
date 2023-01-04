@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.22.0",
+  "version": "2.23.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -18,8 +18,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@sentry/react": "7.26.0",
-    "@sentry/tracing": "7.26.0",
+    "@sentry/react": "7.29.0",
+    "@sentry/tracing": "7.29.0",
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.4.3",

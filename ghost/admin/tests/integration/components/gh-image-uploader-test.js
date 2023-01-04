@@ -64,19 +64,19 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('renders form with supplied alt text', async function () {
-        await render(hbs`{{gh-image-uploader image=image altText="text test"}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @altText="text test" />`);
         expect(find('[data-test-file-input-description]')).to.have.trimmed.text('Upload image of "text test"');
     });
 
     it('renders form with supplied text', async function () {
-        await render(hbs`{{gh-image-uploader image=image text="text test"}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @text="text test" />`);
         expect(find('[data-test-file-input-description]')).to.have.trimmed.text('text test');
     });
 
     it('generates request to correct endpoint', async function () {
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(server.handledRequests.length).to.equal(1);
@@ -90,7 +90,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(update.calledOnce).to.be.true;
@@ -103,7 +103,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubFailedUpload(server, 500);
 
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(update.calledOnce).to.be.false;
@@ -115,7 +115,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader image=image fileSelected=(action fileSelected) update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @fileSelected={{this.fileSelected}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(fileSelected.calledOnce).to.be.true;
@@ -128,7 +128,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader image=image uploadStarted=(action uploadStarted) update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @uploadStarted={{this.uploadStarted}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(uploadStarted.calledOnce).to.be.true;
@@ -140,7 +140,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader image=image uploadFinished=(action uploadFinished) update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @uploadFinished={{this.uploadFinished}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(uploadFinished.calledOnce).to.be.true;
@@ -152,7 +152,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubFailedUpload(server);
 
-        await render(hbs`{{gh-image-uploader image=image uploadFinished=(action uploadFinished) update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @uploadFinished={{this.uploadFinished}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(uploadFinished.calledOnce).to.be.true;
@@ -160,7 +160,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
     it('displays invalid file type error', async function () {
         stubFailedUpload(server, 415, 'UnsupportedMediaTypeError');
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
@@ -171,7 +171,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
     it('displays file too large for server error', async function () {
         stubFailedUpload(server, 413, 'RequestEntityTooLargeError');
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
@@ -182,7 +182,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
             return [413, {}, ''];
         });
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
@@ -191,7 +191,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
     it('displays other server-side error with message', async function () {
         stubFailedUpload(server, 400, 'UnknownError');
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
@@ -202,7 +202,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
             return [500, {'Content-Type': 'application/json'}, ''];
         });
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
@@ -216,7 +216,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubFailedUpload(server, 400, 'VersionMismatchError');
 
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(showAPIError.calledOnce).to.be.true;
@@ -228,7 +228,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         notifications.set('showAPIError', showAPIError);
 
         stubFailedUpload(server, 400, 'UnknownError');
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(showAPIError.called).to.be.false;
@@ -236,7 +236,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
     it('can be reset after a failed upload', async function () {
         stubFailedUpload(server, 400, 'UnknownError');
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
         await fileUpload('input[type="file"]', ['test'], {type: 'test.png'});
         await click('.gh-btn-green');
 
@@ -246,7 +246,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     it('handles drag over/leave', async function () {
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+        await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
 
         run(() => {
             // eslint-disable-next-line new-cap
@@ -278,7 +278,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         this.set('uploadSuccess', uploadSuccess);
 
         stubSuccessfulUpload(server);
-        await render(hbs`{{gh-image-uploader uploadSuccess=(action uploadSuccess)}}`);
+        await render(hbs`<GhImageUploader @uploadSuccess={{this.uploadSuccess}} />`);
 
         run(() => {
             $(find('.gh-image-uploader')).trigger(drop);
@@ -298,9 +298,9 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader
-            uploadSuccess=(action uploadSuccess)
-            uploadFailed=(action uploadFailed)}}`);
+        await render(hbs`<GhImageUploader
+            @uploadSuccess={{this.uploadSuccess}}
+            @uploadFailed={{this.uploadFailed}} />`);
 
         await fileUpload('input[type="file"]', ['test'], {name: 'test.json'});
 
@@ -319,9 +319,9 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader
-            uploadSuccess=(action uploadSuccess)
-            validate=(action validate)}}`);
+        await render(hbs`<GhImageUploader
+            @uploadSuccess={{this.uploadSuccess}}
+            @validate={{this.validate}} />`);
 
         await fileUpload('input[type="file"]', ['test'], {name: 'test.txt'});
 
@@ -340,10 +340,10 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         stubSuccessfulUpload(server);
 
-        await render(hbs`{{gh-image-uploader
-            uploadSuccess=(action uploadSuccess)
-            uploadFailed=(action uploadFailed)
-            validate=(action validate)}}`);
+        await render(hbs`<GhImageUploader
+            @uploadSuccess={{this.uploadSuccess}}
+            @uploadFailed={{this.uploadFailed}}
+            @validate={{this.validate}} />`);
 
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 

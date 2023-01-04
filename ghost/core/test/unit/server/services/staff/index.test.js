@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const staffService = require('../../../../../core/server/services/staff');
 
 const DomainEvents = require('@tryghost/domain-events');
-const {mockManager, sleep} = require('../../../../utils/e2e-framework');
+const {mockManager} = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models');
 
 const {SubscriptionCreatedEvent, SubscriptionCancelledEvent, MemberCreatedEvent} = require('@tryghost/member-events');
@@ -81,7 +81,7 @@ describe('Staff Service:', function () {
             }));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /🥳 Free member signup: Jamie/
@@ -97,7 +97,7 @@ describe('Staff Service:', function () {
             }));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /🥳 Free member signup: Jamie/
@@ -113,7 +113,7 @@ describe('Staff Service:', function () {
             }));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmailCount(0);
         });
     });
@@ -138,7 +138,7 @@ describe('Staff Service:', function () {
             }));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /💸 Paid subscription started: Jamie/
@@ -154,7 +154,7 @@ describe('Staff Service:', function () {
             }));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /💸 Paid subscription started: Jamie/
@@ -170,7 +170,7 @@ describe('Staff Service:', function () {
             }));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmailCount(0);
         });
     });
@@ -190,7 +190,7 @@ describe('Staff Service:', function () {
             }, new Date()));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /⚠️ Cancellation: Jamie/
@@ -206,7 +206,7 @@ describe('Staff Service:', function () {
             }));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /⚠️ Cancellation: Jamie/
@@ -222,7 +222,7 @@ describe('Staff Service:', function () {
             }));
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
             mockManager.assert.sentEmailCount(0);
         });
     });

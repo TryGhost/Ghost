@@ -18,9 +18,10 @@ describe('Integration: Component: gh-timezone-select', function () {
     });
 
     it('renders', async function () {
-        await render(hbs`{{gh-timezone-select
-            availableTimezones=availableTimezones
-            timezone=timezone}}`);
+        await render(hbs`<GhTimezoneSelect
+            @availableTimezones={{this.availableTimezones}}
+            @timezone={{this.timezone}}
+        />`);
 
         expect(this.element, 'top-level elements').to.exist;
         expect(findAll('option'), 'number of options').to.have.length(3);
@@ -30,9 +31,10 @@ describe('Integration: Component: gh-timezone-select', function () {
     it('handles an unknown timezone', async function () {
         this.set('timezone', 'Europe/London');
 
-        await render(hbs`{{gh-timezone-select
-            availableTimezones=availableTimezones
-            timezone=timezone}}`);
+        await render(hbs`<GhTimezoneSelect
+            @availableTimezones={{this.availableTimezones}}
+            @timezone={{this.timezone}}
+        />`);
 
         // we have an additional blank option at the top
         expect(findAll('option'), 'number of options').to.have.length(4);
@@ -46,10 +48,11 @@ describe('Integration: Component: gh-timezone-select', function () {
         let update = sinon.spy();
         this.set('update', update);
 
-        await render(hbs`{{gh-timezone-select
-            availableTimezones=availableTimezones
-            timezone=timezone
-            update=(action update)}}`);
+        await render(hbs`<GhTimezoneSelect
+            @availableTimezones={{this.availableTimezones}}
+            @timezone={{this.timezone}}
+            @update={{this.update}}
+        />`);
 
         await fillIn('select', 'Pacific/Pago_Pago');
         await blur('select');

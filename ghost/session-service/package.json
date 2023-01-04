@@ -23,6 +23,6 @@
     "sinon": "14.0.2"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.19"
+    "@tryghost/errors": "1.2.20"
   }
 }

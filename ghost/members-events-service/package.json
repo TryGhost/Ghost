@@ -24,9 +24,9 @@
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/errors": "1.2.19",
+    "@tryghost/errors": "1.2.20",
+    "@tryghost/logging": "2.3.6",
     "@tryghost/member-events": "0.0.0",
-    "moment-timezone": "0.5.34",
-    "@tryghost/logging": "2.3.5"
+    "moment-timezone": "0.5.34"
   }
 }

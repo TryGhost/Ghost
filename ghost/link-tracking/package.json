@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --lines 88 --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -24,11 +24,11 @@
     "sinon": "14.0.2"
   },
   "dependencies": {
+    "@tryghost/errors": "1.2.20",
     "@tryghost/link-redirects": "0.0.0",
-    "bson-objectid": "2.0.4",
-    "@tryghost/errors": "1.2.19",
-    "@tryghost/tpl": "0.1.20",
     "@tryghost/nql": "0.11.0",
+    "@tryghost/tpl": "0.1.21",
+    "bson-objectid": "2.0.4",
     "lodash": "4.17.21",
     "moment": "2.29.4"
   }

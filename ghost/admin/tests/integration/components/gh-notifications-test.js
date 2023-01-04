@@ -24,7 +24,7 @@ describe('Integration: Component: gh-notifications', function () {
     });
 
     it('renders', async function () {
-        await render(hbs`{{gh-notifications}}`);
+        await render(hbs`<GhNotifications />`);
         expect(find('.gh-notifications')).to.exist;
 
         expect(find('.gh-notifications').children.length).to.equal(2);
