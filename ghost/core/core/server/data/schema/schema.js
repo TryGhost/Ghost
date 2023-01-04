@@ -955,7 +955,7 @@ module.exports = {
     },
     suppressions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        email_address: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
+        email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         email_id: {type: 'string', maxlength: 24, nullable: true, references: 'emails.id'},
         reason: {
             type: 'string',
