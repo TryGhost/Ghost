@@ -20,13 +20,13 @@ describe('Integration: Component: gh-search-input', function () {
 
     it('renders', async function () {
         // renders the component on the page
-        await render(hbs`{{gh-search-input}}`);
+        await render(hbs`<GhSearchInput />`);
 
         expect(find('.ember-power-select-search input')).to.exist;
     });
 
     it('opens the dropdown on text entry', async function () {
-        await render(hbs`{{gh-search-input}}`);
+        await render(hbs`<GhSearchInput />`);
         await fillIn('input[type="search"]', 'test');
 
         expect(findAll('.ember-basic-dropdown-content').length).to.equal(1);

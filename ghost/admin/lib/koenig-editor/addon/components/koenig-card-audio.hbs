@@ -40,7 +40,7 @@
                     {{#if (or uploader.errors uploader.isUploading)}}
                         {{#if uploader.errors}}
                             <span class="db flex items-center h8 pl2 pr2 red sans-serif f6 fw6">
-                                {{uploader.errors.firstObject.message}}
+                                {{get uploader.errors "0.message"}}
                             </span>
                         {{/if}}
 
@@ -138,7 +138,7 @@
                 {{#if (or uploader.errors uploader.isUploading)}}
                     {{#if uploader.errors}}
                         <span class="flex items-center h8 pl2 pr2 red sans-serif f6 fw5">
-                            {{uploader.errors.firstObject.message}}
+                            {{get uploader.errors "0.message"}}
                         </span>
                     {{/if}}
 

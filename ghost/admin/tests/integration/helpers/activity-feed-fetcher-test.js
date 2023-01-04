@@ -29,8 +29,8 @@ describe('Integration: Helper: activity-feed-fetcher-test', function () {
 
         await render(hbs`
             {{#let (activity-feed-fetcher pageSize="2") as |eventsFetcher|}}
-                <button class="previous" {{on "click" eventsFetcher.loadPreviousPage}}>Previous page</button>
-                <button class="next" {{on "click" eventsFetcher.loadNextPage}}>Next page</button>
+                <button class="previous" type="button" {{on "click" eventsFetcher.loadPreviousPage}}>Previous page</button>
+                <button class="next" type="button" {{on "click" eventsFetcher.loadNextPage}}>Next page</button>
 
                 <div class="shown-events">{{eventsFetcher.shownEvents}}</div>
                 <div class="total-events">{{eventsFetcher.totalEvents}}</div>
@@ -71,8 +71,8 @@ describe('Integration: Helper: activity-feed-fetcher-test', function () {
 
         await render(hbs`
             {{#let (activity-feed-fetcher pageSize="2") as |eventsFetcher|}}
-                <button class="previous" {{on "click" eventsFetcher.loadPreviousPage}}>Previous page</button>
-                <button class="next" {{on "click" eventsFetcher.loadNextPage}}>Next page</button>
+                <button class="previous" type="button" {{on "click" eventsFetcher.loadPreviousPage}}>Previous page</button>
+                <button class="next" type="button" {{on "click" eventsFetcher.loadNextPage}}>Next page</button>
 
                 {{#each eventsFetcher.data as |event|}}
                     <div class="event-id">{{event.data.id}}</div>
@@ -115,7 +115,7 @@ describe('Integration: Helper: activity-feed-fetcher-test', function () {
 
         await render(hbs`
             {{#let (activity-feed-fetcher pageSize="2") as |eventsFetcher|}}
-                <button class="next" {{on "click" eventsFetcher.loadNextPage}}>Next page</button>
+                <button class="next" type="button" {{on "click" eventsFetcher.loadNextPage}}>Next page</button>
 
                 <div class="error">{{eventsFetcher.isError}}</div>
                 <div class="error-message">{{eventsFetcher.errorMessage}}</div>
