@@ -67,7 +67,6 @@
         type="button"
         {{on "click" this.close}}
         {{!-- disable mouseDown so it does not trigger focus-out validations --}}
-        {{!-- template-lint-disable no-down-event-binding --}}
         {{on "mousedown" (optional this.noop)}}
         data-test-button="cancel-webhook"
     >
