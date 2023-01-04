@@ -1,5 +1,5 @@
 const {expect, test} = require('@playwright/test');
-const {createPostDraft} = require('../utils');
+const {createPostDraft, createTier} = require('../utils');
 
 const changeSubscriptionAccess = async (page, access) => {
     // Go to settings page
@@ -34,6 +34,12 @@ test.describe('Site Settings', () => {
     test.describe('Subscription Access', () => {
         test('Invite only', async ({page}) => {
             await page.goto('/ghost');
+            await createTier(page, {
+                name: 'Free tier trial',
+                monthlyPrice: 100,
+                yearlyPrice: 1000,
+                trialDays: 5
+            }, true);
 
             await changeSubscriptionAccess(page, 'invite');
 
@@ -44,6 +50,9 @@ test.describe('Site Settings', () => {
 
             // Check sign up is disabled and a message is shown
             await expect(portalFrame.locator('.gh-portal-invite-only-notification')).toHaveText('This site is invite-only, contact the owner for access.');
+
+            // Check free trial message is not shown for invite only
+            await expect(portalFrame.locator('.gh-portal-free-trial-notification')).not.toBeVisible();
 
             // Check portal script loaded (just a negative test for the following test to test the test)
             await checkPortalScriptLoaded(page, true);
