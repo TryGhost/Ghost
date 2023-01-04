@@ -23,6 +23,7 @@ export default class extends Component {
     @tracked showMemberTierModal = false;
     @tracked tiersList;
     @tracked newslettersList;
+    @tracked offersList;
 
     get isAddComplimentaryAllowed() {
         if (!this.membersUtils.paidMembersEnabled) {
