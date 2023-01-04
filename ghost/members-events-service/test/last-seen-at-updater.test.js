@@ -10,12 +10,6 @@ const {MemberPageViewEvent, MemberCommentEvent} = require('@tryghost/member-even
 const moment = require('moment');
 const {EmailOpenedEvent} = require('@tryghost/email-events');
 
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
-
 describe('LastSeenAtUpdater', function () {
     it('Calls updateLastSeenAt on MemberPageViewEvents', async function () {
         const now = moment('2022-02-28T18:00:00Z').utc();

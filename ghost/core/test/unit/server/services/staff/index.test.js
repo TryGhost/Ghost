@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const staffService = require('../../../../../core/server/services/staff');
 
 const DomainEvents = require('@tryghost/domain-events');
-const {mockManager, sleep} = require('../../../../utils/e2e-framework');
+const {mockManager} = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models');
 
 const {SubscriptionCreatedEvent, SubscriptionCancelledEvent, MemberCreatedEvent} = require('@tryghost/member-events');

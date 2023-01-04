@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const {agentProvider, fixtureManager, sleep} = require('../../../utils/e2e-framework');
+const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
 const assert = require('assert');
 const domainEvents = require('@tryghost/domain-events');
 const MailgunClient = require('@tryghost/mailgun-client');

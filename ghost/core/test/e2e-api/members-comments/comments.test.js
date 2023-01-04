@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {agentProvider, mockManager, fixtureManager, matchers, configUtils, sleep} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');

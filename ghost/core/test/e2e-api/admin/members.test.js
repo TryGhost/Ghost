@@ -1,4 +1,4 @@
-const {agentProvider, mockManager, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
 const ObjectId = require('bson-objectid').default;
 
