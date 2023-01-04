@@ -1,4 +1,4 @@
-const {agentProvider, mockManager, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
 const ObjectId = require('bson-objectid').default;
 
@@ -17,6 +17,7 @@ const memberAttributionService = require('../../../core/server/services/member-a
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
+const DomainEvents = require('@tryghost/domain-events');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -732,7 +733,7 @@ describe('Members API', function () {
             });
         const memberPassVerification = passBody.members[0];
 
-        await sleep(100);
+        await DomainEvents.allSettled();
         assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
 
         const memberFailLimit = {
@@ -753,7 +754,7 @@ describe('Members API', function () {
             });
         const memberFailVerification = failBody.members[0];
 
-        await sleep(100);
+        await DomainEvents.allSettled();
         assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
         mockManager.assert.sentEmail({
             subject: 'Email needs verification'

@@ -1,10 +1,11 @@
 require('should');
-const {agentProvider, fixtureManager, mockManager, sleep} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const moment = require('moment');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('assert');
+const DomainEvents = require('@tryghost/domain-events');
 let agent;
 
 async function createPublishedPostEmail() {
@@ -198,7 +199,7 @@ describe('MEGA', function () {
 
             const exclude = '%recipient.unsubscribe_url%';
             let firstLink;
-    
+
             for (const el of $('a').toArray()) {
                 const href = $(el).attr('href');
 
@@ -227,9 +228,8 @@ describe('MEGA', function () {
                 .expect('Location', link.to.href)
                 .expect(302);
 
-            // Since this is all event based, we need to wait a coulple of ms
-            // in the future we should wait for all dispatched events to be completed.
-            await sleep(200);
+            // Since this is all event based we should wait for all dispatched events to be completed.
+            await DomainEvents.allSettled();
 
             // Check if click was tracked and associated with the correct member
             const member = await models.Member.findOne({uuid: memberUuid});

@@ -10,7 +10,7 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 const models = require('../../../../core/server/models');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 
-const {mockManager, sleep} = require('../../../utils/e2e-framework');
+const {mockManager} = require('../../../utils/e2e-framework');
 const assert = require('assert');
 
 let request;

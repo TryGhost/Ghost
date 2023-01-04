@@ -36,6 +36,9 @@ class DomainEvents {
                 logging.error('Unhandled error in event handler for event: ' + Event.name);
                 logging.error(e);
             }
+            if (this.#trackingEnabled) {
+                this.#onProcessed();
+            }
         });
     }
 
@@ -56,7 +59,40 @@ class DomainEvents {
      * @returns {void}
      */
     static dispatchRaw(name, data) {
+        if (this.#trackingEnabled) {
+            this.#dispatchCount += DomainEvents.ee.listenerCount(name);
+        }
         DomainEvents.ee.emit(name, data);
+    }
+
+    // Methods and properties below are only for testing purposes
+    static #awaitQueue = [];
+    static #dispatchCount = 0;
+    static #processedCount = 0;
+    static #trackingEnabled = process.env.NODE_ENV.startsWith('test');
+
+    /**
+     * Waits for all the events in the queue to be dispatched and fully processed (async).
+     */
+    static allSettled() {
+        return new Promise((resolve) => {
+            if (this.#processedCount >= this.#dispatchCount) {
+                // Resolve immediately if there are no events in the queue
+                resolve();
+                return;
+            }
+            this.#awaitQueue.push({resolve});
+        });
+    }
+
+    static #onProcessed() {
+        this.#processedCount += 1;
+        if (this.#processedCount >= this.#dispatchCount) {
+            for (const item of this.#awaitQueue) {
+                item.resolve();
+            }
+            this.#awaitQueue = [];
+        }
     }
 }
 

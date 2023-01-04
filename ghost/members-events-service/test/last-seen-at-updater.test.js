@@ -10,12 +10,6 @@ const {MemberPageViewEvent, MemberCommentEvent} = require('@tryghost/member-even
 const moment = require('moment');
 const {EmailOpenedEvent} = require('@tryghost/email-events');
 
-async function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
-
 describe('LastSeenAtUpdater', function () {
     it('Calls updateLastSeenAt on MemberPageViewEvents', async function () {
         const now = moment('2022-02-28T18:00:00Z').utc();
@@ -72,8 +66,7 @@ describe('LastSeenAtUpdater', function () {
         sinon.spy(updater, 'updateLastSeenAt');
         sinon.spy(updater, 'updateLastSeenAtWithoutKnownLastSeen');
         DomainEvents.dispatch(EmailOpenedEvent.create({memberId: '1', emailRecipientId: '1', emailId: '1', timestamp: now.toDate()}));
-        // Wait for next tick
-        await sleep(50);
+        await DomainEvents.allSettled();
         assert(updater.updateLastSeenAtWithoutKnownLastSeen.calledOnceWithExactly('1', now.toDate()));
         assert(db.update.calledOnce);
     });

@@ -4,10 +4,11 @@ const nock = require('nock');
 const should = require('should');
 const stripe = require('stripe');
 const {Product} = require('../../../core/server/models/product');
-const {agentProvider, mockManager, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
+const DomainEvents = require('@tryghost/domain-events');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId, anyObject} = matchers;
 
 let membersAgent;
@@ -703,7 +704,7 @@ describe('Members API', function () {
             });
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await DomainEvents.allSettled();
 
             mockManager.assert.sentEmail({
                 subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
