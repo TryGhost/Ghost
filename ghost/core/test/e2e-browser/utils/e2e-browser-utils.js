@@ -2,6 +2,7 @@ const DataGenerator = require('../../utils/fixtures/data-generator');
 const {test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
 const {promisify} = require('util');
+const {exec} = require('child_process');
 
 /**
  * Tier
