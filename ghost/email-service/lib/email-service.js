@@ -82,8 +82,7 @@ class EmailService {
             await this.#limitService.errorIfWouldGoOverLimit('emails', {addedCount});
         }
 
-        // Check email verification required
-        // We need to check this inside the job again
+        // Check if email verification is required
         if (await this.#verificationTrigger.checkVerificationRequired()) {
             throw new errors.HostLimitError({
                 message: tpl(messages.emailSendingDisabled)
