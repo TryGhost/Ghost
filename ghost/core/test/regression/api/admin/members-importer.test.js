@@ -8,10 +8,10 @@ const config = require('../../../../core/shared/config');
 const configUtils = require('../../../utils/configUtils');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const models = require('../../../../core/server/models');
+const jobManager = require('../../../../core/server/services/jobs/job-service');
 
 const {mockManager, sleep} = require('../../../utils/e2e-framework');
 const assert = require('assert');
-const {_updateVerificationTrigger} = require('../../../../core/server/services/members');
 
 let request;
 
@@ -253,7 +253,6 @@ describe('Members Importer API', function () {
             verified: false,
             escalationAddress: 'test@example.com'
         });
-        _updateVerificationTrigger();
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -321,7 +320,8 @@ describe('Members Importer API', function () {
             verified: false,
             escalationAddress: 'test@example.com'
         });
-        _updateVerificationTrigger();
+
+        const awaitCompletion = jobManager.awaitCompletion('members-import');
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -338,7 +338,7 @@ describe('Members Importer API', function () {
         should.exist(jsonResponse.meta);
 
         // Wait for the job to finish
-        await sleep(15000);
+        await awaitCompletion;
 
         assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
 

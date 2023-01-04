@@ -1,6 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const sinon = require('sinon');
+const assert = require('assert');
 require('./utils');
 const VerificationTrigger = require('../index');
 const DomainEvents = require('@tryghost/domain-events');
@@ -9,7 +10,7 @@ const {MemberCreatedEvent} = require('@tryghost/member-events');
 describe('Import threshold', function () {
     it('Creates a threshold based on config', async function () {
         const trigger = new VerificationTrigger({
-            importTriggerThreshold: 2,
+            getImportTriggerThreshold: () => 2,
             membersStats: {
                 getTotalMembers: async () => 1
             }
@@ -21,7 +22,7 @@ describe('Import threshold', function () {
 
     it('Increases the import threshold to the number of members', async function () {
         const trigger = new VerificationTrigger({
-            importTriggerThreshold: 2,
+            getImportTriggerThreshold: () => 2,
             membersStats: {
                 getTotalMembers: async () => 3
             }
@@ -34,7 +35,7 @@ describe('Import threshold', function () {
     it('Does not check members count when config threshold is infinite', async function () {
         const membersStub = sinon.stub().resolves(null);
         const trigger = new VerificationTrigger({
-            importTriggerThreshold: Infinity,
+            getImportTriggerThreshold: () => Infinity,
             memberStats: {
                 getTotalMembers: membersStub
             }
@@ -167,7 +168,7 @@ describe('Email verification flow', function () {
         });
 
         new VerificationTrigger({
-            apiTriggerThreshold: 2,
+            getApiTriggerThreshold: () => 2,
             Settings: {
                 edit: settingsStub
             },
@@ -204,7 +205,7 @@ describe('Email verification flow', function () {
         });
 
         const trigger = new VerificationTrigger({
-            importTriggerThreshold: 2,
+            getImportTriggerThreshold: () => 2,
             Settings: {
                 edit: settingsStub
             },
@@ -236,6 +237,63 @@ describe('Email verification flow', function () {
         });
     });
 
+    it('checkVerificationRequired also checks import', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        let isVerificationRequired = false;
+        const isVerificationRequiredStub = sinon.stub().callsFake(() => {
+            return isVerificationRequired;
+        });
+        const settingsStub = sinon.stub().callsFake(() => {
+            isVerificationRequired = true;
+            return Promise.resolve();
+        });
+        const eventStub = sinon.stub().resolves({
+            meta: {
+                pagination: {
+                    total: 10
+                }
+            }
+        });
+
+        const trigger = new VerificationTrigger({
+            getImportTriggerThreshold: () => 2,
+            Settings: {
+                edit: settingsStub
+            },
+            membersStats: {
+                getTotalMembers: () => 15
+            },
+            isVerified: () => false,
+            isVerificationRequired: isVerificationRequiredStub,
+            sendVerificationEmail: emailStub,
+            eventRepository: {
+                getSignupEvents: eventStub
+            }
+        });
+
+        assert.equal(await trigger.checkVerificationRequired(), true);
+        sinon.assert.calledOnce(emailStub);
+    });
+
+    it('testImportThreshold does not calculate anything if already verified', async function () {
+        const trigger = new VerificationTrigger({
+            getImportTriggerThreshold: () => 2,
+            isVerified: () => true
+        });
+
+        assert.equal(await trigger.testImportThreshold(), undefined);
+    });
+
+    it('testImportThreshold does not calculate anything if already pending', async function () {
+        const trigger = new VerificationTrigger({
+            getImportTriggerThreshold: () => 2,
+            isVerified: () => false,
+            isVerificationRequired: () => true
+        });
+
+        assert.equal(await trigger.testImportThreshold(), undefined);
+    });
+
     it('Triggers when a number of members are added from Admin', async function () {
         const emailStub = sinon.stub().resolves(null);
         const settingsStub = sinon.stub().resolves(null);
@@ -248,7 +306,7 @@ describe('Email verification flow', function () {
         });
 
         const trigger = new VerificationTrigger({
-            adminTriggerThreshold: 2,
+            getAdminTriggerThreshold: () => 2,
             Settings: {
                 edit: settingsStub
             },
@@ -283,7 +341,7 @@ describe('Email verification flow', function () {
             amountTriggered: 10
         });
     });
-    
+
     it('Triggers when a number of members are added from API', async function () {
         const emailStub = sinon.stub().resolves(null);
         const settingsStub = sinon.stub().resolves(null);
@@ -296,8 +354,8 @@ describe('Email verification flow', function () {
         });
 
         const trigger = new VerificationTrigger({
-            adminTriggerThreshold: 2,
-            apiTriggerThreshold: 2,
+            getAdminTriggerThreshold: () => 2,
+            getApiTriggerThreshold: () => 2,
             Settings: {
                 edit: settingsStub
             },
@@ -345,7 +403,7 @@ describe('Email verification flow', function () {
         });
 
         const trigger = new VerificationTrigger({
-            apiTriggerThreshold: Infinity,
+            getImportTriggerThreshold: () => Infinity,
             Settings: {
                 edit: settingsStub
             },

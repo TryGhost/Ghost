@@ -16,7 +16,6 @@ const membersService = require('../../../core/server/services/members');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
-const {_updateVerificationTrigger} = require('../../../core/server/services/members');
 const settingsCache = require('../../../core/shared/settings-cache');
 
 /**
@@ -712,7 +711,6 @@ describe('Members API', function () {
             verified: false,
             escalationAddress: 'test@example.com'
         });
-        _updateVerificationTrigger();
 
         assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
 
@@ -766,7 +764,6 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberFailVerification.id}`);
 
         configUtils.restore();
-        _updateVerificationTrigger();
     });
 
     it('Can add and send a signup confirmation email', async function () {

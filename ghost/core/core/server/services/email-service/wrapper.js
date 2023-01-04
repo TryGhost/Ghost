@@ -101,7 +101,8 @@ class EmailServiceWrapper {
             emailRenderer,
             emailSegmenter,
             limitService,
-            membersRepository
+            membersRepository,
+            verificationTrigger: membersService.verificationTrigger
         });
 
         this.controller = new EmailController(this.service, {
