@@ -107,7 +107,7 @@
                                     <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                                 {{/if}}
                             </GhFormGroup>
-                            
+
                             <GhFormGroup @errors={{this.tier.errors}} @property="trialDays" data-test-formgroup="trialDays">
                                 <div class="flex justify-between items-center mb2">
                                     <div>
@@ -122,7 +122,7 @@
                                                 name="free-trial"
                                                 {{on "click" this.setFreeTrialEnabled}}
                                             />
-                                            <span class="input-toggle-component"></span>
+                                            <span class="input-toggle-component" data-test-toggle="free-trial"></span>
                                         </label>
                                     </div>
                                 </div>
@@ -145,7 +145,7 @@
                                 {{/if}}
                             </GhFormGroup>
                         </div>
-                        
+
                         <GhFormGroup>
                             <label for="welcomePage" class="fw6">Welcome page</label>
                             <GhUrlInput
