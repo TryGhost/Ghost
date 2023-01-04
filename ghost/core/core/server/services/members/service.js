@@ -135,15 +135,6 @@ module.exports = {
 
         updateVerificationTrigger();
 
-        (async () => {
-            try {
-                const collection = await models.SingleUseToken.fetchAll();
-                await collection.invokeThen('destroy');
-            } catch (err) {
-                logging.error(err);
-            }
-        })();
-
         if (!env?.startsWith('testing')) {
             const membersMigrationJobName = 'members-migrations';
             if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
@@ -159,6 +150,9 @@ module.exports = {
 
         // Schedule daily cron job to clean expired comp subs
         memberJobs.scheduleExpiredCompCleanupJob();
+
+        // Schedule daily cron job to clean expired tokens
+        memberJobs.scheduleTokenCleanupJob();
     },
     contentGating: require('./content-gating'),
 
