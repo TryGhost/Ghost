@@ -185,7 +185,7 @@ const addEmail = async (postModel, options) => {
         await limitService.errorIfWouldGoOverLimit('emails');
     }
 
-    if (settingsCache.get('email_verification_required') === true) {
+    if (await membersService.verificationTrigger.checkVerificationRequired()) {
         throw new errors.HostLimitError({
             message: tpl(messages.emailSendingDisabled)
         });
@@ -310,6 +310,14 @@ async function sendEmailJob({emailId, options}) {
         // Check host limit for disabled emails or going over emails limit
         if (limitService.isLimited('emails')) {
             await limitService.errorIfWouldGoOverLimit('emails');
+        }
+
+        // Check email verification required
+        // We need to check this inside the job again
+        if (await membersService.verificationTrigger.checkVerificationRequired()) {
+            throw new errors.HostLimitError({
+                message: tpl(messages.emailSendingDisabled)
+            });
         }
 
         // Check if the email is still pending. And set the status to submitting in one transaction.
