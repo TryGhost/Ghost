@@ -27,7 +27,7 @@ export default class MembersFilterValue extends Component {
             const offers = this.args.filter?.value || [];
             return offers.map((offer) => {
                 return {
-                    id: offer.id
+                    id: offer
                 };
             });
         }
@@ -67,7 +67,6 @@ export default class MembersFilterValue extends Component {
 
     @action
     setOffersFilterValue(filter, offers) {
-        console.log(filter);
         this.args.setFilterValue(filter, offers.map(offer => offer.id));
     }
 
