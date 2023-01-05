@@ -3013,7 +3013,7 @@ describe('Members API Bulk operations', function () {
             });
     });
 
-    // TODO: This step requires going throught the checkout flow to prefill the member with a redeemed offer
+    // @TODO: This step requires going throught the checkout flow to prefill the member with a redeemed offer
     it('Can filter members by offer-redemptions', async function () {
         let defaultTier = await getPaidProduct();
         const newOffer = {

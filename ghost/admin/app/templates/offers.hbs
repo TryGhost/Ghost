@@ -92,9 +92,9 @@
                                     <span class="midgrey strike ml2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span>
                                 {{/if}}
                             </LinkTo>
-                            <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
-                                <span class="midgrey">{{offer.redemptionCount}}</span>
-                            </LinkTo>
+                            <a {{on "click" (fn this.offerMembers offer.id)}} class="gh-list-data">
+                                <span data-offer-id="{{offer.id}}" class="midgrey">{{offer.redemptionCount}}</span>
+                            </a>
                             <div class="gh-list-data gh-list-cellwidth-10 gh-list-chevron">
                                 <div class="flex items-center justify-end w-100 h-100">
                                     <button
