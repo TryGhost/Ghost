@@ -80,7 +80,7 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Browse themes', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
             permissions.should.havePermission('Edit themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Activate themes', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('View active theme details', ['Author', 'Editor', 'Administrator', 'Admin Integration']);
+            permissions.should.havePermission('View active theme details', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Upload themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Download themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Delete themes', ['Administrator', 'Admin Integration']);
