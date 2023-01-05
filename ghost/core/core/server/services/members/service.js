@@ -67,11 +67,11 @@ const processImport = async (options) => {
     return await membersImporter.process({...options, verificationTrigger});
 };
 
-const updateVerificationTrigger = () => {
-    verificationTrigger = new VerificationTrigger({
-        apiTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
-        adminTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
-        importTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+const initVerificationTrigger = () => {
+    return new VerificationTrigger({
+        getApiTriggerThreshold: () => _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
+        getAdminTriggerThreshold: () => _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
+        getImportTriggerThreshold: () => _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
         isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
         sendVerificationEmail: async ({subject, message, amountTriggered}) => {
@@ -133,7 +133,8 @@ module.exports = {
             getMembersApi: () => module.exports.api
         });
 
-        updateVerificationTrigger();
+        verificationTrigger = initVerificationTrigger();
+        module.exports.verificationTrigger = verificationTrigger;
 
         if (!env?.startsWith('testing')) {
             const membersMigrationJobName = 'members-migrations';
@@ -163,16 +164,14 @@ module.exports = {
     },
 
     ssr: null,
+    verificationTrigger: null,
 
     stripeConnect: require('./stripe-connect'),
 
     processImport: processImport,
 
     stats: membersStats,
-    export: require('./exporter/query'),
-
-    // Only for tests
-    _updateVerificationTrigger: updateVerificationTrigger
+    export: require('./exporter/query')
 };
 
 module.exports.middleware = require('./middleware');

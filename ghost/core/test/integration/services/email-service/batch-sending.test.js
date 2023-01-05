@@ -9,8 +9,9 @@ const jobManager = require('../../../../core/server/services/jobs/job-service');
 let agent;
 const _ = require('lodash');
 const {MailgunEmailProvider} = require('@tryghost/email-service');
-
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
+const configUtils = require('../../../utils/configUtils');
+const {settingsCache} = require('../../../../core/server/services/settings-helpers');
 
 function sortBatches(a, b) {
     const aId = a.get('provider_id');
@@ -81,6 +82,7 @@ describe('Batch sending tests', function () {
         mockManager.mockSetting('mailgun_api_key', 'test');
         mockManager.mockSetting('mailgun_domain', 'example.com');
         mockManager.mockSetting('mailgun_base_url', 'test');
+        mockManager.mockMail();
 
         // We need to stub the Mailgun client before starting Ghost
         sinon.stub(MailgunClient.prototype, 'getInstance').returns({
@@ -145,6 +147,57 @@ describe('Batch sending tests', function () {
         assert.equal(memberIds.length, _.uniq(memberIds).length);
     });
 
+    it('Doesn\'t include members created after the email in the batches', async function () {
+        // If we create a new member (e.g. a member that was imported) after the email was created, they should not be included in the email
+
+        // Prepare a post and email model
+        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+        const emailModel = await createPublishedPostEmail();
+
+        // Create a new member that is subscribed
+        const laterMember = await models.Member.add({
+            name: 'Member that is added later',
+            email: 'member-that-is-added-later@example.com',
+            status: 'free',
+            newsletters: [{
+                id: fixtureManager.get('newsletters', 0).id
+            }]
+        });
+
+        // Check the batches are not yet generated
+        const earlyBatches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        assert.equal(earlyBatches.models.length, 0);
+
+        // Await sending job
+        await completedPromise;
+
+        await emailModel.refresh();
+        assert.equal(emailModel.get('status'), 'submitted');
+        assert.equal(emailModel.get('email_count'), 4);
+
+        // Did we create batches?
+        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        assert.equal(batches.models.length, 1);
+
+        // Did we create recipients?
+        const emailRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}`});
+        assert.equal(emailRecipients.models.length, 4);
+
+        for (const recipient of emailRecipients.models) {
+            assert.equal(recipient.get('batch_id'), batches.models[0].id);
+            assert.notEqual(recipient.get('member_id'), laterMember.id);
+        }
+
+        // Create a new email and see if it is included now
+        const completedPromise2 = jobManager.awaitCompletion('batch-sending-service-job');
+        const emailModel2 = await createPublishedPostEmail();
+        await completedPromise2;
+        await emailModel2.refresh();
+        assert.equal(emailModel2.get('email_count'), 5);
+        const emailRecipients2 = await models.EmailRecipient.findAll({filter: `email_id:${emailModel2.id}`});
+        assert.equal(emailRecipients2.models.length, emailRecipients.models.length + 1);
+    });
+
     it('Splits recipients in free and paid batch', async function () {
         // Prepare a post and email model
         const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
@@ -164,7 +217,7 @@ describe('Batch sending tests', function () {
 
         await emailModel.refresh();
         assert(emailModel.get('status'), 'submitted');
-        assert.equal(emailModel.get('email_count'), 4);
+        assert.equal(emailModel.get('email_count'), 5);
 
         // Did we create batches?
         const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
@@ -189,7 +242,7 @@ describe('Batch sending tests', function () {
 
         // Did we create recipients?
         const emailRecipientsFirstBatch = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${firstBatch.id}`});
-        assert.equal(emailRecipientsFirstBatch.models.length, 2);
+        assert.equal(emailRecipientsFirstBatch.models.length, 3);
 
         const emailRecipientsSecondBatch = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${secondBatch.id}`});
         assert.equal(emailRecipientsSecondBatch.models.length, 2);
@@ -258,11 +311,11 @@ describe('Batch sending tests', function () {
 
         await emailModel.refresh();
         assert.equal(emailModel.get('status'), 'submitted');
-        assert.equal(emailModel.get('email_count'), 4);
+        assert.equal(emailModel.get('email_count'), 5);
 
         // Did we create batches?
         const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
-        assert.equal(batches.models.length, 4);
+        assert.equal(batches.models.length, 5);
 
         const emailRecipients = [];
 
@@ -318,13 +371,13 @@ describe('Batch sending tests', function () {
 
         await emailModel.refresh();
         assert.equal(emailModel.get('status'), 'failed');
-        assert.equal(emailModel.get('email_count'), 4);
+        assert.equal(emailModel.get('email_count'), 5);
 
         // Did we create batches?
         let batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
-        assert.equal(batches.models.length, 4);
+        assert.equal(batches.models.length, 5);
 
-        // sort batches by provider_id (nullable) because findAll doesn't have order option
+        // sort batches by id because findAll doesn't have order option
         batches.models.sort(sortBatches);
 
         let emailRecipients = [];
@@ -334,7 +387,7 @@ describe('Batch sending tests', function () {
         for (const batch of batches.models) {
             count += 1;
 
-            if (count === 4) {
+            if (count === 5) {
                 assert.equal(batch.get('provider_id'), null);
                 assert.equal(batch.get('status'), 'failed');
                 assert.equal(batch.get('error_status_code'), 500);
@@ -343,7 +396,13 @@ describe('Batch sending tests', function () {
                 assert.equal(errorData.error.status, 500);
                 assert.deepEqual(errorData.messageData.to.length, 1);
             } else {
-                assert.equal(batch.get('provider_id'), 'stubbed-email-id-' + count);
+                if (count === 4) {
+                    // We sorted on provider_id so the count is slightly off
+                    assert.equal(batch.get('provider_id'), 'stubbed-email-id-5');
+                } else {
+                    assert.equal(batch.get('provider_id'), 'stubbed-email-id-' + count);
+                }
+
                 assert.equal(batch.get('status'), 'submitted');
                 assert.equal(batch.get('error_status_code'), null);
                 assert.equal(batch.get('error_message'), null);
@@ -374,14 +433,14 @@ describe('Batch sending tests', function () {
         batches.models.sort(sortBatches);
 
         assert.equal(emailModel.get('status'), 'submitted');
-        assert.equal(emailModel.get('email_count'), 4);
+        assert.equal(emailModel.get('email_count'), 5);
 
         // Did we keep the batches?
         batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
 
         // sort batches by provider_id (nullable) because findAll doesn't have order option
         batches.models.sort(sortBatches);
-        assert.equal(batches.models.length, 4);
+        assert.equal(batches.models.length, 5);
 
         emailRecipients = [];
 
@@ -405,6 +464,62 @@ describe('Batch sending tests', function () {
         // Check members are unique
         memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
+    });
+
+    it('Cannot send an email if verification is required', async function () {
+        // First enable import thresholds
+        configUtils.set('hostSettings:emailVerification', {
+            apiThreshold: 100,
+            adminThreshold: 100,
+            importThreshold: 100,
+            verified: false,
+            escalationAddress: 'test@example.com'
+        });
+
+        // We stub a lot of imported members to mimic a large import that is in progress but is not yet finished
+        // the current verification required value is off. But when creating an email, we need to update that check to avoid this issue.
+        const members = require('../../../../core/server/services/members');
+        const events = members.api.events;
+        const getSignupEvents = sinon.stub(events, 'getSignupEvents').resolves({
+            meta: {
+                pagination: {
+                    total: 100000
+                }
+            }
+        });
+
+        assert.equal(settingsCache.get('email_verification_required'), false, 'This test requires email verification to be disabled initially');
+
+        const post = {
+            title: 'A random test post',
+            status: 'draft',
+            feature_image_alt: 'Testing sending',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            created_at: moment().subtract(2, 'days').toISOString(),
+            updated_at: moment().subtract(2, 'days').toISOString(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await agent.post('posts/')
+            .body({posts: [post]})
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = {
+            status: 'published',
+            updated_at: res.body.posts[0].updated_at
+        };
+
+        const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
+        await agent.put(`posts/${id}/?newsletter=${newsletterSlug}`)
+            .body({posts: [updatedPost]})
+            .expectStatus(403);
+        sinon.assert.calledOnce(getSignupEvents);
+        assert.equal(settingsCache.get('email_verification_required'), true);
+
+        configUtils.restore();
     });
 
     // TODO: Link tracking

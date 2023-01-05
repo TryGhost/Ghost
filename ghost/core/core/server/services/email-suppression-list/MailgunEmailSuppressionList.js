@@ -35,7 +35,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
         try {
             await this.Suppression.destroy({
                 destroyBy: {
-                    email_address: email
+                    email: email
                 }
             });
         } catch (err) {
@@ -49,7 +49,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     async getSuppressionData(email) {
         try {
             const model = await this.Suppression.findOne({
-                email_address: email
+                email: email
             });
 
             if (!model) {
@@ -73,11 +73,11 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
 
         try {
             const collection = await this.Suppression.findAll({
-                filter: `email_address:[${emails.join(',')}]`
+                filter: `email:[${emails.join(',')}]`
             });
 
             return emails.map((email) => {
-                const model = collection.models.find(m => m.get('email_address') === email);
+                const model = collection.models.find(m => m.get('email') === email);
 
                 if (!model) {
                     return new EmailSuppressionData(false);
@@ -106,7 +106,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
                     }
                 }
                 await this.Suppression.add({
-                    email_address: event.email,
+                    email: event.email,
                     email_id: event.emailId,
                     reason: reason,
                     created_at: event.timestamp

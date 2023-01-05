@@ -3444,15 +3444,15 @@
     domhandler "^4.2.0"
     selderee "^0.6.0"
 
-"@sentry/browser@7.28.1":
-  version "7.28.1"
-  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-7.28.1.tgz#c8086e26079809aa401a05d9b4a6e4df63a9c965"
-  integrity sha512-N8j93IcrWKWorfJ5D+RSKVAvcR4S5tIcZ/HvFPMrQWnfVa/jtJcrKThdjZYteA0wjmPiy8/D3KA8nB91yulBPA==
+"@sentry/browser@7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-7.29.0.tgz#eb162b50adec33ac49ecd3dc930bdffbfda8098e"
+  integrity sha512-Af+dIcntaw405Wt7myDOMGDxiszfy4aBdshrEKYbGgcfHjgXBIdF3iKlNatvl6nrOm+IOVuKgSpCLOr2hiCwzw==
   dependencies:
-    "@sentry/core" "7.28.1"
-    "@sentry/replay" "7.28.1"
-    "@sentry/types" "7.28.1"
-    "@sentry/utils" "7.28.1"
+    "@sentry/core" "7.29.0"
+    "@sentry/replay" "7.29.0"
+    "@sentry/types" "7.29.0"
+    "@sentry/utils" "7.29.0"
     tslib "^1.9.3"
 
 "@sentry/core@7.11.1":
@@ -3474,16 +3474,25 @@
     "@sentry/utils" "7.28.1"
     tslib "^1.9.3"
 
-"@sentry/ember@7.28.1":
-  version "7.28.1"
-  resolved "https://registry.yarnpkg.com/@sentry/ember/-/ember-7.28.1.tgz#e05d09ef46d997cd4ca89e27a913610b79143f49"
-  integrity sha512-ldoSmj/UbaTjCkVYm6i+Vz4RuKiKcOURy+TXbQHXwesAeaOYzCe+zXpSH5KKzLw1DJ+1cy5kPTMDlZnrLqGyUA==
+"@sentry/core@7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-7.29.0.tgz#bc4b54d56cf7652598d4430cf43ea97cc069f6fe"
+  integrity sha512-+e9aIp2ljtT4EJq3901z6TfEVEeqZd5cWzbKEuQzPn2UO6If9+Utd7kY2Y31eQYb4QnJgZfiIEz1HonuYY6zqQ==
+  dependencies:
+    "@sentry/types" "7.29.0"
+    "@sentry/utils" "7.29.0"
+    tslib "^1.9.3"
+
+"@sentry/ember@7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/ember/-/ember-7.29.0.tgz#cbb04329ff1494c71befacc8ca5cd14cbfa92a26"
+  integrity sha512-HmsyenWDp/aZ7bd+YUzCBS/6RAgiQAS3j7WjVZliivz1Nc7rBQjiX/oTiLVDNqfVlcVkAI1wlvEDEUy1EuY6/g==
   dependencies:
     "@embroider/macros" "^1.9.0"
-    "@sentry/browser" "7.28.1"
-    "@sentry/tracing" "7.28.1"
-    "@sentry/types" "7.28.1"
-    "@sentry/utils" "7.28.1"
+    "@sentry/browser" "7.29.0"
+    "@sentry/tracing" "7.29.0"
+    "@sentry/types" "7.29.0"
+    "@sentry/utils" "7.29.0"
     ember-auto-import "^1.12.1 || ^2.4.3"
     ember-cli-babel "^7.26.11"
     ember-cli-htmlbars "^6.1.1"
@@ -3525,34 +3534,34 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
-"@sentry/react@7.28.1":
-  version "7.28.1"
-  resolved "https://registry.yarnpkg.com/@sentry/react/-/react-7.28.1.tgz#79531b98176765a788cdf7f8f09b8ba713a95cfb"
-  integrity sha512-sFKK7uDREh84GyJcXDNuiQQ5VhLx7XJTOAdELxLv4HEI6BxbBRz0zNRQiKamTRkz9NmL7bZtld5TfbpOo9kijg==
+"@sentry/react@7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/react/-/react-7.29.0.tgz#a1c2ef522a4ccf1e948d77584e59e1254e09c92b"
+  integrity sha512-pJ138QTChfAiYzFrCgycBgXrAVARV6TdVvLB8z/HsqbHzPq17RhyF9M1xPE4ffeLDQAEuSudwED9CLOpJqKnAw==
   dependencies:
-    "@sentry/browser" "7.28.1"
-    "@sentry/types" "7.28.1"
-    "@sentry/utils" "7.28.1"
+    "@sentry/browser" "7.29.0"
+    "@sentry/types" "7.29.0"
+    "@sentry/utils" "7.29.0"
     hoist-non-react-statics "^3.3.2"
     tslib "^1.9.3"
 
-"@sentry/replay@7.28.1":
-  version "7.28.1"
-  resolved "https://registry.yarnpkg.com/@sentry/replay/-/replay-7.28.1.tgz#fbdd377923e082423b95e3f128cb9af9451aca70"
-  integrity sha512-Os0PzMjKlwtHwzTU0kfVzGzsi4Vaj3g2arCl4Qnr3b6kYTb9WOFZo/n/v56ss7Z+nZG3K8W5PisoD4MRsRJRig==
+"@sentry/replay@7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/replay/-/replay-7.29.0.tgz#75d5bb9df39e0a31994be245032c9998af62a304"
+  integrity sha512-Gw7HgviJQu6pX5RFQGVY38Av4qFn9otrZdwSSl/QK5hIyg6yhlh5h7U0ydZkrYYGiW6Z6SYYRpEWCJc/Wbh+ZQ==
   dependencies:
-    "@sentry/core" "7.28.1"
-    "@sentry/types" "7.28.1"
-    "@sentry/utils" "7.28.1"
+    "@sentry/core" "7.29.0"
+    "@sentry/types" "7.29.0"
+    "@sentry/utils" "7.29.0"
 
-"@sentry/tracing@7.28.1":
-  version "7.28.1"
-  resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-7.28.1.tgz#d276e4d17a79190a88112696c73de12c209607a1"
-  integrity sha512-uWspnuz+7FyW8ES5lRaVA7O/YJSzMlSkvBFtgzaoKmdaueokU/sRLwlCsrdgwavG1wpm79df7R1iiSeqhaXDlw==
+"@sentry/tracing@7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-7.29.0.tgz#767f309cbff46ab12bec6ab3c266f7f03fec91fd"
+  integrity sha512-MAN/G6XROtRhzo/KDjddb6VJn/Q1TaPLwdyj9vvfkUkBNtlt5k16oXp+u7eHWX0uujER9wnZtj2ivXaPeqq0VA==
   dependencies:
-    "@sentry/core" "7.28.1"
-    "@sentry/types" "7.28.1"
-    "@sentry/utils" "7.28.1"
+    "@sentry/core" "7.29.0"
+    "@sentry/types" "7.29.0"
+    "@sentry/utils" "7.29.0"
     tslib "^1.9.3"
 
 "@sentry/types@7.11.1":
@@ -3564,6 +3573,11 @@
   version "7.28.1"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.28.1.tgz#9018b4c152b475de9bedd267237393d3c9b1253d"
   integrity sha512-DvSplMVrVEmOzR2M161V5+B8Up3vR71xMqJOpWTzE9TqtFJRGPtqT/5OBsNJJw1+/j2ssMcnKwbEo9Q2EGeS6g==
+
+"@sentry/types@7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.29.0.tgz#ed829b6014ee19049035fec6af2b4fea44ff28b8"
+  integrity sha512-DmoEpoqHPty3VxqubS/5gxarwebHRlcBd/yuno+PS3xy++/i9YPjOWLZhU2jYs1cW68M9R6CcCOiC9f2ckJjdw==
 
 "@sentry/utils@7.11.1":
   version "7.11.1"
@@ -3579,6 +3593,14 @@
   integrity sha512-75/jzLUO9HH09iC9TslNimGbxOP3jgn89P+q7uR+rp2fJfRExHVeKJZQdK0Ij4/SmE7TJ3Uh2r154N0INZEx1g==
   dependencies:
     "@sentry/types" "7.28.1"
+    tslib "^1.9.3"
+
+"@sentry/utils@7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-7.29.0.tgz#cbf8f87dd851b0fdc7870db9c68014c321c3bab8"
+  integrity sha512-ICcBwTiBGK8NQA8H2BJo0JcMN6yCeKLqNKNMVampRgS6wSfSk1edvcTdhRkW3bSktIGrIPZrKskBHyMwDGF2XQ==
+  dependencies:
+    "@sentry/types" "7.29.0"
     tslib "^1.9.3"
 
 "@sidvind/better-ajv-errors@^2.0.0":
@@ -4408,12 +4430,12 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@1.8.23":
-  version "1.8.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-1.8.23.tgz#00eaeab454b75943f41cfa79de9c6f61b96aba85"
-  integrity sha512-ouScdIOSbK4L3tJK1WTKqozzaXFqgkJplivF3GIXPjTpCGErkQbSi0CT2EdX3r50z9fHFxoVLwZ28RyQOFmb+g==
+"@tryghost/html-to-mobiledoc@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-2.0.0.tgz#90b119dedd765b3856bba28b8781fb355bcec7c1"
+  integrity sha512-zhZaaoJNtx6BqSlLnfJgdz1L5NOyfCEf12B2Td/j+FTxqkKzv4rgBC4fTqBntZ4xdSEMSMsmMRn/sGBzjuBsNg==
   dependencies:
-    "@tryghost/kg-parser-plugins" "^2.12.12"
+    "@tryghost/kg-parser-plugins" "^3.0.0"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^20.0.0"
 
@@ -4451,27 +4473,27 @@
     "@tryghost/errors" "^1.2.20"
     jest-snapshot "^29.0.0"
 
-"@tryghost/kg-card-factory@3.1.9":
-  version "3.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.1.9.tgz#3109a223e7ccdcef44aca50ceed1038c6cdfda30"
-  integrity sha512-ZG/y9QVgBT56RXH03zOPGvA2u0nqr6QR7V9KALCtyRbLroQ+V8RCxjfeFPPEqcMWr1z39ZSE4uXgFqgpxyf+Ww==
+"@tryghost/kg-card-factory@4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.0.tgz#01212a872cbac937aa11b13c904442fa369abbc8"
+  integrity sha512-8u7bAV+Sc0uKBYOEDK4wiD7xYvtNX5vxdat4S/8/qutUlq2iHvzI44jfosRPV2eWBzKTkiWA98Vlq9TQhXko1Q==
 
-"@tryghost/kg-clean-basic-html@2.2.27", "@tryghost/kg-clean-basic-html@^2.2.27":
-  version "2.2.27"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.27.tgz#43f9a526dce0e4bd35b823051daf8b26c4c762b7"
-  integrity sha512-xZrtYFmKcUNxyDU61+0liQ2a0Wr5QSZO/rbLo223H84pqhgcgDRTpe9fYEeUxn2vDUtCgueM5q8ayUoIu2MAJw==
+"@tryghost/kg-clean-basic-html@3.0.0", "@tryghost/kg-clean-basic-html@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.0.tgz#a0b64168620a2477eb3d94cdf40c8840b6f7db4f"
+  integrity sha512-x8IobSKd+jEqYpDzrbxqaxS01BcODZau1sgAueZxKY9EzdKZIc2wJy+o9jj5XwIVqVcdg0ivoYr3+I4jTilyJw==
 
-"@tryghost/kg-default-atoms@3.1.4":
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-3.1.4.tgz#58916cbd350e865246f95143d14ba62a06f7a1a7"
-  integrity sha512-LBDW1uD70Wh27LiYzpctvIv6MExcgq7KkGy/RWUo0K/1EExtyEjLhNeeBrJ9taPouW2AQVwkqu69RHQ7NJW6eA==
+"@tryghost/kg-default-atoms@4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-4.0.0.tgz#569611d1c71947c98eb607910b3eea460811125e"
+  integrity sha512-+8hrTjy99Omj4l1bqzwjaVU21bj+Hglwep+MdvSuzKYbeyCm3IIdq0KuJZT/aHSlcq38MXKN1wb3kPtefEytmQ==
 
-"@tryghost/kg-default-cards@5.18.7", "@tryghost/kg-default-cards@^5.18.7":
-  version "5.18.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.18.7.tgz#2e1882cc543818cdbe9913f0b40891541369cdfa"
-  integrity sha512-Fezi9DnAkuxuBEYErJi2FC3xXoqsdKHTutEvHMVMAFO38Ns3FQtDaoxBhDxBsmQawboS+ZfpaaTOJquEDtmoQg==
+"@tryghost/kg-default-cards@6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-6.0.0.tgz#c83ed913ca2ccea7ac94e75a3be581881ccaccde"
+  integrity sha512-/qI2NyT31EZ+WiSKqNmHHnTgM1om/dKD3Ac6CbnQejK5EQg45pbr26X6n5a/VvpsoaWBd28/b+SBVeQ8R9toOQ==
   dependencies:
-    "@tryghost/kg-markdown-html-renderer" "^5.1.11"
+    "@tryghost/kg-markdown-html-renderer" "^6.0.0"
     "@tryghost/string" "^0.2.0"
     "@tryghost/url-utils" "^4.0.0"
     handlebars "^4.7.6"
@@ -4501,10 +4523,10 @@
     jsdom "^20.0.0"
     lexical "^0.5.0"
 
-"@tryghost/kg-markdown-html-renderer@^5.1.11":
-  version "5.1.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-5.1.11.tgz#c0aa728bc2ec518cefa69353211bdb866f70090d"
-  integrity sha512-mMQmQbO5/l5vVfiKiqlq0Y81wPX83AdSXPEq5GcAklq8E9q1ITpVtIZKC0KGrnQNiuledGOTP6wf2t5tyjgTLg==
+"@tryghost/kg-markdown-html-renderer@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-6.0.0.tgz#25359d13872480289b71b9039923223658e80fc9"
+  integrity sha512-9QWaptGFRds8wi9Wz1+HXsNw5XtbVewDrl7Uk2L7VVkRXlSdi81UolmnT5kWGJDIY6jqPU0J8JUEdnhR+w9x1A==
   dependencies:
     "@tryghost/kg-utils" "^1.0.8"
     markdown-it "^12.2.0"
@@ -4512,23 +4534,25 @@
     markdown-it-image-lazy-loading "^1.1.0"
     markdown-it-lazy-headers "^0.1.3"
     markdown-it-mark "^3.0.0"
+    markdown-it-sub "^1.0.0"
+    markdown-it-sup "^1.0.0"
     semver "^7.3.5"
 
-"@tryghost/kg-mobiledoc-html-renderer@5.3.11":
-  version "5.3.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-5.3.11.tgz#c7563b1bb172d207d695adfc8ac3bbaff4fa202e"
-  integrity sha512-qLLe3vW1m3pmxfOJB80rvFaMA5hGCxVm2DzRMRlJArlUZM/OFxZ7j7+RxtEmmVNAnd1A/IIp2+95pqVtUd82+g==
+"@tryghost/kg-mobiledoc-html-renderer@6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-6.0.0.tgz#485f405382d809a785208083b0db349873822f97"
+  integrity sha512-r1Kj69X4IVL1S84OYLuGUJMfEKTpNCG+LRa0iqSGOQ68ERGPxYe/BVo1gVbq8/Bk+seOaxjJeA40pbR/qbL8dQ==
   dependencies:
     "@tryghost/kg-utils" "^1.0.8"
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@2.12.12", "@tryghost/kg-parser-plugins@^2.12.12":
-  version "2.12.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.12.12.tgz#3ad588e91634645c31dd44d5ba65f283785641c6"
-  integrity sha512-wWCluqxxMrTOBvpuNsnegBv+BCAPdDQSRBJ+PwUebPLFZdarILQD6L9qgQdcBQ9mko6/BsU0doglwnwNvfYL3Q==
+"@tryghost/kg-parser-plugins@3.0.0", "@tryghost/kg-parser-plugins@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-3.0.0.tgz#a8fa453f377c4893b233e89ca0ae37d7d56b2dcd"
+  integrity sha512-CeTylPSz3gwF68C+i4Cefkjj7XgjLPGskPT4vTXDW74wHm3+BhwBGVE7VeknsHmBCWgXcFv8asoOFjD8GLiF4A==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^2.2.27"
+    "@tryghost/kg-clean-basic-html" "^3.0.0"
 
 "@tryghost/kg-utils@^1.0.8":
   version "1.0.8"
@@ -12073,16 +12097,14 @@ ember-modifier-manager-polyfill@^1.2.0:
     ember-cli-version-checker "^2.1.2"
     ember-compatibility-helpers "^1.2.0"
 
-ember-modifier@3.2.7, ember-modifier@^3.0.0, ember-modifier@^3.2.7:
-  version "3.2.7"
-  resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-3.2.7.tgz#f2d35b7c867cbfc549e1acd8d8903c5ecd02ea4b"
-  integrity sha512-ezcPQhH8jUfcJQbbHji4/ZG/h0yyj1jRDknfYue/ypQS8fM8LrGcCMo0rjDZLzL1Vd11InjNs3BD7BdxFlzGoA==
+ember-modifier@4.0.0, "ember-modifier@^2.1.2 || ^3.0.0 || ^4.0.0", "ember-modifier@^2.1.2 || ^3.1.0 || ^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-4.0.0.tgz#0bb3fae11435fcbe0d3dfa852ce224d81d75ddb2"
+  integrity sha512-OdconmrqKP2haK4kBwNmtnA2NiC2MFmIJC3LgJ1WhwZ49GaktM+bRIuFxF/S5W0oaegzKs1qH2ZDlqMeO2L3nw==
   dependencies:
-    ember-cli-babel "^7.26.6"
+    "@embroider/addon-shim" "^1.8.4"
     ember-cli-normalize-entity-name "^1.0.0"
     ember-cli-string-utils "^1.1.0"
-    ember-cli-typescript "^5.0.0"
-    ember-compatibility-helpers "^1.2.5"
 
 ember-modifier@^2.1.0:
   version "2.1.2"
@@ -12097,14 +12119,16 @@ ember-modifier@^2.1.0:
     ember-destroyable-polyfill "^2.0.2"
     ember-modifier-manager-polyfill "^1.2.0"
 
-"ember-modifier@^2.1.2 || ^3.0.0 || ^4.0.0", "ember-modifier@^2.1.2 || ^3.1.0 || ^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-4.0.0.tgz#0bb3fae11435fcbe0d3dfa852ce224d81d75ddb2"
-  integrity sha512-OdconmrqKP2haK4kBwNmtnA2NiC2MFmIJC3LgJ1WhwZ49GaktM+bRIuFxF/S5W0oaegzKs1qH2ZDlqMeO2L3nw==
+ember-modifier@^3.0.0, ember-modifier@^3.2.7:
+  version "3.2.7"
+  resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-3.2.7.tgz#f2d35b7c867cbfc549e1acd8d8903c5ecd02ea4b"
+  integrity sha512-ezcPQhH8jUfcJQbbHji4/ZG/h0yyj1jRDknfYue/ypQS8fM8LrGcCMo0rjDZLzL1Vd11InjNs3BD7BdxFlzGoA==
   dependencies:
-    "@embroider/addon-shim" "^1.8.4"
+    ember-cli-babel "^7.26.6"
     ember-cli-normalize-entity-name "^1.0.0"
     ember-cli-string-utils "^1.1.0"
+    ember-cli-typescript "^5.0.0"
+    ember-compatibility-helpers "^1.2.5"
 
 ember-moment@10.0.0:
   version "10.0.0"
@@ -14760,10 +14784,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==
 
-gscan@4.35.0:
-  version "4.35.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.35.0.tgz#969a064421c6700f8d827d8dc3c42d21659c1567"
-  integrity sha512-KD/wqGTv63787y14KXkYukbp7WnEgya51ezjg2gzpIgo54BtDppZoTdVbSy1hkgdsyTprXlRXSvUTDcb1WTbxA==
+gscan@4.35.1:
+  version "4.35.1"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.35.1.tgz#a5c9369a31fd4e07da9387aa1598b50b5774722e"
+  integrity sha512-Jr9AqUbf5u581Hvpg6ekZuXTZUOhn1kgyJY9mQb3zW3nbd7o7lhi5DQb7wR+bQjfsKumFimy9iIWPo6ye7QxkA==
   dependencies:
     "@sentry/node" "7.28.1"
     "@tryghost/config" "0.2.13"
@@ -18605,12 +18629,12 @@ markdown-it-mark@3.0.1, markdown-it-mark@^3.0.0:
   resolved "https://registry.yarnpkg.com/markdown-it-mark/-/markdown-it-mark-3.0.1.tgz#51257db58787d78aaf46dc13418d99a9f3f0ebd3"
   integrity sha512-HyxjAu6BRsdt6Xcv6TKVQnkz/E70TdGXEFHRYBGLncRE9lBFwDNLVtFojKxjJWgJ+5XxUwLaHXy+2sGBbDn+4A==
 
-markdown-it-sub@1.0.0:
+markdown-it-sub@1.0.0, markdown-it-sub@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/markdown-it-sub/-/markdown-it-sub-1.0.0.tgz#375fd6026eae7ddcb012497f6411195ea1e3afe8"
   integrity sha512-z2Rm/LzEE1wzwTSDrI+FlPEveAAbgdAdPhdWarq/ZGJrGW/uCQbKAnhoCsE4hAbc3SEym26+W2z/VQB0cQiA9Q==
 
-markdown-it-sup@1.0.0:
+markdown-it-sup@1.0.0, markdown-it-sup@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/markdown-it-sup/-/markdown-it-sup-1.0.0.tgz#cb9c9ff91a5255ac08f3fd3d63286e15df0a1fc3"
   integrity sha512-E32m0nV9iyhRR7CrhnzL5msqic7rL1juWre6TQNxsnApg7Uf+F97JOKxUijg5YwXz86lZ0mqfOnutoryyNdntQ==
@@ -20731,7 +20755,7 @@ pend@~1.2.0:
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
   integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
 
-"perf-primitives@github:rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b":
+perf-primitives@rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b:
   version "0.0.6"
   resolved "https://codeload.github.com/rwwagner90/perf-primitives/tar.gz/a6a26f11497ca27be3763a88a5f20744e424756b"
   dependencies:

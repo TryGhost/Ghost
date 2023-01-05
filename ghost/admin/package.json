@@ -26,7 +26,7 @@
     "lint": "yarn lint:js && yarn lint:hbs"
   },
   "engines": {
-    "node": "^14.18.0 || ^16.13.0 || ^18.0.0"
+    "node": "^14.18.0 || ^16.13.0 || ^18.12.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.19.1",
@@ -40,12 +40,12 @@
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
-    "@sentry/ember": "7.28.1",
+    "@sentry/ember": "7.29.0",
     "@tryghost/color-utils": "0.1.22",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.75",
-    "@tryghost/kg-clean-basic-html": "2.2.27",
-    "@tryghost/kg-parser-plugins": "2.12.12",
+    "@tryghost/kg-clean-basic-html": "3.0.0",
+    "@tryghost/kg-parser-plugins": "3.0.0",
     "@tryghost/limit-service": "1.2.4",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
@@ -104,7 +104,7 @@
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.1.2",
     "ember-mocha": "0.16.2",
-    "ember-modifier": "3.2.7",
+    "ember-modifier": "4.0.0",
     "ember-moment": "10.0.0",
     "ember-one-way-select": "4.0.1",
     "ember-power-datepicker": "cibernox/ember-power-datepicker",

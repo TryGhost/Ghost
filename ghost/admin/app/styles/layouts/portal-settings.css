@@ -62,6 +62,12 @@
 .gh-portal-settings-sidebar {
     padding: 0;
     width: 400px;
+    height: calc(100vh - 60px);
+    overflow-x: hidden;
+}
+
+.gh-portal-settings-sidebar .modal-fullsettings-body-labs {
+    overflow: unset;
 }
 
 .gh-portal-form-wrapper {
@@ -255,6 +261,10 @@
     margin: 12px 0 0;
 }
 
+.gh-portal-setting-last {
+    margin-bottom: 12px !important;
+}
+
 .gh-portal-button-icon {
     display: inline-block;
     cursor: pointer;
@@ -389,6 +399,11 @@
 
 .gh-portal-settings-title {
     padding-bottom: 28px;
+    position: sticky;
+    background: var(--main-bg-color);
+    z-index: 9999;
+    width: 100%;
+    top: 0;
 }
 
 .gh-portal-settings-previewheader {
@@ -638,4 +653,28 @@
 
 .gh-portal-settings-previewheader .gh-preview-page-selector svg {
     top: 16px;
+}
+
+.gh-portal-settings-stripefooter {
+    padding: 24px;
+    margin: 32px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
+}
+
+.gh-portal-settings-stripefooter h4 {
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+}
+
+.gh-portal-settings-stripefooter p {
+    font-size: 1.35rem;
+    margin-bottom: 10px;
+    color: var(--darkgrey);
+}
+
+.gh-portal-settings-stripefooter .stripe-connect {
+    margin-top: 20px;
+    width: 100%;
 }

@@ -16,10 +16,7 @@
                             </button>
                             {{#liquid-if isOpen}}
                                 <div class="modal-fullsettings-tab-expanded {{if (not-eq this.settings.membersSignupAccess "all") "disabled-overlay"}}" onclick={{action "switchPreviewPage" "signup"}}>
-                                    {{#unless this.membersUtils.isStripeEnabled}}
-                                        <button class="gh-btn gh-btn-link {{unless this.session.user.isAdmin "disabled"}}" type="button" {{on "click" (action "openStripeConnect")}}>Connect to Stripe</button>
-                                    {{/unless}}
-                                    <GhFormGroup class="gh-members-subscribed-checkbox gh-portal-setting-first mb0">
+                                    <GhFormGroup class="gh-members-subscribed-checkbox gh-portal-setting-first {{unless this.membersUtils.isStripeEnabled "gh-portal-setting-last"}} mb0">
                                         <div class="flex justify-between items-center">
                                             <div class="mr3">
                                                 <h4 class="gh-portal-setting-title">Display name in signup form</h4>
@@ -293,6 +290,14 @@
                     </div>
                 </fieldset>
             </div>
+            {{#if (and (not this.membersUtils.isStripeEnabled) this.session.user.isAdmin)}}
+            <div class="gh-portal-settings-stripefooter">
+                <h4>Collect payments on signup?</h4>
+                <p>Generate revenue to support your work, by offering premium membership tiers.</p>
+                <p>Ghost takes 0% payment fees, everything you earn is yours to keep.</p>
+                <button class="stripe-connect {{unless this.session.user.isAdmin "disabled"}}" type="button" {{on "click" (action "openStripeConnect")}}><span></span></button>
+            </div>
+            {{/if}}
         </div>
         <div class="gh-portal-settings-main">
             <div class="gh-portal-settings-previewheader">

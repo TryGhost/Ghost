@@ -175,8 +175,9 @@ const impersonateMember = async (page) => {
  * @param {string} tier.name
  * @param {number} tier.monthlyPrice
  * @param {number} tier.yearlyPrice
+ * @param {number} [tier.trialDays]
  */
-const createTier = async (page, {name, monthlyPrice, yearlyPrice}, enableInPortal = true) => {
+const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, enableInPortal = true) => {
     // Navigate to the member settings
     await page.locator('.gh-nav a[href="#/settings/"]').click();
     await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
@@ -201,6 +202,10 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice}, enableInPorta
     await modal.locator('input#name').first().fill(name);
     await modal.locator('#monthlyPrice').fill(`${monthlyPrice}`);
     await modal.locator('#yearlyPrice').fill(`${yearlyPrice}`);
+    if (trialDays) {
+        await modal.locator('[data-test-toggle="free-trial"]').click();
+        await modal.locator('#trial').fill(`${trialDays}`);
+    }
     await modal.getByRole('button', {name: 'Add tier'}).click();
     await page.waitForSelector('.modal-content input#name', {state: 'detached'});
 
