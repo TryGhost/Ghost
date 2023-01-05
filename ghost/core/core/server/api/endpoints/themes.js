@@ -4,6 +4,7 @@ const models = require('../../models');
 
 // Used to emit theme.uploaded which is used in core/server/analytics-events
 const events = require('../../lib/common/events');
+const {settingsCache} = require('../../services/settings-helpers');
 
 module.exports = {
     docName: 'themes',
@@ -12,6 +13,18 @@ module.exports = {
         permissions: true,
         query() {
             return themeService.api.getJSON();
+        }
+    },
+
+    active: {
+        headers: {
+            cacheInvalidate: true
+        },
+        permissions: true,
+        async query() {
+            let themeName = settingsCache.get('active_theme');
+            const checkedTheme = await themeService.api.check(themeName);
+            return themeService.api.getJSON(themeName, checkedTheme);
         }
     },
 

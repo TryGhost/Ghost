@@ -9,4 +9,13 @@ export default class Theme extends ApplicationAdapter {
             return model;
         });
     }
+
+    active() {
+        let url = `${this.buildURL('theme', 'active')}`;
+
+        return this.ajax(url, 'GET', {data: {}}).then((data) => {
+            this.store.pushPayload('theme', data);
+            return this.store.peekAll('theme').filterBy('name', data.themes[0].name).firstObject;
+        });
+    }
 }

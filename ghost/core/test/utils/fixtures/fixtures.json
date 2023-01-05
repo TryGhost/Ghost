@@ -220,6 +220,11 @@
                     "object_type": "theme"
                 },
                 {
+                    "name": "View active theme details",
+                    "action_type": "active",
+                    "object_type": "theme"
+                },
+                {
                     "name": "Upload themes",
                     "action_type": "add",
                     "object_type": "theme"
