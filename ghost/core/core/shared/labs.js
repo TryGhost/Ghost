@@ -31,7 +31,8 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'lexicalEditor',
     'suppressionList',
-    'emailStability'
+    'emailStability',
+    'themeErrorsNotification'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
