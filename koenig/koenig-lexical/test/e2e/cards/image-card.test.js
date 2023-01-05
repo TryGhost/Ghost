@@ -88,6 +88,7 @@ describe('Image card', async () => {
                     </figure>
                 </div>
             </div>
+            <div contenteditable="false" data-lexical-cursor="true"></div>
         `);
     });
 
@@ -454,6 +455,7 @@ describe('Image card', async () => {
                     </figure>
                 </div>
             </div>
+            <div contenteditable="false" data-lexical-cursor="true"></div>
         `);
     });
 

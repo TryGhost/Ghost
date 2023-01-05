@@ -28,6 +28,7 @@ describe('Renders code block node', async () => {
                     </code>
                 </div>
             </div>
+            <div contenteditable="false" data-lexical-cursor="true"></div>
         `);
     });
 });

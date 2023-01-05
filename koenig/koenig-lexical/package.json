@@ -35,13 +35,13 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@lexical/list": "^0.6.0",
-    "@lexical/react": "^0.6.0",
-    "@lexical/selection": "^0.6.0",
-    "@lexical/text": "^0.6.0",
-    "@lexical/utils": "^0.6.0",
+    "@lexical/list": "^0.7.0",
+    "@lexical/react": "^0.7.0",
+    "@lexical/selection": "^0.7.0",
+    "@lexical/text": "^0.7.0",
+    "@lexical/utils": "^0.7.0",
     "@tryghost/kg-default-nodes": "^0.0.2",
-    "lexical": "^0.6.0",
+    "lexical": "^0.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

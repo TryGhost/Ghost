@@ -5,6 +5,7 @@ import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
+import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
@@ -53,6 +54,7 @@ const KoenigEditor = ({
             <OnChangePlugin onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}
             <ListPlugin /> {/* adds indent/outdent/remove etc support */}
+            <TabIndentationPlugin /> {/* tab/shift+tab triggers indent/outdent */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
             <PlusCardMenuPlugin />

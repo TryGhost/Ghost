@@ -31,8 +31,8 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",
     "@babel/plugin-syntax-import-assertions": "^7.20.0",
-    "@lexical/headless": "^0.6.3",
-    "@lexical/html": "^0.6.3",
+    "@lexical/headless": "^0.7.0",
+    "@lexical/html": "^0.7.0",
     "c8": "7.12.0",
     "mocha": "10.2.0",
     "rollup": "^3.5.0",
@@ -42,6 +42,6 @@
   },
   "dependencies": {
     "jsdom": "^20.0.3",
-    "lexical": "^0.6.0"
+    "lexical": "^0.7.0"
   }
 }
