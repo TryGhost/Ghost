@@ -3012,4 +3012,31 @@ describe('Members API Bulk operations', function () {
                 }
             });
     });
+
+    // TODO: This step requires going throught the checkout flow to prefill the member with a redeemed offer
+    it('Can filter members by offer-redemptions', async function () {
+        let defaultTier = await getPaidProduct();
+        const newOffer = {
+            name: 'Black Friday',
+            code: 'black-friday',
+            display_title: 'Black Friday Sale!',
+            display_description: '10% off on yearly plan',
+            type: 'percent',
+            cadence: 'year',
+            amount: 12,
+            duration: 'once',
+            duration_in_months: null,
+            currency_restriction: false,
+            currency: null,
+            status: 'active',
+            redemption_count: 0,
+            tier: {
+                id: defaultTier.id
+            }
+        };
+        const addOffer = await agent.post('/offers')
+            .body({offers: [newOffer]});
+        
+        await agent.get(`/members?filter=offer_redemptions:${addOffer.body.offers[0].id}`).expectStatus(200);
+    });
 });
