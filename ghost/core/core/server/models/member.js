@@ -131,7 +131,7 @@ const Member = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients', 'newsletters', 'offer_redemptions'],
+    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients', 'newsletters'],
 
     // do not delete email_recipients records when a member is destroyed. Recipient
     // records are used for analytics and historical records
