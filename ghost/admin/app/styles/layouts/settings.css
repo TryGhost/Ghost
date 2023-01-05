@@ -1415,12 +1415,11 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
 
 .theme-validation-item {
     margin: 12px 0 0;
-    padding: 12px 16px;
+    padding: 12px 16px 12px 28px;
     border: 1px solid #e5eff5;
     border-radius: 5px;
     display: flex;
     flex-direction: column;
-    background: var(--whitegrey);
     border: 1px solid var(--lightgrey);
 }
 
@@ -1436,8 +1435,7 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
 }
 
 .theme-validation-item.theme-fatal-error {
-    background: color-mod(var(--red) alpha(0.04));
-    border: 1px solid color-mod(var(--red) alpha(0.4));
+    border: 1px solid var(--red);
 }
 
 .theme-validation-item.theme-fatal-error .theme-validation-rule-text::before,
@@ -1465,12 +1463,11 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
 .theme-warning .theme-validation-type-label::before {
     content: "";
     display: block;
-    border-top-right-radius: 2px;
-    border-bottom-right-radius: 2px;
     width: 8px;
-    height: 16px;
-    margin-top: 3px;
-    margin-left: -17px;
+    height: 8px;
+    margin-top: 6px;
+    margin-left: -16px;
+    border-radius: 999px;
 }
 
 .theme-fatal-error .theme-validation-type-label::before,
@@ -1496,10 +1493,6 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
     font-weight: 500;
 }
 
-.theme-validation-item {
-    background: var(--whitegrey-l2);
-}
-
 .theme-validation-toggle-details {
     display: flex;
     justify-content: space-between;
@@ -1515,12 +1508,9 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
     flex-shrink: 0;
     margin-left: 5px;
     width: 13px;
+    height: 14px;
     color: var(--midgrey);
     transition: all 0.1s ease-out;
-}
-
-.theme-validation-rule-icon svg {
-    margin-top: 3px;
 }
 
 .theme-validation-rule-icon svg path {
