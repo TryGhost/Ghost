@@ -164,7 +164,7 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">URL Cache</h4>
+                            <h4 class="gh-expandable-title">URL cache</h4>
                             <p class="gh-expandable-description">
                                Enable URL Caching
                             </p>
@@ -203,7 +203,7 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Suppression List</h4>
+                            <h4 class="gh-expandable-title">Suppression list</h4>
                             <p class="gh-expandable-description">
                                 Allows checking whether a member's email is blocked and removing emails from the suppression list.
                             </p>
@@ -223,6 +223,19 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="emailStability" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Theme errors notification</h4>
+                            <p class="gh-expandable-description">
+                                Improves discoverability of theme errors
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="themeErrorsNotification" />
                         </div>
                     </div>
                 </div>
