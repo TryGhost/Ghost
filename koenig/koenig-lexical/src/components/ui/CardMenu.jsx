@@ -2,7 +2,7 @@ import React from 'react';
 
 export const CardMenuSection = ({label, children, ...props}) => {
     return (
-        <li role="separator" className="text-grey flex shrink-0 flex-col justify-center text-[1.1rem] font-semibold uppercase tracking-wide" {...props}>
+        <li role="separator" className="flex shrink-0 flex-col justify-center text-[1.1rem] font-semibold uppercase tracking-wide text-grey" {...props}>
             <span className="mb-2 block px-4 pt-3" style={{minWidth: 'calc(100% - 3.2rem)'}}>{label}</span>
             <ul role="menu">
                 {children}
@@ -24,7 +24,7 @@ export const CardMenuItem = ({label, desc, isSelected, onClick, Icon, ...props})
             <button
                 type="button"
                 role="menuitem"
-                className={`text-grey-800 hover:bg-grey-100 flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-left  ${isSelected ? 'bg-grey-100' : ''}`} onMouseDown={preventMouseDown} onClick={onClick} data-kg-card-menu-item={label}
+                className={`flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-left text-grey-800 hover:bg-grey-100  ${isSelected ? 'bg-grey-100' : ''}`} onMouseDown={preventMouseDown} onClick={onClick} data-kg-card-menu-item={label}
                 data-kg-cardmenu-selected={isSelected}
                 {...props}
             >
@@ -32,8 +32,8 @@ export const CardMenuItem = ({label, desc, isSelected, onClick, Icon, ...props})
                     <Icon className="h-7 w-7" />
                 </div>
                 <div className="flex flex-col">
-                    <div className="text-grey-900 m-0 ml-4 truncate text-[1.3rem] font-medium leading-[1.6rem] tracking-[.02rem]">{label}</div>
-                    <div className="text-grey m-0 ml-4 truncate text-xs font-normal leading-[1.6rem] tracking-[.02rem]">{desc}</div>
+                    <div className="m-0 ml-4 truncate text-[1.3rem] font-medium leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
+                    <div className="m-0 ml-4 truncate text-xs font-normal leading-[1.6rem] tracking-[.02rem] text-grey">{desc}</div>
                 </div>
             </button>
         </li>
@@ -46,7 +46,7 @@ export const CardSnippetItem = ({label, isSelected, Icon, ...props}) => {
             <button
                 type="button"
                 role="menuitem"
-                className={`text-grey-800 hover:bg-grey-100 flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] ${isSelected ? 'bg-grey-100' : ''}`}
+                className={`flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100 ${isSelected ? 'bg-grey-100' : ''}`}
                 data-kg-cardmenu-selected={isSelected}
                 {...props}
             >
@@ -54,7 +54,7 @@ export const CardSnippetItem = ({label, isSelected, Icon, ...props}) => {
                     <Icon className="h-7 w-7" />
                 </div>
                 <div className="flex flex-col">
-                    <div className="text-grey-900 m-0 ml-4 truncate text-[1.3rem] font-medium leading-[1.6rem] tracking-[.02rem]">{label}</div>
+                    <div className="m-0 ml-4 truncate text-[1.3rem] font-medium leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
                 </div>
             </button>
         </li>
@@ -108,7 +108,7 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
     }
 
     return (
-        <ul role="menu" className="not-kg-prose z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 pt-0 font-sans text-sm shadow after:block after:pb-4">
+        <ul role="menu" className="not-kg-prose z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 font-sans text-sm shadow after:block after:pb-4">
             {CardMenuSections}
         </ul>
     );

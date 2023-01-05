@@ -49,7 +49,7 @@ function DemoApp() {
                 initialEditorState={defaultContent} 
                 imageUploadFunction={{imageUploader}}
                 unsplashConfig={unsplashConfig}>
-                <div className="h-full grow relative">
+                <div className="relative h-full grow">
                     {
                         query.get('content') !== 'false'
                             ? <ToggleButton setTitle={setTitle} content={defaultContent}/>
@@ -66,7 +66,7 @@ function DemoApp() {
                     </div>
                 </div>
                 <Watermark />
-                <div className="absolute sm:relative flex h-full flex-col items-end z-20">
+                <div className="absolute z-20 flex h-full flex-col items-end sm:relative">
                     <Sidebar isOpen={isSidebarOpen} view={sidebarView} />
                     <FloatingButton isOpen={isSidebarOpen} onClick={openSidebar} />
                 </div>

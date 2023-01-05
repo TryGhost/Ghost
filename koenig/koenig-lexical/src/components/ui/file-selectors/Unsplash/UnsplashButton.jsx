@@ -12,10 +12,10 @@ function UnsplashButton({icon, label, ...props}) {
     return (
         <a onClick={e => e.stopPropagation()}
             type="button" 
-            className="flex items-center shrink-0 h-8 py-2 px-3 font-sans text-sm text-grey-700 font-medium leading-6 bg-white rounded-md opacity-90 transition-all ease-in-out hover:opacity-100 first-of-type:mr-3 cursor-pointer" 
+            className="flex h-8 shrink-0 cursor-pointer items-center rounded-md bg-white py-2 px-3 font-sans text-sm font-medium leading-6 text-grey-700 opacity-90 transition-all ease-in-out first-of-type:mr-3 hover:opacity-100" 
             {...props}
         >
-            {icon && <Icon className={`w-4 h-4 fill-red stroke-[3px] ${label && 'mr-1'}`} />}
+            {icon && <Icon className={`h-4 w-4 fill-red stroke-[3px] ${label && 'mr-1'}`} />}
             {label && <span>{label}</span>}
         </a>
     );

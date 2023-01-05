@@ -5,17 +5,17 @@ import {Button} from './ButtonCard';
 export function EmailCtaCard({isSelected, visibility, alignment, separators, value, placeholder, button, buttonText}) {
     return (
         <div className="px-3 pb-6">
-            <div className="font-sans text-xs uppercase font-semibold text-grey pt-1 pb-7 tracking-tight">
+            <div className="pt-1 pb-7 font-sans text-xs font-semibold uppercase tracking-tight text-grey">
                 {visibility}
             </div>
-            {separators && <hr className="-mt-4 mb-12 border-t-grey-300 block" />}
-            <input className={`text-xl font-serif w-full text-grey-900 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } value={value} placeholder={placeholder} />
+            {separators && <hr className="-mt-4 mb-12 block border-t-grey-300" />}
+            <input className={`w-full font-serif text-xl text-grey-900 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } value={value} placeholder={placeholder} />
             { (button && (isSelected || buttonText)) && 
                 <div className={`mt-6 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }>
                     <Button valuePlaceholder="Add button text" value={buttonText} />
                 </div>    
             }
-            {separators && <hr className="mt-12 border-t-grey-300 block" />}
+            {separators && <hr className="mt-12 block border-t-grey-300" />}
 
         </div>
     );

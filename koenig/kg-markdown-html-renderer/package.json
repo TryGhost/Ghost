@@ -23,9 +23,9 @@
   },
   "devDependencies": {
     "c8": "7.12.0",
-    "mocha": "10.1.0",
+    "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.0"
+    "sinon": "15.0.1"
   },
   "dependencies": {
     "@tryghost/kg-utils": "^1.0.8",

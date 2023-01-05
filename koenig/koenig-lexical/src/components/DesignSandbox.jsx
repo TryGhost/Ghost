@@ -184,7 +184,7 @@ const DesignSandbox = () => {
 
     function CardMenu() {
         return (
-            <div className="z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 pt-0 text-sm shadow">
+            <div className="z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 text-sm shadow">
                 <CardMenuSection label="Primary" />
                 <CardMenuItem label="Image" desc="Upload, or embed with /image [url]" Icon={ImageCardIcon} />
                 <CardMenuItem label="Markdown" desc="Insert a Markdown editor card" Icon={MarkdownCardIcon} />

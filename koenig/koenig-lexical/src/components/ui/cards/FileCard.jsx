@@ -16,17 +16,17 @@ function EmptyFileCard() {
 
 function PopulatedFileCard({isSelected, title, titlePlaceholder, desc, descPlaceholder, name, size, ...args}) {
     return (
-        <div className="flex p-2 border border-grey/30 rounded justify-between">
-            <div className="flex flex-col font-sans px-2 w-full justify-center" {...args}>
-                { (isSelected || title) && <input value={title} placeholder={titlePlaceholder} className="text-lg text-black font-bold tracking-tight" />}
-                { (isSelected || desc) && <input value={desc} placeholder={descPlaceholder} className="text-[1.6rem] text-grey-700 font-normal pb-1" />}
-                <div className="text-sm text-grey-900 font-medium py-1">
+        <div className="flex justify-between rounded border border-grey/30 p-2">
+            <div className="flex w-full flex-col justify-center px-2 font-sans" {...args}>
+                { (isSelected || title) && <input value={title} placeholder={titlePlaceholder} className="text-lg font-bold tracking-tight text-black" />}
+                { (isSelected || desc) && <input value={desc} placeholder={descPlaceholder} className="pb-1 text-[1.6rem] font-normal text-grey-700" />}
+                <div className="py-1 text-sm font-medium text-grey-900">
                     {name}
                     <span className="text-grey-700"> • {size}</span>
                 </div>
             </div>
-            <div className={`bg-grey-200 w-full max-w-[96px] h-full rounded flex items-center justify-center ${((title && desc) || isSelected) ? 'h-[96px]' : (title || desc) ? 'h-[64px]' : 'h-[40px]'}`}>
-                <FileUploadIcon className={`text-green transition-all ease-in duration-75 ${((title || desc) || isSelected) ? 'w-6 h-6' : 'w-5 h-5'}`} />
+            <div className={`flex h-full w-full max-w-[96px] items-center justify-center rounded bg-grey-200 ${((title && desc) || isSelected) ? 'h-[96px]' : (title || desc) ? 'h-[64px]' : 'h-[40px]'}`}>
+                <FileUploadIcon className={`text-green transition-all duration-75 ease-in ${((title || desc) || isSelected) ? 'h-6 w-6' : 'h-5 w-5'}`} />
             </div>
         </div>
     );

@@ -4,16 +4,16 @@ import {ReactComponent as ArrowDownIcon} from '../../../assets/icons/kg-toggle-a
 
 export function ToggleCard({header, headerPlaceholder, content, contentPlaceholder}) {
     return (
-        <div className="border border-grey/40 rounded py-4 px-6">
-            <div className="flex justify-between items-start">
-                <div className={`font-sans text-xl font-bold text-black leading-relaxed ${header ? 'opacity-100' : 'opacity-40'}`}>
+        <div className="rounded border border-grey/40 py-4 px-6">
+            <div className="flex items-start justify-between">
+                <div className={`font-sans text-xl font-bold leading-relaxed text-black ${header ? 'opacity-100' : 'opacity-40'}`}>
                     {header || headerPlaceholder}
                 </div>
-                <div className="shrink-0 ml-2 w-8 h-8 flex items-center justify-center">
-                    <ArrowDownIcon className="w-4 h-4 text-grey-400 stroke-2" />
+                <div className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center">
+                    <ArrowDownIcon className="h-4 w-4 stroke-2 text-grey-400" />
                 </div>
             </div>
-            <div className={`w-full font-serif font-normal text-xl text-grey-900 leading-relaxed mt-2 ${content ? 'opacity-100' : 'opacity-40'} `}>
+            <div className={`mt-2 w-full font-serif text-xl font-normal leading-relaxed text-grey-900 ${content ? 'opacity-100' : 'opacity-40'} `}>
                 {content || contentPlaceholder}
             </div>
         </div>

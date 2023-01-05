@@ -14,9 +14,9 @@ function PopulatedImageCard({src, alt, previewSrc, progress}) {
         <div>
             <img className={`mx-auto ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : `upload in progress, ${progress} `} />
             {previewSrc && progress && !src ?
-                <div className="absolute inset-0 flex items-center min-w-full bg-white/50 justify-center overflow-hidden">
-                    <div className="not-kg-prose bg-grey-200 rounded-full shadow w-[60%]">
-                        <div className="bg-green rounded-full text-xs leading-none py-1 text-center text-white" style={progressStyle}></div>
+                <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50">
+                    <div className="not-kg-prose w-[60%] rounded-full bg-grey-200 shadow">
+                        <div className="rounded-full bg-green py-1 text-center text-xs leading-none text-white" style={progressStyle}></div>
                     </div>
                 </div>
                 : <></>

@@ -34,7 +34,7 @@ export const TOOLBAR_ICONS = {
 
 export function ToolbarMenu({children, ...props}) {
     return (
-        <ul className="m-0 relative flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-t-8 after:border-t-black after:border-x-8 after:border-x-transparent" {...props}>
+        <ul className="relative m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent after:border-t-black" {...props}>
             {children}
         </ul>
     );

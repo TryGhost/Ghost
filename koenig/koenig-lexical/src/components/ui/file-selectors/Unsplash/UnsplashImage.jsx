@@ -19,7 +19,7 @@ function UnsplashImage({payload,
                 e.stopPropagation();
                 selectImg(zoomed ? null : payload);
             }} 
-            className={`relative block mb-6 bg-grey-100 ${zoomed ? 'cursor-zoom-out w-[max-content] h-full' : 'cursor-zoom-in w-full'}`}>
+            className={`relative mb-6 block bg-grey-100 ${zoomed ? 'h-full w-[max-content] cursor-zoom-out' : 'w-full cursor-zoom-in'}`}>
             <img
                 loading='lazy'
                 data-kg-unsplash-gallery-img
@@ -27,9 +27,9 @@ function UnsplashImage({payload,
                 height={height}
                 src={srcUrl}
                 alt={alt}
-                className={`${zoomed ? 'object-contain w-auto h-full' : ''}`} 
+                className={`${zoomed ? 'h-full w-auto object-contain' : ''}`} 
             />
-            <div className="absolute inset-0 flex flex-col justify-between p-5 transition-all ease-in-out bg-gradient-to-b from-black/5 via-black/5 to-black/30 opacity-0 hover:opacity-100">
+            <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/5 via-black/5 to-black/30 p-5 opacity-0 transition-all ease-in-out hover:opacity-100">
                 <div className="flex items-center justify-end">
                     {/* TODO: we may want to pass in the Ghost referral data from consuming app and parse to the urls */}
                     <UnsplashButton
@@ -48,8 +48,8 @@ function UnsplashImage({payload,
                 </div>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        <img className="w-8 h-8 rounded-full mr-2" src={user.profile_image.small} alt="author" />
-                        <div className="mr-2 font-sans text-white text-sm font-medium truncate">{user.name}</div>
+                        <img className="mr-2 h-8 w-8 rounded-full" src={user.profile_image.small} alt="author" />
+                        <div className="mr-2 truncate font-sans text-sm font-medium text-white">{user.name}</div>
                     </div>
                     <UnsplashButton data-kg-unsplash-insert-button onClick={(e) => {
                         e.stopPropagation();
