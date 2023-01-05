@@ -71,7 +71,10 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     didReceiveAttrs() {
         super.didReceiveAttrs(...arguments);
         this._setIconStyle();
-        this._loadMemberCountsTask.perform();
+
+        if (this.session.user && this.session.user.isAdmin) {
+            this._loadMemberCountsTask.perform();
+        }
     }
 
     didInsertElement() {
