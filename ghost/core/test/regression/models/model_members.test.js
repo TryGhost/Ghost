@@ -508,9 +508,9 @@ describe('Member Model', function run() {
 
         it('Should allow filtering on offers redeemed', async function () {
             const context = testUtils.context.admin;
-
+            let email = 'test@offers.com';
             const member = await Member.add({
-                email: 'test@test.member',
+                email: email,
                 labels: []
             }, context);
 
@@ -571,7 +571,9 @@ describe('Member Model', function run() {
             const offerId = addRedemption.get('offer_id');
 
             const members = await Member.findPage({filter: `offer_redemptions:${offerId}`});
-            should.equal(members.data.length, 1, 'Can search for members with offer redemptions');
+            // convert members to json
+            const membersJson = members.data.map(model => model.toJSON());
+            should.equal(membersJson[0].email, email, 'Can search for members with offer_redemptions');
         });
     });
 });
