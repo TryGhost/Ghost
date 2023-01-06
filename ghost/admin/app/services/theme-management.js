@@ -16,7 +16,6 @@ export default class ThemeManagementService extends Service {
     @service store;
     @service frontend;
     @service session;
-    @service feature;
 
     @inject config;
 
@@ -47,7 +46,7 @@ export default class ThemeManagementService extends Service {
 
     async fetch() {
         // contributors don't have permissions to fetch active theme
-        if (this.session.user && !this.session.user.isContributor && this.feature.get('themeErrorsNotification')) {
+        if (this.session.user && !this.session.user.isContributor) {
             try {
                 const adapter = this.store.adapterFor('theme');
                 const activeTheme = await adapter.active();
