@@ -515,14 +515,14 @@ test.describe('Updating post access', () => {
         await setPostVisibility(page, 'tiers');
 
         // backspace removes existing tiers
-        expect(page.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(3);
+        await expect(page.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(3);
         await page.locator('[data-test-visibility-segment-select] input').click();
         await page.keyboard.press('Backspace');
         await page.waitForTimeout(50);
         await page.keyboard.press('Backspace');
         await page.waitForTimeout(50);
         await page.keyboard.press('Backspace');
-        expect(page.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(0);
+        await expect(page.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(0);
 
         // specific tier can be added back on
         await page.keyboard.type('Go');
