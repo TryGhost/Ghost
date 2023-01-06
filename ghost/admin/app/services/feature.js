@@ -64,7 +64,6 @@ export default class FeatureService extends Service {
     @feature('audienceFeedback') audienceFeedback;
     @feature('suppressionList') suppressionList;
     @feature('emailStability') emailStability;
-    @feature('themeErrorsNotification') themeErrorsNotification;
 
     _user = null;
 
