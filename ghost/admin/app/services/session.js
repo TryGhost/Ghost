@@ -20,6 +20,7 @@ export default class SessionService extends ESASessionService {
     @service upgradeStatus;
     @service whatsNew;
     @service membersUtils;
+    @service themeManagement;
 
     @inject config;
 
@@ -44,6 +45,9 @@ export default class SessionService extends ESASessionService {
             this.settings.fetch(),
             this.membersUtils.fetch()
         ]);
+
+        // Theme management requires features to be loaded
+        this.themeManagement.fetch().catch(console.error); // eslint-disable-line no-console
 
         await this.frontend.loginIfNeeded();
 

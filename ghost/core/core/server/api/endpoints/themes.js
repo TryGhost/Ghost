@@ -4,6 +4,7 @@ const models = require('../../models');
 
 // Used to emit theme.uploaded which is used in core/server/analytics-events
 const events = require('../../lib/common/events');
+const {settingsCache} = require('../../services/settings-helpers');
 
 module.exports = {
     docName: 'themes',
@@ -12,6 +13,15 @@ module.exports = {
         permissions: true,
         query() {
             return themeService.api.getJSON();
+        }
+    },
+
+    readActive: {
+        permissions: true,
+        async query() {
+            let themeName = settingsCache.get('active_theme');
+            const themeErrors = await themeService.api.getThemeErrors(themeName);
+            return themeService.api.getJSON(themeName, themeErrors);
         }
     },
 
@@ -42,15 +52,9 @@ module.exports = {
                 value: themeName
             }];
 
-            return themeService.api.activate(themeName)
-                .then((checkedTheme) => {
-                    // @NOTE: we use the model, not the API here, as we don't want to trigger permissions
-                    return models.Settings.edit(newSettings, frame.options)
-                        .then(() => checkedTheme);
-                })
-                .then((checkedTheme) => {
-                    return themeService.api.getJSON(themeName, checkedTheme);
-                });
+            const themeErrors = await themeService.api.activate(themeName);
+            await models.Settings.edit(newSettings, frame.options);
+            return themeService.api.getJSON(themeName, themeErrors);
         }
     },
 
