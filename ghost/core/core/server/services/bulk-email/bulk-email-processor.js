@@ -19,7 +19,7 @@ async function sleep(ms) {
 }
 
 const messages = {
-    error: 'The email service received an error from mailgun and was unable to send.'
+    error: 'Your test email failed to send. Please try again.'
 };
 
 const mailgunClient = new MailgunClient({config: configService, settings: settingsCache});
