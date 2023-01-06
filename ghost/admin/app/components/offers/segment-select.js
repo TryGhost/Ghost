@@ -82,13 +82,10 @@ export default class OffersSegmentSelect extends Component {
                     name: offer.name,
                     id: offer.id,
                     count: offers.count?.members,
-                    class: 'segment-offer_redemptions'
+                    class: 'segment-offer-redemptions'
                 });
             });
             options.push(offersGroup);
-            // if (this.args.selectDefaultTier && !this.args.tiers) {
-            //     this.setSegment([offers.options[0]]);
-            // }
         }
 
         this._options = options;
