@@ -26,7 +26,7 @@ module.exports = {
     api: {
         getJSON,
         activate: activate.activate,
-        check: validate.checkCached,
+        getThemeErrors: validate.getThemeErrors,
         getZip: storage.getZip,
         setFromZip: storage.setFromZip,
         installFromGithub: installer.installFromGithub,

@@ -57,6 +57,6 @@ module.exports.activate = async (themeName) => {
     const checkedTheme = await validate.checkSafe(themeName, loadedTheme);
     // Activate
     await activator.activateFromAPI(themeName, loadedTheme, checkedTheme);
-    // Return the checked theme
-    return checkedTheme;
+    // Return the theme errors
+    return validate.getErrorsFromCheckedTheme(checkedTheme);
 };

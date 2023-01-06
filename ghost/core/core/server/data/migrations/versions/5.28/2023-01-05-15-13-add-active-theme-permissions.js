@@ -2,7 +2,7 @@ const {addPermissionWithRoles} = require('../../utils');
 
 module.exports = addPermissionWithRoles({
     name: 'View active theme details',
-    action: 'active',
+    action: 'readActive',
     object: 'theme'
 }, [
     'Author',

@@ -161,7 +161,7 @@ module.exports = function apiRoutes() {
 
     router.get('/themes/active',
         mw.authAdminApi,
-        http(api.themes.active)
+        http(api.themes.readActive)
     );
 
     router.post('/themes/upload',

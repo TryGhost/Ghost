@@ -16,15 +16,12 @@ module.exports = {
         }
     },
 
-    active: {
-        headers: {
-            cacheInvalidate: true
-        },
+    readActive: {
         permissions: true,
         async query() {
             let themeName = settingsCache.get('active_theme');
-            const checkedTheme = await themeService.api.check(themeName);
-            return themeService.api.getJSON(themeName, checkedTheme);
+            const themeErrors = await themeService.api.getThemeErrors(themeName);
+            return themeService.api.getJSON(themeName, themeErrors);
         }
     },
 
@@ -55,15 +52,9 @@ module.exports = {
                 value: themeName
             }];
 
-            return themeService.api.activate(themeName)
-                .then((checkedTheme) => {
-                    // @NOTE: we use the model, not the API here, as we don't want to trigger permissions
-                    return models.Settings.edit(newSettings, frame.options)
-                        .then(() => checkedTheme);
-                })
-                .then((checkedTheme) => {
-                    return themeService.api.getJSON(themeName, checkedTheme);
-                });
+            const themeErrors = await themeService.api.activate(themeName);
+            await models.Settings.edit(newSettings, frame.options);
+            return themeService.api.getJSON(themeName, themeErrors);
         }
     },
 

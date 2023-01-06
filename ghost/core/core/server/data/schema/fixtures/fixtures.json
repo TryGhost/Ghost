@@ -216,7 +216,7 @@
                 },
                 {
                     "name": "View active theme details",
-                    "action_type": "active",
+                    "action_type": "readActive",
                     "object_type": "theme"
                 },
                 {
@@ -809,7 +809,7 @@
                     "user": "all",
                     "role": "all",
                     "invite": "all",
-                    "theme": ["browse", "active"],
+                    "theme": ["browse", "readActive"],
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",
@@ -824,7 +824,7 @@
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "theme": ["browse", "active"],
+                    "theme": ["browse", "readActive"],
                     "email_preview": "read",
                     "email": "read",
                     "snippet": ["browse", "read"],

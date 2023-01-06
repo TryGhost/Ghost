@@ -37,6 +37,13 @@ const canActivate = function canActivate(checkedTheme) {
     return !checkedTheme.results.hasFatalErrors;
 };
 
+const getErrorsFromCheckedTheme = function getErrorsFromCheckedTheme(checkedTheme) {
+    return {
+        errors: checkedTheme.results.error ?? [],
+        warnings: checkedTheme.results.warning ?? []
+    };
+};
+
 const check = async function check(themeName, theme, isZip) {
     debug('Begin: Check');
     // gscan can slow down boot time if we require on boot, for now nest the require.
@@ -70,9 +77,9 @@ const check = async function check(themeName, theme, isZip) {
         checkedTheme.results.warning = [];
     }
 
-    // Cache the result
+    // Cache warnings and errors
     try {
-        await gscanCacheStore.set(themeName, checkedTheme);
+        await gscanCacheStore.set(themeName, getErrorsFromCheckedTheme(checkedTheme));
     } catch (err) {
         logging.error('Failed to cache gscan result');
         logging.error(err);
@@ -83,14 +90,15 @@ const check = async function check(themeName, theme, isZip) {
 };
 
 /**
- * Returns the last cached result of check() if available.
- * Otherwise runs check() on the loaded theme with that name (which will always cache the result)
+ * Returns the last cached errors and warnings of check() if available.
+ * Otherwise runs check() on the loaded theme with that name (which will always cache the error and warning results)
+ * @returns {Promise<{errors: Array, warnings: Array}>}
  */
-const checkCached = async function checkCached(themeName) {
+const getThemeErrors = async function getThemeErrors(themeName) {
     try {
-        const cachedTheme = await gscanCacheStore.get(themeName);
-        if (cachedTheme) {
-            return cachedTheme;
+        const cachedThemeErrors = await gscanCacheStore.get(themeName);
+        if (cachedThemeErrors) {
+            return cachedThemeErrors;
         }
     } catch (err) {
         logging.error('Failed to get gscan result from cache');
@@ -106,7 +114,8 @@ const checkCached = async function checkCached(themeName) {
         });
     }
 
-    return await check(themeName, loadedTheme);
+    const result = await check(themeName, loadedTheme);
+    return getErrorsFromCheckedTheme(result);
 };
 
 const checkSafe = async function checkSafe(themeName, theme, isZip) {
@@ -141,7 +150,8 @@ const getThemeValidationError = (message, themeName, checkedTheme) => {
 };
 
 module.exports.check = check;
-module.exports.checkCached = checkCached;
 module.exports.checkSafe = checkSafe;
 module.exports.canActivate = canActivate;
+module.exports.getErrorsFromCheckedTheme = getErrorsFromCheckedTheme;
 module.exports.getThemeValidationError = getThemeValidationError;
+module.exports.getThemeErrors = getThemeErrors;

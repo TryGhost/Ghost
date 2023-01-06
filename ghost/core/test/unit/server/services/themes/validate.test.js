@@ -137,7 +137,7 @@ describe('Themes', function () {
         });
     });
 
-    describe('checkCached', function () {
+    describe('getThemeErrors', function () {
         const testTheme = {
             name: 'supertheme',
             version: '1.0.0',
@@ -152,23 +152,23 @@ describe('Themes', function () {
 
         it('Does an innitial check if not cached yet', async function () {
             checkStub.resolves({});
-            formatStub.returns({results: {error: []}});
+            formatStub.returns({results: {error: [{hello: 'world'}]}});
 
-            const checkedTheme = await validate.checkCached(testTheme.name);
+            const checkedTheme = await validate.getThemeErrors(testTheme.name);
             sinon.assert.calledOnce(checkStub);
             sinon.assert.calledOnce(formatStub);
-            assert.deepEqual(checkedTheme, {results: {error: []}});
+            assert.deepEqual(checkedTheme, {errors: [{hello: 'world'}], warnings: []});
         });
 
         it('Reuses same result if called again', async function () {
-            const checkedTheme = await validate.checkCached(testTheme.name);
+            const checkedTheme = await validate.getThemeErrors(testTheme.name);
             sinon.assert.notCalled(checkStub);
             sinon.assert.notCalled(formatStub);
-            assert.deepEqual(checkedTheme, {results: {error: []}});
+            assert.deepEqual(checkedTheme, {errors: [{hello: 'world'}], warnings: []});
         });
 
         it('Throws for invalid theme names', async function () {
-            await assert.rejects(validate.checkCached('invalid-theme-name'), /Theme "invalid-theme-name" is not loaded and cannot be checked/);
+            await assert.rejects(validate.getThemeErrors('invalid-theme-name'), /Theme "invalid-theme-name" is not loaded and cannot be checked/);
         });
 
         it('Silently fails when cache adapter throws', async function () {
@@ -180,12 +180,12 @@ describe('Themes', function () {
             validate.init();
 
             checkStub.resolves({});
-            formatStub.returns({results: {error: []}});
+            formatStub.returns({results: {error: [{hello: 'world'}]}});
 
-            const checkedTheme = await validate.checkCached(testTheme.name);
+            const checkedTheme = await validate.getThemeErrors(testTheme.name);
             sinon.assert.calledOnce(checkStub);
             sinon.assert.calledOnce(formatStub);
-            assert.deepEqual(checkedTheme, {results: {error: []}});
+            assert.deepEqual(checkedTheme, {errors: [{hello: 'world'}], warnings: []});
         });
     });
 });
