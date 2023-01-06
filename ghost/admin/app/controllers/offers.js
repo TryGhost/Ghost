@@ -77,7 +77,8 @@ export default class MembersController extends Controller {
     }
 
     @action
-    offerMembers(offerId) {
+    offerMembers(offerId, event) {
+        event.preventDefault();
         this.router.transitionTo('members', {queryParams: {filter: `offer_redemptions:${offerId}`}});
     }
 
