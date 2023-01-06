@@ -80,4 +80,59 @@ describe('StripeAPI', function () {
         should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan, true);
         should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days);
     });
+
+    it('createCheckoutSession passes customer ID successfully to Stripe', async function (){
+        const mockCustomer = {
+            id: 'cust_mock_123456',
+            customer_email: 'foo@example.com',
+            name: 'Example Customer'
+        };
+
+        await api.createCheckoutSession('priceId', mockCustomer, {
+            trialDays: null
+        });
+
+        should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
+        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, 'cust_mock_123456');
+    });
+
+    it('createCheckoutSession passes email if no customer object provided', async function (){
+        await api.createCheckoutSession('priceId', undefined, {
+            customerEmail: 'foo@example.com',
+            trialDays: null
+        });
+
+        should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email);
+        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email, 'foo@example.com');
+    });
+
+    it('createCheckoutSession passes email if customer object provided w/o ID', async function (){
+        const mockCustomer = {
+            email: 'foo@example.com',
+            name: 'Example Customer'
+        };
+
+        await api.createCheckoutSession('priceId', mockCustomer, {
+            trialDays: null
+        });
+
+        should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email);
+        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email, 'foo@example.com');
+    });
+
+    it('createCheckoutSession passes only one of customer ID and email', async function (){
+        const mockCustomer = {
+            id: 'cust_mock_123456',
+            email: 'foo@example.com',
+            name: 'Example Customer'
+        };
+
+        await api.createCheckoutSession('priceId', mockCustomer, {
+            trialDays: null
+        });
+
+        should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email);
+        should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
+        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, 'cust_mock_123456');
+    });
 });
