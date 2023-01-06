@@ -273,7 +273,7 @@ test.describe('Admin', () => {
             await page.locator('button[data-test-button="remove-label-selected"]').click();
             await page.locator('div[data-test-state="remove-label-unconfirmed"] > span > select').selectOption({label: 'old'});
             await page.locator('button[data-test-button="confirm"]').click();
-            const success = await page.locator('div[data-test-state="add-complete"] > div > p').innerText();
+            const success = await page.locator('div[data-test-state="remove-complete"] > div > p').innerText();
             expect(success).toEqual('Label removed from 3 members successfully');
         });
 
