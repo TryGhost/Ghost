@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
@@ -1055,7 +1056,13 @@ export default class LexicalEditorController extends Controller {
         } else if (error && error.payload && error.payload.errors && error.payload.errors[0].message) {
             return this.notifications.showAPIError(error, {key: 'post.save'});
         } else {
-            errorMessage = 'Unknown Error';
+            errorMessage = GENERIC_ERROR_MESSAGE;
+
+            console.error(error); // eslint-disable-line
+
+            if (this.config.sentry_dsn) {
+                Sentry.captureException(error);
+            }
         }
 
         message += `: ${errorMessage}`;

@@ -1,6 +1,9 @@
+import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
+import {GENERIC_ERROR_MESSAGE} from '../../../../services/notifications';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isArray} from '@ember/array';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -13,6 +16,8 @@ function isString(str) {
 
 export default class PublishFlowOptions extends Component {
     @service settings;
+
+    @inject config;
 
     @tracked errorMessage;
 
@@ -114,9 +119,15 @@ export default class PublishFlowOptions extends Component {
                 // TODO: remove this once validations are fixed
                 errorMessage = e[0];
             } else if (payloadError?.message) {
-                errorMessage = e.payload.errors[0].message;
+                errorMessage = payloadError.message;
             } else {
-                errorMessage = 'Unknown Error';
+                errorMessage = GENERIC_ERROR_MESSAGE;
+
+                console.error(e); // eslint-disable-line
+
+                if (this.config.sentry_dsn) {
+                    Sentry.captureException(e);
+                }
             }
 
             this.errorMessage = htmlSafe(errorMessage);
