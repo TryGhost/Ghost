@@ -153,6 +153,7 @@ export default class UploadThemeModal extends Component {
 
             this.fatalValidationErrors = fatalErrors;
             this.validationErrors = normalErrors;
+            this.validationWarnings = errorResponse.payload.errors[0].details.warnings || [];
         }
     }
 
