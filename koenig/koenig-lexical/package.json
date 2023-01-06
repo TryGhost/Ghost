@@ -71,7 +71,7 @@
     "eslint-plugin-tailwindcss": "3.8.0",
     "jsdom": "20.0.3",
     "linkedom": "0.14.21",
-    "playwright": "1.29.1",
+    "playwright": "1.29.2",
     "postcss": "8.4.20",
     "postcss-import": "15.1.0",
     "prettier": "2.8.1",
