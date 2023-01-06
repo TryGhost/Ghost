@@ -53,7 +53,7 @@ test.describe('Portal', () => {
 
             // Ensure the offer redemption count was bumped
             await page.locator('.gh-nav a[href="#/offers/"]').click();
-            const locator = page.locator('[data-test-list="offers-list-item"] a:nth-child(5) span').last();
+            const locator = page.locator(`[data-test-offer="${offerName}"]`).locator('[data-test-list="redemption-count"]').locator('span');
             await expect(locator).toContainText('1');
         });
 
