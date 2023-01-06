@@ -13,7 +13,7 @@ const jsonpath = require('jsonpath');
 
 const messages = {
     mustBeCalledAsBlock: 'The {\\{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}',
-    invalidResource: 'Invalid resource given to get helper'
+    invalidResource: 'Invalid "{resource}" resource given to get helper'
 };
 
 const createFrame = hbs.handlebars.createFrame;
@@ -193,7 +193,7 @@ module.exports = async function get(resource, options) {
     }
 
     if (!RESOURCES[resource]) {
-        data.error = tpl(messages.invalidResource);
+        data.error = tpl(messages.invalidResource, {resource});
         logging.warn(data.error);
         return options.inverse(self, {data: data});
     }

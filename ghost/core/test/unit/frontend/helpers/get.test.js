@@ -102,7 +102,7 @@ describe('{{#get}} helper', function () {
                 inverse.calledOnce.should.be.true();
                 inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
                 inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-                inverse.firstCall.args[1].data.error.should.eql('Invalid resource given to get helper');
+                inverse.firstCall.args[1].data.error.should.eql('Invalid "magic" resource given to get helper');
 
                 done();
             }).catch(done);
