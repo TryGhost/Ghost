@@ -12332,10 +12332,10 @@ ember-template-imports@^3.4.0:
     string.prototype.matchall "^4.0.6"
     validate-peer-dependencies "^1.1.0"
 
-ember-template-lint@5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-5.3.0.tgz#da91f704d0055db8e69ff13b5f98488cc76a8322"
-  integrity sha512-P4GsqYDN3bvTgN8+v3LQsBQVfDnu/EJJzZH8LqAYZxFfRQmBeZMcMFjB6I8QS9NYkYKOXO4I4ApiJYtFHRXsUw==
+ember-template-lint@5.3.1:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-5.3.1.tgz#0f1df8d60c6db71556f7c9db6defd9cde3e51d0a"
+  integrity sha512-c1eqYkjMjbZ2Hxfsv49bQcNCfRd2gDjoQv9t48BOb8/l94ygzf8YQN6uzQcIW/zvtVEugh04yGm8moxd7UR4vQ==
   dependencies:
     "@lint-todo/utils" "^13.0.3"
     aria-query "^5.0.2"
@@ -12348,9 +12348,9 @@ ember-template-lint@5.3.0:
     find-up "^6.3.0"
     fuse.js "^6.5.3"
     get-stdin "^9.0.0"
-    globby "^13.1.2"
+    globby "^13.1.3"
     is-glob "^4.0.3"
-    language-tags "^1.0.6"
+    language-tags "^1.0.7"
     micromatch "^4.0.5"
     resolve "^1.22.1"
     v8-compile-cache "^2.3.0"
@@ -14698,7 +14698,7 @@ globby@^11.0.3, globby@^11.0.4, globby@^11.1.0:
     merge2 "^1.4.1"
     slash "^3.0.0"
 
-globby@^13.0.0, globby@^13.1.1, globby@^13.1.2:
+globby@^13.0.0, globby@^13.1.1, globby@^13.1.3:
   version "13.1.3"
   resolved "https://registry.yarnpkg.com/globby/-/globby-13.1.3.tgz#f62baf5720bcb2c1330c8d4ef222ee12318563ff"
   integrity sha512-8krCNHXvlCgHDpegPzleMq07yMYTO2sXKASmZmquEYWEmCx6J5UTRbp5RwMJkTJGtcQ44YpiUYUiN0b9mzy8Bw==
@@ -17649,7 +17649,7 @@ language-subtag-registry@^0.3.20:
   resolved "https://registry.yarnpkg.com/language-subtag-registry/-/language-subtag-registry-0.3.22.tgz#2e1500861b2e457eba7e7ae86877cbd08fa1fd1d"
   integrity sha512-tN0MCzyWnoz/4nHS6uxdlFWoUZT7ABptwKPQ52Ea7URk6vll88bWBVhodtnlfEuCcKWNGoc+uGbw1cwa9IKh/w==
 
-language-tags@^1.0.5, language-tags@^1.0.6:
+language-tags@^1.0.5, language-tags@^1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/language-tags/-/language-tags-1.0.7.tgz#41cc248730f3f12a452c2e2efe32bc0bbce67967"
   integrity sha512-bSytju1/657hFjgUzPAPqszxH62ouE8nQFoFaVlIQfne4wO/wXC9A4+m8jYve7YBBvi59eq0SUpcshvG8h5Usw==
