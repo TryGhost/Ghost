@@ -143,7 +143,8 @@ const getThemeValidationError = (message, themeName, checkedTheme) => {
         message: tpl(messages[message], {theme: themeName}),
         errorDetails: Object.assign(
             _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
-                errors: checkedTheme.results.error
+                errors: checkedTheme.results.error,
+                warnings: checkedTheme.results.warning
             }
         )
     });
