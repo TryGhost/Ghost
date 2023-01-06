@@ -87,6 +87,13 @@ describe('Themes API', function () {
             .expect(200);
     });
 
+    it('Can fetch active theme', async function () {
+        await ownerRequest
+            .get(localUtils.API.getApiQuery('themes/active/'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+    });
+
     it('Can upload a valid theme', async function () {
         const res = await uploadTheme({themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')});
         const jsonResponse = res.body;
@@ -264,6 +271,14 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(testTheme2, 'theme', ['warnings', 'templates']);
         testTheme2.active.should.be.true();
         testTheme2.warnings.should.be.an.Array();
+
+        // Result should be the same
+        const activeThemeResult = await ownerRequest
+            .get(localUtils.API.getApiQuery('themes/active/'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        res2.body.should.eql(activeThemeResult.body);
     });
 
     it('Can download and install a theme from GitHub', async function () {

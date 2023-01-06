@@ -220,6 +220,11 @@
                     "object_type": "theme"
                 },
                 {
+                    "name": "View active theme details",
+                    "action_type": "readActive",
+                    "object_type": "theme"
+                },
+                {
                     "name": "Upload themes",
                     "action_type": "add",
                     "object_type": "theme"
@@ -980,7 +985,7 @@
                     "user": "all",
                     "role": "all",
                     "invite": "all",
-                    "theme": ["browse"],
+                    "theme": ["browse", "readActive"],
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",
@@ -995,7 +1000,7 @@
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "theme": ["browse"],
+                    "theme": ["browse", "readActive"],
                     "email_preview": "read",
                     "email": "read",
                     "snippet": ["browse", "read"],

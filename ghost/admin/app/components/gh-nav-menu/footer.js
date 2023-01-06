@@ -1,5 +1,5 @@
-import AboutModal from '../modals/theme-errors';
 import Component from '@ember/component';
+import ThemeErrorsModal from '../modals/design/theme-errors';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
@@ -14,6 +14,7 @@ export default class Footer extends Component {
     @service whatsNew;
     @service feature;
     @service modals;
+    @service themeManagement;
 
     @inject config;
 
@@ -25,7 +26,17 @@ export default class Footer extends Component {
 
     @action
     openThemeErrors() {
-        this.advancedModal = this.modals.open(AboutModal);
+        this.advancedModal = this.modals.open(ThemeErrorsModal, {
+            title: 'Theme errors',
+            canActivate: false,
+            // Warnings will only be set for developers, otherwise it will always be empty
+            warnings: this.themeManagement.activeTheme.warnings,
+            errors: this.themeManagement.activeTheme.errors
+        });
+    }
+
+    get hasThemeErrors() {
+        return this.themeManagement.activeTheme && this.themeManagement.activeTheme.errors.length;
     }
 
     // equivalent to "left: auto; right: -20px"

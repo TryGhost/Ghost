@@ -27,7 +27,8 @@
         "cache": {
             "active": "Memory",
             "settings": {},
-            "imageSizes": {}
+            "imageSizes": {},
+            "gscan": {}
         }
     },
     "storage": {

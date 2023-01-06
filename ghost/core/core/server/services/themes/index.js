@@ -3,7 +3,7 @@ const themeLoader = require('./loader');
 const storage = require('./storage');
 const getJSON = require('./to-json');
 const installer = require('./installer');
-
+const validate = require('./validate');
 const settingsCache = require('../../../shared/settings-cache');
 
 module.exports = {
@@ -11,8 +11,9 @@ module.exports = {
      * Load the currently active theme
      */
     init: async () => {
-        const themeName = settingsCache.get('active_theme');
+        validate.init();
 
+        const themeName = settingsCache.get('active_theme');
         return activate.loadAndActivate(themeName);
     },
     /**
@@ -25,6 +26,7 @@ module.exports = {
     api: {
         getJSON,
         activate: activate.activate,
+        getThemeErrors: validate.getThemeErrors,
         getZip: storage.getZip,
         setFromZip: storage.setFromZip,
         installFromGithub: installer.installFromGithub,

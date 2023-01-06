@@ -45,7 +45,7 @@ describe('Database Migration (special functions)', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(108);
+            permissions.length.should.eql(109);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'DB Backup Integration']);
@@ -80,6 +80,7 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Browse themes', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
             permissions.should.havePermission('Edit themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Activate themes', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('View active theme details', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Upload themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Download themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Delete themes', ['Administrator', 'Admin Integration']);

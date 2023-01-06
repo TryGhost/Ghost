@@ -4,11 +4,11 @@ import {isBlank} from '@ember/utils';
 
 export default Model.extend({
     active: attr('boolean'),
-    errors: attr('raw'),
+    errors: attr('raw', {defaultValue: () => []}),
     name: attr('string'),
     package: attr('raw'),
     templates: attr('raw', {defaultValue: () => []}),
-    warnings: attr('raw'),
+    warnings: attr('raw', {defaultValue: () => []}),
 
     customTemplates: computed('templates.[]', function () {
         let templates = this.templates || [];
