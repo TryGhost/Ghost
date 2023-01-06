@@ -17,7 +17,8 @@ const messages = {
 const GA_FEATURES = [
     'sourceAttribution',
     'memberAttribution',
-    'audienceFeedback'
+    'audienceFeedback',
+    'themeErrorsNotification'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -31,8 +32,7 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'lexicalEditor',
     'suppressionList',
-    'emailStability',
-    'themeErrorsNotification'
+    'emailStability'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
