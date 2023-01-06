@@ -2147,3 +2147,22 @@ section.gh-ds h2 {
         justify-content: center;
     }
 }
+
+
+/* Theme error toast and modal */
+.gh-theme-error-toast {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.3rem;
+    text-align: left;
+    line-height: 1.35em;
+    padding: 20px;
+    margin-bottom: 32px;
+    color: #fff;
+    background: var(--red);
+    border-radius: 6px;
+}
+
+.gh-theme-error-toast .gh-notification-title {
+    margin: 0 0 6px 0;
+}
