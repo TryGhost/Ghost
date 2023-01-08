@@ -76,12 +76,6 @@ export default class MembersController extends Controller {
         });
     }
 
-    @action
-    offerMembers(offerId, event) {
-        event.preventDefault();
-        this.router.transitionTo('members', {queryParams: {filter: `offer_redemptions:${offerId}`}});
-    }
-
     @task({restartable: true})
     *fetchOffersTask() {
         this.tiers = yield this.store.query('tier', {
