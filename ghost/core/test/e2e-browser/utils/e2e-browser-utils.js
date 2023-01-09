@@ -195,7 +195,9 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
         await page.locator('.modal-content').getByRole('button', {name: 'Archive'}).click();
         await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
     }
-
+    if (!await page.locator('.gh-btn-add-tier').isVisible()) {
+        await page.locator('[data-test-toggle-pub-info]').click();
+    }
     // Add the tier
     await page.locator('.gh-btn-add-tier').click();
     const modal = page.locator('.modal-content');
