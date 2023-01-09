@@ -38,8 +38,9 @@ class EmailController {
         }
 
         let newsletter;
-        if (frame.options.newsletter) {
-            newsletter = await this.models.Newsletter.findOne({slug: frame.options.newsletter}, {require: true});
+        const slug = frame?.options?.newsletter ?? frame?.data?.newsletter ?? null;
+        if (slug) {
+            newsletter = await this.models.Newsletter.findOne({slug}, {require: true});
         } else {
             newsletter = (await post.getLazyRelation('newsletter')) ?? (await this.models.Newsletter.getDefaultNewsletter());
         }

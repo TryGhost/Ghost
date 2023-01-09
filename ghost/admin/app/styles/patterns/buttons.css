@@ -253,10 +253,6 @@ fieldset[disabled] .gh-btn {
     margin-right: 0.6em;
 }
 
-.gh-btn-white svg {
-    fill: var(--darkgrey);
-}
-
 .gh-btn-icon svg.gh-spinner {
     left: 5px;
 }
