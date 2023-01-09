@@ -294,7 +294,7 @@ export default class PopupModal extends React.Component {
 
         return (
             <div style={Styles.modalContainer}>
-                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()}>
+                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup'>
                     <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent />
                 </Frame>
