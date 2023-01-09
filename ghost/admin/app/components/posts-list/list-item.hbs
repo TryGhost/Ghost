@@ -135,15 +135,6 @@
                 opened
             </span>
         </LinkTo>
-    {{else if (and @post.isPage @post.showAttributionAnalytics) }}
-        <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-metrics">
-            <span class="gh-content-email-stats-value">
-                {{@post.count.signups}}
-            </span>
-            <span class="gh-content-email-stats">
-                signups
-            </span>
-        </LinkTo>
     {{else}}
         <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
             {{!-- Empty on purpose --}}
@@ -162,15 +153,6 @@
             </span>
             <span class="gh-content-email-stats">
                 clicked
-            </span>
-        </LinkTo>
-    {{else if (and @post.isPage @post.showPaidAttributionAnalytics) }}
-        <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-metrics">
-            <span class="gh-content-email-stats-value">
-                {{@post.count.paid_conversions}}
-            </span>
-            <span class="gh-content-email-stats">
-                conversions
             </span>
         </LinkTo>
     {{else}}
