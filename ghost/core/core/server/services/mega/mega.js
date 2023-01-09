@@ -50,9 +50,15 @@ const getReplyToAddress = (fromAddress, replyAddressOption) => {
  *
  * @param {Object} postModel - post model instance
  * @param {Object} options
+ * @param {Object} options
  */
 const getEmailData = async (postModel, options) => {
-    let newsletter = await postModel.getLazyRelation('newsletter');
+    let newsletter;
+    if (options.newsletterSlug) {
+        newsletter = await models.Newsletter.findOne({slug: options.newsletterSlug});
+    } else {
+        newsletter = await postModel.getLazyRelation('newsletter');
+    }
     if (!newsletter) {
         // The postModel doesn't have a newsletter in test emails
         newsletter = await models.Newsletter.getDefaultNewsletter();
@@ -85,8 +91,8 @@ const getEmailData = async (postModel, options) => {
  * @param {[string]} toEmails - member email addresses to send email to
  * @param {ValidMemberSegment} [memberSegment]
  */
-const sendTestEmail = async (postModel, toEmails, memberSegment) => {
-    let emailData = await getEmailData(postModel, {isTestEmail: true});
+const sendTestEmail = async (postModel, toEmails, memberSegment, newsletterSlug) => {
+    let emailData = await getEmailData(postModel, {isTestEmail: true, newsletterSlug});
     emailData.subject = `[Test] ${emailData.subject}`;
 
     // fetch any matching members so that replacements use expected values

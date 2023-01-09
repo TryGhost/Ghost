@@ -78,8 +78,8 @@ module.exports = {
                     message: tpl(messages.postNotFound)
                 });
             }
-            const {emails = [], memberSegment} = frame.data;
-            return await mega.mega.sendTestEmail(model, emails, memberSegment);
+            const {emails = [], memberSegment, newsletter = ''} = frame.data;
+            return await mega.mega.sendTestEmail(model, emails, memberSegment, newsletter);
         }
     }
 };

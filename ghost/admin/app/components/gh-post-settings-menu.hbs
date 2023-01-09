@@ -1,5 +1,5 @@
 <div
-    class="settings-menu-container {{if (and this.isViewingSubview (not (eq this.subview "email-settings"))) "settings-menu-container-wide"}}"
+    class="settings-menu-container {{if this.isViewingSubview "settings-menu-container-wide"}}"
     {{did-insert this.setSidebarWidthFromElement}}
     {{did-update this.setSidebarWidthFromElement this.isViewingSubview}}
 >
@@ -138,15 +138,6 @@
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
-                    {{#if (and this.post.isPost this.showEmailNewsletter (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
-                        <li class="nav-list-item">
-                            <button type="button" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
-                                <b>Email newsletter</b>
-                                <span>Customize email settings</span>
-                            </button>
-                            {{svg-jar "arrow-right"}}
-                        </li>
-                    {{/if}}
                     <li class="nav-list-item">
                         <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
                             <b>Code injection</b>
@@ -187,7 +178,7 @@
         </div>{{! .post-settings-menu }}
 
         {{#if this.isViewingSubview}}
-        <div class="settings-menu settings-menu-pane {{unless (eq this.subview "email-settings") "settings-menu-pane-wide"}}">
+        <div class="settings-menu settings-menu-pane settings-menu-pane-wide">
             <div class="active">
                     {{#if (eq this.subview "meta-data")}}
                         <div class="settings-menu-header subview">
@@ -328,14 +319,6 @@
 
                             </form>
                         </div>
-                    {{/if}}
-
-                    {{#if (eq this.subview "email-settings")}}
-                        <GhPostSettingsMenu::Email
-                            @post={{this.post}}
-                            @savePostTask={{this.savePostTask}}
-                            @close={{action "closeSubview"}}
-                        />
                     {{/if}}
 
                     {{#if (eq this.subview "facebook-data")}}
