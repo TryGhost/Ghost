@@ -459,7 +459,9 @@ class SignupPage extends React.Component {
         const {site} = this.context;
         if (hasFreeTrialTier({site}) && !isInviteOnlySite({site})) {
             return (
-                <p className='gh-portal-free-trial-notification'>After a free trial ends, you will be charged the regular price for the tier you’ve chosen. You can always cancel before then.</p>
+                <p className='gh-portal-free-trial-notification' data-testid="free-trial-notification-text">
+                    After a free trial ends, you will be charged the regular price for the tier you’ve chosen. You can always cancel before then.
+                </p>
             );
         }
         return null;
@@ -506,7 +508,12 @@ class SignupPage extends React.Component {
             return (
                 <section>
                     <div className='gh-portal-section'>
-                        <p className='gh-portal-invite-only-notification'>This site is invite-only, contact the owner for access.</p>
+                        <p
+                            className='gh-portal-invite-only-notification'
+                            data-testid="invite-only-notification-text"
+                        >
+                                This site is invite-only, contact the owner for access.
+                        </p>
                         {this.renderLoginMessage()}
                     </div>
                 </section>
@@ -573,7 +580,7 @@ class SignupPage extends React.Component {
         return (
             <header className='gh-portal-signup-header'>
                 {this.renderSiteLogo()}
-                <h1 className="gh-portal-main-title">{siteTitle}</h1>
+                <h1 className="gh-portal-main-title" data-testid='site-title-text'>{siteTitle}</h1>
             </header>
         );
     }
