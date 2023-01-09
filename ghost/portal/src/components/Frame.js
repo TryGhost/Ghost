@@ -24,9 +24,16 @@ export default class Frame extends Component {
     }
 
     render() {
-        const {children, head, title = '', style = {}, ...rest} = this.props;
+        const {children, head, title = '', style = {}, dataTestId = '', ...rest} = this.props;
         return (
-            <iframe srcDoc={`<!DOCTYPE html>`} {...rest} ref={node => (this.node = node)} title={title} style={style} frameBorder="0">
+            <iframe
+                srcDoc={`<!DOCTYPE html>`}
+                data-testid={dataTestId}
+                ref={node => (this.node = node)}
+                title={title}
+                style={style} frameBorder="0"
+                {...rest}
+            >
                 {this.iframeHead && createPortal(head, this.iframeHead)}
                 {this.iframeRoot && createPortal(children, this.iframeRoot)}
             </iframe>
