@@ -69,7 +69,7 @@
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "27.2.1",
     "eslint-plugin-tailwindcss": "3.8.0",
-    "jsdom": "20.0.3",
+    "jsdom": "21.0.0",
     "linkedom": "0.14.21",
     "playwright": "1.29.2",
     "postcss": "8.4.21",

@@ -41,7 +41,7 @@
     "sinon": "15.0.1"
   },
   "dependencies": {
-    "jsdom": "^20.0.3",
+    "jsdom": "^21.0.0",
     "lexical": "^0.7.0"
   }
 }
