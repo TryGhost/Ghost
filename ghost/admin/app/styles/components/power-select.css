@@ -9,7 +9,7 @@
     border: var(--input-border);
 }
 
-.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg {
+.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger):not(.gh-preview-newsletter-trigger) svg {
     height: 4px;
     width: 6.11px;
     margin-left: 2px;

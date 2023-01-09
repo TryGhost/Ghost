@@ -18,6 +18,7 @@
 .gh-browserpreview-iframecontainer {
     flex-grow: 1;
     position: relative;
+    overflow: hidden;
 }
 
 .gh-browserpreview-iframecontainer .site-frame {
