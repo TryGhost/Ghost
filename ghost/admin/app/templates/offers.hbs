@@ -54,7 +54,7 @@
                 </thead>
                 <tbody>
                     {{#each this.filteredOffers as |offer|}}
-                        <tr class="gh-list-row" data-test-list="offers-list-item">
+                        <tr class="gh-list-row" data-test-list="offers-list-item" data-test-offer="{{offer.name}}">
                             <LinkTo @route="offer" @model={{offer}} class="gh-list-data" data-test-list="offer-name">
                                 <h3>{{offer.name}}</h3>
                             </LinkTo>
@@ -92,7 +92,7 @@
                                     <span class="midgrey strike ml2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span>
                                 {{/if}}
                             </LinkTo>
-                            <LinkTo @route="members" @query={{hash filter=(concat "offer_redemptions:" offer.id)}} class="gh-list-data">
+                            <LinkTo @route="members" @query={{hash filter=(concat "offer_redemptions:" offer.id)}} class="gh-list-data" data-test-list="redemption-count">
                                 <span class="midgrey">{{offer.redemptionCount}}</span>
                             </LinkTo>
                             <div class="gh-list-data gh-list-cellwidth-10 gh-list-chevron">

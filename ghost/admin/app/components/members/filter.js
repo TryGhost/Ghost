@@ -151,7 +151,7 @@ export default class MembersFilter extends Component {
 
         // find list of newsletters from store and add them to filter list if there are more than one newsletter
         // it also removes the 'subscribed' filter from the list as that would unsubscribe members from all newsletters, instead replace it with a filter for each newsletter
-        if (this.newsletters.length > 1) {
+        if (this.newsletters?.length > 1) {
             // remove the 'subscribed' filter from the list
             availableFilters = availableFilters.filter(prop => prop.name !== 'subscribed');
             // find the index of the 'basic' group and insert the 'multiple newsletters' filter after it

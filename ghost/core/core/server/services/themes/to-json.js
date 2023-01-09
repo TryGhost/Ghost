@@ -13,10 +13,10 @@ const settingsCache = require('../../../shared/settings-cache');
  * @TODO: settingsCache.get('active_theme') vs. active.get().name
  *
  * @param {string} [name] - the theme to output
- * @param {object} [checkedTheme] - a theme result from gscan
+ * @param {{errors: Array, warnings: Array}} [themeErrors] - Error and warning results from checked theme (if available)
  * @return {}
  */
-module.exports = function toJSON(name, checkedTheme) {
+module.exports = function toJSON(name, themeErrors) {
     let themeResult;
     let toFilter;
 
@@ -30,12 +30,12 @@ module.exports = function toJSON(name, checkedTheme) {
 
         themeResult = packageJSON.filter(toFilter, settingsCache.get('active_theme'));
 
-        if (checkedTheme && checkedTheme.results.warning.length > 0) {
-            themeResult[0].warnings = _.cloneDeep(checkedTheme.results.warning);
+        if (themeErrors && themeErrors.warnings.length) {
+            themeResult[0].warnings = _.cloneDeep(themeErrors.warnings);
         }
 
-        if (checkedTheme && checkedTheme.results.error.length > 0) {
-            themeResult[0].errors = _.cloneDeep(checkedTheme.results.error);
+        if (themeErrors && themeErrors.errors.length) {
+            themeResult[0].errors = _.cloneDeep(themeErrors.errors);
         }
     }
 

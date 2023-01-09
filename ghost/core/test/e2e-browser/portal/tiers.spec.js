@@ -16,7 +16,7 @@ test.describe('Portal', () => {
 
             // fill out signup form and submit
             await portalFrame.locator('[data-test-input="input-name"]').fill('Testy McTesterson');
-            await portalFrame.locator('[data-test-input="input-email"]').fill('testy@example.com');
+            await portalFrame.locator('[data-test-input="input-email"]').fill('testy+paidsignup@example.com');
             await portalFrame.locator('[data-test-button="select-tier"]').nth(1).click();
             const hasContinueBtn = await portalFrame.locator('text="Continue"').isVisible();
             if (hasContinueBtn) {
@@ -28,7 +28,7 @@ test.describe('Portal', () => {
             // come back to the website, open portal and check member is logged in and has paid
             await page.waitForSelector('h1.site-title', {state: 'visible'});
             await portalTriggerButton.click();
-            await expect(portalFrame.getByText('testy@example.com')).toBeVisible();
+            await expect(portalFrame.getByText('testy+paidsignup@example.com')).toBeVisible();
             await expect(portalFrame.getByRole('heading', {name: 'Billing info'})).toBeVisible();
             await expect(portalFrame.getByText('**** **** **** 4242')).toBeVisible();
         });
