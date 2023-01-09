@@ -1174,8 +1174,6 @@ ${ templateSettings.showBadge ? `
 }
 ` : ''}
 
-${iff(templateSettings.feedbackEnabled, feedbackButtons.getButtonsHeadStyles(templateSettings.accentColor), '')}
-
 </style>
 </head>
 
@@ -1281,7 +1279,7 @@ ${iff(templateSettings.feedbackEnabled, feedbackButtons.getButtonsHeadStyles(tem
 
                         <!-- END MAIN CONTENT AREA -->
 
-                        ${iff(templateSettings.feedbackEnabled, feedbackButtons.getTemplate(templateSettings.accentColor), '')}
+                        ${iff(templateSettings.feedbackEnabled, feedbackButtons.getTemplate(), '')}
 
                         <tr>
                             <td class="wrapper" align="center">

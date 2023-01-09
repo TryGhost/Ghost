@@ -44,8 +44,4 @@ export default class EditNewsletterPreview extends Component {
     get featureImageStyle() {
         return htmlSafe(`background-image: url(${this.featureImageUrl})`);
     }
-
-    get accentColor() {
-        return this.settings.accentColor;
-    }
 }

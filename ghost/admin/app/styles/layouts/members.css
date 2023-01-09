@@ -2200,8 +2200,10 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-feedback-button {
+    background: #fff;
     font-weight: bold;
     border-radius: 22px;
+    border: 1px solid #e5eff5;
     pointer-events: none;
     cursor: default;
 }
@@ -2215,8 +2217,7 @@ p.gh-members-import-errordetail:first-of-type {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
-    filter: brightness(0.4);
+    padding: 7px 18px;
 }
 
 /* Custom tier member details */
