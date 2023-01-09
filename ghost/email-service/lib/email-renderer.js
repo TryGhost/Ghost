@@ -503,10 +503,6 @@ class EmailRenderer {
         const adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
         const adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
 
-        const color = new Color(accentColor);
-        const buttonBackgroundColor = `${accentColor}10`;
-        const buttonTextColor = color.darken(0.6).hex();
-
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth} = await this.limitImageWidth(post.get('feature_image'));
 
@@ -596,23 +592,7 @@ class EmailRenderer {
             // Audience feedback
             feedbackButtons: newsletter.get('feedback_enabled') ? {
                 likeHref: positiveLink,
-                dislikeHref: negativeLink,
-                backgroundColor: buttonBackgroundColor,
-                textColor: buttonTextColor,
-
-                sizes: {
-                    width: 100,
-                    height: 38,
-                    iconWidth: 24
-                },
-                // Sizes defined in pixels won’t be adjusted when Outlook is rendering at 120 dpi.
-                // To solve the problem we use values in points (1 pixel = 0.75 point).
-                // resource: https://www.hteumeuleu.com/2021/background-properties-in-vml/
-                sizesOutlook: {
-                    width: (100 + 24) * 0.75,
-                    height: 38 * 0.75 + 1,
-                    iconWidth: 24 * 0.75
-                }
+                dislikeHref: negativeLink
             } : null,
 
             // Paywall
