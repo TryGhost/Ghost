@@ -88,8 +88,8 @@ test.describe('Admin', () => {
 
             // Go to website and open portal
             await page.goto('/');
-            const portalTriggerButton = page.frameLocator('#ghost-portal-root iframe.gh-portal-triggerbtn-iframe').locator('div').nth(1);
-            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
             await portalTriggerButton.click();
 
             // Find the updated tier card
