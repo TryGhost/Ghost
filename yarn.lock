@@ -19198,10 +19198,10 @@ minizlib@^2.0.0, minizlib@^2.1.1, minizlib@^2.1.2:
     minipass "^3.0.0"
     yallist "^4.0.0"
 
-miragejs@0.1.45, miragejs@^0.1.43:
-  version "0.1.45"
-  resolved "https://registry.yarnpkg.com/miragejs/-/miragejs-0.1.45.tgz#b43ec9cb46f4229e6db3e45696dac53967abfadc"
-  integrity sha512-NFdpFVXmBuQfErQh70yL44h4NhSZYHZVbg0qzrIxB5gRZYNZGH1sriduejbxpmKVdqCbmjPypaXvEgBgohqydQ==
+miragejs@0.1.47, miragejs@^0.1.43:
+  version "0.1.47"
+  resolved "https://registry.yarnpkg.com/miragejs/-/miragejs-0.1.47.tgz#c4a8dff21adfc0ce3181d78987f11848d74c6869"
+  integrity sha512-99tuCbIAlMhNhyF3s5d3+5/FdJ7O4jSq/5e3e+sDv7L8dZdwJuwutXe0pobJ7hm6yRChTDjK+Nn8dZZd175wbg==
   dependencies:
     "@miragejs/pretender-node-polyfill" "^0.1.0"
     inflected "^2.0.4"
