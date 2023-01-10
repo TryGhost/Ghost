@@ -122,7 +122,7 @@ class EmailEventStorage {
 
         // Create a forUpdate transaction
         const existing = await this.#models.EmailRecipientFailure.findOne({
-            filter: `email_recipient_id:${event.emailRecipientId}`
+            email_recipient_id: event.emailRecipientId
         }, {...options, require: false, forUpdate: true});
 
         if (!existing) {
