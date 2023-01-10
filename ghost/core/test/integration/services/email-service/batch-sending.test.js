@@ -149,27 +149,33 @@ describe('Batch sending tests', function () {
 
     it('Doesn\'t include members created after the email in the batches', async function () {
         // If we create a new member (e.g. a member that was imported) after the email was created, they should not be included in the email
+        const addStub = sinon.stub(models.Email, 'add');
+        let laterMember;
+        addStub.callsFake(async function () {
+            const r = await addStub.wrappedMethod.call(this, ...arguments);
+
+            // Create a new member that is subscribed
+            laterMember = await models.Member.add({
+                name: 'Member that is added later',
+                email: 'member-that-is-added-later@example.com',
+                status: 'free',
+                newsletters: [{
+                    id: fixtureManager.get('newsletters', 0).id
+                }]
+            });
+
+            return r;
+        });
 
         // Prepare a post and email model
         const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
         const emailModel = await createPublishedPostEmail();
 
-        // Create a new member that is subscribed
-        const laterMember = await models.Member.add({
-            name: 'Member that is added later',
-            email: 'member-that-is-added-later@example.com',
-            status: 'free',
-            newsletters: [{
-                id: fixtureManager.get('newsletters', 0).id
-            }]
-        });
-
-        // Check the batches are not yet generated
-        const earlyBatches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
-        assert.equal(earlyBatches.models.length, 0);
-
         // Await sending job
         await completedPromise;
+        assert(addStub.calledOnce);
+        assert.ok(laterMember);
+        addStub.restore();
 
         await emailModel.refresh();
         assert.equal(emailModel.get('status'), 'submitted');
