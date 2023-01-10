@@ -163,7 +163,7 @@ class BatchSendingService {
             while (!members || lastId) {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
 
-                const filter = segmentFilter + (lastId ? `+id:<${lastId}` : '');
+                const filter = segmentFilter + `+id:<${lastId}`;
                 members = await this.#models.Member.getFilteredCollectionQuery({filter})
                     .orderByRaw('id DESC')
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
@@ -185,7 +185,7 @@ class BatchSendingService {
         logging.info(`Created ${batches.length} batches for email ${email.id} with ${totalCount} recipients`);
 
         if (email.get('email_count') !== totalCount) {
-            logging.error(`Email ${email.id} has wrong recipient count ${totalCount}, expected ${email.get('email_count')}. Updating the model.`);
+            logging.error(`Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}. Updating the model.`);
 
             // We update the email model because this might happen in rare cases where the initial member count changed (e.g. deleted members)
             // between creating the email and sending it
@@ -327,9 +327,9 @@ class BatchSendingService {
 
             await batch.save({
                 status: 'failed',
-                error_status_code: err.statusCode,
+                error_status_code: err.statusCode ?? null,
                 error_message: err.message,
-                error_data: err.errorDetails
+                error_data: err.errorDetails ?? null
             }, {patch: true, require: false, autoRefresh: false});
         }
 
