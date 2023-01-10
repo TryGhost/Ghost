@@ -59,7 +59,7 @@ const createModelClass = (options = {}) => {
     };
 };
 
-const createDb = ({first, all}) => {
+const createDb = ({first, all} = {}) => {
     let a = all;
     const db = {
         knex: function () {
