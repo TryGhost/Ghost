@@ -399,6 +399,103 @@ describe('EmailEventStorage', function () {
         assert.notEqual(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
     });
 
+    it('Can handle permanent failure events for multiple recipients', async function () {
+        const emailBatch = fixtureManager.get('email_batches', 0);
+        const emailId = emailBatch.email_id;
+
+        const emailRecipient = fixtureManager.get('email_recipients', 1);
+        assert(emailRecipient.batch_id === emailBatch.id);
+        const memberId = emailRecipient.member_id;
+        const providerId = emailBatch.provider_id;
+        const timestamp = new Date(2000, 0, 1);
+
+        events = [{
+            event: 'failed',
+            id: 'pl271FzxTTmGRW8Uj3dUWw',
+            'log-level': 'error',
+            severity: 'permanent',
+            reason: 'suppress-bounce',
+            envelope: {
+                sender: 'john@example.org',
+                transport: 'smtp',
+                targets: 'joan@example.com'
+            },
+            flags: {
+                'is-routed': false,
+                'is-authenticated': true,
+                'is-system-test': false,
+                'is-test-mode': false
+            },
+            'delivery-status': {
+                'attempt-no': 1,
+                message: '',
+                code: 605,
+                description: 'Not delivering to previously bounced address',
+                'session-seconds': 0.0
+            },
+            message: {
+                headers: {
+                    to: 'joan@example.com',
+                    'message-id': providerId,
+                    from: 'john@example.org',
+                    subject: 'Test Subject'
+                },
+                attachments: [],
+                size: 867
+            },
+            storage: {
+                url: 'https://se.api.mailgun.net/v3/domains/example.org/messages/eyJwI...',
+                key: 'eyJwI...'
+            },
+            recipient: emailRecipient.member_email,
+            'recipient-domain': 'mailgun.com',
+            campaigns: [],
+            tags: [],
+            'user-variables': {},
+            timestamp: Math.round(timestamp.getTime() / 1000)
+        }];
+
+        const initialModel = await models.EmailRecipient.findOne({
+            id: emailRecipient.id
+        }, {require: true});
+
+        assert.equal(initialModel.get('failed_at'), null);
+
+        // Fire event processing
+        // We use offloading to have correct coverage and usage of worker thread
+        const {eventStats: result} = await run({
+            domainEvents
+        });
+        assert.equal(result.permanentFailed, 1);
+        assert.deepEqual(result.emailIds, [emailId]);
+        assert.deepEqual(result.memberIds, [memberId]);
+
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
+
+        // Check if status has changed to delivered, with correct timestamp
+        const updatedEmailRecipient = await models.EmailRecipient.findOne({
+            id: emailRecipient.id
+        }, {require: true});
+
+        assert.equal(updatedEmailRecipient.get('failed_at').toUTCString(), timestamp.toUTCString());
+
+        // Check we have a stored permanent failure
+        const permanentFailures = await models.EmailRecipientFailure.findAll({
+            filter: `email_recipient_id:${emailRecipient.id}`
+        });
+        assert.equal(permanentFailures.length, 1);
+
+        assert.equal(permanentFailures.models[0].get('message'), 'Not delivering to previously bounced address');
+        assert.equal(permanentFailures.models[0].get('code'), 605);
+        assert.equal(permanentFailures.models[0].get('enhanced_code'), null);
+        assert.equal(permanentFailures.models[0].get('email_id'), emailId);
+        assert.equal(permanentFailures.models[0].get('member_id'), memberId);
+        assert.equal(permanentFailures.models[0].get('event_id'), 'pl271FzxTTmGRW8Uj3dUWw');
+        assert.equal(permanentFailures.models[0].get('severity'), 'permanent');
+        assert.equal(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
+    });
+
     it('Can handle temporary failure events', async function () {
         const emailBatch = fixtureManager.get('email_batches', 0);
         const emailId = emailBatch.email_id;
