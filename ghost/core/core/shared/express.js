@@ -14,6 +14,14 @@ module.exports = (name) => {
     // (X-Forwarded-Proto header will be checked, if present)
     app.enable('trust proxy');
 
+    app.use((req, _res, next) => {
+        if (req.headers['x-real-ip']) {
+            // Use X-Real-IP as the real IP where set
+            req.headers['x-forwarded-for'] = req.headers['x-real-ip'];
+        }
+        next();
+    });
+
     // Sentry must be our first error handler. Mounting it here means all custom error handlers will come after
     app.use(sentry.errorHandler);
 
