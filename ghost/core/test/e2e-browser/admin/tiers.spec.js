@@ -1,5 +1,5 @@
 const {expect, test} = require('@playwright/test');
-const {createTier, createOffer, getUniqueName, getSlug, goToMembershipPage, getTierCardById} = require('../utils');
+const {createTier, createOffer, getUniqueName, getSlug, goToMembershipPage, getTierCardById, openAdminPortalSettings} = require('../utils');
 
 test.describe('Admin', () => {
     test.describe('Tiers', () => {
@@ -43,16 +43,14 @@ test.describe('Admin', () => {
             const enableInPortal = false;
             await createTier(page, {
                 name: tierName,
-                monthlyPrice: 100, // ordered by price, this should be the most expensive so we know it's last
+                monthlyPrice: 100,
                 yearlyPrice: 1000
             }, enableInPortal);
 
             await goToMembershipPage(page);
+            await openAdminPortalSettings(page);
 
             await test.step('Created tier should be in Portal settings and not selected', async () => {
-                await page.locator('[data-test-toggle="portal-settings"]').click();
-                // Wait until the list of tiers available at signup is visible
-                await page.waitForSelector('[data-test-tiers-at-signup]');
                 await page.locator(`[data-test-settings-tier-label="${tierName}"]`);
                 expect(await page.locator(`[data-test-settings-tier-input="${tierName}"]`).isChecked()).toBeFalsy();
             });
@@ -105,14 +103,13 @@ test.describe('Admin', () => {
             });
 
             await test.step('Check yearly price and description', async () => {
-                await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedYearlyPrice);
-                await expect(portalTierCard.locator('.gh-portal-product-description').first()).toHaveText(updatedDescription);
+                await expect(portalTierCard.locator('[data-testid="product-amount"]')).toHaveText(updatedYearlyPrice);
+                await expect(portalTierCard.locator('[data-testid="product-description"]')).toHaveText(updatedDescription);
             });
 
             await test.step('Check monthly price', async () => {
                 await portalFrame.locator('[data-test-button="switch-monthly"]').click();
-                await expect(await portalTierCard.getByText('/month')).toBeVisible();
-                await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedMonthlyPrice);
+                await expect(portalTierCard.locator('[data-testid="product-amount"]')).toHaveText(updatedMonthlyPrice);
             });
         });
 
@@ -162,15 +159,73 @@ test.describe('Admin', () => {
                 await expect(page.locator(`[data-test-tier-card="${tierId}"]`)).toBeVisible();
             });
 
-            await test.step('Open Portal settings', async () => {
-                await page.locator('[data-test-toggle="portal-settings"]').click();
-                // Wait until the list of tiers available at signup is visible
-                await page.waitForSelector('[data-test-tiers-at-signup]');
-            });
+            await openAdminPortalSettings(page);
 
             await test.step('Unarchived tier should be available in portal settings', async () => {
                 await page.locator(`[data-test-settings-tier-label="${tierName}"]`);
                 expect(await page.locator(`[data-test-settings-tier-input="${tierName}"]`).isChecked()).toBeFalsy();
+            });
+        });
+
+        test('Can turn off a tier in portal settings', async ({page}) => {
+            await page.goto('/ghost');
+            const tierName = getUniqueName('Test Tier');
+            await createTier(page, {
+                name: tierName,
+                monthlyPrice: 100,
+                yearlyPrice: 1000
+            });
+
+            await goToMembershipPage(page);
+            await openAdminPortalSettings(page);
+
+            await test.step('Turn off a tier in Portal settings', async () => {
+                await page.locator(`[data-test-settings-tier-label="${tierName}"]`).click();
+                expect(await page.locator(`[data-test-settings-tier-input="${tierName}"]`).isChecked()).toBeFalsy();
+            });
+
+            const portalFrame = await test.step('Go to website and open portal', async () => {
+                await page.goto('/');
+                const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+                const frame = page.frameLocator('[data-testid="portal-popup-frame"]');
+                await portalTriggerButton.click();
+
+                return frame;
+            });
+
+            await test.step('Tier should not be available in frontend Portal', async () => {
+                await portalFrame.locator('[data-test-tier="paid"]').filter({hasText: tierName}).isHidden();
+            });
+        });
+
+        test('Can turn off a cadence in portal settings', async ({page}) => {
+            await page.goto('/ghost');
+            const tierName = getUniqueName('Test Tier');
+            await createTier(page, {
+                name: tierName,
+                monthlyPrice: 100,
+                yearlyPrice: 1000
+            });
+
+            await goToMembershipPage(page);
+            await openAdminPortalSettings(page);
+
+            await test.step('Turn off a monthly cadence in Portal settings', async () => {
+                await page.locator('[data-test-settings-tier-cadence="monthly"]').click();
+                expect(await page.locator('[data-test-settings-tier-cadence="monthly"] input').isChecked()).toBeFalsy();
+            });
+
+            const portalFrame = await test.step('Go to website and open portal', async () => {
+                await page.goto('/');
+                const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+                const frame = page.frameLocator('[data-testid="portal-popup-frame"]');
+                await portalTriggerButton.click();
+
+                return frame;
+            });
+
+            await test.step('Cadence switch should not be available in frontend Portal', async () => {
+                await portalFrame.locator('[data-test-button="switch-monthly"]').isHidden();
             });
         });
     });

@@ -484,6 +484,18 @@ const generateStripeIntegrationToken = async () => {
     })).toString('base64');
 };
 
+/**
+ * Open portal settings modal in admin
+ * @param {import('@playwright/test').Page} page
+ */
+const openAdminPortalSettings = async (page) => {
+    return await test.step('Open Portal settings', async () => {
+        await page.locator('[data-test-toggle="portal-settings"]').click();
+        // Wait until the list of tiers available at signup is visible
+        await page.waitForSelector('[data-test-tiers-at-signup]');
+    });
+};
+
 module.exports = {
     setupGhost,
     setupStripe,
@@ -499,5 +511,6 @@ module.exports = {
     completeStripeSubscription,
     impersonateMember,
     goToMembershipPage,
-    getTierCardById
+    getTierCardById,
+    openAdminPortalSettings
 };
