@@ -196,6 +196,10 @@ class EmailRenderer {
     async renderBody(post, newsletter, segment, options) {
         let html = this.renderPostBaseHtml(post);
 
+        // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
+        // So we need to filter them before we introduce the real %%{uuid}%%
+        html = html.replace(/%%{uuid}%%/g, '{uuid}');
+
         // Paywall and members only content handling
         const isPaidPost = post.get('visibility') === 'paid' || post.get('visibility') === 'tiers';
         const membersOnlyIndex = html.indexOf('<!--members-only-->');
