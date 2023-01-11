@@ -1,8 +1,19 @@
 const {expect, test} = require('@playwright/test');
-const {createTier, createOffer, getUniqueName, getSlug} = require('../utils');
+const {createTier, createOffer, getUniqueName, getSlug, goToMembershipPage, getTierCardById} = require('../utils');
 
 test.describe('Admin', () => {
     test.describe('Tiers', () => {
+        test('Default tier should be $5mo / $50yr', async ({page}) => {
+            const defaultTierId = 'default-product';
+            await goToMembershipPage(page);
+            const tierCard = await getTierCardById(page, {id: defaultTierId});
+
+            await test.step('Default tier should be $5mo / $50yr', async () => {
+                await expect(tierCard.locator('[data-test-amount-monthly-price]')).toHaveText('5');
+                await expect(tierCard.locator('[data-test-amount-yearly-price]')).toHaveText('50');
+            });
+        });
+
         test('Can create a Tier and Offer', async ({page}) => {
             await page.goto('/ghost');
             const tierName = getUniqueName('New Test Tier');
@@ -36,13 +47,10 @@ test.describe('Admin', () => {
                 yearlyPrice: 1000
             }, enableInPortal);
 
-            await test.step('Open Portal settings', async () => {
-                await page.locator('[data-test-nav="settings"]').click();
-                await page.locator('[data-test-nav="members-membership"]').click();
-                await page.locator('[data-test-toggle="portal-settings"]').click();
-            });
+            await goToMembershipPage(page);
 
-            await test.step('Make sure newly created tier in the list and not selected', async () => {
+            await test.step('Created tier should be in Portal settings and not selected', async () => {
+                await page.locator('[data-test-toggle="portal-settings"]').click();
                 // Wait until the list of tiers available at signup is visible
                 await page.waitForSelector('[data-test-tiers-at-signup]');
                 await page.locator(`[data-test-settings-tier-label="${tierName}"]`);
@@ -64,19 +72,8 @@ test.describe('Admin', () => {
                 yearlyPrice: 50
             });
 
-            await test.step('Open Membership settings', async () => {
-                await page.locator('[data-test-nav="settings"]').click();
-                await page.locator('[data-test-nav="members-membership"]').click();
-                // Tiers request can take time, so waiting until there is no connections before interacting with them
-                await page.waitForLoadState('networkidle');
-            });
-
-            const tierCard = await test.step('Expand the premium tier list and find the new tier', async () => {
-                await page.locator('[data-test-toggle-pub-info]').click();
-                await page.waitForSelector(`[data-test-tier-card="${tierId}"]`);
-
-                return await page.locator(`[data-test-tier-card="${tierId}"]`);
-            });
+            await goToMembershipPage(page);
+            const tierCard = await getTierCardById(page, {id: tierId});
 
             await test.step('Open modal and edit tier information', async () => {
                 await tierCard.locator('[data-test-button="tiers-actions"]').click();
@@ -129,19 +126,8 @@ test.describe('Admin', () => {
                 yearlyPrice: 50
             });
 
-            await test.step('Open Membership settings', async () => {
-                await page.locator('[data-test-nav="settings"]').click();
-                await page.locator('[data-test-nav="members-membership"]').click();
-                // Tiers request can take time, so waiting until there is no connections before interacting with them
-                await page.waitForLoadState('networkidle');
-            });
-
-            const tierCard = await test.step('Expand the premium tier list and find the new tier', async () => {
-                await page.locator('[data-test-toggle-pub-info]').click();
-                await page.waitForSelector(`[data-test-tier-card="${tierId}"]`);
-
-                return await page.locator(`[data-test-tier-card="${tierId}"]`);
-            });
+            await goToMembershipPage(page);
+            const tierCard = await getTierCardById(page, {id: tierId});
 
             await test.step('Archive tier', async () => {
                 await tierCard.locator('[data-test-button="tiers-actions"]').click();
