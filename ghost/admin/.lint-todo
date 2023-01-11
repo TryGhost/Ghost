@@ -1136,3 +1136,5 @@ remove|ember-template-lint|no-triple-curlies|25|47|25|47|8336bb2ae349079452ea98b
 remove|ember-template-lint|no-triple-curlies|63|24|63|24|b4fdf1937520db3f14f6f93ec84f03b7653414c0|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-toggle.hbs
 remove|ember-template-lint|no-triple-curlies|72|16|72|16|9197e9050977ef47965e1b6e8d99bee542a7c559|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-toggle.hbs
 remove|ember-template-lint|no-invalid-interactive|93|36|93|36|fc4eb64cc0ad0cc9c500c7ef026e44649bc4778b|1662681600000|1673053200000|1678237200000|app/templates/offers.hbs
+remove|ember-template-lint|no-action|143|50|143|50|91a3281547c8446529685240c77aaccb5c7d69bd|1662681600000|1673053200000|1678237200000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-action|411|168|411|168|0145b67f0faef0aad141c6a4269c35c6ef8f0a47|1662681600000|1673053200000|1678237200000|app/components/gh-post-settings-menu.hbs

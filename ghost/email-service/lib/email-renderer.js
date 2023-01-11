@@ -309,7 +309,7 @@ class EmailRenderer {
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
      * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
      *
-     * @param {string} uuid post uuid
+     * @param {string} [uuid] post uuid
      * @param {Object} [options]
      * @param {string} [options.newsletterUuid] newsletter uuid
      * @param {boolean} [options.comments] Unsubscribe from comment emails
@@ -499,19 +499,22 @@ class EmailRenderer {
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall}) {
-        const accentColor = this.#settingsCache.get('accent_color') || '#15212A';
-        const adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
-        const adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
-
-        const color = new Color(accentColor);
-        const buttonBackgroundColor = `${accentColor}10`;
-        const buttonTextColor = color.darken(0.6).hex();
+        let accentColor = this.#settingsCache.get('accent_color') || '#15212A';
+        let adjustedAccentColor;
+        let adjustedAccentContrastColor;
+        try {
+            adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
+            adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
+        } catch (e) {
+            logging.error(e);
+            accentColor = '#15212A';
+        }
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth} = await this.limitImageWidth(post.get('feature_image'));
 
         const timezone = this.#settingsCache.get('timezone');
-        const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).toLocaleString({
+        const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -519,11 +522,11 @@ class EmailRenderer {
 
         let authors;
         const postAuthors = await post.getLazyRelation('authors');
-        if (postAuthors.models) {
+        if (postAuthors?.models) {
             if (postAuthors.models.length <= 2) {
                 authors = postAuthors.models.map(author => author.get('name')).join(' & ');
             } else {
-                authors = `${postAuthors.models[0].name} & ${postAuthors.models.length - 1} others`;
+                authors = `${postAuthors.models[0].get('name')} & ${postAuthors.models.length - 1} others`;
             }
         }
 
@@ -583,7 +586,7 @@ class EmailRenderer {
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),
             showHeaderTitle: newsletter.get('show_header_title'),
             showHeaderName: newsletter.get('show_header_name'),
-            showFeatureImage: newsletter.get('show_feature_image') && postFeatureImage,
+            showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,
             footerContent: newsletter.get('footer_content'),
 
             classes: {
@@ -596,23 +599,7 @@ class EmailRenderer {
             // Audience feedback
             feedbackButtons: newsletter.get('feedback_enabled') ? {
                 likeHref: positiveLink,
-                dislikeHref: negativeLink,
-                backgroundColor: buttonBackgroundColor,
-                textColor: buttonTextColor,
-
-                sizes: {
-                    width: 100,
-                    height: 38,
-                    iconWidth: 24
-                },
-                // Sizes defined in pixels won’t be adjusted when Outlook is rendering at 120 dpi.
-                // To solve the problem we use values in points (1 pixel = 0.75 point).
-                // resource: https://www.hteumeuleu.com/2021/background-properties-in-vml/
-                sizesOutlook: {
-                    width: (100 + 24) * 0.75,
-                    height: 38 * 0.75 + 1,
-                    iconWidth: 24 * 0.75
-                }
+                dislikeHref: negativeLink
             } : null,
 
             // Paywall

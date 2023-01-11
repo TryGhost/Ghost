@@ -132,13 +132,14 @@ const deleteAllMembers = async (page) => {
  */
 const archiveAllTiers = async (page) => {
     // Navigate to the member settings
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+    await page.locator('[data-test-nav="settings"]').click();
+    await page.locator('[data-test-nav="members-membership"]').click();
+
+    // Tiers request can take time, so waiting until there is no connections before interacting with them
+    await page.waitForLoadState('networkidle');
 
     // Expand the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click({
-        delay: 500 // TODO: Figure out how to prevent this from opening with an empty list without using delay
-    });
+    await page.locator('[data-test-toggle-pub-info]').click();
 
     // Archive if already exists
     while (await page.locator('.gh-tier-card').first().isVisible()) {
@@ -179,13 +180,14 @@ const impersonateMember = async (page) => {
  */
 const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, enableInPortal = true) => {
     // Navigate to the member settings
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+    await page.locator('[data-test-nav="settings"]').click();
+    await page.locator('[data-test-nav="members-membership"]').click();
+
+    // Tiers request can take time, so waiting until there is no connections before interacting with them
+    await page.waitForLoadState('networkidle');
 
     // Expand the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click({
-        delay: 500 // TODO: Figure out how to prevent this from opening with an empty list without using delay
-    });
+    await page.locator('[data-test-toggle-pub-info]').click();
 
     // Archive if already exists
     while (await page.locator('.gh-tier-card').filter({hasText: name}).first().isVisible()) {
@@ -195,7 +197,9 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
         await page.locator('.modal-content').getByRole('button', {name: 'Archive'}).click();
         await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
     }
-
+    if (!await page.locator('.gh-btn-add-tier').isVisible()) {
+        await page.locator('[data-test-toggle-pub-info]').click();
+    }
     // Add the tier
     await page.locator('.gh-btn-add-tier').click();
     const modal = page.locator('.modal-content');
@@ -210,9 +214,7 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
     await page.waitForSelector('.modal-content input#name', {state: 'detached'});
 
     // Close the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click({
-        delay: 500 // TODO: Figure out if we need this delay
-    });
+    await page.locator('[data-test-toggle-pub-info]').click();
 
     // Enable the tier in portal
     if (enableInPortal) {

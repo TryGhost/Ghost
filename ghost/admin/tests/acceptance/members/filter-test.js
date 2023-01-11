@@ -160,7 +160,7 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows after delete')
                 .to.equal(7);
         });
-
+        
         it('can filter by offer redeemed', async function () {
             // add some offers to test the selection dropdown
             const tier = this.server.create('tier');
@@ -194,8 +194,41 @@ describe('Acceptance: Members filtering', function () {
             await visit('/members?filter=' + encodeURIComponent(`offer_redemptions:'${offer.id}'`)); // ensure that the id is parsed as a string and not an integer
 
             // only one redeemed offer so only 1 member should be shown
-
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows').to.equal(1);
+            
+        });
+            
+        it('can filter by specific newsletter subscription', async function () {
+            // add some members to filters
+            const newsletter = this.server.create('newsletter', {status: 'active', slug: 'test-newsletter'});
+            this.server.createList('newsletter', 4);
+            this.server.createList('tier', 4);
+            this.server.createList('member', 4, {subscribed: false});
+
+            await visit('/members');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(4);
+
+            await click('[data-test-button="members-filter-actions"]');
+            // make sure newsletters are in the filter dropdown
+            const newslettersCount = this.server.schema.newsletters.all().models.length;
+            let options = this.element.querySelectorAll('option');
+            let matchingOptions = [...options].filter(option => option.value.includes('newsletters.slug'));
+            expect(matchingOptions).to.have.length(newslettersCount);
+
+            await visit('/');
+            await visit('/members');
+            // add some members with tiers
+            const tier = this.server.create('tier');
+            const member = this.server.create('member', {tiers: [tier], subscribed: true});
+            member.update({newsletters: [newsletter]});
+            this.server.createList('member', 4, {subscribed: false});
+
+            await visit('/members?filter=' + encodeURIComponent(`newsletters.slug:${newsletter.slug}`));
+            // only 1 member is subscribed so we should only see 1 row
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(1);
         });
 
         it('can filter by newsletter subscription', async function () {

@@ -18,51 +18,27 @@ class EmailEventStorage {
      */
     listen(domainEvents) {
         domainEvents.subscribe(EmailDeliveredEvent, async (event) => {
-            try {
-                await this.handleDelivered(event);
-            } catch (err) {
-                logging.error(err);
-            }
+            await this.handleDelivered(event);
         });
 
         domainEvents.subscribe(EmailOpenedEvent, async (event) => {
-            try {
-                await this.handleOpened(event);
-            } catch (err) {
-                logging.error(err);
-            }
+            await this.handleOpened(event);
         });
 
         domainEvents.subscribe(EmailBouncedEvent, async (event) => {
-            try {
-                await this.handlePermanentFailed(event);
-            } catch (e) {
-                logging.error(e);
-            }
+            await this.handlePermanentFailed(event);
         });
 
         domainEvents.subscribe(EmailTemporaryBouncedEvent, async (event) => {
-            try {
-                await this.handleTemporaryFailed(event);
-            } catch (e) {
-                logging.error(e);
-            }
+            await this.handleTemporaryFailed(event);
         });
 
         domainEvents.subscribe(EmailUnsubscribedEvent, async (event) => {
-            try {
-                await this.handleUnsubscribed(event);
-            } catch (e) {
-                logging.error(e);
-            }
+            await this.handleUnsubscribed(event);
         });
 
         domainEvents.subscribe(SpamComplaintEvent, async (event) => {
-            try {
-                await this.handleComplained(event);
-            } catch (e) {
-                logging.error(e);
-            }
+            await this.handleComplained(event);
         });
     }
 
@@ -122,7 +98,7 @@ class EmailEventStorage {
 
         // Create a forUpdate transaction
         const existing = await this.#models.EmailRecipientFailure.findOne({
-            filter: `email_recipient_id:${event.emailRecipientId}`
+            email_recipient_id: event.emailRecipientId
         }, {...options, require: false, forUpdate: true});
 
         if (!existing) {
