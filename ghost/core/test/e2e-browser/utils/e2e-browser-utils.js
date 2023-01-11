@@ -1,4 +1,5 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
+const {test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
 
 /**
@@ -403,6 +404,35 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
     await page.keyboard.type(body);
 };
 
+/**
+ * Go to Membership setting page
+ * @param {import('@playwright/test').Page} page
+ */
+const goToMembershipPage = async (page) => {
+    return await test.step('Open Membership settings', async () => {
+        await page.goto('/ghost');
+        await page.locator('[data-test-nav="settings"]').click();
+        await page.locator('[data-test-nav="members-membership"]').click();
+        // Tiers request can take time, so waiting until there is no connections before interacting with UI
+        await page.waitForLoadState('networkidle');
+    });
+};
+
+/**
+ * Get tier card from membership page
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {String} [options.id]
+ */
+const getTierCardById = async (page, {id}) => {
+    return await test.step('Expand the premium tier list and find the tier', async () => {
+        await page.locator('[data-test-toggle-pub-info]').click();
+        await page.waitForSelector(`[data-test-tier-card="${id}"]`);
+
+        return page.locator(`[data-test-tier-card="${id}"]`);
+    });
+};
+
 module.exports = {
     setupGhost,
     setupStripe,
@@ -414,5 +444,7 @@ module.exports = {
     createMember,
     createPostDraft,
     completeStripeSubscription,
-    impersonateMember
+    impersonateMember,
+    goToMembershipPage,
+    getTierCardById
 };

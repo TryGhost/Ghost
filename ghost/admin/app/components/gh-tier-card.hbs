@@ -42,14 +42,14 @@
                     <div class="gh-tier-card-price" data-test-monthly-price>
                         <div class="flex items-start">
                             <span class="currency">{{currency-symbol this.tierCurrency}}</span>
-                            <span class="amount">{{gh-price-amount @tier.monthlyPrice}}</span>
+                            <span class="amount" data-test-amount-monthly-price>{{gh-price-amount @tier.monthlyPrice}}</span>
                         </div>
                         <div class="period">Monthly</div>
                     </div>
                     <div class="gh-tier-card-price" data-test-yearly-price>
                         <div class="flex items-start">
                             <span class="currency">{{currency-symbol this.tierCurrency}}</span>
-                            <span class="amount">{{gh-price-amount @tier.yearlyPrice}}</span>
+                            <span class="amount" data-test-amount-yearly-price>{{gh-price-amount @tier.yearlyPrice}}</span>
                         </div>
                         <div class="period">Yearly</div>
                     </div>
