@@ -514,7 +514,7 @@ class EmailRenderer {
         const {href: postFeatureImage, width: postFeatureImageWidth} = await this.limitImageWidth(post.get('feature_image'));
 
         const timezone = this.#settingsCache.get('timezone');
-        const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).toLocaleString({
+        const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
             year: 'numeric',
             month: 'short',
             day: 'numeric'
