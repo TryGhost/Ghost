@@ -78,12 +78,10 @@ export default function mockMembers(server) {
 
     server.get('/members/', withPermissionsCheck(ALLOWED_ROLES, function ({members}, {queryParams}) {
         let {filter, search, page, limit} = queryParams;
-
         page = +page || 1;
         limit = +limit || 15;
 
         let collection = members.all();
-
         if (filter) {
             try {
                 const nqlFilter = nql(filter, {
@@ -95,9 +93,15 @@ export default function mockMembers(server) {
                         {
                             key: 'tier',
                             replacement: 'tiers.slug'
+                        },
+                        {
+                            key: 'offer_redemptions',
+                            replacement: 'subscriptions.offer_id'
                         }
                     ]
                 });
+
+                // check if filter contains offer_redemptions
 
                 collection = collection.filter((member) => {
                     const serializedMember = {};
@@ -120,7 +124,6 @@ export default function mockMembers(server) {
                             serializedMember[association].push(serializedAssociation);
                         });
                     });
-
                     return nqlFilter.queryJSON(serializedMember);
                 });
             } catch (err) {

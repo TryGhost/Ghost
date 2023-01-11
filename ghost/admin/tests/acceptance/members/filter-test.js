@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {blur, click, currentURL, fillIn, find, findAll, focus, pauseTest} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {enableNewsletters} from '../../helpers/newsletters';
 import {enablePaidMembers} from '../../helpers/members';
@@ -164,16 +164,15 @@ describe('Acceptance: Members filtering', function () {
         it('can filter by offer redeemed', async function () {
             // add some offers to test the selection dropdown
             const tier = this.server.create('tier');
-            const newsletter = this.server.create('newsletter', {status: 'active'});
+            
             // create 3 offers
-            this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(1, 'day').valueOf()});
+            const offer = this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(1, 'day').valueOf()});
             this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(2, 'day').valueOf()});
             this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(3, 'day').valueOf()});
-            
-            this.server.createList('member', 3, {tiers: [tier], newsletters: [newsletter], status: 'paid'});
-
-            // add some free members so we can see the filter excludes correctly
-            this.server.createList('member', 4, {newsletters: [newsletter]});
+            this.server.createList('member', 3, {status: 'paid', tiers: [tier]});
+            const sub = this.server.create('subscription', {member: this.server.schema.members.first(), tier: tier, offer: offer});
+            const member = this.server.schema.members.first();
+            member.update({subscriptions: [sub]});
 
             await visit('/members');
             await click('[data-test-button="members-filter-actions"]');
@@ -190,7 +189,13 @@ describe('Acceptance: Members filtering', function () {
             // this ensures that the offers are loaded into the multi-select dropdown in the filter
             expect(findAll(`${filterSelector} [data-test-offers-segment]`).length, '# of label options').to.equal(3);
 
-            // @TODO: figure out how to add redeemed offers to members to test the filter
+            // can set filter by path
+            await visit('/');
+            await visit('/members?filter=' + encodeURIComponent(`offer_redemptions:'${offer.id}'`)); // ensure that the id is parsed as a string and not an integer
+
+            // only one redeemed offer so only 1 member should be shown
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows').to.equal(1);
         });
 
         // add some members with offers
