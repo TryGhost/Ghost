@@ -309,7 +309,7 @@ class EmailRenderer {
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
      * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
      *
-     * @param {string} uuid post uuid
+     * @param {string} [uuid] post uuid
      * @param {Object} [options]
      * @param {string} [options.newsletterUuid] newsletter uuid
      * @param {boolean} [options.comments] Unsubscribe from comment emails
@@ -499,9 +499,16 @@ class EmailRenderer {
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall}) {
-        const accentColor = this.#settingsCache.get('accent_color') || '#15212A';
-        const adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
-        const adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
+        let accentColor = this.#settingsCache.get('accent_color') || '#15212A';
+        let adjustedAccentColor;
+        let adjustedAccentContrastColor;
+        try {
+            adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
+            adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
+        } catch (e) {
+            logging.error(e);
+            accentColor = '#15212A';
+        }
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth} = await this.limitImageWidth(post.get('feature_image'));
@@ -515,11 +522,11 @@ class EmailRenderer {
 
         let authors;
         const postAuthors = await post.getLazyRelation('authors');
-        if (postAuthors.models) {
+        if (postAuthors?.models) {
             if (postAuthors.models.length <= 2) {
                 authors = postAuthors.models.map(author => author.get('name')).join(' & ');
             } else {
-                authors = `${postAuthors.models[0].name} & ${postAuthors.models.length - 1} others`;
+                authors = `${postAuthors.models[0].get('name')} & ${postAuthors.models.length - 1} others`;
             }
         }
 
@@ -579,7 +586,7 @@ class EmailRenderer {
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),
             showHeaderTitle: newsletter.get('show_header_title'),
             showHeaderName: newsletter.get('show_header_name'),
-            showFeatureImage: newsletter.get('show_feature_image') && postFeatureImage,
+            showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,
             footerContent: newsletter.get('footer_content'),
 
             classes: {
