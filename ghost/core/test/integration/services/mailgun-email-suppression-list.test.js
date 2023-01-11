@@ -58,7 +58,7 @@ describe('MailgunEmailSuppressionList', function () {
         assert.equal(memberAfter.email_suppression.info.reason, 'fail');
     });
 
-    it('Can handle permanent failure events with an error code of 6xx', async function () {
+    it('Can handle permanent failure events with an error code of 607', async function () {
         const emailBatch = fixtureManager.get('email_batches', 0);
 
         const emailRecipient = fixtureManager.get('email_recipients', 1);
@@ -71,10 +71,8 @@ describe('MailgunEmailSuppressionList', function () {
         const {body: {members: [member]}} = await agent.get(`/members/${memberId}`);
         assert.equal(member.email_suppression.suppressed, false, 'This test requires a member that does not have a suppressed email');
 
-        const errorCode = 600 + Math.floor(Math.random() * 100);
-
         events = [createPermanentFailedEvent({
-            errorCode: errorCode === 605 ? 606 : errorCode, // Random number between 600-699, but not 605
+            errorCode: 607,
             providerId,
             timestamp,
             recipient
@@ -87,8 +85,8 @@ describe('MailgunEmailSuppressionList', function () {
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
-        assert.equal(memberAfter.email_suppression.suppressed, false, 'The member should not have a suppressed email');
-        assert.equal(memberAfter.email_suppression.info, null);
+        assert.equal(memberAfter.email_suppression.suppressed, true, 'The member should have a suppressed email');
+        assert.equal(memberAfter.email_suppression.info.reason, 'fail');
     });
 
     it('Can handle permanent failure events with an error code of 4xx', async function () {
@@ -149,8 +147,8 @@ describe('MailgunEmailSuppressionList', function () {
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
-        assert.equal(memberAfter.email_suppression.suppressed, true, 'The member should have a suppressed email');
-        assert.equal(memberAfter.email_suppression.info.reason, 'fail');
+        assert.equal(memberAfter.email_suppression.suppressed, false, 'The member should not have a suppressed email');
+        assert.equal(memberAfter.email_suppression.info, null);
     });
 
     it('Can handle complaint events', async function () {
