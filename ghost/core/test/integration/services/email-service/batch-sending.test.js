@@ -397,7 +397,7 @@ describe('Batch sending tests', function () {
                 assert.equal(batch.get('provider_id'), null);
                 assert.equal(batch.get('status'), 'failed');
                 assert.equal(batch.get('error_status_code'), 500);
-                assert.equal(batch.get('error_message'), 'Internal server error:Something went wrong');
+                assert.equal(batch.get('error_message'), 'Internal server error: Something went wrong');
                 const errorData = JSON.parse(batch.get('error_data'));
                 assert.equal(errorData.error.status, 500);
                 assert.deepEqual(errorData.messageData.to.length, 1);

@@ -1,6 +1,7 @@
 const MailgunEmailProvider = require('../lib/mailgun-email-provider');
 const sinon = require('sinon');
 const should = require('should');
+const assert = require('assert');
 
 describe('Mailgun Email Provider', function () {
     describe('send', function () {
@@ -122,10 +123,111 @@ describe('Mailgun Email Provider', function () {
                 }, {});
                 should(response).be.undefined();
             } catch (e) {
-                should(e.message).eql('Bad Request:Invalid domain');
+                should(e.message).eql('Bad Request: Invalid domain');
                 should(e.statusCode).eql(400);
                 should(e.errorDetails).eql('{"error":{"details":"Invalid domain","status":400},"messageData":{}}');
             }
+        });
+
+        it('handles unknown error correctly', async function () {
+            const mailgunErr = new Error('Unknown Error');
+            sendStub = sinon.stub().throws(mailgunErr);
+
+            mailgunClient = {
+                send: sendStub
+            };
+
+            const mailgunEmailProvider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+            try {
+                const response = await mailgunEmailProvider.send({
+                    subject: 'Hi',
+                    html: '<html><body>Hi {{name}}</body></html>',
+                    plaintext: 'Hi',
+                    from: 'ghost@example.com',
+                    replyTo: 'ghost@example.com',
+                    emailId: '123',
+                    recipients: [
+                        {
+                            email: 'member@example.com',
+                            replacements: [
+                                {
+                                    id: 'name',
+                                    token: '{{name}}',
+                                    value: 'John'
+                                }
+                            ]
+                        }
+                    ],
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: () => 'John'
+                        }
+                    ]
+                }, {});
+                should(response).be.undefined();
+            } catch (e) {
+                should(e.message).eql('Unknown Error');
+                should(e.errorDetails).eql(undefined);
+            }
+        });
+
+        it('handles empty error correctly', async function () {
+            const mailgunErr = new Error('');
+            sendStub = sinon.stub().throws(mailgunErr);
+
+            mailgunClient = {
+                send: sendStub
+            };
+
+            const mailgunEmailProvider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+            try {
+                const response = await mailgunEmailProvider.send({
+                    subject: 'Hi',
+                    html: '<html><body>Hi {{name}}</body></html>',
+                    plaintext: 'Hi',
+                    from: 'ghost@example.com',
+                    replyTo: 'ghost@example.com',
+                    emailId: '123',
+                    recipients: [
+                        {
+                            email: 'member@example.com',
+                            replacements: [
+                                {
+                                    id: 'name',
+                                    token: '{{name}}',
+                                    value: 'John'
+                                }
+                            ]
+                        }
+                    ],
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: () => 'John'
+                        }
+                    ]
+                }, {});
+                should(response).be.undefined();
+            } catch (e) {
+                should(e.message).eql('Mailgun Error');
+                should(e.errorDetails).eql(undefined);
+            }
+        });
+    });
+
+    describe('getMaximumRecipients', function () {
+        it('returns 1000', function () {
+            const provider = new MailgunEmailProvider({});
+            assert.strictEqual(provider.getMaximumRecipients(), 1000);
         });
     });
 });
