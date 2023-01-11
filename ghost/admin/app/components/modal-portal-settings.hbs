@@ -59,10 +59,11 @@
                                                             (not-eq this.settings.membersSignupAccess "all")
                                                         }}
                                                         class="gh-input post-settings-featured"
+                                                        data-test-settings-tier-input="Free"
                                                         {{on "click" (action "togglePlan" "free")}}
                                                     >
                                                     <span class="input-toggle-component"></span>
-                                                    <p>Free</p>
+                                                    <p data-test-settings-tier-label="Free">Free</p>
                                                 </label>
                                             </div>
                                             {{#each this.tiers as |tier|}}
@@ -81,10 +82,11 @@
                                                                 (not-eq this.settings.membersSignupAccess "all")
                                                             }}
                                                             class="gh-input post-settings-featured"
+                                                            data-test-settings-tier-input={{tier.name}}
                                                             {{on "click" (action "toggleTier" tier.id)}}
                                                         >
                                                         <span class="input-toggle-component"></span>
-                                                        <p>{{tier.name}}</p>
+                                                        <p data-test-settings-tier-label={{tier.name}}>{{tier.name}}</p>
                                                     </label>
                                                 </div>
                                             {{/each}}

@@ -1,11 +1,11 @@
 const {expect, test} = require('@playwright/test');
-const {createTier, createOffer} = require('../utils');
+const {createTier, createOffer, getUniqueName, getSlug} = require('../utils');
 
 test.describe('Admin', () => {
     test.describe('Tiers', () => {
         test('Can create a Tier and Offer', async ({page}) => {
             await page.goto('/ghost');
-            const tierName = 'New Test Tier';
+            const tierName = getUniqueName('New Test Tier');
             await createTier(page, {
                 name: tierName,
                 monthlyPrice: 5,
@@ -18,14 +18,17 @@ test.describe('Admin', () => {
                 amount: 5
             });
 
-            await page.locator('.gh-nav a[href="#/offers/"]').click();
-            await page.locator('.gh-offers-list').waitFor({state: 'visible', timeout: 1000});
-            await expect(page.locator('.gh-offers-list')).toContainText(tierName);
-            await expect(page.locator('.gh-offers-list')).toContainText(offerName);
+            await test.step('Check that offers and tiers are available on Offers page', async () => {
+                await page.locator('[data-test-nav="offers"]').click();
+                await page.waitForSelector('[data-test-offers-list]');
+                await expect(page.locator('[data-test-offers-list]')).toContainText(tierName);
+                await expect(page.locator('[data-test-offers-list]')).toContainText(offerName);
+            });
         });
+
         test('Can create additional Tier', async ({page}) => {
             await page.goto('/ghost');
-            const tierName = 'New Test Tier';
+            const tierName = getUniqueName('New Test Tier');
             const enableInPortal = false;
             await createTier(page, {
                 name: tierName,
@@ -33,24 +36,25 @@ test.describe('Admin', () => {
                 yearlyPrice: 1000
             }, enableInPortal);
 
-            // Open Portal settings
-            await page.locator('.gh-nav a[href="#/settings/"]').click();
-            await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
-            await page.locator('[data-test-toggle="portal-settings"]').click();
+            await test.step('Open Portal settings', async () => {
+                await page.locator('[data-test-nav="settings"]').click();
+                await page.locator('[data-test-nav="members-membership"]').click();
+                await page.locator('[data-test-toggle="portal-settings"]').click();
+            });
 
-            // Wait until the list of tiers available at signup is visible
-            await page.locator('[data-test-tiers-at-signup]').first().waitFor({state: 'visible', timeout: 1000});
-
-            // Make sure newly created tier is in the list
-            await expect(page.locator('[data-test-tier-at-signup] > label > p').last()).toContainText(tierName);
-
-            // Make sure newly created tier is in not selected
-            expect(await page.locator('[data-test-tier-at-signup] > label > input').last().isChecked()).toBeFalsy();
+            await test.step('Make sure newly created tier in the list and not selected', async () => {
+                // Wait until the list of tiers available at signup is visible
+                await page.waitForSelector('[data-test-tiers-at-signup]');
+                await page.locator(`[data-test-settings-tier-label="${tierName}"]`);
+                expect(await page.locator(`[data-test-settings-tier-input="${tierName}"]`).isChecked()).toBeFalsy();
+            });
         });
+
         test('Can update Tier', async ({page}) => {
             await page.goto('/ghost');
-            const tierName = 'New Test Tier';
-            const updatedTierName = 'Updated Test Tier Name';
+            const tierName = getUniqueName('New Test Tier');
+            const tierId = getSlug(tierName);
+            const updatedTierName = getUniqueName('Updated Test Tier Name');
             const updatedMonthlyPrice = '66';
             const updatedYearlyPrice = '666';
             const updatedDescription = 'Updated description text';
@@ -61,53 +65,59 @@ test.describe('Admin', () => {
                 yearlyPrice: 50
             }, enableInPortal);
 
-            // Open Membership settings
-            await page.locator('.gh-nav a[href="#/settings/"]').click();
-            await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
-
-            // Expand the premium tier list
-            await page.locator('[data-test-toggle-pub-info]').click({
-                delay: 500 // TODO: Figure out how to prevent this from opening with an empty list without using delay
+            await test.step('Open Membership settings', async () => {
+                await page.locator('[data-test-nav="settings"]').click();
+                await page.locator('[data-test-nav="members-membership"]').click();
+                // Tiers request can take time, so waiting until there is no connections before interacting with them
+                await page.waitForLoadState('networkidle');
             });
 
-            // Find the new tier
-            await page.locator('[data-test-tier-card]').filter({hasText: tierName}).first().isVisible();
-            const tierCard = page.locator('[data-test-tier-card]').filter({hasText: tierName}).first();
+            const tierCard = await test.step('Expand the premium tier list and find the new tier', async () => {
+                await page.locator('[data-test-toggle-pub-info]').click();
+                await page.waitForSelector(`[data-test-tier-card="${tierId}"]`);
 
-            // Enter edit mode
-            await tierCard.locator('[data-test-button="tiers-actions"]').click();
-            await tierCard.locator('[data-test-button="edit-tier"]').click();
-            const modal = page.locator('.modal-content');
+                return await page.locator(`[data-test-tier-card="${tierId}"]`);
+            });
 
-            // Edit tier information
-            await modal.locator('[data-test-input="tier-name"]').first().fill(updatedTierName);
-            await modal.locator('[data-test-input="tier-description"]').first().fill(updatedDescription);
-            await modal.locator('[data-test-input="monthly-price"]').fill(updatedMonthlyPrice);
-            await modal.locator('[data-test-input="yearly-price"]').fill(updatedYearlyPrice);
-            await modal.locator('[data-test-button="save-tier"]').click();
+            await test.step('Open modal and edit tier information', async () => {
+                await tierCard.locator('[data-test-button="tiers-actions"]').click();
+                await tierCard.locator('[data-test-button="edit-tier"]').click();
+                const modal = page.locator('[data-test-modal="edit-tier"]');
 
-            // Go to website and open portal
-            await page.goto('/');
-            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
-            await portalTriggerButton.click();
+                await modal.locator('[data-test-input="tier-name"]').first().fill(updatedTierName);
+                await modal.locator('[data-test-input="tier-description"]').first().fill(updatedDescription);
+                await modal.locator('[data-test-input="monthly-price"]').fill(updatedMonthlyPrice);
+                await modal.locator('[data-test-input="yearly-price"]').fill(updatedYearlyPrice);
+                await page.locator('[data-test-button="save-tier"]').click();
+            });
 
-            // Find the updated tier card
-            await portalFrame.locator('[data-test-tier="paid"]').filter({hasText: updatedTierName}).first().isVisible();
-            const portalTierCard = portalFrame.locator('[data-test-tier="paid"]').filter({hasText: updatedTierName}).first();
-            await expect(portalTierCard).toBeVisible();
+            const portalFrame = await test.step('Go to website and open portal', async () => {
+                await page.goto('/');
+                const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+                const frame = page.frameLocator('[data-testid="portal-popup-frame"]');
+                await portalTriggerButton.click();
 
-            // Check if the details are updated
-            // Check yearly price
-            await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedYearlyPrice);
+                return frame;
+            });
 
-            // Check description
-            await expect(portalTierCard.locator('.gh-portal-product-description').first()).toHaveText(updatedDescription);
+            const portalTierCard = await test.step('Find the updated tier card', async () => {
+                await portalFrame.locator('[data-test-tier="paid"]').filter({hasText: updatedTierName}).first().isVisible();
+                const card = portalFrame.locator('[data-test-tier="paid"]').filter({hasText: updatedTierName}).first();
+                await expect(card).toBeVisible();
 
-            // Check monthly price
-            await portalFrame.locator('[data-test-button="switch-monthly"]').click();
-            await expect(await portalTierCard.getByText('/month')).toBeVisible();
-            await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedMonthlyPrice);
+                return card;
+            });
+
+            await test.step('Check yearly price and description', async () => {
+                await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedYearlyPrice);
+                await expect(portalTierCard.locator('.gh-portal-product-description').first()).toHaveText(updatedDescription);
+            });
+
+            await test.step('Check monthly price', async () => {
+                await portalFrame.locator('[data-test-button="switch-monthly"]').click();
+                await expect(await portalTierCard.getByText('/month')).toBeVisible();
+                await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedMonthlyPrice);
+            });
         });
     });
 });
