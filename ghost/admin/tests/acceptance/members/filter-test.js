@@ -195,7 +195,6 @@ describe('Acceptance: Members filtering', function () {
 
             // only one redeemed offer so only 1 member should be shown
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows').to.equal(1);
-            
         });
             
         it('can filter by specific newsletter subscription', async function () {
