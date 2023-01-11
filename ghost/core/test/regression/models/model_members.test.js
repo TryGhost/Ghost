@@ -4,6 +4,8 @@ const {Label} = require('../../../core/server/models/label');
 const {Product} = require('../../../core/server/models/product');
 const {Member} = require('../../../core/server/models/member');
 const {MemberStripeCustomer} = require('../../../core/server/models/member-stripe-customer');
+const {Offer} = require('../../../core/server/models/offer');
+const {OfferRedemption} = require('../../../core/server/models/offer-redemption');
 const {StripeCustomerSubscription} = require('../../../core/server/models/stripe-customer-subscription');
 
 const testUtils = require('../../utils');
@@ -502,6 +504,76 @@ describe('Member Model', function run() {
                 const members = await Member.findPage({filter: `subscriptions.plan_interval:month+subscriptions.plan_interval:-year`});
                 should.equal(members.data.length, 0, 'Can search for members by plan_interval');
             }
+        });
+
+        it('Should allow filtering on offers redeemed', async function () {
+            const context = testUtils.context.admin;
+            let email = 'test@offers.com';
+            const member = await Member.add({
+                email: email,
+                labels: []
+            }, context);
+
+            const product = await Product.add({
+                name: 'Ghost Product',
+                slug: 'ghost-product',
+                type: 'paid'
+            }, context);
+
+            const offerData = testUtils.DataGenerator.forKnex.createOffer({
+                product_id: product.get('id')
+            });
+            const offerModel = await Offer.add(offerData, {context: {internal: true}});
+
+            await StripeProduct.add({
+                product_id: product.get('id'),
+                stripe_product_id: 'fake_product_id'
+            }, context);
+
+            await StripePrice.add({
+                stripe_price_id: 'fake_plan_id',
+                stripe_product_id: 'fake_product_id',
+                amount: 5000,
+                interval: 'monthly',
+                active: 1,
+                nickname: 'Monthly',
+                currency: 'USD',
+                type: 'recurring'
+            }, context);
+
+            await MemberStripeCustomer.add({
+                member_id: member.get('id'),
+                customer_id: 'fake_customer_id1'
+            }, context);
+
+            const subscription = await StripeCustomerSubscription.add({
+                customer_id: 'fake_customer_id1',
+                subscription_id: 'fake_subscription_id1',
+                plan_id: 'fake_plan_id',
+                stripe_price_id: 'fake_plan_id',
+                plan_amount: 1337,
+                plan_nickname: 'e-LEET',
+                plan_interval: 'year',
+                plan_currency: 'btc',
+                status: 'active',
+                start_date: new Date(),
+                current_period_end: new Date(),
+                cancel_at_period_end: false
+            }, context);
+
+            const addRedemption = await OfferRedemption.add({
+                offer_id: offerModel.get('id'),
+                member_id: member.get('id'),
+                created_at: new Date(),
+                subscription_id: subscription.get('id')
+            }, context);
+
+            const offerId = addRedemption.get('offer_id');
+
+            const members = await Member.findPage({filter: `offer_redemptions:${offerId}`});
+            // convert members to json
+            const membersJson = members.data.map(model => model.toJSON());
+            should.equal(membersJson[0].email, email, 'Can search for members with offer_redemptions');
         });
     });
 });

@@ -21,3 +21,4 @@ export * from './email-clicked';
 export * from './email-received';
 export * from './email-sent';
 export * from './audience-feedback';
+export * from './offers';

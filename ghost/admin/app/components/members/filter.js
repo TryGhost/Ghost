@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
-import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEWSLETTERS_FILTER, NEXT_BILLING_DATE_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
+import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_RECEIVED_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEWSLETTERS_FILTER, NEXT_BILLING_DATE_FILTER, OFFERS_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -145,7 +145,7 @@ export default class MembersFilter extends Component {
     ]);
 
     newsletters;
-
+    
     get filterProperties() {
         let availableFilters = FILTER_PROPERTIES;
 
@@ -158,6 +158,10 @@ export default class MembersFilter extends Component {
             const indexes = availableFilters.map((obj, index) => (obj.group === 'Basic' ? index : null)).filter(i => i !== null);
             const lastIndex = indexes.pop();
             availableFilters.splice(lastIndex + 1, 0, ...NEWSLETTERS_FILTER(this.newsletters));
+        }
+        // only add the offers filter if there are any offers
+        if (this.offers.length > 0) {
+            availableFilters = availableFilters.concat(OFFERS_FILTER);
         }
 
         // exclude any filters that are behind disabled feature flags
@@ -214,6 +218,7 @@ export default class MembersFilter extends Component {
         // otherwise the filter will be parsed with the wrong properties
         await this.fetchTiers.perform();
         await this.fetchNewsletters.perform();
+        await this.fetchOffers.perform();
         if (this.args.defaultFilterParam) {
             // check if it is different before parsing
             const validFilters = this.validFilters;
@@ -588,6 +593,13 @@ export default class MembersFilter extends Component {
     *fetchNewsletters() {
         const response = yield this.store.query('newsletter', {filter: 'status:active'});
         this.newsletters = response;
+        return response;
+    }
+
+    @task({drop: true})
+    *fetchOffers() {
+        const response = yield this.store.query('offer', {filter: 'status:active'});
+        this.offers = response;
         return response;
     }
 

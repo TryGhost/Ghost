@@ -42,6 +42,16 @@
         />
     </div>
 
+{{else if (eq @filter.type 'offer_redemptions')}}
+    <div class="relative">
+        <Offers::SegmentSelect
+            @onChange={{fn this.setOffersFilterValue @filter}}
+            @offers={{this.offersFilterValue}}
+            @renderInPlace={{true}}
+            @hideOptionsWhenAllSelected={{true}}
+        />
+    </div>
+
 {{else if this.isResourceFilter }}
     <div class="relative gh-members-resource-filter">
          <GhResourceSelect
