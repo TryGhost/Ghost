@@ -3,7 +3,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit, waitFor} from '@ember/test-helpers';
+import {currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit, waitFor} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
@@ -175,7 +175,7 @@ describe('Acceptance: Authentication', function () {
             await waitFor('[data-test-modal="re-authenticate"]', {timeout: 100});
 
             // close the modal so the modal promise is settled and we can continue
-            await click('[data-test-modal="re-authenticate"] button[title="Close"]');
+            await triggerKeyEvent('[data-test-modal="re-authenticate"]', 'keydown', 'Escape');
         });
 
         // don't clobber debounce/throttle for future tests

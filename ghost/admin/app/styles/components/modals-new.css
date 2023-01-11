@@ -55,12 +55,20 @@
     z-index: 10000;
 }
 
+.epm-backdrop.background-light {
+    background-color: var(--whitegrey-l2);
+}
+
 .epm-modal-container {
     z-index: 10000;
     display: flex;
     justify-content: center;
     overflow: auto;
     align-items: unset;
+}
+
+.epm-modal-container.background-blur {
+    backdrop-filter: blur(4px);
 }
 
 .epm-animating .epm-modal-container {

@@ -21,6 +21,14 @@ class Signin extends EmberObject.extend(ValidationEngine) {
 export default class ReAuthenticateModal extends Component {
     @service notifications;
     @service session;
+    @service modals;
+
+    static modalOptions = {
+        className: 'fullscreen-modal-wide fullscreen-modal-action modal-reauthenticate',
+        ignoreBackdropClick: true,
+        backgroundLight: true,
+        backgroundBlur: true
+    };
 
     @tracked authenticationError = null;
 
