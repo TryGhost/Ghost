@@ -1,5 +1,5 @@
 
-<div class="modal-content" {{on-key "Enter" (perform this.unarchiveTask)}}>
+<div class="modal-content" data-test-modal="unarchive-tier" {{on-key "Enter" (perform this.unarchiveTask)}}>
     <header class="modal-header">
         <h1>Reactivate tier</h1>
     </header>
@@ -20,6 +20,7 @@
             @buttonText="Reactivate"
             @task={{this.unarchiveTask}}
             @class="gh-btn gh-btn-black gh-btn-icon"
+            data-test-button="unarchive-tier"
         />
     </div>
 </div>
