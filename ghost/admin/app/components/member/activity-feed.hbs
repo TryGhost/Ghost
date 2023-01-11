@@ -56,7 +56,7 @@
                             {{/each}}
 
                             <div class="gh-member-feed-footer">
-                                <LinkTo @route="members-activity" @query={{hash excludedEvents=null member=@member.id}}>See all member activity &rarr;</LinkTo>
+                                <LinkTo @route="members-activity" @query={{hash excludedEvents=null member=@member.id}}>View all member activity &rarr;</LinkTo>
                             </div>
                         {{else}}
                             <Member::ActivityFeedEmpty />
