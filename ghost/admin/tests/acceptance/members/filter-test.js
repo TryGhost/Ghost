@@ -198,8 +198,6 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows').to.equal(1);
         });
 
-        // add some members with offers
-
         it('can filter by newsletter subscription', async function () {
             // add some members to filter
             this.server.createList('member', 3, {subscribed: true});

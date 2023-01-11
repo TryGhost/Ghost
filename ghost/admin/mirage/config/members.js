@@ -101,8 +101,6 @@ export default function mockMembers(server) {
                     ]
                 });
 
-                // check if filter contains offer_redemptions
-
                 collection = collection.filter((member) => {
                     const serializedMember = {};
 
