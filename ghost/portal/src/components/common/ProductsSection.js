@@ -592,7 +592,7 @@ function ProductCardPrice({product}) {
                     <div className="gh-portal-product-card-price-trial">
                         <div className="gh-portal-product-price">
                             <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>{currencySymbol}</span>
-                            <span className="amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
+                            <span className="amount" data-testid="product-amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
                             <span className="billing-period">/{activePrice.interval}</span>
                         </div>
                         <ProductCardTrialDays trialDays={trialDays} discount={yearlyDiscount} selectedInterval={selectedInterval} />
@@ -610,7 +610,7 @@ function ProductCardPrice({product}) {
             <div className="gh-portal-product-card-price-trial">
                 <div className="gh-portal-product-price">
                     <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>{currencySymbol}</span>
-                    <span className="amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
+                    <span className="amount" data-testid="product-amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
                     <span className="billing-period">/{activePrice.interval}</span>
                 </div>
                 {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} /> : '')}
@@ -668,7 +668,7 @@ function FreeProductCard({products, handleChooseSignup}) {
                         <div className="gh-portal-product-card-pricecontainer free-trial-disabled">
                             <div className="gh-portal-product-price">
                                 <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>{currencySymbol}</span>
-                                <span className="amount">0</span>
+                                <span className="amount" data-testid="product-amount">0</span>
                             </div>
                             {/* <div className="gh-portal-product-alternative-price"></div> */}
                         </div>
@@ -676,7 +676,10 @@ function FreeProductCard({products, handleChooseSignup}) {
                 </div>
                 <div className='gh-portal-product-card-details'>
                     <div className='gh-portal-product-card-detaildata'>
-                        {freeProductDescription ? <div className="gh-portal-product-description">{freeProductDescription}</div> : ''}
+                        {freeProductDescription
+                            ? <div className="gh-portal-product-description" data-testid="product-description">{freeProductDescription}</div>
+                            : ''
+                        }
                         <ProductBenefitsContainer product={product} />
                     </div>
                     {(!hasOnlyFree ?
@@ -746,7 +749,7 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
                 </div>
                 <div className='gh-portal-product-card-details'>
                     <div className='gh-portal-product-card-detaildata'>
-                        <div className="gh-portal-product-description">
+                        <div className="gh-portal-product-description" data-testid="product-description">
                             {productDescription}
                         </div>
                         <ProductBenefitsContainer product={product} />
@@ -996,7 +999,7 @@ export function ChangeProductSection({onPlanSelect, selectedPlan, products, type
 function ProductDescription({product, selectedPrice, activePrice}) {
     if (product?.description) {
         return (
-            <div className="gh-portal-product-description">
+            <div className="gh-portal-product-description" data-testid="product-description">
                 {product.description}
             </div>
         );
