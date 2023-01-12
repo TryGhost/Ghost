@@ -1,5 +1,5 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
-const {test} = require('@playwright/test');
+const {test, expect} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
 const {promisify} = require('util');
 const {exec} = require('child_process');
@@ -364,8 +364,9 @@ const completeStripeSubscription = async (page) => {
  * @param {String} [options.note]
  * @param {String} [options.label]
  * @param {String} [options.compedPlan]
+ * @param {Boolean} [options.invalid] - should check whether Retry button available
  */
-const createMember = async (page, {email, name, note, label = '', compedPlan}) => {
+const createMember = async (page, {email, name, note, label = '', compedPlan, invalid}) => {
     await page.goto('/ghost');
     await page.locator('.gh-nav a[href="#/members/"]').click();
     await page.waitForSelector('a[href="#/members/new/"] span');
@@ -383,12 +384,20 @@ const createMember = async (page, {email, name, note, label = '', compedPlan}) =
     }
 
     if (label) {
-        await page.locator('label:has-text("Labels") + div').click();
+        await page.locator('[data-test-input="member-settings-label"]').click();
         await page.keyboard.type(label);
         await page.keyboard.press('Tab');
     }
 
-    await page.locator('button span:has-text("Save")').click();
+    await page.locator('[data-test-button="save"]').click();
+
+    if (invalid) {
+        await page.waitForSelector('[data-test-button="save"]:has-text("Retry")');
+        await expect(page.locator('[data-test-button="save"]:has-text("Retry")')).toBeVisible();
+
+        return;
+    }
+
     await page.waitForSelector('button span:has-text("Saved")');
 
     if (compedPlan) {
@@ -484,6 +493,20 @@ const generateStripeIntegrationToken = async () => {
     })).toString('base64');
 };
 
+/**
+ * Open portal page
+ * @param {import('@playwright/test').Page} page
+ */
+const openPortal = async (page) => {
+    return await test.step('Go to website and open portal', async () => {
+        const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+        const frame = page.frameLocator('[data-testid="portal-popup-frame"]');
+        await portalTriggerButton.click();
+
+        return frame;
+    });
+};
+
 module.exports = {
     setupGhost,
     setupStripe,
@@ -499,5 +522,6 @@ module.exports = {
     completeStripeSubscription,
     impersonateMember,
     goToMembershipPage,
-    getTierCardById
+    getTierCardById,
+    openPortal
 };

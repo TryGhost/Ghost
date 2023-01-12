@@ -1,4 +1,4 @@
-<tr data-test-list='members-list-item' data-test-member={{@member.id}}>
+<tr data-test-list='members-list-item' data-test-member={{@member.id}} data-test-member-email={{@member.email}}>
     <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="details">
         <div class="flex items-center">
             <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />

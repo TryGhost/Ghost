@@ -45,7 +45,7 @@
                             @onLabelEdit={{@onLabelEdit}}
                             @labels={{this.member.labels}}
                             @triggerId="label-input"
-                            data-test-input=""
+                            @dataTestInput="member-settings-label"
                         />
                     </GhFormGroup>
 
@@ -72,7 +72,7 @@
                                     <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
                                 </div>
                                 <div class="for-switch">
-                                    <label class="switch" for="subscribed-checkbox">
+                                    <label class="switch" for="subscribed-checkbox" data-test-switch="member-subscribed">
                                         <Input
                                             @checked={{this.member.subscribed}}
                                             @type="checkbox"

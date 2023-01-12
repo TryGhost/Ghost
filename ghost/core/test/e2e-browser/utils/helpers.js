@@ -7,7 +7,13 @@ const getUniqueName = (prefix = 'id') => {
 
 const getSlug = str => str.toLowerCase().split(' ').join('-');
 
+const getUniqueEmail = () => {
+    uniqueId += 1;
+    return `test-email-${uniqueId}@test.com`;
+};
+
 module.exports = {
     getUniqueName,
-    getSlug
+    getSlug,
+    getUniqueEmail
 };
