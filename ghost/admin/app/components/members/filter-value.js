@@ -24,7 +24,7 @@ export default class MembersFilterValue extends Component {
 
     get offersFilterValue() {
         if (this.args.filter?.type === 'offer_redemptions') {
-            const offers = this.args.filter?.value || [];
+            const offers = Array.isArray(this.args.filter?.value) ? this.args.filter?.value : [];
             return offers.map((offer) => {
                 return {
                     id: offer
