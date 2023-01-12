@@ -304,8 +304,9 @@
         <div class="gh-portal-settings-main">
             <div class="gh-portal-settings-previewheader">
 
-                <div class="gh-select gh-preview-page-selector">
+                <div class="gh-select gh-preview-page-selector" data-test-select="preview-page-selector">
                     <OneWaySelect
+                        @data-test-select="page-selector"
                         @value={{this.page}}
                         @options={{this.availablePages}}
                         @optionValuePath="name"
