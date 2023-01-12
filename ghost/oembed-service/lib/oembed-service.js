@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const {extract, hasProvider} = require('oembed-parser');
+const {extract, hasProvider} = require('@extractus/oembed-extractor');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 const {CookieJar} = require('tough-cookie');
@@ -11,7 +11,8 @@ const iconv = require('iconv-lite');
 const messages = {
     noUrlProvided: 'No url provided.',
     insufficientMetadata: 'URL contains insufficient metadata.',
-    unknownProvider: 'No provider found for supplied URL.'
+    unknownProvider: 'No provider found for supplied URL.',
+    unauthorized: 'URL contains a private resource.'
 };
 
 /**
@@ -54,7 +55,7 @@ const findUrlWithProvider = (url) => {
 /**
  * @typedef {object} ICustomProvider
  * @prop {(url: URL) => Promise<boolean>} canSupportRequest
- * @prop {(url: URL, externalRequest: IExternalRequest) => Promise<import('oembed-parser').OembedData>} getOEmbedData
+ * @prop {(url: URL, externalRequest: IExternalRequest) => Promise<import('@extractus/oembed-extractor').OembedData>} getOEmbedData
  */
 
 class OEmbed {
@@ -107,9 +108,15 @@ class OEmbed {
         try {
             return await extract(url);
         } catch (err) {
-            throw new errors.InternalServerError({
-                message: err.message
-            });
+            if (err.message === 'Request failed with error code 401') {
+                throw new errors.UnauthorizedError({
+                    message: messages.unauthorized
+                });
+            } else {
+                throw new errors.InternalServerError({
+                    message: err.message
+                });
+            }
         }
     }
 

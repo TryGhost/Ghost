@@ -6,6 +6,7 @@ import {NO_CURSOR_MOVEMENT} from './koenig-editor';
 import {action, computed, set} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isBlank} from '@ember/utils';
+import {isUnauthorizedError} from 'ember-ajax/errors';
 import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 
@@ -23,6 +24,7 @@ export default class KoenigCardEmbed extends Component {
 
     // internal properties
     hasError = false;
+    isUnauthorized = false;
 
     // closure actions
     selectCard() {}
@@ -114,6 +116,7 @@ export default class KoenigCardEmbed extends Component {
     @action
     retry() {
         this.set('hasError', false);
+        this.set('isUnauthorized', false);
     }
 
     @action
@@ -208,6 +211,9 @@ export default class KoenigCardEmbed extends Component {
                 return;
             }
             this.set('hasError', true);
+            if (isUnauthorizedError(err)) {
+                this.set('isUnauthorized', true);
+            }
         }
     }).drop())
         convertUrl;
