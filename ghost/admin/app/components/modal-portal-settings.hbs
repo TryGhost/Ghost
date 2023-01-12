@@ -54,7 +54,7 @@
                                                     id="free-plan"
                                                     name="free-plan"
                                                     data-test-settings-tier-input="Free"
-                                                    disabled={{(not-eq this.settings.membersSignupAccess "all")}}
+                                                    disabled={{not-eq this.settings.membersSignupAccess "all"}}
                                                     class="gh-input post-settings-featured"
                                                     {{on "click" (action "togglePlan" "free")}}
                                                 >
