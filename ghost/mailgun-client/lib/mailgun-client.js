@@ -254,7 +254,7 @@ module.exports = class MailgunClient {
      * Note: if the credentials are not configure, this method returns `null` and it is down to the
      * consumer to act upon this/log this out
      *
-     * @returns {import('mailgun.js')} the Mailgun client instance
+     * @returns {import('mailgun.js')|null} the Mailgun client instance
      */
     getInstance() {
         const mailgunConfig = this.#getConfig();
