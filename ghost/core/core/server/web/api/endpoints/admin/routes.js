@@ -240,7 +240,7 @@ module.exports = function apiRoutes() {
         mw.authAdminApi,
         apiMw.upload.single('file'),
         apiMw.upload.validation({type: 'images'}),
-        apiMw.normalizeImage,
+        //apiMw.normalizeImage,
         http(api.images.upload)
     );
 

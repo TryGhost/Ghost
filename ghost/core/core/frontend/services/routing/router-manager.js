@@ -177,7 +177,7 @@ class RouterManager {
 
         // NOTE: timezone change only affects the collection router with dated permalinks
         const collectionRouter = this.registry.getRouterByName('CollectionRouter');
-        if (collectionRouter.getPermalinks().getValue().match(/:year|:month|:day/)) {
+        if (collectionRouter && collectionRouter.getPermalinks().getValue().match(/:year|:month|:day/)) {
             debug('handleTimezoneEdit: trigger regeneration');
 
             this.urlService.onRouterUpdated(collectionRouter.identifier);
