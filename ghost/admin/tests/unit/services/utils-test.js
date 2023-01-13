@@ -13,13 +13,13 @@ describe('Unit: Service: utils', function () {
         it('removes protocol and www from url if display is true', function () {
             const url = 'https://www.ghost.org';
             const output = utilsService.cleanTrackedUrl(url, true);
-            expect(output).to.be('ghost.org');
+            expect(output).to.equal('ghost.org');
         });
 
         it('removes tracking params from the url', function () {
             const url = 'https://www.ghost.org?ref=123&attribution_id=something&attribution_type=something&leave=123';
             const output = utilsService.cleanTrackedUrl(url, false);
-            expect(output).to.be('https://www.ghost.org?leave=123');
+            expect(output).to.equal('https://www.ghost.org/?leave=123');
         });
     });
 });
