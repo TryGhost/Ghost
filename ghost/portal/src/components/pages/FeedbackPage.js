@@ -100,9 +100,69 @@ export const FeedbackPageStyles = `
     }
 
     @media (max-width: 480px) {
+        .gh-portal-popup-background {
+            animation: none;
+        }
+
+        .gh-portal-popup-wrapper.feedback h1 {
+            font-size: 2.5rem;
+        }
+
+        .gh-portal-popup-wrapper.feedback p {
+            margin-bottom: 1.2rem;
+        }
+
         .gh-portal-feedback .gh-portal-text-center {
             padding-left: 8px;
             padding-right: 8px;
+        }
+
+        .gh-portal-popup-wrapper.feedback {
+            display: block;
+            position: relative;
+            width: 100%;
+            background: none;
+            padding-right: 0 !important;
+            overflow: hidden;
+            overflow-y: hidden !important;
+            animation: none;
+        }
+
+        .gh-portal-popup-container.feedback {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-radius: 18px 18px 0 0;
+            margin: 0 !important;
+            animation: none;
+            animation: mobile-tray-from-bottom 0.4s ease;
+        }
+
+        .gh-portal-popup-wrapper.feedback .gh-portal-closeicon-container {
+            display: none;
+        }
+
+        .gh-feedback-buttons-group,
+        .gh-portal-confirm-button {
+            margin-top: 28px;
+        }
+
+        .gh-portal-powered.outside.feedback {
+            display: none;
+        }
+
+        @keyframes mobile-tray-from-bottom {
+            0% { 
+                opacity: 0;
+                transform: translateY(300px);
+            }
+            20% {
+                opacity: 1.0;
+            }
+            100% { 
+                transform: translateY(0);
+            }
         }
     }
 `;
