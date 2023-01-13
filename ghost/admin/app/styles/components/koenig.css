@@ -2830,9 +2830,10 @@ button.emoji-picker__category-button.active {
     align-items: center;
     max-width: 60%;
     height: auto;
+    margin-top: 1.2rem;
     color: var(--red);
     font-family: "Inter", -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     letter-spacing: 0;
     font-weight: 600;
     line-height: 1.6em;
