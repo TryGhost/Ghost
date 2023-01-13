@@ -16,9 +16,9 @@ export default class UtilsService extends Service {
 
     /**
      * Remove tracking parameters from a URL
-     * @param {string} url 
+     * @param {string} url
      * @param {boolean} [display] Set to true to remove protocol and hash from the URL
-     * @returns 
+     * @returns
      */
     cleanTrackedUrl(url, display = false) {
         // Remove our own querystring parameters and protocol
@@ -31,6 +31,8 @@ export default class UtilsService extends Service {
             return urlObj.toString();
         }
         // Return URL without protocol
-        return urlObj.host + (urlObj.pathname === '/' && !urlObj.search ? '' : urlObj.pathname) + (urlObj.search ? urlObj.search : '') + (urlObj.hash ? urlObj.hash : '');
+        const urlWithoutProtocol = urlObj.host + (urlObj.pathname === '/' && !urlObj.search ? '' : urlObj.pathname) + (urlObj.search ? urlObj.search : '') + (urlObj.hash ? urlObj.hash : '');
+        // remove www. from the start of the URL
+        return urlWithoutProtocol.replace(/^www\./, '');
     }
 }
