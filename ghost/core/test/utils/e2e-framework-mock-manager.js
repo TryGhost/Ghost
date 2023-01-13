@@ -6,6 +6,7 @@ const nock = require('nock');
 // Helper services
 const configUtils = require('./configUtils');
 const WebhookMockReceiver = require('@tryghost/webhook-mock-receiver');
+const EmailMockReceiver = require('@tryghost/email-mock-receiver');
 const {snapshotManager} = require('@tryghost/express-test').snapshot;
 
 let mocks = {};
@@ -13,6 +14,7 @@ let emailCount = 0;
 
 // Mockable services
 const mailService = require('../../core/server/services/mail/index');
+const originalMailServiceSend = mailService.GhostMailer.prototype.send;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
@@ -44,11 +46,16 @@ const mockStripe = () => {
  * @param {String|Object} response
  */
 const mockMail = (response = 'Mail is disabled') => {
-    mocks.mail = sinon
-        .stub(mailService.GhostMailer.prototype, 'send')
-        .resolves(response);
+    const mockMailReceiver = new EmailMockReceiver({
+        snapshotManager: snapshotManager,
+        sendResponse: response
+    });
 
-    return mocks.mail;
+    mailService.GhostMailer.prototype.send = mockMailReceiver.send.bind(mockMailReceiver);
+    mocks.mail = sinon.spy(mailService.GhostMailer.prototype, 'send');
+    mocks.mockMailReceiver = mockMailReceiver;
+
+    return mockMailReceiver;
 };
 
 const mockWebhookRequests = () => {
@@ -58,13 +65,14 @@ const mockWebhookRequests = () => {
 };
 
 const sentEmailCount = (count) => {
+    // NOTE: move to the mock-mail-receiver module
     if (!mocks.mail) {
         throw new errors.IncorrectUsageError({
             message: 'Cannot assert on mail when mail has not been mocked'
         });
     }
 
-    sinon.assert.callCount(mocks.mail, count);
+    mocks.mockMailReceiver.sentEmailCount(count);
 };
 
 const sentEmail = (matchers) => {
@@ -93,7 +101,7 @@ const sentEmail = (matchers) => {
             assert.match(spyCall.args[0][key], value, `Expected Email ${emailCount} to have ${key} that matches ${value}, got ${spyCall.args[0][key]}`);
             return;
         }
-        
+
         assert.equal(spyCall.args[0][key], value, `Expected Email ${emailCount} to have ${key} of ${value}`);
     });
 
@@ -186,6 +194,8 @@ const restore = () => {
     if (mocks.webhookMockReceiver) {
         mocks.webhookMockReceiver.reset();
     }
+
+    mailService.GhostMailer.prototype.send = originalMailServiceSend;
 };
 
 module.exports = {

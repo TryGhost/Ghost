@@ -8,6 +8,7 @@ const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Authentication API', function () {
+    let emailMockReceiver;
     let agent;
 
     describe('Blog setup', function () {
@@ -17,7 +18,7 @@ describe('Authentication API', function () {
 
         beforeEach(async function () {
             await mockManager.disableStripe();
-            mockManager.mockMail();
+            emailMockReceiver = mockManager.mockMail();
         });
 
         afterEach(function () {
@@ -69,10 +70,9 @@ describe('Authentication API', function () {
                 });
 
             // Test our side effects
-            mockManager.assert.sentEmail({
-                subject: 'Your New Ghost Site',
-                to: email
-            });
+            emailMockReceiver.matchHTMLSnapshot();
+            emailMockReceiver.matchMetadataSnapshot();
+
             assert.equal(requestMock.isDone(), true, 'The dawn github URL should have been used');
 
             const activeTheme = await settingsCache.get('active_theme');
@@ -202,10 +202,9 @@ describe('Authentication API', function () {
                 });
 
             // Test our side effects
-            mockManager.assert.sentEmail({
-                subject: 'Your New Ghost Site',
-                to: email
-            });
+            emailMockReceiver.matchHTMLSnapshot();
+            emailMockReceiver.matchMetadataSnapshot();
+
             assert.equal(requestMock.isDone(), false, 'The ghost github URL should not have been used');
 
             const activeTheme = await settingsCache.get('active_theme');
@@ -471,7 +470,7 @@ describe('Authentication API', function () {
         });
 
         beforeEach(function () {
-            mockManager.mockMail();
+            emailMockReceiver = mockManager.mockMail();
         });
 
         afterEach(function () {
