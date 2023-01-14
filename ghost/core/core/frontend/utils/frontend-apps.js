@@ -4,9 +4,6 @@ function getFrontendAppConfig(app) {
     const appVersion = config.get(`${app}:version`);
     let scriptUrl = config.get(`${app}:url`);
     let stylesUrl = config.get(`${app}:styles`);
-    if (scriptUrl.includes('{version}')) {
-        scriptUrl = scriptUrl.replace('{version}', appVersion);
-    }
     if (stylesUrl?.includes('{version}')) {
         stylesUrl = stylesUrl.replace('{version}', appVersion);
     }
