@@ -32,7 +32,8 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'lexicalEditor'
+    'lexicalEditor',
+    'webmentions'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
