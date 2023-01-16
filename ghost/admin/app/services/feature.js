@@ -64,6 +64,7 @@ export default class FeatureService extends Service {
     @feature('audienceFeedback') audienceFeedback;
     @feature('suppressionList') suppressionList;
     @feature('emailStability') emailStability;
+    @feature('webmentions') webmentions;
 
     _user = null;
 
