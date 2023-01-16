@@ -209,7 +209,7 @@
     "cssnano": "5.1.14",
     "eslint": "8.32.0",
     "expect": "^29.0.0",
-    "html-validate": "7.12.2",
+    "html-validate": "7.13.1",
     "inquirer": "8.2.5",
     "jwks-rsa": "3.0.1",
     "mocha": "10.2.0",
