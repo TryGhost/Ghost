@@ -11,9 +11,6 @@ if (!loggingConfig.path) {
 // Additional values used by logging
 loggingConfig.env = config.get('env');
 loggingConfig.domain = config.get('url');
-loggingConfig.metadata = {
-    version: ghostVersion.original
-};
 
 // Config for metrics
 loggingConfig.metrics = config.get('logging:metrics') || {};
