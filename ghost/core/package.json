@@ -162,7 +162,7 @@
     "express-session": "1.17.3",
     "fs-extra": "11.1.0",
     "ghost-storage-base": "1.0.0",
-    "glob": "8.0.3",
+    "glob": "8.1.0",
     "got": "9.6.0",
     "gscan": "4.36.0",
     "human-number": "2.0.1",
