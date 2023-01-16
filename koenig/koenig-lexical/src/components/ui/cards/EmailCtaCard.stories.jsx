@@ -20,8 +20,8 @@ const Template = args => (
     </div>
 );
 
-export const Default = Template.bind({});
-Default.args = {
+export const Empty = Template.bind({});
+Empty.args = {
     isSelected: true,
     visibility: 'Free members',
     alignment: 'left',
@@ -30,5 +30,17 @@ Default.args = {
     placeholder: 'Email only text... (optional)',
     button: true,
     buttonText: ''
+};
+
+export const Populated = Template.bind({});
+Populated.args = {
+    isSelected: true,
+    visibility: 'Free members',
+    alignment: 'center',
+    separators: true,
+    value: 'Want to get access to premium content?',
+    placeholder: 'Email only text... (optional)',
+    button: true,
+    buttonText: 'Upgrade'
 };
 
