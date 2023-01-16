@@ -8,6 +8,11 @@ const story = {
     subcomponent: {CardWrapper},
     argTypes: {
         isSelected: {control: 'boolean'}
+    },
+    parameters: {
+        status: {
+            type: 'uiBlocked'
+        }
     }
 };
 export default story;

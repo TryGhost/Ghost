@@ -19,7 +19,8 @@ module.exports = {
   "addons": [
     "@storybook/addon-links",
     "@storybook/addon-essentials",
-    "@storybook/addon-interactions"
+    "@storybook/addon-interactions",
+    "@etchteam/storybook-addon-status"
   ],
   "framework": "@storybook/react",
   "core": {

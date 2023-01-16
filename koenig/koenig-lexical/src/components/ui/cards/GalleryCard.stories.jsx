@@ -8,6 +8,11 @@ const story = {
     subcomponent: {CardWrapper},
     argTypes: {
         isSelected: {control: 'boolean'}
+    },
+    parameters: {
+        status: {
+            type: 'inProgress'
+        }
     }
 };
 export default story;

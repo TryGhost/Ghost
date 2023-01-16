@@ -20,7 +20,12 @@ import {Snippet} from './ToolbarMenuItem.stories';
 const story = {
     title: 'Toolbar/Toolbar',
     component: ToolbarMenu,
-    subcomponents: {ToolbarMenuSeparator}
+    subcomponents: {ToolbarMenuSeparator},
+    parameters: {
+        status: {
+            type: 'functional'
+        }
+    }
 };
 export default story;
 

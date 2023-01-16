@@ -4,7 +4,12 @@ import {ToolbarMenuItem} from './ToolbarMenu';
 
 const story = {
     title: 'Toolbar/Toolbar buttons',
-    component: ToolbarMenuItem
+    component: ToolbarMenuItem,
+    parameters: {
+        status: {
+            type: 'functional'
+        }
+    }
 };
 export default story;
 

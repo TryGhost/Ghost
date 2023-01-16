@@ -39,7 +39,12 @@ import {ReactComponent as SnippetCardIcon} from '../../assets/icons/kg-card-type
 const story = {
     title: 'Card menu/Card menu',
     component: CardMenu,
-    subcomponent: {CardMenuSection, CardMenuItem, CardSnippetItem}
+    subcomponent: {CardMenuSection, CardMenuItem, CardSnippetItem},
+    parameters: {
+        status: {
+            type: 'functional'
+        }
+    }
 };
 export default story;
 

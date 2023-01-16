@@ -12,6 +12,11 @@ const story = {
             options: ['regular', 'wide', 'full'],
             control: {type: 'radio'}
         }
+    },
+    parameters: {
+        status: {
+            type: 'functional'
+        }
     }
 };
 export default story;

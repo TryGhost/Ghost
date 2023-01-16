@@ -6,7 +6,12 @@ import UnsplashZoomed from './UnsplashZoomed';
 
 const story = {
     title: 'File Selectors/Unsplash',
-    component: UnsplashSelector
+    component: UnsplashSelector,
+    parameters: {
+        status: {
+            type: 'functional'
+        }
+    }
 };
 export default story;
 

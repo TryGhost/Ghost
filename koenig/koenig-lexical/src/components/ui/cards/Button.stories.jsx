@@ -4,7 +4,12 @@ import {Button} from './ButtonCard';
 
 const story = {
     title: 'Generic/Button',
-    component: Button
+    component: Button,
+    parameters: {
+        status: {
+            type: 'uiReady'
+        }
+    }
 };
 export default story;
 
