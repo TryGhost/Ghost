@@ -2,6 +2,7 @@ const {
     agentProvider,
     fixtureManager,
     matchers: {
+        anyContentVersion,
         anyEtag
     },
     dbUtils,
@@ -40,6 +41,7 @@ describe('Sessions API', function () {
             })
             .expectStatus(429)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -68,6 +70,7 @@ describe('Sessions API', function () {
             })
             .expectStatus(429)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
