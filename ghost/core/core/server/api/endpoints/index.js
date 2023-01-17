@@ -57,6 +57,10 @@ module.exports = {
         return apiFramework.pipeline(require('./posts'), localUtils);
     },
 
+    get mentions() {
+        return apiFramework.pipeline(require('./mentions'), localUtils);
+    },
+
     get invites() {
         return apiFramework.pipeline(require('./invites'), localUtils);
     },

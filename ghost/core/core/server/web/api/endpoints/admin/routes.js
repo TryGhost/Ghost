@@ -5,6 +5,7 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
 const shared = require('../../../shared');
+const labs = require('../../../../../shared/labs');
 
 module.exports = function apiRoutes() {
     const router = express.Router('admin api');
@@ -30,6 +31,8 @@ module.exports = function apiRoutes() {
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
+
+    router.get('/mentions', labs.enabledMiddleware('webmentions'), mw.authAdminApi, http(api.mentions.browse));
 
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
