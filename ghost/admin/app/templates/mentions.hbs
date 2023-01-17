@@ -4,7 +4,7 @@
             Mentions
         </h2>
     </GhCanvasHeader>
-    {{#each this.mentionsList as |post|}}
-            <li>{{post}}</li>
+    {{#each this.mentionsList as |mention|}}
+            <li>from: {{mention.source}} to {{mention.target}}</li>
     {{/each}}
 </section>
