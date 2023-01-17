@@ -292,6 +292,7 @@ async function initServices({config}) {
     const audienceFeedback = require('./server/services/audience-feedback');
     const emailSuppressionList = require('./server/services/email-suppression-list');
     const emailService = require('./server/services/email-service');
+    const mentionsService = require('./server/services/mentions');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -305,6 +306,7 @@ async function initServices({config}) {
 
     await Promise.all([
         memberAttribution.init(),
+        mentionsService.init(),
         staffService.init(),
         members.init(),
         tiers.init(),
