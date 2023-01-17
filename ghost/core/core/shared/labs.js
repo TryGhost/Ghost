@@ -33,7 +33,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'lexicalEditor',
-    'webmentions'
+    'webmentions',
+    'externalAttribution'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
