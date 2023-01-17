@@ -36,6 +36,7 @@ describe('API Versioning', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-length': anyContentLength,
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -290,7 +291,8 @@ describe('API Versioning', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .matchBodySnapshot(settingsMatcher);
         });
