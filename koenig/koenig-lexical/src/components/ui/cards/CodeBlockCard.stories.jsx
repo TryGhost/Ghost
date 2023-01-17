@@ -12,7 +12,7 @@ const story = {
     },
     parameters: {
         status: {
-            type: 'uiBlocked'
+            type: 'inProgress'
         }
     }
 };
@@ -28,14 +28,14 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isEditing: false,
+    isEditing: true,
     isSelected: true,
     code: ''
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isEditing: false,
+    isEditing: true,
     isSelected: true,
     code: '<script></script>'
 };
