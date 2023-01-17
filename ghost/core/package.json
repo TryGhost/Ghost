@@ -137,6 +137,7 @@
     "@tryghost/validator": "0.1.31",
     "@tryghost/verification-trigger": "0.0.0",
     "@tryghost/version": "0.1.19",
+    "@tryghost/webmentions": "0.0.0",
     "@tryghost/zip": "1.1.31",
     "amperize": "0.6.1",
     "analytics-node": "6.2.0",
