@@ -201,8 +201,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.29.2",
-    "@tryghost/express-test": "0.11.8",
-    "@tryghost/jest-snapshot": "0.5.0",
+    "@tryghost/express-test": "0.12.0",
     "@tryghost/webhook-mock-receiver": "0.2.3",
     "@types/common-tags": "1.8.1",
     "c8": "7.12.0",
