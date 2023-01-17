@@ -1,9 +1,5 @@
-const utils = require('../../../index');
-
-module.exports = (model, frame) => {
+module.exports = (model) => {
     const json = model.toJSON();
-
-    console.log(json);
 
     return {
         id: json.id,
