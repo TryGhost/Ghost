@@ -15,5 +15,6 @@ module.exports = {
     tags: require('./tags'),
     offers: require('./offers'),
     newsletters: require('./newsletters'),
-    users: require('./users')
+    users: require('./users'),
+    mentions: require('./mentions')
 };
