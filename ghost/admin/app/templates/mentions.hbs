@@ -1,0 +1,10 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            Mentions
+        </h2>
+    </GhCanvasHeader>
+    {{#each this.mentionsList as |mention|}}
+            <li>from: {{mention.source}} to {{mention.target}}</li>
+    {{/each}}
+</section>

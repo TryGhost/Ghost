@@ -123,6 +123,8 @@ Router.map(function () {
     this.route('error404', {path: '/*path'});
 
     this.route('designsandbox');
+
+    this.route('mentions');
 });
 
 export default Router;
