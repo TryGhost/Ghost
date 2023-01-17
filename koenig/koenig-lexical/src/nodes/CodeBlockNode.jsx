@@ -6,10 +6,13 @@ import {
 } from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {CodeBlockCard} from '../components/ui/cards/CodeBlockCard';
+import CardContext from '../context/CardContext';
 
 export const CODE_BLOCK_COMMAND = createCommand();
 
 function CodeBlockComponent({code, language, nodeKey, editor}) {
+    const cardContext = React.useContext(CardContext);
+
     const updateCode = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -30,6 +33,7 @@ function CodeBlockComponent({code, language, nodeKey, editor}) {
             updateCode={updateCode}
             language={language}
             updateLanguage={updateLanguage}
+            isEditing={cardContext.isEditing}
         />
     );
 }
@@ -113,6 +117,10 @@ export class CodeBlockNode extends DecoratorNode {
 
     isInline() {
         return false;
+    }
+
+    hasEditMode() {
+        return true;
     }
 }
 

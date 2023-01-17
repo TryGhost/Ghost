@@ -47,7 +47,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card="image">
+                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="wide">
                         <div>
                             <img
@@ -74,7 +74,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card="image">
+                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div data-testid="media-placeholder">
                             <div>
@@ -106,7 +106,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card="image">
+                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure>
                         <img src="data:image/png;base64,BASE64DATA" alt="" />
                         <figcaption>
@@ -138,7 +138,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card="image">
+                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure>
                         <img src="data:image/png;base64,BASE64DATA" alt="" />
                         <figcaption>
@@ -169,7 +169,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card="image">
+                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure>
                         <img src="data:image/png;base64,BASE64DATA" alt="" />
                         <figcaption>
@@ -318,7 +318,7 @@ describe('Image card', async () => {
         await replacefileChooser.setFiles([filePath2]);
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card="image">
+                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure>
                         <img src="data:image/jpeg;base64,BASE64DATA" alt="" />
                         <figcaption>
@@ -445,7 +445,7 @@ describe('Image card', async () => {
         // placeholder is replaced with uploading image
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card="image">
+                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
                             <img
@@ -466,7 +466,7 @@ describe('Image card', async () => {
         await page.click('[data-kg-unsplash-insert-button]');
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card="unsplash">
+                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="unsplash">
                     <figure data-kg-card-width="regular">
                         <div>
                             <img

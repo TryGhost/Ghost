@@ -17,12 +17,13 @@ import {
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalNodeSelection} from '@lexical/react/useLexicalNodeSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import WrapperContext from '../context/CardContext';
+import CardContext from '../context/CardContext';
 import {CardWrapper} from './ui/CardWrapper';
 
 const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
     const [editor] = useLexicalComposerContext();
     const [isSelected, setSelected, clearSelected] = useLexicalNodeSelection(nodeKey);
+    const [isEditing, setEditing] = React.useState(false);
     const [selection, setSelection] = React.useState(null);
     const [cardType, setCardType] = React.useState(null);
     const [cardWidth, setCardWidth] = React.useState(width || 'regular');
@@ -39,18 +40,39 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
     }, []);
 
     React.useEffect(() => {
+        function select() {
+            setSelected(true);
+        }
+
+        function deselect() {
+            setSelected(false);
+            setEditing(false);
+        }
+
         return mergeRegister(
             editor.registerUpdateListener(({editorState}) => {
-                setSelection(editorState.read(() => $getSelection()));
+                const latestSelection = editorState.read(() => $getSelection());
+                setSelection(latestSelection);
+
+                const cardIsSelected = editorState.read(() => {
+                    return $isNodeSelection(latestSelection) &&
+                        latestSelection.getNodes().length === 1 &&
+                        latestSelection.getNodes()[0].getKey() === nodeKey;
+                });
+
+                // ensure edit mode is removed any time the card loses selection
+                if ((isEditing) && !cardIsSelected) {
+                    setEditing(false);
+                }
             }),
             editor.registerCommand(
                 CLICK_COMMAND,
                 (event) => {
                     if (containerRef.current.contains(event.target)) {
                         clearSelected();
-                        setSelected(true);
+                        select();
                     } else if (isSelected) {
-                        setSelected(false);
+                        deselect();
                     }
                     return false;
                 },
@@ -66,14 +88,29 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                     // }
 
                     const latestSelection = $getSelection();
-                    if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
-                        event.preventDefault();
-                        const cardNode = $getNodeByKey(nodeKey);
-                        const paragraphNode = $createParagraphNode();
-                        cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
-                        paragraphNode.select();
-                        return true;
+
+                    if (event.metaKey || event.ctrlKey) {
+                        if (isSelected) {
+                            event.preventDefault();
+
+                            const node = latestSelection.getNodes()[0];
+                            if (node.hasEditMode?.()) {
+                                setEditing(!isEditing);
+                            }
+
+                            return true;
+                        }
+                    } else {
+                        if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
+                            event.preventDefault();
+                            const cardNode = $getNodeByKey(nodeKey);
+                            const paragraphNode = $createParagraphNode();
+                            cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
+                            paragraphNode.select();
+                            return true;
+                        }
                     }
+
                     return false;
                 },
                 COMMAND_PRIORITY_EDITOR
@@ -86,6 +123,7 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                         event.preventDefault();
                         const cardNode = $getNodeByKey(nodeKey);
                         // This is to avoid deleting the card when backspacing inside the caption / alt input of the card when the card is selected
+                        // TODO: this should be avoided or generalized
                         if (cardNode.getType() === 'image' && event.target.matches('input')) {
                             editor.update(() => {
                                 const caption = cardNode.getCaption();
@@ -160,19 +198,27 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                 COMMAND_PRIORITY_EDITOR
             )
         );
-    }, [editor, isSelected, setSelected, clearSelected, nodeKey]);
+    }, [editor, isSelected, isEditing, setSelected, clearSelected, setEditing, nodeKey]);
 
     return (
-        <WrapperContext.Provider value={{isSelected, cardWidth, setCardWidth, selection, cardContainerRef: containerRef}}>
+        <CardContext.Provider value={{
+            isSelected,
+            isEditing,
+            cardWidth,
+            setCardWidth,
+            selection,
+            cardContainerRef: containerRef
+        }}>
             <CardWrapper
                 isSelected={isSelected}
+                isEditing={isEditing}
                 cardType={cardType}
                 ref={containerRef}
                 cardWidth={cardWidth}
             >
                 {children}
             </CardWrapper>
-        </WrapperContext.Provider>
+        </CardContext.Provider>
     );
 };
 
