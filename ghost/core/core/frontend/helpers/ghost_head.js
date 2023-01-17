@@ -86,7 +86,7 @@ function getSearchHelper(frontendKey) {
 function getWebmentionDiscoveryLink() {
     try {
         const siteUrl = urlUtils.getSiteUrl();
-        const webmentionUrl = new URL('webmention', siteUrl);
+        const webmentionUrl = new URL('webmentions/receive', siteUrl);
         return `<link href="${webmentionUrl.href}" rel="webmention" />`;
     } catch (err) {
         logging.warn(err);
