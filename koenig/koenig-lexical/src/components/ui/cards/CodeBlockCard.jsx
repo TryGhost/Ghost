@@ -1,29 +1,75 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useAutoExpandTextArea from '../../../utils/autoExpandTextArea';
+import CodeMirror from '@uiw/react-codemirror';
+import {EditorView} from '@codemirror/view';
 
-export function CodeBlockCard({code, language, updateCode, updateLanguage}) {
-    const textareaRef = React.useRef(null);
+export function CodeEditor({code, language, updateCode, updateLanguage}) {
+    const onChange = React.useCallback((value) => {
+        updateCode(value);
+    }, [updateCode]);
 
-    useAutoExpandTextArea({el: textareaRef, value: code});
+    const editorCSS = EditorView.theme({
+        '.cm-content, .cm-gutter': {
+            minHeight: '170px'
+        },
+        '.cm-scroller': {
+            overflow: 'auto'
+        }
+    });
 
     return (
-        <code>
-            <textarea
-                ref={textareaRef}
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck="false"
-                tabIndex="0"
-                autoFocus
-                className='min-h-170 w-full bg-grey-50 p-3 text-grey-900'
+        <div>
+            <CodeMirror
                 value={code}
-                onChange={updateCode}
+                extensions={[editorCSS]}
+                onChange={onChange}
             />
-        </code>
+            <input
+                aria-label="Code card language"
+                type="text"
+                value={language}
+                onBlur={updateLanguage}
+                placeholder="Language..."
+                className="z-999 absolute top-1.5 right-1.5 w-20"
+            />
+        </div>
     );
 }
 
-CodeBlockCard.propTypes = {
+export function CodeBlock({code}) {
+    return (
+        <pre>
+            <code>
+                {code}
+            </code>
+        </pre>
+    );
+}
+
+export function CodeBlockCard({code, isEditing, isSelected, language, updateCode, updateLanguage}) {
+    if (isEditing) {
+        return (
+            <CodeEditor 
+                code={code}
+                language={language}
+                updateLanugage={updateLanguage}
+                updateCode={updateCode}
+            />
+        );
+    } else {
+        return (
+            <CodeBlock code={code} />
+        );
+    }
+}
+
+CodeBlock.propTypes = {
     code: PropTypes.string
+};
+
+CodeBlockCard.propTypes = {
+    code: PropTypes.string,
+    isEditing: PropTypes.bool,
+    isSelected: PropTypes.bool,
+    language: PropTypes.string
 };

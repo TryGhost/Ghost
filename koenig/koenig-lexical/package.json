@@ -41,6 +41,8 @@
     "@lexical/text": "^0.7.0",
     "@lexical/utils": "^0.7.0",
     "@tryghost/kg-default-nodes": "^0.0.2",
+    "@uiw/react-codemirror": "^4.19.6",
+    "codemirror": "^6.0.1",
     "lexical": "^0.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
