@@ -1,7 +1,7 @@
 const should = require('should');
 const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyArray, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
+const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 
 const tierSnapshot = {
@@ -89,6 +89,7 @@ describe('Posts API', function () {
         const res = await agent.get('posts/?limit=2')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -100,6 +101,7 @@ describe('Posts API', function () {
         const res = await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -123,6 +125,7 @@ describe('Posts API', function () {
                     posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag,
                     location: anyLocationFor('posts')
                 });
@@ -145,6 +148,7 @@ describe('Posts API', function () {
                     posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag,
                     location: anyLocationFor('posts')
                 });
@@ -186,6 +190,7 @@ describe('Posts API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -210,6 +215,7 @@ describe('Posts API', function () {
                 })
                 .matchHeaderSnapshot({
                     etag: anyEtag,
+                    'content-version': anyContentVersion,
                     'content-length': anyStringNumber
                 });
         });
@@ -231,6 +237,7 @@ describe('Posts API', function () {
                     posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag,
                     location: anyLocationFor('posts')
                 });
@@ -245,6 +252,7 @@ describe('Posts API', function () {
                     posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag,
                     'x-cache-invalidate': anyString
                 });
@@ -283,6 +291,7 @@ describe('Posts API', function () {
                     posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag,
                     location: anyLocationFor('posts')
                 });
@@ -297,6 +306,7 @@ describe('Posts API', function () {
                     posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag,
                     'x-cache-invalidate': anyString
                 });
@@ -328,6 +338,7 @@ describe('Posts API', function () {
                 .expectStatus(204)
                 .expectEmptyBody()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -339,6 +350,7 @@ describe('Posts API', function () {
                 .delete('/posts/abcd1234abcd1234abcd1234/')
                 .expectStatus(404)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({

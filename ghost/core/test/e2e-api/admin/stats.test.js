@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyISODate, anyObjectId} = matchers;
+const {anyContentVersion, anyEtag, anyISODate, anyObjectId} = matchers;
 
 let agent;
 
@@ -20,6 +20,7 @@ describe('Stats API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -36,6 +37,7 @@ describe('Stats API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -60,6 +62,7 @@ describe('Stats API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

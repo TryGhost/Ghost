@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {nullable, anything, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyErrorId, anyString} = matchers;
+const {nullable, anything, anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyErrorId, anyString} = matchers;
 const assert = require('assert');
 
 const matchEmail = {
@@ -49,6 +49,7 @@ describe('Emails API', function () {
                 emails: new Array(2).fill(matchEmail)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -61,6 +62,7 @@ describe('Emails API', function () {
                 emails: [matchEmail]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -73,6 +75,7 @@ describe('Emails API', function () {
                 emails: [matchEmail]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -89,6 +92,7 @@ describe('Emails API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -101,6 +105,7 @@ describe('Emails API', function () {
                 batches: [matchBatch]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -113,6 +118,7 @@ describe('Emails API', function () {
                 batches: [matchBatch]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
         assert.equal(body.batches[0].count.recipients, 6);
@@ -126,6 +132,7 @@ describe('Emails API', function () {
                 failures: new Array(5).fill(matchFailure)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -138,6 +145,7 @@ describe('Emails API', function () {
                 failures: new Array(1).fill(matchFailure)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -150,6 +158,7 @@ describe('Emails API', function () {
                 failures: new Array(4).fill(matchFailure)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -177,6 +186,7 @@ describe('Emails API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

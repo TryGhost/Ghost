@@ -6,6 +6,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "8",
   "content-type": "text/html; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -18,6 +19,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "8",
   "content-type": "text/html; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -31,6 +33,7 @@ Object {
   "access-control-max-age": "86400",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "vary": "Accept-Version, Origin, Access-Control-Request-Headers",
   "x-powered-by": "Express",
 }
@@ -43,6 +46,7 @@ Object {
   "access-control-max-age": "86400",
   "cache-control": "public, max-age=0",
   "content-length": "0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "vary": "Accept-Version, Access-Control-Request-Headers",
   "x-powered-by": "Express",
 }
@@ -55,6 +59,7 @@ Object {
   "access-control-max-age": "86400",
   "cache-control": "public, max-age=0",
   "content-length": "0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "vary": "Accept-Version, Access-Control-Request-Headers",
   "x-powered-by": "Express",
 }
@@ -67,6 +72,7 @@ Object {
   "access-control-max-age": "86400",
   "cache-control": "public, max-age=0",
   "content-length": "0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "vary": "Accept-Version, Access-Control-Request-Headers",
   "x-powered-by": "Express",
 }

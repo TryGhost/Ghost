@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
-const {anyObjectId, anyString, anyEtag, anyNumber} = matchers;
+const {anyContentVersion, anyObjectId, anyString, anyEtag, anyNumber} = matchers;
 
 const matchLink = {
     post_id: anyObjectId,
@@ -27,6 +27,7 @@ describe('Links API', function () {
             .get('links')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -71,12 +72,14 @@ describe('Links API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
         await agent
             .get('links')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -138,12 +141,14 @@ describe('Links API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
         await agent
             .get('links')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -197,12 +202,14 @@ describe('Links API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
         await agent
             .get('links')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({

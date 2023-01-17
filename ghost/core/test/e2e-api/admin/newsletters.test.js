@@ -1,6 +1,6 @@
 const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
 const models = require('../../../core/server/models');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
@@ -49,6 +49,7 @@ describe('Newsletters API', function () {
                 newsletters: new Array(4).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -62,6 +63,7 @@ describe('Newsletters API', function () {
 
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -74,6 +76,7 @@ describe('Newsletters API', function () {
                 newsletters: new Array(4).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -86,6 +89,7 @@ describe('Newsletters API', function () {
                 newsletters: new Array(1).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -123,6 +127,7 @@ describe('Newsletters API', function () {
                 assert.equal(body.newsletters[0].header_image, absolutePath);
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -158,6 +163,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -180,6 +186,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -192,6 +199,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -224,6 +232,7 @@ describe('Newsletters API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -258,6 +267,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -279,6 +289,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -296,6 +307,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -318,6 +330,7 @@ describe('Newsletters API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -470,6 +483,7 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag,
                         location: anyLocationFor('newsletters')
                     });
@@ -495,6 +509,7 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag
                     });
             });
@@ -519,6 +534,7 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag
                     });
             });
@@ -568,6 +584,7 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag
                     });
             });
@@ -589,6 +606,7 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag,
                         location: anyLocationFor('newsletters')
                     });
@@ -611,6 +629,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshotWithoutSortOrder]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -627,6 +646,7 @@ describe('Newsletters API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -663,6 +683,7 @@ describe('Newsletters API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -691,6 +712,7 @@ describe('Newsletters API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

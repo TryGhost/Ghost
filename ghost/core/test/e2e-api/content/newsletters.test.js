@@ -20,6 +20,7 @@ describe('Newsletters Content API', function () {
         await agent.get('/newsletters/')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': matchers.anyContentVersion,
                 etag: matchers.anyEtag
             })
             .matchBodySnapshot({
@@ -31,6 +32,7 @@ describe('Newsletters Content API', function () {
         await agent.get('/newsletters/?filter=status:archived')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': matchers.anyContentVersion,
                 etag: matchers.anyEtag
             })
             .matchBodySnapshot({

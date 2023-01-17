@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 
@@ -30,6 +30,7 @@ describe('Offers API', function () {
             .get(`offers/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot();
@@ -60,6 +61,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -92,6 +94,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -123,6 +126,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -158,6 +162,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -190,6 +195,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -223,6 +229,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -251,6 +258,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -279,6 +287,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -293,6 +302,7 @@ describe('Offers API', function () {
             .get(`offers/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -310,6 +320,7 @@ describe('Offers API', function () {
             .get(`offers/${savedOffer.id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -327,6 +338,7 @@ describe('Offers API', function () {
             .get(`offers/${trialOffer.id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -355,6 +367,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -382,6 +395,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -402,6 +416,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -422,6 +437,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -442,6 +458,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -463,6 +480,7 @@ describe('Offers API', function () {
             .get(`offers/?filter=${filter}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -481,6 +499,7 @@ describe('Offers API', function () {
             .get(`offers/?filter=${filter}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -504,6 +523,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -531,6 +551,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -561,6 +582,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({

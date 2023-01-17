@@ -4,7 +4,7 @@ const moment = require('moment');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
+const {anyContentVersion, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const pageMatcher = {
     published_at: anyISODateTimeWithTZ,
@@ -26,6 +26,7 @@ describe('Pages Content API', function () {
         const res = await agent.get(`pages/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -53,6 +54,7 @@ describe('Pages Content API', function () {
         const res = await agent.get(`pages/${fixtureManager.get('posts', 5).id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({

@@ -29,6 +29,7 @@ describe('Offers Content API', function () {
         await agent.get(`/offers/${offerModel.get('id')}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': matchers.anyContentVersion,
                 etag: matchers.anyEtag
             })
             .matchBodySnapshot({

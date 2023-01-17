@@ -13,6 +13,7 @@ describe('Tiers Content API', function () {
         await agent.get('/tiers/?include=monthly_price')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': matchers.anyContentVersion,
                 etag: matchers.anyEtag
             })
             .matchBodySnapshot({
