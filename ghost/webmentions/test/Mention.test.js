@@ -22,6 +22,8 @@ describe('Mention', function () {
                 'payload',
                 'resourceId',
                 'sourceTitle',
+                'sourceSiteTitle',
+                'sourceAuthor',
                 'sourceExcerpt',
                 'sourceFavicon',
                 'sourceFeaturedImage'
