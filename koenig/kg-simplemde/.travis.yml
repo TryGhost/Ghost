@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+- '6'
+- '5'
+- '4'
+- '0.12'
+before_script:
+- npm install -g gulp
+script: gulp
+deploy:
+  provider: npm
+  email: support@nextstepwebs.com
+  api_key:
+    secure: nADZupyOhJAhTQgr5uOIydbDEjCTAj+3nGHW7ZBJUrVJcb0uR4pg8ngmwrUpvaCeNXgKPG9Uag75/mPcBre9ly2cigBIG9LHlxImlF8qi1jRJykcNRmBb9N2MJJj+zdAMwLaF5Ns+f2v3zt97qxovbEzunhXGcZeCaxc6y40nDM8OTyo0PESNBjQYqaNblt2gO2KHysrwFL8i4kCCKLa+HOBLu2iqgk/fYVqTmfhEeOiiwQ4lIXJeyPyzgb3OPhKCMV1FI5H0T48fRD0MPczt8ds3Daj1OjCbIZurQ7s1dcKwz1g6TKATN59HcMsSarW4lImrEeYmfQxz2F5NjKDRhnith5V0W2IssrkpDG9teTFQ20eQdl5cpnlGjgBvsjb8GhPLR44GvefyJL4+kJGI3O1KVq3/7wbmu/IXrvhtKHEQSdGL2PTqW8QxKasAoUCnk3LGZKN12g8bg0xDg2tvoCUk5Z3asHLRdCJpDbBq1h8QfZ4HV5VLYjr84xduOUZbEUtfMVAixPpJ4h1E3OXJ1wil97BlHjxOZ8JkkxJg5lgSUZ/O/QWwJokEAYXR9c+ouMoVokChAyleV77cRZ5qLn9zbnUxZtnKX8w0IUKeu95/z8QgiaRcERKVCpZvceo8Qw0Y+JoiEtno7Zg/nsrZGxsS6K/V3yg1QQmT3bjDHQ=
+  on:
+    tags: true
+    repo: NextStepWebs/simplemde-markdown-editor
+    branch: production
