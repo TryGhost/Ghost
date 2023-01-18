@@ -6,6 +6,8 @@ module.exports = {
     keySeparator: false,
     namespaceSeparator: false,
 
+    createOldCatalogs: false,
+    indentation: 4,
     sort: true,
 
     output: 'locales/$LOCALE.json'
