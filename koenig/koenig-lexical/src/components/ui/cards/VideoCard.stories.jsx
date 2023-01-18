@@ -7,11 +7,15 @@ const story = {
     component: VideoCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        isSelected: {control: 'boolean'},
+        cardWidth: {
+            options: ['regular', 'wide', 'full'],
+            control: {type: 'radio'}
+        }
     },
     parameters: {
         status: {
-            type: 'inProgress'
+            type: 'uiReady'
         }
     }
 };
@@ -28,6 +32,19 @@ const Template = args => (
 export const Empty = Template.bind({});
 Empty.args = {
     isSelected: true,
+    cardWidth: 'regular',
+    thumbnail: '',
+    customThumbnail: '',
     caption: ''
+};
+
+export const Populated = Template.bind({});
+Populated.args = {
+    isSelected: true,
+    cardWidth: 'regular',
+    thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+    customThumbnail: '',
+    totalDuration: '2:27',
+    caption: 'Introducing the newest accessory for your Mac.'
 };
 
