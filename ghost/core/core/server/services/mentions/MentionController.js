@@ -1,3 +1,5 @@
+const logging = require('@tryghost/logging');
+
 /**
  * @typedef {import('@tryghost/webmentions/lib/webmentions').MentionsAPI} MentionsAPI
  * @typedef {import('@tryghost/webmentions/lib/webmentions').Mention} Mention
@@ -15,6 +17,7 @@ module.exports = class MentionController {
     async init(deps) {
         this.#api = deps.api;
     }
+
     /**
      * @param {import('@tryghost/api-framework').Frame} frame
      * @returns {Promise<Page<Mention>>}
@@ -41,5 +44,23 @@ module.exports = class MentionController {
         });
 
         return results;
+    }
+
+    /**
+     * @param {import('@tryghost/api-framework').Frame} frame
+     * @returns {Promise<void>}
+     */
+    async receive(frame) {
+        logging.info('[Webmention] ' + JSON.stringify(frame.data));
+        const {source, target, ...payload} = frame.data;
+        const result = this.#api.processWebmention({
+            source: new URL(source),
+            target: new URL(target),
+            payload
+        });
+
+        result.catch(function rejected(err) {
+            logging.error(err);
+        });
     }
 };
