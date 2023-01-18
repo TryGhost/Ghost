@@ -10,13 +10,13 @@ describe('MemberAttributionService', function () {
         });
     });
 
-    describe('addEmailSourceAttributionTracking', function () {
+    describe('addOutboundLinkTagging', function () {
         it('uses sluggified sitename for external urls', async function () {
             const service = new MemberAttributionService({
                 getSiteTitle: () => 'Hello world'
             });
             const url = new URL('https://example.com/');
-            const updatedUrl = await service.addEmailSourceAttributionTracking(url);
+            const updatedUrl = await service.addOutboundLinkTagging(url);
 
             should(updatedUrl.toString()).equal('https://example.com/?ref=hello-world');
         });
@@ -35,7 +35,7 @@ describe('MemberAttributionService', function () {
                 }
             };
 
-            const updatedUrl = await service.addEmailSourceAttributionTracking(url, newsletter);
+            const updatedUrl = await service.addOutboundLinkTagging(url, newsletter);
 
             should(updatedUrl.toString()).equal('https://example.com/?ref=used-newsletter-name-newsletter');
         });
@@ -53,7 +53,7 @@ describe('MemberAttributionService', function () {
                     }
                 }
             };
-            const updatedUrl = await service.addEmailSourceAttributionTracking(url, newsletter);
+            const updatedUrl = await service.addOutboundLinkTagging(url, newsletter);
 
             should(updatedUrl.toString()).equal('https://example.com/?ref=weekly-newsletter');
         });
@@ -63,7 +63,7 @@ describe('MemberAttributionService', function () {
                 getSiteTitle: () => 'Hello world'
             });
             const url = new URL('https://facebook.com/');
-            const updatedUrl = await service.addEmailSourceAttributionTracking(url);
+            const updatedUrl = await service.addOutboundLinkTagging(url);
 
             should(updatedUrl.toString()).equal('https://facebook.com/');
         });
@@ -73,7 +73,7 @@ describe('MemberAttributionService', function () {
                 getSiteTitle: () => 'Hello world'
             });
             const url = new URL('https://example.com/?utm_source=hello');
-            const updatedUrl = await service.addEmailSourceAttributionTracking(url);
+            const updatedUrl = await service.addOutboundLinkTagging(url);
             should(updatedUrl.toString()).equal('https://example.com/?utm_source=hello');
         });
 
@@ -82,7 +82,7 @@ describe('MemberAttributionService', function () {
                 getSiteTitle: () => 'Hello world'
             });
             const url = new URL('https://example.com/?ref=hello');
-            const updatedUrl = await service.addEmailSourceAttributionTracking(url);
+            const updatedUrl = await service.addOutboundLinkTagging(url);
             should(updatedUrl.toString()).equal('https://example.com/?ref=hello');
         });
 
@@ -91,7 +91,7 @@ describe('MemberAttributionService', function () {
                 getSiteTitle: () => 'Hello world'
             });
             const url = new URL('https://example.com/?source=hello');
-            const updatedUrl = await service.addEmailSourceAttributionTracking(url);
+            const updatedUrl = await service.addOutboundLinkTagging(url);
             should(updatedUrl.toString()).equal('https://example.com/?source=hello');
         });
     });

@@ -34,7 +34,7 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'lexicalEditor',
     'webmentions',
-    'externalAttribution'
+    'outboundLinkTagging'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
