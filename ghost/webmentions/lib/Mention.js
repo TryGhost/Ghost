@@ -45,6 +45,18 @@ module.exports = class Mention {
     }
 
     /** @type {string} */
+    #sourceSiteTitle;
+    get sourceSiteTitle() {
+        return this.#sourceSiteTitle;
+    }
+
+    /** @type {string} */
+    #sourceAuthor;
+    get sourceAuthor() {
+        return this.#sourceAuthor;
+    }
+
+    /** @type {string} */
     #sourceExcerpt;
     get sourceExcerpt() {
         return this.#sourceExcerpt;
@@ -71,6 +83,8 @@ module.exports = class Mention {
             payload: this.payload,
             resourceId: this.resourceId,
             sourceTitle: this.sourceTitle,
+            sourceSiteTitle: this.sourceSiteTitle,
+            sourceAuthor: this.sourceAuthor,
             sourceExcerpt: this.sourceExcerpt,
             sourceFavicon: this.sourceFavicon,
             sourceFeaturedImage: this.sourceFeaturedImage
@@ -86,6 +100,8 @@ module.exports = class Mention {
         this.#payload = data.payload;
         this.#resourceId = data.resourceId;
         this.#sourceTitle = data.sourceTitle;
+        this.#sourceSiteTitle = data.sourceSiteTitle;
+        this.#sourceAuthor = data.sourceAuthor;
         this.#sourceExcerpt = data.sourceExcerpt;
         this.#sourceFavicon = data.sourceFavicon;
         this.#sourceFeaturedImage = data.sourceFeaturedImage;
@@ -151,6 +167,8 @@ module.exports = class Mention {
 
         const sourceTitle = validateString(data.sourceTitle, 191, 'sourceTitle');
         const sourceExcerpt = validateString(data.sourceExcerpt, 1000, 'sourceExcerpt');
+        const sourceSiteTitle = validateString(data.sourceSiteTitle, 191, 'sourceSiteTitle', false);
+        const sourceAuthor = validateString(data.sourceAuthor, 191, 'sourceAuthor', false);
 
         let sourceFavicon = null;
         if (data.sourceFavicon instanceof URL) {
@@ -174,6 +192,8 @@ module.exports = class Mention {
             payload,
             resourceId,
             sourceTitle,
+            sourceSiteTitle,
+            sourceAuthor,
             sourceExcerpt,
             sourceFavicon,
             sourceFeaturedImage
@@ -181,11 +201,15 @@ module.exports = class Mention {
     }
 };
 
-function validateString(value, maxlength, name) {
+function validateString(value, maxlength, name, required = true) {
     if (!value) {
-        throw new ValidationError({
-            message: `Missing ${name} for Mention`
-        });
+        if (required) {
+            throw new ValidationError({
+                message: `Missing ${name} for Mention`
+            });
+        } else {
+            return null;
+        }
     }
 
     if (typeof value !== 'string') {
