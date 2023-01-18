@@ -3,6 +3,7 @@ const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {JSDOM} = require('jsdom');
 const {CodeBlockNode, $createCodeBlockNode, $isCodeBlockNode} = require('../../');
+const {$getRoot, $insertNodes} = require('lexical');
 
 const editorNodes = [CodeBlockNode];
 
@@ -45,6 +46,70 @@ describe('CodeBlockNode', function () {
         const codeBlockNode = $createCodeBlockNode({language, code, caption});
         $isCodeBlockNode(codeBlockNode).should.be.true;
     }));
+
+    describe('importJSON', function () {
+        it('imports all properties', function (done) {
+            const serialized = `
+                {
+                    "root": {
+                        "children": [
+                            {
+                                "type": "codeblock",
+                                "code": "<?php echo 'Hello World'; ?>",
+                                "language": "php",
+                                "caption": "Your first PHP enabled page"
+                            }
+                        ],
+                        "direction": null,
+                        "format": "",
+                        "indent": 0,
+                        "type": "root",
+                        "version": 1
+                    }
+                }
+            `;
+
+            const editorState = editor.parseEditorState(serialized);
+
+            editorState.read(() => {
+                try {
+                    const codeBlockNode = $getRoot().getChildren()[0];
+                    should(codeBlockNode.getCode()).equal(`<?php echo 'Hello World'; ?>`);
+                    should(codeBlockNode.getLanguage()).equal('php');
+                    should(codeBlockNode.getCaption()).equal('Your first PHP enabled page');
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+    });
+
+    describe('exportJSON', function () {
+        it('exports all properties', function (done) {
+            editor.update(() => {
+                try {
+                    const codeBlockNode = $createCodeBlockNode({code, language, caption});
+                    $getRoot().append(codeBlockNode);
+                } catch (e) {
+                    done(e);
+                }
+            }, {discrete: true});
+
+            const parsedExport = JSON.parse(JSON.stringify(editor.getEditorState()));
+
+            parsedExport.root.children.should.deepEqual([
+                {
+                    type: 'codeblock',
+                    version: 1,
+                    code: '<script></script>',
+                    language: 'javascript',
+                    caption: 'A code block'
+                }
+            ]);
+            done();
+        });
+    });
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {

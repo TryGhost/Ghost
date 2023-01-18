@@ -39,8 +39,8 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     }
 
     static importJSON(serializedNode) {
-        const {code, language} = serializedNode;
-        const node = new this({code, language});
+        const {code, language, caption} = serializedNode;
+        const node = new this({code, language, caption});
         return node;
     }
 
@@ -49,7 +49,8 @@ export class CodeBlockNode extends KoenigDecoratorNode {
             type: 'codeblock',
             version: 1,
             code: this.__code,
-            language: this.__language
+            language: this.__language,
+            caption: this.__caption
         };
     }
 
