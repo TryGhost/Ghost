@@ -4,6 +4,7 @@ import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
+import {enableLabsFlag} from '../helpers/labs-flag';
 
 describe('Acceptance: Settings - Analytics', function () {
     const hooks = setupApplicationTest();
@@ -63,7 +64,8 @@ describe('Acceptance: Settings - Analytics', function () {
         expect(this.server.db.settings.findBy({key: 'members_track_sources'}).value).to.equal(false);
     });
 
-    it('can manage external attribution', async function () {
+    it('can manage outbound link tagging', async function () {
+        enableLabsFlag(this.server, 'outboundLinkTagging');
         this.server.db.settings.update({key: 'outbound_link_tagging'}, {value: 'true'});
 
         await visit('/settings/analytics');

@@ -272,6 +272,7 @@ describe('MEGA', function () {
             }
         });
 
+        // Remove this test once outboundLinkTagging goes GA
         it('Does add outbound refs if disabled but flag is disabled', async function () {
             mockManager.mockLabsDisabled('outboundLinkTagging');
             mockManager.mockSetting('outbound_link_tagging', false);
