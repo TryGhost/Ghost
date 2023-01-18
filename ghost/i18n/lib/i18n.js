@@ -14,8 +14,12 @@ module.exports = (lng = 'en') => {
         fallbackLng: false,
 
         resources: {
-            en: require('../locales/en.js'),
-            nl: require('../locales/nl.js')
+            en: {
+                translation: require('../locales/en.json')
+            },
+            nl: {
+                translation: require('../locales/nl.json')
+            }
         }
     });
 
