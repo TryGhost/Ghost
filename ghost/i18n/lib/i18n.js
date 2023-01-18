@@ -1,5 +1,16 @@
 const i18next = require('i18next');
 
+const RESOURCES = {
+    en: {
+        translation: require('../locales/en.json')
+    },
+    nl: {
+        translation: require('../locales/nl.json')
+    }
+};
+
+const SUPPORTED_LOCALES = Object.keys(RESOURCES);
+
 module.exports = (lng = 'en') => {
     const i18nextInstance = i18next.createInstance();
     i18nextInstance.init({
@@ -13,15 +24,10 @@ module.exports = (lng = 'en') => {
         // do not load a fallback
         fallbackLng: false,
 
-        resources: {
-            en: {
-                translation: require('../locales/en.json')
-            },
-            nl: {
-                translation: require('../locales/nl.json')
-            }
-        }
+        resources: RESOURCES
     });
 
     return i18nextInstance;
 };
+
+module.exports.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
