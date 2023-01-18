@@ -49,9 +49,8 @@ export const CODE_BLOCK = {
     },
     regExp: /^```(\w{1,10})?\s/,
     replace: (textNode, match, text) => {
-        const initCode = text[1] || '';
-        const language = match[1];
-        const codeBlockNode = $createCodeBlockNode(language, initCode);
+        const language = text[1];
+        const codeBlockNode = $createCodeBlockNode({language});
         textNode.replace(codeBlockNode);
     },
     type: 'element'

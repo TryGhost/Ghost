@@ -24,8 +24,8 @@ describe('Renders code block node', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
                     <div>
-                        <pre><code>javascript</code></pre>
-                        <div><span></span></div>
+                        <pre><code></code></pre>
+                        <div><span>javascript</span></div>
                     </div>
                 </div>
             </div>
