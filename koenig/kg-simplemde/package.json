@@ -25,8 +25,6 @@
   },
   "devDependencies": {
     "browserify": "16.2.3",
-    "codemirror": "5.48.0",
-    "codemirror-spell-checker": "*",
     "debug": "*",
     "eslint": "4.19.1",
     "gulp": "*",
@@ -38,12 +36,16 @@
     "gulp-jsbeautifier": "*",
     "gulp-rename": "*",
     "gulp-uglify": "3.0.1",
-    "marked": "0.3.19",
     "vinyl-buffer": "*",
     "vinyl-source-stream": "*"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
+  },
+  "dependencies": {
+    "codemirror": "5.48.0",
+    "codemirror-spell-checker": "1.1.2",
+    "marked": "0.3.19"
   }
 }
