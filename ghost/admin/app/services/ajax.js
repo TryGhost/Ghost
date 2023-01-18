@@ -101,6 +101,17 @@ export function isUnsupportedMediaTypeError(errorOrStatus) {
     }
 }
 
+/**
+ * Returns the code (from the payload) from an error object.
+ * @returns {string|null} error code
+ */
+export function getErrorCode(errorOrStatus) {
+    if (isAjaxError(errorOrStatus) && errorOrStatus.payload && errorOrStatus.payload.errors && Array.isArray(errorOrStatus.payload.errors) && errorOrStatus.payload.errors.length > 0) {
+        return errorOrStatus.payload.errors[0].code || null;
+    }
+    return null;
+}
+
 /* Maintenance error */
 
 export class MaintenanceError extends AjaxError {

@@ -32,7 +32,10 @@ const messages = {
     noContentToImport: 'Zip did not include any content to import.',
     invalidZipStructure: 'Invalid zip file structure.',
     invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
-    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.'
+    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.',
+    invalidZipFileNameEncoding: 'The uploaded zip could not be read',
+    invalidZipFileNameEncodingContext: 'The filename was too long or contained invalid characters',
+    invalidZipFileNameEncodingHelp: 'Remove any special characters from the file name, or alternatively try another archiving tool if using MacOS Archive Utility'
 };
 
 // Glob levels
@@ -170,13 +173,26 @@ class ImportManager {
      * @param {string} filePath
      * @returns {Promise<string>} full path to the extracted folder
      */
-    extractZip(filePath) {
+    async extractZip(filePath) {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
         this.fileToDelete = tmpDir;
 
-        return extract(filePath, tmpDir).then(function () {
-            return tmpDir;
-        });
+        try {
+            await extract(filePath, tmpDir);
+        } catch (err) {
+            if (err.message.startsWith('ENAMETOOLONG:')) {
+                // The file was probably zipped with MacOS zip utility. Which doesn't correctly set UTF-8 encoding flag.
+                // This causes ENAMETOOLONG error on Linux, because the resulting filename length is too long when decoded using the default string encoder.
+                throw new errors.UnsupportedMediaTypeError({
+                    message: tpl(messages.invalidZipFileNameEncoding),
+                    context: tpl(messages.invalidZipFileNameEncodingContext),
+                    help: tpl(messages.invalidZipFileNameEncodingHelp),
+                    code: 'INVALID_ZIP_FILE_NAME_ENCODING'
+                });
+            }
+            throw err;
+        }
+        return tmpDir;
     }
 
     /**
