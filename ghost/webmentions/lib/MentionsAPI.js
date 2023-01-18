@@ -98,6 +98,8 @@ module.exports = class MentionsAPI {
             payload: webmention.payload,
             resourceId: null,
             sourceTitle: 'Fake title',
+            sourceSiteTitle: 'Awesome Site',
+            sourceAuthor: 'James Bond',
             sourceExcerpt: 'Wow, what an awesome article, blah blah blah',
             sourceFavicon: null,
             sourceFeaturedImage: null
