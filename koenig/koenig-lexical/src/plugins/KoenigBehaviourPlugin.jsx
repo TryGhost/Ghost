@@ -71,6 +71,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_ARROW_UP_COMMAND,
                 (event) => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const selection = $getSelection();
 
                     if ($isNodeSelection(selection)) {
@@ -148,6 +153,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_ARROW_DOWN_COMMAND,
                 () => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const selection = $getSelection();
 
                     if ($isNodeSelection(selection)) {
@@ -211,6 +221,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_ARROW_LEFT_COMMAND,
                 (event) => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const selection = $getSelection();
 
                     if (cursorDidExitAtTop) {
@@ -254,6 +269,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_ARROW_RIGHT_COMMAND,
                 (event) => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const selection = $getSelection();
 
                     if (!$isNodeSelection(selection)) {
@@ -278,6 +298,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_BACKSPACE_COMMAND,
                 (event) => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const selection = $getSelection();
 
                     // <KoenigCardWrapper> currently handles the behaviour for
@@ -344,6 +369,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_DELETE_COMMAND,
                 (event) => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const selection = $getSelection();
 
                     // <KoenigCardWrapper> currently handles the behaviour for
@@ -396,6 +426,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_TAB_COMMAND,
                 (event) => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     if (event.shiftKey && cursorDidExitAtTop) {
                         const selection = $getSelection();
 
@@ -432,6 +467,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 PASTE_COMMAND,
                 (clipboard) => {
+                    // avoid Koenig behaviours when an inner element (e.g. a card input) has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const clipboardDataset = clipboard?.clipboardData?.getData('text');
                     const linkMatch = clipboardDataset?.match(/^(https?:\/\/[^\s]+)$/); // replace with better regex to include more protocols like mailto, ftp, etc
                     const selection = $getSelection();

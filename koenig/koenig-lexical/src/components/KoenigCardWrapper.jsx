@@ -81,11 +81,10 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
-                    // TODO: test if this is needed when code card is working again
-                    // we don't want to insert paragraphs if Enter is pressed inside card's form element
-                    // if (event.target.matches('input textarea select option')) {
-                    //     return false;
-                    // }
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
 
                     const latestSelection = $getSelection();
 
@@ -118,6 +117,11 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
             editor.registerCommand(
                 KEY_BACKSPACE_COMMAND,
                 (event) => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const latestSelection = $getSelection();
                     if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
                         event.preventDefault();
@@ -167,6 +171,11 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
             editor.registerCommand(
                 KEY_DELETE_COMMAND,
                 (event) => {
+                    // avoid processing card behaviours when an inner element has focus
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return true;
+                    }
+
                     const latestSelection = $getSelection();
                     if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
                         event.preventDefault();
