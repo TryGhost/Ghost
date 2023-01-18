@@ -20,6 +20,9 @@
   "bugs": {
     "url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "browserify": "16.2.3",
     "codemirror": "5.48.0",
