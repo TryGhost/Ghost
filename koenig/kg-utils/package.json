@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-utils",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-utils",
   "author": "Ghost Foundation",
   "license": "MIT",
