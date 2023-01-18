@@ -301,6 +301,7 @@ describe('ImageNode', function () {
 
             json.should.deepEqual({
                 type: 'image',
+                version: 1,
                 src: '/content/images/2022/11/koenig-lexical.jpg',
                 width: 3840,
                 height: 2160,

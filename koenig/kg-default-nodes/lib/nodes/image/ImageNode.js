@@ -82,6 +82,7 @@ export class ImageNode extends KoenigDecoratorNode {
         const isBlob = src.startsWith('data:');
         const dataset = {
             type: 'image',
+            version: 1,
             src: isBlob ? '<base64String>' : this.getSrc(),
             width: this.getImgWidth(),
             height: this.getImgHeight(),
@@ -119,7 +120,8 @@ export class ImageNode extends KoenigDecoratorNode {
     /* c8 ignore stop */
 
     getSrc() {
-        return this.__src;
+        const self = this.getLatest();
+        return self.__src;
     }
 
     setSrc(src) {
@@ -128,7 +130,8 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     getTitle() {
-        return this.__title;
+        const self = this.getLatest();
+        return self.__title;
     }
 
     setTitle(title) {
@@ -142,11 +145,13 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     getCardWidth() {
-        return this.__cardWidth;
+        const self = this.getLatest();
+        return self.__cardWidth;
     }
 
     getImgWidth() {
-        return this.__width;
+        const self = this.getLatest();
+        return self.__width;
     }
 
     setImgWidth(width) {
@@ -155,7 +160,8 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     getImgHeight() {
-        return this.__height;
+        const self = this.getLatest();
+        return self.__height;
     }
 
     setImgHeight(height) {
@@ -164,7 +170,8 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     getCaption() {
-        return this.__caption;
+        const self = this.getLatest();
+        return self.__caption;
     }
 
     setCaption(caption) {
@@ -173,7 +180,8 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     getAltText() {
-        return this.__altText;
+        const self = this.getLatest();
+        return self.__altText;
     }
 
     setAltText(altText) {
