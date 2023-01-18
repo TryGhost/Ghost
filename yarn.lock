@@ -4367,10 +4367,10 @@
     lodash "^4.17.21"
     uuid "^9.0.0"
 
-"@tryghost/express-test@0.12.0":
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.12.0.tgz#0b96201cadffa615a32e13d225c4cb6871292f0c"
-  integrity sha512-hLtPj/GrjYo52mQpWhkPa386cEKZ2RrzwsHQmE3zfOu3PEqNlLB+4hf0J7SW4gpiHhBtEneytYvj20q2c75qIg==
+"@tryghost/express-test@0.13.0":
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.13.0.tgz#7fc20dc6f0488c09a79117a0233e46cf3fff25fd"
+  integrity sha512-8iE9Lbcw/O0CQd7PcOFfSaKIDrKcZrD496Fm+Ull+k60gy79TH/vtCMBwdRIon+bjaSO1fu0HzYnPO68rholKA==
   dependencies:
     "@tryghost/jest-snapshot" "^0.5.0"
     cookiejar "^2.1.3"
