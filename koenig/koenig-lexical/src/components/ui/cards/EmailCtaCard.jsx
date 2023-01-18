@@ -4,7 +4,7 @@ import {Button} from './ButtonCard';
 
 export function EmailCtaCard({isSelected, visibility, alignment, separators, value, placeholder, button, buttonText}) {
     return (
-        <div className="px-3 pb-6">
+        <div className="pb-6">
             <div className="pt-1 pb-7 font-sans text-xs font-semibold uppercase tracking-tight text-grey">
                 {visibility}
             </div>

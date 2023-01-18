@@ -25,7 +25,8 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
             background: 'none',
             border: 'none',
             fontFamily: 'Consolas,Liberation Mono,Menlo,Courier,monospace;',
-            color: '#CED4D9'
+            color: '#CED4D9',
+            lineHeight: '2.25rem'
         },
         '&.cm-editor .cm-gutter': {
             minHeight: '170px'
@@ -49,7 +50,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     });
 
     return (
-        <div>
+        <div class="not-kg-prose">
             <CodeMirror
                 value={code}
                 extensions={[editorCSS]}
@@ -70,8 +71,8 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
 export function CodeBlock({code, language}) {
     return (
         <div>
-            <pre className="h-[max-content] rounded border border-grey-200 bg-grey-100 px-2 py-[2px]">
-                <code className="font-mono text-[1.6rem] leading-9 text-grey-900">
+            <pre className="rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900">
+                <code>
                     {code}
                 </code>
             </pre>

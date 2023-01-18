@@ -18,7 +18,7 @@ const story = {
 export default story;
 
 const Template = args => (
-    <div className="w-[740px]">
+    <div className="mx-auto my-8 w-[740px]">
         <CardWrapper {...args}>
             <CalloutCard {...args} />
         </CardWrapper>

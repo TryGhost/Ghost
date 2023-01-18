@@ -19,8 +19,8 @@ const story = {
 export default story;
 
 const Template = args => (
-    <div className="w-[740px]">
-        <CardWrapper {...args}>
+    <div className="mx-auto my-8 w-[740px]">
+        <CardWrapper wrapperStyle='code-card' {...args}>
             <CodeBlockCard updateCode={() => {}} {...args} />
         </CardWrapper>
     </div>

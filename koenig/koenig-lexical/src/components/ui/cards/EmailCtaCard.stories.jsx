@@ -18,8 +18,8 @@ const story = {
 export default story;
 
 const Template = args => (
-    <div className="w-[764px]">
-        <CardWrapper {...args}>
+    <div className="mx-auto my-8 w-[740px]">
+        <CardWrapper wrapperStyle='wide' {...args}>
             <EmailCtaCard {...args} />
         </CardWrapper>
     </div>
