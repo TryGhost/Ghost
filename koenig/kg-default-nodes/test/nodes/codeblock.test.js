@@ -42,13 +42,13 @@ describe('CodeBlockNode', function () {
     });
 
     it('matches node with $isCodeBlockNode', editorTest(function () {
-        const codeBlockNode = $createCodeBlockNode(language, code, caption);
+        const codeBlockNode = $createCodeBlockNode({language, code, caption});
         $isCodeBlockNode(codeBlockNode).should.be.true;
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode(language, code, caption);
+            const codeBlockNode = $createCodeBlockNode({language, code, caption});
 
             codeBlockNode.getCode().should.equal('<script></script>');
             codeBlockNode.getLanguage().should.equal('javascript');
@@ -56,7 +56,7 @@ describe('CodeBlockNode', function () {
         }));
 
         it('has setters for all properties', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode('', '', '');
+            const codeBlockNode = $createCodeBlockNode({language: '', code: '', caption: ''});
 
             codeBlockNode.getLanguage().should.equal('');
             codeBlockNode.setLanguage('javascript');
@@ -72,7 +72,7 @@ describe('CodeBlockNode', function () {
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode(language, code, caption);
+            const codeBlockNode = $createCodeBlockNode({language, code, caption});
             const codeBlockNodeDataset = codeBlockNode.getDataset();
 
             codeBlockNodeDataset.should.deepEqual({
@@ -85,7 +85,7 @@ describe('CodeBlockNode', function () {
 
     describe('exportDOM', function () {
         it('renders and escapes', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode('', code, '');
+            const codeBlockNode = $createCodeBlockNode({code});
             const {element} = codeBlockNode.exportDOM(exportOptions);
 
             element.outerHTML.should.prettifyTo(html`
@@ -94,7 +94,7 @@ describe('CodeBlockNode', function () {
         }));
 
         it('renders language class if provided', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode(language, code, '');
+            const codeBlockNode = $createCodeBlockNode({language, code});
             const {element} = codeBlockNode.exportDOM(exportOptions);
 
             element.outerHTML.should.prettifyTo(html`
@@ -103,7 +103,7 @@ describe('CodeBlockNode', function () {
         }));
 
         it('renders nothing when code is undefined or empty', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode('', '', '');
+            const codeBlockNode = $createCodeBlockNode({code: ''});
             const {element} = codeBlockNode.exportDOM(exportOptions);
 
             element.textContent.should.equal('');
@@ -111,7 +111,7 @@ describe('CodeBlockNode', function () {
         }));
 
         it('renders a figure if a caption is provided', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode(language, code, caption);
+            const codeBlockNode = $createCodeBlockNode({language, code, caption});
             const {element} = codeBlockNode.exportDOM(exportOptions);
 
             element.outerHTML.should.prettifyTo(html`

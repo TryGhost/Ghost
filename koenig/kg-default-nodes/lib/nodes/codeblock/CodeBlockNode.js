@@ -85,7 +85,8 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     /* c8 ignore stop */
 
     getCaption() {
-        return this.__caption;
+        const self = this.getLatest();
+        return self.__caption;
     }
 
     setCaption(caption) {

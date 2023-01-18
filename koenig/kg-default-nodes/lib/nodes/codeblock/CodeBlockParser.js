@@ -11,7 +11,7 @@ export class CodeBlockParser {
                 conversion(domNode) {
                     if (domNode.tagName === 'FIGURE') {
                         const pre = domNode.querySelector('pre');
-                        
+
                         // If this figure doesn't have a pre tag in it
                         if (!pre) {
                             return null;
@@ -48,7 +48,7 @@ export class CodeBlockParser {
                             payload.language = languageMatches[1].toLowerCase();
                         }
 
-                        const node = new self.NodeClass(payload.language, payload.code, payload.caption);
+                        const node = new self.NodeClass(payload);
                         return {node};
                     }
                     return null;
@@ -69,7 +69,7 @@ export class CodeBlockParser {
                             if (languageMatches) {
                                 payload.language = languageMatches[1].toLowerCase();
                             }
-                            const node = new self.NodeClass(payload.language, payload.code, payload.caption);
+                            const node = new self.NodeClass(payload);
                             return {node};
                         }
                     }
