@@ -293,6 +293,7 @@ const getAgentsForMembers = async () => {
 };
 
 /**
+ * WARNING: when using this, you should stop the returned ghostServer after the tests.
  * @NOTE: for now method returns a supertest agent for Frontend instead of test agent with snapshot support.
  *        frontendAgent should be returning an instance of TestAgent (related: https://github.com/TryGhost/Toolbox/issues/471)
  *  @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>, frontendAgent: InstanceType<supertest.SuperAgentTest>, contentAPIAgent: InstanceType<ContentAPITestAgent>, ghostServer: Express.Application}>} agents

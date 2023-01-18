@@ -132,15 +132,22 @@ describe('MEGA', function () {
      * + it tests if all the pieces glue together correctly
      */
     describe('Link click tracking', function () {
+        let ghostServer;
+
         before(async function () {
             const agents = await agentProvider.getAgentsWithFrontend();
             agent = agents.adminAgent;
             frontendAgent = agents.frontendAgent;
+            ghostServer = agents.ghostServer;
 
             await fixtureManager.init('newsletters', 'members:newsletters');
             await agent.loginAsOwner();
             _sendEmailJob = require('../../../core/server/services/mega/mega')._sendEmailJob;
             _mailgunClient = require('../../../core/server/services/bulk-email')._mailgunClient;
+        });
+
+        after(async function () {
+            await ghostServer.stop();
         });
 
         it('Tracks all the links in an email', async function () {

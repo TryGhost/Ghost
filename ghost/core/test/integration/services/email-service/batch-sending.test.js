@@ -113,6 +113,7 @@ async function getLastEmail() {
 
 describe('Batch sending tests', function () {
     let linkRedirectService, linkRedirectRepository, linkTrackingService, linkClickRepository;
+    let ghostServer;
 
     beforeEach(function () {
         MailgunEmailProvider.BATCH_SIZE = 100;
@@ -148,6 +149,7 @@ describe('Batch sending tests', function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
         frontendAgent = agents.frontendAgent;
+        ghostServer = agents.ghostServer;
 
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
@@ -159,8 +161,9 @@ describe('Batch sending tests', function () {
         linkClickRepository = linkTrackingService.linkClickRepository;
     });
 
-    after(function () {
+    after(async function () {
         mockManager.restore();
+        await ghostServer.stop();
     });
 
     it('Can send a scheduled post email', async function () {
