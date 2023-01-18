@@ -64,8 +64,11 @@ const mockWebhookRequests = () => {
     return mocks.webhookMockReceiver;
 };
 
+/**
+ * @deprecated use emailMockReceiver.sentEmailCount(count) instead
+ * @param {Number} count number of emails sent
+ */
 const sentEmailCount = (count) => {
-    // NOTE: move to the mock-mail-receiver module
     if (!mocks.mail) {
         throw new errors.IncorrectUsageError({
             message: 'Cannot assert on mail when mail has not been mocked'
