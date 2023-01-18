@@ -13,7 +13,8 @@ describe('MemberAttributionService', function () {
     describe('addOutboundLinkTagging', function () {
         it('uses sluggified sitename for external urls', async function () {
             const service = new MemberAttributionService({
-                getSiteTitle: () => 'Hello world'
+                getSiteTitle: () => 'Hello world',
+                getOutboundLinkTaggingEnabled: () => true
             });
             const url = new URL('https://example.com/');
             const updatedUrl = await service.addOutboundLinkTagging(url);
@@ -21,9 +22,21 @@ describe('MemberAttributionService', function () {
             should(updatedUrl.toString()).equal('https://example.com/?ref=hello-world');
         });
 
+        it('does not add if disabled', async function () {
+            const service = new MemberAttributionService({
+                getSiteTitle: () => 'Hello world',
+                getOutboundLinkTaggingEnabled: () => false
+            });
+            const url = new URL('https://example.com/');
+            const updatedUrl = await service.addOutboundLinkTagging(url);
+
+            should(updatedUrl.toString()).equal('https://example.com/');
+        });
+
         it('uses sluggified newsletter name for internal urls', async function () {
             const service = new MemberAttributionService({
-                getSiteTitle: () => 'Hello world'
+                getSiteTitle: () => 'Hello world',
+                getOutboundLinkTaggingEnabled: () => true
             });
             const url = new URL('https://example.com/');
             const newsletterName = 'used newsletter name';
@@ -42,7 +55,8 @@ describe('MemberAttributionService', function () {
 
         it('does not repeat newsletter at the end of the newsletter name', async function () {
             const service = new MemberAttributionService({
-                getSiteTitle: () => 'Hello world'
+                getSiteTitle: () => 'Hello world',
+                getOutboundLinkTaggingEnabled: () => true
             });
             const url = new URL('https://example.com/');
             const newsletterName = 'Weekly newsletter';
@@ -60,7 +74,8 @@ describe('MemberAttributionService', function () {
 
         it('does not add ref to blacklisted domains', async function () {
             const service = new MemberAttributionService({
-                getSiteTitle: () => 'Hello world'
+                getSiteTitle: () => 'Hello world',
+                getOutboundLinkTaggingEnabled: () => true
             });
             const url = new URL('https://facebook.com/');
             const updatedUrl = await service.addOutboundLinkTagging(url);
@@ -70,7 +85,8 @@ describe('MemberAttributionService', function () {
 
         it('does not add ref if utm_source is present', async function () {
             const service = new MemberAttributionService({
-                getSiteTitle: () => 'Hello world'
+                getSiteTitle: () => 'Hello world',
+                getOutboundLinkTaggingEnabled: () => true
             });
             const url = new URL('https://example.com/?utm_source=hello');
             const updatedUrl = await service.addOutboundLinkTagging(url);
@@ -79,7 +95,8 @@ describe('MemberAttributionService', function () {
 
         it('does not add ref if ref is present', async function () {
             const service = new MemberAttributionService({
-                getSiteTitle: () => 'Hello world'
+                getSiteTitle: () => 'Hello world',
+                getOutboundLinkTaggingEnabled: () => true
             });
             const url = new URL('https://example.com/?ref=hello');
             const updatedUrl = await service.addOutboundLinkTagging(url);
@@ -88,7 +105,8 @@ describe('MemberAttributionService', function () {
 
         it('does not add ref if source is present', async function () {
             const service = new MemberAttributionService({
-                getSiteTitle: () => 'Hello world'
+                getSiteTitle: () => 'Hello world',
+                getOutboundLinkTaggingEnabled: () => true
             });
             const url = new URL('https://example.com/?source=hello');
             const updatedUrl = await service.addOutboundLinkTagging(url);
