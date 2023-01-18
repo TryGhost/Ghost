@@ -108,12 +108,12 @@ class MemberAttributionService {
      * @returns {URL}
      */
     addOutboundLinkTagging(url, useNewsletter) {
+        // Create a deep copy
+        url = new URL(url);
+
         if (!this.isOutboundLinkTaggingEnabled) {
             return url;
         }
-
-        // Create a deep copy
-        url = new URL(url);
 
         if (url.searchParams.has('ref') || url.searchParams.has('utm_source') || url.searchParams.has('source')) {
             // Don't overwrite + keep existing source attribution

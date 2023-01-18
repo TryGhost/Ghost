@@ -42,7 +42,7 @@ class MemberAttributionServiceWrapper {
             },
             attributionBuilder: this.attributionBuilder,
             getTrackingEnabled: () => !!settingsCache.get('members_track_sources'),
-            getOutboundLinkTaggingEnabled: () => !labs.isSet('outbound_link_tagging') || settingsCache.get('outbound_link_tagging'),
+            getOutboundLinkTaggingEnabled: () => !labs.isSet('outboundLinkTagging') || !!settingsCache.get('outbound_link_tagging'),
             getSiteTitle: () => settingsCache.get('title')
         });
     }

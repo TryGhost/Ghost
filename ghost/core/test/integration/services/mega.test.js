@@ -218,9 +218,14 @@ describe('MEGA', function () {
                 }
             }
 
-            const links = await linkRedirectRepository.getAll({post_id: emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
             const link = links.find(l => l.from.pathname === firstLink.pathname);
             assert(link, 'Link model not created');
+
+            for (const l of links) {
+                // Check ref added
+                assert.match(l.to.search, /ref=/);
+            }
 
             // Mimic a click on a link
             const path = firstLink.pathname + firstLink.search;
@@ -235,6 +240,66 @@ describe('MEGA', function () {
             const member = await models.Member.findOne({uuid: memberUuid});
             const clickEvent = await linkClickRepository.getAll({member_id: member.id, link_id: link.link_id.toHexString()});
             assert(clickEvent.length === 1, 'Click event was not tracked');
+        });
+
+        it('Does not add outbound refs if disabled', async function () {
+            mockManager.mockSetting('outbound_link_tagging', false);
+            const linkRedirectService = require('../../../core/server/services/link-redirection');
+            const linkRedirectRepository = linkRedirectService.linkRedirectRepository;
+
+            sinon.stub(_mailgunClient, 'getInstance').returns({});
+            const sendStub = sinon.stub(_mailgunClient, 'send');
+
+            sendStub.callsFake(async () => {
+                return {
+                    id: 'stubbed-email-id'
+                };
+            });
+
+            // Prepare a post and email model
+            const emailModel = await createPublishedPostEmail();
+
+            // Launch email job
+            await _sendEmailJob({emailId: emailModel.id, options: {}});
+
+            await emailModel.refresh();
+            emailModel.get('status').should.eql('submitted');
+
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            for (const link of links) {
+                // Check ref is not added
+                assert.doesNotMatch(link.to.search, /ref=/);
+            }
+        });
+
+        it('Does add outbound refs if disabled but flag is disabled', async function () {
+            mockManager.mockLabsDisabled('outboundLinkTagging');
+            mockManager.mockSetting('outbound_link_tagging', false);
+            const linkRedirectService = require('../../../core/server/services/link-redirection');
+            const linkRedirectRepository = linkRedirectService.linkRedirectRepository;
+
+            sinon.stub(_mailgunClient, 'getInstance').returns({});
+            const sendStub = sinon.stub(_mailgunClient, 'send');
+
+            sendStub.callsFake(async () => {
+                return {
+                    id: 'stubbed-email-id'
+                };
+            });
+
+            // Prepare a post and email model
+            const emailModel = await createPublishedPostEmail();
+
+            // Launch email job
+            await _sendEmailJob({emailId: emailModel.id, options: {}});
+
+            await emailModel.refresh();
+            emailModel.get('status').should.eql('submitted');
+
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            for (const link of links) {
+                assert.match(link.to.search, /ref=/);
+            }
         });
     });
 });
