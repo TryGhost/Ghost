@@ -1,4 +1,3 @@
-const logging = require('@tryghost/logging');
 const mentions = require('../../services/mentions');
 
 module.exports = {
@@ -27,8 +26,7 @@ module.exports = {
             format: 'plain'
         },
         query(frame) {
-            logging.info('[Webmention] ' + JSON.stringify(frame.data));
-            return null;
+            return mentions.controller.receive(frame);
         }
     }
 };
