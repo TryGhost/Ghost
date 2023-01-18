@@ -15,13 +15,17 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     }
 
     static clone(node) {
-        return new CodeBlockNode(node.__language, node.__code, node.__caption, node.__key);
+        // must use `this` so the extended class in the Editor uses the correct class when cloning
+        // without needing to override this method
+        return new this(
+            node.getDataset(),
+            node.__key
+        );
     }
 
     // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
-            src: 'url',
             caption: 'html'
         };
     }
@@ -36,7 +40,7 @@ export class CodeBlockNode extends KoenigDecoratorNode {
 
     static importJSON(serializedNode) {
         const {code, language} = serializedNode;
-        const node = new this({language, code});
+        const node = new this({code, language});
         return node;
     }
 
@@ -49,10 +53,10 @@ export class CodeBlockNode extends KoenigDecoratorNode {
         };
     }
 
-    constructor(language, initCode, caption, key) {
+    constructor({code, language, caption} = {}, key) {
         super(key);
+        this.__code = code;
         this.__language = language;
-        this.__code = initCode;
         this.__caption = caption;
     }
 
@@ -85,8 +89,8 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     }
 
     setCaption(caption) {
-        const writable = this.getWritable();
-        return writable.__caption = caption;
+        const self = this.getWritable();
+        self.__caption = caption;
     }
 
     getCode() {
@@ -125,8 +129,8 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     }
 }
 
-export function $createCodeBlockNode(language, initCode, caption) {
-    return new CodeBlockNode(language, initCode, caption);
+export function $createCodeBlockNode(dataset) {
+    return new CodeBlockNode(dataset);
 }
 
 export function $isCodeBlockNode(node) {
