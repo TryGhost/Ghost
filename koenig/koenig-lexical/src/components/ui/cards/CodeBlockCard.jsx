@@ -50,7 +50,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     });
 
     return (
-        <div class="not-kg-prose">
+        <div className="not-kg-prose">
             <CodeMirror
                 value={code}
                 extensions={[editorCSS]}
@@ -80,14 +80,14 @@ export function CodeBlock({code, language}) {
                 <span className="db nudge-top--2 fw5 f8 midlightgrey">{language}</span>
             </div>
         </div>
-        
+
     );
 }
 
 export function CodeBlockCard({code, isEditing, isSelected, language, updateCode, updateLanguage}) {
     if (isEditing) {
         return (
-            <CodeEditor 
+            <CodeEditor
                 code={code}
                 language={language}
                 updateLanugage={updateLanguage}
