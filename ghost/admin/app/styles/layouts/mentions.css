@@ -1,0 +1,118 @@
+/* Mentions list
+/* ---------------------------------------------------------- */
+
+.gh-mention-your-post {
+    font-size: 1.4rem;
+    line-height: 1.4em;
+    margin-bottom: 8px;
+    color: var(--midgrey);
+}
+
+.gh-mention-your-post-link {
+    color: var(--black);
+    font-weight: 500;
+}
+
+.gh-mention-card {
+    position: relative;
+    width: 100%;
+    margin-bottom: 32px;
+}
+
+.gh-mention-container {
+    display: flex;
+    text-decoration: none;
+    border-radius: 3px;
+    background-color: var(--whitegrey-l1);
+    overflow: hidden;
+    color: inherit;
+}
+
+.gh-mention-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-basis: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.gh-mention-title {
+    font-size: 1.6rem;
+    line-height: 1.4em;
+    font-weight: 600;
+}
+
+.gh-mention-description {
+    display: -webkit-box;
+    font-size: 1.4rem;
+    line-height: 1.5em;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-weight: 400;
+    max-height: 44px;
+    overflow-y: hidden;
+    opacity: .7;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.gh-mention-metadata {
+    display: flex;
+    align-items: center;
+    margin-top: 22px;
+    width: 100%;
+    font-size: 1.4rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.gh-mention-metadata>span:nth-of-type(2):before, .gh-mention-metadata>span:nth-of-type(3):before {
+    content: "•";
+    margin: 0 6px;
+    font-weight: 300;
+}
+
+.gh-mention-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+}
+
+.gh-mention-publisher {
+    display: inline;
+}
+
+.gh-mention-author {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 240px;
+    white-space: nowrap;
+    display: block;
+    line-height: 1.65em;
+    font-weight: 400;
+    opacity: .7;
+}
+
+.gh-mention-timestamp {
+    font-weight: 400;
+    opacity: .7;
+}
+
+.gh-mention-thumbnail {
+    position: relative;
+    flex-grow: 1;
+    min-width: 28%;
+}
+
+.gh-mention-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 0 2px 2px 0;
+}
