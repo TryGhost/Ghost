@@ -67,13 +67,19 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     );
 }
 
-export function CodeBlock({code}) {
+export function CodeBlock({code, language}) {
     return (
-        <pre className="h-[max-content] rounded border border-grey-200 bg-grey-100 px-2 py-[2px]">
-            <code className="font-mono text-[1.6rem] leading-9 text-grey-900">
-                {code}
-            </code>
-        </pre>
+        <div>
+            <pre className="h-[max-content] rounded border border-grey-200 bg-grey-100 px-2 py-[2px]">
+                <code className="font-mono text-[1.6rem] leading-9 text-grey-900">
+                    {code}
+                </code>
+            </pre>
+            <div className="pa2 absolute top-2 right-2 flex items-center justify-center">
+                <span className="db nudge-top--2 fw5 f8 midlightgrey">{language}</span>
+            </div>
+        </div>
+        
     );
 }
 
@@ -89,7 +95,7 @@ export function CodeBlockCard({code, isEditing, isSelected, language, updateCode
         );
     } else {
         return (
-            <CodeBlock code={code} />
+            <CodeBlock code={code} language={language} />
         );
     }
 }

@@ -1,131 +1,30 @@
 import * as React from 'react';
-import {
-    $getNodeByKey,
-    createCommand,
-    DecoratorNode
-} from 'lexical';
+import {CodeBlockNode as BaseCodeBlockNode} from '@tryghost/kg-default-nodes';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {CodeBlockCard} from '../components/ui/cards/CodeBlockCard';
-import CardContext from '../context/CardContext';
 
-export const CODE_BLOCK_COMMAND = createCommand();
+// re-export here so we don't need to import from multiple places throughout the app
+export {CODE_BLOCK_COMMAND} from '@tryghost/kg-default-nodes';
 
-function CodeBlockComponent({code, language, nodeKey, editor}) {
-    const cardContext = React.useContext(CardContext);
-
-    const updateCode = (event) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setCode(event.target.value);
-        });
-    };
-
-    const updateLanguage = (event) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setLanguage(event.target.value);
-        });
-    };
-
-    return (
-        <CodeBlockCard
-            code={code}
-            updateCode={updateCode}
-            language={language}
-            updateLanguage={updateLanguage}
-            isEditing={cardContext.isEditing}
-        />
-    );
-}
-
-export class CodeBlockNode extends DecoratorNode {
-    __code = '';
-    __language = '';
-
-    static getType() {
-        return 'codeblock';
-    }
-
-    static clone(node) {
-        return new CodeBlockNode(node.__key, node.__code);
-    }
-
-    static importJSON(serializedNode) {
-        return $createCodeBlockNode();
-    }
-
-    exportJSON() {
-        return {
-            type: 'codeblock',
-            version: 1,
-            code: this.__code,
-            language: this.__language
-        };
-    }
-
-    constructor(language, initCode, key) {
-        super(key);
-        this.__language = language;
-        this.__code = initCode;
-    }
-
-    createDOM(config) {
-        return document.createElement('div');
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    getCode() {
-        const self = this.getLatest();
-        return self.__code;
-    }
-
-    setCode(code) {
-        const self = this.getWritable();
-        self.__code = code;
-    }
-
-    getLanguage() {
-        const self = this.getLatest();
-        return self.__language;
-    }
-
-    setLanguage(language) {
-        const self = this.getWritable();
-        self.__language = language;
-    }
-
-    getTextContent() {
-        const self = this.getLatest();
-        return self.__code;
-    }
-
-    decorate(editor, config) {
+export class CodeBlockNode extends BaseCodeBlockNode {
+    decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()}>
-                <CodeBlockComponent
-                    code={this.__code}
-                    language={this.__language}
+            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
+                <CodeBlockCard
                     nodeKey={this.getKey()}
-                    editor={editor}
+                    code={this.__code}
+                    updateCode={event => this.setCode(event.target.value)}
+                    language={this.__language}
+                    updateLanguage={event => this.setLanguage(event.target.value)}
+                    //isEditing={cardContext.isEditing}
                 />
             </KoenigCardWrapper>
         );
     }
-
-    isInline() {
-        return false;
-    }
-
-    hasEditMode() {
-        return true;
-    }
 }
 
-export function $createCodeBlockNode(language, initCode) {
-    return new CodeBlockNode(language, initCode);
+export function $createCodeBlockNode(language, initCode, caption) {
+    return new CodeBlockNode(language, initCode, caption);
 }
 
 export function $isCodeBlockNode(node) {
