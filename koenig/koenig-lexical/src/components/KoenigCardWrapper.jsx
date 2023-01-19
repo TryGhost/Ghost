@@ -87,9 +87,22 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                         if (isSelected) {
                             event.preventDefault();
 
-                            const node = latestSelection.getNodes()[0];
+                            const node = $getNodeByKey(nodeKey);
+
                             if (node.hasEditMode?.()) {
                                 setEditing(!isEditing);
+
+                                // when leaving edit mode, ensure focus moves back to the editor
+                                // otherwise focus can be left on removed elements preventing further key events
+                                if (isEditing) {
+                                    editor.getRootElement().focus();
+
+                                    // re-create the node selection because the focus will place the cursor at
+                                    // the beginning of the doc
+                                    const nodeSelection = $createNodeSelection();
+                                    nodeSelection.add(nodeKey);
+                                    $setSelection(nodeSelection);
+                                }
                             }
 
                             return true;
