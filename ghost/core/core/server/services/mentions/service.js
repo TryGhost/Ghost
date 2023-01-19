@@ -2,9 +2,20 @@ const MentionController = require('./MentionController');
 const WebmentionMetadata = require('./WebmentionMetadata');
 const {
     InMemoryMentionRepository,
-    MentionsAPI
+    MentionsAPI,
+    MentionSendingService
 } = require('@tryghost/webmentions');
+const events = require('../../lib/common/events');
+const externalRequest = require('../../../server/lib/request-external.js');
+const urlUtils = require('../../../shared/url-utils');
+const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
+const labs = require('../../../shared/labs');
 
+function getPostUrl(post) {
+    const jsonModel = {};
+    url.forPost(post.id, jsonModel, {options: {}});
+    return jsonModel.url;
+}
 module.exports = {
     controller: new MentionController(),
     async init() {
@@ -53,5 +64,18 @@ module.exports = {
                 extra: 'data'
             }
         });
+
+        const sendingService = new MentionSendingService({
+            discoveryService: {
+                getEndpoint: async () => {
+                    return new URL('https://site.ghost/webmentions/receive');
+                }
+            },
+            externalRequest,
+            getSiteUrl: () => urlUtils.urlFor('home', true),
+            getPostUrl: post => getPostUrl(post),
+            isEnabled: () => labs.isSet('webmentions')
+        });
+        sendingService.listen(events);
     }
 };
