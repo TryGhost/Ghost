@@ -16,8 +16,12 @@
                         <p class="gh-mention-description">{{mention.sourceExcerpt}}</p>
                         <div class="gh-mention-metadata">
                             <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="gh-mention-icon">
-                            <span class="gh-mention-publisher">{{mention.sourceSiteTitle}}</span>
-                            <span class="gh-mention-author">{{mention.sourceAuthor}}</span>
+                            {{#if mention.sourceSiteTitle}}
+                                <span class="gh-mention-publisher">{{mention.sourceSiteTitle}}</span>
+                            {{/if}}
+                            {{#if mention.sourceAuthor}}
+                                <span class="gh-mention-author">{{mention.sourceAuthor}}</span>
+                            {{/if}}
                             <span class="gh-mention-timestamp">{{gh-format-post-time mention.timestamp}}</span>
                         </div>
                     </div>
