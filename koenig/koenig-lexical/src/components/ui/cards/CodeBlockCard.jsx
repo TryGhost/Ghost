@@ -1,12 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CodeMirror from '@uiw/react-codemirror';
-import {EditorView} from '@codemirror/view';
+import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
+import {standardKeymap} from '@codemirror/commands';
+import {EditorView, lineNumbers, keymap} from '@codemirror/view';
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
     const onChange = React.useCallback((value) => {
         updateCode(value);
     }, [updateCode]);
+
+    const onLanguageChange = React.useCallback((event) => {
+        updateLanguage(event.target.value);
+    }, [updateLanguage]);
 
     const editorCSS = EditorView.theme({
         '&.cm-editor': {
@@ -53,14 +59,21 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
         <div className="not-kg-prose">
             <CodeMirror
                 value={code}
-                extensions={[editorCSS]}
+                extensions={[
+                    editorCSS, 
+                    lineNumbers(), 
+                    minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
+                    keymap.of(standardKeymap)
+                ]}
+                autoFocus={true}
+                basicSetup={false} // basic setup includes unnecessary extensions
                 onChange={onChange}
             />
             <input
                 aria-label="Code card language"
                 type="text"
                 value={language}
-                onBlur={updateLanguage}
+                onChange={onLanguageChange}
                 placeholder="Language..."
                 className="z-999 absolute top-1.5 right-1.5 w-1/5 rounded border border-grey-300 p-1 font-sans text-[1.3rem] leading-4 text-grey-900 focus-visible:outline-none"
             />
@@ -80,7 +93,6 @@ export function CodeBlock({code, language}) {
                 <span className="db nudge-top--2 fw5 f8 midlightgrey">{language}</span>
             </div>
         </div>
-
     );
 }
 

@@ -81,11 +81,6 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
-                    // avoid processing card behaviours when an inner element has focus
-                    if (document.activeElement !== editor.getRootElement()) {
-                        return true;
-                    }
-
                     const latestSelection = $getSelection();
 
                     if (event.metaKey || event.ctrlKey) {
@@ -100,6 +95,10 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                             return true;
                         }
                     } else {
+                        // avoid processing card behaviours when an inner element has focus
+                        if (document.activeElement !== editor.getRootElement()) {
+                            return true;
+                        }
                         if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
                             event.preventDefault();
                             const cardNode = $getNodeByKey(nodeKey);

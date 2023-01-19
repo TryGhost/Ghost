@@ -3,7 +3,7 @@ const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {JSDOM} = require('jsdom');
 const {CodeBlockNode, $createCodeBlockNode, $isCodeBlockNode} = require('../../');
-const {$getRoot, $insertNodes} = require('lexical');
+const {$getRoot} = require('lexical');
 
 const editorNodes = [CodeBlockNode];
 

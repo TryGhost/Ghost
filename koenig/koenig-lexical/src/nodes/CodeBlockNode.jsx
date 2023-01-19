@@ -31,9 +31,9 @@ function CodeBlockNodeComponent({nodeKey, code, language}) {
         <CodeBlockCard
             nodeKey={nodeKey}
             code={code}
-            updateCode={event => updateCode(event.target.value)}
+            updateCode={updateCode}
             language={language}
-            updateLanguage={event => updateLanguage(event.target.value)}
+            updateLanguage={updateLanguage}
             isEditing={cardContext.isEditing}
         />
     );
