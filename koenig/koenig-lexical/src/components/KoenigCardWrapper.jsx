@@ -137,16 +137,8 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                     const latestSelection = $getSelection();
                     if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
                         event.preventDefault();
+
                         const cardNode = $getNodeByKey(nodeKey);
-                        // This is to avoid deleting the card when backspacing inside the caption / alt input of the card when the card is selected
-                        // TODO: this should be avoided or generalized
-                        if (cardNode.getType() === 'image' && event.target.matches('input')) {
-                            editor.update(() => {
-                                const caption = cardNode.getCaption();
-                                cardNode.setCaption(caption.slice(0, -1));
-                            });
-                            return false;
-                        }
                         const previousSibling = cardNode.getPreviousSibling();
                         const nextSibling = cardNode.getNextSibling();
 
