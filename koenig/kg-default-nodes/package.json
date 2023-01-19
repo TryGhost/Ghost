@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "jsdom": "^21.0.0",
-    "lexical": "^0.7.0"
+    "lexical": "^0.7.0",
+    "@tryghost/kg-markdown-html-renderer": "^6.0.0"
   }
 }
