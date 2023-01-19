@@ -165,10 +165,13 @@ module.exports = class Mention {
             }
         }
 
-        const sourceTitle = validateString(data.sourceTitle, 191, 'sourceTitle');
-        const sourceExcerpt = validateString(data.sourceExcerpt, 1000, 'sourceExcerpt');
-        const sourceSiteTitle = validateString(data.sourceSiteTitle, 191, 'sourceSiteTitle', false);
-        const sourceAuthor = validateString(data.sourceAuthor, 191, 'sourceAuthor', false);
+        let sourceTitle = validateString(data.sourceTitle, 2000, 'sourceTitle');
+        if (sourceTitle === null) {
+            sourceTitle = source.host;
+        }
+        const sourceExcerpt = validateString(data.sourceExcerpt, 2000, 'sourceExcerpt');
+        const sourceSiteTitle = validateString(data.sourceSiteTitle, 2000, 'sourceSiteTitle');
+        const sourceAuthor = validateString(data.sourceAuthor, 2000, 'sourceAuthor');
 
         let sourceFavicon = null;
         if (data.sourceFavicon instanceof URL) {
@@ -201,15 +204,9 @@ module.exports = class Mention {
     }
 };
 
-function validateString(value, maxlength, name, required = true) {
+function validateString(value, maxlength, name) {
     if (!value) {
-        if (required) {
-            throw new ValidationError({
-                message: `Missing ${name} for Mention`
-            });
-        } else {
-            return null;
-        }
+        return null;
     }
 
     if (typeof value !== 'string') {
@@ -218,11 +215,5 @@ function validateString(value, maxlength, name, required = true) {
         });
     }
 
-    if (value.length > maxlength) {
-        throw new ValidationError({
-            message: `${name} must be less than ${maxlength + 1} characters`
-        });
-    }
-
-    return value;
+    return value.trim().slice(0, maxlength);
 }
