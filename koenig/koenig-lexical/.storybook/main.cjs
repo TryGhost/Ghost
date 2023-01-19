@@ -10,6 +10,14 @@ module.exports = {
         },
       })
     ];
+
+    config.optimizeDeps = {
+        include: ['@tryghost/kg-simplemde'],
+    };
+
+    config.build = {commonjsOptions: {
+            include: [/@tryghost\/kg-simplemde/],
+    }};
     return config;
   },
   "stories": [
