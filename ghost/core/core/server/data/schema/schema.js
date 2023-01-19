@@ -989,8 +989,9 @@ module.exports = {
         publisher: {type: 'string', maxlength: 200, nullable: false},
         thumbnail: {type: 'string', maxlength: 2000, nullable: false},
         icon: {type: 'string', maxlength: 2000, nullable: false},
-        target_url: {type: 'string', maxlength: 2000, nullable: false},
-        target_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'posts.id', cascadeDelete: true},
+        published_at: {type: 'dateTime', nullable: false},
+        target: {type: 'string', maxlength: 2000, nullable: false},
+        target_post_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'posts.id', cascadeDelete: true},
         // @TODO should we use both target_url and target_id - assuming we map the target ID to the internal post ID that was mentioned?
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
