@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
-class MentionSendingService {
+module.exports = class MentionSendingService {
     #discoveryService;
     #externalRequest;
     #getSiteUrl;
@@ -160,6 +160,4 @@ class MentionSendingService {
         }
         return urls;
     }
-}
-
-module.exports = MentionSendingService;
+};
