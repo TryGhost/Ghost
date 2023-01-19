@@ -1,10 +1,30 @@
-const CardText = ({text}) => {
+import React from 'react';
+import PropTypes from 'prop-types';
+import {ReactComponent as ImgPlaceholderIcon} from '../../assets/icons/kg-img-placeholder.svg';
+import {ReactComponent as GalleryPlaceholderIcon} from '../../assets/icons/kg-gallery-placeholder.svg';
+import {ReactComponent as VideoPlaceholderIcon} from '../../assets/icons/kg-video-placeholder.svg';
+import {ReactComponent as AudioPlaceholderIcon} from '../../assets/icons/kg-audio-placeholder.svg';
+import {ReactComponent as FilePlaceholderIcon} from '../../assets/icons/kg-file-placeholder.svg';
+import {ReactComponent as ProductPlaceholderIcon} from '../../assets/icons/kg-product-placeholder.svg';
+
+export const PLACEHOLDER_ICONS = {
+    image: ImgPlaceholderIcon,
+    gallery: GalleryPlaceholderIcon,
+    video: VideoPlaceholderIcon,
+    audio: AudioPlaceholderIcon,
+    file: FilePlaceholderIcon,
+    product: ProductPlaceholderIcon
+};
+
+export const CardText = ({text}) => {
     return (
         <span data-kg-card-drag-text className="font-sans text-sm font-bold text-grey-800 transition-all group-hover:text-grey-800">{text}</span>
     );
 };
 
-export function MediaPlaceholder({desc, Icon, filePicker, size, handleDrag, handleDrop, isDraggedOver, ...props}) {
+export function MediaPlaceholder({desc, icon, filePicker, size, handleDrag, handleDrop, isDraggedOver, ...props}) {
+    const Icon = PLACEHOLDER_ICONS[icon];
+
     return (
         <div
             onDragEnter={handleDrag}
@@ -28,3 +48,9 @@ export function MediaPlaceholder({desc, Icon, filePicker, size, handleDrag, hand
         </div>
     );
 }
+
+MediaPlaceholder.propTypes = {
+    icon: PropTypes.string,
+    desc: PropTypes.string,
+    size: PropTypes.oneOf(['xsmall', 'small', 'medium', 'large'])
+};

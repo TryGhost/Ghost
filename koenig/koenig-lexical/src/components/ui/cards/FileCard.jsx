@@ -1,14 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {MediaPlaceholder} from '../MediaPlaceholder';
-import {ReactComponent as FilePlaceholderIcon} from '../../../assets/icons/kg-file-placeholder.svg';
 import {ReactComponent as FileUploadIcon} from '../../../assets/icons/kg-file-upload.svg';
 
 function EmptyFileCard() {
     return (
         <MediaPlaceholder
             desc="Click to upload a file"
-            Icon={FilePlaceholderIcon}
+            icon='file'
             size='xsmall'
         />
     );

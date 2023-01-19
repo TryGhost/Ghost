@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
-import {ReactComponent as GalleryPlaceholderIcon} from '../../../assets/icons/kg-gallery-placeholder.svg';
 
 function EmptyGalleryCard({onFileChange}) {
     const fileInputRef = React.useRef(null);
@@ -16,7 +15,7 @@ function EmptyGalleryCard({onFileChange}) {
             <MediaPlaceholder
                 filePicker={openFilePicker}
                 desc="Click to select up to 9 images"
-                Icon={GalleryPlaceholderIcon}
+                icon='gallery'
                 size='large'
             />
             <form onChange={onFileChange}>

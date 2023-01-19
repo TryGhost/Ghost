@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {Button} from './ButtonCard';
-import {ReactComponent as ProductPlaceholderIcon} from '../../../assets/icons/kg-product-placeholder.svg';
 import {ReactComponent as StarIcon} from '../../../assets/icons/kg-star.svg';
 
 export function ProductCard({isSelected, image, title, titlePlaceholder, desc, descPlaceholder, button, buttonText, rating}) {
@@ -12,7 +11,7 @@ export function ProductCard({isSelected, image, title, titlePlaceholder, desc, d
                 <div className="mb-4">
                     <MediaPlaceholder
                         desc="Click to select a product image"
-                        Icon={ProductPlaceholderIcon}
+                        icon='product'
                         size='small'
                     />
                 </div>)

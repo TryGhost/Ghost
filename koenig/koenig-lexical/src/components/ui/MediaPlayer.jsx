@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {ReactComponent as PlayIcon} from '../../assets/icons/kg-play.svg';
 import {ReactComponent as UnmuteIcon} from '../../assets/icons/kg-unmute.svg';
 
@@ -25,3 +26,7 @@ export function MediaPlayer({type, duration, theme, ...args}) {
         </div>
     );
 }
+
+MediaPlayer.propTypes = {
+    theme: PropTypes.oneOf(['light', 'dark'])
+};

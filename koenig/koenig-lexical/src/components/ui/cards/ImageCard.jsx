@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
-import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img-placeholder.svg';
 import {openFileSelection} from '../../../utils/openFileSelection';
 import ImageUploadForm from '../ImageUploadForm';
 
@@ -40,7 +39,7 @@ function EmptyImageCard({onFileChange, setFileInputRef, handleDrag, handleDrop, 
                 handleDrop={handleDrop}
                 filePicker={() => openFileSelection({fileInputRef})}
                 desc="Click to select an image"
-                Icon={ImgPlaceholderIcon}
+                icon='image'
                 isDraggedOver={isDraggedOver}
             />
             <ImageUploadForm

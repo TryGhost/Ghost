@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
-import {ReactComponent as VideoPlaceholderIcon} from '../../../assets/icons/kg-video-placeholder.svg';
 import {ReactComponent as PlayIcon} from '../../../assets/icons/kg-play.svg';
 import {openFileSelection} from '../../../utils/openFileSelection';
 import ImageUploadForm from '../ImageUploadForm';
@@ -34,7 +33,7 @@ function EmptyVideoCard({onFileChange}) {
             <MediaPlaceholder
                 filePicker={() => openFileSelection({fileInputRef})}
                 desc="Click to select a video"
-                Icon={VideoPlaceholderIcon}
+                icon='video'
             />
             <ImageUploadForm
                 filePicker={() => openFileSelection({fileInputRef})}

@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
-import {ReactComponent as AudioPlaceholderIcon} from '../../../assets/icons/kg-audio-placeholder.svg';
 import {ReactComponent as AudioFileIcon} from '../../../assets/icons/kg-audio-file.svg';
 import {ReactComponent as FilePlaceholderIcon} from '../../../assets/icons/kg-file-placeholder.svg';
 
@@ -10,7 +9,7 @@ function EmptyAudioCard() {
     return (
         <MediaPlaceholder
             desc="Click to upload an audio file"
-            Icon={AudioPlaceholderIcon}
+            icon='audio'
             size='xsmall'
         />
     );
