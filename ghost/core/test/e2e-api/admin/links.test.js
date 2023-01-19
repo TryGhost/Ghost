@@ -1,5 +1,6 @@
-const {agentProvider, fixtureManager, matchers, sleep} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyString, anyEtag, anyNumber} = matchers;
+const sinon = require('sinon');
 
 const matchLink = {
     post_id: anyObjectId,
@@ -16,10 +17,17 @@ const matchLink = {
 
 describe('Links API', function () {
     let agent;
+    let clock;
+
     beforeEach(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'links');
         await agent.loginAsOwner();
+        clock = sinon.useFakeTimers(new Date());
+    });
+
+    afterEach(async function () {
+        clock.restore();
     });
 
     it('Can browse all links', async function () {
@@ -43,8 +51,10 @@ describe('Links API', function () {
         const postId = siteLink.post_id;
         const originalTo = siteLink.link.to;
         const filter = `post_id:${postId}+to:'${originalTo}'`;
-        // Sleep ensures the updated time of the link is different than created
-        await sleep(1000);
+
+        // Wait minimum 2 seconds
+        clock.tick(2 * 1000);
+
         await agent
             .put(`links/bulk/?filter=${encodeURIComponent(filter)}`)
             .body({
@@ -113,7 +123,10 @@ describe('Links API', function () {
         const postId = siteLink.post_id;
         const originalTo = siteLink.link.to;
         const filter = `post_id:${postId}+to:'${originalTo}'`;
-        await sleep(1000);
+
+        // Wait minimum 2 seconds
+        clock.tick(2 * 1000);
+
         await agent
             .put(`links/bulk/?filter=${encodeURIComponent(filter)}`)
             .body({
