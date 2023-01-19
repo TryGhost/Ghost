@@ -12,11 +12,11 @@ module.exports = {
     ];
 
     config.optimizeDeps = {
-        include: ['@tryghost/kg-simplemde'],
+        include: ['@tryghost/kg-markdown-html-renderer', '@tryghost/kg-simplemde']
     };
 
     config.build = {commonjsOptions: {
-            include: [/@tryghost\/kg-simplemde/],
+            include: [/packages/],
     }};
     return config;
   },
