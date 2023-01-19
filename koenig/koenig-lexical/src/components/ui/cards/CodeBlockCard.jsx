@@ -60,8 +60,8 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
             <CodeMirror
                 value={code}
                 extensions={[
-                    editorCSS, 
-                    lineNumbers(), 
+                    editorCSS,
+                    lineNumbers(),
                     minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
                     keymap.of(standardKeymap)
                 ]}
@@ -102,7 +102,7 @@ export function CodeBlockCard({code, isEditing, isSelected, language, updateCode
             <CodeEditor
                 code={code}
                 language={language}
-                updateLanugage={updateLanguage}
+                updateLanguage={updateLanguage}
                 updateCode={updateCode}
             />
         );
