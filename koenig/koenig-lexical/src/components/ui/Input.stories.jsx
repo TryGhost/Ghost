@@ -1,10 +1,10 @@
 import React from 'react';
 
-import {MediaPlayer} from './MediaPlayer';
+import {Input} from './Input';
 
 const story = {
-    title: 'Generic/Media player',
-    component: MediaPlayer,
+    title: 'Generic/Input',
+    component: Input,
     parameters: {
         status: {
             type: 'uiReady'
@@ -14,10 +14,7 @@ const story = {
 export default story;
 
 const Template = args => (
-    <MediaPlayer {...args} />
+    <Input {...args} />
 );
 
 export const Default = Template.bind({});
-Default.args = {
-    theme: 'dark'
-};

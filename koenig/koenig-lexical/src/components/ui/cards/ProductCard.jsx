@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {MediaPlaceholder} from '../MediaPlaceholder';
-import {Button} from './ButtonCard';
+import {Button} from '../Button';
 import {ReactComponent as StarIcon} from '../../../assets/icons/kg-star.svg';
 
 export function ProductCard({isSelected, image, title, titlePlaceholder, desc, descPlaceholder, button, buttonText, rating}) {

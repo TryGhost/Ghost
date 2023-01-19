@@ -20,6 +20,3 @@ const Template = args => (
 );
 
 export const VideoCard = Template.bind({});
-VideoCard.args = {
-    toggle: true
-};

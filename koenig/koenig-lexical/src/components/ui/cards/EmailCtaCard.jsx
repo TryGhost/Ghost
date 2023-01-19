@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Button} from './ButtonCard';
+import {Button} from '../Button';
 
 export function EmailCtaCard({isSelected, visibility, alignment, separators, value, placeholder, button, buttonText}) {
     return (

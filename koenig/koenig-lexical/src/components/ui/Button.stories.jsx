@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {Button} from './ButtonCard';
+import {Button} from './Button';
 
 const story = {
     title: 'Generic/Button',

@@ -1,10 +1,10 @@
 import React from 'react';
 
-import {MediaPlayer} from './MediaPlayer';
+import {Toggle} from './Toggle';
 
 const story = {
-    title: 'Generic/Media player',
-    component: MediaPlayer,
+    title: 'Generic/Toggle',
+    component: Toggle,
     parameters: {
         status: {
             type: 'uiReady'
@@ -14,10 +14,7 @@ const story = {
 export default story;
 
 const Template = args => (
-    <MediaPlayer {...args} />
+    <Toggle {...args} />
 );
 
 export const Default = Template.bind({});
-Default.args = {
-    theme: 'dark'
-};
