@@ -10,5 +10,7 @@ module.exports = {
     indentation: 4,
     sort: true,
 
+    failOnUpdate: process.env.CI,
+
     output: 'locales/$LOCALE.json'
 };
