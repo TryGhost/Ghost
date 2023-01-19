@@ -7,7 +7,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$getNodeByKey} from 'lexical';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {CODE_BLOCK_COMMAND} from '@tryghost/kg-default-nodes';
+export {INSERT_CODE_BLOCK_COMMAND} from '@tryghost/kg-default-nodes';
 
 function CodeBlockNodeComponent({nodeKey, code, language}) {
     const [editor] = useLexicalComposerContext();

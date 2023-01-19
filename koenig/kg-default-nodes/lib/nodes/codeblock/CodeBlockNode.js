@@ -3,7 +3,7 @@ import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {CodeBlockParser} from './CodeBlockParser';
 import {renderCodeBlockNodeToDOM} from './CodeBlockRenderer';
 
-export const CODE_BLOCK_COMMAND = createCommand();
+export const INSERT_CODE_BLOCK_COMMAND = createCommand();
 
 export class CodeBlockNode extends KoenigDecoratorNode {
     __code;

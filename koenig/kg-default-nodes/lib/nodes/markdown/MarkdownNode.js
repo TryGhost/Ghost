@@ -2,7 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {renderMarkdownNodeToDOM} from './MarkdownRenderer';
 
-export const MARKDOWN_COMMAND = createCommand();
+export const INSERT_MARKDOWN_COMMAND = createCommand();
 
 export class MarkdownNode extends KoenigDecoratorNode {
     __markdown;

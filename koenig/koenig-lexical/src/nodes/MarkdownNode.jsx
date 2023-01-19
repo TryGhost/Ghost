@@ -1,5 +1,5 @@
 import React from 'react';
-import {MarkdownNode as BaseMarkdownNode, MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
+import {MarkdownNode as BaseMarkdownNode, INSERT_MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as MarkdownCardIcon} from '../assets/icons/kg-card-type-markdown.svg';
 import {MarkdownCard} from '../components/ui/cards/MarkdownCard';
@@ -8,7 +8,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$getNodeByKey} from 'lexical';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
+export {INSERT_MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
 
 function MarkdownNodeComponent({nodeKey, markdown}) {
     const [editor] = useLexicalComposerContext();
@@ -36,7 +36,7 @@ export class MarkdownNode extends BaseMarkdownNode {
         label: 'Markdown',
         desc: 'Insert a Markdown editor card',
         Icon: MarkdownCardIcon,
-        insertCommand: MARKDOWN_COMMAND,
+        insertCommand: INSERT_MARKDOWN_COMMAND,
         matches: ['markdown', 'md']
     };
 
