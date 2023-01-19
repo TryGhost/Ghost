@@ -16,6 +16,9 @@ export default defineConfig({
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
         'process.env.VITEST_SEGFAULT_RETRY': 3
     },
+    optimizeDeps: {
+        include: ['@tryghost/kg-markdown-html-renderer', '@tryghost/kg-simplemde']
+    },
     build: {
         minify: true,
         sourcemap: true,
@@ -39,7 +42,10 @@ export default defineConfig({
                     'react-dom': 'ReactDOM'
                 }
             }
-        }
+        },
+        commonjsOptions: {
+            include: [/packages/, /node_modules/],
+        },
     },
     test: {
         globals: true, // required for @testing-library/jest-dom extensions

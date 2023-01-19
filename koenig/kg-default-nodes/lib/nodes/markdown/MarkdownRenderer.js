@@ -1,4 +1,4 @@
-const markdownHtmlRenderer = require('@tryghost/kg-markdown-html-renderer');
+import markdownHtmlRenderer from '@tryghost/kg-markdown-html-renderer';
 
 export function renderMarkdownNodeToDOM(node, options = {}) {
     /* c8 ignore start */

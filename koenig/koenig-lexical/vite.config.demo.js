@@ -10,7 +10,13 @@ export default defineConfig({
         react()
     ],
     base: '/',
+    optimizeDeps: {
+        include: ['@tryghost/kg-markdown-html-renderer', '@tryghost/kg-simplemde']
+    },
     build: {
+        commonjsOptions: {
+            include: [/packages/, /node_modules/],
+        },
         sourcemap: true,
         rollupOptions: {
             input: {
