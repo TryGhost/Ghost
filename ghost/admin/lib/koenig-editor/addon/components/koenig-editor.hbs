@@ -67,11 +67,10 @@
     @editor={{this.editor}}
     @editorRange={{this.selectedRange}}
     @snippets={{this.snippets}}
-    @deleteSnippet={{this.deleteSnippet}}
     @replaceWithCardSection={{action "replaceWithCardSection"}}
     @replaceWithPost={{action "replaceWithPost"}}
     @openSelectorComponent={{action "openSelectorComponent"}}
-    @postType={{@postType}}
+    @menuItems={{card-menu-items postType=@postType snippets=this.snippets deleteSnippet=this.deleteSnippet}}
 />
 
 {{!-- slash menu popup --}}
@@ -79,11 +78,10 @@
     @editor={{this.editor}}
     @editorRange={{this.selectedRange}}
     @snippets={{this.snippets}}
-    @deleteSnippet={{this.deleteSnippet}}
     @replaceWithCardSection={{action "replaceWithCardSection"}}
     @replaceWithPost={{action "replaceWithPost"}}
     @openSelectorComponent={{action "openSelectorComponent"}}
-    @postType={{@postType}}
+    @menuItems={{card-menu-items postType=@postType snippets=this.snippets deleteSnippet=this.deleteSnippet}}
 />
 
 {{!-- all component cards wormholed into the editor canvas --}}
