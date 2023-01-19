@@ -61,10 +61,11 @@ class MentionSendingService {
     async send({source, target, endpoint}) {
         logging.info('[Webmention] Sending webmention from ' + source.href + ' to ' + target.href + ' via ' + endpoint.href);
         const response = await this.#externalRequest.post(endpoint.href, {
-            form: {
+            body: {
                 source: source.href,
                 target: target.href
             },
+            form: true,
             throwHttpErrors: false,
             maxRedirects: 10,
             followRedirect: true,

@@ -319,13 +319,13 @@ describe('MentionSendingService', function () {
         it('Can handle 202 accepted responses', async function () {
             const scope = nock('https://example.org')
                 .persist()
-                .post('/webmentions-test')
+                .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}`)
                 .reply(202);
 
             const service = new MentionSendingService({externalRequest});
             await service.send({
-                source: new URL('https://example.com'),
-                target: new URL('https://example.com'),
+                source: new URL('https://example.com/source'),
+                target: new URL('https://target.com/target'),
                 endpoint: new URL('https://example.org/webmentions-test')
             });
             assert(scope.isDone());
@@ -334,13 +334,13 @@ describe('MentionSendingService', function () {
         it('Can handle 201 created responses', async function () {
             const scope = nock('https://example.org')
                 .persist()
-                .post('/webmentions-test')
+                .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}`)
                 .reply(201);
 
             const service = new MentionSendingService({externalRequest});
             await service.send({
-                source: new URL('https://example.com'),
-                target: new URL('https://example.com'),
+                source: new URL('https://example.com/source'),
+                target: new URL('https://target.com/target'),
                 endpoint: new URL('https://example.org/webmentions-test')
             });
             assert(scope.isDone());
@@ -354,8 +354,8 @@ describe('MentionSendingService', function () {
 
             const service = new MentionSendingService({externalRequest});
             await assert.rejects(service.send({
-                source: new URL('https://example.com'),
-                target: new URL('https://example.com'),
+                source: new URL('https://example.com/source'),
+                target: new URL('https://target.com/target'),
                 endpoint: new URL('https://example.org/webmentions-test')
             }), /sending failed/);
             assert(scope.isDone());
@@ -369,8 +369,8 @@ describe('MentionSendingService', function () {
 
             const service = new MentionSendingService({externalRequest});
             await assert.rejects(service.send({
-                source: new URL('https://example.com'),
-                target: new URL('https://example.com'),
+                source: new URL('https://example.com/source'),
+                target: new URL('https://target.com/target'),
                 endpoint: new URL('https://example.org/webmentions-test')
             }), /sending failed/);
             assert(scope.isDone());
@@ -384,8 +384,8 @@ describe('MentionSendingService', function () {
 
             const service = new MentionSendingService({externalRequest});
             await assert.rejects(service.send({
-                source: new URL('https://example.com'),
-                target: new URL('https://example.com'),
+                source: new URL('https://example.com/source'),
+                target: new URL('https://target.com/target'),
                 endpoint: new URL('https://example.org/webmentions-test')
             }), /network error/);
             assert(scope.isDone());
@@ -420,8 +420,8 @@ describe('MentionSendingService', function () {
         it('Does not send to private IP', async function () {
             const service = new MentionSendingService({externalRequest});
             await assert.rejects(service.send({
-                source: new URL('https://example.com'),
-                target: new URL('https://example.com'),
+                source: new URL('https://example.com/source'),
+                target: new URL('https://target.com/target'),
                 endpoint: new URL('http://localhost/webmentions')
             }), /non-permitted private IP/);
         });
@@ -431,8 +431,8 @@ describe('MentionSendingService', function () {
             // domaincontrol.com -> 127.0.0.1
             const service = new MentionSendingService({externalRequest});
             await assert.rejects(service.send({
-                source: new URL('https://example.com'),
-                target: new URL('https://example.com'),
+                source: new URL('https://example.com/source'),
+                target: new URL('https://target.com/target'),
                 endpoint: new URL('http://domaincontrol.com/webmentions')
             }), /non-permitted private IP/);
         });
