@@ -83,7 +83,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
 
 export function CodeBlock({code, language}) {
     return (
-        <div>
+        <div className="not-kg-prose">
             <pre className="rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900">
                 <code>
                     {code}
