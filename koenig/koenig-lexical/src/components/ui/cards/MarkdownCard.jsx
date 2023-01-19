@@ -1,14 +1,16 @@
 import React, {useRef, useEffect, useLayoutEffect} from 'react';
 import PropTypes from 'prop-types';
 import SimpleMDE from '@tryghost/kg-simplemde';
+import MarkdownRenderer from '@tryghost/kg-markdown-html-renderer';
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 
-export function MarkdownCard({value, onChange, isEditing}) {
+export function MarkdownCard({value, onChange, isEditing, onBlur = () => {}}) {
+    const markdown = MarkdownRenderer.render(value);
     return (
         <div>
             {isEditing
-                ? <MarkdownEditor value='Initial value' onBlur={() => {}} onChange={() => {}} />
-                : <div>{value}</div>
+                ? <MarkdownEditor value={value} onBlur={onBlur} onChange={onChange} />
+                : <div dangerouslySetInnerHTML={{__html: markdown}}></div>
             }
         </div>
     );

@@ -36,7 +36,7 @@ const Template = (args) => {
 
 export const Populated = Template.bind({});
 Populated.args = {
-    value: 'hey',
+    value: '# Title',
     isSelected: true,
     isEditing: true
 };
