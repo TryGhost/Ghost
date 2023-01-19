@@ -5,55 +5,27 @@
         </h2>
     </GhCanvasHeader>
     <section>
-        <div class="gh-mention-card">
-            <p class="gh-mention-your-post">Your post <a href="#" class="gh-mention-your-post-link">Norway’s Ambitious Plan to Designate 10 New National Parks</a> was mentioned in:</p>
-            <a href="#" class="gh-mention-container">
-                <div class="gh-mention-content">
-                    <h3 class="gh-mention-title">99 Good News Stories You Probably Didn't Hear About in 2022</h3>
-                    <p class="gh-mention-description">It was a year defined by a lingering pandemic, rampant inflation, unstable economies, multiple humanitarian crises, a summer of climate hell in many parts of Asia, Europe and North America, and more than anything else, the outbreak of a devastating war in Ukraine. Wherever you turned, it was hard to escape the sense that things were falling apart.</p>
-                    <div class="gh-mention-metadata">
-                        <img src="https://futurecrunch.com/content/images/size/w256h256/2022/12/Logo-Pip-Light-Square-1.png" alt="Future Crunch" class="gh-mention-icon">
-                        <span class="gh-mention-publisher">Future Crunch</span>
-                        <span class="gh-mention-author">Casey Johnson</span>
-                        <span class="gh-mention-timestamp">1 day ago</span>
+       {{#each this.mentionsList as |mention|}}
+            <div class="gh-mention-card">
+                {{!-- TODO: show the title of your post instead of a link --}}
+                {{!-- TODO: link to the post analytics page of your post --}}
+                <p class="gh-mention-your-post">Your post <a href="#" class="gh-mention-your-post-link">{{mention.target}}</a> was mentioned in:</p>
+                <a href="{{mention.source}}" class="gh-mention-container">
+                    <div class="gh-mention-content">
+                        <h3 class="gh-mention-title">{{mention.sourceTitle}}</h3>
+                        <p class="gh-mention-description">{{mention.sourceExcerpt}}</p>
+                        <div class="gh-mention-metadata">
+                            <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="gh-mention-icon">
+                            <span class="gh-mention-publisher">{{mention.sourceSiteTitle}}</span>
+                            <span class="gh-mention-author">{{mention.sourceAuthor}}</span>
+                            <span class="gh-mention-timestamp">{{gh-format-post-time mention.timestamp}}</span>
+                        </div>
                     </div>
-                </div>
-                <div class="gh-mention-thumbnail">
-                    <img src="https://futurecrunch.com/content/images/2022/12/Human-Tower-1.jpg" alt="Future Crunch">
-                </div>
-            </a>
-        </div>
-        <div class="gh-mention-card">
-            <p class="gh-mention-your-post">Your post <a href="#" class="gh-mention-your-post-link">23 Tips to Crush Your Career in 2023</a> was mentioned in:</p>
-            <a href="#" class="gh-mention-container">
-                <div class="gh-mention-content">
-                    <h3 class="gh-mention-title">Mozilla to explore healthy social media alternative</h3>
-                    <p class="gh-mention-description">In early 2023, Mozilla will stand up and test a publicly accessible instance in the Fediverse at Mozilla.Social. We're eager to join the community in growing, experimenting, and learning how we can together solve the technical, experience, and trustworthiness challenges inherent in hyper-scale social systems. Our intention is to contribute to the healthy and sustainable growth of a federated social space that doesn't just operate but thrives on its own terms, independent of profit- and control-motivated tech firms. An open, decentralized, and global social service that puts the needs of people first is not only possible, but it's absolutely necessary.</p>
-                    <div class="gh-mention-metadata">
-                        <img src="https://blog.mozilla.org/wp-content/themes/foxtail/assets/images/favicons/apple-touch-icon.png" alt="Mozilla" class="gh-mention-icon">
-                        <span class="gh-mention-publisher">Mozilla</span>
-                        <span class="gh-mention-author">John Doe</span>
-                        <span class="gh-mention-timestamp">2 days ago</span>
+                    <div class="gh-mention-thumbnail">
+                        <img src="{{mention.sourceFeaturedImage}}" alt="Mozilla">
                     </div>
-                </div>
-                <div class="gh-mention-thumbnail">
-                    <img src="https://blog.mozilla.org/wp-content/blogs.dir/278/files/2021/11/pocket_best_of_special_collections_stories_1200x800-1200x800.jpg" alt="Mozilla">
-                </div>
-            </a>
-        </div>
-        <div class="gh-mention-card">
-            <p class="gh-mention-your-post">Your post <a href="#" class="gh-mention-your-post-link">Airpods Pro 2 Review</a> was mentioned in:</p>
-            <a href="#" class="gh-mention-container">
-                <div class="gh-mention-content">
-                    <h3 class="gh-mention-title">https://www.welcometohellworld.com/we-had-a-really-good-scene-down-there-for-a-long-time/</h3>
-                    <div class="gh-mention-metadata">
-                        <span class="gh-mention-timestamp">2 days ago</span>
-                    </div>
-                </div>
-            </a>
-        </div>
+                </a>
+            </div>
+        {{/each}} 
     </section>
-    {{#each this.mentionsList as |mention|}}
-            <li>from: {{mention.source}} to {{mention.target}}</li>
-    {{/each}}
 </section>
