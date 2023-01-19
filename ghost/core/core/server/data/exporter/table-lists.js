@@ -37,6 +37,7 @@ const BACKUP_TABLES = [
     'members_created_events',
     'members_subscription_created_events',
     'members_newsletters',
+    'mentions',
     'comments',
     'comment_likes',
     'comment_reports',
