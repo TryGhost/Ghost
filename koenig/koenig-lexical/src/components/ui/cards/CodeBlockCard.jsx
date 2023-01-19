@@ -2,8 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CodeMirror from '@uiw/react-codemirror';
 import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
+import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {standardKeymap} from '@codemirror/commands';
 import {EditorView, lineNumbers, keymap} from '@codemirror/view';
+import {javascript} from '@codemirror/lang-javascript';
+import {tags} from '@lezer/highlight';
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
     const onChange = React.useCallback((value) => {
@@ -55,17 +58,23 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
         }
     });
 
+    const editorHighlightStyle = HighlightStyle.define([
+        {tag: tags.keyword, color: '#FF0000', fontWeight: 'bold'}
+    ]);
+
     return (
         <div className="not-kg-prose">
             <CodeMirror
                 value={code}
                 extensions={[
-                    editorCSS,
-                    lineNumbers(),
+                    syntaxHighlighting(editorHighlightStyle), // customizes syntax highlighting rules
+                    editorCSS, // customizes general editor appearance (does not include syntax highlighting)
+                    lineNumbers(), // adds line numbers to the gutter
                     minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
-                    keymap.of(standardKeymap)
+                    keymap.of(standardKeymap), // add back in standardKeymap, which doesn't include Mod+Enter
+                    javascript() // enable syntax highlighting for javascript
                 ]}
-                autoFocus={true}
+                autoFocus={true} // autofocus the editor whenever it is rendered
                 basicSetup={false} // basic setup includes unnecessary extensions
                 onChange={onChange}
             />
