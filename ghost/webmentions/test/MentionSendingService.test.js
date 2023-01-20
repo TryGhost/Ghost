@@ -6,6 +6,7 @@ const externalRequest = require('../../core/core/server/lib/request-external.js'
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {createModel} = require('./utils/index.js');
+const settingsCache = require('../../core/core/shared/settings-cache');
 
 describe('MentionSendingService', function () {
     let errorLogStub;
@@ -51,6 +52,17 @@ describe('MentionSendingService', function () {
             const stub = sinon.stub(service, 'sendAll');
             await service.sendForEditedPost({});
             sinon.assert.notCalled(stub);
+        });
+
+        it('Ignores if site is private', async function () {
+            const service = new MentionSendingService({
+                isEnabled: () => true
+            });
+            const settingsStub = sinon.stub(settingsCache, 'get');
+            settingsStub.withArgs('is_private').returns(true);
+            const sendingStub = sinon.stub(service, 'sendAll');
+            await service.sendForEditedPost({});
+            sinon.assert.notCalled(sendingStub);
         });
 
         it('Ignores draft posts', async function () {

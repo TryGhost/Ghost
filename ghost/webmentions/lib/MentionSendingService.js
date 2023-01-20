@@ -1,5 +1,6 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const settingsCache = require('../../core/core/shared/settings-cache');
 
 module.exports = class MentionSendingService {
     #discoveryService;
@@ -36,6 +37,10 @@ module.exports = class MentionSendingService {
     async sendForEditedPost(post) {
         try {
             if (!this.#isEnabled()) {
+                return;
+            }
+            // private sites should not send mentions
+            if (settingsCache.get('is_private')) {
                 return;
             }
             // TODO: we need to check old url and send webmentions in case the url changed of a post
