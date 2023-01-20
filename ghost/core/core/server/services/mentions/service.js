@@ -3,7 +3,8 @@ const WebmentionMetadata = require('./WebmentionMetadata');
 const {
     InMemoryMentionRepository,
     MentionsAPI,
-    MentionSendingService
+    MentionSendingService,
+    MentionDiscoveryService
 } = require('@tryghost/webmentions');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
@@ -21,6 +22,7 @@ module.exports = {
     async init() {
         const repository = new InMemoryMentionRepository();
         const webmentionMetadata = new WebmentionMetadata();
+        const discoveryService = new MentionDiscoveryService({externalRequest});
         const api = new MentionsAPI({
             repository,
             webmentionMetadata,
@@ -66,11 +68,7 @@ module.exports = {
         });
 
         const sendingService = new MentionSendingService({
-            discoveryService: {
-                getEndpoint: async () => {
-                    return new URL('https://site.ghost/webmentions/receive');
-                }
-            },
+            discoveryService,
             externalRequest,
             getSiteUrl: () => urlUtils.urlFor('home', true),
             getPostUrl: post => getPostUrl(post),
