@@ -1,7 +1,6 @@
 const {addTable} = require('../../utils');
 
-// stay below 
-const mentionsTable = addTable('mentions', {
+module.exports = addTable('mentions', {
     id: {type: 'string', maxlength: 24, nullable: false, primary: true},
     source: {type: 'string', maxlength: 2000, nullable: false},
     source_title: {type: 'string', maxlength: 2000, nullable: true},
@@ -16,8 +15,3 @@ const mentionsTable = addTable('mentions', {
     created_at: {type: 'dateTime', nullable: false},
     payload: {type: 'text', maxlength: 65535, nullable: true}
 });
-
-module.exports = {
-    up: mentionsTable.up,
-    down: mentionsTable.down
-};
