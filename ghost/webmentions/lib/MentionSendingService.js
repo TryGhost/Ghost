@@ -70,14 +70,7 @@ module.exports = class MentionSendingService {
             maxRedirects: 10,
             followRedirect: true,
             methodRewriting: false, // WARNING! this setting has a different meaning in got v12!
-            timeout: {
-                lookup: 200,
-                connect: 200,
-                secureConnect: 200,
-                socket: 1000,
-                send: 5000,
-                response: 1000
-            }
+            timeout: 10000
         });
         if (response.statusCode >= 200 && response.statusCode < 300) {
             return;
