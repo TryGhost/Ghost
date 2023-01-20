@@ -35,7 +35,7 @@
     "gulp-header": "*",
     "gulp-jsbeautifier": "*",
     "gulp-rename": "*",
-    "gulp-uglify": "3.0.1",
+    "gulp-uglify": "3.0.2",
     "vinyl-buffer": "*",
     "vinyl-source-stream": "*"
   },
