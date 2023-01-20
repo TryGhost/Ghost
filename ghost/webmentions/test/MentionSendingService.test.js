@@ -21,6 +21,11 @@ describe('MentionSendingService', function () {
         sinon.restore();
     });
 
+    after(function () {
+        nock.cleanAll();
+        nock.enableNetConnect();
+    });
+
     describe('listen', function () {
         it('Calls on post.edited', async function () {
             const service = new MentionSendingService({});

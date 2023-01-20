@@ -25,8 +25,9 @@ module.exports = {
         response: {
             format: 'plain'
         },
-        query(frame) {
-            return mentions.controller.receive(frame);
+        async query(frame) {
+            await mentions.controller.receive(frame);
+            return null;
         }
     }
 };
