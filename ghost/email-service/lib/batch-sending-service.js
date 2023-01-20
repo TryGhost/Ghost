@@ -4,8 +4,8 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    emailErrorPartialFailure: 'The email was only partially send',
-    emailError: 'Email failed to send'
+    emailErrorPartialFailure: 'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
+    emailError: 'An unexpected error occurred, please retry sending your newsletter.'
 };
 
 /**
