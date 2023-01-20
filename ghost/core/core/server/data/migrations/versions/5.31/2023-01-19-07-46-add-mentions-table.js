@@ -13,7 +13,7 @@ const mentionsTable = addTable('mentions', {
     target: {type: 'string', maxlength: 2000, nullable: false},
     target_post_id: {type: 'string', maxlength: 24, nullable: true, references: 'posts.id'},
     created_at: {type: 'dateTime', nullable: false},
-    updated_at: {type: 'dateTime', nullable: false},
+    updated_at: {type: 'dateTime', nullable: true},
     payload: {type: 'text', maxlength: 65535, fieldtype: 'long', nullable: true}
 });
 

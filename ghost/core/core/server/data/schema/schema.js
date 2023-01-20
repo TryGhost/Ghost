@@ -980,18 +980,18 @@ module.exports = {
             ['email_id', 'member_id']
         ]
     },
-    mentions: {
+    mentions_received: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         source: {type: 'string', maxlength: 2000, nullable: false},
-        title: {type: 'string', maxlength: 2000, nullable: false},
-        description: {type: 'string', maxlength: 2000, nullable: false},
-        author: {type: 'string', maxlength: 200, nullable: false},
-        publisher: {type: 'string', maxlength: 200, nullable: false},
-        thumbnail: {type: 'string', maxlength: 2000, nullable: false},
-        icon: {type: 'string', maxlength: 2000, nullable: false},
-        published_at: {type: 'dateTime', nullable: false},
+        title: {type: 'string', maxlength: 2000, nullable: true},
+        description: {type: 'string', maxlength: 2000, nullable: true},
+        author: {type: 'string', maxlength: 200, nullable: true},
+        publisher: {type: 'string', maxlength: 200, nullable: true},
+        thumbnail: {type: 'string', maxlength: 2000, nullable: true},
+        icon: {type: 'string', maxlength: 2000, nullable: true},
+        published_at: {type: 'dateTime', nullable: true},
         target: {type: 'string', maxlength: 2000, nullable: false},
-        target_post_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'posts.id', cascadeDelete: true},
+        target_post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', cascadeDelete: true},
         // @TODO should we use both target_url and target_id - assuming we map the target ID to the internal post ID that was mentioned?
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
