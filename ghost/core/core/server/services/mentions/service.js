@@ -1,3 +1,4 @@
+const ObjectID = require('bson-objectid').default;
 const MentionController = require('./MentionController');
 const WebmentionMetadata = require('./WebmentionMetadata');
 const {
@@ -11,6 +12,7 @@ const externalRequest = require('../../../server/lib/request-external.js');
 const urlUtils = require('../../../shared/url-utils');
 const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 const labs = require('../../../shared/labs');
+const urlService = require('../url');
 
 function getPostUrl(post) {
     const jsonModel = {};
@@ -27,7 +29,15 @@ module.exports = {
             repository,
             webmentionMetadata,
             resourceService: {
-                async getByURL() {
+                async getByURL(url) {
+                    const path = urlUtils.absoluteToRelative(url.href, {withoutSubdirectory: true});
+                    const resource = urlService.getResource(path);
+                    if (resource?.config?.type === 'posts') {
+                        return {
+                            type: 'post',
+                            id: ObjectID.createFromHexString(resource.data.id)
+                        };
+                    }
                     return {
                         type: null,
                         id: null
