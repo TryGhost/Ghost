@@ -1,4 +1,4 @@
-const MentionSendingService = require('../lib/MentionSendingService.js');
+const {MentionSendingService} = require('../');
 const assert = require('assert');
 const nock = require('nock');
 // non-standard to use externalRequest here, but this is required for the overrides in the libary, which we want to test for security reasons in combination with the package

@@ -4,14 +4,13 @@ const {
     InMemoryMentionRepository,
     MentionsAPI,
     MentionSendingService,
-    MentionsDiscoveryService
+    MentionDiscoveryService
 } = require('@tryghost/webmentions');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
 const urlUtils = require('../../../shared/url-utils');
 const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 const labs = require('../../../shared/labs');
-const MentionDiscoveryService = require('@tryghost/webmentions/lib/MentionDiscoveryService');
 
 function getPostUrl(post) {
     const jsonModel = {};

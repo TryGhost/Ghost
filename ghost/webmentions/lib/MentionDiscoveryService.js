@@ -10,7 +10,7 @@ module.exports = class MentionDiscoveryService {
 
     /**
      * Fetches the given URL to identify the webmention endpoint
-     * @param {URL} url 
+     * @param {URL} url
      * @returns {Promise<URL|null>}
      */
     async getEndpoint(url) {
@@ -18,7 +18,7 @@ module.exports = class MentionDiscoveryService {
             const response = await this.#externalRequest(url.href, {
                 throwHttpErrors: false,
                 followRedirects: true,
-                maxRedirects: 10,
+                maxRedirects: 10
             });
             if (response.statusCode === 404) {
                 throw new errors.BadRequestError({
@@ -63,7 +63,7 @@ module.exports = class MentionDiscoveryService {
         }
 
         const $ = cheerio.load(response.body);
- 
+
         // must be first <link> OR <a> element with rel=webmention
         href = $('a[rel="webmention"],link[rel="webmention"]').first().attr('href');
 

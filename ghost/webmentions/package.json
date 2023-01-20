@@ -27,7 +27,6 @@
   "dependencies": {
     "@tryghost/errors": "1.2.20",
     "@tryghost/logging": "2.3.6",
-    "cheerio": "^1.0.0-rc.12",
-    "node-fetch": "2"
+    "cheerio": "0.22.0"
   }
 }
