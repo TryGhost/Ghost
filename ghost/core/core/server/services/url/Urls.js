@@ -32,6 +32,9 @@ class Urls {
     /**
      * @description Add a url to the system.
      * @param {Object} options
+     * @param {import('./Resource')} options.resource - instance of the Resource class
+     * @param {string} options.generatorId
+     * @param {string} options.url
      */
     add(options) {
         const url = options.url;
