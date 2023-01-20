@@ -8,7 +8,7 @@ import {Modal} from '../Modal.jsx';
 export function MarkdownCard({value = '', onChange, isEditing, onBlur = () => {}}) {
     const markdown = MarkdownRenderer.render(value);
     return (
-        <div className="markdown-editor not-kg-prose">
+        <div className="markdown-editor">
             {isEditing
                 ? <MarkdownEditor value={value} onBlur={onBlur} onChange={onChange} />
                 : <div dangerouslySetInnerHTML={{__html: markdown}}></div>
@@ -161,7 +161,7 @@ function MarkdownEditor({
     }
 
     return (
-        <div>
+        <div className="not-kg-prose">
             <textarea ref={editorRef}></textarea>
 
             <MarkdownHelpDialog onClose={closeHelpDialog} isOpen={isHelpDialogOpen} />

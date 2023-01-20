@@ -9,7 +9,13 @@
         padding-top: 2px;
         z-index: 0;
         width: 100%;
-    
+
+    /* Ugly workaround to fix inheritance from `.koenig-lexical .kg-prose:where(div):not(:where(.not-kg-prose, [class~='not-kg-prose'] *))` breaking markdown editor */
+    div {
+        line-height: initial;
+        max-width: initial;
+    }
+
     /* ensure there's no flash of unstyled textarea while initializing */
     .markdown-editor textarea {
         opacity: 0;
@@ -48,7 +54,7 @@
     .editor-toolbar a.disabled:hover {
         border: none;
     }
-    
+
     .editor-toolbar .fa-check {
         margin-left: auto;
         position: relative;
@@ -72,7 +78,7 @@
         font-size: 9px;
         line-height: 9px;
     }
-    
+
     .editor-toolbar .separator:last-of-type {
         display: none;
     }
