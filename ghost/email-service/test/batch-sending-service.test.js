@@ -481,7 +481,7 @@ describe('Batch Sending Service', function () {
                 batches,
                 post: createModel({}),
                 newsletter: createModel({})
-            }), /Email failed to send/);
+            }), /An unexpected error occurred, please retry sending your newsletter/);
             sinon.assert.callCount(sendBatch, 101);
             const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
             assert.deepEqual(sendBatches, batches);
@@ -507,7 +507,7 @@ describe('Batch Sending Service', function () {
                 batches,
                 post: createModel({}),
                 newsletter: createModel({})
-            }), /The email was only partially send/);
+            }), /was only partially sent/);
             sinon.assert.callCount(sendBatch, 101);
             const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
             assert.deepEqual(sendBatches, batches);
