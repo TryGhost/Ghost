@@ -5,6 +5,7 @@
 @import 'tailwindcss/components';
 @import './components/koenig-lexical';
 @import './components/kg-prose';
+@import './components/simplemde';
 
 @import 'tailwindcss/utilities';
 
@@ -13,11 +14,19 @@
 
 /* TODO: will these clash with consuming apps? */
 :root {
+    --white: #FFF;
+
+    --grey-50: #FAFAFB;
     --grey-100: #F4F5F6;
     --grey-200: #EBEEF0;
     --grey-300: #DDE1E5;
+    --grey-400: #CED4D9;
     --grey-500: #AEB7C1;
+    --grey-600: #95A1AD;
+    --grey-700: #7C8B9A;
+    --grey-800: #626D79;
     --grey-900: #394047;
+
     --black: #15171A;
     
     --kg-breakout-adjustment: 0px;

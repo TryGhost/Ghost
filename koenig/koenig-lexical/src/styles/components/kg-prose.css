@@ -580,7 +580,7 @@
             font-style: italic;
             text-align: center;
             font-size: 2.4rem;
-            color: var(--midgrey-l1);
+            color: var(--grey-500);
         }
 
         :where(

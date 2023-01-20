@@ -1,0 +1,165 @@
+/* .koenig-lexical > .markdown-editor {
+    height: 100vh;
+} */
+
+.koenig-lexical .markdown-editor {
+
+        position: static;
+        overflow: visible;
+        padding-top: 2px;
+        z-index: 0;
+        width: 100%;
+    
+    /* ensure there's no flash of unstyled textarea while initializing */
+    .markdown-editor textarea {
+        opacity: 0;
+    }
+
+    .editor-toolbar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        z-index: 99999;
+        background: var(--white);
+        opacity: 1;
+        padding: 6px;
+        border-top: 1px solid var(--grey-200);
+    }
+
+    .editor-toolbar a {
+        color: var(--grey-900) !important;
+    }
+
+    .editor-toolbar a.active,
+    .editor-toolbar a:hover {
+        border-color: color-mod(var(--lightgrey) l(-5%));
+    }
+
+    .editor-toolbar a.disabled {
+        color: var(--lightgrey) !important;
+        pointer-events: none;
+    }
+
+    .editor-toolbar a.disabled:hover {
+        border: none;
+    }
+    
+    .editor-toolbar .fa-check {
+        margin-left: auto;
+        position: relative;
+        vertical-align: bottom;
+    }
+
+    .editor-toolbar .fa-check:before {
+        position: absolute;
+        right: 3px;
+        bottom: 4px;
+        font-size: 14px;
+        line-height: 14px;
+    }
+
+    .editor-toolbar .fa-check:after {
+        content: "abc";
+        position: absolute;
+        top: 6px;
+        left: 4px;
+        font-family: var(--font-family);
+        font-size: 9px;
+        line-height: 9px;
+    }
+    
+    .editor-toolbar .separator:last-of-type {
+        display: none;
+    }
+
+    .editor-toolbar i.separator {
+        border-right: none;
+        border-left: color-mod(var(--lightgrey) l(-3%)) 1px solid;
+    }
+
+    .CodeMirror {
+        overflow: visible;
+        padding: 0;
+        background: transparent;
+        border: none;
+    }
+
+    /* Prevent confusing select behaviour, see https://github.com/TryGhost/Ghost/issues/9356 */
+    .CodeMirror-code:not([contenteditable="true"]) {
+        user-select: none;
+    }
+
+    .CodeMirror-code .cm-link {
+        color: var(--blue);
+        text-decoration: none;
+    }
+
+    .CodeMirror-cursor {
+        border-width: 3px;
+        border-color: var(--blue);
+    }
+
+    /* fix visible scrollbars when OSX is set to show them */
+    .CodeMirror-scroll {
+        overflow: visible !important;
+    }
+
+    .CodeMirror-scroll:hover {
+        cursor: text;
+    }
+
+    /* prevent markdown content showing after the preview if the preview is shorter */
+    /* .CodeMirror-scroll {
+        display: none;
+    } */
+
+    .CodeMirror-wrap {
+        max-width: 740px;
+        margin-right: auto;
+        margin-left: auto;
+        border: none;
+        background: transparent;
+    }
+
+    .CodeMirror-wrap > div > textarea {
+        top: 0;
+        height: 26px;
+        min-height: 26px;
+        margin-bottom: -26px;
+        min-width: 0;
+    }
+
+    .CodeMirror pre {
+        padding: 0;
+        color: var(--grey-900);
+        font-family: "Consolas", monaco, monospace;
+        font-size: 1.6rem;
+    }
+
+    @media (max-width: 960px) {
+        .CodeMirror pre {
+            font-size: 1.4rem;
+        }
+    }
+
+    .CodeMirror .cm-strong {
+        color: var(--grey-900);
+    }
+
+    .CodeMirror .cm-url {
+        text-decoration: underline;
+    }
+
+    .CodeMirror-selectedtext {
+        color: #000 !important;
+    }
+
+    .CodeMirror-selected {
+        background: color-mod(var(--blue) lightness(+30%));
+    }
+}

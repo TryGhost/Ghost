@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Button} from './ButtonCard';
+import {Button} from '../Button';
 
 export const HEADER_COLORS = {
     dark: 'bg-black',
