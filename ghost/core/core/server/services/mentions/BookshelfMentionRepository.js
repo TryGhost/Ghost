@@ -1,4 +1,5 @@
 const {Mention} = require('@tryghost/webmentions');
+const logging = require('@tryghost/logging');
 
 /**
  * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IMentionRepository} IMentionRepository
@@ -33,6 +34,7 @@ module.exports = class TierRepository {
         try {
             payload = JSON.parse(model.get('payload'));
         } catch (err) {
+            logging.error(err);
             payload = {};
         }
         return Mention.create({
@@ -58,7 +60,6 @@ module.exports = class TierRepository {
     async getPage(options) {
         const page = await this.#MentionModel.findPage(options);
 
-        console.log(page);
         return {
             data: await Promise.all(page.data.map(model => this.#modelToMention(model))),
             meta: page.meta
@@ -103,16 +104,11 @@ module.exports = class TierRepository {
             payload: mention.payload ? JSON.stringify(mention.payload) : null
         };
 
-        console.log(mention.payload);
-        console.log(data.payload);
-
         const existing = await this.#MentionModel.findOne({id: data.id}, {require: false});
 
         if (!existing) {
-            console.log('adding');
             await this.#MentionModel.add(data);
         } else {
-            console.log('editing');
             await this.#MentionModel.edit(data, {
                 id: data.id
             });
