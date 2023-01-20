@@ -6,12 +6,16 @@ const sinon = require('sinon');
 const assert = require('assert');
 const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
-let agent;
 const _ = require('lodash');
 const {MailgunEmailProvider} = require('@tryghost/email-service');
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
 const configUtils = require('../../../utils/configUtils');
 const {settingsCache} = require('../../../../core/server/services/settings-helpers');
+const DomainEvents = require('@tryghost/domain-events');
+
+let agent;
+let stubbedSend;
+let frontendAgent;
 
 function sortBatches(a, b) {
     const aId = a.get('provider_id');
@@ -62,20 +66,68 @@ async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
     return emailModel;
 }
 
+async function sendEmail(settings, email_recipient_filter) {
+    // Prepare a post and email model
+    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+    const emailModel = await createPublishedPostEmail(settings, email_recipient_filter);
+
+    // Await sending job
+    await completedPromise;
+
+    await emailModel.refresh();
+    assert.equal(emailModel.get('status'), 'submitted');
+
+    // Get the email that was sent
+    return {emailModel, ...(await getLastEmail())};
+}
+
 async function retryEmail(emailId) {
     await agent.put(`emails/${emailId}/retry`)
         .expectStatus(200);
 }
 
+/**
+ * Returns the last email that was sent via the stub, with all recipient variables replaced
+ */
+async function getLastEmail() {
+    // Get the email body
+    sinon.assert.calledOnce(stubbedSend);
+    const messageData = stubbedSend.lastArg;
+    let html = messageData.html;
+    let plaintext = messageData.text;
+    const recipientVariables = JSON.parse(messageData['recipient-variables']);
+    const recipientData = recipientVariables[Object.keys(recipientVariables)[0]];
+
+    for (const [key, value] of Object.entries(recipientData)) {
+        html = html.replace(new RegExp(`%recipient.${key}%`, 'g'), value);
+        plaintext = plaintext.replace(new RegExp(`%recipient.${key}%`, 'g'), value);
+    }
+
+    return {
+        ...messageData,
+        html,
+        plaintext,
+        recipientData
+    };
+}
+
 describe('Batch sending tests', function () {
-    let stubbedSend;
+    let linkRedirectService, linkRedirectRepository, linkTrackingService, linkClickRepository;
+    let ghostServer;
 
     beforeEach(function () {
-        stubbedSend = async function () {
-            return {
-                id: 'stubbed-email-id'
-            };
-        };
+        MailgunEmailProvider.BATCH_SIZE = 100;
+        stubbedSend = sinon.fake.resolves({
+            id: 'stubbed-email-id'
+        });
+    });
+
+    afterEach(async function () {
+        configUtils.restore();
+        await models.Settings.edit([{
+            key: 'email_verification_required',
+            value: false
+        }], {context: {internal: true}});
     });
 
     before(async function () {
@@ -88,19 +140,30 @@ describe('Batch sending tests', function () {
         sinon.stub(MailgunClient.prototype, 'getInstance').returns({
             // @ts-ignore
             messages: {
-                create: async () => {
-                    return await stubbedSend();
+                create: async function () {
+                    return await stubbedSend.call(this, ...arguments);
                 }
             }
         });
 
-        agent = await agentProvider.getAdminAPIAgent();
+        const agents = await agentProvider.getAgentsWithFrontend();
+        agent = agents.adminAgent;
+        frontendAgent = agents.frontendAgent;
+        ghostServer = agents.ghostServer;
+
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
+
+        linkRedirectService = require('../../../../core/server/services/link-redirection');
+        linkRedirectRepository = linkRedirectService.linkRedirectRepository;
+
+        linkTrackingService = require('../../../../core/server/services/link-tracking');
+        linkClickRepository = linkTrackingService.linkClickRepository;
     });
 
-    after(function () {
+    after(async function () {
         mockManager.restore();
+        await ghostServer.stop();
     });
 
     it('Can send a scheduled post email', async function () {
@@ -528,6 +591,92 @@ describe('Batch sending tests', function () {
         configUtils.restore();
     });
 
-    // TODO: Link tracking
+    describe('Analytics', function () {
+        it('Adds link tracking to all links in a post', async function () {
+            const {emailModel, html, plaintext, recipientData} = await sendEmail();
+            const memberUuid = recipientData.uuid;
+            const member = await models.Member.findOne({uuid: memberUuid});
+
+            // Test if all links are replaced and contain the member id
+            const cheerio = require('cheerio');
+            const $ = cheerio.load(html);
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+
+            for (const el of $('a').toArray()) {
+                const href = $(el).attr('href');
+
+                if (href.includes('/unsubscribe/?uuid')) {
+                    assert(href.includes('?uuid=' + memberUuid), 'Subscribe link need to contain uuid, got ' + href);
+                    continue;
+                }
+
+                // Check if the link is a tracked link
+                assert(href.includes('?m=' + memberUuid), href + ' is not tracked');
+
+                // Check if this link is also present in the plaintext version (with the right replacements)
+                assert(plaintext.includes(href), href + ' is not present in the plaintext version');
+
+                // Check stored in the database
+                const u = new URL(href);
+                const link = links.find(l => l.from.pathname === u.pathname);
+                assert(link, 'Link model not created for ' + href);
+
+                // Mimic a click on a link
+                const path = u.pathname + u.search;
+                await frontendAgent.get(path)
+                    .expect('Location', link.to.href)
+                    .expect(302);
+
+                // Wait for the link clicks to be processed
+                await DomainEvents.allSettled();
+
+                const clickEvent = await linkClickRepository.getAll({member_id: member.id, link_id: link.link_id.toHexString()});
+                assert(clickEvent.length, 'Click event was not tracked for ' + link.from.href);
+            }
+
+            for (const link of links) {
+                // Check ref added to all replaced links
+                assert.match(link.to.search, /ref=/);
+            }
+        });
+
+        it('Does not add outbound refs if disabled', async function () {
+            mockManager.mockSetting('outbound_link_tagging', false);
+
+            const {emailModel, html} = await sendEmail();
+            assert.match(html, /\m=/);
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+
+            for (const link of links) {
+                // Check ref not added to all replaced links
+                assert.doesNotMatch(link.to.search, /ref=/);
+            }
+        });
+
+        // Remove this test once outboundLinkTagging goes GA
+        it('Does add outbound refs if disabled but flag is disabled', async function () {
+            mockManager.mockLabsDisabled('outboundLinkTagging');
+            mockManager.mockSetting('outbound_link_tagging', false);
+
+            const {emailModel, html} = await sendEmail();
+            assert.match(html, /\m=/);
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+
+            for (const link of links) {
+                // Check ref not added to all replaced links
+                assert.match(link.to.search, /ref=/);
+            }
+        });
+
+        it('Does not add link tracking if disabled', async function () {
+            mockManager.mockSetting('email_track_clicks', false);
+
+            const {emailModel, html} = await sendEmail();
+            assert.doesNotMatch(html, /\m=/);
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            assert.equal(links.length, 0);
+        });
+    });
+
     // TODO: Replacement fallbacks
 });
