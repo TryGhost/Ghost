@@ -21,10 +21,11 @@ class Resources {
      * @param {Object} options
      * @param {Object} [options.resources] - resources to initialize with instead of fetching them from the database
      * @param {Object} [options.queue] - instance of the Queue class
+     * @param {Object[]} [options.resourcesConfig] - resource config used when handling resource events and fetching
      */
-    constructor({resources = {}, queue} = {}) {
+    constructor({resources = {}, queue, resourcesConfig = []} = {}) {
         this.queue = queue;
-        this.resourcesConfig = [];
+        this.resourcesConfig = resourcesConfig;
         this.data = resources;
 
         this.listeners = [];
@@ -45,20 +46,6 @@ class Resources {
         });
 
         events.on(eventName, listener);
-    }
-
-    /**
-     * @description Initialize the resource config. We currently fetch the data straight via the the model layer,
-     *              but because Ghost supports multiple API versions, we have to ensure we load the correct data.
-     *
-     * @TODO: https://github.com/TryGhost/Ghost/issues/10360
-     */
-    initResourceConfig() {
-        if (!_.isEmpty(this.resourcesConfig)) {
-            return;
-        }
-
-        this.resourcesConfig = require('./config');
     }
 
     /**
@@ -440,7 +427,6 @@ class Resources {
 
         this.listeners = [];
         this.data = {};
-        this.resourcesConfig = null;
     }
 
     /**
