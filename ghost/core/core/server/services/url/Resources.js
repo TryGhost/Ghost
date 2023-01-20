@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:url:resources');
+const DomainEvents = require('@tryghost/domain-events');
+const {URLResourceUpdatedEvent} = require('@tryghost/dynamic-routing-events');
 const Resource = require('./Resource');
 const config = require('../../../shared/config');
 const models = require('../../models');
@@ -296,6 +298,25 @@ class Resources {
         debug('_onResourceUpdated', type);
 
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
+
+        if (resourceConfig && Object.keys(model._changed).length) {
+            const ignoredProperties = [...resourceConfig.modelOptions.exclude, 'updated_at'];
+            const containsRouteAffectingChanges = _.difference(Object.keys(model._changed), ignoredProperties).length !== 0;
+
+            if (!containsRouteAffectingChanges) {
+                const cachedResource = this.getByIdAndType(type, model.id);
+
+                if (cachedResource && Object.keys(model._changed).includes('updated_at')) {
+                    DomainEvents.dispatch(URLResourceUpdatedEvent.create(Object.assign(cachedResource.data, {
+                        resourceType: cachedResource.config.type,
+                        updated_at: model._changed.updated_at
+                    })));
+                }
+
+                debug('skipping _onResourceUpdated because only non-route-related properties changed');
+                return false;
+            }
+        }
 
         // NOTE: synchronous handling for post and pages so that their URL is available without a delay
         //       for more context and future improvements check https://github.com/TryGhost/Ghost/issues/10360
