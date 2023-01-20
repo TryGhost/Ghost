@@ -1,8 +1,7 @@
-// Portal container that can be used to render floating elements, outside of the editor
 import React from 'react';
-import {createPortal} from 'react-dom';
 import {$getNodeByKey, $createNodeSelection, $setSelection} from 'lexical';
 import UnsplashSelector from './file-selectors/Unsplash/UnsplashSelector';
+import Portal from './Portal';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import KoenigComposerContext from '../../context/KoenigComposerContext';
 import UnsplashService from '../../utils/services/unsplash';
@@ -33,9 +32,6 @@ const UnsplashModal = ({nodeKey, handleModalClose}) => {
             setLastScrollPos(0);
         }
     }, [zoomedImg, scrollPos, lastScrollPos]);
-
-    // Add selector for consuming apps to render into
-    const portalContainer = document.querySelector('.koenig-lexical');
 
     const closeModalHandler = () => {
         // remove the image node from the editor
@@ -175,26 +171,24 @@ const UnsplashModal = ({nodeKey, handleModalClose}) => {
         }
     };
 
-    if (!portalContainer) {
-        return null;
-    }
-    
-    return createPortal(
-        <UnsplashSelector
-            closeModal={closeModalHandler}
-            handleSearch={handleSearch}
-        >
-            <UnsplashGallery
-                galleryRef={galleryRef}
-                zoomed={zoomedImg}
-                isLoading={isLoading}
-                dataset={dataset}
-                selectImg={selectImg}
-                insertImage={insertImageToNode} 
-                error={UnsplashLib.error}
-            />
-        </UnsplashSelector>
-        , portalContainer);
+    return (
+        <Portal>
+            <UnsplashSelector
+                closeModal={closeModalHandler}
+                handleSearch={handleSearch}
+            >
+                <UnsplashGallery
+                    galleryRef={galleryRef}
+                    zoomed={zoomedImg}
+                    isLoading={isLoading}
+                    dataset={dataset}
+                    selectImg={selectImg}
+                    insertImage={insertImageToNode}
+                    error={UnsplashLib.error}
+                />
+            </UnsplashSelector>
+        </Portal>
+    );
 };
 
 export default UnsplashModal;
