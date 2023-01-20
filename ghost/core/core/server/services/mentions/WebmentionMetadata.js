@@ -12,8 +12,8 @@ module.exports = class WebmentionMetadata {
             title: data.metadata.title,
             excerpt: data.metadata.description,
             author: data.metadata.author,
-            image: new URL(data.metadata.thumbnail),
-            favicon: new URL(data.metadata.icon)
+            image: data.metadata.thumbnail ? new URL(data.metadata.thumbnail) : null,
+            favicon: data.metadata.icon ? new URL(data.metadata.icon) : null
         };
         return result;
     }
