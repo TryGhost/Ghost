@@ -256,7 +256,6 @@ const getWebmentionsAPIAgent = async () => {
     }
 };
 
-
 /**
  * Creates a GhostAPITestAgent, which is a drop-in substitution for supertest
  * It is automatically hooked up to the Ghost API so you can make requests to e.g.

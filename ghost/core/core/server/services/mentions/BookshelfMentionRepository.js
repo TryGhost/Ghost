@@ -17,7 +17,7 @@ const logging = require('@tryghost/logging');
 /**
  * @implements {IMentionRepository}
  */
-module.exports = class TierRepository {
+module.exports = class BookshelfMentionRepository {
     /** @type {Object} */
     #MentionModel;
 

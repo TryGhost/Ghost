@@ -221,7 +221,6 @@ class OEmbed {
         } catch (err) {
             // Log to avoid being blind to errors happenning in metascraper
             logging.error(err);
-            console.error(err);
             return this.unknownProvider(url);
         }
 

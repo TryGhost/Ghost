@@ -12,9 +12,9 @@ describe('Webmentions (receiving)', function () {
         nock.disableNetConnect();
     });
 
-    afterEach(function () {
+    after(function () {
         nock.cleanAll();
-        nock.disableNetConnect();
+        nock.enableNetConnect();
     });
 
     it('can receive a webmention', async function () {
