@@ -6,6 +6,9 @@ const {setupGhost, setupStripe, setupMailgun} = require('./e2e-browser-utils');
 const {chromium} = require('@playwright/test');
 const {startGhost} = require('../../utils/e2e-framework');
 const {stopGhost} = require('../../utils/e2e-utils');
+const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
+const sinon = require('sinon');
+const ObjectID = require('bson-objectid').default;
 
 const startWebhookServer = () => {
     const command = `stripe listen --forward-to ${config.getSiteUrl()}members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
@@ -49,10 +52,17 @@ const generateStripeIntegrationToken = async () => {
 };
 
 const stubMailgun = () => {
-    const rewire = require('rewire');
-    const mockMailgunClient = require('../../utils/mocks/MailgunClientMock');
-    const bulkEmail = rewire('../../../core/server/services/bulk-email/bulk-email-processor');
-    bulkEmail.__set__('mailgunClient', mockMailgunClient);
+    // We need to stub the Mailgun client before starting Ghost
+    sinon.stub(MailgunClient.prototype, 'getInstance').returns({
+        // @ts-ignore
+        messages: {
+            create: async function () {
+                return {
+                    id: `mailgun-mock-id-${ObjectID().toHexString()}`
+                };
+            }
+        }
+    });
 };
 
 /**
