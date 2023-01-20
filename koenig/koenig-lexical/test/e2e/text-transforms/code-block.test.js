@@ -17,7 +17,7 @@ describe('Renders code block node', async () => {
         await initialize({page});
     });
 
-    test('renders code block node', async function () {
+    test('renders code block node in edit mode', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
         await assertHTML(page, html`
@@ -25,7 +25,6 @@ describe('Renders code block node', async () => {
                 <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="codeblock">
                 </div>
             </div>
-            <div contenteditable="false" data-lexical-cursor="true"></div>
         `, {ignoreCardContents: true});
     });
 });

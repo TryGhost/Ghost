@@ -263,8 +263,10 @@ describe('Slash menu', async () => {
         it('has correct order when inserting after a card', async function () {
             await focusEditor(page);
             await page.keyboard.type('/hr');
+            await page.waitForSelector('li:first-child > [data-kg-card-menu-item="Divider"]');
             await page.keyboard.press('Enter');
             await page.keyboard.type('/img');
+            await page.waitForSelector('li:first-child > [data-kg-card-menu-item="Image"]');
             await page.keyboard.press('Enter');
 
             // image card retains focus after insert
@@ -275,7 +277,7 @@ describe('Slash menu', async () => {
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image"></div>
                 </div>
-                <p dir="ltr"><br /></p>
+                <p><br /></p>
             `, {ignoreCardContents: true});
         });
 
@@ -288,7 +290,7 @@ describe('Slash menu', async () => {
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image"></div>
                 </div>
-                <p dir="ltr"><br /></p>
+                <p><br /></p>
             `, {ignoreCardContents: true});
 
             expect(await page.evaluate(() => {

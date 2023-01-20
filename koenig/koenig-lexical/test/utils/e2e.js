@@ -1,8 +1,10 @@
 import {preview} from 'vite';
 import {expect} from 'vitest';
 import {chromium, webkit, firefox} from 'playwright';
-import {parseHTML} from 'linkedom';
+import jsdom from 'jsdom';
 import prettier from 'prettier';
+
+const {JSDOM} = jsdom;
 
 const BROWSER_NAME = process.env.browser || 'chromium';
 export const E2E_PORT = process.env.E2E_PORT || 3000;
@@ -103,7 +105,7 @@ export function prettifyHTML(string, options = {}) {
     output = output.replace(/"blob:(.*?)"/, '"blob:..."');
 
     if (options.ignoreCardContents || options.ignoreCardToolbarContents) {
-        const {document} = parseHTML(output);
+        const {document} = (new JSDOM(output)).window;
 
         const querySelectors = [];
         if (options.ignoreCardContents) {
@@ -114,10 +116,9 @@ export function prettifyHTML(string, options = {}) {
         }
 
         document.querySelectorAll(querySelectors.join(', ')).forEach((element) => {
-            for (const child of element.childNodes) {
-                child.remove();
-            }
+            element.innerHTML = '';
         });
+
         output = document.body.innerHTML;
     }
 

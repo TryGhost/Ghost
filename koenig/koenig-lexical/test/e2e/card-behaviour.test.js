@@ -108,10 +108,10 @@ describe('Card behaviour', async () => {
             await focusEditor(page);
             // TODO: Update this after setting to isEditing on creation
             await page.keyboard.type('```javascript ');
-    
+
             await page.click('div[data-kg-card="codeblock"]');
             await page.click('div[data-kg-card="codeblock"]');
-    
+
             expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
         });
 
@@ -123,7 +123,7 @@ describe('Card behaviour', async () => {
             await page.click('div[data-kg-card="codeblock"]');
             // Click to edit
             await page.click('div[data-kg-card="codeblock"]');
-    
+
             expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
         });
 
@@ -134,10 +134,10 @@ describe('Card behaviour', async () => {
             await page.keyboard.press('Enter');
             await page.keyboard.press('Enter');
             await page.keyboard.type('```javascript ');
-    
+
             await page.click('div[data-kg-card="codeblock"]');
             await page.click('div[data-kg-card="codeblock"]');
-    
+
             expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
 
             await page.click('p');
@@ -147,19 +147,24 @@ describe('Card behaviour', async () => {
         test('clicking on another card when a card is in edit mode selected new card and switches old card to display mode', async function () {
             await focusEditor(page);
             await page.keyboard.type('```python ');
+            await page.waitForSelector('[data-kg-card="codeblock"] [contenteditable="true"]');
+            await page.keyboard.press('Meta+Enter');
+            await page.waitForSelector('[data-kg-card="codeblock"][data-kg-card-selected="true"][data-kg-card-editing="false"]');
             await page.keyboard.press('Enter');
             await page.keyboard.type('```javascript ');
+            await page.waitForSelector('[data-kg-card="codeblock"] [contenteditable="true"]');
+            await page.keyboard.press('Meta+Enter');
+            await page.waitForSelector('[data-kg-card="codeblock"][data-kg-card-selected="true"][data-kg-card-editing="false"]');
 
             await assertHTML(page, html`
-                <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="codeblock">
-                    </div>
-                </div>
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
                     </div>
                 </div>
-                <div contenteditable="false" data-lexical-cursor="true"></div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="codeblock">
+                    </div>
+                </div>
             `, {ignoreCardContents: true});
 
             // Select the python card
