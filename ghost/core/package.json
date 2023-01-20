@@ -228,7 +228,7 @@
     "toml": "3.0.0"
   },
   "resolutions": {
-    "@elastic/elasticsearch": "8.5.0",
+    "@elastic/elasticsearch": "8.6.0",
     "@tryghost/logging": "2.4.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
