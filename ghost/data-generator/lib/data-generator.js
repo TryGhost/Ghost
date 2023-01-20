@@ -24,7 +24,8 @@ const {
     MembersPaidSubscriptionEventsImporter,
     MembersSubscriptionCreatedEventsImporter,
     MembersSubscribeEventsImporter,
-    MentionsImporter
+    MentionsImporter,
+    EmailsImporter
 } = tables;
 const path = require('path');
 const fs = require('fs/promises');
@@ -182,7 +183,7 @@ class DataGenerator {
             this.logger.info('No base data pack specified, starting random base data generation');
             const newslettersImporter = new NewslettersImporter(transaction);
             // First newsletter is free, second is paid
-            newsletters = await newslettersImporter.import({amount: 2, rows: ['sort_order']});
+            newsletters = await newslettersImporter.import({amount: 2, rows: ['name', 'sort_order']});
             newsletters.sort((a, b) => a.sort_order - b.sort_order);
 
             const postsImporter = new PostsImporter(transaction, {
@@ -308,7 +309,7 @@ class DataGenerator {
         const membersSubscribeEventsImporter = new MembersSubscribeEventsImporter(transaction, {newsletters, subscriptions});
         const membersSubscribeEvents = await membersSubscribeEventsImporter.importForEach(members, {
             amount: 2,
-            rows: ['member_id', 'newsletter_id']
+            rows: ['member_id', 'newsletter_id', 'created_at']
         });
 
         const membersNewslettersImporter = new MembersNewslettersImporter(transaction);
@@ -326,7 +327,8 @@ class DataGenerator {
         // Generate up to 4 webmentions per post
         await mentionsImporter.importForEach(posts, {amount: 4});
 
-        // TODO: Emails! (relies on posts & newsletters)
+        const emailsImporter = new EmailsImporter(transaction, {newsletters, members, membersSubscribeEvents});
+        await emailsImporter.importForEach(posts, {amount: 1});
 
         // TODO: Email clicks - redirect, members_click_events (relies on emails)
 

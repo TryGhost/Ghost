@@ -23,5 +23,6 @@ module.exports = {
     MembersPaidSubscriptionEventsImporter: require('./members-paid-subscription-events'),
     MembersSubscriptionCreatedEventsImporter: require('./members-subscription-created-events'),
     MembersSubscribeEventsImporter: require('./members-subscribe-events'),
-    MentionsImporter: require('./mentions')
+    MentionsImporter: require('./mentions'),
+    EmailsImporter: require('./emails')
 };
