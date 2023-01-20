@@ -2,11 +2,12 @@ const ObjectID = require('bson-objectid').default;
 const MentionController = require('./MentionController');
 const WebmentionMetadata = require('./WebmentionMetadata');
 const {
-    InMemoryMentionRepository,
     MentionsAPI,
     MentionSendingService,
     MentionDiscoveryService
 } = require('@tryghost/webmentions');
+const BookshelfMentionRepository = require('./BookshelfMentionRepository');
+const models = require('../../models');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
 const urlUtils = require('../../../shared/url-utils');
@@ -22,7 +23,9 @@ function getPostUrl(post) {
 module.exports = {
     controller: new MentionController(),
     async init() {
-        const repository = new InMemoryMentionRepository();
+        const repository = new BookshelfMentionRepository({
+            MentionModel: models.Mention
+        });
         const webmentionMetadata = new WebmentionMetadata();
         const discoveryService = new MentionDiscoveryService({externalRequest});
         const api = new MentionsAPI({
@@ -61,24 +64,6 @@ module.exports = {
         });
 
         this.controller.init({api});
-
-        const addMocks = () => {
-            if (!urlService.hasFinished()) {
-                setTimeout(addMocks, 100);
-                return;
-            }
-
-            this.controller.receive({
-                data: {
-                    source: 'https://brid.gy/repost/twitter/KiaKamgar/1615735511137624064/1615738476875366401',
-                    target: 'https://valid-url-for-your.site'
-                }
-            });
-
-            return;
-        };
-
-        addMocks();
 
         const sendingService = new MentionSendingService({
             discoveryService,
