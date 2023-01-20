@@ -45,7 +45,16 @@ module.exports = {
                 }
             },
             routingService: {
-                async pageExists() {
+                async pageExists(url) {
+                    const siteUrl = new URL(urlUtils.getSiteUrl());
+                    if (siteUrl.origin !== url.origin) {
+                        return false;
+                    }
+                    const subdir = urlUtils.getSubdir();
+                    if (subdir && !url.pathname.startsWith(subdir)) {
+                        return false;
+                    }
+
                     return true;
                 }
             }
