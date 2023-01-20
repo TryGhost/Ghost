@@ -80,7 +80,8 @@ module.exports = class PostLinkRepository {
         await this.#LinkRedirect.edit({
             post_id: postLink.post_id.toHexString()
         }, {
-            id: postLink.link_id.toHexString()
+            id: postLink.link_id.toHexString(),
+            importing: true // skip setting updated_at when linking a post to a link
         });
     }
 };
