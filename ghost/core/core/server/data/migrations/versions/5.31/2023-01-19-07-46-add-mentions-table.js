@@ -14,7 +14,7 @@ const mentionsTable = addTable('mentions', {
     resource_id: {type: 'string', maxlength: 24, nullable: true},
     resource_type: {type: 'string', maxlength: 50, nullable: true},
     created_at: {type: 'dateTime', nullable: false},
-    payload: {type: 'text', maxlength: 1000000000, nullable: true}
+    payload: {type: 'text', maxlength: 65535, nullable: true}
 });
 
 module.exports = {
