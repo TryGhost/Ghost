@@ -5,7 +5,7 @@ import MarkdownRenderer from '@tryghost/kg-markdown-html-renderer';
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import {Modal} from '../Modal.jsx';
 
-export function MarkdownCard({value, onChange, isEditing, onBlur = () => {}}) {
+export function MarkdownCard({value = '', onChange, isEditing, onBlur = () => {}}) {
     const markdown = MarkdownRenderer.render(value);
     return (
         <div>
