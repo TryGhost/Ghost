@@ -9,13 +9,13 @@ const {
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
 const urlUtils = require('../../../shared/url-utils');
-const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
+const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 const labs = require('../../../shared/labs');
 const urlService = require('../url');
 
 function getPostUrl(post) {
     const jsonModel = {};
-    url.forPost(post.id, jsonModel, {options: {}});
+    outputSerializerUrlUtil.forPost(post.id, jsonModel, {options: {}});
     return jsonModel.url;
 }
 module.exports = {
