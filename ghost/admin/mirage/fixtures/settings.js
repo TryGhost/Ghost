@@ -90,6 +90,9 @@ export default [
     setting('email', 'email_track_clicks', 'true'),
     setting('email', 'email_verification_required', 'false'),
 
+    // ANALYTICS
+    setting('email', 'outbound_link_tagging', 'true'),
+
     // AMP
     setting('amp', 'amp', 'false'),
     setting('amp', 'amp_gtag_id', null),

@@ -7,7 +7,7 @@ Object {
     "accent_color": "#FF1A75",
     "codeinjection_foot": null,
     "codeinjection_head": null,
-    "comments_enabled": null,
+    "comments_enabled": "off",
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "facebook": "ghost",

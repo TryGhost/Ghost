@@ -16,17 +16,23 @@ class MemberAttributionService {
      * @param {Object} deps.models.MemberCreatedEvent
      * @param {Object} deps.models.SubscriptionCreatedEvent
      * @param {() => boolean} deps.getTrackingEnabled
+     * @param {() => boolean} deps.getOutboundLinkTaggingEnabled
      * @param {() => string} deps.getSiteTitle
      */
-    constructor({attributionBuilder, models, getTrackingEnabled, getSiteTitle}) {
+    constructor({attributionBuilder, models, getTrackingEnabled, getOutboundLinkTaggingEnabled, getSiteTitle}) {
         this.models = models;
         this.attributionBuilder = attributionBuilder;
         this._getTrackingEnabled = getTrackingEnabled;
+        this._getOutboundLinkTaggingEnabled = getOutboundLinkTaggingEnabled;
         this._getSiteTitle = getSiteTitle;
     }
 
     get isTrackingEnabled() {
         return this._getTrackingEnabled();
+    }
+
+    get isOutboundLinkTaggingEnabled() {
+        return this._getOutboundLinkTaggingEnabled();
     }
 
     get siteTitle() {
@@ -95,15 +101,19 @@ class MemberAttributionService {
     }
 
     /**
-     * Add some parameters to a URL so that the frontend script can detect this and add the required records
-     * in the URLHistory.
+     * Add some parameters to a URL that points to a site, so that site can detect that the traffic is coming from a Ghost site or newsletter.
+     * Note that this is disabled if outboundLinkTagging setting is disabled.
      * @param {URL} url instance that will get updated
      * @param {Object} [useNewsletter] Use the newsletter name instead of the site name as referrer source
      * @returns {URL}
      */
-    addEmailSourceAttributionTracking(url, useNewsletter) {
+    addOutboundLinkTagging(url, useNewsletter) {
         // Create a deep copy
         url = new URL(url);
+
+        if (!this.isOutboundLinkTaggingEnabled) {
+            return url;
+        }
 
         if (url.searchParams.has('ref') || url.searchParams.has('utm_source') || url.searchParams.has('source')) {
             // Don't overwrite + keep existing source attribution
@@ -118,7 +128,7 @@ class MemberAttributionService {
 
         if (useNewsletter) {
             const name = slugify(useNewsletter.get('name'));
-            
+
             // If newsletter name ends with newsletter, don't add it again
             const ref = name.endsWith('newsletter') ? name : `${name}-newsletter`;
             url.searchParams.append('ref', ref);

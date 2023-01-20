@@ -238,13 +238,13 @@ class EmailRenderer {
 
                 if (isSite) {
                     // Add newsletter name as ref to the URL
-                    url = this.#memberAttributionService.addEmailSourceAttributionTracking(url, newsletter);
+                    url = this.#memberAttributionService.addOutboundLinkTagging(url, newsletter);
 
                     // Only add post attribution to our own site (because external sites could/should not process this information)
                     url = this.#memberAttributionService.addPostAttributionTracking(url, post);
                 } else {
                     // Add email source attribution without the newsletter name
-                    url = this.#memberAttributionService.addEmailSourceAttributionTracking(url);
+                    url = this.#memberAttributionService.addOutboundLinkTagging(url);
                 }
 
                 // Add link click tracking

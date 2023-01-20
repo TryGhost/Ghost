@@ -386,7 +386,7 @@ describe('Email renderer', function () {
             },
             linkReplacer,
             memberAttributionService: {
-                addEmailSourceAttributionTracking: (u, newsletter) => {
+                addOutboundLinkTagging: (u, newsletter) => {
                     u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
                     return u;
                 },

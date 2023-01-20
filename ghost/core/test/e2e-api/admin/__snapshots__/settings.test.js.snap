@@ -265,6 +265,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -615,6 +623,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -638,7 +654,7 @@ exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3522",
+  "content-length": "3608",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -911,6 +927,14 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
     },
     Object {
       "key": "members_enabled",
@@ -1208,6 +1232,14 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
     },
     Object {
       "key": "members_enabled",
@@ -1512,6 +1544,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1807,6 +1847,14 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
     },
     Object {
       "key": "members_enabled",
@@ -2169,6 +2217,14 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
     },
     Object {
       "key": "members_enabled",

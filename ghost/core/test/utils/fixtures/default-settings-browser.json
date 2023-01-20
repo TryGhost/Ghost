@@ -480,5 +480,15 @@
                 ]]
             }
         }
+    },
+    "analytics": {
+        "outbound_link_tagging": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
     }
 }

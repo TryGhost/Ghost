@@ -1,5 +1,6 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, find} from '@ember/test-helpers';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -61,5 +62,21 @@ describe('Acceptance: Settings - Analytics', function () {
         await click('[data-test-button="save-analytics-settings"]');
 
         expect(this.server.db.settings.findBy({key: 'members_track_sources'}).value).to.equal(false);
+    });
+
+    it('can manage outbound link tagging', async function () {
+        enableLabsFlag(this.server, 'outboundLinkTagging');
+        this.server.db.settings.update({key: 'outbound_link_tagging'}, {value: 'true'});
+
+        await visit('/settings/analytics');
+
+        expect(find('[data-test-checkbox="outbound-link-tagging"]')).to.be.checked;
+
+        await click('[data-test-label="outbound-link-tagging"]');
+        expect(find('[data-test-checkbox="outbound-link-tagging"]')).to.not.be.checked;
+
+        await click('[data-test-button="save-analytics-settings"]');
+
+        expect(this.server.db.settings.findBy({key: 'outbound_link_tagging'}).value).to.equal(false);
     });
 });
