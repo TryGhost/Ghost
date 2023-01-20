@@ -13,7 +13,7 @@ const mentionsTable = addTable('mentions', {
     target: {type: 'string', maxlength: 2000, nullable: false},
     resource_id: {type: 'string', maxlength: 24, nullable: true},
     created_at: {type: 'dateTime', nullable: false},
-    payload: {type: 'text', maxlength: 65535, fieldtype: 'long', nullable: true}
+    payload: {type: 'text', maxlength: 65535, nullable: true}
 });
 
 module.exports = {

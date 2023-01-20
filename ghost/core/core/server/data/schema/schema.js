@@ -990,10 +990,9 @@ module.exports = {
         source_publisher: {type: 'string', maxlength: 2000, nullable: true},
         source_featured_image: {type: 'string', maxlength: 2000, nullable: true},
         source_favicon: {type: 'string', maxlength: 2000, nullable: true},
-        published_at: {type: 'dateTime', nullable: true},
         target: {type: 'string', maxlength: 2000, nullable: false},
         resource_id: {type: 'string', maxlength: 24, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        payload: {type: 'text', maxlength: 65535, fieldtype: 'long', nullable: true}
+        payload: {type: 'text', maxlength: 65535, nullable: true}
     }
 };
