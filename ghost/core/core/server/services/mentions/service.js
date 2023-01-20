@@ -65,24 +65,6 @@ module.exports = {
 
         this.controller.init({api});
 
-        const addMocks = () => {
-            if (!urlService.hasFinished()) {
-                setTimeout(addMocks, 100);
-                return;
-            }
-
-            this.controller.receive({
-                data: {
-                    source: 'https://brid.gy/repost/twitter/KiaKamgar/1615735511137624064/1615738476875366401',
-                    target: 'https://valid-url-for-your.site'
-                }
-            });
-
-            return;
-        };
-
-        addMocks();
-
         const sendingService = new MentionSendingService({
             discoveryService,
             externalRequest,
