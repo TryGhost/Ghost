@@ -22,6 +22,8 @@ describe('Mention', function () {
                 'payload',
                 'resourceId',
                 'sourceTitle',
+                'sourceSiteTitle',
+                'sourceAuthor',
                 'sourceExcerpt',
                 'sourceFavicon',
                 'sourceFeaturedImage'
@@ -39,12 +41,8 @@ describe('Mention', function () {
                 {target: 'Not a valid target'},
                 {timestamp: 'Not a valid timestamp'},
                 {resourceId: 'Invalid resourceId'},
-                {sourceTitle: null},
                 {sourceTitle: 123},
-                {sourceTitle: Array.from({length: 200}).join('A')},
-                {sourceExcerpt: null},
                 {sourceExcerpt: 123},
-                {sourceExcerpt: Array.from({length: 3000}).join('A')},
                 {sourceFavicon: 'Invalid source favicon'},
                 {sourceFeaturedImage: 'Invalid source featured image'}
             ];
@@ -87,6 +85,25 @@ describe('Mention', function () {
                     ...localValidInput
                 });
             }
+        });
+
+        it('Will trim titles which are too long', async function () {
+            const mention = await Mention.create({
+                ...validInput,
+                sourceTitle: Array.from({length: 3000}).join('A')
+            });
+
+            assert(mention.sourceTitle.length === 2000);
+        });
+
+        it('Will default the title to the host of the source URL if missing', async function () {
+            const mention = await Mention.create({
+                ...validInput,
+                sourceTitle: null
+            });
+
+            assert(mention.sourceTitle);
+            assert(mention.sourceTitle === 'source.com');
         });
     });
 });

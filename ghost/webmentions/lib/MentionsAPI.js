@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const Mention = require('./Mention');
 
 /**
@@ -38,12 +39,59 @@ const Mention = require('./Mention');
  * @prop {(source: URL, target: URL) => Promise<Mention>} getBySourceAndTarget
  */
 
+/**
+ * @typedef {object} ResourceResult
+ * @prop {string | null} type
+ * @prop {import('bson-objectid').default | null} id
+ */
+
+/**
+ * @typedef {object} IResourceService
+ * @prop {(url: URL) => Promise<ResourceResult>} getByURL
+ */
+
+/**
+ * @typedef {object} IRoutingService
+ * @prop {(url: URL) => Promise<boolean>} pageExists
+ */
+
+/**
+ * @typedef {object} WebmentionMetadata
+ * @prop {string} siteTitle
+ * @prop {string} title
+ * @prop {string} excerpt
+ * @prop {string} author
+ * @prop {URL} image
+ * @prop {URL} favicon
+ */
+
+/**
+ * @typedef {object} IWebmentionMetadata
+ * @prop {(url: URL) => Promise<WebmentionMetadata>} fetch
+ */
+
 module.exports = class MentionsAPI {
     /** @type {IMentionRepository} */
     #repository;
+    /** @type {IResourceService} */
+    #resourceService;
+    /** @type {IRoutingService} */
+    #routingService;
+    /** @type {IWebmentionMetadata} */
+    #webmentionMetadata;
 
+    /**
+     * @param {object} deps
+     * @param {IMentionRepository} deps.repository
+     * @param {IResourceService} deps.resourceService
+     * @param {IRoutingService} deps.routingService
+     * @param {IWebmentionMetadata} deps.webmentionMetadata
+     */
     constructor(deps) {
         this.#repository = deps.repository;
+        this.#resourceService = deps.resourceService;
+        this.#routingService = deps.routingService;
+        this.#webmentionMetadata = deps.webmentionMetadata;
     }
 
     /**
@@ -81,27 +129,38 @@ module.exports = class MentionsAPI {
      * @returns {Promise<Mention>}
      */
     async processWebmention(webmention) {
-        const existing = await this.#repository.getBySourceAndTarget(
+        const targetExists = await this.#routingService.pageExists(webmention.target);
+
+        if (!targetExists) {
+            throw new errors.BadRequestError({
+                message: `${webmention.target} is not a valid URL for this site.`
+            });
+        }
+
+        const resourceInfo = await this.#resourceService.getByURL(webmention.target);
+
+        const metadata = await this.#webmentionMetadata.fetch(webmention.source);
+
+        let mention = await this.#repository.getBySourceAndTarget(
             webmention.source,
             webmention.target
         );
 
-        if (existing) {
-            await this.#repository.save(existing);
-            return existing;
+        if (!mention) {
+            mention = await Mention.create({
+                source: webmention.source,
+                target: webmention.target,
+                timestamp: new Date(),
+                payload: webmention.payload,
+                resourceId: resourceInfo.type === 'post' ? resourceInfo.id : null,
+                sourceTitle: metadata.title,
+                sourceSiteTitle: metadata.siteTitle,
+                sourceAuthor: metadata.author,
+                sourceExcerpt: metadata.excerpt,
+                sourceFavicon: metadata.favicon,
+                sourceFeaturedImage: metadata.image
+            });
         }
-
-        const mention = await Mention.create({
-            source: webmention.source,
-            target: webmention.target,
-            timestamp: new Date(),
-            payload: webmention.payload,
-            resourceId: null,
-            sourceTitle: 'Fake title',
-            sourceExcerpt: 'Wow, what an awesome article, blah blah blah',
-            sourceFavicon: null,
-            sourceFeaturedImage: null
-        });
 
         await this.#repository.save(mention);
 

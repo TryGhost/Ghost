@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test:unit": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-    "test": "yarn test:unit",
+    "test": "yarn test:unit && yarn test:translate",
+    "test:translate": "yarn translate:portal",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
@@ -25,6 +26,6 @@
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "i18next": "22.4.8"
+    "i18next": "22.4.9"
   }
 }

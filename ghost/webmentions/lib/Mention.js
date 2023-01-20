@@ -44,7 +44,19 @@ module.exports = class Mention {
         return this.#sourceTitle;
     }
 
-    /** @type {string} */
+    /** @type {string | null} */
+    #sourceSiteTitle;
+    get sourceSiteTitle() {
+        return this.#sourceSiteTitle;
+    }
+
+    /** @type {string | null} */
+    #sourceAuthor;
+    get sourceAuthor() {
+        return this.#sourceAuthor;
+    }
+
+    /** @type {string | null} */
     #sourceExcerpt;
     get sourceExcerpt() {
         return this.#sourceExcerpt;
@@ -71,6 +83,8 @@ module.exports = class Mention {
             payload: this.payload,
             resourceId: this.resourceId,
             sourceTitle: this.sourceTitle,
+            sourceSiteTitle: this.sourceSiteTitle,
+            sourceAuthor: this.sourceAuthor,
             sourceExcerpt: this.sourceExcerpt,
             sourceFavicon: this.sourceFavicon,
             sourceFeaturedImage: this.sourceFeaturedImage
@@ -86,6 +100,8 @@ module.exports = class Mention {
         this.#payload = data.payload;
         this.#resourceId = data.resourceId;
         this.#sourceTitle = data.sourceTitle;
+        this.#sourceSiteTitle = data.sourceSiteTitle;
+        this.#sourceAuthor = data.sourceAuthor;
         this.#sourceExcerpt = data.sourceExcerpt;
         this.#sourceFavicon = data.sourceFavicon;
         this.#sourceFeaturedImage = data.sourceFeaturedImage;
@@ -96,6 +112,7 @@ module.exports = class Mention {
      * @returns {Promise<Mention>}
      */
     static async create(data) {
+        /** @type ObjectID */
         let id;
         if (!data.id) {
             id = new ObjectID();
@@ -109,6 +126,7 @@ module.exports = class Mention {
             });
         }
 
+        /** @type URL */
         let source;
         if (data.source instanceof URL) {
             source = data.source;
@@ -116,6 +134,7 @@ module.exports = class Mention {
             source = new URL(data.source);
         }
 
+        /** @type URL */
         let target;
         if (data.target instanceof URL) {
             target = data.target;
@@ -123,6 +142,7 @@ module.exports = class Mention {
             target = new URL(data.target);
         }
 
+        /** @type Date */
         let timestamp;
         if (data.timestamp instanceof Date) {
             timestamp = data.timestamp;
@@ -140,6 +160,7 @@ module.exports = class Mention {
         let payload;
         payload = data.payload ? JSON.parse(JSON.stringify(data.payload)) : null;
 
+        /** @type {ObjectID | null} */
         let resourceId = null;
         if (data.resourceId) {
             if (data.resourceId instanceof ObjectID) {
@@ -149,9 +170,19 @@ module.exports = class Mention {
             }
         }
 
-        const sourceTitle = validateString(data.sourceTitle, 191, 'sourceTitle');
-        const sourceExcerpt = validateString(data.sourceExcerpt, 1000, 'sourceExcerpt');
+        /** @type {string} */
+        let sourceTitle = validateString(data.sourceTitle, 2000, 'sourceTitle');
+        if (sourceTitle === null) {
+            sourceTitle = source.host;
+        }
+        /** @type {string | null} */
+        const sourceExcerpt = validateString(data.sourceExcerpt, 2000, 'sourceExcerpt');
+        /** @type {string | null} */
+        const sourceSiteTitle = validateString(data.sourceSiteTitle, 2000, 'sourceSiteTitle');
+        /** @type {string | null} */
+        const sourceAuthor = validateString(data.sourceAuthor, 2000, 'sourceAuthor');
 
+        /** @type {URL | null} */
         let sourceFavicon = null;
         if (data.sourceFavicon instanceof URL) {
             sourceFavicon = data.sourceFavicon;
@@ -159,6 +190,7 @@ module.exports = class Mention {
             sourceFavicon = new URL(data.sourceFavicon);
         }
 
+        /** @type {URL | null} */
         let sourceFeaturedImage = null;
         if (data.sourceFeaturedImage instanceof URL) {
             sourceFeaturedImage = data.sourceFeaturedImage;
@@ -174,6 +206,8 @@ module.exports = class Mention {
             payload,
             resourceId,
             sourceTitle,
+            sourceSiteTitle,
+            sourceAuthor,
             sourceExcerpt,
             sourceFavicon,
             sourceFeaturedImage
@@ -183,9 +217,7 @@ module.exports = class Mention {
 
 function validateString(value, maxlength, name) {
     if (!value) {
-        throw new ValidationError({
-            message: `Missing ${name} for Mention`
-        });
+        return null;
     }
 
     if (typeof value !== 'string') {
@@ -194,11 +226,5 @@ function validateString(value, maxlength, name) {
         });
     }
 
-    if (value.length > maxlength) {
-        throw new ValidationError({
-            message: `${name} must be less than ${maxlength + 1} characters`
-        });
-    }
-
-    return value;
+    return value.trim().slice(0, maxlength);
 }
