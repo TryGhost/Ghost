@@ -100,7 +100,7 @@ module.exports = class TierRepository {
             source_favicon: mention.sourceFavicon?.href,
             target: mention.target.href,
             resource_id: mention.resourceId?.toHexString(),
-            resource_type: 'post',
+            resource_type: mention.resourceId ? 'post' : null,
             payload: mention.payload ? JSON.stringify(mention.payload) : null
         };
 

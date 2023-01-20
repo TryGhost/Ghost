@@ -116,7 +116,7 @@ class OEmbed {
     /**
      * @param {string} url
      * @param {Object} options
-     * 
+     *
      * @returns {Promise<{url: string, body: any, headers: any}>}
      */
     async fetchPage(url, options) {
@@ -134,7 +134,7 @@ class OEmbed {
 
     /**
      * @param {string} url
-     * 
+     *
      * @returns {Promise<{url: string, body: string}>}
      */
     async fetchPageHtml(url) {
@@ -180,7 +180,7 @@ class OEmbed {
 
     /**
      * @param {string} url
-     * 
+     *
      * @returns {Promise<{url: string, body: Object}>}
      */
     async fetchPageJson(url) {
@@ -195,11 +195,11 @@ class OEmbed {
             url: pageUrl
         };
     }
-    
+
     /**
      * @param {string} url
      * @param {string} html
-     * 
+     *
      * @returns {Promise<Object>}
      */
     async fetchBookmarkData(url, html) {
@@ -215,12 +215,13 @@ class OEmbed {
         ]);
 
         let scraperResponse;
-        
+
         try {
             scraperResponse = await metascraper({html, url});
         } catch (err) {
             // Log to avoid being blind to errors happenning in metascraper
             logging.error(err);
+            console.error(err);
             return this.unknownProvider(url);
         }
 
@@ -383,7 +384,7 @@ class OEmbed {
 
             // attempt to fetch oembed
 
-            // In case response was a redirect, see if we were 
+            // In case response was a redirect, see if we were
             // redirected to a known oembed
             if (pageUrl !== url) {
                 const {url: providerUrl, provider} = findUrlWithProvider(pageUrl);

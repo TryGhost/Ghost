@@ -232,6 +232,32 @@ const getMembersAPIAgent = async () => {
 };
 
 /**
+ * Creates a MembersAPITestAgent which is a drop-in substitution for supertest
+ * It is automatically hooked up to the Members API so you can make requests to e.g.
+ * agent.get('/webhooks/stripe/') without having to worry about URL paths
+ *
+ * @returns {Promise<InstanceType<GhostAPITestAgent>>} agent
+ */
+const getWebmentionsAPIAgent = async () => {
+    const bootOptions = {
+        frontend: true
+    };
+    try {
+        const app = await startGhost(bootOptions);
+        const originURL = configUtils.config.get('url');
+
+        return new GhostAPITestAgent(app, {
+            apiURL: '/webmentions/',
+            originURL
+        });
+    } catch (error) {
+        error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
+    }
+};
+
+
+/**
  * Creates a GhostAPITestAgent, which is a drop-in substitution for supertest
  * It is automatically hooked up to the Ghost API so you can make requests to e.g.
  * agent.get('/well-known/jwks.json') without having to worry about URL paths
@@ -380,6 +406,7 @@ module.exports = {
     agentProvider: {
         getAdminAPIAgent,
         getMembersAPIAgent,
+        getWebmentionsAPIAgent,
         getContentAPIAgent,
         getAgentsForMembers,
         getGhostAPIAgent,
