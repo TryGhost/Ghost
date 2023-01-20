@@ -2,11 +2,12 @@ const ObjectID = require('bson-objectid').default;
 const MentionController = require('./MentionController');
 const WebmentionMetadata = require('./WebmentionMetadata');
 const {
-    InMemoryMentionRepository,
     MentionsAPI,
     MentionSendingService,
     MentionDiscoveryService
 } = require('@tryghost/webmentions');
+const BookshelfMentionRepository = require('./BookshelfMentionRepository');
+const models = require('../../models');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
 const urlUtils = require('../../../shared/url-utils');
@@ -22,7 +23,9 @@ function getPostUrl(post) {
 module.exports = {
     controller: new MentionController(),
     async init() {
-        const repository = new InMemoryMentionRepository();
+        const repository = new BookshelfMentionRepository({
+            MentionModel: models.Mention
+        });
         const webmentionMetadata = new WebmentionMetadata();
         const discoveryService = new MentionDiscoveryService({externalRequest});
         const api = new MentionsAPI({
