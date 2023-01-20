@@ -6,7 +6,7 @@ module.exports = createTransactionalMigration(
         const rows = await knex
             .pluck('m.id')
             .from('members AS m')
-            .innerJoin('suppressions AS s', 'm.email', '=', 's.email_address');
+            .innerJoin('suppressions AS s', 'm.email', '=', 's.email');
 
         if (rows.length === 0) {
             logging.info(`No suppressed emails found - skipping migration`);
