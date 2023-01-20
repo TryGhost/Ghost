@@ -9,7 +9,7 @@
             <div class="gh-mention-card">
                 {{!-- TODO: show the title of your post instead of a link --}}
                 {{!-- TODO: link to the post analytics page of your post --}}
-                <p class="gh-mention-your-post">Your post <a href="#" class="gh-mention-your-post-link">{{mention.target}}</a> was mentioned in:</p>
+                <p class="gh-mention-your-post">Your post <a href={{mention.target}} class="gh-mention-your-post-link">{{mention.target}}</a> was mentioned in:</p>
                 <a href="{{mention.source}}" class="gh-mention-container" rel="noreferrer noopener" target="_blank">
                     <div class="gh-mention-content">
                         <h3 class="gh-mention-title">{{mention.sourceTitle}}</h3>
