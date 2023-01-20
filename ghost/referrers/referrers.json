@@ -403,6 +403,14 @@
       "medium": "social",
       "source": "LinkedIn"
   },
+  "www.linkedin.com": {
+      "medium": "social",
+      "source": "LinkedIn"
+  },
+  "com.linkedin.android": {
+      "medium": "social",
+      "source": "LinkedIn"
+  },
   "lnkd.in": {
       "medium": "social",
       "source": "LinkedIn"
@@ -3156,6 +3164,10 @@
       "source": "Google"
   },
   "encrypted.google.com": {
+      "medium": "search",
+      "source": "Google"
+  },
+  "com.google.android.googlequicksearchbox": {
       "medium": "search",
       "source": "Google"
   },
