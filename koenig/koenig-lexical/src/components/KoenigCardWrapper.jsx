@@ -23,6 +23,7 @@ import {CardWrapper} from './ui/CardWrapper';
 const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
     const [editor] = useLexicalComposerContext();
     const [isSelected, setSelected, clearSelected] = useLexicalNodeSelection(nodeKey);
+    const [hasEverBeenSelected, setHasEverBeenSelected] = React.useState(false);
     const [isEditing, setEditing] = React.useState(false);
     const [selection, setSelection] = React.useState(null);
     const [cardType, setCardType] = React.useState(null);
@@ -33,6 +34,9 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
         editor.getEditorState().read(() => {
             const cardNode = $getNodeByKey(nodeKey);
             setCardType(cardNode.getType());
+            if (cardNode.hasEditMode?.()) {
+                setEditing(true);
+            }
         });
 
         // We only do this for init
@@ -60,8 +64,14 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                         latestSelection.getNodes()[0].getKey() === nodeKey;
                 });
 
+                // As soon as the card is selected the firs ttime, set hasEverBeenSelectedTrue
+                if (cardIsSelected) {
+                    setHasEverBeenSelected(true);
+                }
+
                 // ensure edit mode is removed any time the card loses selection
-                if ((isEditing) && !cardIsSelected) {
+                // unless the card has NEVER been selected before
+                if ((isEditing) && !cardIsSelected && hasEverBeenSelected) {
                     setEditing(false);
                 }
             }),
@@ -219,7 +229,7 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                 COMMAND_PRIORITY_EDITOR
             )
         );
-    }, [editor, isSelected, isEditing, setSelected, clearSelected, setEditing, nodeKey]);
+    }, [editor, hasEverBeenSelected, isSelected, isEditing, setSelected, clearSelected, setEditing, nodeKey]);
 
     return (
         <CardContext.Provider value={{

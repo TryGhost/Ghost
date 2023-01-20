@@ -41,17 +41,10 @@ describe('Code Block card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
-                    <div>
-                        <figure>
-                            <pre><code>&lt;script&gt;&lt;/script&gt;</code></pre>
-                            <div><span>javascript</span></div>
-                            <figcaption>A code block</figcaption>
-                        </figure>
-                    </div>
+                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="codeblock">
                 </div>
             </div>
-        `);
+        `, {ignoreCardContents: true});
     });
 
     test('renders code block card node', async function () {
@@ -60,14 +53,10 @@ describe('Code Block card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
-                    <div>
-                        <pre><code></code></pre>
-                        <div><span>javascript</span></div>
-                    </div>
+                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="codeblock">
                 </div>
             </div>
             <div contenteditable="false" data-lexical-cursor="true"></div>
-        `);
+        `, {ignoreCardContents: true});
     });
 });

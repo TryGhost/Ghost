@@ -152,23 +152,15 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
-                        <div>
-                            <pre><code class="language-python"></code></pre>
-                            <div><span>python</span></div>
-                        </div>
+                    <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="codeblock">
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
-                        <div>
-                            <pre><code class="language-javascript"></code></pre>
-                            <div><span>javascript</span></div>
-                        </div>
                     </div>
                 </div>
                 <div contenteditable="false" data-lexical-cursor="true"></div>
-            `);
+            `, {ignoreCardContents: true});
 
             // Select the python card
             await page.click('div[data-kg-card="codeblock"]');
@@ -1092,12 +1084,6 @@ describe('Card behaviour', async () => {
             await page.click('[data-kg-card="codeblock"]');
 
             expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
-            expect(await page.$('[data-kg-card-editing="false"]')).not.toBeNull();
-
-            await page.keyboard.press('Meta+Enter');
-
-            // card enters edit mode
-            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
             expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
 
             await page.keyboard.press('Meta+Enter');
@@ -1105,6 +1091,12 @@ describe('Card behaviour', async () => {
             // card exits edit mode
             expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
             expect(await page.$('[data-kg-card-editing="false"]')).not.toBeNull();
+
+            await page.keyboard.press('Meta+Enter');
+
+            // card enters edit mode
+            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
         });
     });
 });
