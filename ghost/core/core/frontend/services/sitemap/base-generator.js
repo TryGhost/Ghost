@@ -63,6 +63,12 @@ class BaseSiteMapGenerator {
         return sitemapXml;
     }
 
+    updateURL(datum) {
+        const url = this.nodeLookup[datum.id].url[0].loc;
+        this.removeUrl(url, datum);
+        this.addUrl(url, datum);
+    }
+
     addUrl(url, datum) {
         const node = this.createUrlNodeFromDatum(url, datum);
 
@@ -100,6 +106,12 @@ class BaseSiteMapGenerator {
         }
     }
 
+    /**
+     *
+     * @param {String} url
+     * @param {Object} datum
+     * @returns
+     */
     createUrlNodeFromDatum(url, datum) {
         let node;
         let imgNode;
