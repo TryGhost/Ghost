@@ -983,18 +983,18 @@ module.exports = {
     mentions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         source: {type: 'string', maxlength: 2000, nullable: false},
-        title: {type: 'string', maxlength: 2000, nullable: true},
-        description: {type: 'string', maxlength: 2000, nullable: true},
-        author: {type: 'string', maxlength: 200, nullable: true},
-        publisher: {type: 'string', maxlength: 200, nullable: true},
-        thumbnail: {type: 'string', maxlength: 2000, nullable: true},
-        icon: {type: 'string', maxlength: 2000, nullable: true},
+        source_title: {type: 'string', maxlength: 2000, nullable: true},
+        source_site_title: {type: 'string', maxlength: 2000, nullable: true},
+        source_excerpt: {type: 'string', maxlength: 2000, nullable: true},
+        source_author: {type: 'string', maxlength: 2000, nullable: true},
+        source_publisher: {type: 'string', maxlength: 2000, nullable: true},
+        source_featured_image: {type: 'string', maxlength: 2000, nullable: true},
+        source_favicon: {type: 'string', maxlength: 2000, nullable: true},
         published_at: {type: 'dateTime', nullable: true},
         target: {type: 'string', maxlength: 2000, nullable: false},
-        target_post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', cascadeDelete: true},
-        // @TODO should we use both target_url and target_id - assuming we map the target ID to the internal post ID that was mentioned?
-        created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        payload: {type: 'text', maxlength: 65535, fieldtype: 'long', nullable: true} // Assuming we want to store the full payload for the webmention
+        target_post_id: {type: 'string', maxlength: 24, nullable: true, references: 'posts.id'},
+        timestamp: {type: 'dateTime', nullable: false},
+        payload: {type: 'text', maxlength: 65535, fieldtype: 'long', nullable: true},
+        resource_id: {type: 'string', maxlength: 24, nullable: true}
     }
 };
