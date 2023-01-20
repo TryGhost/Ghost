@@ -24,7 +24,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "browserify": "16.2.3",
+    "browserify": "16.5.2",
     "debug": "*",
     "eslint": "4.19.1",
     "gulp": "*",
