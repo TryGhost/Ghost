@@ -20,10 +20,9 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import CardContext from '../context/CardContext';
 import {CardWrapper} from './ui/CardWrapper';
 
-const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
+const KoenigCardWrapperComponent = ({nodeKey, children, width, openInEditMode = false}) => {
     const [editor] = useLexicalComposerContext();
     const [isSelected, setSelected, clearSelected] = useLexicalNodeSelection(nodeKey);
-    const [hasEverBeenSelected, setHasEverBeenSelected] = React.useState(false);
     const [isEditing, setEditing] = React.useState(false);
     const [selection, setSelection] = React.useState(null);
     const [cardType, setCardType] = React.useState(null);
@@ -34,9 +33,6 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
         editor.getEditorState().read(() => {
             const cardNode = $getNodeByKey(nodeKey);
             setCardType(cardNode.getType());
-            if (cardNode.hasEditMode?.()) {
-                setEditing(true);
-            }
         });
 
         // We only do this for init
@@ -64,14 +60,8 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                         latestSelection.getNodes()[0].getKey() === nodeKey;
                 });
 
-                // As soon as the card is selected the firs ttime, set hasEverBeenSelectedTrue
-                if (cardIsSelected) {
-                    setHasEverBeenSelected(true);
-                }
-
                 // ensure edit mode is removed any time the card loses selection
-                // unless the card has NEVER been selected before
-                if ((isEditing) && !cardIsSelected && hasEverBeenSelected) {
+                if (isEditing && !cardIsSelected) {
                     setEditing(false);
                 }
             }),
@@ -229,7 +219,25 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                 COMMAND_PRIORITY_EDITOR
             )
         );
-    }, [editor, hasEverBeenSelected, isSelected, isEditing, setSelected, clearSelected, setEditing, nodeKey]);
+    }, [editor, isSelected, isEditing, setSelected, clearSelected, setEditing, nodeKey]);
+
+    // when openInEditMode is true the card node may have been created but not selected.
+    // make sure we reset the selection here
+    React.useEffect(() => {
+        if (openInEditMode) {
+            editor.update(() => {
+                const nodeSelection = $createNodeSelection();
+                nodeSelection.add(nodeKey);
+                $setSelection(nodeSelection);
+
+                const node = $getNodeByKey(nodeKey);
+                node.clearOpenInEditMode();
+            });
+
+            setSelected(true);
+            setEditing(true);
+        }
+    }, [editor, nodeKey, openInEditMode, setSelected, setEditing]);
 
     return (
         <CardContext.Provider value={{

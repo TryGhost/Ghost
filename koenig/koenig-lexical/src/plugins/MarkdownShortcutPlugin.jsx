@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     HEADING,
     ORDERED_LIST,
@@ -11,9 +10,6 @@ import {MarkdownShortcutPlugin as LexicalMarkdownShortcutPlugin} from '@lexical/
 import {$createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
 import {$isCodeBlockNode, $createCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
 import {$isImageNode, $createImageNode, ImageNode} from '../nodes/ImageNode';
-import {mergeRegister} from '@lexical/utils';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {$createNodeSelection, $setSelection} from 'lexical';
 
 export const HR = {
     dependencies: [HorizontalRuleNode],
@@ -54,7 +50,7 @@ export const CODE_BLOCK = {
     regExp: /^```(\w{1,10})?\s/,
     replace: (textNode, match, text) => {
         const language = text[1];
-        const codeBlockNode = $createCodeBlockNode({language});
+        const codeBlockNode = $createCodeBlockNode({language, _openInEditMode: true});
         textNode.replace(codeBlockNode);
     },
     type: 'element'
@@ -100,25 +96,5 @@ export const DEFAULT_TRANSFORMERS = [
 ];
 
 export default function MarkdownShortcutPlugin({transformers = DEFAULT_TRANSFORMERS} = {}) {
-    const [editor] = useLexicalComposerContext();
-
-    React.useEffect(() => {
-        return mergeRegister(
-            editor.registerMutationListener(CodeBlockNode, (nodes) => {
-                // When a CodeBlockNode is created, the selection moves to the root node
-                // Here we update the selection to include the new CodeBlockNode
-                for (let [key, value] of nodes) {
-                    if (value === 'created') {
-                        editor.update(() => {
-                            const selection = $createNodeSelection();
-                            selection.add(key);
-                            $setSelection(selection);
-                        });
-                    }
-                }
-            })
-        );
-    });
-
     return LexicalMarkdownShortcutPlugin({transformers});
 }

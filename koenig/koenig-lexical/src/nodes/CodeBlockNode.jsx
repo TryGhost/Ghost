@@ -41,9 +41,24 @@ function CodeBlockNodeComponent({nodeKey, caption, code, language}) {
 }
 
 export class CodeBlockNode extends BaseCodeBlockNode {
+    // transient properties used to control node behaviour
+    __openInEditMode = false;
+
+    constructor(dataset = {}, key) {
+        super(dataset, key);
+
+        const {_openInEditMode} = dataset;
+        this.__openInEditMode = _openInEditMode || false;
+    }
+
+    clearOpenInEditMode() {
+        const self = this.getWritable();
+        self.__openInEditMode = false;
+    }
+
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
+            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth} openInEditMode={this.__openInEditMode}>
                 <CodeBlockNodeComponent
                     nodeKey={this.getKey()}
                     caption={this.__caption}
