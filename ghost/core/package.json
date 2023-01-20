@@ -73,6 +73,7 @@
     "@tryghost/database-info": "0.3.14",
     "@tryghost/debug": "0.1.21",
     "@tryghost/domain-events": "0.0.0",
+    "@tryghost/dynamic-routing-events": "0.0.0",
     "@tryghost/email-analytics-provider-mailgun": "0.0.0",
     "@tryghost/email-analytics-service": "0.0.0",
     "@tryghost/email-content-generator": "0.0.0",

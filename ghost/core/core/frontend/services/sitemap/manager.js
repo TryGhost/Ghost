@@ -1,3 +1,5 @@
+const DomainEvents = require('@tryghost/domain-events');
+const {URLResourceUpdatedEvent} = require('@tryghost/dynamic-routing-events');
 const IndexMapGenerator = require('./index-generator');
 const PagesMapGenerator = require('./page-generator');
 const PostsMapGenerator = require('./post-generator');
@@ -27,6 +29,10 @@ class SiteMapManager {
             if (router.name === 'CollectionRouter') {
                 this.pages.addUrl(router.getRoute({absolute: true}), {id: router.identifier, staticRoute: false});
             }
+        });
+
+        DomainEvents.subscribe(URLResourceUpdatedEvent, (event) => {
+            this[event.data.resourceType].updateURL(event.data);
         });
 
         events.on('url.added', (obj) => {
