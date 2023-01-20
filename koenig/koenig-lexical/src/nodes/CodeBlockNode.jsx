@@ -9,7 +9,7 @@ import {$getNodeByKey} from 'lexical';
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_CODE_BLOCK_COMMAND} from '@tryghost/kg-default-nodes';
 
-function CodeBlockNodeComponent({nodeKey, code, language}) {
+function CodeBlockNodeComponent({nodeKey, caption, code, language}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
 
@@ -30,6 +30,7 @@ function CodeBlockNodeComponent({nodeKey, code, language}) {
     return (
         <CodeBlockCard
             nodeKey={nodeKey}
+            caption={caption}
             code={code}
             updateCode={updateCode}
             language={language}
@@ -45,6 +46,7 @@ export class CodeBlockNode extends BaseCodeBlockNode {
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
                 <CodeBlockNodeComponent
                     nodeKey={this.getKey()}
+                    caption={this.__caption}
                     code={this.__code}
                     language={this.__language}
                 />

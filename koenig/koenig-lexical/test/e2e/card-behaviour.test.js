@@ -104,7 +104,106 @@ describe('Card behaviour', async () => {
             `);
         });
 
-        test.todo('double-click puts card in edit mode');
+        test('double-click on an unselected card puts it into edit mode', async function () {
+            await focusEditor(page);
+            // TODO: Update this after setting to isEditing on creation
+            await page.keyboard.type('```javascript ');
+    
+            await page.click('div[data-kg-card="codeblock"]');
+            await page.click('div[data-kg-card="codeblock"]');
+    
+            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+        });
+
+        test('single clicking on a selected card puts it into edit mode', async function () {
+            await focusEditor(page);
+            // TODO: Update this after setting to isEditing on creation
+            await page.keyboard.type('```javascript ');
+            // Click to select
+            await page.click('div[data-kg-card="codeblock"]');
+            // Click to edit
+            await page.click('div[data-kg-card="codeblock"]');
+    
+            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+        });
+
+        test('clicking outside the edit mode card switches back to display mode', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('```javascript ');
+    
+            await page.click('div[data-kg-card="codeblock"]');
+            await page.click('div[data-kg-card="codeblock"]');
+    
+            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+
+            await page.click('p');
+            expect (await page.$('[data-kg-card-editing="false"]'));
+        });
+
+        test('clicking on another card when a card is in edit mode selected new card and switches old card to display mode', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('```python ');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('```javascript ');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
+                        <div>
+                            <pre><code class="language-python"></code></pre>
+                            <div><span>python</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
+                        <div>
+                            <pre><code class="language-javascript"></code></pre>
+                            <div><span>javascript</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div contenteditable="false" data-lexical-cursor="true"></div>
+            `);
+
+            // Select the python card
+            await page.click('div[data-kg-card="codeblock"]');
+            // Click the selected card again to enter editing mode
+            await page.click('div[data-kg-card-selected="true"]');
+
+            // Now the first card should be editing and the second card should not be
+            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+            expect (await page.$('[data-kg-card-editing="false"]')).not.toBeNull();
+
+            // Click the card that's not currently editing (second card)
+            await page.click('div[data-kg-card-editing="false"]');
+            // Now neither card should be editing
+            expect (await page.$('[data-kg-card-editing="true"]')).toBeNull();
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
+                        <div>
+                            <pre><code class="language-python"></code></pre>
+                            <div><span>python</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="codeblock">
+                        <div>
+                            <pre><code class="language-javascript"></code></pre>
+                            <div><span>javascript</span></div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        });
+
         test.todo('lazy click puts card in edit mode');
     });
 

@@ -90,22 +90,42 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     );
 }
 
-export function CodeBlock({code, language}) {
-    return (
-        <div className="not-kg-prose">
-            <pre className="rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900">
-                <code>
-                    {code}
-                </code>
-            </pre>
-            <div className="pa2 absolute top-2 right-2 flex items-center justify-center">
-                <span className="db nudge-top--2 fw5 f8 midlightgrey">{language}</span>
+export function CodeBlock({caption, code, language}) {
+    if (caption && caption.length > 0) {
+        return (
+            <div className="not-kg-prose">
+                <figure>
+                    <pre className="rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900">
+                        <code className={(language && `language-${language}`)}>
+                            {code}
+                        </code>
+                    </pre>
+                    <div className="pa2 absolute top-2 right-2 flex items-center justify-center">
+                        <span className="db nudge-top--2 fw5 f8 midlightgrey">{language}</span>
+                    </div>
+                    <figcaption>
+                        {caption}
+                    </figcaption>
+                </figure>
             </div>
-        </div>
-    );
+        );
+    } else {
+        return (
+            <div className="not-kg-prose">
+                <pre className="rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900">
+                    <code className={(language && `language-${language}`)}>
+                        {code}
+                    </code>
+                </pre>
+                <div className="pa2 absolute top-2 right-2 flex items-center justify-center">
+                    <span className="db nudge-top--2 fw5 f8 midlightgrey">{language}</span>
+                </div>
+            </div>
+        );
+    }
 }
 
-export function CodeBlockCard({code, isEditing, isSelected, language, updateCode, updateLanguage}) {
+export function CodeBlockCard({caption, code, isEditing, isSelected, language, updateCode, updateLanguage}) {
     if (isEditing) {
         return (
             <CodeEditor
@@ -117,7 +137,7 @@ export function CodeBlockCard({code, isEditing, isSelected, language, updateCode
         );
     } else {
         return (
-            <CodeBlock code={code} language={language} />
+            <CodeBlock caption={caption} code={code} language={language} />
         );
     }
 }

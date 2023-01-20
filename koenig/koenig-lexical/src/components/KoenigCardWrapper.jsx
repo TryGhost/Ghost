@@ -69,10 +69,18 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width}) => {
                 CLICK_COMMAND,
                 (event) => {
                     if (containerRef.current.contains(event.target)) {
-                        clearSelected();
-                        select();
+                        const node = $getNodeByKey(nodeKey);
+                        if (node.hasEditMode?.() && isSelected) {
+                            setEditing(true);
+                            clearSelected();
+                            select();
+                        } else {
+                            clearSelected();
+                            select();
+                        }
                     } else if (isSelected) {
                         deselect();
+                        setEditing(false);
                     }
                     return false;
                 },
