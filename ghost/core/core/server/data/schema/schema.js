@@ -980,7 +980,7 @@ module.exports = {
             ['email_id', 'member_id']
         ]
     },
-    mentions_received: {
+    mentions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         source: {type: 'string', maxlength: 2000, nullable: false},
         title: {type: 'string', maxlength: 2000, nullable: true},
