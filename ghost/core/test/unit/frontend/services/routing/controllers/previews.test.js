@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/configUtils');
 const api = require('../../../../../../core/frontend/services/proxy').api;
