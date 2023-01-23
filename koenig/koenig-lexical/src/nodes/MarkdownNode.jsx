@@ -6,6 +6,7 @@ import {MarkdownCard} from '../components/ui/cards/MarkdownCard';
 import CardContext from '../context/CardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$getNodeByKey} from 'lexical';
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
@@ -13,6 +14,7 @@ export {INSERT_MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
 function MarkdownNodeComponent({nodeKey, markdown}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
+    const {imageUploader} = React.useContext(KoenigComposerContext);
 
     const updateMarkdown = (value) => {
         editor.update(() => {
@@ -27,6 +29,7 @@ function MarkdownNodeComponent({nodeKey, markdown}) {
             value={markdown}
             onChange={updateMarkdown}
             isEditing={cardContext.isEditing}
+            imageUploader={imageUploader.getImageUrl}
         />
     );
 }

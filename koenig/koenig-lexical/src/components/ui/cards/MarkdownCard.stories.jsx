@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {MarkdownCard} from './MarkdownCard.jsx';
 import {CardWrapper} from './../CardWrapper';
+import {getImageUrl} from '../../../../demo/utils/imageUploader';
 
 const story = {
     title: 'Primary cards/Markdown card',
@@ -28,7 +29,7 @@ const Template = (args) => {
     return (
         <div className="w-[764px]">
             <CardWrapper {...args}>
-                <MarkdownCard {...args} onChange={onChange} value={value} />
+                <MarkdownCard {...args} onChange={onChange} value={value} imageUploader={getImageUrl} />
             </CardWrapper>
         </div>
     );

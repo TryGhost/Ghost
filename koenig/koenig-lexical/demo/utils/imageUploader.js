@@ -19,3 +19,12 @@ export async function imageUploader(files) {
         };
     }
 }
+
+const delay = time => new Promise((resolve) => {
+    setTimeout(resolve, time);
+});
+
+export async function getImageUrl(files = []) {
+    await delay(1000); // added delay for demo, helps to check progress bar
+    return Array.from(files).map(file => URL.createObjectURL(file));
+}

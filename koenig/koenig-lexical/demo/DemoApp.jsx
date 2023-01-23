@@ -3,7 +3,7 @@ import {KoenigComposer, KoenigEditor} from '../src';
 import FloatingButton from './components/FloatingButton';
 import {useState} from 'react';
 import Watermark from './components/Watermark';
-import {imageUploader} from './utils/imageUploader';
+import {imageUploader, getImageUrl} from './utils/imageUploader';
 import Sidebar from './components/Sidebar';
 import content from './content/content.json';
 import ToggleButton from './components/ToggleButton';
@@ -45,9 +45,9 @@ function DemoApp() {
 
     return (
         <div className="koenig-lexical top">
-            <KoenigComposer 
-                initialEditorState={defaultContent} 
-                imageUploadFunction={{imageUploader}}
+            <KoenigComposer
+                initialEditorState={defaultContent}
+                imageUploadFunction={{imageUploader, getImageUrl}}
                 unsplashConfig={unsplashConfig}>
                 <div className="relative h-full grow">
                     {
