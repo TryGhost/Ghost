@@ -28,7 +28,7 @@
     "debug": "*",
     "eslint": "4.19.1",
     "gulp": "*",
-    "gulp-clean-css": "3.9.4",
+    "gulp-clean-css": "3.10.0",
     "gulp-concat": "*",
     "gulp-debug": "*",
     "gulp-eslint": "4.0.2",
