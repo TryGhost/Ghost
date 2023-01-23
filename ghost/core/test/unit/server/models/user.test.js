@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
 const permissions = require('../../../../core/server/services/permissions');

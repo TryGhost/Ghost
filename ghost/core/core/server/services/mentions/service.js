@@ -1,4 +1,3 @@
-const ObjectID = require('bson-objectid').default;
 const MentionController = require('./MentionController');
 const WebmentionMetadata = require('./WebmentionMetadata');
 const {
@@ -7,6 +6,9 @@ const {
     MentionDiscoveryService
 } = require('@tryghost/webmentions');
 const BookshelfMentionRepository = require('./BookshelfMentionRepository');
+const ResourceService = require('./ResourceService');
+const RoutingService = require('./RoutingService');
+
 const models = require('../../models');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
@@ -28,39 +30,19 @@ module.exports = {
         });
         const webmentionMetadata = new WebmentionMetadata();
         const discoveryService = new MentionDiscoveryService({externalRequest});
+        const resourceService = new ResourceService({
+            urlUtils,
+            urlService
+        });
+        const routingService = new RoutingService({
+            siteUrl: new URL(urlUtils.getSiteUrl())
+        });
+
         const api = new MentionsAPI({
             repository,
             webmentionMetadata,
-            resourceService: {
-                async getByURL(url) {
-                    const path = urlUtils.absoluteToRelative(url.href, {withoutSubdirectory: true});
-                    const resource = urlService.getResource(path);
-                    if (resource?.config?.type === 'posts') {
-                        return {
-                            type: 'post',
-                            id: ObjectID.createFromHexString(resource.data.id)
-                        };
-                    }
-                    return {
-                        type: null,
-                        id: null
-                    };
-                }
-            },
-            routingService: {
-                async pageExists(url) {
-                    const siteUrl = new URL(urlUtils.getSiteUrl());
-                    if (siteUrl.origin !== url.origin) {
-                        return false;
-                    }
-                    const subdir = urlUtils.getSubdir();
-                    if (subdir && !url.pathname.startsWith(subdir)) {
-                        return false;
-                    }
-
-                    return true;
-                }
-            }
+            resourceService,
+            routingService
         });
 
         this.controller.init({api});
