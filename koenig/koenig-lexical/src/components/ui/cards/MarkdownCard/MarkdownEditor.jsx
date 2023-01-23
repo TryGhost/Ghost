@@ -2,6 +2,7 @@ import React, {useRef, useEffect, useLayoutEffect, useState} from 'react';
 import SimpleMDE from '@tryghost/kg-simplemde';
 import MarkdownHelpDialog from './MarkdownHelpDialog';
 import MarkdownImageUploader from './MarkdownImageUploader';
+import UnsplashModal from '../../UnsplashModal';
 
 import useMarkdownImageUploader from './useMarkdownImageUploader';
 
@@ -9,13 +10,15 @@ export default function MarkdownEditor({
     value,
     onChange,
     imageUploader,
+    unsplashConf,
     autofocus = true,
     placeholder = ''
 }) {
     const editorRef = useRef(null);
     const editor = useRef(null);
     const [isHelpDialogOpen, setHelpDialogOpen] = useState(false);
-    const {openImageUploadDialog, uploadImages, imageInputRef, isImageLoading} = useMarkdownImageUploader(editor, imageUploader);
+    const [isUnsplashDialogOpen, setUnsplashDialogOpen] = useState(false);
+    const {openImageUploadDialog, uploadImages, captureSelection, insertUnsplashImage, imageInputRef, isImageLoading} = useMarkdownImageUploader(editor, imageUploader);
 
     // init editor on component mount
     useLayoutEffect(() => {
@@ -34,6 +37,7 @@ export default function MarkdownEditor({
                 toggleSideBySide: null,
                 drawImage: null
             },
+            hideIcons: getListOfHiddenIcons(),
             // hide status bar
             status: [],
             // Ghost-specific SimpleMDE toolbar config - allows us to create a
@@ -50,10 +54,7 @@ export default function MarkdownEditor({
                 },
                 {
                     name: 'unsplash',
-                    action: () => {
-                        // eslint-disable-next-line no-console
-                        console.log('toggleUnsplash');
-                    },
+                    action: openUnsplashDialog,
                     className: 'fa fa-camera',
                     title: 'Add Image from Unsplash'
                 },
@@ -61,7 +62,7 @@ export default function MarkdownEditor({
                 {
                     name: 'spellcheck',
                     action: toggleSpellcheck,
-                    className: 'fa fa-check',
+                    className: 'fa fa-check active',
                     title: 'Spellcheck (Ctrl-Alt-S)',
                     useCtrlOnMac: true
                 },
@@ -89,8 +90,6 @@ export default function MarkdownEditor({
         if (autofocus) {
             editorInstance.codemirror.execCommand('goDocEnd');
         }
-
-        editorInstance.codemirror.setOption('mode', 'spell-checker');
 
         // remove editor on unmount
         return () => {
@@ -140,17 +139,52 @@ export default function MarkdownEditor({
         setHelpDialogOpen(false);
     }
 
+    function getListOfHiddenIcons() {
+        let icons = [];
+
+        if (!unsplashConf) {
+            icons.push('unsplash');
+        }
+
+        return icons;
+    }
+
+    function openUnsplashDialog() {
+        captureSelection();
+        setUnsplashDialogOpen(true);
+    }
+
+    function closeUnsplashDialog() {
+        setUnsplashDialogOpen(false);
+    }
+
+    function onUnsplashInsert(img) {
+        insertUnsplashImage(img);
+        closeUnsplashDialog();
+    }
+
     return (
         <div className="not-kg-prose">
             <textarea ref={editorRef}></textarea>
 
-            <MarkdownHelpDialog onClose={closeHelpDialog} isOpen={isHelpDialogOpen} />
+            <MarkdownHelpDialog
+                onClose={closeHelpDialog}
+                isOpen={isHelpDialogOpen}
+            />
 
             <MarkdownImageUploader
                 inputRef={imageInputRef}
                 onChange={uploadImages}
                 loading={isImageLoading}
             />
+
+            {isUnsplashDialogOpen && (
+                <UnsplashModal
+                    onClose={closeUnsplashDialog}
+                    onImageInsert={onUnsplashInsert}
+                    unsplashConf={unsplashConf}
+                />
+            )}
         </div>
     );
 }

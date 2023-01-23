@@ -8,12 +8,12 @@ function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
     return (
         <>
             <div className="fixed inset-0 h-[100vh] bg-black opacity-60"></div>
-            <div data-kg-modal="unsplash" className="z-100 not-kg-prose fixed inset-8 overflow-hidden rounded bg-white shadow-xl" ref={galleryRef}>
+            <div data-kg-modal="unsplash" className="not-kg-prose fixed inset-8 z-[100000] overflow-hidden rounded bg-white shadow-xl" ref={galleryRef}>
                 <button className="absolute top-6 right-6 cursor-pointer">
-                    <CloseIcon 
-                        data-kg-modal-close-button 
-                        onClick={() => closeModal()} 
-                        className="h-4 w-4 stroke-2 text-grey-400" 
+                    <CloseIcon
+                        data-kg-modal-close-button
+                        onClick={() => closeModal()}
+                        className="h-4 w-4 stroke-2 text-grey-400"
                     />
                 </button>
                 <div className="flex h-full flex-col">

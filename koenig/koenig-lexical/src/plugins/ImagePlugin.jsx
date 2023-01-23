@@ -12,7 +12,7 @@ import {mergeRegister} from '@lexical/utils';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
-import UnsplashModal from '../components/ui/UnsplashModal';
+import UnsplashPlugin from '../components/ui/UnsplashPlugin';
 
 export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -62,7 +62,7 @@ export const ImagePlugin = () => {
                         // insert a paragraph if this will be the last card and
                         // we're not already on a blank paragraph so we always
                         // have a trailing paragraph in the doc
-                        
+
                         const selectedNode = selection.focus.getNode();
                         const selectedIsBlankParagraph = $isParagraphNode(selectedNode) && selectedNode.getTextContent() === '';
                         const nextNode = selectedNode.getTopLevelElementOrThrow().getNextSibling();
@@ -90,7 +90,7 @@ export const ImagePlugin = () => {
     }, [editor, imageUploader, handleImageUpload]);
 
     if (showModal && selector) {
-        return (<UnsplashModal
+        return (<UnsplashPlugin
             nodeKey={selectedKey}
             handleModalClose={setShowModal}
         />);

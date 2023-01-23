@@ -1,18 +1,13 @@
 import React from 'react';
-import {$getNodeByKey, $createNodeSelection, $setSelection} from 'lexical';
 import UnsplashSelector from './file-selectors/Unsplash/UnsplashSelector';
 import Portal from './Portal';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import KoenigComposerContext from '../../context/KoenigComposerContext';
 import UnsplashService from '../../utils/services/unsplash';
 import UnsplashGallery from './file-selectors/Unsplash/UnsplashGallery';
 import {useMemo} from 'react';
 
 const API_URL = 'https://api.unsplash.com';
 
-const UnsplashModal = ({nodeKey, handleModalClose}) => {
-    const [editor] = useLexicalComposerContext();
-    const {unsplashConf} = React.useContext(KoenigComposerContext);
+const UnsplashModal = ({onClose, onImageInsert, unsplashConf}) => {
     const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf}), [unsplashConf]);
 
     const galleryRef = React.useRef(null);
@@ -24,25 +19,12 @@ const UnsplashModal = ({nodeKey, handleModalClose}) => {
     const [zoomedImg, setZoomedImg] = React.useState(null);
     const [dataset, setDataset] = React.useState(UnsplashLib.getColumns() || []);
 
-    // const dataset = UnsplashLib.getColumns();
-
     React.useEffect(() => {
         if (zoomedImg === null && lastScrollPos !== 0) {
             galleryRef.current.scrollTop = lastScrollPos;
             setLastScrollPos(0);
         }
     }, [zoomedImg, scrollPos, lastScrollPos]);
-
-    const closeModalHandler = () => {
-        // remove the image node from the editor
-        if (nodeKey) {
-            editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
-                node.remove();
-            });
-        }
-        handleModalClose(false);
-    };
 
     React.useEffect(() => {
         const ref = galleryRef.current;
@@ -141,24 +123,6 @@ const UnsplashModal = ({nodeKey, handleModalClose}) => {
         }
     }, [galleryRef, loadMorePhotos, zoomedImg]);
 
-    const insertImageToNode = async (image) => {
-        if (image.src) {
-            UnsplashLib.triggerDownload(image);
-            editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
-                node.setSrc(image.src);
-                node.setImgHeight(image.height);
-                node.setImgWidth(image.width);
-                node.setCaption(image.caption);
-                node.setAltText(image.alt);
-                const nodeSelection = $createNodeSelection();
-                nodeSelection.add(node.getKey());
-                $setSelection(nodeSelection);
-            });
-            handleModalClose(false);
-        }
-    };
-
     const selectImg = (payload) => {
         if (payload) {
             setZoomedImg(payload);
@@ -171,10 +135,17 @@ const UnsplashModal = ({nodeKey, handleModalClose}) => {
         }
     };
 
+    async function insertImage(image) {
+        if (image.src) {
+            UnsplashLib.triggerDownload(image);
+            onImageInsert(image);
+        }
+    }
+
     return (
         <Portal>
             <UnsplashSelector
-                closeModal={closeModalHandler}
+                closeModal={onClose}
                 handleSearch={handleSearch}
             >
                 <UnsplashGallery
@@ -183,7 +154,7 @@ const UnsplashModal = ({nodeKey, handleModalClose}) => {
                     isLoading={isLoading}
                     dataset={dataset}
                     selectImg={selectImg}
-                    insertImage={insertImageToNode}
+                    insertImage={insertImage}
                     error={UnsplashLib.error}
                 />
             </UnsplashSelector>

@@ -31,20 +31,43 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
         editor.current.codemirror.execCommand('goDocEnd');
     }
 
+    function insertUnsplashImage({src, alt, caption}) {
+        let image = {
+            alt,
+            url: src,
+            credit: `<small>${caption}</small>`
+        };
+
+        insertImages([image]);
+    }
+
     function insertImages(urls = []) {
         const codemirror = editor.current.codemirror;
 
         // loop through urls and generate image markdown
         let images = urls.map((url) => {
-            let filename = url.split('/').pop();
-            let alt = filename;
+            // plain url string, so extract filename from path
+            if (typeof url === 'string') {
+                let filename = url.split('/').pop();
+                let alt = filename;
 
-            // if we have a normal filename.ext, set alt to filename -ext
-            if (filename.lastIndexOf('.') > 0) {
-                alt = filename.slice(0, filename.lastIndexOf('.'));
+                // if we have a normal filename.ext, set alt to filename -ext
+                if (filename.lastIndexOf('.') > 0) {
+                    alt = filename.slice(0, filename.lastIndexOf('.'));
+                }
+
+                return `![${alt}](${url})`;
+
+                // full url object, use attrs we're given
+            } else {
+                let image = `![${url.alt}](${url.url})`;
+
+                if (url.credit) {
+                    image += `\n${url.credit}`;
+                }
+
+                return image;
             }
-
-            return `![${alt}](${url})`;
         });
         let text = images.join('\n\n');
 
@@ -73,5 +96,5 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
         codemirror.replaceSelection(text, 'end');
     }
 
-    return {openImageUploadDialog, uploadImages, imageInputRef, isImageLoading};
+    return {openImageUploadDialog, captureSelection, uploadImages, insertUnsplashImage, imageInputRef, isImageLoading};
 }
