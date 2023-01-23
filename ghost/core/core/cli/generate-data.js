@@ -1,5 +1,6 @@
 const Command = require('./command');
 const DataGenerator = require('@tryghost/data-generator');
+const config = require('../shared/config');
 
 module.exports = class REPL extends Command {
     setup() {
@@ -39,7 +40,8 @@ module.exports = class REPL extends Command {
                 fatal: this.fatal,
                 debug: this.debug
             },
-            modelQuantities: {}
+            modelQuantities: {},
+            baseUrl: config.getSiteUrl()
         });
         try {
             await dataGenerator.importData();
