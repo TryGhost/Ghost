@@ -20,7 +20,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import CardContext from '../context/CardContext';
 import {CardWrapper} from './ui/CardWrapper';
 
-const KoenigCardWrapperComponent = ({nodeKey, children, width, openInEditMode = false}) => {
+const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, openInEditMode = false, children}) => {
     const [editor] = useLexicalComposerContext();
     const [isSelected, setSelected, clearSelected] = useLexicalNodeSelection(nodeKey);
     const [isEditing, setEditing] = React.useState(false);
@@ -254,6 +254,7 @@ const KoenigCardWrapperComponent = ({nodeKey, children, width, openInEditMode = 
                 cardType={cardType}
                 ref={containerRef}
                 cardWidth={cardWidth}
+                wrapperStyle={wrapperStyle}
             >
                 {children}
             </CardWrapper>

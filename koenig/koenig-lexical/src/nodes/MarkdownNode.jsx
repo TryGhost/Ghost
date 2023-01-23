@@ -50,7 +50,7 @@ export class MarkdownNode extends BaseMarkdownNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
+            <KoenigCardWrapper wrapperStyle="wide" nodeKey={this.getKey()} width={this.__cardWidth}>
                 <MarkdownNodeComponent
                     nodeKey={this.getKey()}
                     markdown={this.__markdown}
