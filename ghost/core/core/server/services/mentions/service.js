@@ -1,4 +1,3 @@
-const ObjectID = require('bson-objectid').default;
 const MentionController = require('./MentionController');
 const WebmentionMetadata = require('./WebmentionMetadata');
 const {
@@ -7,6 +6,7 @@ const {
     MentionDiscoveryService
 } = require('@tryghost/webmentions');
 const BookshelfMentionRepository = require('./BookshelfMentionRepository');
+const ResourceService = require('./ResourceService');
 const RoutingService = require('./RoutingService');
 
 const models = require('../../models');
@@ -30,6 +30,10 @@ module.exports = {
         });
         const webmentionMetadata = new WebmentionMetadata();
         const discoveryService = new MentionDiscoveryService({externalRequest});
+        const resourceService = new ResourceService({
+            urlUtils,
+            urlService
+        });
         const routingService = new RoutingService({
             siteUrl: new URL(urlUtils.getSiteUrl())
         });
@@ -37,22 +41,7 @@ module.exports = {
         const api = new MentionsAPI({
             repository,
             webmentionMetadata,
-            resourceService: {
-                async getByURL(url) {
-                    const path = urlUtils.absoluteToRelative(url.href, {withoutSubdirectory: true});
-                    const resource = urlService.getResource(path);
-                    if (resource?.config?.type === 'posts') {
-                        return {
-                            type: 'post',
-                            id: ObjectID.createFromHexString(resource.data.id)
-                        };
-                    }
-                    return {
-                        type: null,
-                        id: null
-                    };
-                }
-            },
+            resourceService,
             routingService
         });
 
