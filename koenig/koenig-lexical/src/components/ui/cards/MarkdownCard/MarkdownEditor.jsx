@@ -7,8 +7,8 @@ import UnsplashModal from '../../UnsplashModal';
 import useMarkdownImageUploader from './useMarkdownImageUploader';
 
 export default function MarkdownEditor({
-    value,
-    onChange,
+    markdown,
+    updateMarkdown,
     imageUploader,
     unsplashConf,
     autofocus = true,
@@ -77,13 +77,13 @@ export default function MarkdownEditor({
 
         const editorInstance = editor.current;
 
-        editorInstance.value(value ?? '');
+        editorInstance.value(markdown ?? '');
 
         editorInstance.codemirror.on('change', (instance, changeObj) => {
             // avoid a "modified x twice in a single render" error that occurs
             // when the underlying value is completely swapped out
             if (changeObj.origin !== 'setValue') {
-                onChange(editor.current.value());
+                updateMarkdown(editor.current.value());
             }
         });
 
@@ -100,12 +100,12 @@ export default function MarkdownEditor({
     // update the editor when the value property changes from the outside
     useEffect(() => {
         // compare values before forcing a content reset to avoid clobbering the undo behaviour
-        if (value !== editor.current.value()) {
+        if (markdown !== editor.current.value()) {
             let cursor = editor.current.codemirror.getDoc().getCursor();
-            editor.current.value(value);
+            editor.current.value(markdown);
             editor.current.codemirror.getDoc().setCursor(cursor);
         }
-    }, [value]);
+    }, [markdown]);
 
     function toggleSpellcheck() {
         let codemirror = editor.current.codemirror;

@@ -4,28 +4,32 @@ import MarkdownRenderer from '@tryghost/kg-markdown-html-renderer';
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import MarkdownEditor from './MarkdownCard/MarkdownEditor';
 
-export function MarkdownCard({value = '', onChange, isEditing, imageUploader, unsplashConf}) {
-    const markdown = MarkdownRenderer.render(value);
+export function MarkdownCard({markdown = '# Title', updateMarkdown, isEditing, imageUploader, unsplashConf}) {
     return (
         <div className="markdown-editor">
             {isEditing
                 ? (
                     <MarkdownEditor
-                        value={value}
+                        markdown={markdown}
                         imageUploader={imageUploader}
-                        onChange={onChange}
+                        updateMarkdown={updateMarkdown}
                         unsplashConf={unsplashConf}
                     />
                 )
-                : <div dangerouslySetInnerHTML={{__html: markdown}}></div>
+                : <MarkdownDisplay markdown={markdown} />
             }
         </div>
     );
 }
 
+function MarkdownDisplay({markdown}) {
+    const markdownHtml = MarkdownRenderer.render(markdown);
+    return <div dangerouslySetInnerHTML={{__html: markdownHtml}}></div>;
+}
+
 MarkdownCard.propTypes = {
-    value: PropTypes.string,
-    onChange: PropTypes.func,
+    markdown: PropTypes.string,
+    updateMarkdown: PropTypes.func,
     imageUploader: PropTypes.func,
     isEditing: PropTypes.bool
 };

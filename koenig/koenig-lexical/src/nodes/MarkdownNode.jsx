@@ -26,8 +26,8 @@ function MarkdownNodeComponent({nodeKey, markdown}) {
     return (
         <MarkdownCard
             nodeKey={nodeKey}
-            value={markdown}
-            onChange={updateMarkdown}
+            markdown={markdown}
+            updateMarkdown={updateMarkdown}
             isEditing={cardContext.isEditing}
             imageUploader={imageUploader.getImageUrl}
             unsplashConf={unsplashConf}
