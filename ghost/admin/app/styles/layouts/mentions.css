@@ -116,3 +116,33 @@
     left: 0;
     border-radius: 0 2px 2px 0;
 }
+
+.gh-mentions-list-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4vw;
+}
+
+.gh-mentions-list-cta .love-letter {
+    fill: var(--lightgrey);
+    width: 68px;
+    height: 68px;
+    margin-bottom: 20px;
+}
+
+.gh-mentions-list-cta h4 {
+    color: var(--black);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.gh-mentions-list-cta p {
+    max-width: 390px;
+    color: var(--midgrey);
+    text-align: center;
+    line-height: 1.45em;
+    margin: 0 0 20px;
+    padding: 0;
+}
