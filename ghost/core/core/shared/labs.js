@@ -34,6 +34,7 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'lexicalEditor',
     'webmentions',
+    'webmentionEmail',
     'outboundLinkTagging'
 ];
 
