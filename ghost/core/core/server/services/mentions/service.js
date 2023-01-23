@@ -71,7 +71,7 @@ module.exports = {
             externalRequest,
             getSiteUrl: () => urlUtils.urlFor('home', true),
             getPostUrl: post => getPostUrl(post),
-            isEnabled: () => labs.isSet('webmentions') || settingsCache.get('is_private')
+            isEnabled: () => labs.isSet('webmentions') && !settingsCache.get('is_private')
         });
         sendingService.listen(events);
     }
