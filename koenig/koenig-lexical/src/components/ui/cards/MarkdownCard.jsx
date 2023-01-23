@@ -6,25 +6,27 @@ import MarkdownEditor from './MarkdownCard/MarkdownEditor';
 
 export function MarkdownCard({markdown = '# Title', updateMarkdown, isEditing, imageUploader, unsplashConf}) {
     return (
-        <div className="markdown-editor">
+        <>
             {isEditing
                 ? (
-                    <MarkdownEditor
-                        markdown={markdown}
-                        imageUploader={imageUploader}
-                        updateMarkdown={updateMarkdown}
-                        unsplashConf={unsplashConf}
-                    />
+                    <div className="markdown-editor">
+                        <MarkdownEditor
+                            markdown={markdown}
+                            imageUploader={imageUploader}
+                            updateMarkdown={updateMarkdown}
+                            unsplashConf={unsplashConf}
+                        />
+                    </div>
                 )
                 : <MarkdownDisplay markdown={markdown} />
             }
-        </div>
+        </>
     );
 }
 
 function MarkdownDisplay({markdown}) {
     const markdownHtml = MarkdownRenderer.render(markdown);
-    return <div dangerouslySetInnerHTML={{__html: markdownHtml}}></div>;
+    return <div className="whitespace-normal" dangerouslySetInnerHTML={{__html: markdownHtml}}></div>;
 }
 
 MarkdownCard.propTypes = {

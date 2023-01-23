@@ -5,15 +5,15 @@
 .koenig-lexical .markdown-editor {
 
         position: static;
-        overflow: visible;
-        padding-top: 2px;
         z-index: 0;
+        overflow: visible;
         width: 100%;
+        padding-top: 2px;
 
     /* Ugly workaround to fix inheritance from `.koenig-lexical .kg-prose:where(div):not(:where(.not-kg-prose, [class~='not-kg-prose'] *))` breaking markdown editor */
     div {
-        line-height: initial;
         max-width: initial;
+        line-height: initial;
     }
 
     /* ensure there's no flash of unstyled textarea while initializing */
@@ -23,18 +23,18 @@
 
     .editor-toolbar {
         position: absolute;
+        right: 0;
         bottom: 0;
         left: 0;
-        right: 0;
+        z-index: 2;
         display: flex;
-        border-left: none;
-        border-right: none;
-        border-radius: 0;
-        z-index: 99999;
-        background: var(--white);
-        opacity: 1;
         padding: 6px;
         border-top: 1px solid var(--grey-200);
+        border-right: none;
+        border-left: none;
+        background: var(--white);
+        opacity: 1;
+        border-radius: 0;
     }
 
     .editor-toolbar a {
@@ -43,7 +43,7 @@
 
     .editor-toolbar a.active,
     .editor-toolbar a:hover {
-        border-color: color-mod(var(--lightgrey) l(-5%));
+        border-color: var(--grey-400);
     }
 
     .editor-toolbar a.disabled {
@@ -56,8 +56,8 @@
     }
 
     .editor-toolbar .fa-check {
-        margin-left: auto;
         position: relative;
+        margin-left: auto;
         vertical-align: bottom;
     }
 
@@ -101,13 +101,13 @@
     }
 
     .CodeMirror-code .cm-link {
-        color: var(--blue);
+        color: var(--green);
         text-decoration: none;
     }
 
     .CodeMirror-cursor {
         border-width: 3px;
-        border-color: var(--blue);
+        border-color: var(--green);
     }
 
     /* fix visible scrollbars when OSX is set to show them */
@@ -135,9 +135,9 @@
     .CodeMirror-wrap > div > textarea {
         top: 0;
         height: 26px;
+        min-width: 0;
         min-height: 26px;
         margin-bottom: -26px;
-        min-width: 0;
     }
 
     .CodeMirror pre {
