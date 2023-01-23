@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const configUtils = require('../../../utils/configUtils');
 const logging = require('@tryghost/logging');

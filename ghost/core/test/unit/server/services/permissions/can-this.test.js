@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const permissions = require('../../../../../core/server/services/permissions');
