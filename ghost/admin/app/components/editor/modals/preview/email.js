@@ -32,6 +32,7 @@ const SEGMENT_OPTIONS = [{
 // TODO: remove duplication with <ModalPostEmailPreview>
 export default class ModalPostPreviewEmailComponent extends Component {
     @service ajax;
+    @service dropdown;
     @service feature;
     @service ghostPaths;
     @service session;
@@ -76,6 +77,9 @@ export default class ModalPostPreviewEmailComponent extends Component {
             iframe.contentWindow.document.open();
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
+
+            iframe.contentWindow.document.removeEventListener('click', this.dropdown.closeDropdowns);
+            iframe.contentWindow.document.addEventListener('click', this.dropdown.closeDropdowns);
         }
     }
 
