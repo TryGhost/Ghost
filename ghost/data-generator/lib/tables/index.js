@@ -1,51 +1,27 @@
-const PostsImporter = require('./posts');
-const NewslettersImporter = require('./newsletters');
-const UsersImporter = require('./users');
-const PostsAuthorsImporter = require('./posts-authors');
-const TagsImporter = require('./tags');
-const PostsTagsImporter = require('./posts-tags');
-const ProductsImporter = require('./products');
-const MembersImporter = require('./members');
-const BenefitsImporter = require('./benefits');
-const ProductsBenefitsImporter = require('./products-benefits');
-const MembersProductsImporter = require('./members-products');
-const PostsProductsImporter = require('./posts-products');
-const MembersNewslettersImporter = require('./members-newsletters');
-const MembersCreatedEventsImporter = require('./members-created-events');
-const MembersLoginEventsImporter = require('./members-login-events');
-const MembersStatusEventsImporter = require('./members-status-events');
-const StripeProductsImporter = require('./stripe-products');
-const StripePricesImporter = require('./stripe-prices');
-const SubscriptionsImporter = require('./subscriptions');
-const MembersStripeCustomersImporter = require('./members-stripe-customers');
-const MembersStripeCustomersSubscriptionsImporter = require('./members-stripe-customers-subscriptions');
-const MembersPaidSubscriptionEventsImporter = require('./members-paid-subscription-events');
-const MembersSubscriptionCreatedEventsImporter = require('./members-subscription-created-events');
-const MembersSubscribeEventsImporter = require('./members-subscribe-events');
-
 module.exports = {
-    PostsImporter,
-    NewslettersImporter,
-    UsersImporter,
-    PostsAuthorsImporter,
-    TagsImporter,
-    PostsTagsImporter,
-    ProductsImporter,
-    MembersImporter,
-    BenefitsImporter,
-    ProductsBenefitsImporter,
-    MembersProductsImporter,
-    PostsProductsImporter,
-    MembersNewslettersImporter,
-    MembersCreatedEventsImporter,
-    MembersLoginEventsImporter,
-    MembersStatusEventsImporter,
-    StripeProductsImporter,
-    StripePricesImporter,
-    SubscriptionsImporter,
-    MembersStripeCustomersImporter,
-    MembersStripeCustomersSubscriptionsImporter,
-    MembersPaidSubscriptionEventsImporter,
-    MembersSubscriptionCreatedEventsImporter,
-    MembersSubscribeEventsImporter
+    PostsImporter: require('./posts'),
+    NewslettersImporter: require('./newsletters'),
+    UsersImporter: require('./users'),
+    PostsAuthorsImporter: require('./posts-authors'),
+    TagsImporter: require('./tags'),
+    PostsTagsImporter: require('./posts-tags'),
+    ProductsImporter: require('./products'),
+    MembersImporter: require('./members'),
+    BenefitsImporter: require('./benefits'),
+    ProductsBenefitsImporter: require('./products-benefits'),
+    MembersProductsImporter: require('./members-products'),
+    PostsProductsImporter: require('./posts-products'),
+    MembersNewslettersImporter: require('./members-newsletters'),
+    MembersCreatedEventsImporter: require('./members-created-events'),
+    MembersLoginEventsImporter: require('./members-login-events'),
+    MembersStatusEventsImporter: require('./members-status-events'),
+    StripeProductsImporter: require('./stripe-products'),
+    StripePricesImporter: require('./stripe-prices'),
+    SubscriptionsImporter: require('./subscriptions'),
+    MembersStripeCustomersImporter: require('./members-stripe-customers'),
+    MembersStripeCustomersSubscriptionsImporter: require('./members-stripe-customers-subscriptions'),
+    MembersPaidSubscriptionEventsImporter: require('./members-paid-subscription-events'),
+    MembersSubscriptionCreatedEventsImporter: require('./members-subscription-created-events'),
+    MembersSubscribeEventsImporter: require('./members-subscribe-events'),
+    MentionsImporter: require('./mentions')
 };
