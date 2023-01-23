@@ -2109,7 +2109,7 @@ Dashboard Resource */
     color: var(--black);
     font-size: 1.45rem;
     font-weight: 600;
-    line-height: 1.4em;
+    line-height: 1.5em;
 }
 
 .gh-dashboard-resource .gh-dashboard-list-body {
