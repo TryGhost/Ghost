@@ -7,6 +7,8 @@ const {
     MentionDiscoveryService
 } = require('@tryghost/webmentions');
 const BookshelfMentionRepository = require('./BookshelfMentionRepository');
+const RoutingService = require('./RoutingService');
+
 const models = require('../../models');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
@@ -28,6 +30,10 @@ module.exports = {
         });
         const webmentionMetadata = new WebmentionMetadata();
         const discoveryService = new MentionDiscoveryService({externalRequest});
+        const routingService = new RoutingService({
+            siteUrl: new URL(urlUtils.getSiteUrl())
+        });
+
         const api = new MentionsAPI({
             repository,
             webmentionMetadata,
@@ -47,20 +53,7 @@ module.exports = {
                     };
                 }
             },
-            routingService: {
-                async pageExists(url) {
-                    const siteUrl = new URL(urlUtils.getSiteUrl());
-                    if (siteUrl.origin !== url.origin) {
-                        return false;
-                    }
-                    const subdir = urlUtils.getSubdir();
-                    if (subdir && !url.pathname.startsWith(subdir)) {
-                        return false;
-                    }
-
-                    return true;
-                }
-            }
+            routingService
         });
 
         this.controller.init({api});
