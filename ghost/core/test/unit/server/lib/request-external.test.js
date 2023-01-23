@@ -15,8 +15,8 @@ describe('External Request', function () {
             });
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
             sinon.restore();
             nock.cleanAll();
         });
@@ -179,8 +179,8 @@ describe('External Request', function () {
             });
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
             sinon.restore();
             nock.cleanAll();
         });

@@ -34,6 +34,8 @@ const db = require('./db-utils');
 // Services that need resetting
 const settingsService = require('../../core/server/services/settings/settings-service');
 const supertest = require('supertest');
+const {stopGhost} = require('./e2e-utils');
+const adapterManager = require('../../core/server/services/adapter-manager');
 
 /**
  * @param {Object} [options={}]
@@ -52,6 +54,10 @@ const startGhost = async (options = {}) => {
 
     // NOTE: need to pass this config to the server instance
     configUtils.set('paths:contentPath', contentFolder);
+
+    // We need to clear the adapter cache because the config changed
+    // And the LocalStorageAdapter is cached, which means that it will still try to store files to the old content path if we don't recreate all adapters
+    adapterManager.clearCache();
 
     const defaults = {
         backend: true,
@@ -335,6 +341,11 @@ const getAgentsWithFrontend = async () => {
         server: true
     };
     try {
+        // Possible that we still have a running Ghost server from a previous old E2E test
+        // Those tests never stopped the server in the tests manually
+        await stopGhost();
+
+        // Start a new Ghost server with real HTTP listener
         ghostServer = await startGhost(bootOptions);
         const app = ghostServer.rootApp;
 

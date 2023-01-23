@@ -22,9 +22,9 @@ describe('normalize', function () {
         sinon.stub(logging, 'error');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('should do manipulation by default', function (done) {

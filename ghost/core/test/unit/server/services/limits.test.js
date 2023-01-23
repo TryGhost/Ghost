@@ -23,8 +23,8 @@ describe('Limit Service Init', function () {
         });
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         sinon.restore();
     });
 

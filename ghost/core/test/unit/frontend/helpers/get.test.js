@@ -338,8 +338,8 @@ describe('{{#get}} helper', function () {
                 };
             });
         });
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('should log a warning if it hits the notify threshold', async function () {
