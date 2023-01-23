@@ -1,3 +1,4 @@
+const tables = require('./tables');
 const {
     PostsImporter,
     NewslettersImporter,
@@ -22,8 +23,9 @@ const {
     MembersStripeCustomersSubscriptionsImporter,
     MembersPaidSubscriptionEventsImporter,
     MembersSubscriptionCreatedEventsImporter,
-    MembersSubscribeEventsImporter
-} = require('./tables');
+    MembersSubscribeEventsImporter,
+    MentionsImporter
+} = tables;
 const path = require('path');
 const fs = require('fs/promises');
 const {faker} = require('@faker-js/faker');
@@ -37,6 +39,7 @@ const {getProcessRoot} = require('@tryghost/root-utils');
  * @property {Object} schema
  * @property {Object} logger
  * @property {Object} modelQuantities
+ * @property {string} baseUrl
  */
 
 const defaultQuantities = {
@@ -61,7 +64,8 @@ class DataGenerator {
         knex,
         schema,
         logger,
-        modelQuantities = {}
+        modelQuantities = {},
+        baseUrl
     }) {
         this.useBaseData = baseDataPack !== '';
         this.baseDataPack = baseDataPack;
@@ -69,6 +73,7 @@ class DataGenerator {
         this.schema = schema;
         this.logger = logger;
         this.modelQuantities = Object.assign({}, defaultQuantities, modelQuantities);
+        this.baseUrl = baseUrl;
     }
 
     async importData() {
@@ -185,7 +190,7 @@ class DataGenerator {
             });
             posts = await postsImporter.import({
                 amount: this.modelQuantities.posts,
-                rows: ['newsletter_id']
+                rows: ['newsletter_id', 'published_at', 'slug']
             });
 
             const tagsImporter = new TagsImporter(transaction, {
@@ -317,6 +322,10 @@ class DataGenerator {
         const membersSubscriptionCreatedEventsImporter = new MembersSubscriptionCreatedEventsImporter(transaction, {subscriptions});
         await membersSubscriptionCreatedEventsImporter.importForEach(membersStripeCustomersSubscriptions, {amount: 1});
 
+        const mentionsImporter = new MentionsImporter(transaction, {baseUrl: this.baseUrl});
+        // Generate up to 4 webmentions per post
+        await mentionsImporter.importForEach(posts, {amount: 4});
+
         // TODO: Emails! (relies on posts & newsletters)
 
         // TODO: Email clicks - redirect, members_click_events (relies on emails)
@@ -331,3 +340,4 @@ class DataGenerator {
 }
 
 module.exports = DataGenerator;
+module.exports.tables = tables;
