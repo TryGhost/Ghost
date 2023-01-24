@@ -93,7 +93,7 @@ module.exports = {
             } catch (error) {
                 return new FailedBatch(emailBatchId, error);
             }
-        }, {concurrency: 10});
+        }, {concurrency: 2});
 
         const successes = batchResults.filter(response => (response instanceof SuccessfulBatch));
         const failures = batchResults.filter(response => (response instanceof FailedBatch));
