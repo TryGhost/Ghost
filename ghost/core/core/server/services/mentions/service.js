@@ -1,10 +1,12 @@
 const ObjectID = require('bson-objectid').default;
 const MentionController = require('./MentionController');
 const WebmentionMetadata = require('./WebmentionMetadata');
+const mail = require('../mail');
 const {
     MentionsAPI,
     MentionSendingService,
-    MentionDiscoveryService
+    MentionDiscoveryService,
+    MentionNotifications
 } = require('@tryghost/webmentions');
 const BookshelfMentionRepository = require('./BookshelfMentionRepository');
 const models = require('../../models');
@@ -14,6 +16,13 @@ const urlUtils = require('../../../shared/url-utils');
 const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 const labs = require('../../../shared/labs');
 const urlService = require('../url');
+const settingsCache = require('../../../shared/settings-cache');
+const settingsHelpers = require('../settings-helpers');
+const logging = require('@tryghost/logging');
+
+const ghostMailer = new mail.GhostMailer();
+const siteDomain = urlUtils.urlFor('home', true);
+const mailer = ghostMailer;
 
 function getPostUrl(post) {
     const jsonModel = {};
@@ -28,9 +37,11 @@ module.exports = {
         });
         const webmentionMetadata = new WebmentionMetadata();
         const discoveryService = new MentionDiscoveryService({externalRequest});
+        const notifications = new MentionNotifications({logging, models, settingsCache, urlUtils, siteDomain, settingsHelpers, mailer});
         const api = new MentionsAPI({
             repository,
             webmentionMetadata,
+            notifications,
             resourceService: {
                 async getByURL(url) {
                     const path = urlUtils.absoluteToRelative(url.href, {withoutSubdirectory: true});

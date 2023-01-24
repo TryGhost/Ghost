@@ -70,6 +70,11 @@ const Mention = require('./Mention');
  * @prop {(url: URL) => Promise<WebmentionMetadata>} fetch
  */
 
+/**
+ * @typedef {object} MentionNotifications
+ * @prop {(mention: Mention) => Promise<void>} notifyMentionReceived
+*/
+
 module.exports = class MentionsAPI {
     /** @type {IMentionRepository} */
     #repository;
@@ -79,6 +84,8 @@ module.exports = class MentionsAPI {
     #routingService;
     /** @type {IWebmentionMetadata} */
     #webmentionMetadata;
+    /** @type {MentionNotifications} */
+    #notifications;
 
     /**
      * @param {object} deps
@@ -86,12 +93,14 @@ module.exports = class MentionsAPI {
      * @param {IResourceService} deps.resourceService
      * @param {IRoutingService} deps.routingService
      * @param {IWebmentionMetadata} deps.webmentionMetadata
+     * @param {MentionNotifications} deps.notifications
      */
     constructor(deps) {
         this.#repository = deps.repository;
         this.#resourceService = deps.resourceService;
         this.#routingService = deps.routingService;
         this.#webmentionMetadata = deps.webmentionMetadata;
+        this.#notifications = deps.notifications;
     }
 
     /**
@@ -145,7 +154,7 @@ module.exports = class MentionsAPI {
             webmention.source,
             webmention.target
         );
-
+        
         if (!mention) {
             mention = await Mention.create({
                 source: webmention.source,
@@ -160,8 +169,10 @@ module.exports = class MentionsAPI {
                 sourceFavicon: metadata.favicon,
                 sourceFeaturedImage: metadata.image
             });
+            // the notificaiton should be if the mention is new and is not null
+            // this should be wired up to an event emitter or something that can be listened to
+            // this.#notifications.notifyMentionReceived(mention);
         }
-
         await this.#repository.save(mention);
 
         return mention;
