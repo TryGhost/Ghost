@@ -19,14 +19,14 @@ export function Modal({isOpen, onClose, children}) {
 
     return (
         <Portal>
+            <div className="fixed inset-0 z-40 h-[100vh] bg-black opacity-60" onClick={onClose}></div>
             <div
-                className="fixed top-0 left-0 z-[1000] flex h-full w-full items-start justify-center overflow-hidden pt-8"
+                className="fixed top-0 left-0 z-50 flex h-full w-full items-start justify-center overflow-auto"
                 onKeyDown={controlByKeys}
                 role="dialog"
                 aria-modal
             >
-                <div className="fixed inset-0 h-[100vh] bg-black opacity-60" onClick={onClose}></div>
-                <div className="relative rounded bg-white shadow-xl">
+                <div className="relative mt-8 w-full max-w-[550px] rounded bg-white drop-shadow-2xl">
                     <button className="absolute top-6 right-6 cursor-pointer" aria-label="Close dialog" autoFocus>
                         <CloseIcon className="h-4 w-4 stroke-2 text-grey-400" onClick={onClose}/>
                     </button>
