@@ -29,7 +29,13 @@ const story = {
 };
 export default story;
 
-const Template = args => <ToolbarMenu {...args} />;
+const Template = (args) => {
+    return (
+        <div className="flex">
+            <ToolbarMenu {...args} />
+        </div>
+    );
+};
 
 export const Text = Template.bind({});
 Text.args = {

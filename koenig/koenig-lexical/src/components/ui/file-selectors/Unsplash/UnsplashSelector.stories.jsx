@@ -17,35 +17,37 @@ export default story;
 
 const GalleryTemplate = (args) => {
     return (
-        <div className="w-full">
-            <UnsplashSelector>
-                <GalleryLayout>
-                    <MasonryColumn>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                    </MasonryColumn>
-                    <MasonryColumn>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                    </MasonryColumn>
-                    <MasonryColumn>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                        <UnsplashImage {...args}/>
-                    </MasonryColumn>
-                </GalleryLayout>
-            </UnsplashSelector>
+        <div className="kg-prose">
+            <div className="mx-auto my-8 w-full min-w-[initial]">
+                <UnsplashSelector>
+                    <GalleryLayout>
+                        <MasonryColumn>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                        </MasonryColumn>
+                        <MasonryColumn>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                        </MasonryColumn>
+                        <MasonryColumn>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                            <UnsplashImage {...args}/>
+                        </MasonryColumn>
+                    </GalleryLayout>
+                </UnsplashSelector>
+            </div>
         </div>
     );
 };

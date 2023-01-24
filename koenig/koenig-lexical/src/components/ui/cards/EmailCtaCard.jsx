@@ -5,7 +5,7 @@ import {Button} from '../Button';
 export function EmailCtaCard({isSelected, visibility, alignment, separators, value, placeholder, button, buttonText}) {
     return (
         <div className="pb-6">
-            <div className="pt-1 pb-7 font-sans text-xs font-semibold uppercase tracking-tight text-grey">
+            <div className="pt-1 pb-7 font-sans text-xs font-semibold uppercase leading-8 tracking-tight text-grey">
                 {visibility}
             </div>
             {separators && <hr className="-mt-4 mb-12 block border-t-grey-300" />}
@@ -15,7 +15,7 @@ export function EmailCtaCard({isSelected, visibility, alignment, separators, val
                     <Button valuePlaceholder="Add button text" value={buttonText} />
                 </div>    
             }
-            {separators && <hr className="mt-12 block border-t-grey-300" />}
+            {separators && <hr className="mt-12 mb-0 block border-t-grey-300" />}
 
         </div>
     );

@@ -14,7 +14,9 @@ const story = {
 export default story;
 
 const Template = args => (
-    <MediaPlaceholder {...args} />
+    <div className="flex">
+        <MediaPlaceholder {...args} />
+    </div>
 );
 
 export const Image = Template.bind({});

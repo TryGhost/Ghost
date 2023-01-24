@@ -46,15 +46,17 @@ const Template = (args) => {
     };
 
     return (
-        <div className="w-[764px]">
-            <CardWrapper {...args}>
-                <MarkdownCard
-                    {...args}
-                    onChange={onChange}
-                    value={value}
-                    unsplashConf={defaultHeaders}
-                />
-            </CardWrapper>
+        <div className="kg-prose">
+            <div className="mx-auto my-8 w-[740px] min-w-[initial]">
+                <CardWrapper wrapperStyle='wide' {...args}>
+                    <MarkdownCard
+                        {...args}
+                        onChange={onChange}
+                        value={value}
+                        unsplashConf={defaultHeaders}
+                    />
+                </CardWrapper>
+            </div>
         </div>
     );
 };

@@ -18,10 +18,12 @@ const story = {
 export default story;
 
 const Template = args => (
-    <div className="w-full">
-        <CardWrapper {...args}>
-            <HeaderCard {...args} />
-        </CardWrapper>
+    <div className="kg-prose">
+        <div className="mx-auto my-8 w-full min-w-[initial]">
+            <CardWrapper {...args}>
+                <HeaderCard {...args} />
+            </CardWrapper>
+        </div>
     </div>
 );
 

@@ -18,12 +18,14 @@ const story = {
 export default story;
 
 const Template = args => (
-    <div className="mx-auto my-8 w-[740px]">
-        <CardWrapper {...args}>
-            <div className="flex justify-center p-3">
-                <ProductCard {...args} />
-            </div>
-        </CardWrapper>
+    <div className="kg-prose">
+        <div className="not-kg-prose mx-auto my-8 w-[740px] min-w-[initial]">
+            <CardWrapper {...args}>
+                <div className="flex justify-center p-3">
+                    <ProductCard {...args} />
+                </div>
+            </CardWrapper>
+        </div>
     </div>
 );
 

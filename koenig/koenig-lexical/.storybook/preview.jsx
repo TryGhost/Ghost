@@ -43,7 +43,7 @@ export const decorators = [
     (Story) => {
         return (
             <div className="koenig-lexical" id="koenig-lexical">
-              <div className="flex">
+              <div>
                 <Story />
               </div>
             </div>

@@ -19,10 +19,12 @@ const story = {
 export default story;
 
 const Template = args => (
-    <div className="mx-auto my-8 w-[740px]">
-        <CardWrapper wrapperStyle='code-card' {...args}>
-            <CodeBlockCard updateCode={() => {}} {...args} />
-        </CardWrapper>
+    <div className="kg-prose">
+        <div className="mx-auto my-8 w-[740px] min-w-[initial]">
+            <CardWrapper wrapperStyle='code-card' {...args}>
+                <CodeBlockCard updateCode={() => {}} {...args} />
+            </CardWrapper>
+        </div>
     </div>
 );
 

@@ -16,8 +16,10 @@ export default story;
 const Template = (args) => {
     const [isActive, setActive] = React.useState(false);
     return (
-        <div className="rounded bg-black">
-            <ToolbarMenuItem {...args} onClick={() => setActive(!isActive)} isActive={isActive} />
+        <div className="flex">
+            <div className="rounded bg-black">
+                <ToolbarMenuItem {...args} onClick={() => setActive(!isActive)} isActive={isActive} />
+            </div>
         </div>
     );
 };

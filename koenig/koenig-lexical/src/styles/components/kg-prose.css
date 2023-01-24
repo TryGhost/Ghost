@@ -695,5 +695,14 @@
             vertical-align: middle;
             white-space: pre-wrap;
         }
+
+        /* Images
+        /* -------------------------------------------------------------------- */
+
+        :where(
+            img
+        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            display: inline;
+        }
     }
 }

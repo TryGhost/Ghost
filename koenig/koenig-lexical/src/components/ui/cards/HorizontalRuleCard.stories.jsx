@@ -18,10 +18,12 @@ const story = {
 export default story;
 
 const Template = args => (
-    <div className="mx-auto my-8 w-[740px]">
-        <CardWrapper {...args}>
-            <HorizontalRuleCard {...args} />
-        </CardWrapper>
+    <div className="kg-prose">
+        <div className="mx-auto my-8 w-[740px] min-w-[initial]">
+            <CardWrapper {...args}>
+                <HorizontalRuleCard {...args} />
+            </CardWrapper>
+        </div>
     </div>
 );
 
