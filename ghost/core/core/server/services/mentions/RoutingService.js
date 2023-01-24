@@ -1,3 +1,5 @@
+const logging = require('@tryghost/logging');
+
 /**
  * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IRoutingService} IRoutingService
  * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IResourceService} IResourceService
@@ -19,6 +21,9 @@ module.exports = class RoutingService {
     /** @typedef {IResourceService} */
     #resourceService;
 
+    /** @typedef {import('got')} */
+    #externalRequest;
+
     /**
      * @param {object} deps
      * @param {URL} deps.siteUrl
@@ -28,6 +33,7 @@ module.exports = class RoutingService {
     constructor(deps) {
         this.#siteUrl = deps.siteUrl;
         this.#resourceService = deps.resourceService;
+        this.#externalRequest = deps.externalRequest;
     }
 
     /**
@@ -48,7 +54,19 @@ module.exports = class RoutingService {
             return true;
         }
 
-        return false;
+        try {
+            const response = await this.#externalRequest.head(url, {
+                followRedirect: false
+            });
+            if (response.statusCode < 400 && response.statusCode > 199) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (err) {
+            logging.error(err);
+            return false;
+        }
     }
 };
 
