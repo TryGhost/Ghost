@@ -1,55 +1,91 @@
 const assert = require('assert');
+const sinon = require('sinon');
+const ObjectID = require('bson-objectid').default;
 const RoutingService = require('../../../../../core/server/services/mentions/RoutingService');
 
 describe('RoutingService', function () {
     describe('pageExists', function () {
-        it('Returns false if the url is from a different origin', async function () {
-            const siteUrl = new URL('https://website.com');
-            const routingService = new RoutingService({
-                siteUrl
+        describe('URL checks', function () {
+            it('Returns false if the url is from a different origin', async function () {
+                const siteUrl = new URL('https://website.com');
+                const resourceService = {
+                    getByURL: sinon.stub()
+                };
+                const routingService = new RoutingService({
+                    siteUrl,
+                    resourceService
+                });
+
+                const result = await routingService.pageExists(new URL('https://different-website.com'));
+
+                assert.equal(result, false);
             });
 
-            const result = await routingService.pageExists(new URL('https://different-website.com'));
+            it('Returns false if the url is not on the correct subdirectory', async function () {
+                const siteUrl = new URL('https://website.com/subdir');
+                const resourceService = {
+                    getByURL: sinon.stub()
+                };
+                const routingService = new RoutingService({
+                    siteUrl,
+                    resourceService
+                });
 
-            assert.equal(result, false);
+                checkNoSubdomain: {
+                    const result = await routingService.pageExists(new URL('https://website.com'));
+                    assert.equal(result, false);
+                    break checkNoSubdomain;
+                }
+
+                checkIncorrectSubdomain: {
+                    const result = await routingService.pageExists(new URL('https://website.com/different'));
+                    assert.equal(result, false);
+                    break checkIncorrectSubdomain;
+                }
+            });
         });
 
-        it('Returns false if the url is not on the correct subdirectory', async function () {
-            const siteUrl = new URL('https://website.com/subdir');
-            const routingService = new RoutingService({
-                siteUrl
+        describe('Resource checks', function () {
+            it('Returns true if a resource exists for the URL', async function () {
+                const siteUrl = new URL('https://website.com/subdir');
+                const resourceService = {
+                    getByURL: sinon.stub()
+                };
+                const routingService = new RoutingService({
+                    siteUrl,
+                    resourceService
+                });
+
+                resourceService.getByURL.resolves({type: 'post', id: new ObjectID});
+
+                const result = await routingService.pageExists(new URL('https://website.com/subdir/post'));
+                assert.equal(result, true);
             });
 
-            checkNoSubdomain: {
-                const result = await routingService.pageExists(new URL('https://website.com'));
-                assert.equal(result, false);
-                break checkNoSubdomain;
-            }
+            it('Returns false if the url is on the correct origin and subdirectory and a resource does not exist', async function () {
+                const siteUrl = new URL('https://website.com/subdir');
+                const resourceService = {
+                    getByURL: sinon.stub()
+                };
+                const routingService = new RoutingService({
+                    siteUrl,
+                    resourceService
+                });
 
-            checkIncorrectSubdomain: {
-                const result = await routingService.pageExists(new URL('https://website.com/different'));
-                assert.equal(result, false);
-                break checkIncorrectSubdomain;
-            }
-        });
+                resourceService.getByURL.resolves(null);
 
-        it('Returns true if the url is on the correct origin and subdirectory', async function () {
-            const siteUrl = new URL('https://website.com/subdir');
-            const routingService = new RoutingService({
-                siteUrl
+                checkJustSubdomain: {
+                    const result = await routingService.pageExists(new URL('https://website.com/subdir'));
+                    assert.equal(result, false);
+                    break checkJustSubdomain;
+                }
+
+                checkLongerPath: {
+                    const result = await routingService.pageExists(new URL('https://website.com/subdir/page'));
+                    assert.equal(result, false);
+                    break checkLongerPath;
+                }
             });
-
-            checkJustSubdomain: {
-                const result = await routingService.pageExists(new URL('https://website.com/subdir'));
-                assert.equal(result, true);
-                break checkJustSubdomain;
-            }
-
-            checkLongerPath: {
-                const result = await routingService.pageExists(new URL('https://website.com/subdir/page'));
-                assert.equal(result, true);
-                break checkLongerPath;
-            }
         });
     });
 });
