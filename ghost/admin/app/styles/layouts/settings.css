@@ -2662,6 +2662,10 @@ p.theme-validation-details {
 
 /* Stripe Connect modal */
 .fullscreen-modal-stripe-connect {
+    max-width: 860px;
+}
+
+.fullscreen-modal-stripe-connected {
     max-width: 760px;
 }
 
@@ -2880,6 +2884,7 @@ p.theme-validation-details {
 
 .gh-stripe-guide {
     display: flex;
+    width: 100%;
     box-shadow: rgba(0,0,0,0.05) 0 14px 23px -18px;
     color: var(--midgrey);
     transition: all 0.2s ease-in-out;
