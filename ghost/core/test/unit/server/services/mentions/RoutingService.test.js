@@ -65,7 +65,7 @@ describe('RoutingService', function () {
                     externalRequest: got
                 });
 
-                resourceService.getByURL.resolves({pe: 'post', id: new ObjectID});
+                resourceService.getByURL.resolves({type: 'post', id: new ObjectID});
 
                 const result = await routingService.pageExists(new URL('https://website.com/subdir/post'));
                 assert.equal(result, true);
@@ -84,7 +84,7 @@ describe('RoutingService', function () {
                     externalRequest: got
                 });
 
-                resourceService.getByURL.resolves(null);
+                resourceService.getByURL.resolves({type: null, id: null});
 
                 nock('https://website.com').head('/subdir/should-exist').reply(200);
 
@@ -103,7 +103,7 @@ describe('RoutingService', function () {
                     externalRequest: got
                 });
 
-                resourceService.getByURL.resolves(null);
+                resourceService.getByURL.resolves({type: null, id: null});
 
                 nock('https://website.com').head('/subdir/should-redirect').reply(301);
 
@@ -122,7 +122,7 @@ describe('RoutingService', function () {
                     externalRequest: got
                 });
 
-                resourceService.getByURL.resolves(null);
+                resourceService.getByURL.resolves({type: null, id: null});
 
                 nock('https://website.com').head('/subdir/not-exist').reply(404);
 
@@ -141,7 +141,7 @@ describe('RoutingService', function () {
                     externalRequest: got
                 });
 
-                resourceService.getByURL.resolves(null);
+                resourceService.getByURL.resolves({type: null, id: null});
 
                 nock('https://website.com').head('/subdir/big-error').reply(500);
 
