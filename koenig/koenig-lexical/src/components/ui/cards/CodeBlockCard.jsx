@@ -9,7 +9,23 @@ import {javascript} from '@codemirror/lang-javascript';
 import {tags} from '@lezer/highlight';
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
+    const [showLanguage, setShowLanguage] = React.useState(true);
+
+    // show the language input when the mouse moves
+    React.useEffect(() => {
+        const onMouseMove = () => {
+            setShowLanguage(true);
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+        };
+    }, []);
+
     const onChange = React.useCallback((value) => {
+        setShowLanguage(false); // hide language input whenever the user types in the editor
         updateCode(value);
     }, [updateCode]);
 
@@ -81,10 +97,11 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
             <input
                 aria-label="Code card language"
                 type="text"
+                data-testid="code-card-language"
                 value={language}
                 onChange={onLanguageChange}
                 placeholder="Language..."
-                className="z-999 absolute top-1.5 right-1.5 w-1/5 rounded border border-grey-300 p-1 font-sans text-[1.3rem] leading-4 text-grey-900 focus-visible:outline-none"
+                className={`z-999 absolute top-1.5 right-1.5 w-1/5 rounded border border-grey-300 p-1 font-sans text-[1.3rem] leading-4 text-grey-900 transition-opacity focus-visible:outline-none ${showLanguage ? 'opacity-100' : 'opacity-0'}`}
             />
         </div>
     );

@@ -58,4 +58,23 @@ describe('Code Block card', async () => {
             </div>
         `, {ignoreCardContents: true});
     });
+
+    test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('```javascript ');
+
+        // Type in the editor
+        await page.keyboard.type('Here are some words');
+
+        // The language input should be hidden
+        expect(await page.$('[data-testid="code-card-language"].opacity-0')).not.toBeNull();
+        expect(await page.$('[data-testid="code-card-language"].opacity-100')).toBeNull();
+
+        // Move the mouse
+        await page.mouse.move(0,0);
+
+        // The language input should be visible
+        expect(await page.$('[data-testid="code-card-language"].opacity-0')).toBeNull();
+        expect(await page.$('[data-testid="code-card-language"].opacity-100')).not.toBeNull();
+    });
 });
