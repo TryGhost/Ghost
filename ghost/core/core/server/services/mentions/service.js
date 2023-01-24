@@ -39,8 +39,7 @@ const mentionNotifications = new MentionNotifications({
     urlUtils,
     siteDomain,
     settingsHelpers,
-    mailer,
-    DomainEvents
+    mailer
 });
 
 module.exports = {

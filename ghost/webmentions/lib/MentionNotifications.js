@@ -3,7 +3,7 @@ const path = require('path');
 const glob = require('glob');
 
 module.exports = class MentionNotifications {
-    constructor({logging, models, settingsCache, urlUtils, siteDomain, settingsHelpers, mailer, DomainEvents}) {
+    constructor({logging, models, settingsCache, urlUtils, siteDomain, settingsHelpers, mailer}) {
         this.models = models;
         this.settingsCache = settingsCache;
         this.urlUtils = urlUtils;
@@ -13,7 +13,6 @@ module.exports = class MentionNotifications {
         this.mailer = mailer;
         this.logging = logging;
         this.registerPartials();
-        this.DomainEvents = DomainEvents;
     }
 
     get defaultEmailDomain() {

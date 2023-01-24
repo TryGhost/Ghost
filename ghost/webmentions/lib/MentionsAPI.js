@@ -72,11 +72,6 @@ const DomainEvents = require('@tryghost/domain-events');
  * @prop {(url: URL) => Promise<WebmentionMetadata>} fetch
  */
 
-// /**
-//  * @typedef {object} MentionNotifications
-//  * @prop {(mention: Mention) => Promise<void>} notifyMentionReceived
-// */
-
 module.exports = class MentionsAPI {
     /** @type {IMentionRepository} */
     #repository;
@@ -86,8 +81,6 @@ module.exports = class MentionsAPI {
     #routingService;
     /** @type {IWebmentionMetadata} */
     #webmentionMetadata;
-    // /** @type {MentionNotifications} */
-    // #notifications;
 
     /**
      * @param {object} deps
