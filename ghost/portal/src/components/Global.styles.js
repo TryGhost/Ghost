@@ -3,8 +3,10 @@ export const GlobalStyles = `
     /* ----------------------------------------------------- */
     :root {
         --black: #000;
+        --blackrgb: 0,0,0;
         --grey0: #1d1d1d;
         --grey1: #333;
+        --grey1rgb: 33, 33, 33;
         --grey2: #3d3d3d;
         --grey3: #474747;
         --grey4: #515151;
@@ -17,8 +19,10 @@ export const GlobalStyles = `
         --grey11: #e1e1e1;
         --grey12: #eaeaea;
         --grey13: #f9f9f9;
+        --grey13rgb: 249,249,249;
         --grey14: #fbfbfb;
         --white: #fff;
+        --whitergb: 255,255,255;
         --red: #f02525;
         --darkerRed: #C50202;
         --yellow: #FFDC15;

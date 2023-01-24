@@ -17,10 +17,10 @@ export const PopupNotificationStyles = `
         z-index: 11000;
         border-radius: 5px;
         font-size: 1.5rem;
-        box-shadow: 0px 0.8151839971542358px 0.8151839971542358px 0px rgba(0,0,0,0.01),
-                    0px 2.2538793087005615px 2.2538793087005615px 0px rgba(0,0,0,0.02),
-                    0px 5.426473140716553px 5.426473140716553px 0px rgba(0,0,0,0.03),
-                    0px 18px 18px 0px rgba(0,0,0,0.04);
+        box-shadow: 0px 0.8151839971542358px 0.8151839971542358px 0px rgba(var(--blackrgb),0.01),
+                    0px 2.2538793087005615px 2.2538793087005615px 0px rgba(var(--blackrgb),0.02),
+                    0px 5.426473140716553px 5.426473140716553px 0px rgba(var(--blackrgb),0.03),
+                    0px 18px 18px 0px rgba(var(--blackrgb),0.04);
         animation: popupnotification-slidein 0.3s ease-in-out;
     }
 
@@ -55,7 +55,7 @@ export const PopupNotificationStyles = `
     }
 
     .gh-portal-popupnotification-icon.error {
-        color: #FF2828;
+        color: var(--red);
     }
 
     .gh-portal-popupnotification .closeicon {

@@ -34,8 +34,8 @@ export const ProductsSectionStyles = ({site}) => {
             top: 4px;
             bottom: 4px;
             right: 4px;
-            background: #fff;
-            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.08);
+            background: var(--white);
+            box-shadow: 0px 1px 3px rgba(var(--blackrgb), 0.08);
             border-radius: 999px;
             transition: all 0.15s ease-in-out;
         }
@@ -59,8 +59,6 @@ export const ProductsSectionStyles = ({site}) => {
             height: 100%;
             width: 50%;
             color: var(--grey0);
-            /*background: white;
-            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.08);*/
         }
 
         .gh-portal-priceoption-label {
@@ -99,7 +97,7 @@ export const ProductsSectionStyles = ({site}) => {
             flex-direction: column;
             align-items: flex-start;
             justify-content: stretch;
-            background: white;
+            background: var(--white);
             padding: 32px;
             border-radius: 7px;
             border: 1px solid var(--grey11);
@@ -344,13 +342,13 @@ export const ProductsSectionStyles = ({site}) => {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(0deg, rgba(255,255,255,1) 60%, rgba(255,255,255,0) 100%);
+            background: linear-gradient(0deg, rgba(var(--whitergb),1) 60%, rgba(var(--whitergb),0) 100%);
             z-index: 800;
         }
 
         .gh-portal-btn-product .gh-portal-btn {
             background: var(--brandcolor);
-            color: #fff;
+            color: var(--white);
             border: none;
             width: 100%;
             z-index: 900;
@@ -375,7 +373,7 @@ export const ProductsSectionStyles = ({site}) => {
             line-height: 1em;
             letter-spacing: 0.2px;
             font-weight: 500;
-            background: #f0f0f0;
+            background: var(--grey14);
             z-index: 900;
         }
 
