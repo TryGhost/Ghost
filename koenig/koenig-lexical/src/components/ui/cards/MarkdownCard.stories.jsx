@@ -1,8 +1,26 @@
 import React, {useState} from 'react';
 import {MarkdownCard} from './MarkdownCard.jsx';
 import {CardWrapper} from './../CardWrapper';
-import {getImageUrl} from '../../../../demo/utils/imageUploader';
+import {useImageUpload} from '../../../../demo/utils/useImageUpload';
 import {defaultHeaders} from '../../../../demo/utils/unsplashConfig';
+
+function imageLoading() {
+    return {progress: 60, isLoading: true, filesNumber: 2};
+}
+
+function imageErrors() {
+    const errors = [
+        {
+            fileName: 'image.jpg',
+            message: 'Wrong extension'
+        },
+        {
+            fileName: 'cat.png',
+            message: 'Smth went wrong'
+        }
+    ];
+    return {errors};
+}
 
 const story = {
     title: 'Primary cards/Markdown card',
@@ -34,7 +52,6 @@ const Template = (args) => {
                     {...args}
                     onChange={onChange}
                     value={value}
-                    imageUploader={getImageUrl}
                     unsplashConf={defaultHeaders}
                 />
             </CardWrapper>
@@ -46,5 +63,22 @@ export const Populated = Template.bind({});
 Populated.args = {
     value: '# Title',
     isSelected: true,
-    isEditing: true
+    isEditing: true,
+    imageUploader: useImageUpload
+};
+
+export const Progress = Template.bind({});
+Progress.args = {
+    value: '# Title',
+    isSelected: true,
+    isEditing: true,
+    imageUploader: imageLoading
+};
+
+export const Errors = Template.bind({});
+Errors.args = {
+    value: '# Title',
+    isSelected: true,
+    isEditing: true,
+    imageUploader: imageErrors
 };

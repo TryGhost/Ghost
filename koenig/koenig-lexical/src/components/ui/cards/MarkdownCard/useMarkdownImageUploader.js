@@ -3,14 +3,12 @@ import {useRef, useState} from 'react';
 export default function useMarkdownImageUploader(editor, imageUploader) {
     const imageInputRef = useRef(null);
     const [selection, setSelection] = useState(null);
-    const [isImageLoading, setImageLoading] = useState(false);
+    const {progress, upload, errors, isLoading, filesNumber} = imageUploader();
 
     const uploadImages = async (event) => {
-        setImageLoading(true);
         const files = event.target.files;
-        const filesSrc = await imageUploader(files);
+        const filesSrc = await upload(files);
         insertImages(filesSrc);
-        setImageLoading(false);
     };
 
     const captureSelection = () => {
@@ -96,5 +94,15 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
         codemirror.replaceSelection(text, 'end');
     }
 
-    return {openImageUploadDialog, captureSelection, uploadImages, insertUnsplashImage, imageInputRef, isImageLoading};
+    return {
+        openImageUploadDialog,
+        captureSelection,
+        uploadImages,
+        insertUnsplashImage,
+        imageInputRef,
+        progress,
+        errors,
+        isLoading,
+        filesNumber
+    };
 }

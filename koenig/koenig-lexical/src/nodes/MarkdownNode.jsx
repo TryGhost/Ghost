@@ -29,7 +29,7 @@ function MarkdownNodeComponent({nodeKey, markdown}) {
             markdown={markdown}
             updateMarkdown={updateMarkdown}
             isEditing={cardContext.isEditing}
-            imageUploader={imageUploader.getImageUrl}
+            imageUploader={imageUploader.useImageUpload}
             unsplashConf={unsplashConf}
         />
     );

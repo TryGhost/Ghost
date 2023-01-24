@@ -18,7 +18,17 @@ export default function MarkdownEditor({
     const editor = useRef(null);
     const [isHelpDialogOpen, setHelpDialogOpen] = useState(false);
     const [isUnsplashDialogOpen, setUnsplashDialogOpen] = useState(false);
-    const {openImageUploadDialog, uploadImages, captureSelection, insertUnsplashImage, imageInputRef, isImageLoading} = useMarkdownImageUploader(editor, imageUploader);
+    const {
+        openImageUploadDialog,
+        uploadImages,
+        captureSelection,
+        insertUnsplashImage,
+        imageInputRef,
+        progress,
+        errors: imageUploadErrors,
+        isLoading,
+        filesNumber
+    } = useMarkdownImageUploader(editor, imageUploader);
 
     // init editor on component mount
     useLayoutEffect(() => {
@@ -175,7 +185,10 @@ export default function MarkdownEditor({
             <MarkdownImageUploader
                 inputRef={imageInputRef}
                 onChange={uploadImages}
-                loading={isImageLoading}
+                progress={progress}
+                loading={isLoading}
+                errors={imageUploadErrors}
+                filesNumber={filesNumber}
             />
 
             {isUnsplashDialogOpen && (
