@@ -1,5 +1,6 @@
 /**
  * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IRoutingService} IRoutingService
+ * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IResourceService} IResourceService
  */
 
 /**
@@ -15,12 +16,18 @@ module.exports = class RoutingService {
     /** @typedef {URL} */
     #siteUrl;
 
+    /** @typedef {IResourceService} */
+    #resourceService;
+
     /**
      * @param {object} deps
      * @param {URL} deps.siteUrl
+     * @param {IResourceService} deps.resourceService
+     * @param {import('got')} deps.externalRequest;
      */
     constructor(deps) {
         this.#siteUrl = deps.siteUrl;
+        this.#resourceService = deps.resourceService;
     }
 
     /**
@@ -35,7 +42,13 @@ module.exports = class RoutingService {
             return false;
         }
 
-        return true;
+        const resource = await this.#resourceService.getByURL(url);
+
+        if (resource) {
+            return true;
+        }
+
+        return false;
     }
 };
 
