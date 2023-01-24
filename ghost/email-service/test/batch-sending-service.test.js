@@ -440,7 +440,7 @@ describe('Batch Sending Service', function () {
             assert.equal(arg.batch, batches[0]);
         });
 
-        it('Works for more than 10 batches', async function () {
+        it('Works for more than 2 batches', async function () {
             const service = new BatchSendingService({});
             let runningCount = 0;
             let maxRunningCount = 0;
@@ -461,7 +461,7 @@ describe('Batch Sending Service', function () {
             sinon.assert.callCount(sendBatch, 101);
             const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
             assert.deepEqual(sendBatches, batches);
-            assert.equal(maxRunningCount, 10);
+            assert.equal(maxRunningCount, 2);
         });
 
         it('Throws error if all batches fail', async function () {
@@ -485,7 +485,7 @@ describe('Batch Sending Service', function () {
             sinon.assert.callCount(sendBatch, 101);
             const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
             assert.deepEqual(sendBatches, batches);
-            assert.equal(maxRunningCount, 10);
+            assert.equal(maxRunningCount, 2);
         });
 
         it('Throws error if a single batch fails', async function () {
@@ -511,7 +511,7 @@ describe('Batch Sending Service', function () {
             sinon.assert.callCount(sendBatch, 101);
             const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
             assert.deepEqual(sendBatches, batches);
-            assert.equal(maxRunningCount, 10);
+            assert.equal(maxRunningCount, 2);
         });
     });
 
