@@ -36,7 +36,8 @@ module.exports = {
         });
         const routingService = new RoutingService({
             siteUrl: new URL(urlUtils.getSiteUrl()),
-            resourceService
+            resourceService,
+            externalRequest
         });
 
         const api = new MentionsAPI({
