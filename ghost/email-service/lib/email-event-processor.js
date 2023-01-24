@@ -1,5 +1,11 @@
 const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEvent, EmailUnsubscribedEvent, EmailTemporaryBouncedEvent} = require('@tryghost/email-events');
 
+async function waitForEvent() {
+    return new Promise((resolve) => {
+        setTimeout(resolve, 100);
+    });
+}
+
 /**
  * @typedef EmailIdentification
  * @property {string} email
@@ -43,6 +49,8 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 timestamp
             }));
+            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
+            await waitForEvent();
         }
         return recipient;
     }
@@ -61,6 +69,8 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 timestamp
             }));
+            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
+            await waitForEvent();
         }
         return recipient;
     }
@@ -81,6 +91,8 @@ class EmailEventProcessor {
                 emailRecipientId: recipient.emailRecipientId,
                 timestamp
             }));
+            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
+            await waitForEvent();
         }
         return recipient;
     }
@@ -101,6 +113,8 @@ class EmailEventProcessor {
                 emailRecipientId: recipient.emailRecipientId,
                 timestamp
             }));
+            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
+            await waitForEvent();
         }
         return recipient;
     }
@@ -118,6 +132,8 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 timestamp
             }));
+            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
+            await waitForEvent();
         }
         return recipient;
     }
@@ -135,6 +151,8 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 timestamp
             }));
+            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
+            await waitForEvent();
         }
         return recipient;
     }

@@ -8,6 +8,8 @@ const messages = {
     emailError: 'Email failed to send'
 };
 
+const MAX_SENDING_CONCURRENCY = 2;
+
 /**
  * @typedef {import('./sending-service')} SendingService
  * @typedef {import('./email-segmenter')} EmailSegmenter
@@ -267,8 +269,8 @@ class BatchSendingService {
             }
         };
 
-        // Run maximum 10 at the same time
-        await Promise.all(new Array(10).fill(0).map(() => runNext()));
+        // Run maximum MAX_SENDING_CONCURRENCY at the same time
+        await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runNext()));
 
         if (succeededCount < batches.length) {
             if (succeededCount > 0) {
