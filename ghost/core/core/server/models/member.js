@@ -219,11 +219,13 @@ const Member = ghostBookshelf.Model.extend({
 
     async updateTierExpiry(products = [], options = {}) {
         for (const product of products) {
-            const expiry = product.expiry_at ? new Date(product.expiry_at) : null;
-            const queryOptions = _.extend({}, options, {
-                query: {where: {product_id: product.id}}
-            });
-            await this.products().updatePivot({expiry_at: expiry}, queryOptions);
+            if (product?.id) {
+                const expiry = product.expiry_at ? new Date(product.expiry_at) : null;
+                const queryOptions = _.extend({}, options, {
+                    query: {where: {product_id: product.id}}
+                });
+                await this.products().updatePivot({expiry_at: expiry}, queryOptions);
+            }
         }
     },
 
