@@ -1,3 +1,6 @@
+const validator = require('@tryghost/validator');
+const logging = require('@tryghost/logging');
+
 /**
  * @typedef {object} EmailData
  * @prop {string} html
@@ -111,7 +114,7 @@ class SendingService {
     buildRecipients(members, replacementDefinitions) {
         return members.map((member) => {
             return {
-                email: member.email,
+                email: member.email?.trim(),
                 replacements: replacementDefinitions.map((def) => {
                     return {
                         id: def.id,
@@ -120,6 +123,13 @@ class SendingService {
                     };
                 })
             };
+        }).filter((recipient) => {
+            // Remove invalid recipient email addresses
+            const isValidRecipient = validator.isEmail(recipient.email, {legacy: false});
+            if (!isValidRecipient) {
+                logging.warn(`Removed recipient ${recipient.email} from list because it is not a valid email address`);
+            }
+            return isValidRecipient;
         });
     }
 }
