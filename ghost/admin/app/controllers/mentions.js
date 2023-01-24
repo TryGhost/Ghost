@@ -15,7 +15,7 @@ export default class MentionsController extends Controller {
     
     @task
     *loadMentionsTask() {
-        const mentions = yield this.store.query('mention', {});
+        const mentions = yield this.store.query('mention', {order: 'created_at desc'});
         this.mentionsList = mentions;
     }
 }
