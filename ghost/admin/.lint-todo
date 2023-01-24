@@ -1138,3 +1138,7 @@ remove|ember-template-lint|no-triple-curlies|72|16|72|16|9197e9050977ef47965e1b6
 remove|ember-template-lint|no-invalid-interactive|93|36|93|36|fc4eb64cc0ad0cc9c500c7ef026e44649bc4778b|1662681600000|1673053200000|1678237200000|app/templates/offers.hbs
 remove|ember-template-lint|no-action|143|50|143|50|91a3281547c8446529685240c77aaccb5c7d69bd|1662681600000|1673053200000|1678237200000|app/components/gh-post-settings-menu.hbs
 remove|ember-template-lint|no-action|411|168|411|168|0145b67f0faef0aad141c6a4269c35c6ef8f0a47|1662681600000|1673053200000|1678237200000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-action|4|55|4|55|141d456b03124abca146e58e4ae15825fdd040bb|1662681600000|1673053200000|1678237200000|app/components/modal-stripe-connect.hbs
+remove|ember-template-lint|no-action|4|79|4|79|d465b362b15b90cf42a093e72895155f49cdf6f2|1662681600000|1673053200000|1678237200000|app/components/modal-stripe-connect.hbs
+remove|ember-template-lint|no-action|21|91|21|91|ebbd89a393bcec7f537f2104ace2a6b1941a19a7|1662681600000|1673053200000|1678237200000|app/components/modal-stripe-connect.hbs
+remove|ember-template-lint|no-action|22|12|22|12|d465b362b15b90cf42a093e72895155f49cdf6f2|1662681600000|1673053200000|1678237200000|app/components/modal-stripe-connect.hbs
