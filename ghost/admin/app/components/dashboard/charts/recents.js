@@ -9,11 +9,13 @@ export default class Recents extends Component {
 
     @tracked selected = 'posts';
     @tracked posts = [];
+    @tracked mentions = [];
     excludedEventTypes = ['aggregated_click_event'];
 
     @action 
     async loadPosts() {
         this.posts = await this.store.query('post', {limit: 5, filter: 'status:[published,sent]', order: 'published_at desc'});
+        this.mentions = await this.store.query('mention', {limit: 5, order: 'created_at desc'});
     }
 
     @action
