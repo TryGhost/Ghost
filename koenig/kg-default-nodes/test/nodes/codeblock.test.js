@@ -146,6 +146,14 @@ describe('CodeBlockNode', function () {
                 caption: 'A code block'
             });
         }));
+
+        it('has isEmpty() convenience method', editorTest(function () {
+            const codeBlockNode = $createCodeBlockNode({language, code, caption});
+
+            codeBlockNode.isEmpty().should.be.false;
+            codeBlockNode.setCode('');
+            codeBlockNode.isEmpty().should.be.true;
+        }));
     });
 
     describe('exportDOM', function () {

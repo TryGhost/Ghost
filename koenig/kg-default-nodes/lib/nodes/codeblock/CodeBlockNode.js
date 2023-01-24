@@ -129,6 +129,10 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     hasEditMode() {
         return true;
     }
+
+    isEmpty() {
+        return !this.__code;
+    }
 }
 
 export function $createCodeBlockNode(dataset) {

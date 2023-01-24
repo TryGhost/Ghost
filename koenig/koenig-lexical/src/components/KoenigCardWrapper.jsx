@@ -239,6 +239,36 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, openInEditMod
         }
     }, [editor, nodeKey, openInEditMode, setSelected, setEditing]);
 
+    // when the card leaves editing mode and isEmpty() is true, remove the card
+    React.useEffect(() => {
+        if (!isEditing && !isSelected && !openInEditMode) {
+            editor.update(() => {
+                const cardNode = $getNodeByKey(nodeKey);
+                if (cardNode.isEmpty?.()) {
+                    const nextSibling = cardNode.getNextSibling();
+
+                    if (nextSibling) {
+                        if (nextSibling.selectStart) {
+                            nextSibling.selectStart();
+                        } else if ($isDecoratorNode(nextSibling)) {
+                            const nodeSelection = $createNodeSelection();
+                            nodeSelection.add(nextSibling.getKey());
+                            $setSelection(nodeSelection);
+                        } else {
+                            cardNode.selectNext();
+                        }
+                    } else {
+                        const paragraphNode = $createParagraphNode();
+                        cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
+                        paragraphNode.select();
+                    }
+
+                    cardNode.remove();
+                }
+            });
+        }
+    }, [isEditing]);
+
     return (
         <CardContext.Provider value={{
             isSelected,

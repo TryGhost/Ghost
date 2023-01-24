@@ -144,6 +144,18 @@ describe('Card behaviour', async () => {
             expect (await page.$('[data-kg-card-editing="false"]'));
         });
 
+        test('clicking outside the empty edit mode card removes the card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('```javascript ');
+
+            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+
+            await page.click('.koenig-lexical');
+            await assertHTML(page, html`
+                <p><br /></p>
+            `);
+        });
+
         test('clicking on another card when a card is in edit mode selected new card and switches old card to display mode', async function () {
             await focusEditor(page);
             await page.keyboard.type('```python ');
