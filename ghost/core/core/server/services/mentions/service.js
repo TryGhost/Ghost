@@ -35,7 +35,8 @@ module.exports = {
             urlService
         });
         const routingService = new RoutingService({
-            siteUrl: new URL(urlUtils.getSiteUrl())
+            siteUrl: new URL(urlUtils.getSiteUrl()),
+            resourceService
         });
 
         const api = new MentionsAPI({
