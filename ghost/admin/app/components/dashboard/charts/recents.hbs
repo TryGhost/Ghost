@@ -148,25 +148,28 @@
                         <div class="gh-dashboard-list-title">Time</div>
                     </div>
                     <div class="gh-dashboard-list-body">
-                        {{!-- TODO: Switch to LinkTo --}}
-                        <a href="#" class="gh-dashboard-list-item permalink">
-                            <div class="gh-dashboard-list-item-sub">
-                                <img src="https://blog.mozilla.org/wp-content/themes/foxtail/assets/images/favicons/apple-touch-icon.png" alt="Mozilla" class="w5 h5 mr2 flex-shrink-0" />
-                                <span class="gh-dashboard-list-text">Mozilla</span>
+                        {{#if this.mentions}}
+                            {{#each this.mentions as |mention|}}
+                                <a href="#" class="gh-dashboard-list-item permalink">
+                                    <div class="gh-dashboard-list-item-sub">
+                                        <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0" />
+                                        <span class="gh-dashboard-list-text">{{if mention.sourceSiteTitle mention.sourceSiteTitle mention.source}}</span>
+                                    </div>
+                                    <div class="gh-dashboard-list-item-sub">
+                                        <span class="gh-dashboard-list-subtext gh-dashboard-recent-mentioned">
+                                            {{mention.target}}
+                                        </span>
+                                    </div>
+                                    <div class="gh-dashboard-list-item-sub gh-dashboard-list gh-dashboard-list-item-date">
+                                        <span class="gh-dashboard-list-subtext">{{gh-format-post-time mention.timestamp}}</span>
+                                    </div>
+                                </a>
+                            {{/each}}
+                        {{else}}
+                            <div class="gh-dashboard-list-empty">
+                                <p>No mentions yet.</p>
                             </div>
-                            <div class="gh-dashboard-list-item-sub">
-                                <span class="gh-dashboard-list-subtext gh-dashboard-recent-mentioned">
-                                    Norway’s Ambitious Plan to Designate 10 New National Parks
-                                </span>
-                            </div>
-                            <div class="gh-dashboard-list-item-sub gh-dashboard-list gh-dashboard-list-item-date">
-                                <span class="gh-dashboard-list-subtext">2 hours ago</span>
-                            </div>
-                        </a>
-                        {{!-- Empty state --}}
-                        {{!-- <div class="gh-dashboard-list-empty">
-                            <p>No mentions yet.</p>
-                        </div> --}}
+                        {{/if}}
                     </div>
                     <div class="gh-dashboard-list-footer">
                         <LinkTo @route="posts" @query={{reset-query-params "posts"}}>View all mentions &rarr;</LinkTo>
