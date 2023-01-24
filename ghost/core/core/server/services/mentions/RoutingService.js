@@ -50,7 +50,7 @@ module.exports = class RoutingService {
 
         const resource = await this.#resourceService.getByURL(url);
 
-        if (resource) {
+        if (resource?.type !== null) {
             return true;
         }
 
