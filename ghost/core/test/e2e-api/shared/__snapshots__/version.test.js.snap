@@ -469,7 +469,7 @@ a {
                                 <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;background-color:#f6f6f6; padding:20px; border-radius:2px;\\">
                                     <strong style=\\"font-weight: 600;\\">Integration expected Ghost version:</strong>&nbsp; v3.5
                                     <br>
-                                    <strong style=\\"font-weight: 600;\\">Current Ghost version:</strong>&nbsp; v5.30
+                                    <strong style=\\"font-weight: 600;\\">Current Ghost version:</strong>&nbsp; v5.31
                                     <br>
                                     <strong style=\\"font-weight: 600;\\">Failed request URL:</strong>&nbsp; /ghost/api/admin/removed_endpoint/
                                 </p>
@@ -526,7 +526,7 @@ generated some helpful information about the error that you can share with the
 creator of the Zapier integration below: 
 
  Integration expected Ghost version:v3.5 
-Current Ghost version:v5.30 
+Current Ghost version:v5.31 
 Failed request URL:/ghost/api/admin/removed_endpoint/ 
 
 This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
@@ -769,7 +769,7 @@ a {
                                 <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;background-color:#f6f6f6; padding:20px; border-radius:2px;\\">
                                     <strong style=\\"font-weight: 600;\\">Integration expected Ghost version:</strong>&nbsp; v3.1
                                     <br>
-                                    <strong style=\\"font-weight: 600;\\">Current Ghost version:</strong>&nbsp; v5.30
+                                    <strong style=\\"font-weight: 600;\\">Current Ghost version:</strong>&nbsp; v5.31
                                     <br>
                                     <strong style=\\"font-weight: 600;\\">Failed request URL:</strong>&nbsp; /ghost/api/admin/removed_endpoint/
                                 </p>
@@ -813,7 +813,7 @@ generated some helpful information about the error that you can share with the
 creator of the Zapier integration below: 
 
  Integration expected Ghost version:v3.1 
-Current Ghost version:v5.30 
+Current Ghost version:v5.31 
 Failed request URL:/ghost/api/admin/removed_endpoint/ 
 
 This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
