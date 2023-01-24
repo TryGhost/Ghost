@@ -2665,10 +2665,6 @@ p.theme-validation-details {
     max-width: 860px;
 }
 
-.fullscreen-modal-stripe-connected {
-    max-width: 760px;
-}
-
 .fullscreen-modal-stripe-connect:not(.fullscreen-modal-stripe-connected) .gh-main-section {
     margin: 0 0 -32px;
 }
@@ -2785,17 +2781,6 @@ p.theme-validation-details {
     flex-direction: column;
     align-items: center;
     margin-top: 7vw;
-}
-
-.gh-stripe-connected-container .check-circle {
-    width: 70px;
-    height: 70px;
-    color: var(--green);
-    margin-top: 20px;
-}
-
-.gh-stripe-connected-container .check-circle path {
-    stroke-width: 1px;
 }
 
 .gh-stripe-connected-container h1 {

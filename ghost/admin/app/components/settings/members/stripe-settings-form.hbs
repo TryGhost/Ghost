@@ -55,7 +55,7 @@
 
     {{else}}
 
-        {{#if (and this.stripeConnectAccountId (not this.saveStripeSettings.isRunning))}}
+        {{#if (and this.stripeConnectAccountId (not this.saveStripeSettingsTask.isRunning))}}
             <button type="button" class="gh-btn gh-btn-large gh-btn-stripe-disconnect" {{on "click" this.openDisconnectStripeModal}}><span>Disconnect</span></button>
             <div class="gh-stripe-connected-container">
                 <div class="gh-logos-stripe-connect">
