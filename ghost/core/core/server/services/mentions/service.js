@@ -6,8 +6,10 @@ const {
     MentionsAPI,
     MentionSendingService,
     MentionDiscoveryService,
+    MentionCreatedEvent,
     MentionNotifications
 } = require('@tryghost/webmentions');
+// const MentionNotifications = require('./MentionNotifications');
 const BookshelfMentionRepository = require('./BookshelfMentionRepository');
 const models = require('../../models');
 const events = require('../../lib/common/events');
@@ -19,7 +21,7 @@ const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const settingsHelpers = require('../settings-helpers');
 const logging = require('@tryghost/logging');
-
+const DomainEvents = require('@tryghost/domain-events');
 const ghostMailer = new mail.GhostMailer();
 const siteDomain = urlUtils.urlFor('home', true);
 const mailer = ghostMailer;
@@ -29,6 +31,18 @@ function getPostUrl(post) {
     outputSerializerUrlUtil.forPost(post.id, jsonModel, {options: {}});
     return jsonModel.url;
 }
+
+const mentionNotifications = new MentionNotifications({
+    logging,
+    models,
+    settingsCache,
+    urlUtils,
+    siteDomain,
+    settingsHelpers,
+    mailer,
+    DomainEvents
+});
+
 module.exports = {
     controller: new MentionController(),
     async init() {
@@ -37,11 +51,9 @@ module.exports = {
         });
         const webmentionMetadata = new WebmentionMetadata();
         const discoveryService = new MentionDiscoveryService({externalRequest});
-        const notifications = new MentionNotifications({logging, models, settingsCache, urlUtils, siteDomain, settingsHelpers, mailer});
         const api = new MentionsAPI({
             repository,
             webmentionMetadata,
-            notifications,
             resourceService: {
                 async getByURL(url) {
                     const path = urlUtils.absoluteToRelative(url.href, {withoutSubdirectory: true});
@@ -84,5 +96,14 @@ module.exports = {
             isEnabled: () => labs.isSet('webmentions')
         });
         sendingService.listen(events);
+
+        function MentionNotificationListener() {
+            DomainEvents.subscribe(MentionCreatedEvent, async (event) => {
+                await mentionNotifications.notifyMentionReceived(event.data.data);
+            });
+        }
+        if (labs.isSet('webmentions')) {
+            MentionNotificationListener();
+        }
     }
 };
