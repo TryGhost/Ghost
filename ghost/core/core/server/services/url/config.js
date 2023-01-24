@@ -128,7 +128,8 @@ module.exports = [
                 'accessibility',
                 'meta_title',
                 'meta_description',
-                'tour'
+                'tour',
+                'last_seen'
             ],
             filter: 'visibility:public',
             shouldHavePosts: {
