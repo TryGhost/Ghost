@@ -463,7 +463,7 @@ const fixtures = {
     insertMentions: function insertMentions() {
         return Promise.all(DataGenerator.forKnex.mentions.map((mention) => {
             return models.Mention.add(mention, context.internal);
-        }))
+        }));
     },
 
     insertEmails: function insertEmails() {

@@ -925,7 +925,7 @@ DataGenerator.Content = {
             target: 'https://target.com',
             sourceTitle: 'Title goes here',
             sourceExcerpt: 'Excerpt goes here'
-        },
+        }
     ]
 };
 
@@ -1379,8 +1379,8 @@ DataGenerator.forKnex = (function () {
     function createMention(overrides) {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
-            created_at: new Date(),
-        })
+            created_at: new Date()
+        });
     }
 
     const posts = [
@@ -1895,7 +1895,7 @@ DataGenerator.forKnex = (function () {
     const mentions = [
         createMention(DataGenerator.Content.mentions[0]),
         createMention(DataGenerator.Content.mentions[1]),
-        createMention(DataGenerator.Content.mentions[2]),
+        createMention(DataGenerator.Content.mentions[2])
     ];
 
     return {
