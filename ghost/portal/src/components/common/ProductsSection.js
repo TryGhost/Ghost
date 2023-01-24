@@ -18,7 +18,7 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-products-pricetoggle {
             position: relative;
             display: flex;
-            background: var(--grey13);
+            background: #F3F3F3;
             width: 100%;
             border-radius: 999px;
             padding: 4px;
@@ -59,8 +59,6 @@ export const ProductsSectionStyles = ({site}) => {
             height: 100%;
             width: 50%;
             color: var(--grey0);
-            /*background: white;
-            box-shadow: 0px 1px 3px rgba(var(--blackrgb), 0.08);*/
         }
 
         .gh-portal-priceoption-label {
