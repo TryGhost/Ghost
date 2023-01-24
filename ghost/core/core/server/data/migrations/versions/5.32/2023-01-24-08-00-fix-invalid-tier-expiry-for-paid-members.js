@@ -5,23 +5,23 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Removing expiry dates for paid members');
         try {
-            const memberIdsWithInvalidExpiry = await knex('members_products')
-                .select('members_products.member_id as id')
+            const invalidExpiryIds = await knex('members_products')
+                .select('members_products.id')
                 .leftJoin('members', 'members_products.member_id', 'members.id')
                 .where('members.status', '=', 'paid')
-                .whereNotNull('members_products.expiry_at').pluck('id');
+                .whereNotNull('members_products.expiry_at').pluck('members_products.id');
 
-            logging.info(`Found ${memberIdsWithInvalidExpiry.length} paid members with expiry dates`);
+            logging.info(`Found ${invalidExpiryIds.length} paid members with expiry dates`);
 
-            if (memberIdsWithInvalidExpiry.length === 0) {
+            if (invalidExpiryIds.length === 0) {
                 return;
             }
 
-            logging.info(`Removing expiry dates for ${memberIdsWithInvalidExpiry.length} paid members`);
+            logging.info(`Removing expiry dates for ${invalidExpiryIds.length} paid members`);
 
             await knex('members_products')
                 .update('expiry_at', null)
-                .whereIn('member_id', memberIdsWithInvalidExpiry);
+                .whereIn('id', invalidExpiryIds);
         } catch (err) {
             logging.warn('Failed to remove expiry dates for paid members');
             logging.warn(err);
