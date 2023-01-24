@@ -26,12 +26,21 @@ export default class Recents extends Component {
         this.selected = 'activity';
     }
 
+    @action
+    changeTabToMentions() {
+        this.selected = 'mentions';
+    }
+
     get postsTabSelected() {
         return (this.selected === 'posts');
     }
 
     get activityTabSelected() {
         return (this.selected === 'activity');
+    }
+
+    get mentionsTabSelected() {
+        return (this.selected === 'mentions');
     }
 
     get areMembersEnabled() {
