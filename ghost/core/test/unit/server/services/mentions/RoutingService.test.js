@@ -1,9 +1,15 @@
 const assert = require('assert');
 const sinon = require('sinon');
+const nock = require('nock');
+const got = require('got');
 const ObjectID = require('bson-objectid').default;
 const RoutingService = require('../../../../../core/server/services/mentions/RoutingService');
 
 describe('RoutingService', function () {
+    afterEach(function () {
+        sinon.restore();
+        nock.cleanAll();
+    });
     describe('pageExists', function () {
         describe('URL checks', function () {
             it('Returns false if the url is from a different origin', async function () {
@@ -13,7 +19,8 @@ describe('RoutingService', function () {
                 };
                 const routingService = new RoutingService({
                     siteUrl,
-                    resourceService
+                    resourceService,
+                    externalRequest: got
                 });
 
                 const result = await routingService.pageExists(new URL('https://different-website.com'));
@@ -28,7 +35,8 @@ describe('RoutingService', function () {
                 };
                 const routingService = new RoutingService({
                     siteUrl,
-                    resourceService
+                    resourceService,
+                    externalRequest: got
                 });
 
                 checkNoSubdomain: {
@@ -53,38 +61,92 @@ describe('RoutingService', function () {
                 };
                 const routingService = new RoutingService({
                     siteUrl,
-                    resourceService
+                    resourceService,
+                    externalRequest: got
                 });
 
-                resourceService.getByURL.resolves({type: 'post', id: new ObjectID});
+                resourceService.getByURL.resolves({pe: 'post', id: new ObjectID});
 
                 const result = await routingService.pageExists(new URL('https://website.com/subdir/post'));
                 assert.equal(result, true);
             });
+        });
 
-            it('Returns false if the url is on the correct origin and subdirectory and a resource does not exist', async function () {
+        describe('Network checks', function () {
+            it('Returns true if the URL responds with a 200 status code to a HEAD request', async function () {
                 const siteUrl = new URL('https://website.com/subdir');
                 const resourceService = {
                     getByURL: sinon.stub()
                 };
                 const routingService = new RoutingService({
                     siteUrl,
-                    resourceService
+                    resourceService,
+                    externalRequest: got
                 });
 
                 resourceService.getByURL.resolves(null);
 
-                checkJustSubdomain: {
-                    const result = await routingService.pageExists(new URL('https://website.com/subdir'));
-                    assert.equal(result, false);
-                    break checkJustSubdomain;
-                }
+                nock('https://website.com').head('/subdir/should-exist').reply(200);
 
-                checkLongerPath: {
-                    const result = await routingService.pageExists(new URL('https://website.com/subdir/page'));
-                    assert.equal(result, false);
-                    break checkLongerPath;
-                }
+                const result = await routingService.pageExists(new URL('https://website.com/subdir/should-exist'));
+                assert.equal(result, true);
+            });
+
+            it('Returns true if the URL responds with a 301 status code to a HEAD request', async function () {
+                const siteUrl = new URL('https://website.com/subdir');
+                const resourceService = {
+                    getByURL: sinon.stub()
+                };
+                const routingService = new RoutingService({
+                    siteUrl,
+                    resourceService,
+                    externalRequest: got
+                });
+
+                resourceService.getByURL.resolves(null);
+
+                nock('https://website.com').head('/subdir/should-redirect').reply(301);
+
+                const result = await routingService.pageExists(new URL('https://website.com/subdir/should-redirect'));
+                assert.equal(result, true);
+            });
+
+            it('Returns false if the URL responds with a 404 status code to a HEAD request', async function () {
+                const siteUrl = new URL('https://website.com/subdir');
+                const resourceService = {
+                    getByURL: sinon.stub()
+                };
+                const routingService = new RoutingService({
+                    siteUrl,
+                    resourceService,
+                    externalRequest: got
+                });
+
+                resourceService.getByURL.resolves(null);
+
+                nock('https://website.com').head('/subdir/not-exist').reply(404);
+
+                const result = await routingService.pageExists(new URL('https://website.com/subdir/not-exist'));
+                assert.equal(result, false);
+            });
+
+            it('Returns false if the URL responds with a 500 status code to a HEAD request', async function () {
+                const siteUrl = new URL('https://website.com/subdir');
+                const resourceService = {
+                    getByURL: sinon.stub()
+                };
+                const routingService = new RoutingService({
+                    siteUrl,
+                    resourceService,
+                    externalRequest: got
+                });
+
+                resourceService.getByURL.resolves(null);
+
+                nock('https://website.com').head('/subdir/big-error').reply(500);
+
+                const result = await routingService.pageExists(new URL('https://website.com/subdir/big-error'));
+                assert.equal(result, false);
             });
         });
     });
