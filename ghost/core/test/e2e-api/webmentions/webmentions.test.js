@@ -61,7 +61,7 @@ describe('Webmentions (receiving)', function () {
     });
 
     it('can send an email notification for a new webmention', async function () {
-        const url = new URL('http://testpage.com/external-article-123-email/');
+        const url = new URL('http://testpage.com/external-article-123-email-test/');
         const html = `
                 <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
             `;
@@ -69,21 +69,23 @@ describe('Webmentions (receiving)', function () {
             .get('/')
             .reply(200, html, {'content-type': 'text/html'});
 
-        await agent.post('/receive')
+        await agent.post('/receive/')
             .body({
-                source: 'http://testpage.com/external-article-123-email/',
-                target: urlUtils.getSiteUrl()
+                source: 'http://testpage.com/external-article-123-email-test/',
+                target: urlUtils.getSiteUrl() + 'integrations/',
+                withExtension: true // test payload recorded
             })
             .expectStatus(202);
         
         await sleep(2000);
 
-        const users = await models.User.findAll(); 
-        users.forEach((user) => {
-            mockManager.assert.sentEmail({
+        const users = await models.User.findAll();
+        users.forEach(async (user) => {
+            await mockManager.assert.sentEmail({
                 subject: 'You\'ve been mentioned!',
                 to: user.toJSON().email
             }); 
         });
+        emailMockReceiver.sentEmailCount(users.length);
     });
 });
