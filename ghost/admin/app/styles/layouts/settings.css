@@ -3538,6 +3538,16 @@ p.theme-validation-details {
     word-break: break-all;
 }
 
+.gh-email-debug-batch-col-details .detailtext .noselect {
+    user-select: none;
+}
+
+.gh-email-debug-batch-col-details .detailtext div code {
+    white-space: unset;
+    word-break: normal;
+    user-select: all;
+}
+
 .gh-email-debug-batch-col-details .error {
     color: color-mod(var(--red) l(-2%));
     font-weight: unset;

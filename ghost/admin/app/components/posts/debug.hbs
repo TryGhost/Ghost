@@ -67,23 +67,35 @@
                 {{#each this.permanentFailureData as |failure index|}}
                 <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
-                        <div class="gh-email-debug-member">
-                            <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
-                                <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
-                                    <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                        {{#if failure.member.id}}
+                            <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
+                                <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
                                 </div>
-                            </figure>
-                            <div>
-                                <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
-                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                            </LinkTo>
+                        {{else}}
+                            <div class="gh-email-debug-member">
+                                <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
+                                    <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
+                                        <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                                    </div>
+                                </figure>
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                </div>
                             </div>
-                        </div>
+                        {{/if}}
                     </div>
                     <div class="gh-list-data gh-email-debug-col-failure">
                         <div class="gh-email-debug-failure-details">
                             <div class="gh-email-debug-failure-codes">
                                 <span class="gh-email-debug-failure-code">Failure code: <span>{{failure.code}}</span></span>
-                                <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                {{#if failure.enhancedCode}}
+                                    <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                {{/if}}
                             </div>
                             <Posts::Debug::EmailErrorMessage @index={{index}} @message={{failure.message}} />
                         </div>
@@ -112,27 +124,36 @@
                 {{#each this.temporaryFailureData as |failure index|}}
                 <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
-                        <div class="gh-email-debug-member">
-                            <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-purple">
-                                <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
-                                    <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                        {{#if failure.member.id}}
+                            <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
+                                <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
                                 </div>
-                                {{!-- {{#if this.avatarImage}}
-                                    <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or failure.recipient.name failure.recipient.email}}" />
-                                {{/if}} --}}
-                            </figure>
-                            <div>
-                                <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
-                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                            </LinkTo>
+                        {{else}}
+                            <div class="gh-email-debug-member">
+                                <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-blue">
+                                    <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
+                                        <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                                    </div>
+                                </figure>
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                </div>
                             </div>
-                        </div>
+                        {{/if}}
                     </div>
                     <div class="gh-list-data gh-email-debug-col-failure">
                         <div class="gh-email-debug-failure">
                             <div class="gh-email-debug-failure-details">
                                 <div class="gh-email-debug-failure-codes">
                                     <span class="gh-email-debug-failure-code">Failure code: <span>{{failure.code}}</span></span>
-                                    <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                    {{#if failure.enhancedCode}}
+                                        <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                    {{/if}}
                                 </div>
                                 <Posts::Debug::EmailErrorMessage @index={{index}} @message={{failure.message}} />
                             </div>
@@ -191,10 +212,11 @@
                                 {{#if (or batch.providerId batch.errorStatusCode batch.errorMessage)}}
                                     <div class="detailtext">
                                         {{#if batch.providerId}}
-                                            <div>Provider id:
-                                                <span>
+                                            <div class="noselect">
+                                                Provider id:
+                                                <code>
                                                     {{batch.providerId}}
-                                                </span>
+                                                </code>
                                             </div>
                                         {{/if}}
                                         {{#if batch.errorStatusCode}}
