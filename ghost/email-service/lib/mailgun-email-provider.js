@@ -168,7 +168,7 @@ class MailgunEmailProvider {
                 });
             }
 
-            logging.warn(ghostError);
+            logging.error(ghostError);
             debug(`failed to send message (${Date.now() - startTime}ms)`);
 
             // log error to custom error handler. ex sentry

@@ -196,8 +196,11 @@ module.exports = {
 
             // log any error that didn't come from the provider which would have already logged it
             if (!error.code || error.code !== 'BULK_EMAIL_SEND_FAILED') {
-                let ghostError = new errors.InternalServerError({
-                    err: error
+                let ghostError = new errors.EmailError({
+                    err: error,
+                    code: 'BULK_EMAIL_SEND_FAILED',
+                    message: `Error sending email batch ${emailBatchId}`,
+                    context: error.message
                 });
                 sentry.captureException(ghostError);
                 logging.error(ghostError);
@@ -274,7 +277,7 @@ module.exports = {
             });
 
             sentry.captureException(ghostError);
-            logging.warn(ghostError);
+            logging.error(ghostError);
 
             debug(`failed to send message (${Date.now() - startTime}ms)`);
             throw ghostError;

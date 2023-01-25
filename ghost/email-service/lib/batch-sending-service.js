@@ -29,6 +29,7 @@ class BatchSendingService {
     #jobsService;
     #models;
     #db;
+    #sentry;
 
     /**
      * @param {Object} dependencies
@@ -42,6 +43,7 @@ class BatchSendingService {
      * @param {Email} dependencies.models.Email
      * @param {object} dependencies.models.Member
      * @param {object} dependencies.db
+     * @param {object} [dependencies.sentry]
      */
     constructor({
         emailRenderer,
@@ -49,7 +51,8 @@ class BatchSendingService {
         jobsService,
         emailSegmenter,
         models,
-        db
+        db,
+        sentry
     }) {
         this.#emailRenderer = emailRenderer;
         this.#sendingService = sendingService;
@@ -57,6 +60,7 @@ class BatchSendingService {
         this.#emailSegmenter = emailSegmenter;
         this.#models = models;
         this.#db = db;
+        this.#sentry = sentry;
     }
 
     /**
@@ -97,7 +101,17 @@ class BatchSendingService {
                 error: null
             }, {patch: true, autoRefresh: false});
         } catch (e) {
-            logging.error(`Error sending email ${email.id}: ${e.message}`);
+            const ghostError = new errors.EmailError({
+                err: e,
+                code: 'BULK_EMAIL_SEND_FAILED',
+                message: `Error sending email ${email.id}`
+            });
+
+            logging.error(ghostError);
+            if (this.#sentry) {
+                // Log the original error to Sentry
+                this.#sentry.captureException(e);
+            }
 
             // Edge case: Store error in email model (that are not caught by the batch)
             await email.save({
@@ -324,8 +338,21 @@ class BatchSendingService {
             }, {patch: true, require: false, autoRefresh: false});
             succeeded = true;
         } catch (err) {
-            logging.error(`Error sending email batch ${batch.id}`);
-            logging.error(err);
+            if (!err.code || err.code !== 'BULK_EMAIL_SEND_FAILED') {
+                // BULK_EMAIL_SEND_FAILED are already logged in mailgun-email-provider
+                const ghostError = new errors.EmailError({
+                    err,
+                    code: 'BULK_EMAIL_SEND_FAILED',
+                    message: `Error sending email batch ${batch.id}`,
+                    context: err.message
+                });
+
+                logging.error(ghostError);
+                if (this.#sentry) {
+                    // Log the original error to Sentry
+                    this.#sentry.captureException(err);
+                }
+            }
 
             await batch.save({
                 status: 'failed',
