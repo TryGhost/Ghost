@@ -5,6 +5,8 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Removing expiry dates for paid members');
         try {
+            // Fetch all members with a paid status that have an expiry date
+            // Paid members should not have an expiry date
             const invalidExpiryIds = await knex('members_products')
                 .select('members_products.id')
                 .leftJoin('members', 'members_products.member_id', 'members.id')
