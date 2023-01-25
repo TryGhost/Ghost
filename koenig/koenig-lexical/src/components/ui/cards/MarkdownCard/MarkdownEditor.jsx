@@ -101,6 +101,11 @@ export default function MarkdownEditor({
             editorInstance.codemirror.execCommand('goDocEnd');
         }
 
+        // Prevents the editor from losing focus when double clicking inside
+        editorInstance.codemirror.on('mousedown', (instance, event) => {
+            event.stopPropagation();
+        });
+
         // remove editor on unmount
         return () => {
             editor.current.toTextArea();
