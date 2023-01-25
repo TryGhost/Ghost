@@ -267,7 +267,10 @@ describe('StaffService', function () {
                     },
                     settingsCache,
                     urlUtils,
-                    settingsHelpers
+                    settingsHelpers,
+                    labs: {
+                        isSet: () => 'webmentionEmail'
+                    }
                 });
             });
             it('handles free member created event', async function () {
