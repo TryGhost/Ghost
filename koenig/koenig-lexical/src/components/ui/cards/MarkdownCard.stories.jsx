@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {MarkdownCard} from './MarkdownCard.jsx';
 import {CardWrapper} from './../CardWrapper';
 import {useImageUpload} from '../../../../demo/utils/useImageUpload';
@@ -11,7 +11,7 @@ function imageLoading() {
 function imageErrors() {
     const errors = [
         {
-            fileName: 'Image.jpg', 
+            fileName: 'Image.jpg',
             message: 'The file type you uploaded is not supported.'
         }
     ];
@@ -38,7 +38,7 @@ const Template = args => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
             <CardWrapper wrapperStyle='wide' {...args}>
-                <MarkdownCard {...args} />
+                <MarkdownCard {...args} unsplashConf={defaultHeaders} />
             </CardWrapper>
         </div>
     </div>

@@ -5,6 +5,7 @@ import MarkdownImageUploader from './MarkdownImageUploader';
 import UnsplashModal from '../../UnsplashModal';
 
 import useMarkdownImageUploader from './useMarkdownImageUploader';
+import ctrlOrCmd from '../../../../utils/ctrlOrCmd';
 
 export default function MarkdownEditor({
     markdown,
@@ -29,6 +30,12 @@ export default function MarkdownEditor({
         isLoading,
         filesNumber
     } = useMarkdownImageUploader(editor, imageUploader);
+
+    const shortcuts = {
+        openImageDialog: `${ctrlOrCmd}-Alt-I`,
+        toggleSpellcheck: `${ctrlOrCmd}-Alt-S`,
+        openUnsplashDialog: `${ctrlOrCmd}-Alt-U`
+    };
 
     // init editor on component mount
     useLayoutEffect(() => {
@@ -60,21 +67,20 @@ export default function MarkdownEditor({
                     name: 'image',
                     action: openImageUploadDialog,
                     className: 'fa fa-picture-o',
-                    title: 'Upload Image(s)'
+                    title: `Upload Image(s) (${shortcuts.openImageDialog})`
                 },
                 {
                     name: 'unsplash',
                     action: openUnsplashDialog,
                     className: 'fa fa-camera',
-                    title: 'Add Image from Unsplash'
+                    title: `Add Image from Unsplash (${shortcuts.openUnsplashDialog})`
                 },
                 '|',
                 {
                     name: 'spellcheck',
                     action: toggleSpellcheck,
                     className: 'fa fa-check active',
-                    title: 'Spellcheck (Ctrl-Alt-S)',
-                    useCtrlOnMac: true
+                    title: `Spellcheck (${shortcuts.toggleSpellcheck})`
                 },
                 {
                     name: 'guide',
@@ -106,6 +112,8 @@ export default function MarkdownEditor({
             event.stopPropagation();
         });
 
+        addShortcuts();
+
         // remove editor on unmount
         return () => {
             editor.current.toTextArea();
@@ -121,6 +129,21 @@ export default function MarkdownEditor({
             editor.current.codemirror.getDoc().setCursor(cursor);
         }
     }, [markdown]);
+
+    function addShortcuts() {
+        const codemirror = editor.current.codemirror;
+
+        const keys = codemirror.getOption('extraKeys');
+
+        keys[shortcuts.toggleSpellcheck] = toggleSpellcheck;
+        keys[shortcuts.openImageDialog] = openImageUploadDialog;
+
+        if (unsplashConf) {
+            keys[shortcuts.openUnsplashDialog] = openUnsplashDialog;
+        }
+        // update shortcuts
+        codemirror.setOption('extraKeys', keys);
+    }
 
     function toggleSpellcheck() {
         let codemirror = editor.current.codemirror;
