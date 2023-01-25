@@ -1,4 +1,6 @@
 const mega = require('../../../../../../services/mega');
+const labs = require('../../../../../../../shared/labs');
+const config = require('../../../../../../../shared/config');
 
 module.exports = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -12,6 +14,12 @@ module.exports = (model, frame) => {
             replacement.fallback || ''
         );
     });
+
+    if (!labs.isSet('emailErrors') && !!(config.get('bulkEmail') && config.get('bulkEmail').mailgun)) {
+        if (jsonModel.status === 'failed') {
+            jsonModel.status = 'submitted';
+        }
+    }
 
     return jsonModel;
 };
