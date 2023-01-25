@@ -1,8 +1,13 @@
 <div class="gh-nav-bottom">
     {{#if this.hasThemeErrors}}
-    <button type="button" class="gh-theme-error-toast" {{on "click" (fn this.openThemeErrors null)}}>
-        <span class="gh-notification-title">Your theme contains errors</span>
-        <span class="gh-theme-error-p">Some functionality on your site may be limited &rarr;</span>
+    <button type="button" class="gh-footer-toast gh-theme-error-toast" {{on "click" (fn this.openThemeErrors null)}}>
+        <span class="gh-footer-toast-title gh-notification-title">Your theme contains errors</span>
+        <span class="gh-footer-toast-p">Some functionality on your site may be limited &rarr;</span>
+    </button>
+    {{else if (and this.showReferralInvite (not this.hasThemeErrors))}}
+    <button type="button" class="gh-footer-toast gh-referral-toast" {{on "click" (fn this.openReferralsPage null)}}>
+        <span class="gh-footer-toast-title gh-notification-title">Become a Ghost referral partner</span>
+        <span class="gh-footer-toast-p">Earn 30% of every Ghost(Pro) referral, for life &rarr;</span>
     </button>
     {{/if}}
 

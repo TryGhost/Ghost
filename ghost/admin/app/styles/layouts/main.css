@@ -2149,8 +2149,8 @@ section.gh-ds h2 {
 }
 
 
-/* Theme error toast and modal */
-.gh-theme-error-toast {
+/* Footer toast in navbar */
+.gh-footer-toast {
     display: flex;
     flex-direction: column;
     font-size: 1.3rem;
@@ -2159,10 +2159,25 @@ section.gh-ds h2 {
     padding: 20px;
     margin-bottom: 32px;
     color: #fff;
-    background: var(--red);
     border-radius: 6px;
 }
 
-.gh-theme-error-toast .gh-notification-title {
+.gh-footer-toast-title.gh-notification-title {
     margin: 0 0 6px 0;
+}
+
+/* Theme error toast and modal */
+.gh-theme-error-toast {
+    background: var(--red);
+}
+
+/* Ghost Referrals invite toast */
+.gh-referral-toast {
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--darkgrey);
+}
+
+.gh-referral-toast .gh-footer-toast-p {
+    color: var(--middarkgrey);
 }
