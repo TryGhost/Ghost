@@ -88,7 +88,8 @@ class EmailServiceWrapper {
             jobsService,
             emailSegmenter,
             emailRenderer,
-            db
+            db,
+            sentry
         });
 
         this.service = new EmailService({
