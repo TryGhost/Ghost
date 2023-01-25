@@ -48,6 +48,7 @@
     "@uiw/react-codemirror": "^4.19.6",
     "codemirror": "^6.0.1",
     "lexical": "^0.7.0",
+    "pluralize": "^8.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

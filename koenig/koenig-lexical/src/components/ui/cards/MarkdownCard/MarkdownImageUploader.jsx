@@ -1,4 +1,5 @@
 import React from 'react';
+import pluralize from 'pluralize';
 import {ProgressBar} from '../../ProgressBar';
 
 export default function MarkdownImageUploader({onChange, inputRef, progress, loading, filesNumber, errors = []}) {
@@ -11,7 +12,9 @@ export default function MarkdownImageUploader({onChange, inputRef, progress, loa
                 loading && !!progress && (
                     <div className="absolute inset-0 z-10 flex min-w-full flex-col items-center justify-center overflow-hidden bg-white/70">
                         <div className="mb-4 w-full text-center">
-                            <h3 className="mb-3 font-sans text-xl font-bold">Uploading {filesNumber} images...</h3>
+                            <h3 className="mb-3 font-sans text-xl font-bold">
+                                Uploading {filesNumber} {pluralize('image', filesNumber)}...
+                            </h3>
                             <ProgressBar style={progressStyle} />
                         </div>
                     </div>
