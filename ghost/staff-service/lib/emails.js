@@ -142,6 +142,33 @@ class StaffServiceEmails {
         }
     }
 
+    async notifyMentionReceived({mention}) {
+        const users = await this.models.User.findAll(); // sending to all staff users for now
+        for (const user of users) {
+            const to = user.toJSON().email;
+            const subject = `You've been mentioned!`;
+
+            const templateData = {
+                sourceUrl: mention.source,
+                siteTitle: this.settingsCache.get('title'),
+                siteUrl: this.urlUtils.getSiteUrl(),
+                siteDomain: this.siteDomain,
+                accentColor: this.settingsCache.get('accent_color'),
+                fromEmail: this.fromEmailAddress,
+                toEmail: to,
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.toJSON().slug}`)
+            };
+            const {html, text} = await this.renderEmailTemplate('new-mention-received', templateData);
+
+            await this.sendMail({
+                to,
+                subject,
+                html,
+                text
+            });
+        }
+    }
+
     // Utils
 
     /** @private */
