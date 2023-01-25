@@ -18,7 +18,7 @@ describe('Webmentions (receiving)', function () {
         nock.cleanAll();
         nock.enableNetConnect();
     });
- 
+    
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
     });
