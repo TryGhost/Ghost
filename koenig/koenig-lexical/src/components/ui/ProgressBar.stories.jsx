@@ -1,10 +1,9 @@
 import React from 'react';
-
-import {Toggle} from './Toggle';
+import {ProgressBar} from './ProgressBar';
 
 const story = {
-    title: 'Generic/Toggle',
-    component: Toggle,
+    title: 'Generic/Progress bar',
+    component: ProgressBar,
     parameters: {
         status: {
             type: 'uiReady'
@@ -14,10 +13,11 @@ const story = {
 export default story;
 
 const Template = args => (
-    <Toggle {...args} />
+    <ProgressBar {...args} />
 );
 
 export const Default = Template.bind({});
 Default.args = {
-    isChecked: true
+    style: {width: 60 + '%'},
+    fullWidth: false
 };

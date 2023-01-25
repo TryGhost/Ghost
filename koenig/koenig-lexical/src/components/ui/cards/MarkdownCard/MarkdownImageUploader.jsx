@@ -1,14 +1,18 @@
 import React from 'react';
+import {ProgressBar} from '../../ProgressBar';
 
 export default function MarkdownImageUploader({onChange, inputRef, progress, loading, filesNumber, errors = []}) {
+    const progressStyle = {
+        width: `${progress}%`
+    };
     return (
         <>
             {
                 loading && !!progress && (
-                    <div className="absolute inset-0 flex min-w-full flex-col items-center justify-center overflow-hidden bg-white/50">
-                        <div>Uploading {filesNumber} images...</div>
-                        <div className="not-kg-prose w-[60%] rounded-full bg-grey-200 shadow">
-                            <div className="rounded-full bg-green py-1 text-center text-xs leading-none text-white" style={{width: `${progress}%`}}></div>
+                    <div className="absolute inset-0 z-10 flex min-w-full flex-col items-center justify-center overflow-hidden bg-white/70">
+                        <div className="mb-4 w-full text-center">
+                            <h3 className="mb-3 font-sans text-xl font-bold">Uploading {filesNumber} images...</h3>
+                            <ProgressBar style={progressStyle} />
                         </div>
                     </div>
                 )
@@ -16,17 +20,16 @@ export default function MarkdownImageUploader({onChange, inputRef, progress, loa
 
             {
                 !!errors.length && (
-                    <div className="absolute inset-0 flex min-w-full flex-col items-center justify-center overflow-hidden bg-white/50">
-                        {
-                            errors.map(error => (
-                                <div>{error.fileName} - {error.message}</div>
-                            ))
-                        }
-                    </div>
-
+                    errors.map(error => (
+                        <div className="absolute inset-0 z-10 flex min-w-full flex-col items-center justify-center overflow-hidden bg-white/70">
+                            <div className="mb-4 w-3/5 text-center">
+                                <h3 className="mb-3 font-sans text-xl font-bold">{error.fileName}<span className="text-red"> failed to upload.</span></h3>
+                                <p className="font-sans text-sm font-normal">{error.message}</p>
+                            </div>
+                        </div>
+                    ))
                 )
             }
-
             <form onChange={onChange}>
                 <input
                     name="image"

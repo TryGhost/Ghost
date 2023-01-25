@@ -147,12 +147,6 @@
         font-size: 1.6rem;
     }
 
-    @media (max-width: 960px) {
-        .CodeMirror pre {
-            font-size: 1.4rem;
-        }
-    }
-
     .CodeMirror .cm-strong {
         color: var(--grey-900);
     }

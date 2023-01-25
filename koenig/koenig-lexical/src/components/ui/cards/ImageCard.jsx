@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
+import {ProgressBar} from '../ProgressBar';
 import {openFileSelection} from '../../../utils/openFileSelection';
 import ImageUploadForm from '../ImageUploadForm';
 
@@ -14,9 +15,7 @@ function PopulatedImageCard({src, alt, previewSrc, progress}) {
             <img className={`mx-auto ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : `upload in progress, ${progress} `} />
             {previewSrc && progress && !src ?
                 <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50">
-                    <div className="not-kg-prose w-[60%] rounded-full bg-grey-200 shadow">
-                        <div className="rounded-full bg-green py-1 text-center text-xs leading-none text-white" style={progressStyle}></div>
-                    </div>
+                    <ProgressBar style={progressStyle} />
                 </div>
                 : <></>
             }

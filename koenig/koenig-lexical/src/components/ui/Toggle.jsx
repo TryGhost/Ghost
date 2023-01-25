@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
+import PropTypes from 'prop-types';
 
-export function Toggle() {
-    const [isChecked, setChecked] = useState(false);
+export function Toggle({isChecked}) {
+    const [setChecked] = useState(false);
     const toggleChecked = () => {
         setChecked(!isChecked);
     };
@@ -18,3 +19,7 @@ export function Toggle() {
         </label>
     );
 }
+
+Toggle.propTypes = {
+    isChecked: PropTypes.bool
+};

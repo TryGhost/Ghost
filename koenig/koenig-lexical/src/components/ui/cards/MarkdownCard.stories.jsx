@@ -11,12 +11,8 @@ function imageLoading() {
 function imageErrors() {
     const errors = [
         {
-            fileName: 'image.jpg',
-            message: 'Wrong extension'
-        },
-        {
-            fileName: 'cat.png',
-            message: 'Smth went wrong'
+            fileName: 'Image.jpg', 
+            message: 'The file type you uploaded is not supported.'
         }
     ];
     return {errors};
@@ -38,32 +34,19 @@ const story = {
 };
 export default story;
 
-const Template = (args) => {
-    const [value, setValue] = useState(args.value ?? '');
-    const onChange = (...params) => {
-        args.onChange(...params);
-        setValue(...params);
-    };
-
-    return (
-        <div className="kg-prose">
-            <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-                <CardWrapper wrapperStyle='wide' {...args}>
-                    <MarkdownCard
-                        {...args}
-                        onChange={onChange}
-                        value={value}
-                        unsplashConf={defaultHeaders}
-                    />
-                </CardWrapper>
-            </div>
+const Template = args => (
+    <div className="kg-prose">
+        <div className="mx-auto my-8 w-[740px] min-w-[initial]">
+            <CardWrapper wrapperStyle='wide' {...args}>
+                <MarkdownCard {...args} />
+            </CardWrapper>
         </div>
-    );
-};
+    </div>
+);
 
 export const Populated = Template.bind({});
 Populated.args = {
-    value: '# Title',
+    markdown: '**Bold** and *italic*',
     isSelected: true,
     isEditing: true,
     imageUploader: useImageUpload
@@ -71,7 +54,7 @@ Populated.args = {
 
 export const Progress = Template.bind({});
 Progress.args = {
-    value: '# Title',
+    markdown: '**Bold** and *italic*',
     isSelected: true,
     isEditing: true,
     imageUploader: imageLoading
@@ -79,7 +62,7 @@ Progress.args = {
 
 export const Errors = Template.bind({});
 Errors.args = {
-    value: '# Title',
+    markdown: '**Bold** and *italic*',
     isSelected: true,
     isEditing: true,
     imageUploader: imageErrors

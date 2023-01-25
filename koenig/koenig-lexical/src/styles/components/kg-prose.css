@@ -634,7 +634,7 @@
         /* -------------------------------------------------------------------- */
 
         :where(
-            div
+            > div
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             line-height: 0;
             min-width: 100%;
