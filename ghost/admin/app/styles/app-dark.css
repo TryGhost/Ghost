@@ -1478,3 +1478,12 @@ kbd {
     background: var(--green) !important;
     color: #fff;
 }
+
+/* Mentions */
+.gh-mention-container {
+    background-color: var(--whitegrey);
+}
+
+.gh-mention-your-post-link {
+    color: var(--black);
+}
