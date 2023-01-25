@@ -8,7 +8,13 @@ const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
 const {MailgunEmailProvider} = require('@tryghost/email-service');
+const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
+const mobileDocWithFreeMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:free","alignment":"left","html":"<p>This is for free members only</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[1,"p",[[0,[],0,"Bye."]]]],"ghostVersion":"4.0"}';
+const mobileDocWithPaidMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:-free","alignment":"left","html":"<p>This is for paid members only</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[1,"p",[[0,[],0,"Bye."]]]],"ghostVersion":"4.0"}';
+const mobileDocWithPaidAndFreeMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:free","alignment":"left","html":"<p>This is for free members only</p>"}],["email-cta",{"showButton":false,"showDividers":true,"segment":"status:-free","alignment":"left","html":"<p>This is for paid members only</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[10,1],[1,"p",[[0,[],0,"Bye."]]]],"ghostVersion":"4.0"}';
+const mobileDocWithFreeMemberOnlyAndPaywall = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:free","alignment":"left","html":"<p>This is for free members only</p>"}],["paywall",{}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[1,"p",[[0,[],0,"Bye."]]],[10,1],[1,"p",[[0,[],0,"This is after the paywall."]]]],"ghostVersion":"4.0"}';
+
 const configUtils = require('../../../utils/configUtils');
 const {settingsCache} = require('../../../../core/server/services/settings-helpers');
 const DomainEvents = require('@tryghost/domain-events');
@@ -109,6 +115,61 @@ async function getLastEmail() {
         plaintext,
         recipientData
     };
+}
+
+/**
+ * Test amount of batches and segmenting for a given email
+ *
+ * @param {object} settings
+ * @param {string|null} email_recipient_filter
+ * @param {{recipients: number, segment: string | null}[]} expectedBatches
+ */
+async function testEmailBatches(settings, email_recipient_filter, expectedBatches) {
+    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+    const emailModel = await createPublishedPostEmail(settings, email_recipient_filter);
+
+    assert.equal(emailModel.get('source_type'), 'mobiledoc');
+    assert(emailModel.get('subject'));
+    assert(emailModel.get('from'));
+
+    // Await sending job
+    await completedPromise;
+
+    await emailModel.refresh();
+    assert(emailModel.get('status'), 'submitted');
+    const expectedTotal = expectedBatches.reduce((acc, batch) => acc + batch.recipients, 0);
+    assert.equal(emailModel.get('email_count'), expectedTotal, 'This email should have an email_count of ' + expectedTotal + ' recipients');
+
+    // Did we create batches?
+    const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+    assert.equal(batches.models.length, expectedBatches.length);
+    const remainingBatches = batches.models.slice();
+    const emailRecipients = [];
+
+    for (const expectedBatch of expectedBatches) {
+        // Check all batches are in send state
+        const index = remainingBatches.findIndex(b => b.get('member_segment') === expectedBatch.segment);
+        assert(index !== -1, `Could not find batch with segment ${expectedBatch.segment}`);
+        const firstBatch = remainingBatches[index];
+        remainingBatches.splice(index, 1);
+
+        assert.equal(firstBatch.get('provider_id'), 'stubbed-email-id');
+        assert.equal(firstBatch.get('status'), 'submitted');
+        assert.equal(firstBatch.get('member_segment'), expectedBatch.segment);
+        assert.equal(firstBatch.get('error_status_code'), null);
+        assert.equal(firstBatch.get('error_message'), null);
+        assert.equal(firstBatch.get('error_data'), null);
+
+        // Did we create recipients?
+        const emailRecipientsFirstBatch = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${firstBatch.id}`});
+        assert.equal(emailRecipientsFirstBatch.models.length, expectedBatch.recipients);
+
+        emailRecipients.push(...emailRecipientsFirstBatch.models);
+    }
+
+    // Check members are unique in all batches
+    const memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
+    assert.equal(memberIds.length, _.uniq(memberIds).length);
 }
 
 describe('Batch sending tests', function () {
@@ -268,146 +329,150 @@ describe('Batch sending tests', function () {
     });
 
     it('Splits recipients in free and paid batch', async function () {
-        // Prepare a post and email model
-        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-        const emailModel = await createPublishedPostEmail({
-            // Requires a paywall
+        await testEmailBatches({
+            // Requires a paywall = different content for paid and free members
             mobiledoc: mobileDocWithPaywall,
             // Required to trigger the paywall
             visibility: 'paid'
-        });
-
-        assert.equal(emailModel.get('source_type'), 'mobiledoc');
-        assert(emailModel.get('subject'));
-        assert(emailModel.get('from'));
-
-        // Await sending job
-        await completedPromise;
-
-        await emailModel.refresh();
-        assert(emailModel.get('status'), 'submitted');
-        assert.equal(emailModel.get('email_count'), 5);
-
-        // Did we create batches?
-        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
-        assert.equal(batches.models.length, 2);
-
-        // Check all batches are in send state
-        const firstBatch = batches.models[0];
-        assert.equal(firstBatch.get('provider_id'), 'stubbed-email-id');
-        assert.equal(firstBatch.get('status'), 'submitted');
-        assert.equal(firstBatch.get('member_segment'), 'status:free');
-        assert.equal(firstBatch.get('error_status_code'), null);
-        assert.equal(firstBatch.get('error_message'), null);
-        assert.equal(firstBatch.get('error_data'), null);
-
-        const secondBatch = batches.models[1];
-        assert.equal(secondBatch.get('provider_id'), 'stubbed-email-id');
-        assert.equal(secondBatch.get('status'), 'submitted');
-        assert.equal(secondBatch.get('member_segment'), 'status:-free');
-        assert.equal(secondBatch.get('error_status_code'), null);
-        assert.equal(secondBatch.get('error_message'), null);
-        assert.equal(secondBatch.get('error_data'), null);
-
-        // Did we create recipients?
-        const emailRecipientsFirstBatch = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${firstBatch.id}`});
-        assert.equal(emailRecipientsFirstBatch.models.length, 3);
-
-        const emailRecipientsSecondBatch = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${secondBatch.id}`});
-        assert.equal(emailRecipientsSecondBatch.models.length, 2);
-
-        // Check members are unique
-        const memberIds = [...emailRecipientsFirstBatch.models, ...emailRecipientsSecondBatch.models].map(recipient => recipient.get('member_id'));
-        assert.equal(memberIds.length, _.uniq(memberIds).length);
+        }, null, [
+            {segment: 'status:free', recipients: 3},
+            {segment: 'status:-free', recipients: 2}
+        ]);
     });
 
-    it('Only sends to members in email recipient filter', async function () {
-        // Prepare a post and email model
-        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-        const emailModel = await createPublishedPostEmail({
-            // Requires a paywall
-            mobiledoc: mobileDocWithPaywall,
+    it('Splits recipients in free and paid batch when including free member only content', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocWithFreeMemberOnly // = different content for paid and free members (extra content for free in this case)
+        }, null, [
+            {segment: 'status:free', recipients: 3},
+            {segment: 'status:-free', recipients: 2}
+        ]);
+    });
+
+    it('Splits recipients in free and paid batch when including paid member only content', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocWithPaidMemberOnly // = different content for paid and free members (extra content for paid in this case)
+        }, null, [
+            {segment: 'status:free', recipients: 3},
+            {segment: 'status:-free', recipients: 2}
+        ]);
+    });
+
+    it('Splits recipients in free and paid batch when including paid member only content', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocWithPaidAndFreeMemberOnly // = different content for paid and free members
+        }, null, [
+            {segment: 'status:free', recipients: 3},
+            {segment: 'status:-free', recipients: 2}
+        ]);
+    });
+
+    it('Splits recipients in free and paid batch when including free members only content with paywall', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocWithFreeMemberOnlyAndPaywall, // = different content for paid and free members (extra content for paid in this case + a paywall)
             // Required to trigger the paywall
             visibility: 'paid'
-        }, 'status:-free');
+        }, null, [
+            {segment: 'status:free', recipients: 3},
+            {segment: 'status:-free', recipients: 2}
+        ]);
+    });
 
-        assert.equal(emailModel.get('source_type'), 'mobiledoc');
-        assert(emailModel.get('subject'));
-        assert(emailModel.get('from'));
+    it('Does not split recipient in free and paid batch if email is identical', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocExample // = same content for free and paid, no need to split batches
+        }, null, [
+            {segment: null, recipients: 5}
+        ]);
+    });
 
-        // Await sending job
-        await completedPromise;
+    it('Only sends to paid members if recipient filter is applied', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocExample // = same content for free and paid, no need to split batches
+        }, 'status:-free', [
+            {segment: null, recipients: 2}
+        ]);
+    });
 
-        await emailModel.refresh();
-        assert.equal(emailModel.get('status'), 'submitted');
-        assert.equal(emailModel.get('email_count'), 2);
+    it('Only sends to members with a specific label', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocExample // = same content for free and paid, no need to split batches
+        }, 'label:label-1', [
+            {segment: null, recipients: 1} // 1 member was subscribed, one member is not subscribed
+        ]);
+    });
 
-        // Did we create batches?
-        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
-        assert.equal(batches.models.length, 1);
+    it('Only sends to members with a specific label and paid content', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocWithPaidMemberOnly // = different content for paid and free members (extra content for paid in this case)
+        }, 'label:label-1', [
+            {segment: 'status:free', recipients: 1} // The only member with this label is a free member
+        ]);
+    });
 
-        // Check all batches are in send state
-        const firstBatch = batches.models[0];
-        assert.equal(firstBatch.get('provider_id'), 'stubbed-email-id');
-        assert.equal(firstBatch.get('status'), 'submitted');
-        assert.equal(firstBatch.get('member_segment'), 'status:-free');
-        assert.equal(firstBatch.get('error_status_code'), null);
-        assert.equal(firstBatch.get('error_message'), null);
-        assert.equal(firstBatch.get('error_data'), null);
+    it('Only sends to members with a specific label and paywall', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocWithPaywall,
+            visibility: 'paid'
+        }, 'label:label-1', [
+            {segment: 'status:free', recipients: 1} // The only member with this label is a free member
+        ]);
+    });
 
-        // Did we create recipients?
-        const emailRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}`});
-        assert.equal(emailRecipients.models.length, 2);
+    it('Can handle OR filter in email recipient filter and split content', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocWithPaywall, // = content should be different for free and paid members
+            visibility: 'paid'
+        }, 'status:-free,label:label-1', [
+            {segment: 'status:free', recipients: 1}, // The only member with this label is a free member
+            {segment: 'status:-free', recipients: 2} // The only member with this label is a free member
+        ]);
+    });
 
-        // Check members are unique
-        const memberIds = emailRecipients.models.map(recipient => recipient.get('member_id'));
-        assert.equal(_.uniq(memberIds).length, 2);
+    it('Can handle OR filter in email recipient filter without split content', async function () {
+        await testEmailBatches({
+            mobiledoc: mobileDocExample // = content is same for free and paid members
+        }, 'status:-free,label:label-1', [
+            {segment: null, recipients: 3} // 2 paid members + 1 free member with the label
+        ]);
+    });
+
+    it('Only sends to paid members if recipient filter is applied in combination with free member only content', async function () {
+        // Tests if the batch generator doesn't go insane if we include a free memebr only content for an email that is only send to paid members
+        await testEmailBatches({
+            mobiledoc: mobileDocWithFreeMemberOnly
+        }, 'status:-free', [
+            {segment: 'status:-free', recipients: 2}
+        ]);
     });
 
     it('Splits up in batches according to email provider batch size', async function () {
         MailgunEmailProvider.BATCH_SIZE = 1;
+        await testEmailBatches({
+            mobiledoc: mobileDocExample
+        }, null, [
+            {segment: null, recipients: 1},
+            {segment: null, recipients: 1},
+            {segment: null, recipients: 1},
+            {segment: null, recipients: 1},
+            {segment: null, recipients: 1}
+        ]);
+    });
 
-        // Prepare a post and email model
-        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-        const emailModel = await createPublishedPostEmail();
+    it('Splits up in batches according to email provider batch size with paid and free segments', async function () {
+        MailgunEmailProvider.BATCH_SIZE = 1;
+        await testEmailBatches({
+            mobiledoc: mobileDocWithPaidMemberOnly
+        }, null, [
+            // 2 paid
+            {segment: 'status:-free', recipients: 1},
+            {segment: 'status:-free', recipients: 1},
 
-        assert.equal(emailModel.get('source_type'), 'mobiledoc');
-        assert(emailModel.get('subject'));
-        assert(emailModel.get('from'));
-
-        // Await sending job
-        await completedPromise;
-
-        await emailModel.refresh();
-        assert.equal(emailModel.get('status'), 'submitted');
-        assert.equal(emailModel.get('email_count'), 5);
-
-        // Did we create batches?
-        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
-        assert.equal(batches.models.length, 5);
-
-        const emailRecipients = [];
-
-        // Check all batches are in send state
-        for (const batch of batches.models) {
-            assert.equal(batch.get('provider_id'), 'stubbed-email-id');
-            assert.equal(batch.get('status'), 'submitted');
-            assert.equal(batch.get('member_segment'), null);
-
-            assert.equal(batch.get('error_status_code'), null);
-            assert.equal(batch.get('error_message'), null);
-            assert.equal(batch.get('error_data'), null);
-
-            // Did we create recipients?
-            const batchRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${batch.id}`});
-            assert.equal(batchRecipients.models.length, 1);
-
-            emailRecipients.push(...batchRecipients.models);
-        }
-
-        // Check members are unique
-        const memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
-        assert.equal(memberIds.length, _.uniq(memberIds).length);
+            // 3 free
+            {segment: 'status:free', recipients: 1},
+            {segment: 'status:free', recipients: 1},
+            {segment: 'status:free', recipients: 1}
+        ]);
     });
 
     it('One failed batch marks the email as failed and allows for a retry', async function () {
