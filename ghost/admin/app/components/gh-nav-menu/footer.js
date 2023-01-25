@@ -54,7 +54,7 @@ export default class Footer extends Component {
     }
 
     get showReferralInvite() {
-        return !this.hasThemeErrors && this.isStripeLiveMode && this.dashboardStats?.currentMRR / 100 >= 1000;
+        return !this.hasThemeErrors && this.isStripeLiveMode && this.dashboardStats?.currentMRR / 100 >= 100;
     }
 
     // equivalent to "left: auto; right: -20px"
