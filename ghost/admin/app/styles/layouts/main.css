@@ -2199,7 +2199,6 @@ section.gh-ds h2 {
     color: #ddd;
     font-size: 2.2rem;
     line-height: 1;
-    transition: all 0.3s ease;
 }
 
 .gh-referral-toast-close:hover {
