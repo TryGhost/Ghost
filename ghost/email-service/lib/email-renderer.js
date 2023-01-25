@@ -141,13 +141,22 @@ class EmailRenderer {
     }
 
     /**
-		Not sure about this, but we need a method that can tell us which member segments are needed for a given post/email.
+		Returns all the segments that we need to render the email for because they have different content.
+        WARNING: The sum of all the returned segments should always include all the members. Those members are later limited if needed based on the recipient filter of the email.
         @param {Post} post
         @returns {Segment[]}
 	*/
     getSegments(post) {
         const allowedSegments = ['status:free', 'status:-free'];
         const html = this.renderPostBaseHtml(post);
+
+        /**
+         * Always add free and paid segments if email has paywall card
+         */
+        if (html.indexOf('<!--members-only-->') !== -1) {
+            // We have different content between free and paid members
+            return allowedSegments;
+        }
 
         const cheerio = require('cheerio');
         const $ = cheerio.load(html);
@@ -156,19 +165,14 @@ class EmailRenderer {
             .get()
             .map(el => el.attribs['data-gh-segment']);
 
-        /**
-         * Always add free and paid segments if email has paywall card
-         */
-        if (html.indexOf('<!--members-only-->') !== -1) {
-            allSegments = allSegments.concat(['status:free', 'status:-free']);
-        }
-
         const segments = [...new Set(allSegments)].filter(segment => allowedSegments.includes(segment));
         if (segments.length === 0) {
-            // One segment to all members
+            // No difference in email content between free and paid
             return [null];
         }
-        return segments;
+
+        // We have different content between free and paid members
+        return allowedSegments;
     }
 
     renderPostBaseHtml(post) {
