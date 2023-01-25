@@ -3369,7 +3369,6 @@ p.theme-validation-details {
 
 /* Debug screen
 /* ---------------------------------------------------------- */
-
 .gh-email-debug .gh-post-analytics-header .gh-canvas-header-content {
     border-bottom: none;
     padding-bottom: 0;
@@ -3456,6 +3455,7 @@ p.theme-validation-details {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    width: 100%;
 }
 
 .gh-email-debug-failure-codes {
@@ -3619,6 +3619,7 @@ p.theme-validation-details {
 
 .gh-email-debug-readmore-error {
     display: inline-flex;
+    width: 100%;
 }
 
 .gh-email-debug-readmore-error label {
@@ -3648,7 +3649,7 @@ p.theme-validation-details {
 }
 
 .gh-email-debug-readmore-error .toggle-checkbox:checked ~ label {
-    display: none;
+    display: none !important;
 }
 
 .gh-email-debug-readmore-error svg {
