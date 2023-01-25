@@ -159,6 +159,7 @@ class StaffServiceEmails {
                 staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.toJSON().slug}`)
             };
             const {html, text} = await this.renderEmailTemplate('new-mention-received', templateData);
+
             await this.sendMail({
                 to,
                 subject,

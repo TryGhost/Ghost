@@ -1,6 +1,5 @@
 const {Mention} = require('@tryghost/webmentions');
 const logging = require('@tryghost/logging');
-const labs = require('../../../shared/labs');
 
 /**
  * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IMentionRepository} IMentionRepository
@@ -119,11 +118,8 @@ module.exports = class BookshelfMentionRepository {
                 id: data.id
             });
         }
-
-        if (labs.isSet('webmentionEmail')) {
-            for (const event of mention.events) {
-                this.#DomainEvents.dispatch(event);
-            }
+        for (const event of mention.events) {
+            this.#DomainEvents.dispatch(event);
         }
     }
 };
