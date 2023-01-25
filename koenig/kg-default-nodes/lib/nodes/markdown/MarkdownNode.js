@@ -88,6 +88,10 @@ export class MarkdownNode extends KoenigDecoratorNode {
     hasEditMode() {
         return true;
     }
+
+    isEmpty() {
+        return !this.__markdown;
+    }
 }
 
 export function $createMarkdownNode(dataset) {

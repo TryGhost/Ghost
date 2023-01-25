@@ -67,6 +67,14 @@ describe('MarkdownNode', function () {
                 ...dataset
             });
         }));
+
+        it('has isEmpty() convenience method', editorTest(function () {
+            const markdownNode = $createMarkdownNode(dataset);
+
+            markdownNode.isEmpty().should.be.false;
+            markdownNode.setMarkdown('');
+            markdownNode.isEmpty().should.be.true;
+        }));
     });
 
     describe('exportDOM', function () {
