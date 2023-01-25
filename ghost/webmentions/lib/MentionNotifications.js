@@ -1,6 +1,6 @@
-const {promises: fs, readFileSync} = require('fs');
+const {promises: fs} = require('fs');
 const path = require('path');
-const glob = require('glob');
+// const glob = require('glob');
 
 module.exports = class MentionNotifications {
     constructor({logging, models, settingsCache, urlUtils, siteDomain, settingsHelpers, mailer}) {
@@ -12,7 +12,7 @@ module.exports = class MentionNotifications {
         this.Handlebars = require('handlebars');
         this.mailer = mailer;
         this.logging = logging;
-        this.registerPartials();
+        // this.registerPartials();
     }
 
     get defaultEmailDomain() {
@@ -59,17 +59,6 @@ module.exports = class MentionNotifications {
                 text
             });
         }
-    }
-
-    registerPartials() {
-        const rootDirname = './email-templates/partials/';
-        const files = glob.sync('*.hbs', {cwd: path.join(__dirname, rootDirname)});
-        files.forEach((fileName) => {
-            const name = fileName.replace(/.hbs$/, '');
-            const filePath = path.join(__dirname, rootDirname, `${name}.hbs`);
-            const content = readFileSync(filePath, 'utf8');
-            this.Handlebars.registerPartial(name, content);
-        });
     }
 
     get notificationFromAddress() {
