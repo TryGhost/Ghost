@@ -145,7 +145,7 @@ module.exports = class MentionsAPI {
             webmention.source,
             webmention.target
         );
-        
+
         if (!mention) {
             mention = await Mention.create({
                 source: webmention.source,
