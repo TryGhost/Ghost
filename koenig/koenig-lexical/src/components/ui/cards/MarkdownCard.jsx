@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import MarkdownRenderer from '@tryghost/kg-markdown-html-renderer';
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import MarkdownEditor from './MarkdownCard/MarkdownEditor';
+import {sanitizeHtml} from '../../../utils/sanitize-html';
 
 export function MarkdownCard({markdown = '# Title', updateMarkdown, isEditing, imageUploader, unsplashConf}) {
     return (
@@ -26,7 +27,9 @@ export function MarkdownCard({markdown = '# Title', updateMarkdown, isEditing, i
 
 function MarkdownDisplay({markdown}) {
     const markdownHtml = MarkdownRenderer.render(markdown);
-    return <div className="whitespace-normal" dangerouslySetInnerHTML={{__html: markdownHtml}}></div>;
+    const sanitizedHtml = sanitizeHtml(markdownHtml, {replaceJS: true});
+
+    return <div className="whitespace-normal" dangerouslySetInnerHTML={{__html: sanitizedHtml}}></div>;
 }
 
 MarkdownCard.propTypes = {
