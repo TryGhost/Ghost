@@ -101,7 +101,7 @@ module.exports = {
                 await mentionNotifications.notifyMentionReceived(event.data.data);
             });
         }
-        if (labs.isSet('webmentions')) {
+        if (labs.isSet('webmentionEmail')) {
             MentionNotificationListener();
         }
     }
