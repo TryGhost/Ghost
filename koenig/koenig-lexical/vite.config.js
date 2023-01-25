@@ -44,13 +44,14 @@ export default defineConfig({
             }
         },
         commonjsOptions: {
-            include: [/packages/, /node_modules/],
-        },
+            include: [/packages/, /node_modules/]
+        }
     },
     test: {
         globals: true, // required for @testing-library/jest-dom extensions
         environment: 'jsdom',
         setupFiles: './test/test-setup.js',
+        globalSetup: './test/e2e-setup.js',
         testTimeout: 10000
     }
 });

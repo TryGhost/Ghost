@@ -1,16 +1,14 @@
-import {preview} from 'vite';
 import {expect} from 'vitest';
 import {chromium, webkit, firefox} from 'playwright';
 import jsdom from 'jsdom';
 import prettier from 'prettier';
+import {E2E_PORT} from '../e2e-setup';
 
 const {JSDOM} = jsdom;
 
 const BROWSER_NAME = process.env.browser || 'chromium';
-export const E2E_PORT = process.env.E2E_PORT || 3000;
 
 export async function startApp() {
-    const server = await preview({preview: {port: E2E_PORT}});
     const browser = await {chromium, webkit, firefox}[BROWSER_NAME].launch();
     const page = await browser.newPage();
 
@@ -18,9 +16,6 @@ export async function startApp() {
         app: {
             stop: async () => {
                 await browser.close();
-                await new Promise((resolve, reject) => {
-                    server.httpServer.close(error => (error ? reject(error) : resolve()));
-                });
             }
         },
         browser,
