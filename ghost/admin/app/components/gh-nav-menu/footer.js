@@ -2,7 +2,7 @@ import Component from '@ember/component';
 import ThemeErrorsModal from '../modals/design/theme-errors';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
-// import envConfig from 'ghost-admin/config/environment';
+import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
 import {and, match} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -18,7 +18,7 @@ export default class Footer extends Component {
     @service themeManagement;
     @service dashboardStats;
     @service settings;
-    // @service membersUtils;
+    @service membersUtils;
 
     @inject config;
 
@@ -39,19 +39,14 @@ export default class Footer extends Component {
         });
     }
 
-    @action
-    openReferralsPage() {
-        return window.open('https://referrals.ghost.org/?ref=admin', '_blank');
-    }
-
     get isStripeLiveMode() {
-        // if (envConfig.environment !== 'production' && this.membersUtils.isStripeEnabled) {
-        //     return true;
-        // } else if (this.settings.stripeConnectLivemode) {
-        //     return true;
-        // }
-        // return false;
-        return this.settings.stripeConnectLivemode;
+        if (envConfig.environment !== 'production' && this.membersUtils.isStripeEnabled) {
+            return true;
+        } else if (this.settings.stripeConnectLivemode) {
+            return true;
+        }
+        return false;
+        // return this.settings.stripeConnectLivemode;
     }
 
     get hasThemeErrors() {
