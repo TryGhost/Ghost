@@ -3545,7 +3545,7 @@ p.theme-validation-details {
 .gh-email-debug-batch-col-details .detailtext div code {
     white-space: unset;
     word-break: normal;
-    user-select: all;
+    user-select: text;
 }
 
 .gh-email-debug-batch-col-details .error {
