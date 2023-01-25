@@ -1,11 +1,12 @@
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {MentionCreatedEvent} = require('@tryghost/webmentions');
 
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
 class StaffService {
-    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, DomainEvents}) {
+    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, DomainEvents, labs}) {
         this.logging = logging;
-
+        this.labs = labs;
         /** @private */
         this.settingsCache = settingsCache;
         this.models = models;
@@ -76,6 +77,9 @@ class StaffService {
 
     /** @private */
     async handleEvent(type, event) {
+        if (type === MentionCreatedEvent && event.data.mention && this.labs.isSet('webmentionEmail')) {
+            await this.emails.notifyMentionReceived(event.data);
+        }
         if (!['api', 'member'].includes(event.data.source)) {
             return;
         }
@@ -131,6 +135,15 @@ class StaffService {
                 await this.handleEvent(SubscriptionCancelledEvent, event);
             } catch (e) {
                 this.logging.error(`Failed to notify paid member subscription cancel - ${event?.data?.memberId}`);
+            }
+        });
+
+        // Trigger email when a new webmention is received
+        this.DomainEvents.subscribe(MentionCreatedEvent, async (event) => {
+            try {
+                await this.handleEvent(MentionCreatedEvent, event);
+            } catch (e) {
+                this.logging.error(`Failed to notify webmention`);
             }
         });
     }

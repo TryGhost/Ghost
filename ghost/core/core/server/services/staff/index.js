@@ -1,4 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
+const labs = require('../../../shared/labs');
+
 class StaffServiceWrapper {
     init() {
         if (this.api) {
@@ -23,7 +25,8 @@ class StaffServiceWrapper {
             settingsHelpers,
             settingsCache,
             urlUtils,
-            DomainEvents
+            DomainEvents,
+            labs
         });
 
         this.api.subscribeEvents();

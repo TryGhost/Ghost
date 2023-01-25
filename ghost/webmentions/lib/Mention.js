@@ -1,7 +1,11 @@
 const ObjectID = require('bson-objectid').default;
 const {ValidationError} = require('@tryghost/errors');
+const MentionCreatedEvent = require('./MentionCreatedEvent');
 
 module.exports = class Mention {
+    /** @type {Array} */
+    events = [];
+
     /** @type {ObjectID} */
     #id;
     get id() {
@@ -114,7 +118,9 @@ module.exports = class Mention {
     static async create(data) {
         /** @type ObjectID */
         let id;
+        let isNew = false;
         if (!data.id) {
+            isNew = true;
             id = new ObjectID();
         } else if (typeof data.id === 'string') {
             id = ObjectID.createFromHexString(data.id);
@@ -198,7 +204,7 @@ module.exports = class Mention {
             sourceFeaturedImage = new URL(data.sourceFeaturedImage);
         }
 
-        return new Mention({
+        const mention = new Mention({
             id,
             source,
             target,
@@ -212,6 +218,11 @@ module.exports = class Mention {
             sourceFavicon,
             sourceFeaturedImage
         });
+
+        if (isNew) {
+            mention.events.push(MentionCreatedEvent.create({mention}));
+        }
+        return mention;
     }
 };
 

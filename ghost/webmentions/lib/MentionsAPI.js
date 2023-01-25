@@ -161,7 +161,6 @@ module.exports = class MentionsAPI {
                 sourceFeaturedImage: metadata.image
             });
         }
-
         await this.#repository.save(mention);
 
         return mention;
