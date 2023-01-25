@@ -98,11 +98,11 @@ module.exports = {
 
         function MentionNotificationListener() {
             DomainEvents.subscribe(MentionCreatedEvent, async (event) => {
-                await mentionNotifications.notifyMentionReceived(event.data.data);
+                if (labs.isSet('webmentionEmail')) {
+                    await mentionNotifications.notifyMentionReceived(event.data.data);
+                }
             });
         }
-        if (labs.isSet('webmentionEmail')) {
-            MentionNotificationListener();
-        }
+        MentionNotificationListener();
     }
 };
