@@ -1,14 +1,34 @@
 const MentionDiscoveryService = require('../lib/MentionDiscoveryService');
-// non-standard to use externalRequest here, but this is required for the overrides in the libary, which we want to test for security reasons in combination with the package
+const sinon = require('sinon');
+// non-standard to use externalRequest here, but this is required for the overrides in the library, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../core/core/server/lib/request-external.js');
+const dnsPromises = require('dns').promises;
 const assert = require('assert');
 const nock = require('nock');
 
 describe('MentionDiscoveryService', function () {
     const service = new MentionDiscoveryService({externalRequest});
 
+    beforeEach(function () {
+        nock.disableNetConnect();
+        // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
+        sinon.stub(dnsPromises, 'lookup').callsFake(function () {
+            return Promise.resolve({address: '123.123.123.123'});
+        });
+    });
+
+    afterEach(function () {
+        sinon.restore();
+        nock.cleanAll();
+    });
+
+    after(function () {
+        nock.cleanAll();
+        nock.enableNetConnect();
+    });
+
     it('Returns null from a bad URL', async function () {
-        const url = new URL('http://www.fake.com/');
+        const url = new URL('http://www.notarealsite.com/');
         nock(url.href)
             .get('/')
             .reply(404);
