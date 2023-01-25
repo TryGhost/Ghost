@@ -3,8 +3,8 @@ import ThemeErrorsModal from '../modals/design/theme-errors';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
 import envConfig from 'ghost-admin/config/environment';
-import {action} from '@ember/object';
-import {and, match} from '@ember/object/computed';
+import {action, computed} from '@ember/object';
+import {and, empty, match, reads} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -28,6 +28,28 @@ export default class Footer extends Component {
     @match('router.currentRouteName', /^settings/)
         isSettingsRoute;
 
+    @reads('session.user.isAdmin')
+        isAdminOrOwner;
+
+    @empty('feature.accessibility.referralInviteDismissed')
+        referralNotDismissedYet;
+
+    @computed('envConfig.environment', 'membersUtils.isStripeEnabled', 'settings.stripeConnectLivemode')
+    get stripeLiveModeEnabled() {
+        const isDevModeEnabled = envConfig.environment !== 'production' && this.membersUtils.isStripeEnabled;
+        const isLiveEnabled = this.settings.stripeConnectLivemode;
+        return isDevModeEnabled || isLiveEnabled;
+    }
+
+    get showReferralInvite() {
+        // Conditions to see the referral invite
+        // 1. Needs to be Owner or Admin
+        // 2. Stripe is live enabled
+        // 3. MRR is > $100
+        // 4. Notification has not yet been dismissed by the user
+        return this.isAdminOrOwner && this.referralNotDismissedYet && this.stripeLiveModeEnabled && this.dashboardStats?.currentMRR / 100 >= 100;
+    }
+
     @action
     openThemeErrors() {
         this.advancedModal = this.modals.open(ThemeErrorsModal, {
@@ -39,22 +61,19 @@ export default class Footer extends Component {
         });
     }
 
-    get isStripeLiveMode() {
-        if (envConfig.environment !== 'production' && this.membersUtils.isStripeEnabled) {
-            return true;
-        } else if (this.settings.stripeConnectLivemode) {
-            return true;
-        }
-        return false;
-        // return this.settings.stripeConnectLivemode;
+    @action
+    dismissReferralInvite(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const key = 'referralInviteDismissed';
+        const value = true;
+        const options = {user: true};
+
+        return this.feature.update(key, value, options);
     }
 
     get hasThemeErrors() {
         return this.themeManagement.activeTheme && this.themeManagement.activeTheme.errors.length;
-    }
-
-    get showReferralInvite() {
-        return !this.hasThemeErrors && this.isStripeLiveMode && this.dashboardStats?.currentMRR / 100 >= 100;
     }
 
     // equivalent to "left: auto; right: -20px"
