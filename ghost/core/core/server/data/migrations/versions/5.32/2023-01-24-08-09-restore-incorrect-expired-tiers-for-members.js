@@ -7,8 +7,8 @@ module.exports = createTransactionalMigration(
         logging.info('Restoring member<>tier mapping for members with paid status');
         try {
             // fetch all members with a paid status that don't have a members_products record
-        // and have a members_product_events record with an action of "added"
-        // and fetch the product_id from the most recent record for that member
+            // and have a members_product_events record with an action of "added"
+            // and fetch the product_id from the most recent record for that member
             const memberWithTiers = await knex.select('m.id as member_id', 'mpe.product_id as product_id')
                 .from('members as m')
                 .leftJoin('members_products as mp', 'm.id', 'mp.member_id')
