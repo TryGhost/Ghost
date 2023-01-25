@@ -18,7 +18,7 @@ describe('Webmentions (receiving)', function () {
         nock.cleanAll();
         nock.enableNetConnect();
     });
-
+ 
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
     });
@@ -87,5 +87,27 @@ describe('Webmentions (receiving)', function () {
             }); 
         });
         emailMockReceiver.sentEmailCount(users.length);
+    });
+
+    it('does not send notification with flag disabled', async function () {
+        mockManager.mockLabsDisabled('webmentionEmail');
+        const url = new URL('http://testpage.com/external-article-123-email-test/');
+        const html = `
+                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+            `;
+        nock(url.href)
+            .get('/')
+            .reply(200, html, {'content-type': 'text/html'});
+
+        await agent.post('/receive/')
+            .body({
+                source: 'http://testpage.com/external-article-123-email-test/',
+                target: urlUtils.getSiteUrl() + 'integrations/',
+                withExtension: true // test payload recorded
+            })
+            .expectStatus(202);
+        
+        await sleep(2000);
+        emailMockReceiver.sentEmailCount(0);
     });
 });

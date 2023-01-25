@@ -1,7 +1,5 @@
 const errors = require('@tryghost/errors');
 const Mention = require('./Mention');
-const MentionCreatedEvent = require('./MentionCreatedEvent');
-const DomainEvents = require('@tryghost/domain-events');
 
 /**
  * @template Model
@@ -162,8 +160,6 @@ module.exports = class MentionsAPI {
                 sourceFavicon: metadata.favicon,
                 sourceFeaturedImage: metadata.image
             });
-            const event = MentionCreatedEvent.create({data: mention, timestamp: new Date()});
-            DomainEvents.dispatch(event);
         }
         await this.#repository.save(mention);
 
