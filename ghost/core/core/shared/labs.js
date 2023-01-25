@@ -26,7 +26,8 @@ const GA_FEATURES = [
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
-    'activitypub'
+    'activitypub',
+    'emailErrors'
 ];
 
 const ALPHA_FEATURES = [
