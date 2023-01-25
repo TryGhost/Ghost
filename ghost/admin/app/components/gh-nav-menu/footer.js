@@ -3,6 +3,7 @@ import ThemeErrorsModal from '../modals/design/theme-errors';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
 import envConfig from 'ghost-admin/config/environment';
+import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {and, empty, match, reads} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -32,22 +33,23 @@ export default class Footer extends Component {
         isAdminOrOwner;
 
     @empty('feature.accessibility.referralInviteDismissed')
-        referralNotDismissedYet;
+        isReferralNotificationNotDismissed;
 
     @computed('envConfig.environment', 'membersUtils.isStripeEnabled', 'settings.stripeConnectLivemode')
     get stripeLiveModeEnabled() {
-        const isDevModeEnabled = envConfig.environment !== 'production' && this.membersUtils.isStripeEnabled;
+        // allow testing mode when not in a production environment
+        const isDevModeStripeEnabled = envConfig.environment !== 'production' && this.membersUtils.isStripeEnabled;
         const isLiveEnabled = this.settings.stripeConnectLivemode;
-        return isDevModeEnabled || isLiveEnabled;
+        return isDevModeStripeEnabled || isLiveEnabled;
     }
 
     get showReferralInvite() {
         // Conditions to see the referral invite
         // 1. Needs to be Owner or Admin
-        // 2. Stripe is live enabled
+        // 2. Stripe is setup and enabled in live mode
         // 3. MRR is > $100
         // 4. Notification has not yet been dismissed by the user
-        return this.isAdminOrOwner && this.referralNotDismissedYet && this.stripeLiveModeEnabled && this.dashboardStats?.currentMRR / 100 >= 100;
+        return this.isAdminOrOwner && this.isReferralNotificationNotDismissed && this.stripeLiveModeEnabled && (this.dashboardStats?.currentMRR / 100 >= 100);
     }
 
     @action
@@ -62,11 +64,16 @@ export default class Footer extends Component {
     }
 
     @action
+    loadCurrentMRR() {
+        this.dashboardStats.loadMrrStats();
+    }
+
+    @action
     dismissReferralInvite(event) {
         event.preventDefault();
         event.stopPropagation();
         const key = 'referralInviteDismissed';
-        const value = true;
+        const value = moment().tz(this.settings.timezone);
         const options = {user: true};
 
         return this.feature.update(key, value, options);

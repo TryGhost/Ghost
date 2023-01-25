@@ -1,4 +1,4 @@
-<div class="gh-nav-bottom">
+<div class="gh-nav-bottom" {{did-insert this.loadCurrentMRR}}>
     {{#if this.hasThemeErrors}}
     <button type="button" class="gh-footer-toast gh-theme-error-toast" {{on "click" (fn this.openThemeErrors null)}}>
         <span class="gh-footer-toast-title gh-notification-title">Your theme contains errors</span>
