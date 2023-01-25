@@ -199,7 +199,8 @@ module.exports = {
                 let ghostError = new errors.EmailError({
                     err: error,
                     code: 'BULK_EMAIL_SEND_FAILED',
-                    message: `Error sending email batch ${emailBatchId}`
+                    message: `Error sending email batch ${emailBatchId}`,
+                    context: error.message
                 });
                 sentry.captureException(ghostError);
                 logging.error(ghostError);
