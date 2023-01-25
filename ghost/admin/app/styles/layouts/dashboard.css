@@ -1550,6 +1550,11 @@ Dashboard Recents */
     grid-template-columns: 25% 25% 35% 15%;
 }
 
+.gh-dashboard-recents-mentions .gh-dashboard-list-header,
+.gh-dashboard-recents-mentions .gh-dashboard-list-item {
+    grid-template-columns: 20% 65% 15%;
+}
+
 .gh-dashboard-recents-activity .gh-dashboard-list-title:nth-child(2),
 .gh-dashboard-recents-activity .gh-dashboard-list-item .gh-dashboard-list-item-sub:nth-child(2) {
     margin-left: -4px; /* grid layout adjustments */
@@ -1567,6 +1572,10 @@ Dashboard Recents */
     white-space: nowrap;
     overflow: hidden;
     padding: 0 32px 0 0;
+}
+
+.gh-dashboard-recent-mentioned {
+    color: var(--black);
 }
 
 
@@ -2109,7 +2118,7 @@ Dashboard Resource */
     color: var(--black);
     font-size: 1.45rem;
     font-weight: 600;
-    line-height: 1.4em;
+    line-height: 1.5em;
 }
 
 .gh-dashboard-resource .gh-dashboard-list-body {

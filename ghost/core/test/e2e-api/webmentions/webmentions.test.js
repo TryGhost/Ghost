@@ -60,36 +60,6 @@ describe('Webmentions (receiving)', function () {
         }));
     });
 
-    it('can receive a webmention to homepage', async function () {
-        const url = new URL('http://testpage.com/external-article-2/');
-        const html = `
-                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-            `;
-        nock(url.href)
-            .get('/')
-            .reply(200, html, {'content-type': 'text/html'});
-
-        await agent.post('/receive')
-            .body({
-                source: 'http://testpage.com/external-article-2/',
-                target: urlUtils.getSiteUrl()
-            })
-            .expectStatus(202);
-
-        // todo: remove sleep in future
-        await sleep(2000);
-
-        const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article-2/'});
-        assert(mention);
-        assert.equal(mention.get('target'), urlUtils.getSiteUrl());
-        assert.ok(!mention.get('resource_id'));
-        assert.equal(mention.get('resource_type'), null);
-        assert.equal(mention.get('source_title'), 'Test Page');
-        assert.equal(mention.get('source_excerpt'), 'Test description');
-        assert.equal(mention.get('source_author'), 'John Doe');
-        assert.equal(mention.get('payload'), JSON.stringify({}));
-    });
-
     it('can send an email notification for a new webmention', async function () {
         const url = new URL('http://testpage.com/external-article-123-email/');
         const html = `

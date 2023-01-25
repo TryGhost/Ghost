@@ -5,31 +5,46 @@
         </h2>
     </GhCanvasHeader>
     <section>
-       {{#each this.mentionsList as |mention|}}
-            <div class="gh-mention-card">
-                {{!-- TODO: show the title of your post instead of a link --}}
-                {{!-- TODO: link to the post analytics page of your post --}}
-                <p class="gh-mention-your-post">Your post <a href={{mention.target}} class="gh-mention-your-post-link">{{mention.target}}</a> was mentioned in:</p>
-                <a href="{{mention.source}}" class="gh-mention-container" rel="noreferrer noopener" target="_blank">
-                    <div class="gh-mention-content">
-                        <h3 class="gh-mention-title">{{mention.sourceTitle}}</h3>
-                        <p class="gh-mention-description">{{mention.sourceExcerpt}}</p>
-                        <div class="gh-mention-metadata">
-                            <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="gh-mention-icon">
-                            {{#if mention.sourceSiteTitle}}
-                                <span class="gh-mention-publisher">{{mention.sourceSiteTitle}}</span>
+        {{!-- TODO: Invert logic --}}
+        {{#if this.mentionsList}}
+            {{#each this.mentionsList as |mention|}}
+                <div class="gh-mention-card">
+                    {{!-- TODO: show the title of your post instead of a link --}}
+                    {{!-- TODO: link to the post analytics page of your post --}}
+                    <p class="gh-mention-your-post">Your post <a href={{mention.target}} class="gh-mention-your-post-link">{{mention.target}}</a> was mentioned in:</p>
+                    <a href="{{mention.source}}" class="gh-mention-container" rel="noreferrer noopener" target="_blank">
+                        <div class="gh-mention-content">
+                            <h3 class="gh-mention-title">{{if mention.sourceTitle mention.sourceTitle mention.target}}</h3>
+                            {{#if mention.sourceExcerpt}}
+                                <p class="gh-mention-description">{{mention.sourceExcerpt}}</p>
                             {{/if}}
-                            {{#if mention.sourceAuthor}}
-                                <span class="gh-mention-author">{{mention.sourceAuthor}}</span>
-                            {{/if}}
-                            <span class="gh-mention-timestamp">{{gh-format-post-time mention.timestamp}}</span>
+                            <div class="gh-mention-metadata">
+                                {{#if mention.sourceFavicon}}
+                                    <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="gh-mention-icon">
+                                {{/if}}
+                                {{#if mention.sourceSiteTitle}}
+                                    <span class="gh-mention-publisher">{{mention.sourceSiteTitle}}</span>
+                                {{/if}}
+                                {{#if mention.sourceAuthor}}
+                                    <span class="gh-mention-author">{{mention.sourceAuthor}}</span>
+                                {{/if}}
+                                <span class="gh-mention-timestamp">{{gh-format-post-time mention.timestamp}}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="gh-mention-thumbnail">
-                        <img src="{{mention.sourceFeaturedImage}}" alt="Mozilla">
-                    </div>
-                </a>
+                        {{#if mention.sourceFeaturedImage}}
+                            <div class="gh-mention-thumbnail">
+                                <img src="{{mention.sourceFeaturedImage}}" alt="{{mention.sourceTitle}}">
+                            </div>
+                        {{/if}}
+                    </a>
+                </div>
+            {{/each}}
+        {{else}}
+            <div class="gh-mentions-list-cta">
+                {{svg-jar "email-love-letter" class="love-letter"}}
+                <h4>No mentions yet</h4>
+                <p>When other sites mention your posts, they'll appear here.</p>
             </div>
-        {{/each}}
+        {{/if}}
     </section>
 </section>
