@@ -11,7 +11,7 @@ jobs:
     if: github.repository_owner == 'TryGhost'
     name: Create checklist comment
     steps:
-      - uses: peter-evans/create-or-update-comment@2cabc739d5d914143fda652ac1a7456f5c73d3c4
+      - uses: peter-evans/create-or-update-comment@e0e8aa00752bbac08c4393c1f7834e6ee753c159
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
