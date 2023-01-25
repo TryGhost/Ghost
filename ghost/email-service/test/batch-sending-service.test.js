@@ -125,8 +125,12 @@ describe('Batch Sending Service', function () {
                     status: 'pending'
                 }
             });
+            const captureException = sinon.stub();
             const service = new BatchSendingService({
-                models: {Email}
+                models: {Email},
+                sentry: {
+                    captureException
+                }
             });
             let emailModel;
             let afterEmailModel;
@@ -141,6 +145,16 @@ describe('Batch Sending Service', function () {
             assert.equal(result, undefined);
             sinon.assert.calledOnce(errorLog);
             sinon.assert.calledOnce(sendEmail);
+            sinon.assert.calledOnce(captureException);
+
+            // Check error code
+            const error = errorLog.firstCall.args[0];
+            assert.equal(error.code, 'BULK_EMAIL_SEND_FAILED');
+
+            // Check error
+            const sentryError = captureException.firstCall.args[0];
+            assert.equal(sentryError.message, '');
+
             assert.equal(emailModel.status, 'submitting', 'The email status is submitting while sending');
             assert.equal(afterEmailModel.get('status'), 'failed', 'The email status is failed after sending');
             assert.equal(afterEmailModel.get('error'), 'Something went wrong while sending the email');
@@ -621,8 +635,56 @@ describe('Batch Sending Service', function () {
             });
 
             assert.equal(result, false);
-            sinon.assert.calledTwice(errorLog);
+            sinon.assert.calledOnce(errorLog);
             sinon.assert.calledOnce(sendingService.send);
+
+            sinon.assert.calledOnce(findOne);
+            const batch = await findOne.firstCall.returnValue;
+            assert.equal(batch.get('status'), 'failed');
+            assert.equal(batch.get('error_status_code'), null);
+            assert.equal(batch.get('error_message'), 'Test error');
+            assert.equal(batch.get('error_data'), null);
+        });
+
+        it('Does log error to Sentry', async function () {
+            const EmailBatch = createModelClass({
+                findOne: {
+                    status: 'pending',
+                    member_segment: null
+                }
+            });
+            const sendingService = {
+                send: sinon.stub().rejects(new Error('Test error'))
+            };
+
+            const findOne = sinon.spy(EmailBatch, 'findOne');
+            const captureException = sinon.stub();
+            const service = new BatchSendingService({
+                models: {EmailBatch, EmailRecipient},
+                sendingService,
+                sentry: {
+                    captureException
+                }
+            });
+
+            const result = await service.sendBatch({
+                email: createModel({}),
+                batch: createModel({}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            assert.equal(result, false);
+            sinon.assert.calledOnce(errorLog);
+            sinon.assert.calledOnce(sendingService.send);
+            sinon.assert.calledOnce(captureException);
+            const sentryExeption = captureException.firstCall.args[0];
+            assert.equal(sentryExeption.message, 'Test error');
+
+            const loggedExeption = errorLog.firstCall.args[0];
+            assert.match(loggedExeption.message, /Error sending email batch/);
+            assert.equal(loggedExeption.context, 'Test error');
+            assert.equal(loggedExeption.code, 'BULK_EMAIL_SEND_FAILED');
 
             sinon.assert.calledOnce(findOne);
             const batch = await findOne.firstCall.returnValue;
@@ -664,7 +726,7 @@ describe('Batch Sending Service', function () {
             });
 
             assert.equal(result, false);
-            sinon.assert.calledTwice(errorLog);
+            sinon.assert.notCalled(errorLog);
             sinon.assert.calledOnce(sendingService.send);
 
             sinon.assert.calledOnce(findOne);
