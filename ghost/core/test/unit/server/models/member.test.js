@@ -77,5 +77,13 @@ describe('Unit: models/member', function () {
 
             updatePivot.calledWith({expiry_at: new Date(expiry)}, {query: {where: {product_id: '1'}}}).should.be.true();
         });
+
+        it('calls updatePivot on member products to remove expiry', function () {
+            memberModel.updateTierExpiry([{
+                id: '1'
+            }]);
+
+            updatePivot.calledWith({expiry_at: null}, {query: {where: {product_id: '1'}}}).should.be.true();
+        });
     });
 });
