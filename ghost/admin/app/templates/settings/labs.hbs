@@ -252,6 +252,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Show email errors</h4>
+                            <p class="gh-expandable-description">
+                                This makes email errors visible in the UI.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="emailErrors" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}

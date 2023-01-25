@@ -67,6 +67,7 @@ export default class FeatureService extends Service {
     @feature('webmentions') webmentions;
     @feature('outboundLinkTagging') outboundLinkTagging;
     @feature('webmentionEmail') webmentionEmail;
+    @feature('emailErrors') emailErrors;
 
     _user = null;
 
