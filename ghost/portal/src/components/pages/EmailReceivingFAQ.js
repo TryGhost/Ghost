@@ -24,7 +24,7 @@ export default function EmailReceivingPage() {
             </header>
 
             <div class="gh-longform">
-                <h3>Help! I'm not receiving subscription emails</h3>
+                <h3>Help! I'm not receiving emails</h3>
 
                 <p>If you're not receiving the email newsletter you've subscribed to, here are few things to check.</p>
 
