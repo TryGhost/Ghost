@@ -4,6 +4,12 @@ import {CardWrapper} from './../CardWrapper';
 import {useImageUpload} from '../../../../demo/utils/useImageUpload';
 import {defaultHeaders} from '../../../../demo/utils/unsplashConfig';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false},
+    Editing: {isSelected: true, isEditing: true}
+};
+
 function imageLoading() {
     return {progress: 60, isLoading: true, filesNumber: 2};
 }
@@ -23,7 +29,19 @@ const story = {
     component: MarkdownCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected',
+                    Editing: 'Editing'
+                },
+                defaultValue: displayOptions.Default
+            }
+        }
     },
     parameters: {
         status: {
@@ -34,11 +52,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper wrapperStyle='wide' {...args}>
-                <MarkdownCard {...args} unsplashConf={defaultHeaders} />
+            <CardWrapper wrapperStyle='wide' {...display} {...args}>
+                <MarkdownCard {...display} {...args} unsplashConf={defaultHeaders} />
             </CardWrapper>
         </div>
     </div>
@@ -47,23 +65,20 @@ const Template = args => (
 export const Populated = Template.bind({});
 Populated.args = {
     markdown: '**Bold** and *italic*',
-    isSelected: true,
-    isEditing: true,
+    display: 'Editing',
     imageUploader: useImageUpload
 };
 
 export const Progress = Template.bind({});
 Progress.args = {
     markdown: '**Bold** and *italic*',
-    isSelected: true,
-    isEditing: true,
+    display: 'Editing',
     imageUploader: imageLoading
 };
 
 export const Errors = Template.bind({});
 Errors.args = {
     markdown: '**Bold** and *italic*',
-    isSelected: true,
-    isEditing: true,
+    display: 'Editing',
     imageUploader: imageErrors
 };
