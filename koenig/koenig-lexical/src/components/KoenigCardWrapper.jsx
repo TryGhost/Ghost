@@ -26,7 +26,7 @@ import {CardWrapper} from './ui/CardWrapper';
 const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, openInEditMode = false, children}) => {
     const [editor] = useLexicalComposerContext();
     const [isSelected, setSelected, clearSelected] = useLexicalNodeSelection(nodeKey);
-    const [isEditing, setEditing] = React.useState(false);
+    const [isEditing, setEditing] = React.useState(openInEditMode);
     const [selection, setSelection] = React.useState(null);
     const [cardType, setCardType] = React.useState(null);
     const [cardWidth, setCardWidth] = React.useState(width || 'regular');
@@ -279,23 +279,13 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, openInEditMod
         );
     }, [editor, isSelected, isEditing, setSelected, clearSelected, setEditing, nodeKey]);
 
-    // when openInEditMode is true the card node may have been created but not selected.
-    // make sure we reset the selection here
     React.useEffect(() => {
         if (openInEditMode) {
             editor.update(() => {
-                const nodeSelection = $createNodeSelection();
-                nodeSelection.add(nodeKey);
-                $setSelection(nodeSelection);
-
-                const node = $getNodeByKey(nodeKey);
-                node.clearOpenInEditMode();
+                $getNodeByKey(nodeKey).clearOpenInEditMode();
             });
-
-            setSelected(true);
-            setEditing(true);
         }
-    }, [editor, nodeKey, openInEditMode, setSelected, setEditing]);
+    }, [editor, nodeKey, openInEditMode]);
 
     return (
         <CardContext.Provider value={{

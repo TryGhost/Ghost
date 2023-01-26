@@ -58,7 +58,8 @@ export class ImageNode extends BaseImageNode {
     }
 
     getPreviewSrc() {
-        return this.__previewSrc;
+        const self = this.getLatest();
+        return self.__previewSrc;
     }
 
     setPreviewSrc(previewSrc) {

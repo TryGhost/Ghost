@@ -38,8 +38,7 @@ const story = {
                     Default: 'Default',
                     Selected: 'Selected',
                     Editing: 'Editing'
-                },
-                defaultValue: displayOptions.Default
+                }
             }
         }
     },

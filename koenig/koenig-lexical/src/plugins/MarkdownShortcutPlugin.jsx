@@ -10,6 +10,7 @@ import {MarkdownShortcutPlugin as LexicalMarkdownShortcutPlugin} from '@lexical/
 import {$createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
 import {$isCodeBlockNode, $createCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
 import {$isImageNode, $createImageNode, ImageNode} from '../nodes/ImageNode';
+import {$createNodeSelection, $setSelection} from 'lexical';
 
 export const HR = {
     dependencies: [HorizontalRuleNode],
@@ -51,7 +52,12 @@ export const CODE_BLOCK = {
     replace: (textNode, match, text) => {
         const language = text[1];
         const codeBlockNode = $createCodeBlockNode({language, _openInEditMode: true});
-        textNode.replace(codeBlockNode);
+        const replacementNode = textNode.replace(codeBlockNode);
+
+        // select node when replacing so it immediately renders in editing mode
+        const replacementSelection = $createNodeSelection();
+        replacementSelection.add(replacementNode.getKey());
+        $setSelection(replacementSelection);
     },
     type: 'element'
 };
