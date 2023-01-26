@@ -1,5 +1,4 @@
-import cajaHtmlSanitize from './caja-sanitizer-bundle';
-import cajaSanitizers from '../utils/caja-sanitizers';
+import DOMPurify from 'dompurify';
 
 export function sanitizeHtml(html, options = {}) {
     options = {
@@ -16,5 +15,5 @@ export function sanitizeHtml(html, options = {}) {
     }
 
     // sanitize html
-    return cajaHtmlSanitize(html, cajaSanitizers.url, cajaSanitizers.id);
+    return DOMPurify.sanitize(html, {ALLOWED_URI_REGEXP: /^https?:|^\/|blob:/, ADD_ATTR: ['id']});
 }
