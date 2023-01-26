@@ -4,7 +4,7 @@
         <span class="gh-footer-toast-title gh-notification-title">Your theme contains errors</span>
         <span class="gh-footer-toast-p">Some functionality on your site may be limited &rarr;</span>
     </button>
-    {{else if (and this.showReferralInvite (not this.hasThemeErrors))}}
+    {{else if this.showReferralInvite}}
     <a href="https://referrals.ghost.org/?ref=admin" class="gh-referral-toast" target="_blank" rel="noopener noreferrer">
         <span class="gh-referral-toast-close" {{on "click" (fn this.dismissReferralInvite)}}>&#xd7;</span>
         <strong>You qualify for our invite-only  referral program.</strong>

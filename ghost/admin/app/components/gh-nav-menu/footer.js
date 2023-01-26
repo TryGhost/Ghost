@@ -49,7 +49,7 @@ export default class Footer extends Component {
         // 2. Stripe is setup and enabled in live mode
         // 3. MRR is > $100
         // 4. Notification has not yet been dismissed by the user
-        return this.isAdminOrOwner && this.isReferralNotificationNotDismissed && this.stripeLiveModeEnabled && (this.dashboardStats?.currentMRR / 100 >= 100);
+        return !this.hasThemeErrors && this.isAdminOrOwner && this.isReferralNotificationNotDismissed && this.stripeLiveModeEnabled && (this.dashboardStats?.currentMRR / 100 >= 100);
     }
 
     @action
