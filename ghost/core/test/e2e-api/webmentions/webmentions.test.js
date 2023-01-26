@@ -3,8 +3,9 @@ const models = require('../../../core/server/models');
 const assert = require('assert');
 const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
+const jobsService = require('../../../core/server/services/jobs');
 
-describe('Webmentions (receiving)', function () {
+describe.only('Webmentions (receiving)', function () {
     let agent;
     let emailMockReceiver;
     before(async function () {
@@ -28,24 +29,30 @@ describe('Webmentions (receiving)', function () {
     });
 
     it('can receive a webmention', async function () {
-        const url = new URL('http://testpage.com/external-article/');
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article/');
         const html = `
                 <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
             `;
-        nock(url.href)
-            .get('/')
-            .reply(200, html, {'content-type': 'text/html'});
 
+
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
         await agent.post('/receive')
             .body({
-                source: 'http://testpage.com/external-article/',
-                target: urlUtils.getSiteUrl() + 'integrations/',
+                source: sourceUrl.href,
+                target: targetUrl.href,
                 withExtension: true // test payload recorded
             })
             .expectStatus(202);
 
-        // todo: remove sleep in future
-        await sleep(2000);
+        await processWebmentionJob;
 
         const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article/'});
         assert(mention);
@@ -61,23 +68,33 @@ describe('Webmentions (receiving)', function () {
     });
 
     it('can receive a webmention to homepage', async function () {
-        const url = new URL('http://testpage.com/external-article-2/');
+        console.log('awating completiong');
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL(urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-2/');
         const html = `
                 <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
             `;
-        nock(url.href)
-            .get('/')
-            .reply(200, html, {'content-type': 'text/html'});
+
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
 
         await agent.post('/receive')
             .body({
-                source: 'http://testpage.com/external-article-2/',
-                target: urlUtils.getSiteUrl()
+                source: sourceUrl.href,
+                target: targetUrl.href,
             })
             .expectStatus(202);
 
-        // todo: remove sleep in future
-        await sleep(2000);
+        console.log('waiting');
+
+        const res = await processWebmentionJob;
+        console.log('waited', res);
 
         const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article-2/'});
         assert(mention);
