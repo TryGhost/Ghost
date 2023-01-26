@@ -126,6 +126,8 @@ module.exports = class MailgunClient {
                 value: Date.now() - startTime,
                 statusCode: 200
             });
+            // By limiting the processed events to ones created before this job started we cancel early ready for the next job run.
+            // Avoids chance of events being missed in long job runs due to mailgun's eventual-consistency creating events outside of our 30min sliding re-check window
             let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
             debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
@@ -153,6 +155,7 @@ module.exports = class MailgunClient {
                     value: Date.now() - startTime,
                     statusCode: 200
                 });
+                // We need to cap events at the time we started fetching them (see comment above)
                 events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
                 debug(`fetchEvents: finished fetching next page with ${events.length} events`);
             }
