@@ -44,6 +44,7 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     isSelected: true,
+    isEditing: true,
     size: 'small',
     backgroundColor: 'dark',
     heading: 'This is a heading',

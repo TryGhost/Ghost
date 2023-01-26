@@ -38,6 +38,7 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     isSelected: true,
+    isEditing: true,
     value: 'Something to pay attention to.',
     valuePlaceholder: 'Callout text...',
     backgroundColor: 'grey'

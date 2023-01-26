@@ -42,6 +42,7 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     isSelected: true,
+    isEditing: true,
     visibility: 'Free members',
     alignment: 'center',
     separators: true,

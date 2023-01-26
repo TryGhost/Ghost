@@ -30,6 +30,7 @@ const Template = args => (
 export const Default = Template.bind({});
 Default.args = {
     isSelected: true,
+    isEditing: true,
     value: 'Hey {first_name, "there"},',
     placeholder: 'Email only text...'
 };

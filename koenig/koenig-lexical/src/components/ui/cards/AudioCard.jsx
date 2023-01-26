@@ -15,14 +15,14 @@ function EmptyAudioCard() {
     );
 }
 
-function PopulatedAudioCard({isSelected, title, placeholder, duration, ...args}) {
+function PopulatedAudioCard({isEditing, title, placeholder, duration, ...args}) {
     return (
         <div className="flex rounded border border-grey/30 p-2" {...args}>
             <div className="group flex h-20 w-20 items-center justify-center rounded-sm bg-purple">
-                {(isSelected && <FilePlaceholderIcon className="ease-inx h-6 w-6 text-white transition-all duration-75 group-hover:scale-105" />) || <AudioFileIcon className="h-6 w-6 text-white" />}
+                {(isEditing && <FilePlaceholderIcon className="ease-inx h-6 w-6 text-white transition-all duration-75 group-hover:scale-105" />) || <AudioFileIcon className="h-6 w-6 text-white" />}
             </div>
             <div className="flex h-20 w-full flex-col justify-between px-4">
-                {(isSelected || title) && <input value={title} placeholder={placeholder} className="font-sans text-lg font-bold text-black" />}
+                {(isEditing || title) && <input value={title} placeholder={placeholder} className="font-sans text-lg font-bold text-black" />}
                 <MediaPlayer duration={duration} theme='dark' />
             </div>
         </div>
@@ -42,6 +42,7 @@ export function AudioCard({isPopulated, audioTitle, audioTitlePlaceholder, total
 
 AudioCard.propTypes = {
     isPopulated: PropTypes.bool,
+    isEditing: PropTypes.bool,
     audioTitle: PropTypes.string,
     totalDuration: PropTypes.string
 };

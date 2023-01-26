@@ -45,6 +45,7 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     isSelected: true,
+    isEditing: true,
     image: true,
     title: 'Fujifilm X100V',
     titlePlaceholder: 'Product title',

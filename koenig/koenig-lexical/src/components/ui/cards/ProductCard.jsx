@@ -4,10 +4,10 @@ import {MediaPlaceholder} from '../MediaPlaceholder';
 import {Button} from '../Button';
 import {ReactComponent as StarIcon} from '../../../assets/icons/kg-star.svg';
 
-export function ProductCard({isSelected, image, title, titlePlaceholder, desc, descPlaceholder, button, buttonText, rating}) {
+export function ProductCard({isEditing, image, title, titlePlaceholder, desc, descPlaceholder, button, buttonText, rating}) {
     return (
         <div className="flex w-full max-w-[550px] flex-col rounded border border-grey/40 p-4 font-sans">
-            {(image && <div className="mb-4 h-[324px] w-full border border-grey-200 bg-grey-200"></div>) || (isSelected &&
+            {(image && <div className="mb-4 h-[324px] w-full border border-grey-200 bg-grey-200"></div>) || (isEditing &&
                 <div className="mb-4">
                     <MediaPlaceholder
                         desc="Click to select a product image"
@@ -17,15 +17,15 @@ export function ProductCard({isSelected, image, title, titlePlaceholder, desc, d
                 </div>)
             } 
             <div className="flex items-start justify-between">
-                {(title || isSelected) && <h3 className={`text-xl font-bold leading-snug text-black ${title || 'opacity-40'}`}>{title || titlePlaceholder}</h3>}
+                {(title || isEditing) && <h3 className={`text-xl font-bold leading-snug text-black ${title || 'opacity-40'} ${rating && 'mr-2'}`}>{title || titlePlaceholder}</h3>}
                 {rating && 
-                    <div className="flex fill-grey-900 transition-all duration-75 hover:fill-grey-800">
+                    <div className="ml-auto flex fill-grey-900 transition-all duration-75 hover:fill-grey-800">
                         <RatingButton />
                     </div>
                 }
             </div>
-            {(desc || isSelected) && <p className={`mt-2 text-[1.6rem] font-normal leading-snug text-grey-700 ${desc || 'opacity-50'}`}>{desc || descPlaceholder}</p>}
-            {(button && (isSelected || buttonText)) && 
+            {(desc || isEditing) && <p className={`mt-2 text-[1.6rem] font-normal leading-snug text-grey-700 ${desc || 'opacity-50'}`}>{desc || descPlaceholder}</p>}
+            {(button && (isEditing || buttonText)) && 
                 <div className="mt-6 w-full">
                     <Button width='full' value={buttonText} />
                 </div>
@@ -42,7 +42,7 @@ function RatingButton() {
 }
 
 ProductCard.propTypes = {
-    isSelected: PropTypes.bool,
+    isEditing: PropTypes.bool,
     image: PropTypes.bool,
     title: PropTypes.string,
     titlePlaceholder: PropTypes.string,
@@ -51,4 +51,8 @@ ProductCard.propTypes = {
     button: PropTypes.bool,
     buttonText: PropTypes.string,
     rating: PropTypes.bool
+};
+
+ProductCard.defaultProps = {
+    isEditing: true
 };

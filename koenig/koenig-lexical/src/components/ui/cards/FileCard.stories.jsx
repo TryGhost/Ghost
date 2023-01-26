@@ -43,6 +43,7 @@ export const Populated = Template.bind({});
 Populated.args = {
     isSelected: true,
     isPopulated: true,
+    isEditing: true,
     fileTitle: 'Example file',
     fileTitlePlaceholder: 'File title',
     fileDesc: '',

@@ -39,6 +39,7 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     isSelected: true,
+    isEditing: true,
     header: 'When should I use Toggles?',
     headerPlaceholder: 'Toggle header',
     content: 'Toggles allow you to create collapsible sections of content which is a great way to make your content less overwhelming and easy to navigate. A common example is an FAQ section, like this one.',
