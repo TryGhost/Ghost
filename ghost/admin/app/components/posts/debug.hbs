@@ -55,7 +55,7 @@
         </div>
     </GhCanvasHeader>
 
-    <Tabs::Tabs class="gh-tabs-analytics" @forceRender={{true}} as |tabs|>
+    <Tabs::Tabs class="gh-tabs-analytics" @forceRender={{false}} as |tabs|>
         <tabs.tab>
             <h3>{{svg-jar "analytics-tab-sent-large"}} {{this.tabTotals.permanentFailures}}</h3>
             <p><span class="analytics-tab-label">Permanent {{gh-pluralize this.tabTotals.permanentFailures "failure" without-count=true}}</span></p>
@@ -67,29 +67,37 @@
                 {{#each this.permanentFailureData as |failure index|}}
                 <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
-                        <div class="gh-email-debug-member">
-                            <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
-                                <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
-                                    <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                        {{#if failure.member.id}}
+                            <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
+                                <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
                                 </div>
-                            </figure>
-                            <div>
-                                <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
-                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                            </LinkTo>
+                        {{else}}
+                            <div class="gh-email-debug-member">
+                                <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
+                                    <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
+                                        <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                                    </div>
+                                </figure>
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                </div>
                             </div>
-                        </div>
+                        {{/if}}
                     </div>
                     <div class="gh-list-data gh-email-debug-col-failure">
                         <div class="gh-email-debug-failure-details">
                             <div class="gh-email-debug-failure-codes">
                                 <span class="gh-email-debug-failure-code">Failure code: <span>{{failure.code}}</span></span>
-                                <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                {{#if failure.enhancedCode}}
+                                    <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                {{/if}}
                             </div>
-                            <div class="gh-email-debug-readmore-error">
-                                <input type="checkbox" id="error-{{index}}-checkbox" class="toggle-checkbox">
-                                <label for="error-{{index}}-checkbox">{{svg-jar "dotdotdot"}}</label>
-                                <span>{{failure.message}}</span>
-                            </div>
+                            <Posts::Debug::EmailErrorMessage @index={{index}} @message={{failure.message}} />
                         </div>
                     </div>
                 </tr>
@@ -116,33 +124,38 @@
                 {{#each this.temporaryFailureData as |failure index|}}
                 <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
-                        <div class="gh-email-debug-member">
-                            <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-purple">
-                                <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
-                                    <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                        {{#if failure.member.id}}
+                            <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
+                                <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
                                 </div>
-                                {{!-- {{#if this.avatarImage}}
-                                    <img class="gh-member-avatar-image" src="{{this.avatarImage}}" alt="{{or failure.recipient.name failure.recipient.email}}" />
-                                {{/if}} --}}
-                            </figure>
-                            <div>
-                                <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
-                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                            </LinkTo>
+                        {{else}}
+                            <div class="gh-email-debug-member">
+                                <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-blue">
+                                    <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
+                                        <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                                    </div>
+                                </figure>
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                </div>
                             </div>
-                        </div>
+                        {{/if}}
                     </div>
                     <div class="gh-list-data gh-email-debug-col-failure">
                         <div class="gh-email-debug-failure">
                             <div class="gh-email-debug-failure-details">
                                 <div class="gh-email-debug-failure-codes">
                                     <span class="gh-email-debug-failure-code">Failure code: <span>{{failure.code}}</span></span>
-                                    <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                    {{#if failure.enhancedCode}}
+                                        <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                    {{/if}}
                                 </div>
-                                <div class="gh-email-debug-readmore-error">
-                                    <input type="checkbox" id="error-{{index}}-checkbox-permanent" class="toggle-checkbox">
-                                    <label for="error-{{index}}-checkbox-permanent">{{svg-jar "dotdotdot"}}</label>
-                                    <span>{{failure.message}}</span>
-                                </div>
+                                <Posts::Debug::EmailErrorMessage @index={{index}} @message={{failure.message}} />
                             </div>
                         </div>
                     </div>
@@ -199,10 +212,11 @@
                                 {{#if (or batch.providerId batch.errorStatusCode batch.errorMessage)}}
                                     <div class="detailtext">
                                         {{#if batch.providerId}}
-                                            <div>Provider id:
-                                                <span>
+                                            <div class="noselect">
+                                                Provider id:
+                                                <code>
                                                     {{batch.providerId}}
-                                                </span>
+                                                </code>
                                             </div>
                                         {{/if}}
                                         {{#if batch.errorStatusCode}}
@@ -214,9 +228,9 @@
                                             <span class="error">{{batch.errorMessage}}</span>
                                         {{/if}}
                                     </div>
-                                    {{#if batch.errorMessage}}
-                                    <div class="download-icon">{{svg-jar "download" title="Download full failure message"}}</div>
-                                    {{/if}}
+                                    {{!-- {{#if batch.errorMessage}}
+                                        <div class="download-icon">{{svg-jar "download" title="Download full failure message"}}</div>
+                                    {{/if}} --}}
                                 {{else}}
                                     <div class="dib lightgrey">N/A</div>
                                 {{/if}}
@@ -231,93 +245,6 @@
                         </td>
                     </tr>
                     {{/unless}}
-                    {{!-- <tr>
-                        <div class="gh-list-data gh-email-debug-batch-col-status">
-                            <span class="failed">Failed</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-created">
-                            <span>22 June, 2022 19:34:29</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-segment">
-                            <span>-status:free</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-recipients">
-                            <span>1,000</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-details">
-                            <div class="flex flex-col items-center space-between w100">
-                                <div class="detailtext">
-                                    <div>Provider id:  <span>20220824043031.b31949925525913d@m.ghost.io</span></div>
-                                    <div>Failure status code: <span>500</span></div>
-                                    <span class="error">Mailgun Error 500: Internal server error</span>
-                                </div>
-                                <div class="download-icon">{{svg-jar "download" title="Download full failure message"}}</div>
-                            </div>
-                        </div>
-                    </tr>
-                    <tr>
-                        <div class="gh-list-data gh-email-debug-batch-col-status">
-                            <span class="pending">Pending</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-created">
-                            <span>22 June, 2022 19:34:29</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-segment">
-                            <span>-status:free</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-recipients">
-                            <span>1,000</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-details">
-                            <div class="flex flex-col items-center space-between w100">
-                                <div class="detailtext">
-                                    <div>Provider id:  <span>20220824043031.b31949925525913d@m.ghost.io</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </tr>
-                    <tr>
-                        <div class="gh-list-data gh-email-debug-batch-col-status">
-                            <span class="submitting">Submitting</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-created">
-                            <span>22 June, 2022 19:34:29</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-segment">
-                            <span>-status:free</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-recipients">
-                            <span>1,000</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-details">
-                            <div class="flex flex-col items-center space-between w100">
-                                <div class="detailtext">
-                                    <div>Provider id:  <span>20220824043031.b31949925525913d@m.ghost.io</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </tr>
-                    <tr>
-                        <div class="gh-list-data gh-email-debug-batch-col-status">
-                            <span class="submitted">Submitted</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-created">
-                            <span>22 June, 2022 19:34:29</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-segment">
-                            <span>-status:free</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-recipients">
-                            <span>1,000</span>
-                        </div>
-                        <div class="gh-list-data gh-email-debug-batch-col-details">
-                            <div class="flex flex-col items-center space-between w100">
-                                <div class="detailtext">
-                                    <div>Provider id:  <span>20220824043031.b31949925525913d@m.ghost.io</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </tr> --}}
                 </tbody>
             </table>
         </tabs.tabPanel>
