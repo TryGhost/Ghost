@@ -810,6 +810,10 @@ input:focus,
     background: color-mod(var(--dark-main-bg-color) l(+2%));
 }
 
+.gh-referral-toast-close:hover {
+    color: #fff;
+}
+
 .nightshift-toggle {
     background: var(--lightgrey);
 }

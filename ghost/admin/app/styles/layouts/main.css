@@ -2149,8 +2149,8 @@ section.gh-ds h2 {
 }
 
 
-/* Theme error toast and modal */
-.gh-theme-error-toast {
+/* Footer toast in navbar */
+.gh-footer-toast {
     display: flex;
     flex-direction: column;
     font-size: 1.3rem;
@@ -2159,10 +2159,87 @@ section.gh-ds h2 {
     padding: 20px;
     margin-bottom: 32px;
     color: #fff;
-    background: var(--red);
     border-radius: 6px;
 }
 
-.gh-theme-error-toast .gh-notification-title {
+.gh-footer-toast-title.gh-notification-title {
     margin: 0 0 6px 0;
+}
+
+/* Theme error toast and modal */
+.gh-theme-error-toast {
+    background: var(--red);
+}
+
+/* Ghost Referrals invite toast */
+.gh-referral-toast {
+    position: relative;
+    display: block;
+    padding: 25px;
+    margin-bottom: 50px;
+    color: var(--black);
+    text-decoration: none;
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: rgb(75 225 226 / 28%) -7px -6px 42px 8px, rgb(202 103 255 / 32%) 7px 6px 42px 8px;
+    transition: all 0.6s ease;
+    cursor: pointer;
+}
+
+.gh-referral-toast a {
+    color: var(--black);
+}
+
+.gh-referral-toast:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: rgb(75 225 226 / 38%) -7px -4px 42px 10px, rgb(202 103 255 / 42%) 7px 8px 42px 10px;
+    transition: all 0.3s ease;
+  }
+
+.gh-referral-toast-close {
+    position: absolute;
+    top: 7px;
+    right: 10px;
+    padding: 5px;
+    color: #ddd;
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.gh-referral-toast-close:hover {
+    color: #15171A;
+}
+
+.gh-referral-toast a > strong {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1.7rem;
+    line-height: 1.2em;
+}
+
+.gh-referral-toast a > p {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.35em;
+    letter-spacing: -0.015em;
+    font-weight: 500;
+    color: #666;
+}
+
+.gh-referral-toast a > p strong {
+    color: #ff247d;
+}
+
+.gh-referral-toast-button {
+    margin-top: 20px;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.gh-referral-toast-button span {
+    padding: 0 12px;
+    font-size: 1.4rem;
+    text-align-last: center;
+    height: 40px;
+    line-height: 40px;
 }

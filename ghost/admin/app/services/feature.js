@@ -55,6 +55,9 @@ export default class FeatureService extends Service {
     @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
         nightShift;
 
+    // user-specific referral invitation
+    @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
+
     // labs flags
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
