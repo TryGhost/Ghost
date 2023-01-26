@@ -72,11 +72,10 @@ export default class Footer extends Component {
     dismissReferralInvite(event) {
         event.preventDefault();
         event.stopPropagation();
-        const key = 'referralInviteDismissed';
-        const value = moment().tz(this.settings.timezone);
-        const options = {user: true};
 
-        return this.feature.update(key, value, options);
+        if (!this.feature.referralInviteDismissed) {
+            this.feature.referralInviteDismissed = moment().tz(this.settings.timezone);
+        }
     }
 
     get hasThemeErrors() {
