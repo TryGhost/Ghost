@@ -5,7 +5,7 @@ import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import MarkdownEditor from './MarkdownCard/MarkdownEditor';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
-export function MarkdownCard({markdown = '# Title', updateMarkdown, isEditing, imageUploader, unsplashConf}) {
+export function MarkdownCard({markdown = '', updateMarkdown, isEditing, imageUploader, unsplashConf}) {
     return (
         <>
             {isEditing

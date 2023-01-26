@@ -28,7 +28,7 @@ describe('Markdown card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="markdown">
+                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="markdown">
                 </div>
             </div>
             <p><br /></p>

@@ -32,7 +32,7 @@ export const MarkdownPlugin = () => {
                     const focusNode = selection.focus.getNode();
 
                     if (focusNode !== null) {
-                        const markdownNode = $createMarkdownNode(dataset);
+                        const markdownNode = $createMarkdownNode({...dataset, _openInEditMode: true});
 
                         // insert a paragraph if this will be the last card and
                         // we're not already on a blank paragraph so we always
