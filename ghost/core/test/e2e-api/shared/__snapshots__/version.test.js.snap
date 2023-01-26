@@ -223,6 +223,34 @@ Object {
 }
 `;
 
+exports[`API Versioning Admin API responds with content version header even when accept version header is NOT PRESENT 1: [body] 1`] = `
+Object {
+  "site": Object {
+    "accent_color": "#FF1A75",
+    "description": "Thoughts, stories and ideas",
+    "icon": null,
+    "locale": "en",
+    "logo": null,
+    "title": "Ghost",
+    "url": "http://127.0.0.1:2369/",
+    "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+/,
+  },
+}
+`;
+
+exports[`API Versioning Admin API responds with content version header even when accept version header is NOT PRESENT 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`API Versioning Admin API responds with current content version header when requested version is AHEAD and CAN respond 1: [body] 1`] = `
 Object {
   "site": Object {
@@ -391,34 +419,6 @@ Object {
 `;
 
 exports[`API Versioning Admin API responds with error when requested version is BEHIND and CANNOT respond 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": StringMatching /\\\\d\\+/,
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`API Versioning Admin API responds with no content version header when accept version header is NOT PRESENT 1: [body] 1`] = `
-Object {
-  "site": Object {
-    "accent_color": "#FF1A75",
-    "description": "Thoughts, stories and ideas",
-    "icon": null,
-    "locale": "en",
-    "logo": null,
-    "title": "Ghost",
-    "url": "http://127.0.0.1:2369/",
-    "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+/,
-  },
-}
-`;
-
-exports[`API Versioning Admin API responds with no content version header when accept version header is NOT PRESENT 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
