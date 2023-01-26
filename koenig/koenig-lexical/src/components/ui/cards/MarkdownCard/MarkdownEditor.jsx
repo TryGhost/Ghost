@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useLayoutEffect, useState} from 'react';
+import React, {useRef, useLayoutEffect, useState} from 'react';
 import SimpleMDE from '@tryghost/kg-simplemde';
 import MarkdownHelpDialog from './MarkdownHelpDialog';
 import MarkdownImageUploader from './MarkdownImageUploader';
@@ -22,7 +22,6 @@ export default function MarkdownEditor({
     const {
         openImageUploadDialog,
         uploadImages,
-        captureSelection,
         insertUnsplashImage,
         imageInputRef,
         progress,
@@ -103,6 +102,10 @@ export default function MarkdownEditor({
             }
         });
 
+        // add non-breaking space as a special char
+        // eslint-disable-next-line no-control-regex
+        editorInstance.codemirror.setOption('specialChars', /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\ufeff\xa0]/g);
+
         if (autofocus) {
             editorInstance.codemirror.execCommand('goDocEnd');
         }
@@ -119,16 +122,6 @@ export default function MarkdownEditor({
             editor.current.toTextArea();
         };
     }, []);
-
-    // update the editor when the value property changes from the outside
-    useEffect(() => {
-        // compare values before forcing a content reset to avoid clobbering the undo behaviour
-        if (markdown !== editor.current.value()) {
-            let cursor = editor.current.codemirror.getDoc().getCursor();
-            editor.current.value(markdown);
-            editor.current.codemirror.getDoc().setCursor(cursor);
-        }
-    }, [markdown]);
 
     function addShortcuts() {
         const codemirror = editor.current.codemirror;
@@ -188,17 +181,17 @@ export default function MarkdownEditor({
     }
 
     function openUnsplashDialog() {
-        captureSelection();
         setUnsplashDialogOpen(true);
     }
 
     function closeUnsplashDialog() {
+        editor.current.codemirror.focus();
         setUnsplashDialogOpen(false);
     }
 
     function onUnsplashInsert(img) {
         insertUnsplashImage(img);
-        closeUnsplashDialog();
+        setUnsplashDialogOpen(false);
     }
 
     return (

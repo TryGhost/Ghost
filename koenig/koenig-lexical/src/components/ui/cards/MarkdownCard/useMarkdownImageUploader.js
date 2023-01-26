@@ -1,8 +1,7 @@
-import {useRef, useState} from 'react';
+import {useRef} from 'react';
 
 export default function useMarkdownImageUploader(editor, imageUploader) {
     const imageInputRef = useRef(null);
-    const [selection, setSelection] = useState(null);
     const {progress, upload, errors, isLoading, filesNumber} = imageUploader();
 
     const uploadImages = async (event) => {
@@ -11,22 +10,8 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
         insertImages(filesSrc);
     };
 
-    const captureSelection = () => {
-        setSelection({
-            anchor: editor.current.codemirror.getCursor('anchor'),
-            head: editor.current.codemirror.getCursor('head')
-        });
-    };
-
     function openImageUploadDialog() {
-        captureSelection();
-
         imageInputRef.current.click();
-    }
-
-    function focusEditor() {
-        editor.current.codemirror.focus();
-        editor.current.codemirror.execCommand('goDocEnd');
     }
 
     function insertUnsplashImage({src, alt, caption}) {
@@ -69,25 +54,7 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
         });
         let text = images.join('\n\n');
 
-        // clicking the image toolbar button will lose the selection so we use
-        // the captured selection to re-select here
-        if (selection) {
-            // we want to focus but not re-position
-            focusEditor();
-
-            // re-select and clear the captured selection so drag/drop still
-            // inserts at the correct place
-            codemirror.setSelection(
-                selection.anchor,
-                selection.head
-            );
-        }
-
-        // focus editor.current and place cursor at end if not already focused
-        if (!codemirror.hasFocus()) {
-            focusEditor();
-            text = `\n\n${text}\n\n`;
-        }
+        editor.current.codemirror.focus();
 
         // insert at cursor or replace selection then position cursor at end
         // of inserted text
@@ -96,7 +63,6 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
 
     return {
         openImageUploadDialog,
-        captureSelection,
         uploadImages,
         insertUnsplashImage,
         imageInputRef,

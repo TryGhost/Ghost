@@ -89,6 +89,7 @@
     }
 
     .CodeMirror {
+        margin-bottom: 49px;
         overflow: visible;
         padding: 0;
         background: transparent;
@@ -157,9 +158,6 @@
 
     .CodeMirror-selectedtext {
         color: #000 !important;
-    }
-
-    .CodeMirror-selected {
         background: color-mod(var(--blue) lightness(+30%));
     }
 }
