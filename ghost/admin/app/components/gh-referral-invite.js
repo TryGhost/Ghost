@@ -47,7 +47,13 @@ export default class GhReferralInvite extends Component {
 
     @task
     *loadCurrentMRR() {
-        yield this.dashboardStats.loadMrrStats();
+        if (this.isAdminOrOwnern) {
+            try {
+                yield this.dashboardStats.loadMrrStats();
+            } catch (error) {
+                // noop
+            }
+        }
     }
 
     @action
