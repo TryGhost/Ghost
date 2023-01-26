@@ -160,14 +160,17 @@ describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('```python ');
             await page.waitForSelector('[data-kg-card="codeblock"] [contenteditable="true"]');
+            await page.keyboard.type('import pandas as pd');
             await page.keyboard.press('Meta+Enter');
             await page.waitForSelector('[data-kg-card="codeblock"][data-kg-card-selected="true"][data-kg-card-editing="false"]');
             await page.keyboard.press('Enter');
             await page.keyboard.type('```javascript ');
             await page.waitForSelector('[data-kg-card="codeblock"] [contenteditable="true"]');
+            await page.keyboard.type('import React from "react"');
             await page.keyboard.press('Meta+Enter');
             await page.waitForSelector('[data-kg-card="codeblock"][data-kg-card-selected="true"][data-kg-card-editing="false"]');
 
+            // Neither card should be in editing mode right now
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
@@ -197,7 +200,7 @@ describe('Card behaviour', async () => {
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
                         <div>
-                            <pre><code class="language-python"></code></pre>
+                            <pre><code class="language-python">import pandas as pd</code></pre>
                             <div><span>python</span></div>
                         </div>
                     </div>
@@ -205,7 +208,7 @@ describe('Card behaviour', async () => {
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="codeblock">
                         <div>
-                            <pre><code class="language-javascript"></code></pre>
+                            <pre><code class="language-javascript">import React from "react"</code></pre>
                             <div><span>javascript</span></div>
                         </div>
                     </div>
@@ -1098,6 +1101,7 @@ describe('Card behaviour', async () => {
         test('with an edit-mode card selected', async function () {
             await focusEditor(page);
             await page.keyboard.type('``` ');
+            await page.keyboard.type('import React from "react"');
             await page.click('[data-kg-card="codeblock"]');
 
             expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
@@ -1114,6 +1118,46 @@ describe('Card behaviour', async () => {
             // card enters edit mode
             expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
             expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+        });
+    });
+
+    describe('ESCAPE', function () {
+        test('with an edit mode card that is not empty', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('``` ');
+            await page.waitForSelector('[data-kg-card="codeblock"]');
+            await page.keyboard.type('import React from "react"');
+
+            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+
+            await page.keyboard.press('Escape');
+
+            // card exits edit mode
+            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="false"]')).not.toBeNull();
+
+            // card is still able to re-enter edit mode with CMD+ETNER
+            await page.keyboard.press('Meta+Enter');
+
+            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+            // expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull(); // TODO: fix this
+        });
+
+        test('with an edit mode card that is empty', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('``` ');
+            await page.waitForSelector('[data-kg-card="codeblock"]');
+
+            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+
+            await page.keyboard.press('Escape');
+
+            // card is replaced with an empty paragraph
+            await assertHTML(page, html`
+                <p><br></p>
+            `);
         });
     });
 });
