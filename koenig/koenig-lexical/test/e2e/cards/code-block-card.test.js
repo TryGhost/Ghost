@@ -1,5 +1,6 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 describe('Code Block card', async () => {
     let app;
@@ -66,15 +67,18 @@ describe('Code Block card', async () => {
         // Type in the editor
         await page.keyboard.type('Here are some words');
 
+        const languageInput = await page.locator('[data-testid="code-card-language"]');
+
         // The language input should be hidden
-        expect(await page.$('[data-testid="code-card-language"].opacity-0')).not.toBeNull();
-        expect(await page.$('[data-testid="code-card-language"].opacity-100')).toBeNull();
+        await expect(languageInput).toHaveClass(/opacity-0/);
+        await expect(languageInput).not.toHaveClass(/opacity-100/);
 
         // Move the mouse
         await page.mouse.move(0,0);
+        await page.mouse.move(100,100);
 
         // The language input should be visible
-        expect(await page.$('[data-testid="code-card-language"].opacity-0')).toBeNull();
-        expect(await page.$('[data-testid="code-card-language"].opacity-100')).not.toBeNull();
+        await expect(languageInput).toHaveClass(/opacity-100/);
+        await expect(languageInput).not.toHaveClass(/opacity-0/);
     });
 });
