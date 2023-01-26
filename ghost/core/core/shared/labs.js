@@ -36,7 +36,8 @@ const ALPHA_FEATURES = [
     'lexicalEditor',
     'webmentions',
     'webmentionEmail',
-    'outboundLinkTagging'
+    'outboundLinkTagging',
+    'milestoneEmails'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
