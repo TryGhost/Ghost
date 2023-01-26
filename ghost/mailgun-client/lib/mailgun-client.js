@@ -119,13 +119,14 @@ module.exports = class MailgunClient {
         debug(`fetchEvents: starting fetching first events page`);
         const mailgunConfig = this.#getConfig();
         let startTime = Date.now();
+        const startDate = new Date();
         try {
             let page = await mailgunInstance.events.get(mailgunConfig.domain, mailgunOptions);
             metrics.metric('mailgun-get-events', {
                 value: Date.now() - startTime,
                 statusCode: 200
             });
-            let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e);
+            let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
             debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
@@ -152,7 +153,7 @@ module.exports = class MailgunClient {
                     value: Date.now() - startTime,
                     statusCode: 200
                 });
-                events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e);
+                events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
                 debug(`fetchEvents: finished fetching next page with ${events.length} events`);
             }
 
