@@ -265,6 +265,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Milestone emails</h4>
+                            <p class="gh-expandable-description">
+                                Send emails for reaching specific milestones.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="milestoneEmails" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
