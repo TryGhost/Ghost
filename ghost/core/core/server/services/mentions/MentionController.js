@@ -10,12 +10,26 @@ const logging = require('@tryghost/logging');
  * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').Page} Page<Model>
  */
 
+/**
+ * @typedef {object} IJobService
+ * @prop {(name: string, fn: Function) => void} addJob
+ */
+
 module.exports = class MentionController {
     /** @type {import('@tryghost/webmentions/lib/MentionsAPI')} */
     #api;
 
+    /** @type {IJobService} */
+    #jobService;
+
+    /**
+     * @param {object} deps
+     * @param {import('@tryghost/webmentions/lib/MentionsAPI')} deps.api
+     * @param {IJobService} deps.jobService
+     */
     async init(deps) {
         this.#api = deps.api;
+        this.#jobService = deps.jobService;
     }
 
     /**
@@ -52,15 +66,18 @@ module.exports = class MentionController {
      */
     async receive(frame) {
         logging.info('[Webmention] ' + JSON.stringify(frame.data));
-        const {source, target, ...payload} = frame.data;
-        const result = this.#api.processWebmention({
-            source: new URL(source),
-            target: new URL(target),
-            payload
-        });
+        this.#jobService.addJob('processWebmention', async () => {
+            const {source, target, ...payload} = frame.data;
+            try {
+                await this.#api.processWebmention({
+                    source: new URL(source),
+                    target: new URL(target),
+                    payload
+                });
 
-        result.catch(function rejected(err) {
-            logging.error(err);
+            } catch (err) {
+                logging.error(err);
+            }
         });
     }
 };
