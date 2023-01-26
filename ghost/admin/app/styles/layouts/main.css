@@ -2183,6 +2183,11 @@ section.gh-ds h2 {
     border-radius: 10px;
     box-shadow: rgb(75 225 226 / 28%) -7px -6px 42px 8px, rgb(202 103 255 / 32%) 7px 6px 42px 8px;
     transition: all 0.6s ease;
+    cursor: pointer;
+}
+
+.gh-referral-toast a {
+    color: var(--black);
 }
 
 .gh-referral-toast:hover {
@@ -2205,14 +2210,14 @@ section.gh-ds h2 {
     color: #15171A;
 }
 
-.gh-referral-toast > strong {
+.gh-referral-toast a > strong {
     display: block;
     margin-bottom: 10px;
     font-size: 1.7rem;
     line-height: 1.2em;
 }
 
-.gh-referral-toast p {
+.gh-referral-toast a > p {
     margin: 0;
     font-size: 1.5rem;
     line-height: 1.35em;
@@ -2220,7 +2225,8 @@ section.gh-ds h2 {
     font-weight: 500;
     color: #666;
 }
-.gh-referral-toast p strong {
+
+.gh-referral-toast a > p strong {
     color: #ff247d;
 }
 

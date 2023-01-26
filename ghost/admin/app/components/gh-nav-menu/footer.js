@@ -11,6 +11,8 @@ import {inject as service} from '@ember/service';
 export default class Footer extends Component {
     @service session;
     @service router;
+    @service whatsNew;
+    @service feature;
     @service modals;
     @service themeManagement;
 
