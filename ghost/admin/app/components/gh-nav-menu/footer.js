@@ -2,10 +2,8 @@ import Component from '@ember/component';
 import ThemeErrorsModal from '../modals/design/theme-errors';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
-import envConfig from 'ghost-admin/config/environment';
-import moment from 'moment-timezone';
-import {action, computed} from '@ember/object';
-import {and, empty, match, reads} from '@ember/object/computed';
+import {action} from '@ember/object';
+import {and, match} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -13,13 +11,8 @@ import {inject as service} from '@ember/service';
 export default class Footer extends Component {
     @service session;
     @service router;
-    @service whatsNew;
-    @service feature;
     @service modals;
     @service themeManagement;
-    @service dashboardStats;
-    @service settings;
-    @service membersUtils;
 
     @inject config;
 
@@ -28,29 +21,6 @@ export default class Footer extends Component {
 
     @match('router.currentRouteName', /^settings/)
         isSettingsRoute;
-
-    @reads('session.user.isAdmin')
-        isAdminOrOwner;
-
-    @empty('feature.accessibility.referralInviteDismissed')
-        isReferralNotificationNotDismissed;
-
-    @computed('envConfig.environment', 'membersUtils.isStripeEnabled', 'settings.stripeConnectLivemode')
-    get stripeLiveModeEnabled() {
-        // allow testing mode when not in a production environment
-        const isDevModeStripeEnabled = envConfig.environment !== 'production' && this.membersUtils.isStripeEnabled;
-        const isLiveEnabled = this.settings.stripeConnectLivemode;
-        return isDevModeStripeEnabled || isLiveEnabled;
-    }
-
-    get showReferralInvite() {
-        // Conditions to see the referral invite
-        // 1. Needs to be Owner or Admin
-        // 2. Stripe is setup and enabled in live mode
-        // 3. MRR is > $100
-        // 4. Notification has not yet been dismissed by the user
-        return !this.hasThemeErrors && this.isAdminOrOwner && this.isReferralNotificationNotDismissed && this.stripeLiveModeEnabled && (this.dashboardStats?.currentMRR / 100 >= 100);
-    }
 
     @action
     openThemeErrors() {
@@ -61,21 +31,6 @@ export default class Footer extends Component {
             warnings: this.themeManagement.activeTheme.warnings,
             errors: this.themeManagement.activeTheme.errors
         });
-    }
-
-    @action
-    loadCurrentMRR() {
-        this.dashboardStats.loadMrrStats();
-    }
-
-    @action
-    dismissReferralInvite(event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (!this.feature.referralInviteDismissed) {
-            this.feature.referralInviteDismissed = moment().tz(this.settings.timezone);
-        }
     }
 
     get hasThemeErrors() {
