@@ -10,6 +10,7 @@ describe('Email Service', function () {
     let membersRepository;
     let emailRenderer;
     let sendingService;
+    let scheduleRecurringJobs;
 
     beforeEach(function () {
         memberCount = 123;
@@ -19,6 +20,7 @@ describe('Email Service', function () {
         };
         verificicationRequired = false;
         scheduleEmail = sinon.stub().returns();
+        scheduleRecurringJobs = sinon.stub().resolves();
         settings = {};
         settingsCache = {
             get(key) {
@@ -85,7 +87,10 @@ describe('Email Service', function () {
             settingsCache,
             emailRenderer,
             membersRepository,
-            sendingService
+            sendingService,
+            emailAnalyticsJobs: {
+                scheduleRecurringJobs
+            }
         });
     });
 
@@ -155,6 +160,22 @@ describe('Email Service', function () {
             assert.strictEqual(email.get('status'), 'pending');
             assert.strictEqual(email.get('source'), post.get('mobiledoc'));
             assert.strictEqual(email.get('source_type'), 'mobiledoc');
+            sinon.assert.calledOnce(scheduleRecurringJobs);
+        });
+
+        it('Ignores analytics job scheduling errors', async function () {
+            const post = createModel({
+                id: '123',
+                newsletter: createModel({
+                    status: 'active',
+                    feedback_enabled: true
+                }),
+                mobiledoc: 'Mobiledoc'
+            });
+
+            scheduleRecurringJobs.rejects(new Error('Test error'));
+            await service.createEmail(post);
+            sinon.assert.calledOnce(scheduleRecurringJobs);
         });
 
         it('Creates and schedules an email with lexical', async function () {

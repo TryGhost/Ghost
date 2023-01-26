@@ -7,7 +7,7 @@ const jobsService = require('../../jobs');
 let hasScheduled = false;
 
 module.exports = {
-    async scheduleRecurringJobs() {
+    async scheduleRecurringJobs(skipEmailCheck = false) {
         if (
             !hasScheduled &&
             config.get('emailAnalytics') &&
@@ -17,10 +17,10 @@ module.exports = {
             // Don't register email analytics job if we have no emails,
             // processor usage from many sites spinning up threads can be high.
             // Mega service will re-run this scheduling task when an email is sent
-            const emailCount = await models.Email
+            const emailCount = skipEmailCheck ? 1 : (await models.Email
                 .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
                 .where('status', '<>', 'failed')
-                .count();
+                .count());
 
             if (emailCount > 0) {
                 // use a random seconds value to avoid spikes to external APIs on the minute
