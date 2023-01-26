@@ -119,13 +119,16 @@ module.exports = class MailgunClient {
         debug(`fetchEvents: starting fetching first events page`);
         const mailgunConfig = this.#getConfig();
         let startTime = Date.now();
+        const startDate = new Date();
         try {
             let page = await mailgunInstance.events.get(mailgunConfig.domain, mailgunOptions);
             metrics.metric('mailgun-get-events', {
                 value: Date.now() - startTime,
                 statusCode: 200
             });
-            let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e);
+            // By limiting the processed events to ones created before this job started we cancel early ready for the next job run.
+            // Avoids chance of events being missed in long job runs due to mailgun's eventual-consistency creating events outside of our 30min sliding re-check window
+            let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
             debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
@@ -152,7 +155,8 @@ module.exports = class MailgunClient {
                     value: Date.now() - startTime,
                     statusCode: 200
                 });
-                events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e);
+                // We need to cap events at the time we started fetching them (see comment above)
+                events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
                 debug(`fetchEvents: finished fetching next page with ${events.length} events`);
             }
 
