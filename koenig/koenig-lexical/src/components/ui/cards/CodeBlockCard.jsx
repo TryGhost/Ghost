@@ -79,7 +79,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     ]);
 
     return (
-        <div className="not-kg-prose">
+        <div className="not-kg-prose min-h-[170px] bg-[#F4F5F6]">
             <CodeMirror
                 value={code}
                 extensions={[
