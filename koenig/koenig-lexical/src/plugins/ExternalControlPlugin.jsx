@@ -47,6 +47,23 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                         }
                     });
                 }
+                if (position === 'bottom') {
+                    // Lexical does not automatically select a decorator node
+                    editor.update(() => {
+                        const root = $getRoot();
+                        const lastChild = root.getLastChild();
+
+                        if ($isDecoratorNode(lastChild)) {
+                            $selectDecoratorNode(lastChild);
+                            // selecting a decorator node does not change the
+                            // window selection (there's no caret) so we need
+                            // to manually move focus to the editor element
+                            editor.getRootElement().focus();
+                        } else {
+                            lastChild.select();
+                        }
+                    });
+                }
             },
             blurEditor() {
                 editor.blur();

@@ -216,6 +216,43 @@ describe('Card behaviour', async () => {
             `);
         });
 
+        test('clicking below the editor focuses the editor if last node is a paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('Here is some text');
+
+            await page.mouse.click(100, 900);
+            await assertSelection(page, {
+                anchorOffset: 1,
+                anchorPath: [0],
+                focusOffset: 1,
+                focusPath: [0]
+            });
+        });
+
+        test('clicking below the editor focuses the editor if last node is a card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('```javascript ');
+            await page.keyboard.type('import React from "react"');
+            await page.keyboard.press('Meta+Enter');
+
+            await page.mouse.click(100, 900);
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
+                    </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardContents: true});
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
+        });
+
         test.todo('lazy click puts card in edit mode');
     });
 

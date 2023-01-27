@@ -12,6 +12,7 @@ import {useLocation} from 'react-router-dom';
 import TitleTextBox from './components/TitleTextBox';
 import {defaultHeaders as unsplashConfig} from './utils/unsplashConfig';
 import {KoenigDecoratorNode} from '@tryghost/kg-default-nodes';
+
 const loadContent = () => {
     const cnt = JSON.stringify(content);
     return cnt;
@@ -47,7 +48,8 @@ function DemoApp() {
 
     function focusEditor(event) {
         const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lixical-decorator');
-        if (editorAPI && !clickedOnDecorator) {
+        const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
+        if (editorAPI && !clickedOnDecorator && !clickedOnSlashMenu) {
             let editor = editorAPI.editorInstance;
             let {bottom} = editor._rootElement.getBoundingClientRect();
 
@@ -56,19 +58,21 @@ function DemoApp() {
             // documentyarn
             if (event.pageY > bottom && event.clientY > bottom) {
                 event.preventDefault();
-                editorAPI.focusEditor();
-            }
 
-            // we should always have a visible cursor when focusing
-            // at the bottom so create an empty paragraph if last
-            // section is a card
-            const lastNode = Array.from(editor._editorState._nodeMap).pop()[1];
-            if (lastNode instanceof KoenigDecoratorNode) {
-                editorAPI.insertParagraphAtBottom();
-            }
+                // we should always have a visible cursor when focusing
+                // at the bottom so create an empty paragraph if last
+                // section is a card
+                const lastNode = Array.from(editor._editorState._nodeMap).pop()[1];
+                if (lastNode instanceof KoenigDecoratorNode) {
+                    editorAPI.insertParagraphAtBottom();
+                }
 
-            //scroll to the bottom of the container
-            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                // Focus the editor
+                editorAPI.focusEditor({position: 'bottom'});
+
+                //scroll to the bottom of the container
+                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            }   
         }
     }
 
