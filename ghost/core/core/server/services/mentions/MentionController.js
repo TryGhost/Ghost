@@ -74,7 +74,6 @@ module.exports = class MentionController {
                     target: new URL(target),
                     payload
                 });
-
             } catch (err) {
                 logging.error(err);
             }
