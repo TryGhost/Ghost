@@ -61,6 +61,16 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                         paragraphNode.selectStart();
                     }
                 });
+            },
+            insertParagraphAtBottom({focus = true} = {}) {
+                editor.update(() => {
+                    const paragraphNode = $createParagraphNode();
+                    $getRoot().append(paragraphNode);
+
+                    if (focus) {
+                        paragraphNode.selectStart();
+                    }
+                });
             }
         };
 

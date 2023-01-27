@@ -11,7 +11,7 @@ import ToggleButton from './components/ToggleButton';
 import {useLocation} from 'react-router-dom';
 import TitleTextBox from './components/TitleTextBox';
 import {defaultHeaders as unsplashConfig} from './utils/unsplashConfig';
-
+import {KoenigDecoratorNode} from '@tryghost/kg-default-nodes';
 const loadContent = () => {
     const cnt = JSON.stringify(content);
     return cnt;
@@ -31,6 +31,7 @@ function DemoApp() {
     const [title, setTitle] = useState(defaultContent ? 'Meet the Koenig editor.' : '');
     const [editorAPI, setEditorAPI] = useState(null);
     const titleRef = React.useRef(null);
+    const containerRef = React.useRef(null);
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -44,8 +45,37 @@ function DemoApp() {
         titleRef.current?.focus();
     }
 
+    function focusEditor(event) {
+        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lixical-decorator');
+        if (editorAPI && !clickedOnDecorator) {
+            let editor = editorAPI.editorInstance;
+            let {bottom} = editor._rootElement.getBoundingClientRect();
+
+            // if a mousedown and subsequent mouseup occurs below the editor
+            // canvas, focus the editor and put the cursor at the end of the
+            // documentyarn
+            if (event.pageY > bottom && event.clientY > bottom) {
+                event.preventDefault();
+                editorAPI.focusEditor();
+            }
+
+            // we should always have a visible cursor when focusing
+            // at the bottom so create an empty paragraph if last
+            // section is a card
+            const lastNode = Array.from(editor._editorState._nodeMap).pop()[1];
+            if (lastNode instanceof KoenigDecoratorNode) {
+                editorAPI.insertParagraphAtBottom();
+            }
+
+            //scroll to the bottom of the container
+            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+    }
+
     return (
-        <div className="koenig-lexical top">
+        <div 
+            className="koenig-lexical top"
+        >
             <KoenigComposer
                 initialEditorState={defaultContent}
                 imageUploadFunction={{imageUploader, useImageUpload}}
@@ -56,7 +86,7 @@ function DemoApp() {
                             ? <ToggleButton setTitle={setTitle} content={defaultContent}/>
                             : null
                     }
-                    <div className="h-full overflow-auto">
+                    <div className="h-full overflow-auto" ref={containerRef} onClick={focusEditor}>
                         <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
                             <TitleTextBox title={title} setTitle={setTitle} editorAPI={editorAPI} ref={titleRef} />
                             <KoenigEditor
