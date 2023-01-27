@@ -19,7 +19,7 @@ describe.only('Webmentions (receiving)', function () {
         nock.cleanAll();
         nock.enableNetConnect();
     });
-    
+
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
     });
@@ -68,7 +68,6 @@ describe.only('Webmentions (receiving)', function () {
     });
 
     it('can receive a webmention to homepage', async function () {
-        console.log('awating completiong');
         const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
         const targetUrl = new URL(urlUtils.getSiteUrl());
         const sourceUrl = new URL('http://testpage.com/external-article-2/');
@@ -91,10 +90,7 @@ describe.only('Webmentions (receiving)', function () {
             })
             .expectStatus(202);
 
-        console.log('waiting');
-
         const res = await processWebmentionJob;
-        console.log('waited', res);
 
         const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article-2/'});
         assert(mention);
@@ -116,7 +112,7 @@ describe.only('Webmentions (receiving)', function () {
                 withExtension: true // test payload recorded
             })
             .expectStatus(202);
-        
+
         await sleep(2000);
 
         const users = await models.User.findAll();
@@ -124,7 +120,7 @@ describe.only('Webmentions (receiving)', function () {
             await mockManager.assert.sentEmail({
                 subject: 'You\'ve been mentioned!',
                 to: user.toJSON().email
-            }); 
+            });
         });
         emailMockReceiver.sentEmailCount(users.length);
     });
@@ -146,7 +142,7 @@ describe.only('Webmentions (receiving)', function () {
                 withExtension: true // test payload recorded
             })
             .expectStatus(202);
-        
+
         await sleep(2000);
         emailMockReceiver.sentEmailCount(0);
     });
