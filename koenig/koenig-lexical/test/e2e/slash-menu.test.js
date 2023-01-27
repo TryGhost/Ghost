@@ -120,14 +120,22 @@ describe('Slash menu', async () => {
             await page.click('body');
             await page.click('[data-lexical-editor] > p:nth-of-type(2)');
 
-            await assertSelection(page, {
-                anchorOffset: 1,
-                anchorPath: [1, 0, 0],
-                focusOffset: 1,
-                focusPath: [1, 0, 0]
-            });
-
             expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+
+            // TODO: this fails in CI but passes locally
+            // await assertSelection(page, {
+            //     anchorOffset: 1,
+            //     anchorPath: [1, 0, 0],
+            //     focusOffset: 1,
+            //     focusPath: [1, 0, 0]
+            // });
+
+            // Temp workaround for above to ensure the focus is in the right place
+            await page.keyboard.type('words');
+            await assertHTML(page, html`
+                <p><br /></p>
+                <p dir="ltr"><span data-lexical-text="true">/words</span></p>
+            `);
         });
     });
 
