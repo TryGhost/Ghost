@@ -22,6 +22,7 @@ import {useLexicalNodeSelection} from '@lexical/react/useLexicalNodeSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import CardContext from '../context/CardContext';
 import {CardWrapper} from './ui/CardWrapper';
+import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
 
 const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, openInEditMode = false, children}) => {
     const [editor] = useLexicalComposerContext();
@@ -131,7 +132,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, openInEditMod
                                 // when leaving edit mode, ensure focus moves back to the editor
                                 // otherwise focus can be left on removed elements preventing further key events
                                 if (isEditing) {
-                                    editor.getRootElement().focus();
+                                    editor.getRootElement().focus({preventScroll: true});
 
                                     if (cardNode.isEmpty()) {
                                         if ($getRoot().getLastChild().is(cardNode)) {
@@ -269,10 +270,13 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, openInEditMod
                             $removeOrReplaceNodeWithParagraph(cardNode);
                         } else {
                             setEditing(false);
-                            editor.getRootElement().focus();
+                            editor.update(() => {
+                                $selectDecoratorNode(cardNode);
+                            });
+                            editor.getRootElement().focus({preventScroll: true});
                         }
                     }
-                    return true;
+                    return false;
                 },
                 COMMAND_PRIORITY_EDITOR
             )

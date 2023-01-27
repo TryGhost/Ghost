@@ -1141,7 +1141,7 @@ describe('Card behaviour', async () => {
             await page.keyboard.press('Meta+Enter');
 
             expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
-            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull(); // TODO: fix this
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
         });
 
         test('with an edit mode card that is empty', async function () {
