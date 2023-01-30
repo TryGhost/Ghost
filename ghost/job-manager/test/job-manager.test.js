@@ -250,17 +250,17 @@ describe('Job Manager', function () {
             it('uses worker message handler when job sends a message', async function (){
                 const workerMessageHandlerSpy = sinon.spy();
                 const jobManager = new JobManager({workerMessageHandler: workerMessageHandlerSpy});
+                const completion = jobManager.awaitCompletion('will-send-msg');
 
                 jobManager.addJob({
                     job: path.resolve(__dirname, './jobs/message.js'),
                     name: 'will-send-msg'
                 });
                 jobManager.bree.run('will-send-msg');
-
+                await delay(100);
                 jobManager.bree.workers['will-send-msg'].postMessage('hello from Ghost!');
 
-                // Give time for worker (worker thread) <-> parent process (job manager) communication
-                await delay(100);
+                await completion;
 
                 should(workerMessageHandlerSpy.called).be.true();
                 should(workerMessageHandlerSpy.args[0][0].name).equal('will-send-msg');
