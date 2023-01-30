@@ -322,12 +322,13 @@ describe('StaffService', function () {
                     data: {
                         mention: {
                             source: 'https://exmaple.com/some-post',
-                            target: 'https://exmaple.com/some-mentioned-post'
+                            target: 'https://exmaple.com/some-mentioned-post',
+                            sourceSiteTitle: 'Exmaple'
                         }
                     }
                 });
                 mailStub.calledWith(
-                    sinon.match({subject: `You've been mentioned!`})
+                    sinon.match({subject: `💌 New mention from: Exmaple`})
                 ).should.be.true();
             });
         });
