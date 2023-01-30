@@ -5,6 +5,5 @@ module.exports = addPermissionWithRoles({
     action: 'browse',
     object: 'mention'
 }, [
-    'Administrator',
-    'Admin Integration'
+    'Administrator'
 ]);

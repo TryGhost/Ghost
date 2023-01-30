@@ -804,8 +804,7 @@
                     "newsletter": ["browse", "read", "add", "edit"],
                     "explore": "read",
                     "comment": "all",
-                    "link": "all",
-                    "mention": "browse"
+                    "link": "all"
                 },
                 "Editor": {
                     "notification": "all",
