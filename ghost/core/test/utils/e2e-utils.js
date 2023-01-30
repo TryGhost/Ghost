@@ -113,6 +113,9 @@ const restartModeGhostStart = async ({frontend, copyThemes, copySettings}) => {
 
     debug('init done');
 
+    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
+    adapterManager.clearCache();
+
     // Reset the settings cache
     await settingsService.init();
     debug('settings done');
@@ -142,10 +145,6 @@ const restartModeGhostStart = async ({frontend, copyThemes, copySettings}) => {
 
     // Reload limits service
     limits.init();
-
-    // We need to clear the adapter cache because the config changed
-    // And the LocalStorageAdapter is cached, which means that it will still try to store files to the old content path if we don't recreate all adapters
-    adapterManager.clearCache();
 };
 
 // CASE: Ghost Server needs Starting
@@ -165,16 +164,15 @@ const freshModeGhostStart = async (options) => {
     // Stop the server (forceStart Mode)
     await stopGhost();
 
+    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
+    adapterManager.clearCache();
+
     // Reset the settings cache and disable listeners so they don't get triggered further
     settingsService.reset();
 
     await dbUtils.reset();
 
     await settingsService.init();
-
-    // We need to clear the adapter cache because the config changed
-    // And the LocalStorageAdapter is cached, which means that it will still try to store files to the old content path if we don't recreate all adapters
-    adapterManager.clearCache();
 
     // Actually boot Ghost
     ghostServer = await boot({
