@@ -1,15 +1,10 @@
-const {
-    addPermissionWithRoles,
-    combineTransactionalMigrations
-} = require('../../utils');
+const {addPermissionWithRoles} = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
-    addPermissionWithRoles({
-        name: 'Browse mentions',
-        action: 'browse',
-        object: 'mention'
-    }, [
-        'Administrator',
-        'Admin Integration'
-    ])
-);
+module.exports = addPermissionWithRoles({
+    name: 'Browse mentions',
+    action: 'browse',
+    object: 'mention'
+}, [
+    'Administrator',
+    'Admin Integration'
+]);

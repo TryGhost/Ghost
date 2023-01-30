@@ -769,7 +769,7 @@
                     "explore": "read",
                     "comment": "all",
                     "link": "all",
-                    "mention": ["browse"]
+                    "mention": "browse"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -805,7 +805,7 @@
                     "explore": "read",
                     "comment": "all",
                     "link": "all",
-                    "mention": ["browse"]
+                    "mention": "browse"
                 },
                 "Editor": {
                     "notification": "all",
