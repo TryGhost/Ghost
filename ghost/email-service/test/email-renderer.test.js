@@ -391,10 +391,6 @@ describe('Email renderer', function () {
             },
             linkReplacer,
             memberAttributionService: {
-                addOutboundLinkTagging: (u, newsletter) => {
-                    u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
-                    return u;
-                },
                 addPostAttributionTracking: (u) => {
                     u.searchParams.append('post_tracking', 'added');
                     return u;
@@ -405,6 +401,12 @@ describe('Email renderer', function () {
                     addTrackingToUrl: (u, _post, uuid) => {
                         return new URL('http://tracked-link.com/?m=' + encodeURIComponent(uuid) + '&url=' + encodeURIComponent(u.href));
                     }
+                }
+            },
+            outboundLinkTagger: {
+                addToUrl: (u, newsletter) => {
+                    u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
+                    return u;
                 }
             }
         });
