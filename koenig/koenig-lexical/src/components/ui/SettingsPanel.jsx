@@ -1,10 +1,14 @@
 import React from 'react';
 import {Toggle} from './Toggle';
 import {Input} from './Input';
+import useMovable from '../../hooks/useMovable';
 
 export function SettingsPanel() {
+    const {ref} = useMovable({adjustOnResize: true});
     return (
-        <div className="not-kg-prose z-[9999999] m-0 w-[320px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding font-sans shadow">
+        <div className="not-kg-prose z-[9999999] m-0 w-[320px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding font-sans shadow"
+            ref={ref}
+        >
             <ToggleSetting label='Loop' description='Autoplay your video on a loop without sound.' />
             <InputSetting label='Button title' value='' placeholder='Add button text' />
         </div>
