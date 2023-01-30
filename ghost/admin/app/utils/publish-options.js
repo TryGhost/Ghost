@@ -168,7 +168,7 @@ export default class PublishOptions {
     }
 
     get recipientFilter() {
-        return this.selectedRecipientFilter === undefined ? this.defaultRecipientFilter : this.selectedRecipientFilter;
+        return this.selectedRecipientFilter || this.post.emailSegment || this.defaultRecipientFilter;
     }
 
     get defaultRecipientFilter() {
