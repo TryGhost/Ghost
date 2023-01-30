@@ -97,6 +97,8 @@ export default class Debug extends Component {
                     initials: this.getInitials(failure.email_recipient?.member_name || failure.email_recipient?.member_email)
                 },
                 member: {
+                    record: failure.member,
+                    id: failure.member?.id,
                     name: failure.member?.name || '',
                     email: failure.member?.email || '',
                     initials: this.getInitials(failure.member?.name)
@@ -120,6 +122,8 @@ export default class Debug extends Component {
                     initials: this.getInitials(failure.email_recipient?.member_name || failure.email_recipient?.member_email)
                 },
                 member: {
+                    record: failure.member,
+                    id: failure.member?.id,
                     name: failure.member?.name || '',
                     email: failure.member?.email || '',
                     initials: this.getInitials(failure.member?.name)

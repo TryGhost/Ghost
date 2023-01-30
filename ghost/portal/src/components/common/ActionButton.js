@@ -47,12 +47,12 @@ export const ActionButtonStyles = `
 
     .gh-portal-loadingicon path,
     .gh-portal-loadingicon rect {
-        fill: #fff;
+        fill: var(--white);
     }
 
     .gh-portal-loadingicon.dark path,
     .gh-portal-loadingicon.dark rect {
-        fill: #1d1d1d;
+        fill: var(--grey0);
     }
 `;
 

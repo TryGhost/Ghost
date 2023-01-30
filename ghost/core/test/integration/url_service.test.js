@@ -240,9 +240,9 @@ describe('Integration: services/url/UrlService', function () {
             })();
         });
 
-        afterEach(function () {
+        afterEach(async function () {
             urlService.resetGenerators();
-            configUtils.restore();
+            await configUtils.restore();
         });
 
         it('getUrl', function () {

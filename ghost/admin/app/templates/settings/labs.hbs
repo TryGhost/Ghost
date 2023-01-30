@@ -229,6 +229,19 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
+                            <h4 class="gh-expandable-title">Webmention Email Notifications</h4>
+                            <p class="gh-expandable-description">
+                                Receive email notifications when a webmention is received.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="webmentionEmail" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
                             <h4 class="gh-expandable-title">External attribution</h4>
                             <p class="gh-expandable-description">
                                 Adds ?ref to external links in web posts and adds a setting to control this for both web and newsletters.
@@ -236,6 +249,32 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="outboundLinkTagging" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Show email errors</h4>
+                            <p class="gh-expandable-description">
+                                This makes email errors visible in the UI.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="emailErrors" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Milestone emails</h4>
+                            <p class="gh-expandable-description">
+                                Send emails for reaching specific milestones.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="milestoneEmails" />
                         </div>
                     </div>
                 </div>

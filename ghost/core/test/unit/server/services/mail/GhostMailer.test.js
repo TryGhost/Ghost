@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/configUtils');
@@ -40,9 +39,9 @@ const mailDataIncomplete = {
 const sandbox = sinon.createSandbox();
 
 describe('Mail: Ghostmailer', function () {
-    afterEach(function () {
+    afterEach(async function () {
         mailer = null;
-        configUtils.restore();
+        await configUtils.restore();
         sandbox.restore();
     });
 

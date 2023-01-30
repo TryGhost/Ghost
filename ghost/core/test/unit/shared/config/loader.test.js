@@ -5,12 +5,12 @@ const _ = require('lodash');
 const configUtils = require('../../../utils/configUtils');
 
 describe('Config Loader', function () {
-    before(function () {
-        configUtils.restore();
+    before(async function () {
+        await configUtils.restore();
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     describe('hierarchy of config channels', function () {

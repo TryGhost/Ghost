@@ -21,12 +21,17 @@ module.exports = class BookshelfMentionRepository {
     /** @type {Object} */
     #MentionModel;
 
+    /** @type {import('@tryghost/domain-events')} */
+    #DomainEvents;
+
     /**
      * @param {object} deps
      * @param {object} deps.MentionModel Bookshelf Model
+     * @param {import('@tryghost/domain-events')} deps.DomainEvents
      */
     constructor(deps) {
         this.#MentionModel = deps.MentionModel;
+        this.#DomainEvents = deps.DomainEvents;
     }
 
     #modelToMention(model) {
@@ -112,6 +117,9 @@ module.exports = class BookshelfMentionRepository {
             await this.#MentionModel.edit(data, {
                 id: data.id
             });
+        }
+        for (const event of mention.events) {
+            this.#DomainEvents.dispatch(event);
         }
     }
 };

@@ -330,7 +330,7 @@ describe('Email renderer', function () {
                 }
             };
             let response = emailRenderer.getSegments(post);
-            response.should.eql(['status:-free']);
+            response.should.eql(['status:free', 'status:-free']);
         });
     });
 

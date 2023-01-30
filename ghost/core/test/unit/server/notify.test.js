@@ -27,9 +27,9 @@ describe('Notify', function () {
             eventSpy = sinon.spy(events, 'emit');
         });
 
-        afterEach(function () {
+        afterEach(async function () {
             process.send = undefined;
-            configUtils.restore();
+            await configUtils.restore();
             socketStub.restore();
             eventSpy.restore();
         });

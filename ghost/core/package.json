@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.30.1",
+  "version": "5.33.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -73,6 +73,7 @@
     "@tryghost/database-info": "0.3.14",
     "@tryghost/debug": "0.1.21",
     "@tryghost/domain-events": "0.0.0",
+    "@tryghost/dynamic-routing-events": "0.0.0",
     "@tryghost/email-analytics-provider-mailgun": "0.0.0",
     "@tryghost/email-analytics-service": "0.0.0",
     "@tryghost/email-content-generator": "0.0.0",
@@ -176,7 +177,7 @@
     "jsonwebtoken": "8.5.1",
     "juice": "8.1.0",
     "keypair": "1.0.4",
-    "knex": "2.4.1",
+    "knex": "2.4.2",
     "knex-migrator": "5.1.1",
     "lodash": "4.17.21",
     "luxon": "3.2.1",
@@ -201,7 +202,7 @@
     "sqlite3": "5.1.4"
   },
   "devDependencies": {
-    "@playwright/test": "1.29.2",
+    "@playwright/test": "1.30.0",
     "@tryghost/express-test": "0.13.0",
     "@tryghost/webhook-mock-receiver": "0.2.3",
     "@types/common-tags": "1.8.1",

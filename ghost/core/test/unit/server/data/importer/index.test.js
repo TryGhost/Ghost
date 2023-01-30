@@ -22,10 +22,10 @@ const storage = require('../../../../../core/server/adapters/storage');
 const configUtils = require('../../../../utils/configUtils');
 
 describe('Importer', function () {
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
         ImageHandler = rewire('../../../../../core/server/data/importer/handlers/image');
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('ImportManager', function () {

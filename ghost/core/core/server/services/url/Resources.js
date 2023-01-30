@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:url:resources');
+const DomainEvents = require('@tryghost/domain-events');
+const {URLResourceUpdatedEvent} = require('@tryghost/dynamic-routing-events');
 const Resource = require('./Resource');
 const config = require('../../../shared/config');
 const models = require('../../models');
@@ -273,6 +275,21 @@ class Resources {
     }
 
     /**
+     *
+     * @param {Object} model resource model
+     * @returns
+     */
+    _containsRoutingAffectingChanges(model, ignoredProperties) {
+        if (model._changed && Object.keys(model._changed).length) {
+            return _.difference(Object.keys(model._changed), ignoredProperties).length !== 0;
+        }
+
+        // NOTE: returning true here as "_changed" property might not be available on attached/detached events
+        //       assuming there were route affecting changes by default
+        return true;
+    }
+
+    /**
      * @description Listener for "model updated" event.
      *
      * CASE:
@@ -296,6 +313,22 @@ class Resources {
         debug('_onResourceUpdated', type);
 
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
+
+        // NOTE: check if any of the route-related fields were changed and only proceed if so
+        const ignoredProperties = [...resourceConfig.modelOptions.exclude, 'updated_at'];
+        if (!this._containsRoutingAffectingChanges(model, ignoredProperties)) {
+            const cachedResource = this.getByIdAndType(type, model.id);
+
+            if (cachedResource && model._changed && Object.keys(model._changed).includes('updated_at')) {
+                DomainEvents.dispatch(URLResourceUpdatedEvent.create(Object.assign(cachedResource.data, {
+                    resourceType: cachedResource.config.type,
+                    updated_at: model._changed.updated_at
+                })));
+            }
+
+            debug('skipping _onResourceUpdated because only non-route-related properties changed');
+            return false;
+        }
 
         // NOTE: synchronous handling for post and pages so that their URL is available without a delay
         //       for more context and future improvements check https://github.com/TryGhost/Ghost/issues/10360

@@ -55,12 +55,21 @@ class BaseSiteMapGenerator {
         // Generate full xml
         let sitemapXml = localUtils.getDeclarations() + xml(data);
 
-        // Perform url transformatons
+        // Perform url transformations
         // - Necessary because sitemap data is supplied by the router which
         //   uses knex directly bypassing model-layer attribute transforms
         sitemapXml = urlUtils.transformReadyToAbsolute(sitemapXml);
 
         return sitemapXml;
+    }
+
+    updateURL(datum) {
+        const url = this.nodeLookup[datum.id]?.url[0].loc;
+
+        if (url) {
+            this.removeUrl(url, datum);
+            this.addUrl(url, datum);
+        }
     }
 
     addUrl(url, datum) {
@@ -100,6 +109,12 @@ class BaseSiteMapGenerator {
         }
     }
 
+    /**
+     *
+     * @param {String} url
+     * @param {Object} datum
+     * @returns
+     */
     createUrlNodeFromDatum(url, datum) {
         let node;
         let imgNode;

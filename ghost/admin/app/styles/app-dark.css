@@ -810,6 +810,10 @@ input:focus,
     background: color-mod(var(--dark-main-bg-color) l(+2%));
 }
 
+.gh-referral-toast-close:hover {
+    color: #fff;
+}
+
 .nightshift-toggle {
     background: var(--lightgrey);
 }
@@ -1477,4 +1481,13 @@ kbd {
 .gh-portal-settings-actions .gh-btn-primary:hover {
     background: var(--green) !important;
     color: #fff;
+}
+
+/* Mentions */
+.gh-mention-container {
+    background-color: var(--whitegrey);
+}
+
+.gh-mention-your-post-link {
+    color: var(--black);
 }

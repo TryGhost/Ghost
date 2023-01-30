@@ -10,7 +10,6 @@ const settingsMatcher = {
 describe('API Versioning', function () {
     describe('Admin API', function () {
         let agentAdminAPI;
-        let emailMockReceiver;
 
         before(async function () {
             agentAdminAPI = await agentProvider.getAdminAPIAgent();
@@ -19,14 +18,14 @@ describe('API Versioning', function () {
         });
 
         beforeEach(function () {
-            emailMockReceiver = mockManager.mockMail();
+            mockManager.mockMail();
         });
 
         afterEach(function () {
             mockManager.restore();
         });
 
-        it('responds with no content version header when accept version header is NOT PRESENT', async function () {
+        it('responds with content version header even when accept version header is NOT PRESENT', async function () {
             await agentAdminAPI
                 .get('site/')
                 .expectStatus(200)
@@ -131,9 +130,11 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            emailMockReceiver.sentEmailCount(1);
-            emailMockReceiver.matchHTMLSnapshot();
-            emailMockReceiver.matchMetadataSnapshot();
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: 'Attention required: Your Zapier integration has failed',
+                to: 'jbloggs@example.com'
+            });
         });
 
         it('responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times', async function () {
@@ -154,9 +155,11 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            emailMockReceiver.sentEmailCount(1);
-            emailMockReceiver.matchHTMLSnapshot();
-            emailMockReceiver.matchMetadataSnapshot();
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: 'Attention required: Your Zapier integration has failed',
+                to: 'jbloggs@example.com'
+            });
 
             await agentAdminAPI
                 .get('removed_endpoint')
@@ -175,7 +178,7 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            emailMockReceiver.sentEmailCount(1);
+            mockManager.assert.sentEmailCount(1);
         });
 
         it('responds with 404 error when the resource cannot be found', async function () {
@@ -194,7 +197,7 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            emailMockReceiver.sentEmailCount(0);
+            mockManager.assert.sentEmailCount(0);
         });
 
         it('Does an internal rewrite for canary URLs with accept version set', async function () {
@@ -268,10 +271,9 @@ describe('API Versioning', function () {
 
     describe('Content API', function () {
         let agentContentAPI;
-        let emailMockReceiver;
 
         beforeEach(function () {
-            emailMockReceiver = mockManager.mockMail();
+            mockManager.mockMail();
         });
 
         afterEach(function () {
@@ -339,7 +341,7 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            emailMockReceiver.sentEmailCount(0);
+            mockManager.assert.sentEmailCount(0);
         });
     });
 });
