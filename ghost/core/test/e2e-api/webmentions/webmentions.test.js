@@ -4,6 +4,7 @@ const assert = require('assert');
 const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/jobs');
+const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 
 describe('Webmentions (receiving)', function () {
     let agent;
@@ -24,7 +25,8 @@ describe('Webmentions (receiving)', function () {
         emailMockReceiver = mockManager.mockMail();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
+        await DomainEvents.allSettled();
         mockManager.restore();
     });
 
@@ -126,6 +128,7 @@ describe('Webmentions (receiving)', function () {
             .expectStatus(202);
 
         await processWebmentionJob;
+        await DomainEvents.allSettled();
 
         const users = await models.User.findAll();
         users.forEach(async (user) => {
@@ -162,6 +165,7 @@ describe('Webmentions (receiving)', function () {
             .expectStatus(202);
 
         await processWebmentionJob;
+        await DomainEvents.allSettled();
 
         emailMockReceiver.sentEmailCount(0);
     });
