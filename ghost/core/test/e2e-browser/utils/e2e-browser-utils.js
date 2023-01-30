@@ -107,7 +107,7 @@ const setupStripe = async (page, stripConnectIntegrationToken) => {
     }
     await page.getByPlaceholder('Paste your secure key here').first().fill(stripConnectIntegrationToken);
     await page.getByRole('button', {name: 'Save Stripe settings'}).click();
-    await page.getByRole('button', {name: 'OK'}).click();
+    await page.locator('[data-test-button="close-stripe-connect"]').click();
 };
 
 // Setup Mailgun with fake data, for Ghost Admin to allow bulk sending
