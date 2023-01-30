@@ -5,6 +5,7 @@ const imageTransform = require('@tryghost/image-transform');
 const storage = require('../../../server/adapters/storage');
 const activeTheme = require('../../services/theme-engine/active');
 const config = require('../../../shared/config');
+const {imageSize} = require('../../../server/lib/image');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 const FORMAT_PATH_REGEX = /^\/format\/([^./]+)\//;
@@ -21,7 +22,7 @@ module.exports = function (req, res, next) {
     }
 
     const requestedDimension = req.url.match(SIZE_PATH_REGEX)[1];
-    
+
     // Note that we don't use sizeImageDir because we need to keep the trailing slash
     let imagePath = req.url.replace(`/size/${requestedDimension}`, '');
 
@@ -39,7 +40,7 @@ module.exports = function (req, res, next) {
         // We need to keep the first slash here
         let url = req.originalUrl
             .replace(`/size/${requestedDimension}`, '');
-        
+
         if (format) {
             url = url.replace(`/format/${format}`, '');
         }
@@ -81,7 +82,7 @@ module.exports = function (req, res, next) {
         return redirectToOriginal();
     }
 
-    if (format) {        
+    if (format) {
         // CASE: When formatting, we need to check if the imageTransform package supports this specific format
         if (!imageTransform.canTransformToFormat(format)) {
             // transform not supported
@@ -89,7 +90,7 @@ module.exports = function (req, res, next) {
         }
     }
 
-    // CASE: when transforming is supported, we need to check if it is desired 
+    // CASE: when transforming is supported, we need to check if it is desired
     // (e.g. it is not desired to resize SVGs when not formatting them to a different type)
     if (!format && !imageTransform.shouldResizeFileExtension(requestUrlFileExtension)) {
         return redirectToOriginal();
@@ -111,23 +112,7 @@ module.exports = function (req, res, next) {
             return;
         }
 
-        const {dir, name, ext} = path.parse(imagePath);
-        const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
-
-        if (!imageNameMatched) {
-            // CASE: Image name does not contain any characters?
-            // RESULT: Hand off to `next()` which will 404
-            return;
-        }
-        const unoptimizedImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
-
-        return storageInstance.exists(unoptimizedImagePath)
-            .then((unoptimizedImageExists) => {
-                if (unoptimizedImageExists) {
-                    return unoptimizedImagePath;
-                }
-                return imagePath;
-            })
+        return imageSize.getOriginalImagePath(imagePath)
             .then((storagePath) => {
                 return storageInstance.read({path: storagePath});
             })

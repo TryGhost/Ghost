@@ -118,7 +118,11 @@ describe('Posts API', function () {
             };
 
             await agent
-                .post('/posts/?formats=mobiledoc,lexical,html')
+                .post('/posts/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
                 .body({posts: [post]})
                 .expectStatus(201)
                 .matchBodySnapshot({
