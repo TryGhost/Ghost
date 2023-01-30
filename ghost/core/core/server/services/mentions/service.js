@@ -16,6 +16,7 @@ const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/ser
 const labs = require('../../../shared/labs');
 const urlService = require('../url');
 const DomainEvents = require('@tryghost/domain-events');
+const jobsService = require('../jobs');
 
 function getPostUrl(post) {
     const jsonModel = {};
@@ -50,7 +51,18 @@ module.exports = {
             routingService
         });
 
-        this.controller.init({api});
+        this.controller.init({
+            api,
+            jobService: {
+                async addJob(name, fn) {
+                    jobsService.addJob({
+                        name,
+                        job: fn,
+                        offloaded: false
+                    });
+                }
+            }
+        });
 
         const sendingService = new MentionSendingService({
             discoveryService,
