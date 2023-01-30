@@ -34,9 +34,9 @@ describe('cors', function () {
         next = sinon.spy();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
         cors = rewire('../../../../../../core/server/web/api/middleware/cors')[1];
     });
 

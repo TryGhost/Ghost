@@ -191,8 +191,8 @@ describe('Member Attribution Service', function () {
                 configUtils.set('url', 'https://siteurl.com/subdirectory/');
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
             });
 
             it('resolves urls', async function () {

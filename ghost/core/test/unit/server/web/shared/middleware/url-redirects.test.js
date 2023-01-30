@@ -29,9 +29,9 @@ describe('UNIT: url redirects', function () {
         next = sinon.spy();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
         host = null;
     });
 

@@ -9,12 +9,12 @@ describe('Admin App', function () {
         const req = {};
         let res;
 
-        beforeEach(function () {
+        beforeEach(async function () {
             res = {
                 sendFile: sinon.spy()
             };
 
-            configUtils.restore();
+            await configUtils.restore();
             configUtils.set('paths:adminAssets', path.resolve('test/utils/fixtures/admin-build'));
         });
 

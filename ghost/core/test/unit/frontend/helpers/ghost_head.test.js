@@ -362,9 +362,9 @@ describe('{{ghost_head}} helper', function () {
         makeFixtures();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('without Code Injection', function () {

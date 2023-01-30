@@ -26,12 +26,16 @@ configUtils.set = function () {
  * important: do not delete cloneDeep for value
  * nconf keeps this as a reference and then it can happen that the defaultConfig get's overridden by new values
  */
-configUtils.restore = function () {
+configUtils.restore = async function () {
     /**
      * we have to reset the whole config object
      * config keys, which get set via a test and do not exist in the config files, won't get reseted
      */
-    config.reset();
+    await new Promise((resolve) => {
+        config.reset(() => {
+            resolve();
+        });
+    });
 
     _.each(configUtils.defaultConfig, function (value, key) {
         config.set(key, _.cloneDeep(value));

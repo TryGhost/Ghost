@@ -8,8 +8,8 @@ describe('RSS: Cache', function () {
     let generateSpy;
     let generateFeedReset;
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         sinon.restore();
         generateFeedReset();
     });

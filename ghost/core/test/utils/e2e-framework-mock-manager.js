@@ -185,7 +185,8 @@ const mockLabsDisabled = (flag, alpha = true) => {
 };
 
 const restore = () => {
-    configUtils.restore();
+    // eslint-disable-next-line no-console
+    configUtils.restore().catch(console.error);
     sinon.restore();
     mocks = {};
     fakedLabsFlags = {};

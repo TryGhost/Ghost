@@ -43,8 +43,8 @@ describe('Frontend behavior tests', function () {
             sinon.restore();
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
             urlUtils.restore();
             sinon.restore();
         });
@@ -292,9 +292,9 @@ describe('Frontend behavior tests', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(function () {
+        after(async function () {
             urlUtils.restore();
-            configUtils.restore();
+            await configUtils.restore();
         });
 
         describe('protocol', function () {
@@ -398,8 +398,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -505,8 +505,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -558,8 +558,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -650,8 +650,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -726,8 +726,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -873,8 +873,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -978,8 +978,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
                 sinon.restore();
             });
@@ -1036,8 +1036,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -1087,8 +1087,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
                 sinon.restore();
             });
@@ -1262,8 +1262,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -1495,8 +1495,8 @@ describe('Frontend behavior tests', function () {
             localUtils.overrideGhostConfig(configUtils);
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
             urlUtils.restore();
         });
 

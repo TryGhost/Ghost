@@ -54,6 +54,15 @@ module.exports = class AdapterManager {
     }
 
     /**
+     * Force recreation of all instances instead of reusing cached instances. Use when editing config file during tests.
+     */
+    clearInstanceCache() {
+        for (const key of Object.keys(this.instanceCache)) {
+            this.instanceCache[key] = {};
+        }
+    }
+
+    /**
      * getAdapter
      *
      * @param {string} adapterName The name of the type of adapter, e.g. "storage" or "scheduling", optionally including the feature, e.g. "storage:files"
@@ -75,7 +84,7 @@ module.exports = class AdapterManager {
         } else {
             adapterType = adapterName;
         }
-        
+
         const adapterCache = this.instanceCache[adapterType];
 
         if (!adapterCache) {

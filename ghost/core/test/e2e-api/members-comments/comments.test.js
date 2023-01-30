@@ -191,8 +191,8 @@ describe('Comments API', function () {
         mockManager.mockMail();
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         mockManager.restore();
     });
 

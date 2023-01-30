@@ -29,5 +29,12 @@ module.exports = {
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
         return adapterManager.getAdapter(name, adapterClassName, adapterConfig);
+    },
+
+    /**
+     * Force recreation of all instances instead of reusing cached instances. Use when editing config file during tests.
+     */
+    clearCache() {
+        adapterManager.clearInstanceCache();
     }
 };

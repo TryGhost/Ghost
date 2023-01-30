@@ -53,7 +53,8 @@ const stubUrlUtilsFromConfig = () => {
 
 const restore = () => {
     defaultSandbox.restore();
-    configUtils.restore();
+    // eslint-disable-next-line no-console
+    configUtils.restore().catch(console.error);
 };
 
 module.exports.stubUrlUtilsFromConfig = stubUrlUtilsFromConfig;

@@ -16,8 +16,8 @@ describe('api/endpoints/content/pages', function () {
         await testUtils.initFixtures('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     it('Returns a validation error when unsupported "page" filter is used', function () {

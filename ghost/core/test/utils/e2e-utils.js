@@ -20,6 +20,7 @@ const routeSettingsService = require('../../core/server/services/route-settings'
 const themeService = require('../../core/server/services/themes');
 const limits = require('../../core/server/services/limits');
 const customRedirectsService = require('../../core/server/services/custom-redirects');
+const adapterManager = require('../../core/server/services/adapter-manager');
 
 // Other Test Utilities
 const configUtils = require('./configUtils');
@@ -112,6 +113,9 @@ const restartModeGhostStart = async ({frontend, copyThemes, copySettings}) => {
 
     debug('init done');
 
+    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
+    adapterManager.clearCache();
+
     // Reset the settings cache
     await settingsService.init();
     debug('settings done');
@@ -159,6 +163,9 @@ const freshModeGhostStart = async (options) => {
 
     // Stop the server (forceStart Mode)
     await stopGhost();
+
+    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
+    adapterManager.clearCache();
 
     // Reset the settings cache and disable listeners so they don't get triggered further
     settingsService.reset();

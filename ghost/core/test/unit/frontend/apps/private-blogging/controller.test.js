@@ -48,9 +48,9 @@ describe('Private Controller', function () {
         });
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('Should render default password page when theme has no password template', function (done) {

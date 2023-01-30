@@ -9,9 +9,9 @@ describe('Unit: models/permission', function () {
         models.init();
     });
 
-    after(function () {
+    after(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('add', function () {

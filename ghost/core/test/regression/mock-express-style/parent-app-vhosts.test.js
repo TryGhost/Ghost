@@ -13,8 +13,8 @@ describe('Integration - Web - vhosts', function () {
 
     before(testUtils.teardownDb);
 
-    after(function () {
-        configUtils.restore();
+    after(async function () {
+        await configUtils.restore();
         urlUtils.restore();
         sinon.restore();
     });
@@ -36,8 +36,8 @@ describe('Integration - Web - vhosts', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
             urlUtils.restore();
             sinon.restore();
         });
@@ -144,8 +144,8 @@ describe('Integration - Web - vhosts', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
             urlUtils.restore();
             sinon.restore();
         });
@@ -297,8 +297,8 @@ describe('Integration - Web - vhosts', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
             urlUtils.restore();
             sinon.restore();
         });

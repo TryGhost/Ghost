@@ -23,8 +23,8 @@ describe('{{img_url}} helper', function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('should output relative url of image', function () {
@@ -85,8 +85,8 @@ describe('{{img_url}} helper', function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('should output relative url of image', function () {
@@ -113,8 +113,8 @@ describe('{{img_url}} helper', function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('should output correct url for absolute paths which are internal', function () {
@@ -204,7 +204,7 @@ describe('{{img_url}} helper', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {
                 hash: {
                     size: 'medium'
-                }, 
+                },
                 data: {
                     config: {
                         image_sizes: {
@@ -222,7 +222,7 @@ describe('{{img_url}} helper', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {
                 hash: {
                     format: 'webp'
-                }, 
+                },
                 data: {
                     config: {
                         image_sizes: {
@@ -241,7 +241,7 @@ describe('{{img_url}} helper', function () {
                 hash: {
                     size: 'w600',
                     format: 'webp'
-                }, 
+                },
                 data: {
                     config: {
                         image_sizes: {
@@ -260,7 +260,7 @@ describe('{{img_url}} helper', function () {
                 hash: {
                     size: 'w600',
                     format: 'invalid'
-                }, 
+                },
                 data: {
                     config: {
                         image_sizes: {
@@ -280,8 +280,8 @@ describe('{{img_url}} helper', function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('works without size option', function () {

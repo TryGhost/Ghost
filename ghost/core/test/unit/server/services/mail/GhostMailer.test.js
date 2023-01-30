@@ -39,9 +39,9 @@ const mailDataIncomplete = {
 const sandbox = sinon.createSandbox();
 
 describe('Mail: Ghostmailer', function () {
-    afterEach(function () {
+    afterEach(async function () {
         mailer = null;
-        configUtils.restore();
+        await configUtils.restore();
         sandbox.restore();
     });
 

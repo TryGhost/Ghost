@@ -9,10 +9,10 @@ const urlUtils = require('../../../../core/shared/url-utils');
 const mockUtils = require('../../../utils/mocks');
 
 describe('lib/mobiledoc', function () {
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
         nock.cleanAll();
-        configUtils.restore();
+        await configUtils.restore();
         // ensure config changes are reset and picked up by next test
         mobiledocLib.reload();
         mockUtils.modules.unmockNonExistentModule(/sharp/);

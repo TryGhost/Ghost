@@ -10,8 +10,8 @@ describe('Frontend apps:', function () {
             configUtils.set({'portal:styles': 'https://cdn.example.com/~{version}/main.css'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('should return app urls and version from config', async function () {

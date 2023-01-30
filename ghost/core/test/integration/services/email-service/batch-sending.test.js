@@ -184,7 +184,7 @@ describe('Batch sending tests', function () {
     });
 
     afterEach(async function () {
-        configUtils.restore();
+        await configUtils.restore();
         await models.Settings.edit([{
             key: 'email_verification_required',
             value: false
@@ -653,7 +653,7 @@ describe('Batch sending tests', function () {
         sinon.assert.calledOnce(getSignupEvents);
         assert.equal(settingsCache.get('email_verification_required'), true);
 
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('Analytics', function () {

@@ -63,9 +63,9 @@ describe('Admin Routing', function () {
             request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
         });
 
-        after(function () {
+        after(async function () {
             urlUtils.restore();
-            configUtils.restore();
+            await configUtils.restore();
         });
 
         it('should redirect admin access over non-HTTPS', async function () {
@@ -90,8 +90,8 @@ describe('Admin Routing', function () {
             configUtils.set('paths', configPaths);
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('serves assets in production', async function () {
