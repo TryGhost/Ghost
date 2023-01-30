@@ -1,25 +1,44 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {ReactComponent as MarkdownIcon} from '../../assets/icons/kg-indicator-markdown.svg';
+import {ReactComponent as HtmlIcon} from '../../assets/icons/kg-indicator-html.svg';
+import {ReactComponent as EmailIcon} from '../../assets/icons/kg-indicator-email.svg';
 
-export const CardWrapper = React.forwardRef(({isSelected, isEditing, cardWidth, cardType, wrapperStyle, children, ...props}, ref) => {
+export const INDICATOR_ICONS = {
+    markdown: MarkdownIcon,
+    html: HtmlIcon,
+    email: EmailIcon
+};
+
+export const CardWrapper = React.forwardRef(({isSelected, isEditing, cardWidth, cardType, wrapperStyle, icon, children, ...props}, ref) => {
+    const Icon = INDICATOR_ICONS[icon];
+
     return (
-        <div
-            className={`relative border border-transparent caret-grey-800 ${isSelected ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'} ${(cardWidth === 'wide') ? 'mx-[calc(50%-(50vw-var(--kg-breakout-adjustment))-.8rem)] w-[calc(65vw+2px-var(--kg-breakout-adjustment))] min-w-[calc(100%+3.6rem)] translate-x-[calc(50vw-50%+.8rem-var(--kg-breakout-adjustment))] sm:min-w-[calc(100%+10rem)] lg:min-w-[calc(100%+18rem)]' : (cardWidth === 'full') ? 'lg:mx-[calc(50%-50vw+(var(--kg-breakout-adjustment)/2))] lg:w-[calc(100vw-var(--kg-breakout-adjustment))]' : ''} ${((wrapperStyle === 'wide') && (isEditing || isSelected)) ? '-mx-3 px-3' : ((wrapperStyle === 'code-card') && isEditing) ? '-mx-6' : ''} ${(wrapperStyle === 'wide') ? 'hover:-mx-3 hover:px-3' : ''}`}
-            ref={ref}
-            data-kg-card={cardType}
-            data-kg-card-selected={isSelected}
-            data-kg-card-editing={isEditing}
-            {...props}
-        >
-            {children}
-        </div>
+        <>
+            {icon &&
+                <div className="sticky top-6 mb-6">
+                    <Icon className="absolute left-[-6rem] top-[.6rem] h-6 w-6 text-grey" />
+                </div>
+            }
+            <div
+                className={`relative border border-transparent caret-grey-800 ${isSelected ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'} ${(cardWidth === 'wide') ? 'mx-[calc(50%-(50vw-var(--kg-breakout-adjustment))-.8rem)] w-[calc(65vw+2px-var(--kg-breakout-adjustment))] min-w-[calc(100%+3.6rem)] translate-x-[calc(50vw-50%+.8rem-var(--kg-breakout-adjustment))] sm:min-w-[calc(100%+10rem)] lg:min-w-[calc(100%+18rem)]' : (cardWidth === 'full') ? 'lg:mx-[calc(50%-50vw+(var(--kg-breakout-adjustment)/2))] lg:w-[calc(100vw-var(--kg-breakout-adjustment))]' : ''} ${((wrapperStyle === 'wide') && (isEditing || isSelected)) ? '-mx-3 px-3' : ((wrapperStyle === 'code-card') && isEditing) ? '-mx-6' : ''} ${(wrapperStyle === 'wide') ? 'hover:-mx-3 hover:px-3' : ''}`}
+                ref={ref}
+                data-kg-card={cardType}
+                data-kg-card-selected={isSelected}
+                data-kg-card-editing={isEditing}
+                {...props}
+            >
+                {children}
+            </div>
+        </>
     );
 });
 
 CardWrapper.propTypes = {
     isSelected: PropTypes.bool,
     isEditing: PropTypes.bool,
-    cardWidth: PropTypes.oneOf(['regular', 'wide', 'full'])
+    cardWidth: PropTypes.oneOf(['regular', 'wide', 'full']),
+    icon: PropTypes.string
 };
 
 CardWrapper.defaultProps = {
