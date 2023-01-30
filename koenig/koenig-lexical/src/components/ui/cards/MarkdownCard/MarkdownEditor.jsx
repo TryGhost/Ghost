@@ -121,6 +121,9 @@ export default function MarkdownEditor({
         return () => {
             editor.current.toTextArea();
         };
+
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     function addShortcuts() {
