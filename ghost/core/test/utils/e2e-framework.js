@@ -55,8 +55,7 @@ const startGhost = async (options = {}) => {
     // NOTE: need to pass this config to the server instance
     configUtils.set('paths:contentPath', contentFolder);
 
-    // We need to clear the adapter cache because the config changed
-    // And the LocalStorageAdapter is cached, which means that it will still try to store files to the old content path if we don't recreate all adapters
+    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
     adapterManager.clearCache();
 
     const defaults = {
