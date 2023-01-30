@@ -28,6 +28,7 @@ describe('Markdown card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
                 <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="markdown">
                 </div>
             </div>
@@ -44,6 +45,7 @@ describe('Markdown card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
                 <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="markdown">
                 </div>
             </div>
@@ -54,6 +56,7 @@ describe('Markdown card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
                 <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="markdown">
                 </div>
             </div>
