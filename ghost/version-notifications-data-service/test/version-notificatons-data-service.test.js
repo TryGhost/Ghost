@@ -123,7 +123,7 @@ describe('Version Notification Data Service', function () {
         });
     });
 
-    describe('getIntegrationName', function () {
+    describe('getIntegration', function () {
         it('Queries for Content API key when such is provided', async function () {
             const ApiKeyModel = {
                 findOne: sinon
@@ -136,7 +136,10 @@ describe('Version Notification Data Service', function () {
                     .resolves({
                         relations: {
                             integration: {
-                                get: () => 'live fast die young'
+                                toJSON: () => ({
+                                    name: 'live fast die young',
+                                    type: 'custom'
+                                })
                             }
                         }
                     })
@@ -148,9 +151,10 @@ describe('Version Notification Data Service', function () {
                 settingsService: {}
             });
 
-            const integrationName = await versionNotificationsDataService.getIntegrationName('super_secret', 'content');
+            const {name: integrationName, type: integrationType} = await versionNotificationsDataService.getIntegration('super_secret', 'content');
 
             assert.equal(integrationName, 'live fast die young');
+            assert.equal(integrationType, 'custom');
         });
 
         it('Queries for Admin API key when such is provided', async function () {
@@ -164,8 +168,12 @@ describe('Version Notification Data Service', function () {
                     })
                     .resolves({
                         relations: {
+
                             integration: {
-                                get: () => 'Tri Hita Karana'
+                                toJSON: () => ({
+                                    name: 'Tri Hita Karana',
+                                    type: 'core'
+                                })
                             }
                         }
                     })
@@ -177,9 +185,10 @@ describe('Version Notification Data Service', function () {
                 settingsService: {}
             });
 
-            const integrationName = await versionNotificationsDataService.getIntegrationName('key_id', 'admin');
+            const {name: integrationName, type: integrationType} = await versionNotificationsDataService.getIntegration('key_id', 'admin');
 
             assert.equal(integrationName, 'Tri Hita Karana');
+            assert.equal(integrationType, 'core');
         });
     });
 });

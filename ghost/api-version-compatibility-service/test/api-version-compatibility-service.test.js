@@ -40,7 +40,10 @@ describe('APIVersionCompatibilityService', function () {
                 .resolves({
                     relations: {
                         integration: {
-                            get: () => 'Elaborate Fox'
+                            toJSON: () => ({
+                                name: 'Elaborate Fox',
+                                type: 'custom'
+                            })
                         }
                     }
                 })
@@ -179,6 +182,114 @@ describe('APIVersionCompatibilityService', function () {
 
         assert.equal(sendEmail.calledOnce, true);
         assert.equal(sendEmail.calledTwice, false);
+    });
+
+    it('Does NOT send an email to the instance owner when "internal" or "core" integration triggered version mismatch', async function () {
+        const sendEmail = sinon.spy();
+        const findOneStub = sinon.stub();
+        findOneStub
+            .withArgs({
+                id: 'secret_core'
+            }, {
+                withRelated: ['integration']
+            })
+            .resolves({
+                relations: {
+                    integration: {
+                        toJSON: () => ({
+                            name: 'Core Integration',
+                            type: 'core'
+                        })
+                    }
+                }
+            });
+        findOneStub
+            .withArgs({
+                id: 'secrete_internal'
+            }, {
+                withRelated: ['integration']
+            })
+            .resolves({
+                relations: {
+                    integration: {
+                        toJSON: () => ({
+                            name: 'Internal Integration',
+                            type: 'internal'
+                        })
+                    }
+                }
+            });
+        findOneStub
+            .withArgs({
+                secret: 'custom_key_id'
+            }, {
+                withRelated: ['integration']
+            })
+            .resolves({
+                relations: {
+                    integration: {
+                        toJSON: () => ({
+                            name: 'Custom Integration',
+                            type: 'custom'
+                        })
+                    }
+                }
+            });
+
+        ApiKeyModel = {
+            findOne: findOneStub
+        };
+
+        settingsService = {
+            read: sinon.stub().resolves({
+                version_notifications: {
+                    value: JSON.stringify([])
+                }
+            }),
+            edit: sinon.stub().resolves()
+        };
+
+        const compatibilityService = new APIVersionCompatibilityService({
+            sendEmail,
+            ApiKeyModel,
+            UserModel,
+            settingsService,
+            getSiteUrl,
+            getSiteTitle
+        });
+
+        await compatibilityService.handleMismatch({
+            acceptVersion: 'v4.5',
+            contentVersion: 'v5.1',
+            userAgent: 'GhostAdminSDK/2.4.0',
+            requestURL: '',
+            apiKeyValue: 'secret_core',
+            apiKeyType: 'admin'
+        });
+
+        assert.equal(sendEmail.called, false);
+
+        await compatibilityService.handleMismatch({
+            acceptVersion: 'v4.5',
+            contentVersion: 'v5.1',
+            userAgent: 'GhostAdminSDK/2.4.0',
+            requestURL: 'does not matter',
+            apiKeyValue: 'secrete_internal',
+            apiKeyType: 'admin'
+        });
+
+        assert.equal(sendEmail.called, false);
+
+        await compatibilityService.handleMismatch({
+            acceptVersion: 'v4.5',
+            contentVersion: 'v5.1',
+            userAgent: 'GhostContentSDK/2.4.0',
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
+            apiKeyValue: 'custom_key_id',
+            apiKeyType: 'content'
+        });
+
+        assert.equal(sendEmail.called, true);
     });
 
     it('Does send multiple emails to the instance owners when previously unhandled accept-version header mismatch is detected', async function () {
