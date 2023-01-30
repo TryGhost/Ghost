@@ -22,9 +22,9 @@ describe('Unit - services/routing/controllers/previews', function () {
         };
     }
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     let previewStub;

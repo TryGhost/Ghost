@@ -15,8 +15,8 @@ describe('Authors Content API', function () {
         await testUtils.initFixtures('owner:post', 'users', 'user:inactive', 'posts', 'api_keys');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     it('can read authors with fields', function () {

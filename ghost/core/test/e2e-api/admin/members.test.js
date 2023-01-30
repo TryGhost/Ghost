@@ -791,7 +791,7 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberPassVerification.id}`);
         await agent.delete(`/members/${memberFailVerification.id}`);
 
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('Can add and send a signup confirmation email', async function () {
