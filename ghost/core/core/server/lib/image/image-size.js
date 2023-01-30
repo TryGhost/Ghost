@@ -270,18 +270,36 @@ class ImageSize {
             });
     }
 
-    async getOriginalImageSizeFromStoragePath(imagePath) {
+    /**
+     * Returns the path of the original image for a given image path (we always store the original image in a separate file, suffixed with _o, while we store a resized version of the image on the original name)
+     * TODO: Preferrably we want to move this to a separate image utils package. Currently not really a good place to put it in image lib.
+     */
+    async getOriginalImagePath(imagePath) {
         const {dir, name, ext} = path.parse(imagePath);
+        const storageInstance = this.storage.getStorage('images');
+
+        const preferredUnoptimizedImagePath = path.join(dir, `${name}_o${ext}`);
+        const preferredUnoptimizedImagePathExists = await storageInstance.exists(preferredUnoptimizedImagePath);
+        if (preferredUnoptimizedImagePathExists) {
+            return preferredUnoptimizedImagePath;
+        }
+
+        // Legacy format did some magic with the numbers that could cause bugs. We still need to support it for old files.
+        // refs https://github.com/TryGhost/Team/issues/481
         const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
 
         if (!imageNameMatched) {
-            return this.getImageSizeFromStoragePath(imagePath);
+            return imagePath;
         }
 
-        const originalImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
-        const originalImageExists = await this.storage.getStorage('images').exists(originalImagePath);
+        const legacyOriginalImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
+        const legacyOriginalImageExists = await storageInstance.exists(legacyOriginalImagePath);
 
-        return this.getImageSizeFromStoragePath(originalImageExists ? originalImagePath : imagePath);
+        return legacyOriginalImageExists ? legacyOriginalImagePath : imagePath;
+    }
+
+    async getOriginalImageSizeFromStoragePath(imagePath) {
+        return this.getImageSizeFromStoragePath(await this.getOriginalImagePath(imagePath));
     }
 
     _getPathFromUrl(imageUrl) {
