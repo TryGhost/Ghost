@@ -103,16 +103,29 @@ describe('Webmentions (receiving)', function () {
     });
 
     it('can send an email notification for a new webmention', async function () {
-        const url = new URL('http://testpage.com/external-article-123-email-test/');
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-123-email-test/');
+        const html = `
+            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+        `;
+
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
+
         await agent.post('/receive/')
             .body({
-                source: 'http://testpage.com/external-article-123-email-test/',
-                target: urlUtils.getSiteUrl() + 'integrations/',
-                withExtension: true // test payload recorded
+                source: sourceUrl.href,
+                target: targetUrl.href
             })
             .expectStatus(202);
 
-        await sleep(2000);
+        await processWebmentionJob;
 
         const users = await models.User.findAll();
         users.forEach(async (user) => {
@@ -126,23 +139,30 @@ describe('Webmentions (receiving)', function () {
 
     it('does not send notification with flag disabled', async function () {
         mockManager.mockLabsDisabled('webmentionEmail');
-        const url = new URL('http://testpage.com/external-article-123-email-test/');
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-123-email-test/');
         const html = `
-                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-            `;
-        nock(url.href)
-            .get('/')
-            .reply(200, html, {'content-type': 'text/html'});
+            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+        `;
+
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
 
         await agent.post('/receive/')
             .body({
-                source: 'http://testpage.com/external-article-123-email-test/',
-                target: urlUtils.getSiteUrl() + 'integrations/',
-                withExtension: true // test payload recorded
+                source: sourceUrl.href,
+                target: targetUrl.href
             })
             .expectStatus(202);
 
-        await sleep(2000);
+        await processWebmentionJob;
+
         emailMockReceiver.sentEmailCount(0);
     });
 });
