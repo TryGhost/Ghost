@@ -105,6 +105,13 @@ Dashboard Layout */
     margin-right: 24px;
 }
 
+@media (max-width: 1120px) {
+    .gh-dashboard-box.gh-dashboard-split:not(.gh-dashboard-box.no-boarder) section:nth-child(odd),
+    .gh-dashboard-box.gh-dashboard-split:not(.gh-dashboard-box.no-boarder) section:nth-child(even) {
+        margin: 0 24px;
+    }
+}
+
 .gh-dashboard-box.is-secondary {
     background: var(--main-color-content-greybg);
     border-color: var(--main-color-content-greybg);
