@@ -181,6 +181,8 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Unlike comments', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Report comments', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Browse links', ['Administrator', 'Admin Integration']);
+
+            permissions.should.havePermission('Browse mentions', ['Administrator', 'Admin Integration']);
         });
 
         describe('Populate', function () {
@@ -198,7 +200,6 @@ describe('Database Migration (special functions)', function () {
                     roles: Models.Role.findAll(),
                     permissions: Models.Permission.findAll({withRelated: ['roles']})
                 };
-
                 return Promise.props(props).then(function (result) {
                     should.exist(result);
 
