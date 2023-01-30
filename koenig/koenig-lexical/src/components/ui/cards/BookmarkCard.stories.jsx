@@ -2,12 +2,28 @@ import React from 'react';
 import {BookmarkCard} from './BookmarkCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false}
+};
+
 const story = {
     title: 'Primary cards/Bookmark card',
     component: BookmarkCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected'
+                },
+                defaultValue: displayOptions.Default
+            }
+        }
     },
     parameters: {
         status: {
@@ -17,11 +33,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="not-kg-prose mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper {...args}>
-                <BookmarkCard {...args} />
+            <CardWrapper {...display} {...args}>
+                <BookmarkCard {...display} {...args} />
             </CardWrapper>
         </div>
     </div>
@@ -29,7 +45,7 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true,
+    display: 'Selected',
     urlValue: '',
     urlPlaceholder: 'Paste URL to add bookmark content...',
     bookmarkTitle: 'Ghost: The Creator Economy Platform',
@@ -41,7 +57,7 @@ Empty.args = {
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isSelected: true,
+    display: 'Selected',
     urlValue: 'https://ghost.org/',
     urlPlaceholder: 'Paste URL to add bookmark content...',
     bookmarkTitle: 'Ghost: The Creator Economy Platform',

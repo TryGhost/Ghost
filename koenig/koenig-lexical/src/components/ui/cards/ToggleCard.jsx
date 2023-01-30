@@ -25,13 +25,8 @@ export function ToggleCard({isEditing, header, headerPlaceholder, content, conte
 }
 
 ToggleCard.propTypes = {
-    isEditing: PropTypes.bool,
     header: PropTypes.string,
     headerPlaceholder: PropTypes.string,
     content: PropTypes.string,
     contentPlaceholder: PropTypes.string
-};
-
-ToggleCard.defaultProps = {
-    isEditing: true
 };

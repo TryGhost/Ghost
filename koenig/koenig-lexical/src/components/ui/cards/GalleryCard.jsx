@@ -51,6 +51,5 @@ export function GalleryCard({
 }
 
 GalleryCard.propTypes = {
-    isSelected: PropTypes.bool,
     caption: PropTypes.string
 };

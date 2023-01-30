@@ -2,12 +2,28 @@ import React from 'react';
 import {ImageCard} from './ImageCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false}
+};
+
 const story = {
     title: 'Primary cards/Image card',
     component: ImageCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'},
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected'
+                },
+                defaultValue: displayOptions.Default
+            }
+        },
         cardWidth: {
             options: ['regular', 'wide', 'full'],
             control: {type: 'radio'}
@@ -21,11 +37,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper {...args}>
-                <ImageCard {...args} />
+            <CardWrapper {...display} {...args}>
+                <ImageCard {...display} {...args} />
             </CardWrapper>
         </div>
     </div>
@@ -33,7 +49,7 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true,
+    display: 'Selected',
     setAltText: true,
     caption: '',
     altText: '',
@@ -42,7 +58,7 @@ Empty.args = {
 
 export const inProgress = Template.bind({});
 inProgress.args = {
-    isSelected: true,
+    display: 'Selected',
     setAltText: true,
     caption: '',
     altText: '',
@@ -54,7 +70,7 @@ inProgress.args = {
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isSelected: true,
+    display: 'Selected',
     src: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
     setAltText: true,
     caption: 'Welcome to your new Ghost publication',

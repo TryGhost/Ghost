@@ -2,12 +2,30 @@ import React from 'react';
 import {ProductCard} from './ProductCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false},
+    Editing: {isSelected: true, isEditing: true}
+};
+
 const story = {
     title: 'Primary cards/Product card',
     component: ProductCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected',
+                    Editing: 'Editing'
+                },
+                defaultValue: displayOptions.Default
+            }
+        }
     },
     parameters: {
         status: {
@@ -17,12 +35,12 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="not-kg-prose mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper {...args}>
+            <CardWrapper {...display} {...args}>
                 <div className="flex justify-center p-3">
-                    <ProductCard {...args} />
+                    <ProductCard {...display} {...args} />
                 </div>
             </CardWrapper>
         </div>
@@ -31,7 +49,7 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true,
+    display: 'Editing',
     image: false,
     title: '',
     titlePlaceholder: 'Product title',
@@ -39,13 +57,13 @@ Empty.args = {
     descPlaceholder: 'Description',
     button: false,
     buttonText: '',
+    buttonUrl: '',
     rating: false
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isSelected: true,
-    isEditing: true,
+    display: 'Editing',
     image: true,
     title: 'Fujifilm X100V',
     titlePlaceholder: 'Product title',
@@ -53,6 +71,7 @@ Populated.args = {
     descPlaceholder: 'Description',
     button: true,
     buttonText: 'Get it now',
+    buttonUrl: 'https://ghost.org/',
     rating: true
 };
 

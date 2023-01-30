@@ -33,8 +33,5 @@ function MarkdownDisplay({markdown}) {
 }
 
 MarkdownCard.propTypes = {
-    markdown: PropTypes.string,
-    updateMarkdown: PropTypes.func,
-    imageUploader: PropTypes.func,
-    isEditing: PropTypes.bool
+    markdown: PropTypes.string
 };

@@ -171,8 +171,6 @@ CodeBlock.propTypes = {
 
 CodeBlockCard.propTypes = {
     code: PropTypes.string,
-    isEditing: PropTypes.bool,
-    isSelected: PropTypes.bool,
     language: PropTypes.string,
     caption: PropTypes.string
 };

@@ -2,12 +2,30 @@ import React from 'react';
 import {AudioCard} from './AudioCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false},
+    Editing: {isSelected: true, isEditing: true}
+};
+
 const story = {
     title: 'Primary cards/Audio card',
     component: AudioCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected',
+                    Editing: 'Editing'
+                },
+                defaultValue: displayOptions.Default
+            }
+        }
     },
     parameters: {
         status: {
@@ -17,11 +35,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="not-kg-prose mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper {...args}>
-                <AudioCard {...args} />
+            <CardWrapper {...display} {...args}>
+                <AudioCard {...display} {...args} />
             </CardWrapper>
         </div>
     </div>
@@ -29,7 +47,8 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true,
+    display: 'Editing',
+    isPopulated: false,
     audioTitle: '',
     audioTitlePlaceholder: 'Add a title...',
     totalDuration: ''
@@ -37,9 +56,8 @@ Empty.args = {
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isSelected: true,
+    display: 'Editing',
     isPopulated: true,
-    isEditing: true,
     audioTitle: 'Audio file title',
     audioTitlePlaceholder: 'Add a title...',
     totalDuration: '0:27'

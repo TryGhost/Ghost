@@ -128,7 +128,6 @@ export function VideoCard({
 }
 
 VideoCard.propTypes = {
-    isSelected: PropTypes.bool,
     thumbnail: PropTypes.string,
     customThumbnail: PropTypes.string,
     totalDuration: PropTypes.string,

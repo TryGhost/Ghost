@@ -24,8 +24,7 @@ export function CalloutCard({backgroundColor, value, valuePlaceholder, isEditing
 CalloutCard.propTypes = {
     backgroundColor: PropTypes.oneOf(['grey', 'white', 'blue', 'green', 'yellow', 'red', 'pink', 'purple']),
     value: PropTypes.string,
-    valuePlaceholder: PropTypes.string,
-    isEditing: PropTypes.bool
+    valuePlaceholder: PropTypes.string
 };
 
 CalloutCard.defaultProps = {

@@ -2,12 +2,30 @@ import React from 'react';
 import {ToggleCard} from './ToggleCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false},
+    Editing: {isSelected: true, isEditing: true}
+};
+
 const story = {
     title: 'Primary cards/Toggle card',
     component: ToggleCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected',
+                    Editing: 'Editing'
+                },
+                defaultValue: displayOptions.Default
+            }
+        }
     },
     parameters: {
         status: {
@@ -17,11 +35,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="not-kg-prose mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper {...args}>
-                <ToggleCard {...args} />
+            <CardWrapper {...display} {...args}>
+                <ToggleCard {...display} {...args} />
             </CardWrapper>
         </div>
     </div>
@@ -29,7 +47,7 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true,
+    display: 'Editing',
     header: '',
     headerPlaceholder: 'Toggle header',
     content: '',
@@ -38,8 +56,7 @@ Empty.args = {
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isSelected: true,
-    isEditing: true,
+    display: 'Editing',
     header: 'When should I use Toggles?',
     headerPlaceholder: 'Toggle header',
     content: 'Toggles allow you to create collapsible sections of content which is a great way to make your content less overwhelming and easy to navigate. A common example is an FAQ section, like this one.',

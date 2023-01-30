@@ -10,7 +10,7 @@ export function EmailContentCard({value, placeholder, isEditing}) {
                 <div className="-mx-3 flex items-center justify-center bg-grey-100 p-2 font-sans text-sm font-normal leading-8 text-grey-600">
                     Only visible when delivered by email, this card will not be published on your site.
                     <a href="https://ghost.org/help/email-newsletters/#email-cards" target="_blank" rel="noopener noreferrer">
-                        <HelpIcon className="ml-1 mt-[1px] stroke-[1.2px]" />
+                        <HelpIcon className="ml-1 mt-[1px] stroke-[1.2px] text-grey-600" />
                     </a>
                 </div>
             }
@@ -19,7 +19,6 @@ export function EmailContentCard({value, placeholder, isEditing}) {
 }
 
 EmailContentCard.propTypes = {
-    isEditing: PropTypes.bool,
     value: PropTypes.string,
     placeholder: PropTypes.string
 };

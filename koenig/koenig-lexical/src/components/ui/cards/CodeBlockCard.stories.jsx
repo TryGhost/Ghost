@@ -2,13 +2,30 @@ import React from 'react';
 import {CodeBlockCard} from './CodeBlockCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false},
+    Editing: {isSelected: true, isEditing: true}
+};
+
 const story = {
     title: 'Primary cards/Code card',
     component: CodeBlockCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isEditing: {control: 'boolean'},
-        isSelected: {control: 'boolean'}
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected',
+                    Editing: 'Editing'
+                },
+                defaultValue: displayOptions.Default
+            }
+        }
     },
     parameters: {
         status: {
@@ -18,11 +35,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper wrapperStyle='code-card' {...args}>
-                <CodeBlockCard updateCode={() => {}} {...args} />
+            <CardWrapper wrapperStyle='code-card' {...display} {...args}>
+                <CodeBlockCard updateCode={() => {}} {...display} {...args} />
             </CardWrapper>
         </div>
     </div>
@@ -30,8 +47,7 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isEditing: true,
-    isSelected: true,
+    display: 'Editing',
     code: '',
     language: '',
     caption: ''
@@ -39,8 +55,7 @@ Empty.args = {
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isEditing: true,
-    isSelected: true,
+    display: 'Editing',
     code: '<script></script>',
     language: 'html',
     caption: 'A code example'

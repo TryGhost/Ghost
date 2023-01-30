@@ -2,12 +2,30 @@ import React from 'react';
 import {EmailCtaCard} from './EmailCtaCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false},
+    Editing: {isSelected: true, isEditing: true}
+};
+
 const story = {
     title: 'Primary cards/Email CTA card',
     component: EmailCtaCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected',
+                    Editing: 'Editing'
+                },
+                defaultValue: displayOptions.Default
+            }
+        }    
     },
     parameters: {
         status: {
@@ -17,11 +35,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper wrapperStyle='wide' {...args}>
-                <EmailCtaCard {...args} />
+            <CardWrapper wrapperStyle='wide' {...display} {...args}>
+                <EmailCtaCard {...display} {...args} />
             </CardWrapper>
         </div>
     </div>
@@ -29,26 +47,27 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true,
+    display: 'Editing',
     visibility: 'Free members',
     alignment: 'left',
     separators: true,
     value: '',
     placeholder: 'Email only text... (optional)',
     button: true,
-    buttonText: ''
+    buttonText: '',
+    buttonUrl: ''
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isSelected: true,
-    isEditing: true,
+    display: 'Editing',
     visibility: 'Free members',
     alignment: 'center',
     separators: true,
     value: 'Want to get access to premium content?',
     placeholder: 'Email only text... (optional)',
     button: true,
-    buttonText: 'Upgrade'
+    buttonText: 'Upgrade',
+    buttonUrl: 'https://ghost.org/'
 };
 

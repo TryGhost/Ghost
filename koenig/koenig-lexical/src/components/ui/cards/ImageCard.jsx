@@ -142,7 +142,6 @@ export function ImageCard({
 }
 
 ImageCard.propTypes = {
-    isSelected: PropTypes.bool,
     setAltText: PropTypes.func,
     caption: PropTypes.string,
     altText: PropTypes.string,

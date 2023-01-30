@@ -61,6 +61,13 @@ const Template = ({display, ...args}) => (
     </div>
 );
 
+export const Empty = Template.bind({});
+Empty.args = {
+    markdown: '',
+    display: 'Editing',
+    imageUploader: useImageUpload
+};
+
 export const Populated = Template.bind({});
 Populated.args = {
     markdown: '**Bold** and *italic*',

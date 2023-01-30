@@ -2,12 +2,30 @@ import React from 'react';
 import {CalloutCard} from './CalloutCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false},
+    Editing: {isSelected: true, isEditing: true}
+};
+
 const story = {
     title: 'Primary cards/Callout card',
     component: CalloutCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'}
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected',
+                    Editing: 'Editing'
+                },
+                defaultValue: displayOptions.Default
+            }
+        }
     },
     parameters: {
         status: {
@@ -17,11 +35,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper {...args}>
-                <CalloutCard {...args} />
+            <CardWrapper {...display} {...args}>
+                <CalloutCard {...display} {...args} />
             </CardWrapper>
         </div>
     </div>
@@ -29,7 +47,7 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true,
+    display: 'Editing',
     value: '',
     valuePlaceholder: 'Callout text...',
     backgroundColor: 'grey'
@@ -37,8 +55,7 @@ Empty.args = {
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isSelected: true,
-    isEditing: true,
+    display: 'Editing',
     value: 'Something to pay attention to.',
     valuePlaceholder: 'Callout text...',
     backgroundColor: 'grey'

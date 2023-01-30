@@ -52,7 +52,6 @@ export function FileCard({isPopulated, fileTitle, fileTitlePlaceholder, fileDesc
 
 FileCard.propTypes = {
     isPopulated: PropTypes.bool,
-    isEditing: PropTypes.bool,
     fileTitle: PropTypes.string,
     fileTitlePlaceholder: PropTypes.string,
     fileDesc: PropTypes.string,

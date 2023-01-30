@@ -42,7 +42,6 @@ export function AudioCard({isPopulated, audioTitle, audioTitlePlaceholder, total
 
 AudioCard.propTypes = {
     isPopulated: PropTypes.bool,
-    isEditing: PropTypes.bool,
     audioTitle: PropTypes.string,
     totalDuration: PropTypes.string
 };

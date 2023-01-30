@@ -23,7 +23,6 @@ export function HeaderCard({isEditing, size, backgroundColor, heading, headingPl
 }
 
 HeaderCard.propTypes = {
-    isEditing: PropTypes.bool,
     size: PropTypes.oneOf(['small', 'medium', 'large']),
     backgroundColor: PropTypes.oneOf(['dark', 'light', 'accent']),
     heading: PropTypes.string,
@@ -33,8 +32,4 @@ HeaderCard.propTypes = {
     button: PropTypes.bool,
     buttonText: PropTypes.string,
     buttonPlaceholder: PropTypes.string
-};
-
-HeaderCard.defaultProps = {
-    isEditing: true
 };

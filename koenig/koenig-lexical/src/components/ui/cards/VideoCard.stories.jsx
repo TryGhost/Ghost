@@ -2,12 +2,30 @@ import React from 'react';
 import {VideoCard} from './VideoCard';
 import {CardWrapper} from './../CardWrapper';
 
+const displayOptions = {
+    Default: {isSelected: false, isEditing: false},
+    Selected: {isSelected: true, isEditing: false},
+    Editing: {isSelected: true, isEditing: true}
+};
+
 const story = {
     title: 'Primary cards/Video card',
     component: VideoCard,
     subcomponent: {CardWrapper},
     argTypes: {
-        isSelected: {control: 'boolean'},
+        display: {
+            options: Object.keys(displayOptions),
+            mapping: displayOptions,
+            control: {
+                type: 'radio',
+                labels: {
+                    Default: 'Default',
+                    Selected: 'Selected',
+                    Editing: 'Editing'
+                },
+                defaultValue: displayOptions.Default
+            }
+        },
         cardWidth: {
             options: ['regular', 'wide', 'full'],
             control: {type: 'radio'}
@@ -21,11 +39,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="not-kg-prose mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper {...args}>
-                <VideoCard {...args} />
+            <CardWrapper {...display} {...args}>
+                <VideoCard {...display} {...args} />
             </CardWrapper>
         </div>
     </div>
@@ -33,7 +51,7 @@ const Template = args => (
 
 export const Empty = Template.bind({});
 Empty.args = {
-    isSelected: true,
+    display: 'Editing',
     cardWidth: 'regular',
     thumbnail: '',
     customThumbnail: '',
@@ -42,7 +60,7 @@ Empty.args = {
 
 export const Populated = Template.bind({});
 Populated.args = {
-    isSelected: true,
+    display: 'Editing',
     cardWidth: 'regular',
     thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     customThumbnail: '',
