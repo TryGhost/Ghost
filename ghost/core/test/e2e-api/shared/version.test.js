@@ -25,7 +25,7 @@ describe('API Versioning', function () {
             mockManager.restore();
         });
 
-        it('responds with no content version header when accept version header is NOT PRESENT', async function () {
+        it('responds with content version header even when accept version header is NOT PRESENT', async function () {
             await agentAdminAPI
                 .get('site/')
                 .expectStatus(200)

@@ -13,6 +13,7 @@ const tpl = require('@tryghost/tpl');
 const EmailRenderer = require('./email-renderer');
 const EmailSegmenter = require('./email-segmenter');
 const SendingService = require('./sending-service');
+const logging = require('@tryghost/logging');
 
 const messages = {
     archivedNewsletterError: 'Cannot send email to archived newsletters',
@@ -30,6 +31,7 @@ class EmailService {
     #limitService;
     #membersRepository;
     #verificationTrigger;
+    #emailAnalyticsJobs;
 
     /**
      *
@@ -44,6 +46,7 @@ class EmailService {
      * @param {LimitService} dependencies.limitService
      * @param {object} dependencies.membersRepository
      * @param {VerificationTrigger} dependencies.verificationTrigger
+     * @param {object} dependencies.emailAnalyticsJobs
      */
     constructor({
         batchSendingService,
@@ -54,7 +57,8 @@ class EmailService {
         emailSegmenter,
         limitService,
         membersRepository,
-        verificationTrigger
+        verificationTrigger,
+        emailAnalyticsJobs
     }) {
         this.#batchSendingService = batchSendingService;
         this.#models = models;
@@ -65,6 +69,7 @@ class EmailService {
         this.#membersRepository = membersRepository;
         this.#sendingService = sendingService;
         this.#verificationTrigger = verificationTrigger;
+        this.#emailAnalyticsJobs = emailAnalyticsJobs;
     }
 
     /**
@@ -139,6 +144,13 @@ class EmailService {
                 status: 'failed',
                 error: e.message || 'Something went wrong while scheduling the email'
             }, {patch: true});
+        }
+
+        // make sure recurring background analytics jobs are running once we have emails
+        try {
+            await this.#emailAnalyticsJobs.scheduleRecurringJobs(true);
+        } catch (e) {
+            logging.error(e);
         }
 
         return email;
