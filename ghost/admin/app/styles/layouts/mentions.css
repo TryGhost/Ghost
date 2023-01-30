@@ -24,6 +24,7 @@
     text-decoration: none;
     border-radius: 3px;
     background-color: var(--whitegrey-l1);
+    border: 1px solid var(--whitegrey-l1);
     overflow: hidden;
     color: inherit;
 }

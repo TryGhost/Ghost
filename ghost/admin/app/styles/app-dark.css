@@ -1486,6 +1486,7 @@ kbd {
 /* Mentions */
 .gh-mention-container {
     background-color: var(--whitegrey);
+    border: 1px solid var(--whitegrey);
 }
 
 .gh-mention-your-post-link {
