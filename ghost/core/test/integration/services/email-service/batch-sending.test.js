@@ -743,5 +743,19 @@ describe('Batch sending tests', function () {
         });
     });
 
+    describe('HTML-content', function () {
+        it('Does not HTML escape feature_image_caption', async function () {
+            const {html, plaintext} = await sendEmail({
+                feature_image: 'https://example.com/image.jpg',
+                feature_image_caption: 'Testing <b>feature image caption</b>'
+            });
+            // Check html contains text without escaping
+            assert.match(html, /Testing <b>feature image caption<\/b>/);
+
+            // Check plaintext version dropped the bold tag
+            assert.match(plaintext, /Testing feature image caption/);
+        });
+    });
+
     // TODO: Replacement fallbacks
 });
