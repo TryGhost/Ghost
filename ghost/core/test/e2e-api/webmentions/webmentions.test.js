@@ -4,7 +4,7 @@ const assert = require('assert');
 const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/jobs');
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const DomainEvents = require('@tryghost/domain-events');
 
 describe('Webmentions (receiving)', function () {
     let agent;
