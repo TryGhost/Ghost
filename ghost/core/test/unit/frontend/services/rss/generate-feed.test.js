@@ -37,9 +37,9 @@ describe('RSS: Generate Feed', function () {
         });
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     beforeEach(function () {

@@ -53,12 +53,13 @@ class VersionNotificationsDataService {
     }
 
     /**
+     * This method is for internal use only.
      *
      * @param {String} key - api key identification value, it's "secret" in case of Content API key and "id" for Admin API
      * @param {String} type - one of "content" or "admin" values
-     * @returns
+     * @returns {Promise<Object>} Integration JSON object
      */
-    async getIntegrationName(key, type) {
+    async getIntegration(key, type) {
         let queryOptions = null;
 
         if (type === 'content') {
@@ -69,7 +70,7 @@ class VersionNotificationsDataService {
 
         const apiKey = await this.ApiKeyModel.findOne(queryOptions, {withRelated: ['integration']});
 
-        return apiKey.relations.integration.get('name');
+        return apiKey.relations.integration.toJSON();
     }
 }
 
