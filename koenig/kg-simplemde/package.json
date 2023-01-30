@@ -31,7 +31,7 @@
     "gulp-clean-css": "3.10.0",
     "gulp-concat": "*",
     "gulp-debug": "*",
-    "gulp-eslint": "4.0.2",
+    "gulp-eslint": "6.0.0",
     "gulp-header": "*",
     "gulp-jsbeautifier": "*",
     "gulp-rename": "*",
