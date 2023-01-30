@@ -8,12 +8,12 @@ const configUtils = require('../../../utils/configUtils');
  */
 
 describe('Adapter Config', function () {
-    before(function () {
-        configUtils.restore();
+    before(async function () {
+        await configUtils.restore();
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     describe('Storage', function () {

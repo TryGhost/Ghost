@@ -15,8 +15,8 @@ describe('Unit: models/member', function () {
         config.set('assetHash', '1');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         sinon.restore();
     });
 

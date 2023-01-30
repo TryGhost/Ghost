@@ -229,14 +229,12 @@ describe('Dynamic Routing', function () {
                     });
             });
 
-            after(function () {
-                configUtils.restore();
+            after(async function () {
+                await configUtils.restore();
 
-                return testUtils.startGhost({forceStart: true})
-                    .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
-                        request = supertest.agent(config.get('url'));
-                    });
+                await testUtils.startGhost({forceStart: true});
+                sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
+                request = supertest.agent(config.get('url'));
             });
 
             it('should redirect without slash', function (done) {
@@ -431,14 +429,12 @@ describe('Dynamic Routing', function () {
                     });
             });
 
-            after(function () {
-                configUtils.restore();
+            after(async function () {
+                await configUtils.restore();
 
-                return testUtils.startGhost({forceStart: true})
-                    .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
-                        request = supertest.agent(config.get('url'));
-                    });
+                await testUtils.startGhost({forceStart: true});
+                sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
+                request = supertest.agent(config.get('url'));
             });
 
             it('should redirect without slash', function (done) {

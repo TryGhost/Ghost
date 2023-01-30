@@ -24,10 +24,10 @@ describe('{{comments}} helper', function () {
         configUtils.set('comments:version', 'test.version');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         mockManager.restore();
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('returns undefined if not used withing post context', function (done) {

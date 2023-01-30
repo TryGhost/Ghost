@@ -16,9 +16,9 @@ describe('XMLRPC', function () {
         configUtils.set('privacy:useRpcPing', true);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
         nock.cleanAll();
     });
 

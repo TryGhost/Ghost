@@ -18,8 +18,8 @@ describe('Tags Content API', function () {
         await testUtils.initFixtures('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     const validKey = localUtils.getValidKey();

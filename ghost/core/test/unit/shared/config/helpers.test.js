@@ -6,8 +6,8 @@ describe('vhost utils', function () {
         configUtils.set('url', 'http://ghost.blog');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     // url = 'https://ghost.blog'
