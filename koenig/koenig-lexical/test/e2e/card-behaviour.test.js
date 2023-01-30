@@ -232,8 +232,10 @@ describe('Card behaviour', async () => {
         test('clicking below the editor focuses the editor if last node is a card', async function () {
             await focusEditor(page);
             await page.keyboard.type('```javascript ');
+            await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
             await page.keyboard.type('import React from "react"');
             await page.keyboard.press('Meta+Enter');
+            await page.waitForSelector('[data-kg-card="codeblock"][data-kg-card-selected="true"][data-kg-card-editing="false"]');
 
             await page.mouse.click(100, 900);
 
