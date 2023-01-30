@@ -117,8 +117,8 @@ export function CodeBlock({caption, code, language}) {
                             {code}
                         </code>
                     </pre>
-                    <div className="pa2 absolute top-2 right-2 flex items-center justify-center">
-                        <span className="db nudge-top--2 fw5 f8 midlightgrey">{language}</span>
+                    <div className="absolute top-2 right-2 flex items-center justify-center px-1">
+                        <span className="block font-sans text-sm font-medium leading-normal text-grey">{language}</span>
                     </div>
                     <figcaption>
                         {caption}
@@ -134,8 +134,8 @@ export function CodeBlock({caption, code, language}) {
                         {code}
                     </code>
                 </pre>
-                <div className="pa2 absolute top-2 right-2 flex items-center justify-center">
-                    <span className="db nudge-top--2 fw5 f8 midlightgrey">{language}</span>
+                <div className="absolute top-2 right-2 flex items-center justify-center px-1">
+                    <span className="block font-sans text-sm font-medium leading-normal text-grey">{language}</span>
                 </div>
             </div>
         );
