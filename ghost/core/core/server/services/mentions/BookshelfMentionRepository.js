@@ -54,7 +54,7 @@ module.exports = class BookshelfMentionRepository {
             sourceAuthor: model.get('source_author'),
             sourceExcerpt: model.get('source_excerpt'),
             sourceFavicon: model.get('source_favicon'),
-            sourceFeaturedImaged: model.get('source_featured_image')
+            sourceFeaturedImage: model.get('source_featured_image')
         });
     }
 
