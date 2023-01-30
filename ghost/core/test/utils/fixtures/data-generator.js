@@ -890,6 +890,42 @@ DataGenerator.Content = {
             created_at: null,
             updated_at: null
         }
+    ],
+
+    // TODO: build mentions for testing browse endpoint
+    mentions: [
+        // source: webmention.source,
+        // target: webmention.target,
+        // timestamp: new Date(),
+        // payload: webmention.payload,
+        // resourceId: resourceInfo.type === 'post' ? resourceInfo.id : null,
+        // sourceTitle: metadata.title,
+        // sourceSiteTitle: metadata.siteTitle,
+        // sourceAuthor: metadata.author,
+        // sourceExcerpt: metadata.excerpt,
+        // sourceFavicon: metadata.favicon,
+        // sourceFeaturedImage: metadata.image
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://source.com',
+            target: 'https://target.com',
+            sourceTitle: 'Title!',
+            sourceExcerpt: 'Excerpt!'
+        },
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://anothersource.com',
+            target: 'https://anothertarget.com',
+            sourceTitle: 'Another Title!',
+            sourceExcerpt: 'Another Excerpt!'
+        },
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://src.com',
+            target: 'https://target.com',
+            sourceTitle: 'Title goes here',
+            sourceExcerpt: 'Excerpt goes here'
+        }
     ]
 };
 
@@ -1337,6 +1373,13 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             created_at: new Date(),
             updated_at: new Date()
+        });
+    }
+
+    function createMention(overrides) {
+        const newObj = _.cloneDeep(overrides);
+        return _.defaults(newObj, {
+            created_at: new Date()
         });
     }
 
@@ -1849,6 +1892,12 @@ DataGenerator.forKnex = (function () {
         createLink(DataGenerator.Content.links[2])
     ];
 
+    const mentions = [
+        createMention(DataGenerator.Content.mentions[0]),
+        createMention(DataGenerator.Content.mentions[1]),
+        createMention(DataGenerator.Content.mentions[2])
+    ];
+
     return {
         createPost,
         createGenericPost,
@@ -1880,6 +1929,7 @@ DataGenerator.forKnex = (function () {
         createNewsletter,
         createOffer,
         createComment,
+        createMention,
 
         invites,
         posts,
@@ -1912,6 +1962,7 @@ DataGenerator.forKnex = (function () {
         comments,
         redirects,
         links,
+        mentions,
 
         members_paid_subscription_events,
         members_created_events,
