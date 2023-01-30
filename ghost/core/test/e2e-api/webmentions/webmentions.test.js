@@ -5,7 +5,7 @@ const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/jobs');
 
-describe.only('Webmentions (receiving)', function () {
+describe('Webmentions (receiving)', function () {
     let agent;
     let emailMockReceiver;
     before(async function () {
@@ -35,7 +35,6 @@ describe.only('Webmentions (receiving)', function () {
         const html = `
                 <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
             `;
-
 
         nock(targetUrl.origin)
             .head(targetUrl.pathname)
@@ -86,11 +85,11 @@ describe.only('Webmentions (receiving)', function () {
         await agent.post('/receive')
             .body({
                 source: sourceUrl.href,
-                target: targetUrl.href,
+                target: targetUrl.href
             })
             .expectStatus(202);
 
-        const res = await processWebmentionJob;
+        await processWebmentionJob;
 
         const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article-2/'});
         assert(mention);
