@@ -1140,6 +1140,7 @@ describe('Card behaviour', async () => {
         test('with an edit-mode card selected', async function () {
             await focusEditor(page);
             await page.keyboard.type('``` ');
+            await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
             await page.keyboard.type('import React from "react"');
             await page.click('[data-kg-card="codeblock"]');
 
