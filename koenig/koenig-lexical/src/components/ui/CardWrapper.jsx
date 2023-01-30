@@ -1,23 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {ReactComponent as MarkdownIcon} from '../../assets/icons/kg-indicator-markdown.svg';
-import {ReactComponent as HtmlIcon} from '../../assets/icons/kg-indicator-html.svg';
-import {ReactComponent as EmailIcon} from '../../assets/icons/kg-indicator-email.svg';
 
-export const INDICATOR_ICONS = {
-    markdown: MarkdownIcon,
-    html: HtmlIcon,
-    email: EmailIcon
-};
-
-export const CardWrapper = React.forwardRef(({isSelected, isEditing, cardWidth, cardType, wrapperStyle, icon, children, ...props}, ref) => {
-    const Icon = INDICATOR_ICONS[icon];
-
+export const CardWrapper = React.forwardRef(({isSelected, isEditing, cardWidth, cardType, wrapperStyle, IndicatorIcon, children, ...props}, ref) => {
     return (
         <>
-            {icon &&
+            {IndicatorIcon &&
                 <div className="sticky top-6 mb-6">
-                    <Icon className="absolute left-[-6rem] top-[.6rem] h-6 w-6 text-grey" />
+                    <IndicatorIcon className="absolute left-[-6rem] top-[.6rem] h-6 w-6 text-grey" />
                 </div>
             }
             <div

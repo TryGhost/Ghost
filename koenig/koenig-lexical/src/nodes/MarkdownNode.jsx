@@ -1,12 +1,13 @@
 import React from 'react';
+import {$getNodeByKey} from 'lexical';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {MarkdownNode as BaseMarkdownNode, INSERT_MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
-import {ReactComponent as MarkdownCardIcon} from '../assets/icons/kg-card-type-markdown.svg';
 import {MarkdownCard} from '../components/ui/cards/MarkdownCard';
 import CardContext from '../context/CardContext';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {$getNodeByKey} from 'lexical';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import {ReactComponent as MarkdownCardIcon} from '../assets/icons/kg-card-type-markdown.svg';
+import {ReactComponent as MarkdownIndicatorIcon} from '../assets/icons/kg-indicator-markdown.svg';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
@@ -65,7 +66,13 @@ export class MarkdownNode extends BaseMarkdownNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper wrapperStyle="wide" nodeKey={this.getKey()} width={this.__cardWidth} openInEditMode={this.__openInEditMode}>
+            <KoenigCardWrapper
+                nodeKey={this.getKey()}
+                wrapperStyle="wide"
+                width={this.__cardWidth}
+                openInEditMode={this.__openInEditMode}
+                IndicatorIcon={MarkdownIndicatorIcon}
+            >
                 <MarkdownNodeComponent
                     nodeKey={this.getKey()}
                     markdown={this.__markdown}
