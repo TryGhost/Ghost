@@ -15,6 +15,7 @@ const urlUtils = require('../../../shared/url-utils');
 const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 const labs = require('../../../shared/labs');
 const urlService = require('../url');
+const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const jobsService = require('../jobs');
 
@@ -69,7 +70,7 @@ module.exports = {
             externalRequest,
             getSiteUrl: () => urlUtils.urlFor('home', true),
             getPostUrl: post => getPostUrl(post),
-            isEnabled: () => labs.isSet('webmentions')
+            isEnabled: () => labs.isSet('webmentions') && !settingsCache.get('is_private')
         });
         sendingService.listen(events);
     }
