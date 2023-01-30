@@ -26,7 +26,7 @@
   "devDependencies": {
     "browserify": "17.0.0",
     "debug": "*",
-    "eslint": "4.19.1",
+    "eslint": "8.33.0",
     "gulp": "*",
     "gulp-clean-css": "3.10.0",
     "gulp-concat": "*",
