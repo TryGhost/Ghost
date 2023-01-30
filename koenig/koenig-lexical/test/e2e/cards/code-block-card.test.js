@@ -63,6 +63,7 @@ describe('Code Block card', async () => {
     test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
+        await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
 
         // Type in the editor
         await page.keyboard.type('Here are some words');
