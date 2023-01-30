@@ -32,12 +32,16 @@ export const Empty = Template.bind({});
 Empty.args = {
     isEditing: true,
     isSelected: true,
-    code: ''
+    code: '',
+    language: '',
+    caption: ''
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
     isEditing: true,
     isSelected: true,
-    code: '<script></script>'
+    code: '<script></script>',
+    language: 'html',
+    caption: 'A code example'
 };

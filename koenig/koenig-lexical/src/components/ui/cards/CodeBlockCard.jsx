@@ -7,6 +7,7 @@ import {standardKeymap} from '@codemirror/commands';
 import {EditorView, lineNumbers, keymap} from '@codemirror/view';
 import {javascript} from '@codemirror/lang-javascript';
 import {tags} from '@lezer/highlight';
+import {CardCaptionEditor} from '../CardCaptionEditor';
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
     const [showLanguage, setShowLanguage] = React.useState(true);
@@ -120,9 +121,6 @@ export function CodeBlock({caption, code, language}) {
                     <div className="absolute top-2 right-2 flex items-center justify-center px-1">
                         <span className="block font-sans text-sm font-medium leading-normal text-grey">{language}</span>
                     </div>
-                    <figcaption>
-                        {caption}
-                    </figcaption>
                 </figure>
             </div>
         );
@@ -142,7 +140,7 @@ export function CodeBlock({caption, code, language}) {
     }
 }
 
-export function CodeBlockCard({caption, code, isEditing, isSelected, language, updateCode, updateLanguage}) {
+export function CodeBlockCard({caption, code, isEditing, isSelected, language, updateCode, updateLanguage, setCaption}) {
     if (isEditing) {
         return (
             <CodeEditor
@@ -154,7 +152,15 @@ export function CodeBlockCard({caption, code, isEditing, isSelected, language, u
         );
     } else {
         return (
-            <CodeBlock caption={caption} code={code} language={language} />
+            <>
+                <CodeBlock caption={caption} code={code} language={language} />
+                <CardCaptionEditor
+                    caption={caption || ''}
+                    setCaption={setCaption}
+                    captionPlaceholder="Type caption for code block (optional)"
+                    isSelected={isSelected}
+                />
+            </>
         );
     }
 }
@@ -167,5 +173,6 @@ CodeBlockCard.propTypes = {
     code: PropTypes.string,
     isEditing: PropTypes.bool,
     isSelected: PropTypes.bool,
-    language: PropTypes.string
+    language: PropTypes.string,
+    caption: PropTypes.string
 };
