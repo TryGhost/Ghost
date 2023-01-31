@@ -260,10 +260,10 @@ describe('External Request', function () {
             };
 
             return externalRequest(url, options).then(() => {
-                throw new Error('Request should have rejected with invalid url message');
+                throw new Error('Request should have rejected');
             }, (err) => {
                 should.exist(err);
-                err.message.should.be.equal('URL empty or invalid.');
+                err.message.should.be.equal('Invalid URL');
             });
         });
 
@@ -276,10 +276,10 @@ describe('External Request', function () {
             };
 
             return externalRequest(url, options).then(() => {
-                throw new Error('Request should have rejected with invalid url message');
+                throw new Error('Request should have rejected');
             }, (err) => {
                 should.exist(err);
-                err.message.should.be.equal('URL empty or invalid.');
+                err.message.should.be.equal('No URL protocol specified');
             });
         });
 
@@ -300,7 +300,7 @@ describe('External Request', function () {
             }, (err) => {
                 requestMock.isDone().should.be.true();
                 should.exist(err);
-                err.statusMessage.should.be.equal('Not Found');
+                err.response.statusMessage.should.be.equal('Not Found');
             });
         });
 
@@ -322,9 +322,9 @@ describe('External Request', function () {
             }, (err) => {
                 requestMock.isDone().should.be.true();
                 should.exist(err);
-                err.statusMessage.should.be.equal('Internal Server Error');
-                err.body.should.match(/something awful happened/);
-                err.body.should.match(/AWFUL_ERROR/);
+                err.response.statusMessage.should.be.equal('Internal Server Error');
+                err.response.body.should.match(/something awful happened/);
+                err.response.body.should.match(/AWFUL_ERROR/);
             });
         });
     });

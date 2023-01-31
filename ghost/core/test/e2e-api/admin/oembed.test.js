@@ -73,6 +73,7 @@ describe('Oembed API', function () {
             const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
             const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
                 .set('Origin', config.get('url'))
+                .expect(console.log)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);

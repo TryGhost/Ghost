@@ -9,7 +9,7 @@ module.exports = class GeolocationService {
         }
 
         const geojsUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ipAddress)}.json`;
-        const response = await got(geojsUrl, {json: true, timeout: 500});
+        const response = await got(geojsUrl, {timeout: 500}).json();
         return response.body;
     }
 };

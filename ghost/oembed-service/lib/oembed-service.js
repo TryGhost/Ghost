@@ -68,16 +68,7 @@ class OEmbed {
         this.config = config;
 
         /** @type {IExternalRequest} */
-        this.externalRequest = async (url, requestConfig) => {
-            if (this.isIpOrLocalhost(url)) {
-                return this.unknownProvider(url);
-            }
-            const response = await externalRequest(url, requestConfig);
-            if (this.isIpOrLocalhost(response.url)) {
-                return this.unknownProvider(url);
-            }
-            return response;
-        };
+        this.externalRequest = externalRequest; // changed this because this is already happening in externalRequest + we can't await because we lose .json() possibility on promise
 
         /** @type {ICustomProvider[]} */
         this.customProviders = [];
@@ -117,14 +108,14 @@ class OEmbed {
      * @param {string} url
      * @param {Object} options
      *
-     * @returns {Promise<{url: string, body: any, headers: any}>}
+     * @returns {GotPromise<any>}
      */
-    async fetchPage(url, options) {
-        const cookieJar = new CookieJar();
+    fetchPage(url, options) {
+        //const cookieJar = new CookieJar();
         return this.externalRequest(
             url,
             {
-                cookieJar,
+                //cookieJar,
                 method: 'GET',
                 timeout: 2 * 1000,
                 followRedirect: true,
@@ -184,11 +175,7 @@ class OEmbed {
      * @returns {Promise<{url: string, body: Object}>}
      */
     async fetchPageJson(url) {
-        const {body, url: pageUrl} = await this.fetchPage(
-            url,
-            {
-                json: true
-            });
+        const {body, url: pageUrl} = await this.fetchPage(url, {}).json();
 
         return {
             body,
@@ -221,6 +208,7 @@ class OEmbed {
         } catch (err) {
             // Log to avoid being blind to errors happenning in metascraper
             logging.error(err);
+            console.error(err);
             return this.unknownProvider(url);
         }
 
@@ -288,6 +276,7 @@ class OEmbed {
         try {
             oembedUrl = cheerio('link[type="application/json+oembed"]', html).attr('href');
         } catch (e) {
+            console.error(e);
             return this.unknownProvider(url);
         }
 
@@ -401,6 +390,7 @@ class OEmbed {
 
             // couldn't get anything, throw a validation error
             if (!data) {
+                console.error('no data');
                 return this.unknownProvider(url);
             }
 
@@ -418,6 +408,7 @@ class OEmbed {
             }));
 
             // default to unknown provider to avoid leaking any app specifics
+            console.error(err);
             return this.unknownProvider(url);
         }
     }
