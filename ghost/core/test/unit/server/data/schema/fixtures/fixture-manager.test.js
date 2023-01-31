@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 
 const models = require('../../../../../../core/server/models');
 const baseUtils = require('../../../../../../core/server/models/base/utils');
@@ -199,7 +198,7 @@ describe('Migration Fixture Utils', function () {
             const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
-                const FIXTURE_COUNT = 96;
+                const FIXTURE_COUNT = 98;
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', FIXTURE_COUNT);

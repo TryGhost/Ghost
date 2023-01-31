@@ -4,9 +4,11 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    emailErrorPartialFailure: 'The email was only partially send',
-    emailError: 'Email failed to send'
+    emailErrorPartialFailure: 'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
+    emailError: 'An unexpected error occurred, please retry sending your newsletter.'
 };
+
+const MAX_SENDING_CONCURRENCY = 2;
 
 /**
  * @typedef {import('./sending-service')} SendingService
@@ -27,6 +29,7 @@ class BatchSendingService {
     #jobsService;
     #models;
     #db;
+    #sentry;
 
     /**
      * @param {Object} dependencies
@@ -40,6 +43,7 @@ class BatchSendingService {
      * @param {Email} dependencies.models.Email
      * @param {object} dependencies.models.Member
      * @param {object} dependencies.db
+     * @param {object} [dependencies.sentry]
      */
     constructor({
         emailRenderer,
@@ -47,7 +51,8 @@ class BatchSendingService {
         jobsService,
         emailSegmenter,
         models,
-        db
+        db,
+        sentry
     }) {
         this.#emailRenderer = emailRenderer;
         this.#sendingService = sendingService;
@@ -55,6 +60,7 @@ class BatchSendingService {
         this.#emailSegmenter = emailSegmenter;
         this.#models = models;
         this.#db = db;
+        this.#sentry = sentry;
     }
 
     /**
@@ -95,7 +101,17 @@ class BatchSendingService {
                 error: null
             }, {patch: true, autoRefresh: false});
         } catch (e) {
-            logging.error(`Error sending email ${email.id}: ${e.message}`);
+            const ghostError = new errors.EmailError({
+                err: e,
+                code: 'BULK_EMAIL_SEND_FAILED',
+                message: `Error sending email ${email.id}`
+            });
+
+            logging.error(ghostError);
+            if (this.#sentry) {
+                // Log the original error to Sentry
+                this.#sentry.captureException(e);
+            }
 
             // Edge case: Store error in email model (that are not caught by the batch)
             await email.save({
@@ -267,8 +283,8 @@ class BatchSendingService {
             }
         };
 
-        // Run maximum 10 at the same time
-        await Promise.all(new Array(10).fill(0).map(() => runNext()));
+        // Run maximum MAX_SENDING_CONCURRENCY at the same time
+        await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runNext()));
 
         if (succeededCount < batches.length) {
             if (succeededCount > 0) {
@@ -322,8 +338,21 @@ class BatchSendingService {
             }, {patch: true, require: false, autoRefresh: false});
             succeeded = true;
         } catch (err) {
-            logging.error(`Error sending email batch ${batch.id}`);
-            logging.error(err);
+            if (!err.code || err.code !== 'BULK_EMAIL_SEND_FAILED') {
+                // BULK_EMAIL_SEND_FAILED are already logged in mailgun-email-provider
+                const ghostError = new errors.EmailError({
+                    err,
+                    code: 'BULK_EMAIL_SEND_FAILED',
+                    message: `Error sending email batch ${batch.id}`,
+                    context: err.message
+                });
+
+                logging.error(ghostError);
+                if (this.#sentry) {
+                    // Log the original error to Sentry
+                    this.#sentry.captureException(err);
+                }
+            }
 
             await batch.save({
                 status: 'failed',

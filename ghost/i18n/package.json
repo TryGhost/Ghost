@@ -1,0 +1,31 @@
+{
+  "name": "@tryghost/i18n",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/ghost/i18n",
+  "author": "Ghost Foundation",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test:unit": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test": "yarn test:unit && yarn test:translate",
+    "test:translate": "yarn translate:portal",
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
+    "translate:portal": "i18next '../portal/src/**/*.{js,jsx}'"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "locales"
+  ],
+  "devDependencies": {
+    "c8": "7.12.0",
+    "i18next-parser": "7.6.0",
+    "mocha": "10.2.0"
+  },
+  "dependencies": {
+    "i18next": "22.4.9"
+  }
+}

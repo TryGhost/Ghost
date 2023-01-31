@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, stringMatching, anyISODateTime} = matchers;
+const {anyContentVersion, anyEtag, anyErrorId, stringMatching, anyISODateTime} = matchers;
 
 describe('Sessions API', function () {
     let agent;
@@ -21,6 +21,7 @@ describe('Sessions API', function () {
             .expectStatus(201)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 'set-cookie': [
                     stringMatching(/^ghost-admin-api-session=/)
@@ -39,6 +40,7 @@ describe('Sessions API', function () {
                 updated_at: anyISODateTime
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -49,6 +51,7 @@ describe('Sessions API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -63,6 +66,7 @@ describe('Sessions API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

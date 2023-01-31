@@ -8,6 +8,7 @@ const Queue = require('./Queue');
 const Urls = require('./Urls');
 const Resources = require('./Resources');
 const urlUtils = require('../../../shared/url-utils');
+const resourcesConfig = require('./config');
 
 /**
  * The url service class holds all instances in a centralized place.
@@ -17,7 +18,7 @@ const urlUtils = require('../../../shared/url-utils');
 class UrlService {
     /**
      *
-     * @param {Object} options
+     * @param {Object} [options]
      * @param {Object} [options.cache] - cache handler instance
      * @param {Function} [options.cache.read] - read cache by type
      * @param {Function} [options.cache.write] - write into cache by type
@@ -35,6 +36,7 @@ class UrlService {
         //      Way too many tests fail if the initialization is removed so leaving it as is for time being
         this.urls = new Urls();
         this.resources = new Resources({
+            resourcesConfig: resourcesConfig,
             queue: this.queue
         });
 
@@ -321,12 +323,10 @@ class UrlService {
         if (persistedUrls && persistedResources) {
             this.urls.urls = persistedUrls;
             this.resources.data = persistedResources;
-            this.resources.initResourceConfig();
             this.resources.initEventListeners();
 
             this._onQueueEnded('init');
         } else {
-            this.resources.initResourceConfig();
             this.resources.initEventListeners();
             await this.resources.fetchResources();
             // CASE: all resources are fetched, start the queue

@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const configUtils = require('../../../utils/configUtils');
 const logging = require('@tryghost/logging');
@@ -339,8 +338,8 @@ describe('{{#get}} helper', function () {
                 };
             });
         });
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('should log a warning if it hits the notify threshold', async function () {

@@ -7,8 +7,10 @@ const {mockManager} = require('../../../../utils/e2e-framework');
 const should = require('should');
 
 describe('UNIT > Settings BREAD Service:', function () {
+    let emailMockReceiver;
+
     beforeEach(function () {
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -194,10 +196,8 @@ describe('UNIT > Settings BREAD Service:', function () {
             assert.equal(settings.length, 0);
             assert.deepEqual(settings.meta.sent_email_verification, ['members_support_address']);
 
-            mockManager.assert.sentEmail({
-                subject: 'Verify email address',
-                to: 'support@example.com'
-            });  
+            emailMockReceiver.matchHTMLSnapshot();
+            emailMockReceiver.matchMetadataSnapshot();
         });
     });
 

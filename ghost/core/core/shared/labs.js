@@ -19,20 +19,25 @@ const GA_FEATURES = [
     'sourceAttribution',
     'memberAttribution',
     'audienceFeedback',
-    'themeErrorsNotification'
+    'themeErrorsNotification',
+    'emailStability'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'activitypub',
-    'emailStability'
+    'emailErrors'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'lexicalEditor'
+    'lexicalEditor',
+    'webmentions',
+    'webmentionEmail',
+    'outboundLinkTagging',
+    'milestoneEmails'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

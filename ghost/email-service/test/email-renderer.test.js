@@ -330,7 +330,7 @@ describe('Email renderer', function () {
                 }
             };
             let response = emailRenderer.getSegments(post);
-            response.should.eql(['status:-free']);
+            response.should.eql(['status:free', 'status:-free']);
         });
     });
 
@@ -386,7 +386,7 @@ describe('Email renderer', function () {
             },
             linkReplacer,
             memberAttributionService: {
-                addEmailSourceAttributionTracking: (u, newsletter) => {
+                addOutboundLinkTagging: (u, newsletter) => {
                     u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
                     return u;
                 },

@@ -8,8 +8,8 @@ const config = configUtils.config;
 const getAssetUrl = require('../../../../core/frontend/meta/asset-url');
 
 describe('getAssetUrl', function () {
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         sinon.restore();
     });
 
@@ -93,8 +93,8 @@ describe('getAssetUrl', function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('should return asset url with just context', function () {

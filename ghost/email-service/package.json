@@ -32,6 +32,7 @@
     "@tryghost/logging": "2.4.0",
     "@tryghost/tpl": "0.1.21",
     "bson-objectid": "2.0.4",
+    "@tryghost/validator": "^0.2.0",
     "cheerio": "0.22.0",
     "handlebars": "4.7.7",
     "juice": "8.1.0",

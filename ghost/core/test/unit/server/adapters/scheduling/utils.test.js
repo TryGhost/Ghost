@@ -14,13 +14,13 @@ describe('Scheduling: utils', function () {
         }
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         if (scope.adapter) {
             fs.unlinkSync(scope.adapter);
             scope.adapter = null;
         }
 
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('success', function () {

@@ -2,6 +2,8 @@ const should = require('should');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');
+const moment = require('moment');
+const assert = require('assert');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
@@ -97,7 +99,7 @@ describe('Generators', function () {
                 generator.types.pages.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
                 generator.types.tags.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
                 generator.types.authors.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
-    
+
                 const xml = generator.getXml();
 
                 xml.should.match(/sitemap-tags.xml/);
@@ -108,7 +110,7 @@ describe('Generators', function () {
 
             it('does not create entries for pages with no content', function () {
                 generator.types.tags.addUrl('http://my-ghost-blog.com/episode-1/', {id: 'identifier1', staticRoute: true});
-    
+
                 const xml = generator.getXml();
 
                 xml.should.match(/sitemap-tags.xml/);
@@ -241,6 +243,34 @@ describe('Generators', function () {
                 should.not.exist(generator.getXml(-1));
                 should.not.exist(generator.getXml(99999));
                 should.not.exist(generator.getXml(0));
+            });
+        });
+
+        describe('fn: updateURL', function () {
+            it('updates existing url', function () {
+                const postDatumToUpdate = testUtils.DataGenerator.forKnex.createPost({
+                    updated_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 100
+                });
+
+                generator.addUrl('http://my-ghost-blog.com/url/100/', postDatumToUpdate);
+
+                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[0].loc, 'http://my-ghost-blog.com/url/100/');
+
+                const postWithUpdatedDatum = Object.assign({}, {
+                    updated_at: (Date.UTC(2023, 11, 22, 12) - 360000)
+                }, postDatumToUpdate);
+                const updatedISOString = moment(postWithUpdatedDatum.updated_at).toISOString();
+                generator.updateURL(postWithUpdatedDatum);
+
+                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[0].loc, 'http://my-ghost-blog.com/url/100/');
+                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[1].lastmod, updatedISOString);
+            });
+
+            it('does not thrown when trying to update a non-existing url', function () {
+                const postDatumToUpdate = testUtils.DataGenerator.forKnex.createPost();
+                generator.updateURL(postDatumToUpdate);
+
+                assert.equal(generator.nodeLookup[postDatumToUpdate.id], undefined);
             });
         });
 

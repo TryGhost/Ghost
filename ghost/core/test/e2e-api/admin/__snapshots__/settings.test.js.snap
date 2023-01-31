@@ -265,6 +265,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -290,6 +298,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -318,6 +327,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "91",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -341,6 +351,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "51",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -612,6 +623,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -635,8 +654,9 @@ exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3522",
+  "content-length": "3632",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -909,6 +929,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -934,6 +962,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -1205,6 +1234,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1230,6 +1267,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -1506,6 +1544,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1531,6 +1577,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -1802,6 +1849,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1827,6 +1882,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -1880,6 +1936,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "281",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -1890,6 +1947,7 @@ exports[`Settings API stripe connect can do disconnectStripeConnectIntegration 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
@@ -2161,6 +2219,14 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -2186,6 +2252,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -2217,6 +2284,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "241",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",

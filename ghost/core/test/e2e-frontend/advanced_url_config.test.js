@@ -28,8 +28,8 @@ describe('Advanced URL Configurations', function () {
             request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
             urlUtils.restore();
         });
 

@@ -57,7 +57,7 @@ describe('Scheduling: Post Scheduler', function () {
                 events.emit('post.scheduled', post);
 
                 // let the events bubble up
-                await Promise.delay(100);
+                await new Promise(resolve => setTimeout(resolve, 100));
 
                 adapter.schedule.called.should.eql(true);
 
