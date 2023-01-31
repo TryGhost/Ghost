@@ -68,7 +68,7 @@ module.exports = class InMemoryMentionRepository {
      */
     async getPage(options) {
         const filter = nql(options.filter || '', {});
-        const results = this.#store.slice().filter((item) => {
+        let results = this.#store.slice().filter((item) => {
             return filter.queryJSON(this.toPrimitive(item));
         });
 

@@ -52,7 +52,7 @@ module.exports = class MentionController {
         }
 
         let order;
-        if (frame.options.order && frame.options.order === 'created_at desc') {
+        if (frame.options.order === 'created_at desc') {
             order = 'created_at desc';
         } else {
             order = 'created_at asc';
@@ -60,6 +60,7 @@ module.exports = class MentionController {
 
         const results = await this.#api.listMentions({
             filter: frame.options.filter,
+            order,
             limit,
             page,
             order
