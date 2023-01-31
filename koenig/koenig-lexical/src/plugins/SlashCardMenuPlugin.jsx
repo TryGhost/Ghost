@@ -289,7 +289,7 @@ function useSlashCardMenu(editor) {
 
     if (isShowingMenu) {
         return (
-            <div className="absolute" style={{top: `${topPosition}px`}} ref={containerRef} data-kg-slash-container>
+            <div className="absolute -left-2 mt-2" style={{top: `${topPosition}px`}} ref={containerRef} data-kg-slash-container>
                 <SlashMenu>
                     <CardMenu menu={cardMenu.menu} selectedItemIndex={selectedItemIndex} insert={insert} />
                 </SlashMenu>

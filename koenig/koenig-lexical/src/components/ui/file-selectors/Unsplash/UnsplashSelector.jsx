@@ -7,8 +7,8 @@ import {ReactComponent as CloseIcon} from '../../../../assets/icons/kg-close.svg
 function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
     return (
         <>
-            <div className="fixed inset-0 h-[100vh] bg-black opacity-60"></div>
-            <div data-kg-modal="unsplash" className="not-kg-prose fixed inset-8 z-[100000] overflow-hidden rounded bg-white shadow-xl" ref={galleryRef}>
+            <div className="fixed inset-0 z-40 h-[100vh] bg-black opacity-60"></div>
+            <div data-kg-modal="unsplash" className="not-kg-prose fixed inset-8 z-50 overflow-hidden rounded bg-white shadow-xl" ref={galleryRef}>
                 <button className="absolute top-6 right-6 cursor-pointer">
                     <CloseIcon
                         data-kg-modal-close-button
