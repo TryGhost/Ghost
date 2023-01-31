@@ -56,7 +56,7 @@
     {{else}}
 
         {{#if (and this.stripeConnectAccountId (not this.saveStripeSettingsTask.isRunning))}}
-            <button type="button" class="gh-btn gh-btn-large gh-btn-stripe-disconnect" {{on "click" this.openDisconnectStripeModal}}><span>Disconnect</span></button>
+            <button type="button" class="gh-btn gh-btn-large gh-btn-stripe-disconnect" data-test-button="stripe-disconnect" {{on "click" this.openDisconnectStripeModal}}><span>Disconnect</span></button>
             <div class="gh-stripe-connected-container">
                 <div class="gh-logos-stripe-connect">
                     <div class="gh-logo-squircle" style="background-image:url(assets/img/orb-squircle.png);"></div>

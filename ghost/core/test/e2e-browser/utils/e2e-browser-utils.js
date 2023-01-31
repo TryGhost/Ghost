@@ -1,5 +1,5 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
-const {test} = require('@playwright/test');
+const {expect, test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
 const {promisify} = require('util');
 const {exec} = require('child_process');
@@ -107,6 +107,8 @@ const setupStripe = async (page, stripConnectIntegrationToken) => {
     }
     await page.getByPlaceholder('Paste your secure key here').first().fill(stripConnectIntegrationToken);
     await page.getByRole('button', {name: 'Save Stripe settings'}).click();
+    // We need to wait for the saving to succeed
+    await expect(page.locator('[data-test-button="stripe-disconnect"]')).toBeVisible();
     await page.locator('[data-test-button="close-stripe-connect"]').click();
 };
 
