@@ -1,5 +1,5 @@
-const EventEmitter = require('events').EventEmitter;
 const logging = require('@tryghost/logging');
+const AsyncEventEmitter = require('./AsyncEventEmitter');
 
 /**
  * @template T
@@ -18,7 +18,7 @@ class DomainEvents {
      * @private
      * @type EventEmitter
      */
-    static ee = new EventEmitter;
+    static ee = new AsyncEventEmitter;
 
     /**
      * @template Data
@@ -45,10 +45,10 @@ class DomainEvents {
     /**
      * @template Data
      * @param {IEvent<Data>} event
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    static dispatch(event) {
-        DomainEvents.dispatchRaw(event.constructor.name, event);
+    static async dispatch(event) {
+        return DomainEvents.dispatchRaw(event.constructor.name, event);
     }
 
     /**
@@ -56,13 +56,13 @@ class DomainEvents {
      * @template Data
      * @param {string} name
      * @param {Data} data
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    static dispatchRaw(name, data) {
+    static async dispatchRaw(name, data) {
         if (this.#trackingEnabled) {
             this.#dispatchCount += DomainEvents.ee.listenerCount(name);
         }
-        DomainEvents.ee.emit(name, data);
+        return DomainEvents.ee.emit(name, data);
     }
 
     // Methods and properties below are only for testing purposes
