@@ -62,6 +62,7 @@ module.exports = class InMemoryMentionRepository {
     /**
      * @param {object} options
      * @param {string} [options.filter]
+     * @param {string} [options.order]
      * @param {number | null} options.page
      * @param {number | 'all'} options.limit
      * @returns {Promise<Page<Mention>>}

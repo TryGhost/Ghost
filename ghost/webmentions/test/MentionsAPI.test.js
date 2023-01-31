@@ -113,6 +113,74 @@ describe('MentionsAPI', function () {
         assert(page.data[0].id === mentionTwo.id);
     });
 
+    it('Can list mentions in descending order', async function () {
+        const repository = new InMemoryMentionRepository();
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: mockResourceService,
+            webmentionMetadata: mockWebmentionMetadata
+        });
+
+        const mentionOne = await api.processWebmention({
+            source: new URL('https://source.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        const mentionTwo = await api.processWebmention({
+            source: new URL('https://source2.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        assert(mentionOne instanceof Mention);
+        assert(mentionTwo instanceof Mention);
+
+        const page = await api.listMentions({
+            limit: 'all',
+            order: 'created_at desc'
+        });
+
+        assert(page.meta.pagination.total === 2);
+        assert(page.data[0].id === mentionTwo.id);
+        assert(page.data[1].id === mentionOne.id);
+    });
+
+    it('Can list mentions in ascending order', async function () {
+        const repository = new InMemoryMentionRepository();
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: mockResourceService,
+            webmentionMetadata: mockWebmentionMetadata
+        });
+
+        const mentionOne = await api.processWebmention({
+            source: new URL('https://source.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        const mentionTwo = await api.processWebmention({
+            source: new URL('https://source2.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        assert(mentionOne instanceof Mention);
+        assert(mentionTwo instanceof Mention);
+
+        const page = await api.listMentions({
+            limit: 'all',
+            order: 'created_at asc'
+        });
+
+        assert(page.meta.pagination.total === 2);
+        assert(page.data[0].id === mentionOne.id);
+        assert(page.data[1].id === mentionTwo.id);
+    });
+
     it('Can handle updating mentions', async function () {
         const repository = new InMemoryMentionRepository();
         const api = new MentionsAPI({
