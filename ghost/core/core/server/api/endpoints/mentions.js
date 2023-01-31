@@ -11,7 +11,7 @@ module.exports = {
             'page',
             'debug'
         ],
-        permissions: false,
+        permissions: true,
         query(frame) {
             return mentions.controller.browse(frame);
         }

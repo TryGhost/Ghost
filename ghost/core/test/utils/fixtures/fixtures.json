@@ -633,6 +633,11 @@
                     "name": "Edit links",
                     "action_type": "edit",
                     "object_type": "link"
+                },
+                {
+                    "name": "Browse mentions",
+                    "action_type": "browse",
+                    "object_type": "mention"
                 }
             ]
         },
@@ -939,7 +944,8 @@
                     "newsletter": "all",
                     "explore": "read",
                     "comment": "all",
-                    "link": "all"
+                    "link": "all",
+                    "mention": "browse"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -974,7 +980,8 @@
                     "newsletter": ["browse", "read", "add", "edit"],
                     "explore": "read",
                     "comment": "all",
-                    "link": "all"
+                    "link": "all",
+                    "mention": "browse"
                 },
                 "Editor": {
                     "notification": "all",
