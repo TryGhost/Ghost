@@ -45,7 +45,7 @@ describe('Database Migration (special functions)', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(109);
+            permissions.length.should.eql(110);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'DB Backup Integration']);
@@ -181,6 +181,7 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Unlike comments', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Report comments', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Browse links', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Browse mentions', ['Administrator', 'Admin Integration']);
         });
 
         describe('Populate', function () {
@@ -198,10 +199,7 @@ describe('Database Migration (special functions)', function () {
                     roles: Models.Role.findAll(),
                     permissions: Models.Permission.findAll({withRelated: ['roles']})
                 };
-
                 return Promise.props(props).then(function (result) {
-                    should.exist(result);
-
                     // Post
                     should.exist(result.posts);
                     result.posts.length.should.eql(7);
