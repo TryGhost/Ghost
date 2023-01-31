@@ -1,4 +1,3 @@
-const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
 class AsyncEventEmitter {
@@ -14,12 +13,12 @@ class AsyncEventEmitter {
      * @param {(data: any) => void | Promise<void>} listener
      */
     on(event, listener) {
-        if (typeof event !== 'string') {
-            throw new errors.IncorrectUsageError({
-                message: 'Cannot add an event listener without a string event name'
-            });
+        const array = this.listeners.get(event);
+        if (!array) {
+            this.listeners.set(event, [listener]);
+        } else {
+            array.push(listener);
         }
-        this.listeners.set(event, (this.listeners.get(event) || []).concat(listener));
     }
 
     /**
@@ -27,6 +26,17 @@ class AsyncEventEmitter {
      */
     listenerCount(event) {
         return this.listeners.get(event)?.length ?? 0;
+    }
+
+    /**
+     * @param {string} [event]
+     */
+    removeAllListeners(event) {
+        if (event === undefined) {
+            this.listeners = new Map();
+        } else {
+            this.listeners.delete(event);
+        }
     }
 
     /**

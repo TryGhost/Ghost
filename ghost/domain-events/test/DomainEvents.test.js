@@ -25,6 +25,64 @@ describe('DomainEvents', function () {
         DomainEvents.ee.removeAllListeners();
     });
 
+    it('Can await async listeners', async function () {
+        const event = new TestEvent('Hello, world!');
+
+        let count = 0;
+
+        // Test we only run one listener in parallel
+        let running = false;
+
+        /**
+         * @param {TestEvent} receivedEvent
+         */
+        async function handler1() {
+            if (running) {
+                throw new Error('Only one listener should be running at a time');
+            }
+            running = true;
+            await sleep(10);
+            count += 1;
+            running = false;
+        }
+
+        DomainEvents.subscribe(TestEvent, handler1);
+        DomainEvents.subscribe(TestEvent, handler1);
+
+        await DomainEvents.dispatch(event);
+        assert.equal(count, 2);
+    });
+
+    it('All listeners are executed even if one fails', async function () {
+        const event = new TestEvent('Hello, world!');
+        const stub = sinon.stub(logging, 'error').returns();
+
+        let count = 0;
+
+        /**
+         * @param {TestEvent} receivedEvent
+         */
+        async function handler1() {
+            await sleep(10);
+            throw new Error('Test error');
+        }
+
+        /**
+         * @param {TestEvent} receivedEvent
+         */
+        async function handler2() {
+            await sleep(10);
+            count += 1;
+        }
+
+        DomainEvents.subscribe(TestEvent, handler1);
+        DomainEvents.subscribe(TestEvent, handler2);
+
+        await DomainEvents.dispatch(event);
+        assert.equal(count, 1);
+        assert.equal(stub.calledTwice, true);
+    });
+
     it('Will call multiple subscribers with the event when it is dispatched', async function () {
         const event = new TestEvent('Hello, world!');
 
