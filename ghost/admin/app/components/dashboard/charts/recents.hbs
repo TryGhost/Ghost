@@ -1,4 +1,4 @@
-<section class="gh-dashboard-section gh-dashboard-recents" {{did-insert this.loadPosts}}>
+<section class="gh-dashboard-section gh-dashboard-recents" {{did-insert this.loadData}}>
     <article class="gh-dashboard-box">
         <div class="gh-dashboard-tabs">
             <button type="button" class="gh-dashboard-tab {{if this.postsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPosts}}>
@@ -172,7 +172,7 @@
                         {{/if}}
                     </div>
                     <div class="gh-dashboard-list-footer">
-                        <LinkTo @route="posts" @query={{reset-query-params "posts"}}>View all mentions &rarr;</LinkTo>
+                        <LinkTo @route="mentions">View all mentions &rarr;</LinkTo>
                     </div>
                 </div>
             {{/if}}

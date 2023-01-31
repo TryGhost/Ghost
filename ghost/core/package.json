@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.33.0",
+  "version": "5.33.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -212,6 +212,7 @@
     "eslint": "8.32.0",
     "expect": "^29.0.0",
     "html-validate": "7.13.1",
+    "form-data": "^4.0.0",
     "inquirer": "8.2.5",
     "jwks-rsa": "3.0.1",
     "mocha": "10.2.0",
