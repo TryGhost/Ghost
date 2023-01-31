@@ -1,6 +1,7 @@
 import React from 'react';
 import {EmailCtaCard} from './EmailCtaCard';
 import {CardWrapper} from './../CardWrapper';
+import {ReactComponent as EmailIndicatorIcon} from '../../../assets/icons/kg-indicator-email.svg';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -38,7 +39,7 @@ export default story;
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper wrapperStyle='wide' icon='email' {...display} {...args}>
+            <CardWrapper wrapperStyle='wide' IndicatorIcon={EmailIndicatorIcon} {...display} {...args}>
                 <EmailCtaCard {...display} {...args} />
             </CardWrapper>
         </div>

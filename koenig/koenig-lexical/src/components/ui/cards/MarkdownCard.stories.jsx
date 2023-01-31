@@ -1,7 +1,7 @@
 import React from 'react';
 import {MarkdownCard} from './MarkdownCard.jsx';
 import {CardWrapper} from './../CardWrapper';
-import {ReactComponent as MarkdownIndicatorIcon} from '../../assets/icons/kg-indicator-markdown.svg';
+import {ReactComponent as MarkdownIndicatorIcon} from '../../../assets/icons/kg-indicator-markdown.svg';
 import {useImageUpload} from '../../../../demo/utils/useImageUpload';
 import {defaultHeaders} from '../../../../demo/utils/unsplashConfig';
 

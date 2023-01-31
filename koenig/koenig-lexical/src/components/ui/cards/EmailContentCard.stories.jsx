@@ -1,7 +1,7 @@
 import React from 'react';
 import {EmailContentCard} from './EmailContentCard';
 import {CardWrapper} from './../CardWrapper';
-import {ReactComponent as EmailIndicatorIcon} from '../../assets/icons/kg-indicator-email.svg';
+import {ReactComponent as EmailIndicatorIcon} from '../../../assets/icons/kg-indicator-email.svg';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
