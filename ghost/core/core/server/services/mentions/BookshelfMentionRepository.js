@@ -64,7 +64,6 @@ module.exports = class BookshelfMentionRepository {
      */
     async getPage(options) {
         const page = await this.#MentionModel.findPage(options);
-
         return {
             data: await Promise.all(page.data.map(model => this.#modelToMention(model))),
             meta: page.meta

@@ -18,6 +18,7 @@ const Mention = require('./Mention');
 /**
  * @typedef {object} PaginatedOptions
  * @prop {string} [filter] A valid NQL string
+ * @prop {string} [order]
  * @prop {number} page
  * @prop {number} limit
  */
@@ -105,13 +106,15 @@ module.exports = class MentionsAPI {
         if (options.limit === 'all') {
             pageOptions = {
                 filter: options.filter,
-                limit: options.limit
+                limit: options.limit,
+                order: options.order
             };
         } else {
             pageOptions = {
                 filter: options.filter,
                 limit: options.limit,
-                page: options.page
+                page: options.page,
+                order: options.order
             };
         }
 

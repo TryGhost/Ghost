@@ -51,12 +51,19 @@ module.exports = class MentionController {
             page = 1;
         }
 
+        let order;
+        if (frame.options.order && frame.options.order === 'created_at desc') {
+            order = 'created_at desc';
+        } else {
+            order = 'created_at asc';
+        }
+
         const results = await this.#api.listMentions({
             filter: frame.options.filter,
             limit,
-            page
+            page,
+            order
         });
-
         return results;
     }
 
