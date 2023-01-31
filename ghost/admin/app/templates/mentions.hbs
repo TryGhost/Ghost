@@ -28,7 +28,7 @@
                                 {{#if mention.sourceAuthor}}
                                     <span class="gh-mention-author">{{mention.sourceAuthor}}</span>
                                 {{/if}}
-                                <span class="gh-mention-timestamp">{{gh-format-post-time mention.timestamp}}</span>
+                                <span class="gh-mention-timestamp" title={{gh-format-post-time mention.timestamp}}>{{moment-from-now mention.timestamp}}</span>
                             </div>
                         </div>
                         {{#if mention.sourceFeaturedImage}}
