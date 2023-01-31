@@ -165,7 +165,7 @@ async function initServicesForFrontend({bootLogger}) {
     debug('End: Link Redirects');
 
     debug('Begin: Themes');
-    // customThemSettingsService.api must be initialized before any theme activation occurs
+    // customThemeSettingsService.api must be initialized before any theme activation occurs
     const customThemeSettingsService = require('./server/services/custom-theme-settings');
     customThemeSettingsService.init();
 
