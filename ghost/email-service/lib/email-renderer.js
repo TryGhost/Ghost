@@ -141,13 +141,22 @@ class EmailRenderer {
     }
 
     /**
-		Not sure about this, but we need a method that can tell us which member segments are needed for a given post/email.
+		Returns all the segments that we need to render the email for because they have different content.
+        WARNING: The sum of all the returned segments should always include all the members. Those members are later limited if needed based on the recipient filter of the email.
         @param {Post} post
         @returns {Segment[]}
 	*/
     getSegments(post) {
         const allowedSegments = ['status:free', 'status:-free'];
         const html = this.renderPostBaseHtml(post);
+
+        /**
+         * Always add free and paid segments if email has paywall card
+         */
+        if (html.indexOf('<!--members-only-->') !== -1) {
+            // We have different content between free and paid members
+            return allowedSegments;
+        }
 
         const cheerio = require('cheerio');
         const $ = cheerio.load(html);
@@ -156,19 +165,14 @@ class EmailRenderer {
             .get()
             .map(el => el.attribs['data-gh-segment']);
 
-        /**
-         * Always add free and paid segments if email has paywall card
-         */
-        if (html.indexOf('<!--members-only-->') !== -1) {
-            allSegments = allSegments.concat(['status:free', 'status:-free']);
-        }
-
         const segments = [...new Set(allSegments)].filter(segment => allowedSegments.includes(segment));
         if (segments.length === 0) {
-            // One segment to all members
+            // No difference in email content between free and paid
             return [null];
         }
-        return segments;
+
+        // We have different content between free and paid members
+        return allowedSegments;
     }
 
     renderPostBaseHtml(post) {
@@ -195,6 +199,10 @@ class EmailRenderer {
      */
     async renderBody(post, newsletter, segment, options) {
         let html = this.renderPostBaseHtml(post);
+
+        // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
+        // So we need to filter them before we introduce the real %%{uuid}%%
+        html = html.replace(/%%{uuid}%%/g, '{uuid}');
 
         // Paywall and members only content handling
         const isPaidPost = post.get('visibility') === 'paid' || post.get('visibility') === 'tiers';
@@ -234,13 +242,13 @@ class EmailRenderer {
 
                 if (isSite) {
                     // Add newsletter name as ref to the URL
-                    url = this.#memberAttributionService.addEmailSourceAttributionTracking(url, newsletter);
+                    url = this.#memberAttributionService.addOutboundLinkTagging(url, newsletter);
 
                     // Only add post attribution to our own site (because external sites could/should not process this information)
                     url = this.#memberAttributionService.addPostAttributionTracking(url, post);
                 } else {
                     // Add email source attribution without the newsletter name
-                    url = this.#memberAttributionService.addEmailSourceAttributionTracking(url);
+                    url = this.#memberAttributionService.addOutboundLinkTagging(url);
                 }
 
                 // Add link click tracking
@@ -309,7 +317,7 @@ class EmailRenderer {
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
      * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
      *
-     * @param {string} uuid post uuid
+     * @param {string} [uuid] post uuid
      * @param {Object} [options]
      * @param {string} [options.newsletterUuid] newsletter uuid
      * @param {boolean} [options.comments] Unsubscribe from comment emails
@@ -499,19 +507,22 @@ class EmailRenderer {
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall}) {
-        const accentColor = this.#settingsCache.get('accent_color') || '#15212A';
-        const adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
-        const adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
-
-        const color = new Color(accentColor);
-        const buttonBackgroundColor = `${accentColor}10`;
-        const buttonTextColor = color.darken(0.6).hex();
+        let accentColor = this.#settingsCache.get('accent_color') || '#15212A';
+        let adjustedAccentColor;
+        let adjustedAccentContrastColor;
+        try {
+            adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
+            adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
+        } catch (e) {
+            logging.error(e);
+            accentColor = '#15212A';
+        }
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth} = await this.limitImageWidth(post.get('feature_image'));
 
         const timezone = this.#settingsCache.get('timezone');
-        const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).toLocaleString({
+        const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -519,11 +530,11 @@ class EmailRenderer {
 
         let authors;
         const postAuthors = await post.getLazyRelation('authors');
-        if (postAuthors.models) {
+        if (postAuthors?.models) {
             if (postAuthors.models.length <= 2) {
                 authors = postAuthors.models.map(author => author.get('name')).join(' & ');
             } else {
-                authors = `${postAuthors.models[0].name} & ${postAuthors.models.length - 1} others`;
+                authors = `${postAuthors.models[0].get('name')} & ${postAuthors.models.length - 1} others`;
             }
         }
 
@@ -583,7 +594,7 @@ class EmailRenderer {
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),
             showHeaderTitle: newsletter.get('show_header_title'),
             showHeaderName: newsletter.get('show_header_name'),
-            showFeatureImage: newsletter.get('show_feature_image') && postFeatureImage,
+            showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,
             footerContent: newsletter.get('footer_content'),
 
             classes: {
@@ -596,23 +607,7 @@ class EmailRenderer {
             // Audience feedback
             feedbackButtons: newsletter.get('feedback_enabled') ? {
                 likeHref: positiveLink,
-                dislikeHref: negativeLink,
-                backgroundColor: buttonBackgroundColor,
-                textColor: buttonTextColor,
-
-                sizes: {
-                    width: 100,
-                    height: 38,
-                    iconWidth: 24
-                },
-                // Sizes defined in pixels won’t be adjusted when Outlook is rendering at 120 dpi.
-                // To solve the problem we use values in points (1 pixel = 0.75 point).
-                // resource: https://www.hteumeuleu.com/2021/background-properties-in-vml/
-                sizesOutlook: {
-                    width: (100 + 24) * 0.75,
-                    height: 38 * 0.75 + 1,
-                    iconWidth: 24 * 0.75
-                }
+                dislikeHref: negativeLink
             } : null,
 
             // Paywall

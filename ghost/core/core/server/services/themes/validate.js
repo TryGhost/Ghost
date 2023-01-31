@@ -5,20 +5,46 @@ const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const adapterManager = require('../adapter-manager');
+const logging = require('@tryghost/logging');
+const list = require('./list');
 
 const messages = {
     themeHasErrors: 'Theme "{theme}" is not compatible or contains errors.',
     activeThemeHasFatalErrors: 'The currently active theme "{theme}" has fatal errors.',
-    activeThemeHasErrors: 'The currently active theme "{theme}" has errors, but will still work.'
+    activeThemeHasErrors: 'The currently active theme "{theme}" has errors, but will still work.',
+    themeNotLoaded: 'Theme "{themeName}" is not loaded and cannot be checked.'
+};
+
+/**
+ * @typedef {Object} CacheStore
+ * @property {(key: string) => Promise<any>} get - get a value from the cache. Returns undefined if not found
+ * @property {(key: string, value: any) => Promise<void>} set - set a value in the cache
+ * @property {() => Promise<void>} reset - reset the cache
+ */
+
+/**
+ * The cache store for storing the result of the last theme validation
+ * @type {CacheStore}
+ */
+let gscanCacheStore;
+
+module.exports.init = () => {
+    gscanCacheStore = adapterManager.getAdapter('cache:gscan');
 };
 
 const canActivate = function canActivate(checkedTheme) {
-    // CASE: production and no fatal errors
-    // CASE: development returns fatal and none fatal errors, theme is only invalid if fatal errors
-    return !checkedTheme.results.error.length || (config.get('env') === 'development') && !checkedTheme.results.hasFatalErrors;
+    return !checkedTheme.results.hasFatalErrors;
 };
 
-const check = async function check(theme, isZip) {
+const getErrorsFromCheckedTheme = function getErrorsFromCheckedTheme(checkedTheme) {
+    return {
+        errors: checkedTheme.results.error ?? [],
+        warnings: checkedTheme.results.warning ?? []
+    };
+};
+
+const check = async function check(themeName, theme, isZip) {
     debug('Begin: Check');
     // gscan can slow down boot time if we require on boot, for now nest the require.
     const gscan = require('gscan');
@@ -41,16 +67,59 @@ const check = async function check(theme, isZip) {
     }
 
     checkedTheme = gscan.format(checkedTheme, {
-        onlyFatalErrors: config.get('env') === 'production',
+        onlyFatalErrors: false,
         checkVersion: checkedVersion
     });
+
+    // In production we don't want to show warnings
+    // Warnings are meant for developers only
+    if (config.get('env') === 'production') {
+        checkedTheme.results.warning = [];
+    }
+
+    // Cache warnings and errors
+    try {
+        await gscanCacheStore.set(themeName, getErrorsFromCheckedTheme(checkedTheme));
+    } catch (err) {
+        logging.error('Failed to cache gscan result');
+        logging.error(err);
+    }
 
     debug('End: Check');
     return checkedTheme;
 };
 
+/**
+ * Returns the last cached errors and warnings of check() if available.
+ * Otherwise runs check() on the loaded theme with that name (which will always cache the error and warning results)
+ * @returns {Promise<{errors: Array, warnings: Array}>}
+ */
+const getThemeErrors = async function getThemeErrors(themeName) {
+    try {
+        const cachedThemeErrors = await gscanCacheStore.get(themeName);
+        if (cachedThemeErrors) {
+            return cachedThemeErrors;
+        }
+    } catch (err) {
+        logging.error('Failed to get gscan result from cache');
+        logging.error(err);
+    }
+
+    const loadedTheme = list.get(themeName);
+
+    if (!loadedTheme) {
+        throw new errors.ValidationError({
+            message: tpl(messages.themeNotLoaded, {themeName: themeName}),
+            errorDetails: themeName
+        });
+    }
+
+    const result = await check(themeName, loadedTheme);
+    return getErrorsFromCheckedTheme(result);
+};
+
 const checkSafe = async function checkSafe(themeName, theme, isZip) {
-    const checkedTheme = await check(theme, isZip);
+    const checkedTheme = await check(themeName, theme, isZip);
 
     if (canActivate(checkedTheme)) {
         return checkedTheme;
@@ -74,7 +143,8 @@ const getThemeValidationError = (message, themeName, checkedTheme) => {
         message: tpl(messages[message], {theme: themeName}),
         errorDetails: Object.assign(
             _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
-                errors: checkedTheme.results.error
+                errors: checkedTheme.results.error,
+                warnings: checkedTheme.results.warning
             }
         )
     });
@@ -83,4 +153,6 @@ const getThemeValidationError = (message, themeName, checkedTheme) => {
 module.exports.check = check;
 module.exports.checkSafe = checkSafe;
 module.exports.canActivate = canActivate;
+module.exports.getErrorsFromCheckedTheme = getErrorsFromCheckedTheme;
 module.exports.getThemeValidationError = getThemeValidationError;
+module.exports.getThemeErrors = getThemeErrors;

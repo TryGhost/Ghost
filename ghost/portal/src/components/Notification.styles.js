@@ -20,11 +20,11 @@ const NotificationStyles = `
         min-height: 66px;
         font-size: 1.3rem;
         letter-spacing: 0.2px;
-        background: rgba(33,33,33,0.95);
+        background: rgba(var(--grey1rgb),0.95);
         backdrop-filter: blur(8px);
         color: var(--white);
         border-radius: 7px;
-        box-shadow: 0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px -5px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 3.2px 3.6px rgba(var(--black), 0.024), 0 8.8px 10px -5px rgba(var(--black), 0.08);
         animation: notification-slidein 0.55s cubic-bezier(0.215, 0.610, 0.355, 1.000);
     }
 
@@ -74,7 +74,7 @@ const NotificationStyles = `
     }
 
     .gh-portal-notification-icon.error {
-        color: #FF2828;
+        color: var(--red);
     }
 
     .gh-portal-notification-closeicon {

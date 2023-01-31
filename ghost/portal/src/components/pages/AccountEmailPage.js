@@ -7,10 +7,6 @@ const React = require('react');
 
 export default function AccountEmailPage() {
     const {member, onAction, site} = useContext(AppContext);
-    const defaultSubscribedNewsletters = [...(member?.newsletters || [])];
-    const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
-    const {comments_enabled: commentsEnabled} = site;
-    const {enable_comment_notifications: enableCommentNotifications} = member;
 
     useEffect(() => {
         if (!member) {
@@ -19,6 +15,11 @@ export default function AccountEmailPage() {
             });
         }
     }, [member, onAction]);
+
+    const defaultSubscribedNewsletters = [...(member?.newsletters || [])];
+    const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
+    const {comments_enabled: commentsEnabled} = site;
+    const {enable_comment_notifications: enableCommentNotifications} = member || {};
 
     useEffect(() => {
         setSubscribedNewsletters(member?.newsletters || []);

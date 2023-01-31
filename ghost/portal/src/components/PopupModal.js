@@ -55,7 +55,7 @@ class PopupContent extends React.Component {
 
     componentDidMount() {
         // Handle Esc to close popup
-        if (this.node && !hasMode(['preview'])) {
+        if (this.node && !hasMode(['preview']) && !this.props.isMobile) {
             this.node.focus();
             this.keyUphandler = (event) => {
                 if (event.key === 'Escape') {
@@ -274,6 +274,7 @@ export default class PopupModal extends React.Component {
     renderFrameContainer() {
         const {member, site, customSiteUrl} = this.context;
         const Styles = StylesWrapper({member});
+        const isMobile = window.innerWidth < 480;
 
         const frameStyle = {
             ...Styles.frame.common
@@ -294,9 +295,9 @@ export default class PopupModal extends React.Component {
 
         return (
             <div style={Styles.modalContainer}>
-                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()}>
+                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup-frame'>
                     <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
-                    <PopupContent />
+                    <PopupContent isMobile={isMobile} />
                 </Frame>
             </div>
         );

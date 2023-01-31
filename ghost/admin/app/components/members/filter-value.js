@@ -22,6 +22,18 @@ export default class MembersFilterValue extends Component {
         return [];
     }
 
+    get offersFilterValue() {
+        if (this.args.filter?.type === 'offer_redemptions') {
+            const offers = Array.isArray(this.args.filter?.value) ? this.args.filter?.value : [];
+            return offers.map((offer) => {
+                return {
+                    id: offer
+                };
+            });
+        }
+        return [];
+    }
+
     @action
     setInputFilterValue(filter, event) {
         this.filterValue = event.target.value;
@@ -51,6 +63,11 @@ export default class MembersFilterValue extends Component {
     @action
     setTiersFilterValue(filter, tiers) {
         this.args.setFilterValue(filter, tiers.map(tier => tier.slug));
+    }
+
+    @action
+    setOffersFilterValue(filter, offers) {
+        this.args.setFilterValue(filter, offers.map(offer => offer.id));
     }
 
     get isResourceFilter() {

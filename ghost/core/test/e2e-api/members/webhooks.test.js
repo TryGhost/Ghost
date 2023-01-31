@@ -9,7 +9,7 @@ const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId, anyObject} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId, anyObject} = matchers;
 
 let membersAgent;
 let adminAgent;
@@ -176,6 +176,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
         });
@@ -307,6 +308,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
 
@@ -516,6 +518,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
 
@@ -649,6 +652,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature);
 
             const {body} = await adminAgent.get('/members/?search=checkout-webhook-test@email.com');
@@ -747,6 +751,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature);
 
             const {body} = await adminAgent.get('/members/?search=checkout-newsletter-default-test@email.com');
@@ -795,6 +800,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature);
 
             const {body} = await adminAgent.get('/members/?search=checkout-newsletter-test@email.com');
@@ -865,6 +871,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
         });
@@ -993,6 +1000,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
 
@@ -1054,6 +1062,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
 
@@ -1390,6 +1399,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature);
 
             const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
@@ -1448,6 +1458,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
 
@@ -1586,6 +1597,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature);
 
             const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
@@ -1670,6 +1682,7 @@ describe('Members API', function () {
                 .get(`/members/events/?filter=type:subscription_event`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
@@ -1748,6 +1761,7 @@ describe('Members API', function () {
 
             await membersAgent.post('/webhooks/stripe/')
                 .body(webhookPayload)
+                .header('content-type', 'application/json')
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
 
@@ -1805,6 +1819,7 @@ describe('Members API', function () {
                     members: new Array(1).fill(memberMatcherShallowIncludes)
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .expect(({body: body3}) => {
@@ -1986,6 +2001,7 @@ describe('Members API', function () {
                 .get(`/members/events/?filter=type:subscription_event`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({

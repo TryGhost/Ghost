@@ -12,6 +12,12 @@ const postEmailSerializer = require('../mega/post-email-serializer');
 const configService = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
 
+async function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
 const messages = {
     error: 'The email service received an error from mailgun and was unable to send.'
 };
@@ -87,7 +93,7 @@ module.exports = {
             } catch (error) {
                 return new FailedBatch(emailBatchId, error);
             }
-        }, {concurrency: 10});
+        }, {concurrency: 2});
 
         const successes = batchResults.filter(response => (response instanceof SuccessfulBatch));
         const failures = batchResults.filter(response => (response instanceof FailedBatch));
@@ -145,14 +151,27 @@ module.exports = {
             });
         }
 
-        // get recipient rows via knex to avoid costly bookshelf model instantiation
-        const recipientRows = await models.EmailRecipient
-            .getFilteredCollectionQuery({filter: `batch_id:${emailBatchId}`});
-
         // Patch to prevent saving the related email model
         await emailBatchModel.save({status: 'submitting'}, {...knexOptions, patch: true});
 
         try {
+            // get recipient rows via knex to avoid costly bookshelf model instantiation
+            let recipientRows = await models.EmailRecipient.getFilteredCollectionQuery({filter: `batch_id:${emailBatchId}`}, knexOptions);
+
+            // For an unknown reason, the returned recipient rows is sometimes an empty array
+            // refs https://github.com/TryGhost/Team/issues/2246
+            let counter = 0;
+            while (recipientRows.length === 0 && counter < 5) {
+                logging.info('[sendEmailJob] Found zero recipients [retries:' + counter + '] for email batch ' + emailBatchId);
+
+                counter += 1;
+                await sleep(200);
+                recipientRows = await models.EmailRecipient.getFilteredCollectionQuery({filter: `batch_id:${emailBatchId}`}, knexOptions);
+            }
+            if (counter > 0) {
+                logging.info('[sendEmailJob] Recovered recipients [retries:' + counter + '] for email batch ' + emailBatchId + ' - ' + recipientRows.length + ' recipients found');
+            }
+
             // Load newsletter data on email
             await emailBatchModel.relations.email.getLazyRelation('newsletter', {require: false, ...knexOptions});
 
@@ -177,8 +196,11 @@ module.exports = {
 
             // log any error that didn't come from the provider which would have already logged it
             if (!error.code || error.code !== 'BULK_EMAIL_SEND_FAILED') {
-                let ghostError = new errors.InternalServerError({
-                    err: error
+                let ghostError = new errors.EmailError({
+                    err: error,
+                    code: 'BULK_EMAIL_SEND_FAILED',
+                    message: `Error sending email batch ${emailBatchId}`,
+                    context: error.message
                 });
                 sentry.captureException(ghostError);
                 logging.error(ghostError);
@@ -255,7 +277,7 @@ module.exports = {
             });
 
             sentry.captureException(ghostError);
-            logging.warn(ghostError);
+            logging.error(ghostError);
 
             debug(`failed to send message (${Date.now() - startTime}ms)`);
             throw ghostError;

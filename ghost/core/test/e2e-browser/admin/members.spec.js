@@ -236,6 +236,9 @@ test.describe('Admin', () => {
             expect(csvContents).toMatch(csvRegex);
         });
 
+        // saves time by going directly to the members page with the label filter applied
+        let labelFilterUrl;
+
         test('A filtered list of members can have a label added to them', async ({page}) => {
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
@@ -259,6 +262,19 @@ test.describe('Admin', () => {
             await page.waitForSelector('div[data-test-state="add-complete"]');
             const success = await page.locator('div[data-test-state="add-complete"] > div > p').innerText();
             expect(success).toEqual('Label added to 3 members successfully');
+            labelFilterUrl = await page.url();
+        });
+
+        test('A filtered list of members can have a label removed from them', async ({page}) => {
+            await page.goto(labelFilterUrl);
+            await page.waitForSelector('button[data-test-button="members-actions"]');
+            await page.locator('button[data-test-button="members-actions"]').click();
+            await page.waitForSelector('button[data-test-button="remove-label-selected"]');
+            await page.locator('button[data-test-button="remove-label-selected"]').click();
+            await page.locator('div[data-test-state="remove-label-unconfirmed"] > span > select').selectOption({label: 'old'});
+            await page.locator('button[data-test-button="confirm"]').click();
+            const success = await page.locator('div[data-test-state="remove-complete"] > div > p').innerText();
+            expect(success).toEqual('Label removed from 3 members successfully');
         });
 
         test('A member can be granted a comp in admin', async ({page}) => {

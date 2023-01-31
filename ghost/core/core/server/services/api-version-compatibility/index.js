@@ -30,21 +30,18 @@ module.exports.errorHandler = (err, req, res, next) => {
 };
 
 /**
- * If Accept-Version is set on the request set Content-Version on the response
- * Also, add 'Accept-Version' to VARY as it effects response caching
+ * Set Content-Version on the response, and add 'Accept-Version' to VARY as
+ * it effects response caching
  * TODO: move the method to mw once back-compatibility with 4.x is sorted
- * 
+ *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
 module.exports.contentVersion = (req, res, next) => {
-    if (req.header('accept-version')) {
-        res.header('Content-Version', `v${ghostVersion.safe}`);
-    }
-
+    res.header('Content-Version', `v${ghostVersion.safe}`);
     res.vary('Accept-Version');
-    
+
     next();
 };
 

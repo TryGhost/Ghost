@@ -114,13 +114,6 @@ export default class GhPostSettingsMenu extends Component {
     )
         showVisibilityInput;
 
-    @or(
-        'session.user.isOwnerOnly',
-        'session.user.isAdminOnly',
-        'session.user.isEditor'
-    )
-        showEmailNewsletter;
-
     @computed('metaTitleScratch', 'post.titleScratch')
     get seoTitle() {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';

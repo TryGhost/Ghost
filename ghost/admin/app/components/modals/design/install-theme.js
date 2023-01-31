@@ -124,7 +124,7 @@ export default class InstallThemeModal extends Component {
 
                 this.fatalValidationErrors = fatalErrors;
                 this.validationErrors = normalErrors;
-
+                this.validationWarnings = error.payload.errors[0].details.warnings || [];
                 return false;
             }
 

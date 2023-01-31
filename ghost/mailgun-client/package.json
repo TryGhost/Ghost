@@ -20,12 +20,12 @@
   "devDependencies": {
     "c8": "7.12.0",
     "mocha": "10.2.0",
-    "nock": "13.2.9",
+    "nock": "13.3.0",
     "sinon": "14.0.2"
   },
   "dependencies": {
     "@tryghost/debug": "0.1.21",
-    "@tryghost/logging": "2.3.6",
+    "@tryghost/logging": "2.4.0",
     "@tryghost/metrics": "1.0.20",
     "form-data": "4.0.0",
     "lodash": "4.17.21",

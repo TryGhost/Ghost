@@ -9,8 +9,8 @@ const fakeDSN = 'https://aaabbbccc000111222333444555667@sentry.io/1234567';
 let sentry;
 
 describe('UNIT: sentry', function () {
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         sinon.restore();
     });
 

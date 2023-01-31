@@ -10,7 +10,7 @@
             <input type="text" placeholder="Search for a card..." class="gh-input koenig-cardmenu-search-input">
         </div> --}}
         <KoenigMenuContent
-            @itemSections={{this.itemSections}}
+            @itemSections={{@menuItems}}
             @itemClicked={{action "itemClicked"}}
             @postType={{@postType}}
         />

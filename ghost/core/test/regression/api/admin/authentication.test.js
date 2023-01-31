@@ -1,13 +1,14 @@
 const nock = require('nock');
 const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
-const {anyEtag, anyISODateTime, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
 
 const {tokens} = require('@tryghost/security');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Authentication API', function () {
+    let emailMockReceiver;
     let agent;
 
     describe('Blog setup', function () {
@@ -17,7 +18,7 @@ describe('Authentication API', function () {
 
         beforeEach(async function () {
             await mockManager.disableStripe();
-            mockManager.mockMail();
+            emailMockReceiver = mockManager.mockMail();
         });
 
         afterEach(function () {
@@ -31,6 +32,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -65,14 +67,14 @@ describe('Authentication API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
             // Test our side effects
-            mockManager.assert.sentEmail({
-                subject: 'Your New Ghost Site',
-                to: email
-            });
+            emailMockReceiver.matchHTMLSnapshot();
+            emailMockReceiver.matchMetadataSnapshot();
+
             assert.equal(requestMock.isDone(), true, 'The dawn github URL should have been used');
 
             const activeTheme = await settingsCache.get('active_theme');
@@ -113,6 +115,7 @@ describe('Authentication API', function () {
                 .get('authentication/setup')
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -135,6 +138,7 @@ describe('Authentication API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -162,6 +166,7 @@ describe('Authentication API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -198,14 +203,14 @@ describe('Authentication API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
             // Test our side effects
-            mockManager.assert.sentEmail({
-                subject: 'Your New Ghost Site',
-                to: email
-            });
+            emailMockReceiver.matchHTMLSnapshot();
+            emailMockReceiver.matchMetadataSnapshot();
+
             assert.equal(requestMock.isDone(), false, 'The ghost github URL should not have been used');
 
             const activeTheme = await settingsCache.get('active_theme');
@@ -238,6 +243,7 @@ describe('Authentication API', function () {
                 .get('authentication/invitation?email=invalidemail')
                 .expectStatus(400)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -248,6 +254,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -258,6 +265,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -275,6 +283,7 @@ describe('Authentication API', function () {
                 })
                 .expectStatus(404)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -297,6 +306,7 @@ describe('Authentication API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -315,6 +325,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -359,6 +370,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -381,6 +393,7 @@ describe('Authentication API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -413,6 +426,7 @@ describe('Authentication API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -442,6 +456,7 @@ describe('Authentication API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -458,6 +473,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -471,7 +487,7 @@ describe('Authentication API', function () {
         });
 
         beforeEach(function () {
-            mockManager.mockMail();
+            emailMockReceiver = mockManager.mockMail();
         });
 
         afterEach(function () {
@@ -485,6 +501,7 @@ describe('Authentication API', function () {
                 .expectStatus(204)
                 .expectEmptyBody()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 

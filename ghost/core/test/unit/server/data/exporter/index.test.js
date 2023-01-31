@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const db = require('../../../../../core/server/data/db');
 const exporter = require('../../../../../core/server/data/exporter');
@@ -157,7 +156,7 @@ describe('Exporter', function () {
     describe('exportFileName', function () {
         it('should return a correctly structured filename', function (done) {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
-                new Promise.resolve({
+                Promise.resolve({
                     get: function () {
                         return 'testblog';
                     }
@@ -175,7 +174,7 @@ describe('Exporter', function () {
 
         it('should return a correctly structured filename if settings is empty', function (done) {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
-                new Promise.resolve()
+                Promise.resolve()
             );
 
             exporter.fileName().then(function (result) {
@@ -189,7 +188,7 @@ describe('Exporter', function () {
 
         it('should return a correctly structured filename if settings errors', function (done) {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
-                new Promise.reject()
+                Promise.reject()
             );
 
             exporter.fileName().then(function (result) {
@@ -234,7 +233,7 @@ describe('Exporter', function () {
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
-            const allowedKeysLength = 72;
+            const allowedKeysLength = 73;
             totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });

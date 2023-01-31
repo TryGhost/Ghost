@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId} = matchers;
+const {anyEtag, anyErrorId, anyContentVersion} = matchers;
 const assert = require('assert');
 
 // @TODO: factor out these requires
@@ -29,6 +29,7 @@ describe('Email Preview API', function () {
             await agent.get('email_previews/posts/abcd1234abcd1234abcd1234/')
                 .expectStatus(404)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
@@ -43,6 +44,7 @@ describe('Email Preview API', function () {
                 .get(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot();
@@ -67,6 +69,7 @@ describe('Email Preview API', function () {
                 .get(`email_previews/posts/${post.id}/`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot();
@@ -91,6 +94,7 @@ describe('Email Preview API', function () {
                 .get(`email_previews/posts/${post.id}/`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot()
@@ -125,6 +129,7 @@ describe('Email Preview API', function () {
                 .get(`email_previews/posts/${post.id}/`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot()
@@ -159,6 +164,7 @@ describe('Email Preview API', function () {
                 .get(`email_previews/posts/${post.id}/?newsletter=${selectedNewsletter.slug}`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot()
@@ -179,6 +185,7 @@ describe('Email Preview API', function () {
                 })
                 .expectStatus(204)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .expectEmptyBody();
@@ -198,6 +205,7 @@ describe('Email Preview API', function () {
                 })
                 .expectStatus(204)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .expectEmptyBody();
@@ -217,6 +225,7 @@ describe('Email Preview API', function () {
                 })
                 .expectStatus(204)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .expectEmptyBody();
@@ -236,6 +245,7 @@ describe('Email Preview API', function () {
                 })
                 .expectStatus(403)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
@@ -259,6 +269,7 @@ describe('Email Preview API', function () {
                 })
                 .expectStatus(403)
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({

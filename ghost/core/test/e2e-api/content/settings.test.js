@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyContentLength} = matchers;
+const {anyEtag, anyContentLength, anyContentVersion} = matchers;
 
 const settingsMatcher = {
     version: matchers.anyString
@@ -19,6 +19,7 @@ describe('Settings Content API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
+                'content-version': anyContentVersion,
                 'content-length': anyContentLength
             })
             .matchBodySnapshot({

@@ -165,7 +165,7 @@ async function initServicesForFrontend({bootLogger}) {
     debug('End: Link Redirects');
 
     debug('Begin: Themes');
-    // customThemSettingsService.api must be initialized before any theme activation occurs
+    // customThemeSettingsService.api must be initialized before any theme activation occurs
     const customThemeSettingsService = require('./server/services/custom-theme-settings');
     customThemeSettingsService.init();
 
@@ -292,6 +292,7 @@ async function initServices({config}) {
     const audienceFeedback = require('./server/services/audience-feedback');
     const emailSuppressionList = require('./server/services/email-suppression-list');
     const emailService = require('./server/services/email-service');
+    const mentionsService = require('./server/services/mentions');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -305,6 +306,7 @@ async function initServices({config}) {
 
     await Promise.all([
         memberAttribution.init(),
+        mentionsService.init(),
         staffService.init(),
         members.init(),
         tiers.init(),

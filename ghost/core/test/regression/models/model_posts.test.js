@@ -41,8 +41,8 @@ describe('Post Model', function () {
     });
 
     describe('Single author posts', function () {
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         describe('fetchOne/fetchAll/fetchPage', function () {

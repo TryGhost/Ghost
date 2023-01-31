@@ -182,7 +182,11 @@ class TriggerButtonContent extends React.Component {
         if (hasText) {
             return (
                 <div className='gh-portal-triggerbtn-wrapper' ref={this.container}>
-                    <div className='gh-portal-triggerbtn-container with-label' onClick={e => this.onToggle(e)}>
+                    <div
+                        className='gh-portal-triggerbtn-container with-label'
+                        onClick={e => this.onToggle(e)}
+                        data-testid='portal-trigger-button'
+                    >
                         {this.renderTriggerIcon()}
                         {(hasText ? this.renderText() : '')}
                     </div>
@@ -191,7 +195,11 @@ class TriggerButtonContent extends React.Component {
         }
         return (
             <div className='gh-portal-triggerbtn-wrapper'>
-                <div className={'gh-portal-triggerbtn-container ' + triggerBtnClass} onClick={e => this.onToggle(e)}>
+                <div
+                    className={'gh-portal-triggerbtn-container ' + triggerBtnClass}
+                    onClick={e => this.onToggle(e)}
+                    data-testid='portal-trigger-button'
+                >
                     {this.renderTriggerIcon()}
                 </div>
             </div>
@@ -252,7 +260,7 @@ export default class TriggerButton extends React.Component {
         }
 
         return (
-            <Frame className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={this.renderFrameStyles()}>
+            <Frame dataTestId='portal-trigger-frame' className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={this.renderFrameStyles()}>
                 <TriggerButtonContent isPopupOpen={showPopup} updateWidth={width => this.onWidthChange(width)} />
             </Frame>
         );

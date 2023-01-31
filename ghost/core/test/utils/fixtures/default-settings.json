@@ -474,5 +474,29 @@
             "defaultValue": "all",
             "type": "string"
         }
+    },
+    "comments": {
+        "comments_enabled": {
+            "type": "string",
+            "defaultValue": "off",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [[
+                    "off",
+                    "all",
+                    "paid"
+                ]]
+            }
+        }
+    },
+    "analytics": {
+        "outbound_link_tagging": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
     }
 }

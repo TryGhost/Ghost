@@ -5,7 +5,7 @@ const {
     mockManager,
     matchers
 } = require('../../utils/e2e-framework');
-const {anyEtag} = matchers;
+const {anyContentVersion, anyEtag} = matchers;
 
 describe('Tiers API', function () {
     let agent;
@@ -132,6 +132,7 @@ describe('Tiers API', function () {
         let {body: {tiers: [tier]}} = await agent.get('/tiers/?filter=type:paid&limit=1')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -154,6 +155,7 @@ describe('Tiers API', function () {
         const {body: {tiers: [updatedTier]}} = await agent.get(`/tiers/${tier.id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({

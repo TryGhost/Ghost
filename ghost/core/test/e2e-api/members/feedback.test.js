@@ -20,10 +20,10 @@ describe('Members Feedback', function () {
         mockManager.mockMail();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         clock?.restore();
         clock = undefined;
-        configUtils.restore();
+        await configUtils.restore();
         mockManager.restore();
     });
 
@@ -273,7 +273,7 @@ describe('Members Feedback', function () {
                     }
                 ]
             });
-        
+
         const model3 = await models.MemberFeedback.findOne({id: feedbackId}, {require: true});
         assert.equal(body3.feedback[0].id, feedbackId);
         assert.equal(body3.feedback[0].score, 1);

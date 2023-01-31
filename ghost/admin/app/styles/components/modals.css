@@ -780,3 +780,21 @@
     padding: 0;
     margin-bottom: 0;
 }
+
+
+/* Re-authentication modal (cookies expired with unsaved changes in editor)
+/* ---------------------------------------------------------- */
+
+.modal-reauthenticate p {
+    color: var(--black);
+    font-size: 1.6rem;
+    font-weight: 400;
+}
+
+.epm-modal.modal-reauthenticate .modal-content {
+    padding: 48px 32px;
+}
+
+.modal-reauthenticate .gh-signin .gh-btn-login {
+    margin-top: 32px;
+}

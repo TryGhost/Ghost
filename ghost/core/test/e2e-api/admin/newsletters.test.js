@@ -1,6 +1,6 @@
 const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
 const models = require('../../../core/server/models');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
@@ -49,6 +49,7 @@ describe('Newsletters API', function () {
                 newsletters: new Array(4).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -62,6 +63,7 @@ describe('Newsletters API', function () {
 
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -74,6 +76,7 @@ describe('Newsletters API', function () {
                 newsletters: new Array(4).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -86,6 +89,7 @@ describe('Newsletters API', function () {
                 newsletters: new Array(1).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -123,6 +127,7 @@ describe('Newsletters API', function () {
                 assert.equal(body.newsletters[0].header_image, absolutePath);
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -158,6 +163,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -180,6 +186,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -192,6 +199,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -224,6 +232,7 @@ describe('Newsletters API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -258,6 +267,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -279,6 +289,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -296,6 +307,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshot]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -318,6 +330,7 @@ describe('Newsletters API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -341,8 +354,8 @@ describe('Newsletters API', function () {
             })
             .expectStatus(200);
 
-        const mailHtml = mailMocks.getCall(0).args[0].html;
-        const $mailHtml = cheerio.load(mailHtml);
+        const mail = mockManager.assert.sentEmail([]);
+        const $mailHtml = cheerio.load(mail.html);
 
         const verifyUrl = new URL($mailHtml('[data-test-verify-link]').attr('href'));
         // convert Admin URL hash to native URL for easier token param extraction
@@ -362,7 +375,7 @@ describe('Newsletters API', function () {
         after(function () {
             configUtils.set('hostSettings:limits', undefined);
         });
-        
+
         it('Request fails when newsletter limit is in place', async function () {
             configUtils.set('hostSettings:limits', {
                 newsletters: {
@@ -398,7 +411,7 @@ describe('Newsletters API', function () {
                         error: 'Your plan supports up to {{max}} newsletters. Please upgrade to add more.'
                     }
                 });
-    
+
                 agent = await agentProvider.getAdminAPIAgent();
                 await fixtureManager.init('newsletters', 'members:newsletters');
                 await agent.loginAsOwner();
@@ -408,11 +421,11 @@ describe('Newsletters API', function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
                 assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
-    
+
                 const newsletter = {
                     name: 'Naughty newsletter'
                 };
-    
+
                 await agent
                     .post(`newsletters/?opt_in_existing=true`)
                     .body({newsletters: [newsletter]})
@@ -431,11 +444,11 @@ describe('Newsletters API', function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
                 assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
-    
+
                 const newsletter = {
                     name: 'Naughty newsletter'
                 };
-    
+
                 // Note that ?opt_in_existing=true will trigger a transaction, so we explicitly test here without a
                 // transaction
                 await agent
@@ -456,12 +469,12 @@ describe('Newsletters API', function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
                 assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
-    
+
                 const newsletter = {
                     name: 'Archived newsletter',
                     status: 'archived'
                 };
-    
+
                 await agent
                     .post(`newsletters/?opt_in_existing=true`)
                     .body({newsletters: [newsletter]})
@@ -470,6 +483,7 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag,
                         location: anyLocationFor('newsletters')
                     });
@@ -479,10 +493,10 @@ describe('Newsletters API', function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
                 assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
-    
+
                 const activeNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
                 assert.ok(activeNewsletter, 'This test expects to have an active newsletter in the test fixtures');
-    
+
                 const id = activeNewsletter.id;
                 await agent.put(`newsletters/${id}`)
                     .body({
@@ -495,18 +509,19 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag
                     });
             });
-    
+
             it('Editing an archived newsletter doesn\'t fail', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
                 assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
-    
+
                 const archivedNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
                 assert.ok(archivedNewsletter, 'This test expects to have an archived newsletter in the test fixtures');
-    
+
                 const id = archivedNewsletter.id;
                 await agent.put(`newsletters/${id}`)
                     .body({
@@ -519,18 +534,19 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag
                     });
             });
-    
+
             it('Unarchiving a newsletter fails', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
                 assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
-    
+
                 const archivedNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
                 assert.ok(archivedNewsletter, 'This test expects to have an archived newsletter in the test fixtures');
-    
+
                 const id = archivedNewsletter.id;
                 await agent.put(`newsletters/${id}`)
                     .body({
@@ -553,9 +569,9 @@ describe('Newsletters API', function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
                 assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
-    
+
                 const activeNewsletter = allNewsletters.find(n => n.get('status') === 'active');
-    
+
                 const id = activeNewsletter.id;
                 await agent.put(`newsletters/${id}`)
                     .body({
@@ -568,6 +584,7 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag
                     });
             });
@@ -576,7 +593,7 @@ describe('Newsletters API', function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
                 assert.equal(newsletterCount, 2, 'This test expects to have 2 current active newsletters');
-        
+
                 const newsletter = {
                     name: 'Naughty newsletter'
                 };
@@ -589,6 +606,7 @@ describe('Newsletters API', function () {
                         newsletters: [newsletterSnapshot]
                     })
                     .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
                         etag: anyEtag,
                         location: anyLocationFor('newsletters')
                     });
@@ -611,6 +629,7 @@ describe('Newsletters API', function () {
                 newsletters: [newsletterSnapshotWithoutSortOrder]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -627,6 +646,7 @@ describe('Newsletters API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -663,6 +683,7 @@ describe('Newsletters API', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
@@ -691,6 +712,7 @@ describe('Newsletters API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

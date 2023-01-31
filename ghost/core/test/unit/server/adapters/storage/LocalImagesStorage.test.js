@@ -25,9 +25,9 @@ describe('Local Images Storage', function () {
         momentStub = sinon.stub(moment.fn, 'format');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     beforeEach(function () {

@@ -159,7 +159,8 @@ describe('Email Controller', function () {
                         findOne: {
                             title: 'Post title'
                         }
-                    })
+                    }),
+                    Newsletter: createModelClass()
                 }
             });
             const result = await controller.previewEmail({
@@ -189,7 +190,8 @@ describe('Email Controller', function () {
                         findOne: {
                             title: 'Post title'
                         }
-                    })
+                    }),
+                    Newsletter: createModelClass()
                 }
             });
             await assert.rejects(controller.sendTestEmail({
@@ -214,7 +216,8 @@ describe('Email Controller', function () {
                         findOne: {
                             title: 'Post title'
                         }
-                    })
+                    }),
+                    Newsletter: createModelClass()
                 }
             });
             const result = await controller.sendTestEmail({

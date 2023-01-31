@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const configUtils = require('../../../utils/configUtils');
 const logging = require('@tryghost/logging');
@@ -102,7 +101,7 @@ describe('{{#get}} helper', function () {
                 inverse.calledOnce.should.be.true();
                 inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
                 inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-                inverse.firstCall.args[1].data.error.should.eql('Invalid resource given to get helper');
+                inverse.firstCall.args[1].data.error.should.eql('Invalid "magic" resource given to get helper');
 
                 done();
             }).catch(done);
@@ -339,8 +338,8 @@ describe('{{#get}} helper', function () {
                 };
             });
         });
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('should log a warning if it hits the notify threshold', async function () {

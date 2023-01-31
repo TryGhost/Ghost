@@ -164,7 +164,7 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">URL Cache</h4>
+                            <h4 class="gh-expandable-title">URL cache</h4>
                             <p class="gh-expandable-description">
                                Enable URL Caching
                             </p>
@@ -203,7 +203,7 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Suppression List</h4>
+                            <h4 class="gh-expandable-title">Suppression list</h4>
                             <p class="gh-expandable-description">
                                 Allows checking whether a member's email is blocked and removing emails from the suppression list.
                             </p>
@@ -216,13 +216,65 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Email stability</h4>
+                            <h4 class="gh-expandable-title">Webmentions</h4>
                             <p class="gh-expandable-description">
-                                Use a new email sending flow that improves how email errors are handled.
+                                Allow receiving webmentions from external sites and sending webmentions when linking external sites in posts.
                             </p>
                         </div>
                         <div class="for-switch">
-                            <GhFeatureFlag @flag="emailStability" />
+                            <GhFeatureFlag @flag="webmentions" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Webmention Email Notifications</h4>
+                            <p class="gh-expandable-description">
+                                Receive email notifications when a webmention is received.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="webmentionEmail" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">External attribution</h4>
+                            <p class="gh-expandable-description">
+                                Adds ?ref to external links in web posts and adds a setting to control this for both web and newsletters.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="outboundLinkTagging" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Show email errors</h4>
+                            <p class="gh-expandable-description">
+                                This makes email errors visible in the UI.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="emailErrors" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Milestone emails</h4>
+                            <p class="gh-expandable-description">
+                                Send emails for reaching specific milestones.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="milestoneEmails" />
                         </div>
                     </div>
                 </div>

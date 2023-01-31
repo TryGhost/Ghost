@@ -73,7 +73,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
 
         try {
             const collection = await this.Suppression.findAll({
-                filter: `email:[${emails.join(',')}]`
+                filter: `email:[${emails.map(email => `'${email}'`).join(',')}]`
             });
 
             return emails.map((email) => {
@@ -101,7 +101,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
                     if (!Number.isInteger(event.error?.code)) {
                         return;
                     }
-                    if (event.error.code < 500 || event.error.code > 599) {
+                    if (event.error.code !== 607 && event.error.code !== 605) {
                         return;
                     }
                 }
