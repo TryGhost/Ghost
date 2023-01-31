@@ -14,8 +14,7 @@ export class VideoNode extends KoenigDecoratorNode {
     __height;
     __duration;
     __thumbnailSrc;
-    __thumbnailWidth;
-    __thumbnailHeight;
+    __customThumbnailSrc;
     __cardWidth;
     __loop;
 
@@ -34,9 +33,14 @@ export class VideoNode extends KoenigDecoratorNode {
     static get urlTransformMap() {
         return {
             src: 'url',
+            thumbnailSrc: 'url',
+            customThumbnailSrc: 'url',
             caption: 'html'
         };
     }
+
+    static extensionTypes = ['mp4', 'webm', 'ogv'];
+    static mimeTypes = ['video/mp4', 'video/webm', 'video/ogg'];
 
     getDataset() {
         return {
@@ -46,17 +50,13 @@ export class VideoNode extends KoenigDecoratorNode {
             height: this.__height,
             duration: this.__duration,
             thumbnailSrc: this.__thumbnailSrc,
-            thumbnailWidth: this.__thumbnailWidth,
-            thumbnailHeight: this.__thumbnailHeight,
+            customThumbnailSrc: this.__customThumbnailSrc,
             cardWidth: this.__cardWidth,
             loop: this.__loop
         };
     }
 
-    static extensionTypes = ['mp4', 'webm', 'ogv'];
-    static mimeTypes = ['video/mp4', 'video/webm', 'video/ogg'];
-
-    constructor({src, caption, width, height, duration, thumbnailSrc, thumbnailWidth, thumbnailHeight, cardWidth, loop} = {}, key) {
+    constructor({src, caption, width, height, duration, thumbnailSrc, customThumbnailSrc, cardWidth, loop} = {}, key) {
         super(key);
         this.__src = src || '';
         this.__caption = caption || '';
@@ -64,14 +64,13 @@ export class VideoNode extends KoenigDecoratorNode {
         this.__height = height || null;
         this.__duration = duration || 0;
         this.__thumbnailSrc = thumbnailSrc || '';
-        this.__thumbnailWidth = thumbnailWidth || null;
-        this.__thumbnailHeight = thumbnailHeight || null;
+        this.__customThumbnailSrc = customThumbnailSrc || '';
         this.__cardWidth = cardWidth || 'regular';
         this.__loop = !!loop;
     }
 
     static importJSON(serializedNode) {
-        const {src, caption, width, height, duration, thumbnailSrc, thumbnailWidth, thumbnailHeight, cardWidth, loop} = serializedNode;
+        const {src, caption, width, height, duration, thumbnailSrc, customThumbnailSrc, cardWidth, loop} = serializedNode;
         const node = new this({
             src,
             caption,
@@ -79,8 +78,7 @@ export class VideoNode extends KoenigDecoratorNode {
             height,
             duration,
             thumbnailSrc,
-            thumbnailWidth,
-            thumbnailHeight,
+            customThumbnailSrc,
             cardWidth,
             loop
         });
@@ -100,8 +98,7 @@ export class VideoNode extends KoenigDecoratorNode {
             height: this.getVideoHeight(),
             duration: this.getDuration(),
             thumbnailSrc: this.getThumbnailSrc(),
-            thumbnailWidth: this.getThumbnailWidth(),
-            thumbnailHeight: this.getThumbnailHeight(),
+            customThumbnailSrc: this.getCustomThumbnailSrc(),
             cardWidth: this.getCardWidth(),
             loop: this.getLoop()
         };
@@ -183,26 +180,6 @@ export class VideoNode extends KoenigDecoratorNode {
         return writable.__duration = duration;
     }
 
-    getThumbnailWidth() {
-        const self = this.getLatest();
-        return self.__thumbnailWidth;
-    }
-
-    setThumbnailWidth(thumbnailWidth) {
-        const writable = this.getWritable();
-        return writable.__thumbnailWidth = thumbnailWidth;
-    }
-
-    getThumbnailHeight() {
-        const self = this.getLatest();
-        return self.__thumbnailHeight;
-    }
-
-    setThumbnailHeight(thumbnailHeight) {
-        const writable = this.getWritable();
-        return writable.__thumbnailHeight = thumbnailHeight;
-    }
-
     getThumbnailSrc() {
         const self = this.getLatest();
         return self.__thumbnailSrc;
@@ -211,6 +188,16 @@ export class VideoNode extends KoenigDecoratorNode {
     setThumbnailSrc(thumbnailSrc) {
         const writable = this.getWritable();
         return writable.__thumbnailSrc = thumbnailSrc;
+    }
+
+    getCustomThumbnailSrc() {
+        const self = this.getLatest();
+        return self.__customThumbnailSrc;
+    }
+
+    setCustomThumbnailSrc(customThumbnailSrc) {
+        const writable = this.getWritable();
+        return writable.__customThumbnailSrc = customThumbnailSrc;
     }
 
     setCardWidth(cardWidth) {
