@@ -38,13 +38,20 @@ module.exports = class Milestone {
         return this.#createdAt;
     }
 
+    /** @type {Date | null} */
+    #emailSentAt;
+    get emailSentAt() {
+        return this.#emailSentAt;
+    }
+
     toJSON() {
         return {
             id: this.id,
             name: this.name,
             type: this.type,
             value: this.value,
-            createdAt: this.createdAt
+            createdAt: this.createdAt,
+            emailSentAt: this.emailSentAt
         };
     }
 
@@ -55,6 +62,7 @@ module.exports = class Milestone {
         this.#type = data.type;
         this.#value = data.value;
         this.#createdAt = data.createdAt;
+        this.#emailSentAt = data.emailSentAt;
     }
 
     /**
@@ -66,6 +74,7 @@ module.exports = class Milestone {
         const type = validateType(data.type);
         const value = validateValue(data.value);
         const name = validateName(data.name, value, type);
+        const emailSentAt = validateEmailSentAt(data);
 
         /** @type Date */
         let createdAt;
@@ -87,7 +96,8 @@ module.exports = class Milestone {
             name,
             type,
             value,
-            createdAt
+            createdAt,
+            emailSentAt
         });
     }
 };
@@ -129,5 +139,23 @@ function validateName(name, value, type) {
     }
 
     return name;
+}
+
+function validateEmailSentAt(data) {
+    let emailSentAt;
+    if (data.emailSentAt instanceof Date) {
+        emailSentAt = data.emailSentAt;
+    } else if (data.emailSentAt) {
+        emailSentAt = new Date(data.emailSentAt);
+        if (isNaN(emailSentAt.valueOf())) {
+            throw new ValidationError({
+                message: 'Invalid Date'
+            });
+        }
+    } else {
+        emailSentAt = null;
+    }
+
+    return emailSentAt;
 }
 
