@@ -91,8 +91,8 @@ export default function mockMembers(server) {
                             replacement: 'labels.slug'
                         },
                         {
-                            key: 'tier',
-                            replacement: 'tiers.slug'
+                            key: 'tier_id',
+                            replacement: 'tiers.id'
                         },
                         {
                             key: 'offer_redemptions',
