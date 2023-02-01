@@ -27,7 +27,7 @@ describe('MentionSendingService', function () {
     });
 
     describe('listen', function () {
-        it('Calls on post.edited', async function () {
+        it('Calls on post.published, post.published.edited, post.unpublished', async function () {
             const service = new MentionSendingService({});
             const stub = sinon.stub(service, 'sendForPost').resolves();
             let callback;
@@ -37,7 +37,7 @@ describe('MentionSendingService', function () {
                 })
             };
             service.listen(events);
-            sinon.assert.calledOnce(events.on);
+            sinon.assert.calledThrice(events.on);
             await callback({});
             sinon.assert.calledOnce(stub);
         });
