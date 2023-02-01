@@ -82,11 +82,10 @@ export default class GhMembersSegmentSelect extends Component {
                 groupName: 'Tiers',
                 options: []
             };
-
             tiers.forEach((tier) => {
                 tiersGroup.options.push({
                     name: tier.name,
-                    segment: `tier:${tier.slug}`,
+                    segment: `${tier.id}`,
                     count: tier.count?.members,
                     class: 'segment-tier'
                 });
