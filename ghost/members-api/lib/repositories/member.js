@@ -99,12 +99,13 @@ module.exports = class MemberRepository {
     dispatchEvent(event, options) {
         if (options?.transacting) {
             // Only dispatch the event after the transaction has finished
-            // Note: we don't return the promise, or we would create a deadlock
-            options.transacting.executionPromise.then(async () => {
+            // Note: we don't return the promise, or we would create a deadlock, instead we override options.transacting.executionPromise, so that the dispatched event is awaited when we await the result of the transaction
+            options.transacting.executionPromise = options.transacting.executionPromise.then(async () => {
                 // Note that we await here, so we properly wait for all the events to be handled before continuing
                 return await DomainEvents.dispatch(event);
-            }).catch(() => {
+            }).catch((error) => {
                 // catches transaction errors/rollback to not dispatch event
+                throw error;
             });
         } else {
             // Returns a promise
