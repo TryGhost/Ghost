@@ -32,7 +32,7 @@ describe('LastSeenAtUpdater', function () {
         });
         updater.subscribe(DomainEvents);
         sinon.stub(updater, 'updateLastSeenAt');
-        DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
+        await DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
         assert(updater.updateLastSeenAt.calledOnceWithExactly('1', previousLastSeen, now.toDate()));
     });
 
@@ -65,8 +65,7 @@ describe('LastSeenAtUpdater', function () {
         updater.subscribe(DomainEvents);
         sinon.spy(updater, 'updateLastSeenAt');
         sinon.spy(updater, 'updateLastSeenAtWithoutKnownLastSeen');
-        DomainEvents.dispatch(EmailOpenedEvent.create({memberId: '1', emailRecipientId: '1', emailId: '1', timestamp: now.toDate()}));
-        await DomainEvents.allSettled();
+        await DomainEvents.dispatch(EmailOpenedEvent.create({memberId: '1', emailRecipientId: '1', emailId: '1', timestamp: now.toDate()}));
         assert(updater.updateLastSeenAtWithoutKnownLastSeen.calledOnceWithExactly('1', now.toDate()));
         assert(db.update.calledOnce);
     });
@@ -91,7 +90,7 @@ describe('LastSeenAtUpdater', function () {
         });
         updater.subscribe(DomainEvents);
         sinon.stub(updater, 'updateLastCommentedAt');
-        DomainEvents.dispatch(MemberCommentEvent.create({memberId: '1'}, now.toDate()));
+        await DomainEvents.dispatch(MemberCommentEvent.create({memberId: '1'}, now.toDate()));
         assert(updater.updateLastCommentedAt.calledOnceWithExactly('1', now.toDate()));
     });
 
