@@ -12,7 +12,7 @@ export default class MembersFilterValue extends Component {
 
     get tierFilterValue() {
         if (this.args.filter?.type === 'tier_id') {
-            const tiers = this.args.filter?.value || [];
+            const tiers = Array.isArray(this.args.filter?.value) ? this.args.filter?.value : [];
             return tiers.map((tier) => {
                 return {
                     id: tier

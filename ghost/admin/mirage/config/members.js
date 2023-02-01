@@ -91,6 +91,10 @@ export default function mockMembers(server) {
                             replacement: 'labels.slug'
                         },
                         {
+                            key: 'tier',
+                            replacement: 'tiers.slug'
+                        },
+                        {
                             key: 'tier_id',
                             replacement: 'tiers.id'
                         },
@@ -132,7 +136,6 @@ export default function mockMembers(server) {
 
         if (search) {
             const query = search.toLowerCase();
-
             collection = collection.filter((member) => {
                 return member.name.toLowerCase().indexOf(query) !== -1
                     || member.email.toLowerCase().indexOf(query) !== -1;
