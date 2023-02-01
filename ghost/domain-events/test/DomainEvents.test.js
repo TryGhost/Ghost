@@ -107,8 +107,7 @@ describe('DomainEvents', function () {
         DomainEvents.subscribe(TestEvent, handler1);
         DomainEvents.subscribe(TestEvent, handler2);
 
-        DomainEvents.dispatch(event);
-        await DomainEvents.allSettled();
+        await DomainEvents.dispatch(event);
 
         assert.equal(events.length, 2);
         assert.equal(events[0], event);
@@ -130,8 +129,7 @@ describe('DomainEvents', function () {
 
         DomainEvents.subscribe(TestEvent, handler1);
 
-        DomainEvents.dispatch(event);
-        await DomainEvents.allSettled();
+        await DomainEvents.dispatch(event);
         assert.equal(stub.calledTwice, true);
     });
 

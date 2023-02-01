@@ -180,7 +180,7 @@ describe('Email verification flow', function () {
             }
         });
 
-        DomainEvents.dispatch(MemberCreatedEvent.create({
+        await DomainEvents.dispatch(MemberCreatedEvent.create({
             memberId: 'hello!',
             source: 'api'
         }, new Date()));

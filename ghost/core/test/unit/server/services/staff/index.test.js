@@ -75,13 +75,11 @@ describe('Staff Service:', function () {
 
         it('sends email for member source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(MemberCreatedEvent.create({
+            await DomainEvents.dispatch(MemberCreatedEvent.create({
                 source: 'member',
                 ...eventData
             }));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /🥳 Free member signup: Jamie/
@@ -91,13 +89,11 @@ describe('Staff Service:', function () {
 
         it('sends email for api source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(MemberCreatedEvent.create({
+            await DomainEvents.dispatch(MemberCreatedEvent.create({
                 source: 'api',
                 ...eventData
             }));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /🥳 Free member signup: Jamie/
@@ -107,13 +103,11 @@ describe('Staff Service:', function () {
 
         it('does not send email for importer source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(MemberCreatedEvent.create({
+            await DomainEvents.dispatch(MemberCreatedEvent.create({
                 source: 'import',
                 ...eventData
             }));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmailCount(0);
         });
     });
@@ -132,13 +126,11 @@ describe('Staff Service:', function () {
 
         it('sends email for member source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCreatedEvent.create({
+            await DomainEvents.dispatch(SubscriptionCreatedEvent.create({
                 source: 'member',
                 ...eventData
             }));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /💸 Paid subscription started: Jamie/
@@ -148,13 +140,11 @@ describe('Staff Service:', function () {
 
         it('sends email for api source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCreatedEvent.create({
+            await DomainEvents.dispatch(SubscriptionCreatedEvent.create({
                 source: 'api',
                 ...eventData
             }));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /💸 Paid subscription started: Jamie/
@@ -164,13 +154,11 @@ describe('Staff Service:', function () {
 
         it('does not send email for importer source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCreatedEvent.create({
+            await DomainEvents.dispatch(SubscriptionCreatedEvent.create({
                 source: 'import',
                 ...eventData
             }));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmailCount(0);
         });
     });
@@ -184,13 +172,11 @@ describe('Staff Service:', function () {
 
         it('sends email for member source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCancelledEvent.create({
+            await DomainEvents.dispatch(SubscriptionCancelledEvent.create({
                 source: 'member',
                 ...eventData
             }, new Date()));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /⚠️ Cancellation: Jamie/
@@ -200,13 +186,11 @@ describe('Staff Service:', function () {
 
         it('sends email for api source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCancelledEvent.create({
+            await DomainEvents.dispatch(SubscriptionCancelledEvent.create({
                 source: 'api',
                 ...eventData
             }));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
                 subject: /⚠️ Cancellation: Jamie/
@@ -216,13 +200,11 @@ describe('Staff Service:', function () {
 
         it('does not send email for importer source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCancelledEvent.create({
+            await DomainEvents.dispatch(SubscriptionCancelledEvent.create({
                 source: 'import',
                 ...eventData
             }));
 
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
             mockManager.assert.sentEmailCount(0);
         });
     });

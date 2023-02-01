@@ -106,11 +106,10 @@ describe('Unit: sitemap/manager', function () {
 
             it('Listens to URLResourceUpdatedEvent event', async function () {
                 sinon.stub(PostGenerator.prototype, 'updateURL').resolves(true);
-                DomainEvents.dispatch(URLResourceUpdatedEvent.create({
+                await DomainEvents.dispatch(URLResourceUpdatedEvent.create({
                     id: 'post_id',
                     resourceType: 'posts'
                 }));
-                await DomainEvents.allSettled();
 
                 assert.ok(PostGenerator.prototype.updateURL.calledOnce);
             });

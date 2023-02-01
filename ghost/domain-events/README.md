@@ -20,5 +20,5 @@ DomainEvents.subscribe(MyEvent, function handler(event) {
 
 const event = new MyEvent('hello world');
 
-DomainEvents.dispatch(event);
+await DomainEvents.dispatch(event);
 ```
