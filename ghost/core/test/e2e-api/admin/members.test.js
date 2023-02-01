@@ -746,7 +746,7 @@ describe('Members API', function () {
     it('Can add a member and trigger host email verification limits', async function () {
         configUtils.set('hostSettings:emailVerification', {
             apiThreshold: 0,
-            adminThreshold: 1,
+            adminThreshold: 2,
             importThreshold: 0,
             verified: false,
             escalationAddress: 'test@example.com'

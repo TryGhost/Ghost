@@ -99,13 +99,16 @@ module.exports = class MemberRepository {
     dispatchEvent(event, options) {
         if (options?.transacting) {
             // Only dispatch the event after the transaction has finished
+            // Note: we don't return the promise, or we would create a deadlock
             options.transacting.executionPromise.then(async () => {
-                DomainEvents.dispatch(event);
+                // Note that we await here, so we properly wait for all the events to be handled before continuing
+                return await DomainEvents.dispatch(event);
             }).catch(() => {
                 // catches transaction errors/rollback to not dispatch event
             });
         } else {
-            DomainEvents.dispatch(event);
+            // Returns a promise
+            return DomainEvents.dispatch(event);
         }
     }
 
@@ -368,7 +371,9 @@ module.exports = class MemberRepository {
                 }
             }
         }
-        this.dispatchEvent(MemberCreatedEvent.create({
+
+        // We need to await this event, otherwise we wouldn't return the attribution for the same request response
+        await this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
             batchId: options.batch_id,
             attribution: data.attribution,
@@ -1059,7 +1064,7 @@ module.exports = class MemberRepository {
                 attribution: data.attribution,
                 batchId: options.batch_id
             });
-            this.dispatchEvent(event, options);
+            await this.dispatchEvent(event, options);
         }
 
         let memberProducts = (await member.related('products').fetch(options)).toJSON();
