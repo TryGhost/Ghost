@@ -53,6 +53,26 @@ describe('MentionSendingService', function () {
             sinon.assert.notCalled(stub);
         });
 
+        it('Ignores if importing data', async function () {
+            const service = new MentionSendingService({
+                isEnabled: () => true
+            });
+            const stub = sinon.stub(service, 'sendAll');
+            let options = {importing: true};
+            await service.sendForPost({}, options);
+            sinon.assert.notCalled(stub);
+        });
+
+        it('Ignores if internal context', async function () {
+            const service = new MentionSendingService({
+                isEnabled: () => true
+            });
+            const stub = sinon.stub(service, 'sendAll');
+            let options = {context: {internal: true}};
+            await service.sendForPost({}, options);
+            sinon.assert.notCalled(stub);
+        });
+
         it('Ignores draft posts', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true
