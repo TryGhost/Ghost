@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {blur, click, currentURL, fillIn, find, findAll, focus, pauseTest} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {enableNewsletters} from '../../helpers/newsletters';
 import {enablePaidMembers} from '../../helpers/members';
@@ -120,54 +120,45 @@ describe('Acceptance: Members filtering', function () {
             this.server.createList('tier', 4);
 
             // add some members with tiers
-            const tier = this.server.create('tier', {id: 12345});
+            const tier = this.server.create('tier', {id: 'qwerty123456789'});
             this.server.createList('member', 3, {tiers: [tier], newsletters: [newsletter]});
 
             // add some free members so we can see the filter excludes correctly
             this.server.createList('member', 4, {newsletters: [newsletter]});
 
-            await visit('/members?filter=' + encodeURIComponent(`tier_id:['${tier.id}']`));
-            // await visit('/members');
+            await visit('/members');
 
-            await pauseTest();
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(7);
+            await click('[data-test-button="members-filter-actions"]');
+            const filterSelector = `[data-test-members-filter="0"]`;
 
-            // await visit('/members');
+            await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'tier_id');
+            // has the right operators
+            const operatorOptions = findAll(`${filterSelector} [data-test-select="members-filter-operator"] option`);
+            expect(operatorOptions).to.have.length(2);
+            expect(operatorOptions[0]).to.have.value('is');
+            expect(operatorOptions[1]).to.have.value('is-not');
 
-            // expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
-            //     .to.equal(7);
+            // value dropdown can open and has all labels
+            await click(`${filterSelector} .gh-tier-token-input`);
+            expect(findAll(`${filterSelector} [data-test-tiers-segment]`).length, '# of label options').to.equal(5);
 
-            // await click('[data-test-button="members-filter-actions"]');
-            // const filterSelector = `[data-test-members-filter="0"]`;
+            // selecting a value updates table
+            await selectChoose(`${filterSelector} .gh-tier-token-input`, tier.name);
 
-            // await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'tier_id');
-            // // // has the right operators
-            // const operatorOptions = findAll(`${filterSelector} [data-test-select="members-filter-operator"] option`);
-            // expect(operatorOptions).to.have.length(2);
-            // expect(operatorOptions[0]).to.have.value('is');
-            // expect(operatorOptions[1]).to.have.value('is-not');
-            // // // value dropdown can open and has all labels
-            // await click(`${filterSelector} .gh-tier-token-input`);
+            expect(findAll('[data-test-list="members-list-item"]').length, `# of filtered member rows - ${tier.name}`)
+                .to.equal(3);
+            // table shows labels column+data
+            expect(find('[data-test-table-column="status"]')).to.exist;
+            expect(findAll('[data-test-table-data="status"]').length).to.equal(3);
+            expect(find('[data-test-table-data="status"]')).to.contain.text(tier.name);
 
-            // expect(findAll(`${filterSelector} [data-test-tiers-segment]`).length, '# of label options').to.equal(5);
-            // // // selecting a value updates table
-            // // // get dataset testTiersSegment and match tier.name
-            
-            // await selectChoose(`${filterSelector} .gh-tier-token-input`, `${tier.name}`);
+            // can delete filter
+            await click('[data-test-delete-members-filter="0"]');
 
-            // await click('[data-test-button="members-filter-actions"]');
-            // expect(findAll('[data-test-list="members-list-item"]').length, `# of filtered member rows - ${tier.name}`)
-            //     .to.equal(3);
-            // // table shows labels column+data
-            // expect(find('[data-test-table-column="status"]')).to.exist;
-            
-            // expect(findAll('[data-test-table-data="status"]').length).to.equal(3);
-            // expect(find('[data-test-table-data="status"]')).to.contain.text(tier.name);
-
-            // // can delete filter
-            // await click('[data-test-delete-members-filter="0"]');
-
-            // expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows after delete')
-            //     .to.equal(7);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows after delete')
+                .to.equal(7);
         });
         
         it('can filter by offer redeemed', async function () {

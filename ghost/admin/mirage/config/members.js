@@ -117,7 +117,6 @@ export default function mockMembers(server) {
                     // similar deal for associated models
                     ['labels', 'tiers', 'subscriptions', 'newsletters'].forEach((association) => {
                         serializedMember[association] = [];
-
                         member[association].models.forEach((associatedModel) => {
                             const serializedAssociation = {};
                             Object.keys(associatedModel.attrs).forEach((key) => {
