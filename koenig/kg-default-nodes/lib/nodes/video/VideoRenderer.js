@@ -78,7 +78,7 @@ export function cardTemplate({node, cardClasses}) {
                         </button>
                         <span class="kg-video-current-time">0:00</span>
                         <div class="kg-video-time">
-                            /<span class="kg-video-duration">${node.getDuration()}</span>
+                            /<span class="kg-video-duration">${node.getFormattedDuration()}</span>
                         </div>
                         <input type="range" class="kg-video-seek-slider" max="100" value="0">
                         <button class="kg-video-playback-rate">1&#215;</button>

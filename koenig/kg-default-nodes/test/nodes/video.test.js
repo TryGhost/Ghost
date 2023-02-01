@@ -115,6 +115,22 @@ describe('VideoNode', function () {
                 loop: false
             });
         }));
+
+        it('can format duration', editorTest(function () {
+            const videoNode = $createVideoNode(dataset);
+
+            videoNode.setDuration(60);
+            videoNode.getFormattedDuration().should.equal('1:00');
+
+            videoNode.setDuration(30);
+            videoNode.getFormattedDuration().should.equal('0:30');
+
+            videoNode.setDuration(0);
+            videoNode.getFormattedDuration().should.equal('0:00');
+
+            videoNode.setDuration(78);
+            videoNode.getFormattedDuration().should.equal('1:18');
+        }));
     });
 
     describe('exportJSON', function () {
@@ -229,7 +245,7 @@ describe('VideoNode', function () {
                                 </button>
                                 <span class="kg-video-current-time">0:00</span>
                                 <div class="kg-video-time">
-                                    /<span class="kg-video-duration">60</span>
+                                    /<span class="kg-video-duration">1:00</span>
                                 </div>
                                 <input type="range" class="kg-video-seek-slider" max="100" value="0">
                                 <button class="kg-video-playback-rate">1×</button>

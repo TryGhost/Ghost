@@ -175,6 +175,14 @@ export class VideoNode extends KoenigDecoratorNode {
         return self.__duration;
     }
 
+    getFormattedDuration() {
+        const minutes = Math.floor(this.getDuration() / 60);
+        const seconds = Math.floor(this.getDuration() - (minutes * 60));
+        const paddedSeconds = String(seconds).padStart(2, '0');
+        const formattedDuration = `${minutes}:${paddedSeconds}`;
+        return formattedDuration;
+    }
+
     setDuration(duration) {
         const writable = this.getWritable();
         return writable.__duration = duration;
