@@ -662,6 +662,14 @@ describe('Members API', function () {
             assert.equal(member.status, 'paid', 'The member should be "paid"');
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
+            // Wait for the dispatched events (because this happens async)
+            await DomainEvents.allSettled();
+
+            mockManager.assert.sentEmail({
+                subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
+                to: 'jbloggs@example.com'
+            });
+
             mockManager.assert.sentEmail({
                 subject: '🙌 Thank you for signing up to Ghost!',
                 to: 'checkout-webhook-test@email.com'
@@ -705,14 +713,6 @@ describe('Members API', function () {
                         mrr_delta: 500
                     }
                 ]
-            });
-
-            // Wait for the dispatched events (because this happens async)
-            await DomainEvents.allSettled();
-
-            mockManager.assert.sentEmail({
-                subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
-                to: 'jbloggs@example.com'
             });
         });
 
