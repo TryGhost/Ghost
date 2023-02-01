@@ -36,6 +36,7 @@ class EmailServiceWrapper {
         const audienceFeedback = require('../audience-feedback');
         const storageUtils = require('../../adapters/storage/utils');
         const emailAnalyticsJobs = require('../email-analytics/jobs');
+        const {imageSize} = require('../../lib/image');
 
         // capture errors from mailgun client and log them in sentry
         const errorHandler = (error) => {
@@ -60,7 +61,7 @@ class EmailServiceWrapper {
                 mobiledoc: mobiledocLib.mobiledocHtmlRenderer,
                 lexical: lexicalLib.lexicalHtmlRenderer
             },
-            imageSize: null,
+            imageSize,
             urlUtils,
             storageUtils,
             getPostUrl: this.getPostUrl,
