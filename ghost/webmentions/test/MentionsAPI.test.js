@@ -30,6 +30,12 @@ const mockWebmentionMetadata = {
     }
 };
 
+async function waitForOneSecond() {
+    await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+    });
+}
+
 describe('MentionsAPI', function () {
     it('Can list paginated mentions', async function () {
         const repository = new InMemoryMentionRepository();
@@ -94,7 +100,6 @@ describe('MentionsAPI', function () {
             target: new URL('https://target.com'),
             payload: {}
         });
-
         const mentionTwo = await api.processWebmention({
             source: new URL('https://source.com'),
             target: new URL('https://target.com'),
@@ -127,6 +132,9 @@ describe('MentionsAPI', function () {
             target: new URL('https://target.com'),
             payload: {}
         });
+
+        // adds a second to the created_at date to ensure the order is correct
+        await waitForOneSecond();
 
         const mentionTwo = await api.processWebmention({
             source: new URL('https://source2.com'),
@@ -161,6 +169,8 @@ describe('MentionsAPI', function () {
             target: new URL('https://target.com'),
             payload: {}
         });
+
+        await waitForOneSecond();
 
         const mentionTwo = await api.processWebmention({
             source: new URL('https://source2.com'),

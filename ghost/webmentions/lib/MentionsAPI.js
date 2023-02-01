@@ -73,7 +73,7 @@ const Mention = require('./Mention');
  */
 
 module.exports = class MentionsAPI {
-    /** @type {Repository} */
+    /** @type {IMentionRepository} */
     #repository;
     /** @type {IResourceService} */
     #resourceService;

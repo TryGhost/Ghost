@@ -69,9 +69,18 @@ module.exports = class InMemoryMentionRepository {
      */
     async getPage(options) {
         const filter = nql(options.filter || '', {});
-        const results = this.#store.slice().filter((item) => {
+        const data = this.#store.slice();
+        // reverse
+
+        const results = data.slice().filter((item) => {
             return filter.queryJSON(this.toPrimitive(item));
         });
+
+        if (options.order === 'created_at desc') {
+            results.sort((a, b) => {
+                return Number(b.timestamp) - Number(a.timestamp);
+            });
+        }
 
         if (options.limit === 'all') {
             return {
