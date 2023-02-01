@@ -1,7 +1,7 @@
 import {$getNodeByKey} from 'lexical';
 import {getImageDimensions} from './getImageDimensions';
 
-export const imageUploadHandler = async (files, nodeKey, editor, imageUploader) => {
+export const imageUploadHandler = async (files, nodeKey, editor, fileUploader) => {
     if (!files) {
         return;
     }
@@ -13,7 +13,7 @@ export const imageUploadHandler = async (files, nodeKey, editor, imageUploader) 
         });
     }
     const {width, height} = await getImageDimensions(url);
-    const fileSrc = await imageUploader.imageUploader(files);
+    const fileSrc = await fileUploader.fileUploader(files);
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
         node.setImgWidth(width);

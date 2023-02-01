@@ -20,7 +20,7 @@ const KoenigComposer = ({
     initialEditorState,
     nodes = [...DEFAULT_NODES],
     onError = defaultOnError,
-    imageUploadFunction,
+    fileUploadFunction,
     unsplashConfig,
     children
 }) => {
@@ -34,7 +34,7 @@ const KoenigComposer = ({
 
     const editorContainerRef = React.useRef(null);
 
-    const imageUploader = imageUploadFunction || function () {
+    const fileUploader = fileUploadFunction || function () {
         console.error('requires imageUploadFunction to be passed to KoenigComposer component, eg <KoenigComposer imageUploadFunction={function} />'); // eslint-disable-line no-console
         return;
     };
@@ -46,7 +46,7 @@ const KoenigComposer = ({
 
     return (
         <LexicalComposer initialConfig={initialConfig}>
-            <KoenigComposerContext.Provider value={{imageUploader, editorContainerRef, unsplashConf}}>
+            <KoenigComposerContext.Provider value={{fileUploader, editorContainerRef, unsplashConf}}>
                 {children}
             </KoenigComposerContext.Provider>
         </LexicalComposer>

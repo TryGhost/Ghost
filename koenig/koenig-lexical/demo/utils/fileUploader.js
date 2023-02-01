@@ -1,4 +1,4 @@
-export async function imageUploader(files) {
+export async function fileUploader(files) {
     function convertToURL(file) {
         return new Promise((resolve, reject) => {
             const fileReader = new FileReader();

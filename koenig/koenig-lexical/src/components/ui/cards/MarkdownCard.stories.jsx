@@ -2,7 +2,7 @@ import React from 'react';
 import {MarkdownCard} from './MarkdownCard.jsx';
 import {CardWrapper} from './../CardWrapper';
 import {ReactComponent as MarkdownIndicatorIcon} from '../../../assets/icons/kg-indicator-markdown.svg';
-import {useImageUpload} from '../../../../demo/utils/useImageUpload';
+import {useFileUpload} from '../../../../demo/utils/useFileUpload';
 import {defaultHeaders} from '../../../../demo/utils/unsplashConfig';
 
 const displayOptions = {
@@ -66,14 +66,14 @@ export const Empty = Template.bind({});
 Empty.args = {
     markdown: '',
     display: 'Editing',
-    imageUploader: useImageUpload
+    imageUploader: useFileUpload
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
     markdown: '**Bold** and *italic*',
     display: 'Editing',
-    imageUploader: useImageUpload
+    imageUploader: useFileUpload
 };
 
 export const Progress = Template.bind({});

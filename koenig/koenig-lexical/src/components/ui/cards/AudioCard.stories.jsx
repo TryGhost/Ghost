@@ -48,17 +48,46 @@ const Template = ({display, ...args}) => (
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    isPopulated: false,
-    audioTitle: '',
-    audioTitlePlaceholder: 'Add a title...',
-    totalDuration: ''
+    src: '',
+    title: '',
+    audioTitlePlaceholder: 'Add a title...'
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
-    isPopulated: true,
-    audioTitle: 'Audio file title',
+    thumbnailSrc: '',
+    src: 'audio.mp3',
+    duration: 19,
+    title: 'Audio file title',
+    audioTitlePlaceholder: 'Add a title...'
+};
+
+export const PopulatedWithThumbnail = Template.bind({});
+PopulatedWithThumbnail.args = {
+    display: 'Editing',
+    thumbnailSrc: 'https://via.placeholder.com/80x80',
+    src: 'audio.mp3',
+    duration: 19,
+    title: 'Audio file title',
+    audioTitlePlaceholder: 'Add a title...'
+};
+
+export const UploadingAudio = Template.bind({});
+UploadingAudio.args = {
+    display: 'Editing',
+    src: '',
+    title: '',
     audioTitlePlaceholder: 'Add a title...',
-    totalDuration: '0:27'
+    audioProgress: 50
+};
+
+export const UploadingThumbnail = Template.bind({});
+UploadingThumbnail.args = {
+    display: 'Editing',
+    src: 'audio.mp3',
+    duration: 19,
+    title: 'Audio file title',
+    audioTitlePlaceholder: 'Add a title...',
+    thumbnailProgress: 50
 };

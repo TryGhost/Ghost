@@ -1,6 +1,6 @@
 import {useState} from 'react';
 
-export function useImageUpload() {
+export function useFileUpload() {
     const [progress, setProgress] = useState(100);
     const [isLoading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);

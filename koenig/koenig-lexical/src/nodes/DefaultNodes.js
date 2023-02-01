@@ -4,6 +4,7 @@ import {LinkNode} from '@lexical/link';
 import {AsideNode} from './AsideNode';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
 import {CodeBlockNode} from './CodeBlockNode';
+import {AudioNode} from './AudioNode';
 import {ImageNode} from './ImageNode';
 import {MarkdownNode} from './MarkdownNode';
 
@@ -17,7 +18,8 @@ const DEFAULT_NODES = [
     CodeBlockNode,
     HorizontalRuleNode,
     ImageNode,
-    MarkdownNode
+    MarkdownNode,
+    AudioNode
 ];
 
 export default DEFAULT_NODES;

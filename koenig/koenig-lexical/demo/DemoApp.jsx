@@ -3,8 +3,8 @@ import {KoenigComposer, KoenigEditor} from '../src';
 import FloatingButton from './components/FloatingButton';
 import {useState} from 'react';
 import Watermark from './components/Watermark';
-import {imageUploader} from './utils/imageUploader';
-import {useImageUpload} from './utils/useImageUpload.js';
+import {fileUploader} from './utils/fileUploader';
+import {useFileUpload} from './utils/useFileUpload.js';
 import Sidebar from './components/Sidebar';
 import content from './content/content.json';
 import ToggleButton from './components/ToggleButton';
@@ -82,7 +82,7 @@ function DemoApp() {
         >
             <KoenigComposer
                 initialEditorState={defaultContent}
-                imageUploadFunction={{imageUploader, useImageUpload}}
+                fileUploadFunction={{fileUploader, useFileUpload}}
                 unsplashConfig={unsplashConfig}>
                 <div className="relative h-full grow">
                     {

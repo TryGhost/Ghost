@@ -10,31 +10,27 @@ import {
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {mergeRegister} from '@lexical/utils';
 import KoenigComposerContext from '../context/KoenigComposerContext';
-import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
-import {imageUploadHandler} from '../utils/imageUploadHandler';
-import UnsplashPlugin from '../components/ui/UnsplashPlugin';
+import {$createAudioNode, AudioNode, INSERT_AUDIO_COMMAND} from '../nodes/AudioNode';
+import {audioUploadHandler} from '../utils/audioUploadHandler';
 
-export const ImagePlugin = () => {
+export const AudioPlugin = () => {
     const [editor] = useLexicalComposerContext();
     const {fileUploader} = React.useContext(KoenigComposerContext);
-    const [selector, setSelector] = React.useState(null);
-    const [selectedKey, setSelectedKey] = React.useState(null);
-    const [showModal, setShowModal] = React.useState(false);
 
-    const handleImageUpload = React.useCallback(async (files, imageNodeKey) => {
+    const handleAudioUpload = React.useCallback(async (files, audioNodeKey) => {
         if (files?.length > 0) {
-            return await imageUploadHandler(files, imageNodeKey, editor, fileUploader);
+            return await audioUploadHandler(files, audioNodeKey, editor, fileUploader);
         }
     }, [fileUploader, editor]);
 
     React.useEffect(() => {
-        if (!editor.hasNodes([ImageNode])){
-            console.error('ImagePlugin: ImageNode not registered'); // eslint-disable-line no-console
+        if (!editor.hasNodes([AudioNode])){
+            console.error('AudioPlugin: AudioNode not registered'); // eslint-disable-line no-console
             return;
         }
         return mergeRegister(
             editor.registerCommand(
-                INSERT_IMAGE_COMMAND,
+                INSERT_AUDIO_COMMAND,
                 async (dataset) => {
                     const selection = $getSelection();
 
@@ -45,18 +41,11 @@ export const ImagePlugin = () => {
                     const focusNode = selection.focus.getNode();
 
                     if (focusNode !== null) {
-                        const imageNode = $createImageNode(dataset);
-
-                        // fires the unsplash selector
-                        if (dataset?.triggerFileSelector === 'unsplash') {
-                            setSelectedKey(imageNode.getKey());
-                            setShowModal(true);
-                            setSelector('unsplash');
-                        }
+                        const audioNode = $createAudioNode(dataset);
 
                         if (!dataset.src) {
-                            const imageNodeKey = imageNode.getKey();
-                            handleImageUpload(dataset, imageNodeKey);
+                            const audioNodeKey = audioNode.getKey();
+                            handleAudioUpload(dataset, audioNodeKey);
                         }
 
                         // insert a paragraph if this will be the last card and
@@ -73,12 +62,12 @@ export const ImagePlugin = () => {
                         selection.focus
                             .getNode()
                             .getTopLevelElementOrThrow()
-                            .insertBefore(imageNode);
+                            .insertBefore(audioNode);
 
                         // move the focus away from the paragraph to the inserted
                         // decorator node
                         const nodeSelection = $createNodeSelection();
-                        nodeSelection.add(imageNode.getKey());
+                        nodeSelection.add(audioNode.getKey());
                         $setSelection(nodeSelection);
                     }
 
@@ -87,16 +76,9 @@ export const ImagePlugin = () => {
                 COMMAND_PRIORITY_HIGH
             )
         );
-    }, [editor, fileUploader, handleImageUpload]);
-
-    if (showModal && selector) {
-        return (<UnsplashPlugin
-            nodeKey={selectedKey}
-            handleModalClose={setShowModal}
-        />);
-    }
+    }, [editor, fileUploader, handleAudioUpload]);
 
     return null;
 };
 
-export default ImagePlugin;
+export default AudioPlugin;

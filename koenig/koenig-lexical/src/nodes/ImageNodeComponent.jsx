@@ -13,14 +13,14 @@ import {imageUploadHandler} from '../utils/imageUploadHandler';
 export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog, previewSrc}) {
     const [editor] = useLexicalComposerContext();
     const [dragOver, setDragOver] = React.useState(false);
-    const {imageUploader} = React.useContext(KoenigComposerContext);
+    const {fileUploader} = React.useContext(KoenigComposerContext);
     const {isSelected, cardWidth, setCardWidth} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
 
     const onFileChange = async (e) => {
         const fls = e.target.files;
-        return await imageUploadHandler(fls, nodeKey, editor, imageUploader);
+        return await imageUploadHandler(fls, nodeKey, editor, fileUploader);
     };
 
     const setCaption = (newCaption) => {
@@ -86,12 +86,12 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
             const fls = e.dataTransfer.files;
             if (fls) {
                 setDragOver(false);
-                await imageUploadHandler(fls, nodeKey, editor, imageUploader);
+                await imageUploadHandler(fls, nodeKey, editor, fileUploader);
             }
         }
     };
 
-    const uploadProgress = imageUploader?.uploadProgress || 0;
+    const uploadProgress = fileUploader?.uploadProgress || 0;
 
     return (
         <>
