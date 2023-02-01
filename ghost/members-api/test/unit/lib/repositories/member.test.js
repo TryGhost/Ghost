@@ -254,6 +254,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
+            await DomainEvents.allSettled();
             notifySpy.calledOnce.should.be.true();
         });
 
@@ -284,6 +285,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
+            await DomainEvents.allSettled();
             notifySpy.calledOnce.should.be.true();
             notifySpy.calledWith(sinon.match((event) => {
                 if (event.data.offerId === 'offer_123') {
