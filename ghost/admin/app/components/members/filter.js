@@ -179,7 +179,7 @@ export default class MembersFilter extends Component {
         // exclude tiers filter if site has only single tier
         availableFilters = availableFilters
             .filter((filter) => {
-                return filter.name === 'tier' ? hasMultipleTiers : true;
+                return filter.name === 'tier_id' ? hasMultipleTiers : true;
             });
 
         // exclude subscription filters if Stripe isn't connected

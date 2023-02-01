@@ -120,7 +120,7 @@ describe('Acceptance: Members filtering', function () {
             this.server.createList('tier', 4);
 
             // add some members with tiers
-            const tier = this.server.create('tier');
+            const tier = this.server.create('tier', {id: 'qwerty123456789'});
             this.server.createList('member', 3, {tiers: [tier], newsletters: [newsletter]});
 
             // add some free members so we can see the filter excludes correctly
@@ -133,7 +133,7 @@ describe('Acceptance: Members filtering', function () {
             await click('[data-test-button="members-filter-actions"]');
             const filterSelector = `[data-test-members-filter="0"]`;
 
-            await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'tier');
+            await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'tier_id');
             // has the right operators
             const operatorOptions = findAll(`${filterSelector} [data-test-select="members-filter-operator"] option`);
             expect(operatorOptions).to.have.length(2);
