@@ -1951,25 +1951,25 @@
     ee-log "^3.0.0"
     section-tests "^1.3.0"
 
-"@elastic/elasticsearch@8.5.0", "@elastic/elasticsearch@8.6.0":
-  version "8.5.0"
-  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.5.0.tgz#407aee0950a082ee76735a567f2571cf4301d4ea"
-  integrity sha512-iOgr/3zQi84WmPhAplnK2W13R89VXD2oc6WhlQmH3bARQwmI+De23ZJKBEn7bvuG/AHMAqasPXX7uJIiJa2MqQ==
+"@elastic/elasticsearch@8.6.0":
+  version "8.6.0"
+  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.6.0.tgz#c474f49808deee64b5bc5b8f938bf78f4468cb94"
+  integrity sha512-mN5EbbgSp1rfRmQ/5Hv7jqAK8xhGJxCg7G84xje8hSefE59P+HPPCv/+DgesCUSJdZpwXIo0DwOWHfHvktxxLw==
   dependencies:
-    "@elastic/transport" "^8.2.0"
+    "@elastic/transport" "^8.3.1"
     tslib "^2.4.0"
 
-"@elastic/transport@^8.2.0":
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/@elastic/transport/-/transport-8.2.0.tgz#f292cb79c918a36268dd853431e41f13544814ad"
-  integrity sha512-H/HmefMNQfLiBSVTmNExu2lYs5EzwipUnQB53WLr17RCTDaQX0oOLHcWpDsbKQSRhDAMPPzp5YZsZMJxuxPh7A==
+"@elastic/transport@^8.3.1":
+  version "8.3.1"
+  resolved "https://registry.yarnpkg.com/@elastic/transport/-/transport-8.3.1.tgz#e7569d7df35b03108ea7aa886113800245faa17f"
+  integrity sha512-jv/Yp2VLvv5tSMEOF8iGrtL2YsYHbpf4s+nDsItxUTLFTzuJGpnsB/xBlfsoT2kAYEnWHiSJuqrbRcpXEI/SEQ==
   dependencies:
     debug "^4.3.4"
     hpagent "^1.0.0"
     ms "^2.1.3"
     secure-json-parse "^2.4.0"
     tslib "^2.4.0"
-    undici "^5.1.1"
+    undici "^5.5.1"
 
 "@ember-data/adapter@3.24.0":
   version "3.24.0"
@@ -4516,7 +4516,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/http-cache-utils/-/http-cache-utils-0.1.6.tgz#893ffad3b03b29ef5a4ab72b6298e95f9d6a7a08"
   integrity sha512-8j35Ixs5Ioa88cSKz2MaAILusuNa2cmbgt7b+XabwAyL3thxNZd6iaEyExPqqX6UOLkGJgO2e1oA5J+qeC7Ajg==
 
-"@tryghost/http-stream@^0.1.17":
+"@tryghost/http-stream@^0.1.16", "@tryghost/http-stream@^0.1.17":
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/@tryghost/http-stream/-/http-stream-0.1.17.tgz#3241ff2e1a403c052a3096855fc89f4d21c90d97"
   integrity sha512-tcl8aRO47avrjoMneIKTlEakqsTHA8pFn1WNVH5nYC4cbgvkv0jOv4UgZ4NpwI2dbaRscfrgfsuq5KV5ZuvSiw==
@@ -4647,7 +4647,24 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.3.6", "@tryghost/logging@2.4.0", "@tryghost/logging@^2.3.6":
+"@tryghost/logging@2.3.6":
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.3.6.tgz#7faab8f43bf934e2276c16d8e9bec638e930a355"
+  integrity sha512-PkxFwwlOgvn6hkkANYj6E/NZa8bJ82CbeNdSYd87FjgMNSuLXUcQuQSRbs/89ZF20NO1P4PUQTSs6cPoZHP54Q==
+  dependencies:
+    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
+    "@tryghost/elasticsearch" "^3.0.8"
+    "@tryghost/http-stream" "^0.1.16"
+    "@tryghost/pretty-stream" "^0.1.15"
+    "@tryghost/root-utils" "^0.3.19"
+    bunyan "^1.8.15"
+    bunyan-loggly "^1.4.2"
+    fs-extra "^10.0.0"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.21"
+
+"@tryghost/logging@2.4.0", "@tryghost/logging@^2.3.6":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.4.0.tgz#b6620ba3029b5d481d317a04eb5c578b0b13ae08"
   integrity sha512-Q3y3gPHOGgijViCkuu2ARr4G++jnGDeafWD9JdPZO8CK6K3N20Dun3M7ujX3OY+u5UXhQTsMQw+nC5pjPRBRGg==
@@ -19680,17 +19697,51 @@ mock-knex@TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682:
     lodash "^4.14.2"
     semver "^5.3.0"
 
-moment-timezone@0.5.23, moment-timezone@0.5.34, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
+moment-timezone@0.5.23, moment-timezone@^0.5.23:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.3, moment@2.29.4, "moment@>= 2.9.0", moment@^2.10.2, moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.1:
+moment-timezone@0.5.34:
+  version "0.5.34"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.34.tgz#a75938f7476b88f155d3504a9343f7519d9a405c"
+  integrity sha512-3zAEHh2hKUs3EXLESx/wsgw6IQdusOT8Bxm3D9UrHPQR7zlMmzwybC8zHEM1tQ4LJwP7fcxrWr8tuBg05fFCbg==
+  dependencies:
+    moment ">= 2.9.0"
+
+moment-timezone@^0.5.31, moment-timezone@^0.5.33:
+  version "0.5.40"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.40.tgz#c148f5149fd91dd3e29bf481abc8830ecba16b89"
+  integrity sha512-tWfmNkRYmBkPJz5mr9GVDn9vRlVZOTe6yqY92rFxiOdWXbjaR0+9LwQnZGGuNR63X456NqmEkbskte8tWL5ePg==
+  dependencies:
+    moment ">= 2.9.0"
+
+moment@2.24.0, "moment@>= 2.9.0", moment@^2.10.2, moment@^2.18.1, moment@^2.19.3:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
+
+moment@2.27.0:
+  version "2.27.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.27.0.tgz#8bff4e3e26a236220dfe3e36de756b6ebaa0105d"
+  integrity sha512-al0MUK7cpIcglMv3YF13qSgdAIqxHTO7brRtaz3DlSULbqfazqkc5kEjNrLDOM7fsjshoFIihnU8snrP7zUvhQ==
+
+moment@2.29.1:
+  version "2.29.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
+  integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
+
+moment@2.29.3:
+  version "2.29.3"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.3.tgz#edd47411c322413999f7a5940d526de183c031f3"
+  integrity sha512-c6YRvhEo//6T2Jz/vVtYzqBzwvPT95JBQ+smCytzf7c50oMZRsR/a4w88aD34I+/QVSfnoAnSBFPJHItlOMJVw==
+
+moment@2.29.4, moment@^2.27.0, moment@^2.29.1:
+  version "2.29.4"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.4.tgz#3dbe052889fe7c1b2ed966fcb3a77328964ef108"
+  integrity sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==
 
 moo@^0.5.0, moo@^0.5.1:
   version "0.5.2"
@@ -26023,10 +26074,10 @@ underscore@~1.8.3:
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.8.3.tgz#4f3fb53b106e6097fcf9cb4109f2a5e9bdfa5022"
   integrity sha512-5WsVTFcH1ut/kkhAaHf4PVgI8c7++GiVcpCGxPouI6ZVjsqPnSDf8h/8HtVqc0t4fzRXwnMK70EcZeAs3PIddg==
 
-undici@^5.1.1:
-  version "5.11.0"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-5.11.0.tgz#1db25f285821828fc09d3804b9e2e934ae86fc13"
-  integrity sha512-oWjWJHzFet0Ow4YZBkyiJwiK5vWqEYoH7BINzJAJOLedZ++JpAlCbUktW2GQ2DS2FpKmxD/JMtWUUWl1BtghGw==
+undici@^5.5.1:
+  version "5.16.0"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-5.16.0.tgz#6b64f9b890de85489ac6332bd45ca67e4f7d9943"
+  integrity sha512-KWBOXNv6VX+oJQhchXieUznEmnJMqgXMbs0xxH2t8q/FUAWSJvOSr/rMaZKnX5RIVq7JDn0JbP4BOnKG2SGXLQ==
   dependencies:
     busboy "^1.6.0"
 

@@ -13,15 +13,15 @@ module.exports = class MilestoneEmailService {
     #jobService;
 
     /** @type {IGhostMailer} */
-    #provider;
+    #mailer;
 
     /**
      * @param {object} deps
-     * @param {IGhostMailer} deps.provider
+     * @param {IGhostMailer} deps.mailer
      * @param {IJobService} deps.jobService
      */
     async init(deps) {
-        this.#provider = deps.provider;
+        this.#mailer = deps.mailer;
         this.#jobService = deps.jobService;
     }
 };

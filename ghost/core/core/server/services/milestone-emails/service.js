@@ -1,6 +1,6 @@
 const MilestoneEmailService = require('./MilestoneEmailService');
 const config = require('../../../shared/config');
-const {GhostMailer} = require('../mail');
+// const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
 
 // What do we need?
@@ -22,7 +22,6 @@ module.exports = {
     controller: new MilestoneEmailService(),
     async init() {
         this.controller.init({
-            provider: new GhostMailer(),
             config,
             jobsService
         });
