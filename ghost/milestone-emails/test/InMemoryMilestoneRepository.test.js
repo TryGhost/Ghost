@@ -25,17 +25,29 @@ describe('InMemoryMilestoneRepository', function () {
                 emailSentAt: '2023-02-01T01:00:00Z'
             },
             {
+                type: 'arr',
+                value: 60000,
+                createdAt: '2023-02-01T01:00:00Z',
+                emailSentAt: '2023-02-01T01:00:00Z'
+            },
+            {
                 type: 'members',
                 value: 100,
                 createdAt: '2023-01-01T00:00:00Z',
-                emailSentAt: '2023-01-01T00:00:00Z'
+                emailSentAt: '2023-01-01T00:00:00Z',
+                id: resourceId
             },
             {
                 type: 'members',
                 value: 500,
                 createdAt: '2023-02-01T00:00:00Z',
-                emailSentAt: '2023-02-01T00:00:00Z',
-                id: resourceId
+                emailSentAt: '2023-02-01T00:00:00Z'
+            },
+            {
+                type: 'members',
+                value: 600,
+                createdAt: '2023-02-01T00:00:00Z',
+                emailSentAt: '2023-02-01T00:00:00Z'
             }
         ];
 
@@ -49,17 +61,19 @@ describe('InMemoryMilestoneRepository', function () {
     });
 
     it('Can return the latest milestone for members', async function () {
-        const latestArrMilestone = await repository.getLatestByType('members');
-        const timeDiff = new Date(latestArrMilestone.createdAt) - new Date('2023-02-01T00:00:00.000Z');
+        const latestMemberCountMilestone = await repository.getLatestByType('members');
+        const timeDiff = new Date(latestMemberCountMilestone.createdAt) - new Date('2023-02-01T00:00:00.000Z');
         assert(timeDiff === 0);
-        assert(latestArrMilestone.type === 'members');
+        assert(latestMemberCountMilestone.type === 'members');
+        assert(latestMemberCountMilestone.value === 600);
     });
 
     it('Can return the latest milestone for ARR', async function () {
-        const latestMemberCountMilestone = await repository.getLatestByType('arr');
-        const timeDiff = new Date(latestMemberCountMilestone.createdAt) - new Date('2023-02-01T01:00:00Z');
+        const latestArrMilestone = await repository.getLatestByType('arr');
+        const timeDiff = new Date(latestArrMilestone.createdAt) - new Date('2023-02-01T01:00:00Z');
         assert(timeDiff === 0);
-        assert(latestMemberCountMilestone.type === 'arr');
+        assert(latestArrMilestone.type === 'arr');
+        assert(latestArrMilestone.value === 60000);
     });
 
     it('Can return the last sent email', async function () {

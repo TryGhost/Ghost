@@ -1,9 +1,6 @@
 /**
  * @typedef {import('./Milestone')} Milestone
- */
-/**
- * @template Model
- * @typedef {import('./MilestonesAPI')<Model>} <Model>
+ * @typedef {import('./MilestonesAPI').IMilestoneRepository} IMilestoneRepository
  */
 
 /**
@@ -38,7 +35,10 @@ module.exports = class InMemoryMilestoneRepository {
     async getLatestByType(type) {
         return this.#store
             .filter(item => item.type === type)
-            .sort((a, b) => ((a.createdAt > b.createdAt) ? -1 : ((a.createdAt < b.createdAt) ? 1 : 0)))[0];
+            // sort by created at desc
+            .sort((a, b) => (b.createdAt.valueOf() - a.createdAt.valueOf()))
+            // if we end up with more values created at the same time, pick the highest value
+            .sort((a, b) => b.value - a.value)[0];
     }
 
     /**
@@ -47,7 +47,10 @@ module.exports = class InMemoryMilestoneRepository {
     async getLastEmailSent() {
         return this.#store
             .filter(item => item.emailSentAt)
-            .sort((a, b) => ((a.emailSentAt > b.emailSentAt) ? -1 : ((a.emailSentAt < b.emailSentAt) ? 1 : 0)))[0];
+            // sort by emailSentAt desc
+            .sort((a, b) => (b.emailSentAt.valueOf() - a.emailSentAt.valueOf()))
+            // if we end up with more values with the same datetime, pick the highest value
+            .sort((a, b) => b.value - a.value)[0];
     }
 
     /**

@@ -1,4 +1,8 @@
 const MilestoneEmailService = require('./MilestoneEmailService');
+const {
+    InMemoryMilestoneRepository,
+    MilestonesAPI
+} = require('@tryghost/milestone-emails');
 const config = require('../../../shared/config');
 // const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
@@ -19,9 +23,15 @@ const jobsService = require('../jobs');
 // We need to update the state of the check into a table, MilestoneEmail, saving only when the query was successful and an email was sent
 
 module.exports = {
-    controller: new MilestoneEmailService(),
+    service: new MilestoneEmailService(),
     async init() {
-        this.controller.init({
+        const repository = new InMemoryMilestoneRepository();
+        const api = new MilestonesAPI({
+            repository
+        });
+
+        this.service.init({
+            api,
             config,
             jobsService
         });
