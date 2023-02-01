@@ -4,7 +4,7 @@ import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
 import {ProgressBar} from '../ProgressBar';
 import {ReactComponent as AudioFileIcon} from '../../../assets/icons/kg-audio-file.svg';
-import {ReactComponent as ReplaceThumbnailIcon} from '../../../assets/icons/kg-replace.svg';
+import {ReactComponent as TrashIcon} from '../../../assets/icons/kg-trash.svg';
 import {openFileSelection} from '../../../utils/openFileSelection';
 import {ReactComponent as FilePlaceholderIcon} from '../../../assets/icons/kg-file-placeholder.svg';
 import {AudioUploadForm} from '../AudioUploadForm';
@@ -47,11 +47,14 @@ function EmptyAudioCard({
 function AudioThumbnail({
     thumbnailSrc,
     thumbnailProgress,
+    isUploadingThumbnail,
     isEditing,
     setThumbnailFileInputRef,
     onThumbnailFileChange,
     removeThumbnail
 }) {
+    const [showTrash, setShowTrash] = React.useState(false);
+
     const thumbnailFileInputRef = React.useRef(null);
 
     const onThumbnailFileInputRef = (element) => {
@@ -63,22 +66,32 @@ function AudioThumbnail({
         width: `${thumbnailProgress?.toFixed(0)}%`
     };
 
+    // Show the trash icon on mouseover
+    const onMouseOver = (event) => {
+        setShowTrash(true);
+    };
+
+    // Hide the trash icon on mouseout
+    const onMouseOut = (event) => {
+        setShowTrash(false);
+    };
+
     if (thumbnailSrc) {
         return (
-            <div className="group flex h-20 w-20 items-center justify-center rounded-sm bg-purple">
-                <img data-testid="audio-thumbnail" src={thumbnailSrc} alt="Audio thumbnail" />
-                <div className="insert-0 absolute p-2">
+            <div className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
+                <img data-testid="audio-thumbnail" src={thumbnailSrc} alt="Audio thumbnail" className="h-full w-full object-cover transition ease-in" />
+                <div className={`absolute inset-0 p-2 ${showTrash ? 'opacity-100' : 'opacity-0'} transition ease-in-out`} onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
                     <div className="flex flex-row-reverse">
-                        <button onClick={removeThumbnail} data-testid="remove-thumbnail" className="bg-white-90 br3 pe-auto" type="button">
-                            <ReplaceThumbnailIcon className="h-6 w-6 text-white transition-all duration-75" />
+                        <button onClick={removeThumbnail} data-testid="remove-thumbnail" className="br3 pe-auto bg-white opacity-90" type="button">
+                            <TrashIcon className="h-6 w-6 fill-[#394047] transition-all duration-75" />
                         </button>
                     </div>
                 </div>
             </div>
         );
-    } else if (thumbnailProgress) {
+    } else if (isUploadingThumbnail) {
         return (
-            <div className="group flex h-20 w-20 items-center justify-center rounded-sm bg-purple">
+            <div className="group flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
                 <ProgressBar style={progressStyle} />
             </div>
         );
@@ -108,6 +121,8 @@ function PopulatedAudioCard({
     title,
     placeholder,
     audioProgress,
+    isUploadingAudio,
+    isUploadingThumbnail,
     thumbnailProgress,
     duration,
     updateTitle,
@@ -132,12 +147,12 @@ function PopulatedAudioCard({
         updateTitle(event.target.value);
     };
 
-    if (audioProgress) {
+    if (isUploadingAudio) {
         return (
             <div className="not-kg-prose">
                 <div className="flex rounded border border-grey/30 p-2">
                     <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50">
-                        <ProgressBar style={progressStyle} />
+                        <ProgressBar data-testid="progress-bar" style={progressStyle} />
                     </div>
                 </div>
             </div>
@@ -148,6 +163,7 @@ function PopulatedAudioCard({
                 <div className="flex rounded border border-grey/30 p-2">
                     <AudioThumbnail
                         thumbnailProgress={thumbnailProgress}
+                        isUploadingThumbnail={isUploadingThumbnail}
                         thumbnailSrc={thumbnailSrc} 
                         isEditing={isEditing} 
                         onThumbnailFileChange={onThumbnailFileChange} 
@@ -174,7 +190,9 @@ export function AudioCard({
     thumbnailSrc,
     duration,
     audioProgress,
+    isUploadingAudio,
     thumbnailProgress,
+    isUploadingThumbnail,
     audioFileInputRef,
     thumbnailFileInputRef,
     onAudioFileChange,
@@ -196,13 +214,15 @@ export function AudioCard({
         }
     };
 
-    if (audioProgress || src) {
+    if (isUploadingAudio || src) {
         return (
             <PopulatedAudioCard
                 title={title}
                 placeholder={titlePlaceholder}
                 duration={duration}
                 audioProgress={audioProgress}
+                isUploadingAudio={isUploadingAudio}
+                isUploadingThumbnail={isUploadingThumbnail}
                 thumbnailProgress={thumbnailProgress}
                 setTitle={updateTitle}
                 isEditing={isEditing}
@@ -234,6 +254,8 @@ AudioCard.propTypes = {
     thumbnailSrc: PropTypes.string,
     duration: PropTypes.number,
     audioProgress: PropTypes.number,
+    isUploadingAudio: PropTypes.bool,
+    isUploadingThumbnail: PropTypes.bool,
     thumbnailProgress: PropTypes.number,
     audioFileInputRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}),
     thumbnailFileInputRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}),
@@ -255,6 +277,8 @@ EmptyAudioCard.propTypes = {
 
 AudioThumbnail.propTypes = {
     thumbnailSrc: PropTypes.string,
+    thumbnailProgress: PropTypes.number,
+    isUploadingThumbnail: PropTypes.bool,
     isEditing: PropTypes.bool,
     onThumbnailFileChange: PropTypes.func,
     setThumbnailFileInputRef: PropTypes.func,
@@ -266,6 +290,9 @@ PopulatedAudioCard.propTypes = {
     placeholder: PropTypes.string,
     duration: PropTypes.number,
     audioProgress: PropTypes.number,
+    thumbnailProgress: PropTypes.number,
+    isUploadingAudio: PropTypes.bool,
+    isUploadingThumbnail: PropTypes.bool,
     updateTitle: PropTypes.func,
     isEditing: PropTypes.bool,
     thumbnailSrc: PropTypes.string,

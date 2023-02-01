@@ -79,7 +79,8 @@ UploadingAudio.args = {
     src: '',
     title: '',
     audioTitlePlaceholder: 'Add a title...',
-    audioProgress: 50
+    audioProgress: 50,
+    isUploadingAudio: true
 };
 
 export const UploadingThumbnail = Template.bind({});
@@ -89,5 +90,6 @@ UploadingThumbnail.args = {
     duration: 19,
     title: 'Audio file title',
     audioTitlePlaceholder: 'Add a title...',
-    thumbnailProgress: 50
+    thumbnailProgress: 50,
+    isUploadingThumbnail: true
 };

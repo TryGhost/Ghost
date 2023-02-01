@@ -21,14 +21,17 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
     const thumbnailFileInputRef = React.useRef();
     const cardContext = React.useContext(CardContext);
 
+    const {progress: audioProgress, isLoading: isUploadingAudio, upload: uploadAudio} = fileUploader.useFileUpload();
+    const {progress: thumbnailProgress, isLoading: isUploadingThumbnail, upload: uploadThumbnail} = fileUploader.useFileUpload();
+
     const onAudioFileChange = async (e) => {
         const fls = e.target.files;
-        return await audioUploadHandler(fls, nodeKey, editor, fileUploader);
+        return await audioUploadHandler(fls, nodeKey, editor, uploadAudio);
     };
 
     const onThumbnailFileChange = async (e) => {
         const fls = e.target.files;
-        return await thumbnailUploadHandler(fls, nodeKey, editor, fileUploader);
+        return await thumbnailUploadHandler(fls, nodeKey, editor, uploadThumbnail);
     };
 
     const setTitle = (newTitle) => {
@@ -68,9 +71,6 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
         });
     });
 
-    // Need to split this out to audioProgress and thumbnailProgress somehow...
-    const uploadProgress = fileUploader?.uploadProgress || 0;
-
     return (
         <AudioCard
             nodeKey={nodeKey}
@@ -81,7 +81,10 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
             duration={duration}
             updateTitle={setTitle}
             triggerFileDialog={triggerFileDialog}
-            audioProgress={uploadProgress}
+            audioProgress={audioProgress}
+            isUploadingAudio={isUploadingAudio}
+            thumbnailProgress={thumbnailProgress}
+            isUploadingThumbnail={isUploadingThumbnail}
             audioFileInputRef={audioFileInputRef}
             thumbnailFileInputRef={thumbnailFileInputRef}
             onAudioFileChange={onAudioFileChange}

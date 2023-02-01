@@ -78,6 +78,9 @@ describe('Audio card', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
 
+        // Check that the progress bar is displayed
+        expect(await page.getByTestId('progress-bar')).not.toBeNull();
+
         // Check that audio file was uploaded
         await page.waitForSelector('input[name="title"]');
         expect(await page.locator('input[name="title"]').inputValue()).toEqual('Audio sample');

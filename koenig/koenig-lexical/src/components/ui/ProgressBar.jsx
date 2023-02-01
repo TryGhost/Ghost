@@ -10,6 +10,6 @@ export function ProgressBar({style, fullWidth}) {
 }
 
 ProgressBar.propTypes = {
-    style: PropTypes.string,
+    style: PropTypes.object,
     fullWidth: PropTypes.bool
 };

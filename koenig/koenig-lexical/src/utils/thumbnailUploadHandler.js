@@ -1,13 +1,13 @@
 import {$getNodeByKey} from 'lexical';
 
-export const thumbnailUploadHandler = async (files, nodeKey, editor, fileUploader) => {
+export const thumbnailUploadHandler = async (files, nodeKey, editor, upload) => {
     if (!files) {
         return;
     }
-    const fileSrc = await fileUploader.fileUploader(files);
+    const fileSrc = await upload(files);
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
-        node.setThumbnailSrc(fileSrc.src);
+        node.setThumbnailSrc(fileSrc[0]);
     });
     return;
 };
