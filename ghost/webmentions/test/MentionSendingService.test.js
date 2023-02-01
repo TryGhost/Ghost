@@ -324,7 +324,7 @@ describe('MentionSendingService', function () {
         it('Can handle 202 accepted responses', async function () {
             const scope = nock('https://example.org')
                 .persist()
-                .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}`)
+                .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}&source_is_ghost=true`)
                 .reply(202);
 
             const service = new MentionSendingService({externalRequest});
@@ -339,7 +339,7 @@ describe('MentionSendingService', function () {
         it('Can handle 201 created responses', async function () {
             const scope = nock('https://example.org')
                 .persist()
-                .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}`)
+                .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}&source_is_ghost=true`)
                 .reply(201);
 
             const service = new MentionSendingService({externalRequest});
