@@ -63,7 +63,8 @@ module.exports = class MentionSendingService {
         const response = await this.#externalRequest.post(endpoint.href, {
             body: {
                 source: source.href,
-                target: target.href
+                target: target.href,
+                source_is_ghost: true
             },
             form: true,
             throwHttpErrors: false,
