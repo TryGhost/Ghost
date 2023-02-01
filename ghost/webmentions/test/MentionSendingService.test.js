@@ -29,7 +29,7 @@ describe('MentionSendingService', function () {
     describe('listen', function () {
         it('Calls on post.edited', async function () {
             const service = new MentionSendingService({});
-            const stub = sinon.stub(service, 'sendForEditedPost').resolves();
+            const stub = sinon.stub(service, 'sendForPost').resolves();
             let callback;
             const events = {
                 on: sinon.stub().callsFake((event, c) => {
@@ -43,13 +43,13 @@ describe('MentionSendingService', function () {
         });
     });
 
-    describe('sendForEditedPost', function () {
+    describe('sendForPost', function () {
         it('Ignores if disabled', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => false
             });
             const stub = sinon.stub(service, 'sendAll');
-            await service.sendForEditedPost({});
+            await service.sendForPost({});
             sinon.assert.notCalled(stub);
         });
 
@@ -58,7 +58,7 @@ describe('MentionSendingService', function () {
                 isEnabled: () => true
             });
             const stub = sinon.stub(service, 'sendAll');
-            await service.sendForEditedPost(createModel({
+            await service.sendForPost(createModel({
                 status: 'draft',
                 html: 'changed',
                 previous: {
@@ -74,7 +74,7 @@ describe('MentionSendingService', function () {
                 isEnabled: () => true
             });
             const stub = sinon.stub(service, 'sendAll');
-            await service.sendForEditedPost(createModel({
+            await service.sendForPost(createModel({
                 status: 'published',
                 html: 'same',
                 previous: {
@@ -90,7 +90,7 @@ describe('MentionSendingService', function () {
                 isEnabled: () => true
             });
             const stub = sinon.stub(service, 'sendAll');
-            await service.sendForEditedPost(createModel({
+            await service.sendForPost(createModel({
                 status: 'send',
                 html: 'changed',
                 previous: {
@@ -107,7 +107,7 @@ describe('MentionSendingService', function () {
                 getPostUrl: () => 'https://site.com/post/'
             });
             const stub = sinon.stub(service, 'sendAll');
-            await service.sendForEditedPost(createModel({
+            await service.sendForPost(createModel({
                 status: 'published',
                 html: 'same',
                 previous: {
@@ -128,7 +128,7 @@ describe('MentionSendingService', function () {
                 getPostUrl: () => 'https://site.com/post/'
             });
             const stub = sinon.stub(service, 'sendAll');
-            await service.sendForEditedPost(createModel({
+            await service.sendForPost(createModel({
                 status: 'published',
                 html: 'updated',
                 previous: {
@@ -149,7 +149,7 @@ describe('MentionSendingService', function () {
                 getPostUrl: () => 'https://site.com/post/'
             });
             sinon.stub(service, 'sendAll').rejects(new Error('Internal error test'));
-            await service.sendForEditedPost(createModel({
+            await service.sendForPost(createModel({
                 status: 'published',
                 html: 'same',
                 previous: {
