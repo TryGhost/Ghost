@@ -112,7 +112,7 @@ function validateId(id) {
     if (id instanceof ObjectID) {
         return id;
     }
-    return new ObjectID;
+    return new ObjectID();
 }
 
 function validateValue(value) {
@@ -134,7 +134,7 @@ function validateType(type) {
 }
 
 function validateName(name, value, type) {
-    if (!name || typeof name !== 'string' || !name.match(/(arr|members)-\d{10}/i)) {
+    if (!name || !name.match(/(arr|members)-\d*/i)) {
         return `${type}-${value}`;
     }
 
