@@ -176,14 +176,15 @@ class EmailRenderer {
     }
 
     renderPostBaseHtml(post) {
+        const postUrl = this.#getPostUrl(post);
         let html;
         if (post.get('lexical')) {
             html = this.#renderers.lexical.render(
-                post.get('lexical'), {target: 'email', postUrl: post.url}
+                post.get('lexical'), {target: 'email', postUrl}
             );
         } else {
             html = this.#renderers.mobiledoc.render(
-                JSON.parse(post.get('mobiledoc')), {target: 'email', postUrl: post.url}
+                JSON.parse(post.get('mobiledoc')), {target: 'email', postUrl}
             );
         }
         return html;
