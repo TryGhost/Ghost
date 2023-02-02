@@ -1,4 +1,4 @@
-const LinkRedirectsService = require('../lib/LinkRedirectsService');
+const {LinkRedirectsService} = require('../index');
 const assert = require('assert');
 const sinon = require('sinon');
 const crypto = require('crypto');
@@ -73,7 +73,7 @@ describe('LinkRedirectsService', function () {
         it('redirects if found', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
-                    if (url.toString() === 'https://localhost:2368/a') {
+                    if (url.toString() === 'https://localhost:2368/r/a') {
                         return Promise.resolve({
                             to: new URL('https://localhost:2368/b')
                         });
@@ -88,7 +88,7 @@ describe('LinkRedirectsService', function () {
                 }
             });
             const req = {
-                originalUrl: '/a'
+                originalUrl: '/r/a'
             };
             const res = {
                 redirect: sinon.fake(),
@@ -111,11 +111,45 @@ describe('LinkRedirectsService', function () {
                 }
             });
             const req = {
-                url: '/a'
+                originalUrl: 'r/a'
             };
             const res = {};
             const next = sinon.fake();
             await instance.handleRequest(req, res, next);
+            assert.equal(next.callCount, 1);
+        });
+
+        it('does not redirect if url does not contain a redirect prefix on site with no subdir', async function () {
+            const instance = new LinkRedirectsService({
+                config: {
+                    baseURL: new URL('https://localhost:2368/')
+                }
+            });
+            const req = {
+                originalUrl: 'no_r/prefix'
+            };
+            const res = {};
+            const next = sinon.fake();
+
+            await instance.handleRequest(req, res, next);
+
+            assert.equal(next.callCount, 1);
+        });
+
+        it('does not redirect if url does not contain a redirect prefix on site with subdir', async function () {
+            const instance = new LinkRedirectsService({
+                config: {
+                    baseURL: new URL('https://localhost:2368/blog')
+                }
+            });
+            const req = {
+                originalUrl: 'blog/no_r/prefix'
+            };
+            const res = {};
+            const next = sinon.fake();
+
+            await instance.handleRequest(req, res, next);
+
             assert.equal(next.callCount, 1);
         });
     });
