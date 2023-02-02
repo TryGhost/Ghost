@@ -27,6 +27,7 @@ const GA_FEATURES = [
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'activitypub',
+    'webmentions',
     'emailErrors'
 ];
 
@@ -34,7 +35,6 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'lexicalEditor',
-    'webmentions',
     'webmentionEmail',
     'outboundLinkTagging',
     'milestoneEmails'
