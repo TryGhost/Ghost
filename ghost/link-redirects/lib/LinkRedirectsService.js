@@ -17,6 +17,9 @@ class LinkRedirectsService {
     /** @type URL */
     #baseURL;
 
+    /** @type String */
+    #redirectURLPrefix = 'r/';
+
     /**
      * @param {object} deps
      * @param {ILinkRedirectRepository} deps.linkRedirectRepository
@@ -43,7 +46,7 @@ class LinkRedirectsService {
         let url;
         while (!url || await this.#linkRedirectRepository.getByURL(url)) {
             const slug = crypto.randomBytes(4).toString('hex');
-            url = new URL(`r/${slug}`, this.#baseURL);
+            url = new URL(`${this.#redirectURLPrefix}${slug}`, this.#baseURL);
         }
         return url;
     }
@@ -82,6 +85,12 @@ class LinkRedirectsService {
      * @returns {Promise<void>}
      */
     async handleRequest(req, res, next) {
+        // skip handling if original url doesn't match the prefix
+        const fullURLWithRedirectPrefix = `${this.#baseURL.pathname}${this.#redirectURLPrefix}`;
+        if (!req.originalUrl.startsWith(fullURLWithRedirectPrefix)) {
+            return next();
+        }
+
         const url = new URL(req.originalUrl, this.#baseURL);
         const link = await this.#linkRedirectRepository.getByURL(url);
 
