@@ -81,7 +81,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
                     editor.update(() => {
                         const cardNode = $getNodeByKey(nodeKey);
 
-                        if (cardNode.isEmpty()) {
+                        if (cardNode.isEmpty?.()) {
                             $removeOrReplaceNodeWithParagraph(cardNode);
                         }
                     });
@@ -105,7 +105,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
                         deselect();
                         setEditing(false);
 
-                        if (cardNode.isEmpty()) {
+                        if (cardNode.isEmpty?.()) {
                             editor.update(() => {
                                 $removeOrReplaceNodeWithParagraph(cardNode);
                             });
@@ -134,7 +134,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
                                 if (isEditing) {
                                     editor.getRootElement().focus({preventScroll: true});
 
-                                    if (cardNode.isEmpty()) {
+                                    if (cardNode.isEmpty?.()) {
                                         if ($getRoot().getLastChild().is(cardNode)) {
                                             const paragraph = $createParagraphNode();
                                             $getRoot().append(paragraph);
