@@ -3,6 +3,7 @@ const ObjectID = require('bson-objectid');
 const Mention = require('../lib/Mention');
 const MentionsAPI = require('../lib/MentionsAPI');
 const InMemoryMentionRepository = require('../lib/InMemoryMentionRepository');
+const sinon = require('sinon');
 
 const mockRoutingService = {
     async pageExists() {
@@ -30,13 +31,17 @@ const mockWebmentionMetadata = {
     }
 };
 
-async function waitForOneSecond() {
-    await new Promise((resolve) => {
-        setTimeout(resolve, 1000);
-    });
+function addMinutes(date, minutes) {
+    date.setMinutes(date.getMinutes() + minutes);
+  
+    return date;
 }
 
 describe('MentionsAPI', function () {
+    beforeEach(function () {
+        sinon.restore();
+    });
+
     it('Can list paginated mentions', async function () {
         const repository = new InMemoryMentionRepository();
         const api = new MentionsAPI({
@@ -133,8 +138,7 @@ describe('MentionsAPI', function () {
             payload: {}
         });
 
-        // adds a second to the created_at date to ensure the order is correct
-        await waitForOneSecond();
+        sinon.useFakeTimers(addMinutes(new Date(), 10).getTime());
 
         const mentionTwo = await api.processWebmention({
             source: new URL('https://source2.com'),
@@ -151,8 +155,8 @@ describe('MentionsAPI', function () {
         });
 
         assert(page.meta.pagination.total === 2);
-        assert(page.data[0].id === mentionTwo.id);
-        assert(page.data[1].id === mentionOne.id);
+        assert(page.data[0].id === mentionTwo.id, 'First mention should be the second one in descending order');
+        assert(page.data[1].id === mentionOne.id, 'Second mention should be the first one in descending order');
     });
 
     it('Can list mentions in ascending order', async function () {
@@ -170,7 +174,7 @@ describe('MentionsAPI', function () {
             payload: {}
         });
 
-        await waitForOneSecond();
+        sinon.useFakeTimers(addMinutes(new Date(), 10).getTime());
 
         const mentionTwo = await api.processWebmention({
             source: new URL('https://source2.com'),
@@ -187,8 +191,8 @@ describe('MentionsAPI', function () {
         });
 
         assert(page.meta.pagination.total === 2);
-        assert(page.data[0].id === mentionOne.id);
-        assert(page.data[1].id === mentionTwo.id);
+        assert(page.data[0].id === mentionOne.id, 'First mention should be the first one in ascending order');
+        assert(page.data[1].id === mentionTwo.id, 'Second mention should be the second one in ascending order');
     });
 
     it('Can handle updating mentions', async function () {
