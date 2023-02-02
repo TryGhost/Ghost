@@ -7,7 +7,7 @@ module.exports = (model) => {
         target: json.target,
         timestamp: json.timestamp,
         payload: json.payload,
-        resource_id: json.resourceId,
+        resource: json.resource,
         source_title: json.sourceTitle,
         source_site_title: json.sourceSiteTitle,
         source_excerpt: json.sourceExcerpt,

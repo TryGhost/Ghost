@@ -5,7 +5,7 @@ export default Model.extend({
     source: attr('string'),
     target: attr('string'),
     timestamp: attr('date'),
-    resourceId: attr('string', {allowNull: true}),
+    resource: attr(),
     sourceTitle: attr('string'),
     sourceSiteTitle: attr('string'),
     sourceAuthor: attr('string'),

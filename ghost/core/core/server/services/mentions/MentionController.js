@@ -11,8 +11,25 @@ const logging = require('@tryghost/logging');
  */
 
 /**
+ * @typedef {object} MentionResource
+ * @prop {ObjectID} id
+ * @prop {string} type
+ * @prop {string} name
+ */
+
+/**
+ * @typedef {Mention} MentionDTO
+ * @prop {Resource} resource
+ */
+
+/**
  * @typedef {object} IJobService
  * @prop {(name: string, fn: Function) => void} addJob
+ */
+
+/**
+ * @typedef {object} IMentionResourceService
+ * @prop {(id: ObjectID)  => Promise<MentionResource>} getByID
  */
 
 module.exports = class MentionController {
@@ -22,19 +39,24 @@ module.exports = class MentionController {
     /** @type {IJobService} */
     #jobService;
 
+    /** @type {IMentionResourceService} */
+    #mentionResourceService;
+
     /**
      * @param {object} deps
      * @param {import('@tryghost/webmentions/lib/MentionsAPI')} deps.api
      * @param {IJobService} deps.jobService
+     * @param {IMentionResourceService} deps.mentionResourceService
      */
     async init(deps) {
         this.#api = deps.api;
         this.#jobService = deps.jobService;
+        this.#mentionResourceService = deps.mentionResourceService;
     }
 
     /**
      * @param {import('@tryghost/api-framework').Frame} frame
-     * @returns {Promise<Page<Mention>>}
+     * @returns {Promise<Page<MentionDTO>>}
      */
     async browse(frame) {
         let limit;
@@ -58,14 +80,34 @@ module.exports = class MentionController {
             order = 'created_at asc';
         }
 
-        const results = await this.#api.listMentions({
+        const mentions = await this.#api.listMentions({
             filter: frame.options.filter,
             order,
             limit,
             page
         });
 
-        return results;
+        const resources = await Promise.all(mentions.data.map((mention) => {
+            return this.#mentionResourceService.getByID(mention.resourceId);
+        }));
+
+        /** @type {Page<MentionDTO>} */
+        const result = {
+            data: mentions.data.map((mention, index) => {
+                const mentionDTO = {
+                    ...mention.toJSON(),
+                    resource: resources[index],
+                    toJSON() {
+                        return mentionDTO;
+                    }
+                };
+                delete mentionDTO.resourceId;
+                return mentionDTO;
+            }),
+            meta: mentions.meta
+        };
+
+        return result;
     }
 
     /**
