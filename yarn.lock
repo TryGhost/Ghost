@@ -11310,12 +11310,12 @@ ember-classic-decorator@3.0.1:
     ember-cli-babel "^7.26.11"
     ember-cli-htmlbars "^6.0.1"
 
-ember-cli-app-version@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-app-version/-/ember-cli-app-version-5.0.0.tgz#adad17c6f706f419b223707eec66dd1cd28530c3"
-  integrity sha512-afhx/CXDOMNXzoe4NDPy5WUfxWmYYHUzMCiTyvPBxCDBXYcMrtxNWxvgaSaeqcoHVEmqzeyBj8V82tzmT1dcyw==
+ember-cli-app-version@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-app-version/-/ember-cli-app-version-6.0.0.tgz#531cdd40c30076f0b14122c76d35a30543de21ef"
+  integrity sha512-XhzETSTy+RMTIyxM/FaZ/8aJvAwT/iIp8HC9zukpOaSPEm5i6Vm4tskeXY4OBnY3VwFWNXWssDt1hgIkUP76WQ==
   dependencies:
-    ember-cli-babel "^7.23.1"
+    ember-cli-babel "^7.26.11"
     git-repo-info "^2.1.1"
 
 ember-cli-babel-plugin-helpers@^1.0.0, ember-cli-babel-plugin-helpers@^1.1.0, ember-cli-babel-plugin-helpers@^1.1.1:

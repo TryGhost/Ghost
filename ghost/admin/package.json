@@ -73,7 +73,7 @@
     "ember-auto-import": "2.5.0",
     "ember-classic-decorator": "3.0.1",
     "ember-cli": "3.24.0",
-    "ember-cli-app-version": "5.0.0",
+    "ember-cli-app-version": "6.0.0",
     "ember-cli-babel": "7.26.11",
     "ember-cli-chart": "3.7.2",
     "ember-cli-code-coverage": "1.0.3",
