@@ -69,7 +69,7 @@
     "@testing-library/react": "13.4.0",
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",
-    "@uiw/react-textarea-code-editor": "2.0.6",
+    "@uiw/react-textarea-code-editor": "2.1.0",
     "@vitejs/plugin-react": "2.2.0",
     "@vitest/coverage-c8": "0.28.3",
     "@vitest/ui": "0.28.3",
