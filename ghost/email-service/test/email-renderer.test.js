@@ -260,12 +260,14 @@ describe('Email renderer', function () {
                         return '<p> Mobiledoc Test</p>';
                     }
                 }
+            },
+            getPostUrl: () => {
+                return 'http://example.com/post-id';
             }
         });
 
         it('returns correct empty segment for post', function () {
             let post = {
-                url: '',
                 get: (key) => {
                     if (key === 'lexical') {
                         return '{}';
@@ -276,7 +278,6 @@ describe('Email renderer', function () {
             response.should.eql([null]);
 
             post = {
-                url: '',
                 get: (key) => {
                     if (key === 'mobiledoc') {
                         return '{}';
@@ -295,11 +296,13 @@ describe('Email renderer', function () {
                             return '<p> Lexical Test <!--members-only--> members only section</p>';
                         }
                     }
+                },
+                getPostUrl: () => {
+                    return 'http://example.com/post-id';
                 }
             });
 
             let post = {
-                url: '',
                 get: (key) => {
                     if (key === 'lexical') {
                         return '{}';
@@ -318,11 +321,13 @@ describe('Email renderer', function () {
                             return '<html> <div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> </html>';
                         }
                     }
+                },
+                getPostUrl: () => {
+                    return 'http://example.com/post-id';
                 }
             });
 
             let post = {
-                url: '',
                 get: (key) => {
                     if (key === 'lexical') {
                         return '{}';
@@ -407,7 +412,6 @@ describe('Email renderer', function () {
 
         beforeEach(function () {
             basePost = {
-                url: '',
                 lexical: '{}',
                 visibility: 'public',
                 title: 'Test Post',
@@ -693,7 +697,6 @@ describe('Email renderer', function () {
         it('removes data-gh-segment and renders paywall', async function () {
             renderedPost = '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both <!--members-only--> finishing part only for members';
             let post = {
-                url: '',
                 related: () => {
                     return null;
                 },
