@@ -19,6 +19,7 @@ import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
 import {AudioPlugin} from '../plugins/AudioPlugin';
+import {VideoPlugin} from '../plugins/VideoPlugin';
 import '../styles/index.css';
 
 const KoenigEditor = ({
@@ -64,6 +65,7 @@ const KoenigEditor = ({
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
             <ImagePlugin />
             <AudioPlugin />
+            <VideoPlugin />
             <MarkdownPlugin />
             <DragDropPastePlugin />
             <HorizontalRulePlugin />

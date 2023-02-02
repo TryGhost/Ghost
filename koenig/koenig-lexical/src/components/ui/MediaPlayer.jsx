@@ -7,7 +7,7 @@ export function MediaPlayer({type, duration, theme, ...args}) {
     return (
         <div className="mt-auto flex w-full items-center py-2" {...args}>
             <PlayIcon className={`mr-2 h-[1.4rem] w-[1.4rem] ${theme === 'light' ? 'fill-white' : 'fill-black'}`} />
-            <div className="mb-[1px] font-sans text-sm font-medium text-grey-600">
+            <div className="mb-[1px] font-sans text-sm font-medium text-grey-300">
                 <span className={`${theme === 'light' ? 'text-white' : 'text-black'}`}>0:00 </span>
             / {duration}
             </div>

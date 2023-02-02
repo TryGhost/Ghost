@@ -131,6 +131,14 @@ describe('VideoNode', function () {
             videoNode.setDuration(78);
             videoNode.getFormattedDuration().should.equal('1:18');
         }));
+
+        it('has isEmpty() convenience method', editorTest(function () {
+            const videoNode = $createVideoNode(dataset);
+
+            videoNode.isEmpty().should.be.false;
+            videoNode.setSrc('');
+            videoNode.isEmpty().should.be.true;
+        }));
     });
 
     describe('exportJSON', function () {
@@ -337,6 +345,13 @@ describe('VideoNode', function () {
             const output = element.outerHTML;
             output.should.containEql('<figure class="kg-card kg-video-card kg-width-regular kg-card-hascaption"');
             output.should.containEql('<figcaption><strong>Caption</strong></figcaption>');
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const videoNode = $createVideoNode(dataset);
+            videoNode.hasEditMode().should.be.true;
         }));
     });
 });

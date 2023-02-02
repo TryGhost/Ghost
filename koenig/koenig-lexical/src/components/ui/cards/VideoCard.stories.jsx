@@ -68,3 +68,38 @@ Populated.args = {
     caption: 'Introducing the newest accessory for your Mac.'
 };
 
+export const ProgressVideo = Template.bind({});
+ProgressVideo.args = {
+    display: 'Editing',
+    cardWidth: 'regular',
+    thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+    customThumbnail: '',
+    totalDuration: '2:27',
+    caption: 'Introducing the newest accessory for your Mac.',
+    isVideoLoading: true,
+    videoUploadProgress: 60
+};
+
+export const ProgressCustomThumbnail = Template.bind({});
+ProgressCustomThumbnail.args = {
+    display: 'Editing',
+    cardWidth: 'regular',
+    thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+    customThumbnail: '',
+    totalDuration: '2:27',
+    caption: 'Introducing the newest accessory for your Mac.',
+    isCustomThumbnailLoading: true,
+    customThumbnailUploadProgress: 60
+};
+
+export const EnabledLoop = Template.bind({});
+EnabledLoop.args = {
+    display: 'Editing',
+    cardWidth: 'regular',
+    thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+    customThumbnail: '',
+    totalDuration: '2:27',
+    caption: 'Introducing the newest accessory for your Mac.',
+    isLoopChecked: true
+};
+

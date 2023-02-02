@@ -5,6 +5,7 @@ import {AsideNode} from './AsideNode';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
 import {CodeBlockNode} from './CodeBlockNode';
 import {AudioNode} from './AudioNode';
+import {VideoNode} from './VideoNode';
 import {ImageNode} from './ImageNode';
 import {MarkdownNode} from './MarkdownNode';
 
@@ -19,7 +20,8 @@ const DEFAULT_NODES = [
     HorizontalRuleNode,
     ImageNode,
     MarkdownNode,
-    AudioNode
+    AudioNode,
+    VideoNode
 ];
 
 export default DEFAULT_NODES;
