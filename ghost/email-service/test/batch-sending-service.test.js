@@ -119,6 +119,43 @@ describe('Batch Sending Service', function () {
             assert.equal(afterEmailModel.get('error'), 'Unexpected test error');
         });
 
+        it('retries saving error state if sending fails', async function () {
+            const Email = createModelClass({
+                findOne: {
+                    status: 'pending'
+                }
+            });
+            const service = new BatchSendingService({
+                models: {Email},
+                AFTER_RETRY_CONFIG: {maxRetries: 20, maxTime: 2000, sleep: 1}
+            });
+            let afterEmailModel;
+            const sendEmail = sinon.stub(service, 'sendEmail').callsFake((email) => {
+                afterEmailModel = email;
+                let called = 0;
+                const originalSave = email.save;
+                email.save = async function () {
+                    called += 1;
+                    if (called === 2) {
+                        return await originalSave.call(this, ...arguments);
+                    }
+                    throw new Error('Database connection error');
+                };
+                return Promise.reject(new Error('Unexpected test error'));
+            });
+            const result = await service.emailJob({emailId: '123'});
+            assert.equal(result, undefined);
+            sinon.assert.calledTwice(errorLog);
+            const loggedExeption = errorLog.getCall(1).args[0];
+            assert.match(loggedExeption.message, /\[BULK_EMAIL_DB_RETRY\] email 123 -> failed/);
+            assert.match(loggedExeption.context, /Database connection error/);
+            assert.equal(loggedExeption.code, 'BULK_EMAIL_DB_RETRY');
+
+            sinon.assert.calledOnce(sendEmail);
+            assert.equal(afterEmailModel.get('status'), 'failed', 'The email status is failed after sending');
+            assert.equal(afterEmailModel.get('error'), 'Unexpected test error');
+        });
+
         it('saves default error message if sending fails', async function () {
             const Email = createModelClass({
                 findOne: {
@@ -735,6 +772,217 @@ describe('Batch Sending Service', function () {
             assert.equal(batch.get('error_status_code'), 500);
             assert.equal(batch.get('error_message'), 'Test error');
             assert.equal(batch.get('error_data'), '{"error":"test","messageData":"test"}');
+        });
+
+        it('Retries fetching recipients if 0 are returned', async function () {
+            const EmailBatch = createModelClass({
+                findOne: {
+                    status: 'pending',
+                    member_segment: null
+                }
+            });
+            const sendingService = {
+                send: sinon.stub().resolves({id: 'providerid@example.com'})
+            };
+
+            const WrongEmailRecipient = createModelClass({
+                findAll: []
+            });
+
+            let called = 0;
+            const MappedEmailRecipient = {
+                ...EmailRecipient,
+                findAll() {
+                    called += 1;
+                    if (called === 1) {
+                        return WrongEmailRecipient.findAll(...arguments);
+                    }
+                    return EmailRecipient.findAll(...arguments);
+                }
+            };
+
+            const findOne = sinon.spy(EmailBatch, 'findOne');
+            const service = new BatchSendingService({
+                models: {EmailBatch, EmailRecipient: MappedEmailRecipient},
+                sendingService,
+                BEFORE_RETRY_CONFIG: {maxRetries: 10, maxTime: 2000, sleep: 1}
+            });
+
+            const result = await service.sendBatch({
+                email: createModel({}),
+                batch: createModel({}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            assert.equal(result, true);
+            sinon.assert.calledOnce(errorLog);
+            const loggedExeption = errorLog.firstCall.args[0];
+            assert.match(loggedExeption.message, /\[BULK_EMAIL_DB_RETRY\] getBatchMembers batch/);
+            assert.match(loggedExeption.context, /No members found for batch/);
+            assert.equal(loggedExeption.code, 'BULK_EMAIL_DB_RETRY');
+
+            sinon.assert.calledOnce(sendingService.send);
+
+            sinon.assert.calledOnce(findOne);
+            const batch = await findOne.firstCall.returnValue;
+            assert.equal(batch.get('status'), 'submitted');
+            assert.equal(batch.get('provider_id'), 'providerid@example.com');
+
+            const {members} = sendingService.send.firstCall.args[0];
+            assert.equal(members.length, 2);
+        });
+
+        it('Stops retrying after the email retry cut off time', async function () {
+            const EmailBatch = createModelClass({
+                findOne: {
+                    status: 'pending',
+                    member_segment: null
+                }
+            });
+            const sendingService = {
+                send: sinon.stub().resolves({id: 'providerid@example.com'})
+            };
+
+            const WrongEmailRecipient = createModelClass({
+                findAll: []
+            });
+
+            let called = 0;
+            const MappedEmailRecipient = {
+                ...EmailRecipient,
+                findAll() {
+                    called += 1;
+                    return WrongEmailRecipient.findAll(...arguments);
+                }
+            };
+
+            const service = new BatchSendingService({
+                models: {EmailBatch, EmailRecipient: MappedEmailRecipient},
+                sendingService,
+                BEFORE_RETRY_CONFIG: {maxRetries: 10, maxTime: 2000, sleep: 300}
+            });
+
+            const email = createModel({});
+            email._retryCutOffTime = new Date(Date.now() + 400);
+
+            const result = await service.sendBatch({
+                email,
+                batch: createModel({}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+            assert.equal(called, 2);
+
+            assert.equal(result, false);
+            sinon.assert.calledThrice(errorLog); // First retry, second retry failed + bulk email send failed
+            const loggedExeption = errorLog.firstCall.args[0];
+            assert.match(loggedExeption.message, /\[BULK_EMAIL_DB_RETRY\] getBatchMembers batch/);
+            assert.match(loggedExeption.context, /No members found for batch/);
+            assert.equal(loggedExeption.code, 'BULK_EMAIL_DB_RETRY');
+
+            sinon.assert.notCalled(sendingService.send);
+        });
+    });
+
+    describe('retryDb', function () {
+        it('Does retry', async function () {
+            const service = new BatchSendingService({});
+            let callCount = 0;
+            const result = await service.retryDb(() => {
+                callCount += 1;
+                if (callCount === 3) {
+                    return 'ok';
+                }
+                throw new Error('Test error');
+            }, {
+                maxRetries: 2, sleep: 10
+            });
+            assert.equal(result, 'ok');
+            assert.equal(callCount, 3);
+        });
+
+        it('Stops after maxRetries', async function () {
+            const service = new BatchSendingService({});
+            let callCount = 0;
+            const result = service.retryDb(() => {
+                callCount += 1;
+                if (callCount === 3) {
+                    return 'ok';
+                }
+                throw new Error('Test error');
+            }, {
+                maxRetries: 1, sleep: 10
+            });
+            await assert.rejects(result, /Test error/);
+            assert.equal(callCount, 2);
+        });
+
+        it('Stops after stopAfterDate', async function () {
+            const clock = sinon.useFakeTimers({now: new Date(2023, 0, 1, 0, 0, 0, 0), shouldAdvanceTime: true});
+            const service = new BatchSendingService({});
+            let callCount = 0;
+            const result = service.retryDb(() => {
+                callCount += 1;
+                clock.tick(1000 * 60);
+                throw new Error('Test error');
+            }, {
+                maxRetries: 1000, stopAfterDate: new Date(2023, 0, 1, 0, 2, 50)
+            });
+            await assert.rejects(result, /Test error/);
+            assert.equal(callCount, 3);
+        });
+
+        it('Stops after maxTime', async function () {
+            const clock = sinon.useFakeTimers({now: new Date(2023, 0, 1, 0, 0, 0, 0), shouldAdvanceTime: true});
+            const service = new BatchSendingService({});
+            let callCount = 0;
+            const result = service.retryDb(() => {
+                callCount += 1;
+                clock.tick(1000 * 60);
+                throw new Error('Test error');
+            }, {
+                maxRetries: 1000, maxTime: 1000 * 60 * 3 - 1
+            });
+            await assert.rejects(result, /Test error/);
+            assert.equal(callCount, 3);
+        });
+
+        it('Resolves after maxTime', async function () {
+            const clock = sinon.useFakeTimers({now: new Date(2023, 0, 1, 0, 0, 0, 0), shouldAdvanceTime: true});
+            const service = new BatchSendingService({});
+            let callCount = 0;
+            const result = await service.retryDb(() => {
+                callCount += 1;
+                clock.tick(1000 * 60);
+
+                if (callCount === 3) {
+                    return 'ok';
+                }
+                throw new Error('Test error');
+            }, {
+                maxRetries: 1000, maxTime: 1000 * 60 * 3
+            });
+            assert.equal(result, 'ok');
+            assert.equal(callCount, 3);
+        });
+
+        it('Resolves with stopAfterDate', async function () {
+            const clock = sinon.useFakeTimers({now: new Date(2023, 0, 1, 0, 0, 0, 0), shouldAdvanceTime: true});
+            const service = new BatchSendingService({});
+            let callCount = 0;
+            const result = await service.retryDb(() => {
+                callCount += 1;
+                clock.tick(1000 * 60);
+                if (callCount === 4) {
+                    return 'ok';
+                }
+                throw new Error('Test error');
+            }, {
+                maxRetries: 1000, stopAfterDate: new Date(2023, 0, 1, 0, 10, 50)
+            });
+            assert.equal(result, 'ok');
+            assert.equal(callCount, 4);
         });
     });
 });
