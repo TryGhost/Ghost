@@ -1142,3 +1142,4 @@ remove|ember-template-lint|no-action|4|55|4|55|141d456b03124abca146e58e4ae15825f
 remove|ember-template-lint|no-action|4|79|4|79|d465b362b15b90cf42a093e72895155f49cdf6f2|1662681600000|1673053200000|1678237200000|app/components/modal-stripe-connect.hbs
 remove|ember-template-lint|no-action|21|91|21|91|ebbd89a393bcec7f537f2104ace2a6b1941a19a7|1662681600000|1673053200000|1678237200000|app/components/modal-stripe-connect.hbs
 remove|ember-template-lint|no-action|22|12|22|12|d465b362b15b90cf42a093e72895155f49cdf6f2|1662681600000|1673053200000|1678237200000|app/components/modal-stripe-connect.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|8481ae69591188cc636eaae534ae8d328d95ef04|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-callout.hbs
