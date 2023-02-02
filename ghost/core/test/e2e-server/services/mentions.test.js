@@ -1,70 +1,237 @@
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
-const MentionsService = require('../../../core/server/services/mentions');
-const { MentionSendingService } = require('@tryghost/webmentions');
+const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
 const nock = require('nock');
+const assert = require('assert');
+const sleep = require('../../utils/sleep');
+const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
+const dnsPromises = require('dns').promises;
 
 let agent;
-let post_id;
-let post_body;
+let mentionUrl = new URL('https://www.otherghostsite.com/');
+let mentionHtml = `Check out this really cool <a href="${mentionUrl.href}">other site</a>.`;
+let endpointUrl = new URL('https://www.endpoint.com/');
+let targetHtml = `<head><link rel="webmention" href="${endpointUrl.href}"</head><body>Some content</body>`;
+let mentionMock;
+let endpointMock;
+
+const mentionsPost = {
+    title: 'testing sending webmentions',
+    mobiledoc: markdownToMobiledoc(mentionHtml)
+};
 
 describe('Mentions Service', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsAdmin();
-        await mockManager.mockLabsEnabled('webmentions');
-        MentionsService.init();
-
-        // problematic - can't stub this without creating an object..
-        //  how do we access the SendingService instance created by MentionsService.init?
-        let sendingStub = sinon.stub(MentionSendingService, 'sendForEditedPost')
         nock.disableNetConnect(); // make sure we don't actually send mentions
+    });
+
+    beforeEach(async function () {
+        await mockManager.mockLabsEnabled('webmentions');
+
+        // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
+        sinon.stub(dnsPromises, 'lookup').callsFake(function () {
+            return Promise.resolve({address: '123.123.123.123'});
+        });
+
+        // mock response from website mentioned by post to provide endpoint
+        mentionMock = nock(mentionUrl.href)
+            .get('/')
+            .reply(200, targetHtml, {'content-type': 'text/html'});
+
+        // mock response from mention endpoint, usually 201, sometimes 202
+        endpointMock = nock(endpointUrl.href)
+            .post('/')
+            .reply(201);
     });
 
     afterEach(function () {
         mockManager.restore();
-    })
+        nock.cleanAll();
+    });
 
     after(function () {
         nock.enableNetConnect();
-    })
-
-    describe('Sending Service', async function () {
-
-        it('Is not triggered on a draft post.edited', async function () {
-            const res = await agent
-                .post('posts/')
-                .body({
-                    posts: [{
-                        title: 'testing post.edited',
-                        status: 'draft'
-                    }]
-                })
-                .expectStatus(201);
-
-            // used for subsequent tests to reuse same post
-            post_id = res.body.posts[0].id;
-            post_body = res.body.posts[0];
-
-            // TODO: check for trigger
-        });
-
+        nock.cleanAll();
     });
 
-    // it('Is triggered on a publishing a post', async function () {
-    //     const res = await agent
-    //         .put('posts/' + post_id)
-    //         .body({
-    //             posts: [post_body]
-    //         })
-    //         .expectStatus(200);
+    describe('Sending Service', function () {
+        describe(`does not send when we expect it to not send`, function () {
+            it('New draft post created', async function () {
+                let publishedPost = {status: 'draft', ...mentionsPost};
+                await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
 
-    //     // TODO: check for trigger
-    // });
+                assert.equal(mentionMock.isDone(), false);
+                assert.equal(endpointMock.isDone(), false);
+            });
 
-    // TODO: triggered on post.edited for status = published (and published.edited)
+            it('Respects the disabled flag', async function () {
+                await mockManager.mockLabsDisabled('webmentions');
+                let publishedPost = {status: 'published', ...mentionsPost};
+                await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
 
+                assert.equal(mentionMock.isDone(), false);
+                assert.equal(endpointMock.isDone(), false);
+            });
+
+            // these don't actually trigger post.published
+            it('Email only post published', async function () {
+                let publishedPost = {status: 'published', email_only: true, ...mentionsPost};
+                await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
+
+                assert.equal(mentionMock.isDone(), false);
+                assert.equal(endpointMock.isDone(), false);
+            });
+        });
+
+        describe(`does send when we expect it to send`, function () {
+            it('Newly published post (post.published)', async function () {
+                let publishedPost = {status: 'published', ...mentionsPost};
+                await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
+
+                // the r
+                await sleep(10);
+
+                assert.equal(mentionMock.isDone(), true);
+                assert.equal(endpointMock.isDone(), true);
+            });
+
+            it('Edited published post (post.published.edited)', async function () {
+                let publishedPost = {status: 'published', ...mentionsPost};
+                let res = await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
+
+                await sleep(10);
+
+                // while not the point of the test, we should have real links/mentions to start with
+                assert.equal(mentionMock.isDone(), true);
+                assert.equal(endpointMock.isDone(), true);
+
+                // reset mocks for mention
+                let mentionMockTwo = nock(mentionUrl.href)
+                    .get('/')
+                    .reply(200, targetHtml, {'content-type': 'text/html'});
+                let endpointMockTwo = nock(endpointUrl.href)
+                    .post('/')
+                    .reply(201);
+
+                let postId = res.body.posts[0].id;
+                let editedPost = {
+                    mobiledoc: markdownToMobiledoc(mentionHtml + 'More content'),
+                    updated_at: res.body.posts[0].updated_at
+                };
+                // moving back to draft is how we unpublish
+                await agent.put(`posts/${postId}/`)
+                    .body({posts: [editedPost]})
+                    .expectStatus(200);
+
+                await sleep(10);
+
+                assert.equal(mentionMockTwo.isDone(), true);
+                assert.equal(endpointMockTwo.isDone(), true);
+            });
+            
+            it('Unpublished post (post.unpublished)', async function () {
+                let publishedPost = {status: 'published', ...mentionsPost};
+                let res = await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
+
+                await sleep(10);
+
+                // while not the point of the test, we should have real links/mentions to start with
+                assert.equal(mentionMock.isDone(), true);
+                assert.equal(endpointMock.isDone(), true);
+
+                // reset mocks for mention
+                let mentionMockTwo = nock(mentionUrl.href)
+                    .get('/')
+                    .reply(200, targetHtml, {'content-type': 'text/html'});
+                let endpointMockTwo = nock(endpointUrl.href)
+                    .post('/')
+                    .reply(201);
+
+                let postId = res.body.posts[0].id;
+                // moving back to draft is how we unpublish
+                let unpublishedPost = {
+                    status: 'draft', 
+                    updated_at: res.body.posts[0].updated_at
+                };
+                await agent.put(`posts/${postId}/`)
+                    .body({posts: [unpublishedPost]})
+                    .expectStatus(200);
+
+                await sleep(10);
+
+                assert.equal(mentionMockTwo.isDone(), true);
+                assert.equal(endpointMockTwo.isDone(), true);
+            });
+
+            it('Sends for links that got removed from a post', async function () {
+                let publishedPost = {status: 'published', ...mentionsPost};
+                let res = await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
+
+                await sleep(10);
+
+                // while not the point of the test, we should have real links/mentions to start with
+                assert.equal(mentionMock.isDone(), true);
+                assert.equal(endpointMock.isDone(), true);
+
+                // reset mocks for mention
+                let mentionMockTwo = nock(mentionUrl.href)
+                    .get('/')
+                    .reply(200, targetHtml, {'content-type': 'text/html'});
+                let endpointMockTwo = nock(endpointUrl.href)
+                    .post('/')
+                    .reply(201);
+
+                let postId = res.body.posts[0].id;
+                let editedPost = {
+                    mobiledoc: markdownToMobiledoc(`mentions were removed from this post`),
+                    updated_at: res.body.posts[0].updated_at
+                };
+                await agent.put(`posts/${postId}/`)
+                    .body({posts: [editedPost]})
+                    .expectStatus(200);
+
+                await sleep(10);
+
+                assert.equal(mentionMockTwo.isDone(), true);
+                assert.equal(endpointMockTwo.isDone(), true);
+            });
+
+            // there's no special handling for this atm, but could be down the road
+            it('New paid post', async function () {
+                let publishedPost = {status: 'published', visibility: 'paid', ...mentionsPost};
+                await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
+
+                await sleep(10);
+
+                assert.equal(mentionMock.isDone(), true);
+                assert.equal(endpointMock.isDone(), true);
+            });
+        });
+    });
 });
-
-// TODO: do not send if webmentions disabled
