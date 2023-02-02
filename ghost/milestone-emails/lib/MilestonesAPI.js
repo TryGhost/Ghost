@@ -42,6 +42,7 @@ module.exports = class MilestonesAPI {
      * @param {object} milestone
      * @param {'arr'|'members'} milestone.type
      * @param {number} milestone.value
+     * @param {string} milestone.currency
      *
      * @returns {Promise<boolean>}
      */
@@ -50,7 +51,7 @@ module.exports = class MilestonesAPI {
         let existingMilestone = null;
 
         if (milestone.type === 'arr') {
-            existingMilestone = await this.#repository.getByARR(milestone.value) || false;
+            existingMilestone = await this.#repository.getByARR(milestone.value, milestone?.currency) || false;
         } else if (milestone.type === 'members') {
             existingMilestone = await this.#repository.getByCount(milestone.value) || false;
         }
@@ -70,8 +71,12 @@ module.exports = class MilestonesAPI {
         const milestoneExists = await this.checkMilestoneExists(milestone);
 
         if (milestoneExists) {
+            const milestoneName = milestone.type === 'arr'
+                ? `${milestone.type}-${milestone.value}-${milestone.currency}`
+                : `${milestone.type}-${milestone.value}`;
+
             throw new errors.ValidationError({
-                message: `Milestone ${milestone.type}-${milestone.value} already exists`
+                message: `Milestone ${milestoneName} already exists`
             });
         }
 

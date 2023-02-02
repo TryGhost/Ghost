@@ -9,11 +9,13 @@
 module.exports = class InMemoryMilestoneRepository {
     /** @type {Milestone[]} */
     #store = [];
+
     /** @type {Object.<string, true>} */
     #ids = {};
 
     /**
      * @param {Milestone} milestone
+     *
      * @returns {Promise<void>}
      */
     async save(milestone) {
@@ -30,6 +32,7 @@ module.exports = class InMemoryMilestoneRepository {
 
     /**
      * @param {'arr'|'members'} type
+     *
      * @returns {Promise<Milestone>}
      */
     async getLatestByType(type) {
@@ -55,17 +58,20 @@ module.exports = class InMemoryMilestoneRepository {
 
     /**
      * @param {number} value
+     * @param {string} currency
+     *
      * @returns {Promise<Milestone>}
      */
-    async getByARR(value) {
+    async getByARR(value, currency = 'usd') {
         // find a milestone of the ARR type by a given value
         return this.#store.find((item) => {
-            return item.value === value && item.type === 'arr';
+            return item.value === value && item.type === 'arr' && item.currency === currency;
         });
     }
 
     /**
      * @param {number} value
+     *
      * @returns {Promise<Milestone>}
      */
     async getByCount(value) {

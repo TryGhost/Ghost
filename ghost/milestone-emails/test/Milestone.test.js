@@ -2,21 +2,27 @@ const assert = require('assert');
 const ObjectID = require('bson-objectid');
 const Milestone = require('../lib/Milestone');
 
-const validInput = {
-    type: 'members',
+const validInputARR = {
+    type: 'arr',
     value: 100
+};
+
+const validInputMembers = {
+    type: 'members',
+    value: 300
 };
 
 describe('Milestone', function () {
     describe('toJSON', function () {
-        it('Returns a object with the expected properties', async function () {
-            const milestone = await Milestone.create(validInput);
+        it('Returns an object with the expected properties', async function () {
+            const milestone = await Milestone.create(validInputARR);
             const actual = Object.keys(milestone.toJSON());
             const expected = [
                 'id',
                 'name',
                 'type',
                 'value',
+                'currency',
                 'createdAt',
                 'emailSentAt'
             ];
@@ -37,7 +43,11 @@ describe('Milestone', function () {
                 let errored = false;
                 try {
                     await Milestone.create({
-                        ...validInput,
+                        ...validInputARR,
+                        ...invalidInput
+                    });
+                    await Milestone.create({
+                        ...validInputMembers,
                         ...invalidInput
                     });
                 } catch (err) {
@@ -61,25 +71,44 @@ describe('Milestone', function () {
                 {createdAt: '2023-01-01T00:00:00Z'},
                 {emailSentAt: new Date()},
                 {emailSentAt: '2023-01-01T00:00:00Z'},
-                {emailSentAt: null}
+                {emailSentAt: null},
+                {currency: 'usd'},
+                {currency: null},
+                {currency: 1234},
+                {currency: 'not-a-currency'}
             ];
 
             for (const localValidInput of validInputs) {
                 await Milestone.create({
-                    ...validInput,
+                    ...validInputARR,
+                    ...localValidInput
+                });
+                await Milestone.create({
+                    ...validInputMembers,
                     ...localValidInput
                 });
             }
         });
 
-        it('Will generate a valid name', async function () {
+        it('Will generate a valid name for ARR milestone', async function () {
             const milestone = await Milestone.create({
-                ...validInput,
+                ...validInputARR,
                 value: 500,
-                type: 'arr'
+                type: 'arr',
+                currency: 'aud'
             });
 
-            assert(milestone.name === 'arr-500');
+            assert(milestone.name === 'arr-500-aud');
+        });
+
+        it('Will generate a valid name for Members milestone', async function () {
+            const milestone = await Milestone.create({
+                ...validInputMembers,
+                value: 100,
+                type: 'members'
+            });
+
+            assert(milestone.name === 'members-100');
         });
     });
 });

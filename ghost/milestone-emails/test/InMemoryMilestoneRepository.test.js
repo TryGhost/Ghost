@@ -22,13 +22,15 @@ describe('InMemoryMilestoneRepository', function () {
                 type: 'arr',
                 value: 50000,
                 createdAt: '2023-02-01T01:00:00Z',
-                emailSentAt: '2023-02-01T01:00:00Z'
+                emailSentAt: '2023-02-01T01:00:00Z',
+                currency: 'usd'
             },
             {
                 type: 'arr',
                 value: 60000,
                 createdAt: '2023-02-01T01:00:00Z',
-                emailSentAt: '2023-02-01T01:00:00Z'
+                emailSentAt: '2023-02-01T01:00:00Z',
+                currency: 'usd'
             },
             {
                 type: 'members',
@@ -72,8 +74,8 @@ describe('InMemoryMilestoneRepository', function () {
         const latestArrMilestone = await repository.getLatestByType('arr');
         const timeDiff = new Date(latestArrMilestone.createdAt) - new Date('2023-02-01T01:00:00Z');
         assert(timeDiff === 0);
-        assert(latestArrMilestone.type === 'arr');
         assert(latestArrMilestone.value === 60000);
+        assert(latestArrMilestone.type = 'arr');
     });
 
     it('Can return the last sent email', async function () {
@@ -83,11 +85,13 @@ describe('InMemoryMilestoneRepository', function () {
     });
 
     it('Can return the ARR milestone for a given value', async function () {
-        const arrMilestoneForValue = await repository.getByARR(50000);
+        const arrMilestoneForValue = await repository.getByARR(50000, 'usd');
         const timeDiff = new Date(arrMilestoneForValue.createdAt) - new Date('2023-02-01T01:00:00Z');
         assert(timeDiff === 0);
         assert(arrMilestoneForValue.type === 'arr');
         assert(arrMilestoneForValue.value === 50000);
+        assert(arrMilestoneForValue.currency === 'usd');
+        assert(arrMilestoneForValue.name === 'arr-50000-usd');
     });
 
     it('Can return the Members count milestone for a given value', async function () {
@@ -96,5 +100,6 @@ describe('InMemoryMilestoneRepository', function () {
         assert(timeDiff === 0);
         assert(membersCountForValue.type === 'members');
         assert(membersCountForValue.value === 100);
+        assert(membersCountForValue.name === 'members-100');
     });
 });

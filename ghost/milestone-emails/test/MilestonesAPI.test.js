@@ -80,7 +80,26 @@ describe('MilestonesAPI', function () {
 
             await api.processMilestone({
                 type: 'arr',
-                value: 100
+                value: 100,
+                currency: 'usd'
+            });
+        } catch (err) {
+            errored = true;
+        } finally {
+            assert(errored);
+        }
+
+        errored = false;
+
+        try {
+            await api.processMilestone({
+                type: 'members',
+                value: 1000
+            });
+
+            await api.processMilestone({
+                type: 'members',
+                value: 1000
             });
         } catch (err) {
             errored = true;

@@ -11,7 +11,7 @@ module.exports = class Milestone {
     }
 
     /**
-     * @type {'arr' | 'members'}
+     * @type {'arr'|'members'}
      */
     #type;
     get type() {
@@ -32,13 +32,19 @@ module.exports = class Milestone {
         return this.#value;
     }
 
+    /** @type {string} */
+    #currency;
+    get currency() {
+        return this.#currency;
+    }
+
     /** @type {Date} */
     #createdAt;
     get createdAt() {
         return this.#createdAt;
     }
 
-    /** @type {Date | null} */
+    /** @type {Date|null} */
     #emailSentAt;
     get emailSentAt() {
         return this.#emailSentAt;
@@ -50,6 +56,7 @@ module.exports = class Milestone {
             name: this.name,
             type: this.type,
             value: this.value,
+            currency: this.currency,
             createdAt: this.createdAt,
             emailSentAt: this.emailSentAt
         };
@@ -61,6 +68,7 @@ module.exports = class Milestone {
         this.#name = data.name;
         this.#type = data.type;
         this.#value = data.value;
+        this.#currency = data.currency;
         this.#createdAt = data.createdAt;
         this.#emailSentAt = data.emailSentAt;
     }
@@ -70,10 +78,12 @@ module.exports = class Milestone {
      * @returns {Promise<Milestone>}
      */
     static async create(data) {
+        // order of validation matters!
         const id = validateId(data.id);
         const type = validateType(data.type);
+        const currency = validateCurrency(type, data?.currency);
         const value = validateValue(data.value);
-        const name = validateName(data.name, value, type);
+        const name = validateName(data.name, value, type, currency);
         const emailSentAt = validateEmailSentAt(data);
 
         /** @type Date */
@@ -96,12 +106,19 @@ module.exports = class Milestone {
             name,
             type,
             value,
+            currency,
             createdAt,
             emailSentAt
         });
     }
 };
 
+/**
+ *
+ * @param {ObjectID|string|null} id
+ *
+ * @returns {ObjectID}
+ */
 function validateId(id) {
     if (!id) {
         return new ObjectID();
@@ -115,6 +132,12 @@ function validateId(id) {
     return new ObjectID();
 }
 
+/**
+ *
+ * @param {number|null} value
+ *
+ * @returns {number}
+ */
 function validateValue(value) {
     if (!value || typeof value !== 'number' || value === 0) {
         throw new ValidationError({
@@ -125,6 +148,12 @@ function validateValue(value) {
     return value;
 }
 
+/**
+ *
+ * @param {'arr'|'members'} type
+ *
+ * @returns {string}
+ */
 function validateType(type) {
     if (type === 'arr') {
         return 'arr';
@@ -133,14 +162,53 @@ function validateType(type) {
     return 'members';
 }
 
-function validateName(name, value, type) {
+/**
+ *
+ * @param {'arr'|'members'} type
+ * @param {string|null} currency
+ *
+ * @returns {string}
+ */
+function validateCurrency(type, currency) {
+    if (type === 'members') {
+        return null;
+    }
+
+    if (!currency || (currency && typeof currency !== 'string')) {
+        return 'usd';
+    }
+
+    if (currency.length > 3) {
+        return currency.slice(0, 3);
+    }
+
+    return currency;
+}
+
+/**
+ *
+ * @param {string} name
+ * @param {number} value
+ * @param {'arr'|'members'} type
+ * @param {string|null} currency
+ *
+ * @returns {string}
+ */
+function validateName(name, value, type, currency) {
     if (!name || !name.match(/(arr|members)-\d*/i)) {
-        return `${type}-${value}`;
+        return type === 'arr' ? `${type}-${value}-${currency}` : `${type}-${value}`;
     }
 
     return name;
 }
 
+/**
+ *
+ * @param {Object} data
+ * @param {Date|null} data.emailSentAt
+ *
+ * @returns {Date|null}
+ */
 function validateEmailSentAt(data) {
     let emailSentAt;
     if (data.emailSentAt instanceof Date) {
