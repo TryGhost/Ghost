@@ -534,6 +534,20 @@ describe('Members API', function () {
             });
     });
 
+    it('Can filter by tier id', async function () {
+        const products = await getPaidProduct();
+        await agent
+            .get(`/members/?filter=tier_id:[${products.toJSON().id}]`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(4).fill(memberMatcherShallowIncludes)
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
     it('Can filter using contains operators', async function () {
         await agent
             .get(`/members/?filter=name:~'Venkman'`)
