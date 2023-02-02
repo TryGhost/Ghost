@@ -24,7 +24,9 @@
 
         <div class="kg-card kg-callout-card kg-callout-card-{{@payload.backgroundColor}}">
             {{#if @payload.calloutEmoji}}
-            <button type="button" class="kg-callout-emoji {{if this.isPickerVisible "kg-emoji-picker-active"}}" {{on "click" this.changeEmoji}}>{{@payload.calloutEmoji}}</button>
+            <div tabindex="-1">
+                <button type="button" class="kg-callout-emoji {{if this.isPickerVisible "kg-emoji-picker-active"}}" {{on "click" this.changeEmoji}}>{{@payload.calloutEmoji}}</button>
+            </div>
             {{/if}}
             <KoenigBasicHtmlInput
                 @html={{@payload.calloutText}}
