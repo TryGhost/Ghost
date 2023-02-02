@@ -6,7 +6,7 @@ Object {
     Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "payload": null,
-      "resource_id": null,
+      "resource": null,
       "source": Any<String>,
       "source_author": null,
       "source_excerpt": null,
@@ -20,7 +20,7 @@ Object {
     Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "payload": null,
-      "resource_id": null,
+      "resource": null,
       "source": Any<String>,
       "source_author": null,
       "source_excerpt": null,
