@@ -1,4 +1,3 @@
-const sinon = require('sinon');
 const assert = require('assert');
 
 const models = require('../../../../../core/server/models');
@@ -6,7 +5,7 @@ const models = require('../../../../../core/server/models');
 const serialize = require('../../../../../core/server/services/webhooks/serialize');
 
 // Mocked internals
-const membersService = require('../../../../../core/server/services/members');
+const tiersService = require('../../../../../core/server/services/tiers');
 
 const {fixtureManager} = require('../../../../utils/e2e-framework');
 
@@ -16,13 +15,15 @@ describe('WebhookService - Serialize', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(membersService, 'api').get(() => {
-            return {
-                productRepository: {
-                    list: sinon.stub().returns({})
-                }
-            };
-        });
+        tiersService.api = {
+            browse() {
+                return {};
+            }
+        };
+    });
+
+    afterEach(function () {
+        tiersService.api = null;
     });
 
     it('rejects with no arguments', async function () {
