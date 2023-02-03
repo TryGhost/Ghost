@@ -17,5 +17,9 @@ module.exports = {
 
     get urlRedirects() {
         return require('./url-redirects');
+    },
+
+    get mentionsLimiter() {
+        return require('./mentions-limiter');
     }
 };
