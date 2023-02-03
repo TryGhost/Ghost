@@ -846,16 +846,17 @@ module.exports = class MemberRepository {
         }
 
         if (!options.transacting) {
-            const transactor = this._Member.transaction((transacting) => {
-                return this.linkSubscription(data, {
+            let executionPromise = null;
+            await this._Member.transaction(async (transacting) => {
+                await this.linkSubscription(data, {
                     ...options,
                     transacting
                 });
+                executionPromise = transacting.executionPromise;
             });
-            await transactor;
-            if (transactor.executionPromise) {
-                // We override executionPromise, but the initial await executionPromise is not waiting for the overridden one (not possible in knex atm)
-                await transactor.executionPromise;
+            if (executionPromise) {
+                // Wait for added events
+                await executionPromise;
             }
         }
 
