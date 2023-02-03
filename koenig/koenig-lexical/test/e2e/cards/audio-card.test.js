@@ -213,4 +213,55 @@ describe('Audio card', async () => {
         await page.waitForSelector('[data-testid="thumbnail-errors"]');
         expect (await page.getByTestId('thumbnail-errors').textContent()).toEqual('Upload failed');
     });
+
+    test('renders audio card toolbar', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
+
+        await focusEditor(page);
+
+        // Upload audio file
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.keyboard.type('/audio');
+        await page.keyboard.press('Enter');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+
+        // Leave editing mode to display the toolbar
+        await page.waitForSelector('input[name="title"]');
+        await page.keyboard.press('Escape');
+
+        // Check that the toolbar is displayed
+        expect(await page.locator('[data-kg-card-toolbar="audio"]')).not.toBeNull();
+    });
+
+    test('audio card toolbar as Edit button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
+
+        await focusEditor(page);
+
+        // Upload audio file
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.keyboard.type('/audio');
+        await page.keyboard.press('Enter');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+
+        // Leave editing mode to display the toolbar
+        await page.waitForSelector('input[name="title"]');
+        await page.keyboard.press('Escape');
+
+        // Check that the toolbar is displayed
+        expect(await page.locator('[data-kg-card-toolbar="audio"]')).not.toBeNull();
+
+        await page.waitForSelector('[data-kg-card-toolbar="audio"] button[aria-label="Edit"]');
+        await page.locator('[data-kg-card-toolbar="audio"] button[aria-label="Edit"]').click();
+
+        await assertHTML(page, html`
+        <div data-lexical-decorator="true" contenteditable="false">
+            <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="audio">
+            </div>
+        </div>
+        <p><br /></p>
+        `, {ignoreCardContents: true});
+    });
 });

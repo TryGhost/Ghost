@@ -5,6 +5,8 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import {ReactComponent as AudioCardIcon} from '../assets/icons/kg-card-type-audio.svg';
 import {AudioCard} from '../components/ui/cards/AudioCard';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {audioUploadHandler} from '../utils/audioUploadHandler';
 import {thumbnailUploadHandler} from '../utils/thumbnailUploadHandler';
 import CardContext from '../context/CardContext';
@@ -18,6 +20,7 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
     const [editor] = useLexicalComposerContext();
     const {fileUploader} = React.useContext(KoenigComposerContext);
     const [dragOver, setDragOver] = React.useState(false);
+    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const audioFileInputRef = React.useRef();
     const thumbnailFileInputRef = React.useRef();
     const cardContext = React.useContext(CardContext);
@@ -95,6 +98,12 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
         }
     };
 
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+    };
+
     // when card is inserted from the card menu or slash command we want to show the file picker immediately
     // uses a setTimeout to avoid issues with React rendering the component twice in dev mode 🙈
     React.useEffect(() => {
@@ -119,28 +128,40 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
     });
 
     return (
-        <AudioCard
-            nodeKey={nodeKey}
-            src={src}
-            thumbnailSrc={thumbnailSrc}
-            title={title}
-            isEditing={cardContext.isEditing}
-            duration={duration}
-            updateTitle={setTitle}
-            triggerFileDialog={triggerFileDialog}
-            audioUploader={audioUploader}
-            thumbnailUploader={thumbnailUploader}
-            audioFileInputRef={audioFileInputRef}
-            thumbnailFileInputRef={thumbnailFileInputRef}
-            onAudioFileChange={onAudioFileChange}
-            onThumbnailFileChange={onThumbnailFileChange}
-            removeThumbnail={removeThumbnail}
-            isDraggedOver={dragOver}
-            handleAudioDrag={handleAudioDrag}
-            handleAudioDrop={handleAudioDrop}
-            handleThumbnailDrag={handleThumbnailDrag}
-            handleThumbnailDrop={handleThumbnailDrop}
-        />
+        <>
+            <AudioCard
+                nodeKey={nodeKey}
+                src={src}
+                thumbnailSrc={thumbnailSrc}
+                title={title}
+                isEditing={cardContext.isEditing}
+                duration={duration}
+                updateTitle={setTitle}
+                triggerFileDialog={triggerFileDialog}
+                audioUploader={audioUploader}
+                thumbnailUploader={thumbnailUploader}
+                audioFileInputRef={audioFileInputRef}
+                thumbnailFileInputRef={thumbnailFileInputRef}
+                onAudioFileChange={onAudioFileChange}
+                onThumbnailFileChange={onThumbnailFileChange}
+                removeThumbnail={removeThumbnail}
+                isDraggedOver={dragOver}
+                handleAudioDrag={handleAudioDrag}
+                handleAudioDrop={handleAudioDrop}
+                handleThumbnailDrag={handleThumbnailDrag}
+                handleThumbnailDrop={handleThumbnailDrop}
+            />
+            <ActionToolbar
+                isVisible={src && isSelected && !isEditing}
+                data-kg-card-toolbar="audio"
+            >
+                <ToolbarMenu>
+                    <ToolbarMenuItem label="Edit" icon="edit" isActive={false} onClick={handleToolbarEdit} />
+                    <ToolbarMenuSeparator />
+                    <ToolbarMenuItem label="Snippet" icon="snippet" isActive={false} />
+                </ToolbarMenu>
+            </ActionToolbar>
+        </>
     );
 }
 
