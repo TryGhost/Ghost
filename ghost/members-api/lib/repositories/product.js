@@ -48,6 +48,10 @@ function validatePrice(price) {
 }
 
 class ProductRepository {
+    // @NOTE: ugly import from core, change once the Memory cache module gets it's own package
+    /** @typedef {import('../../../core/core/server/adapters/cache/Memory')} MemoryCache */
+    #cache;
+
     /**
      * @param {object} deps
      * @param {any} deps.Product
@@ -55,19 +59,22 @@ class ProductRepository {
      * @param {any} deps.StripeProduct
      * @param {any} deps.StripePrice
      * @param {import('@tryghost/members-api/lib/services/stripe-api')} deps.stripeAPIService
+     * @param {MemoryCache} deps.cache
      */
     constructor({
         Product,
         Settings,
         StripeProduct,
         StripePrice,
-        stripeAPIService
+        stripeAPIService,
+        cache
     }) {
         this._Product = Product;
         this._Settings = Settings;
         this._StripeProduct = StripeProduct;
         this._StripePrice = StripePrice;
         this._stripeAPIService = stripeAPIService;
+        this.#cache = cache;
     }
 
     /**
@@ -314,6 +321,7 @@ class ProductRepository {
             await product.related('yearlyPrice').fetch(options);
         }
 
+        this.#cache.reset();
         return product;
     }
 
@@ -639,6 +647,7 @@ class ProductRepository {
             await product.related('benefits').fetch(options);
         }
 
+        this.#cache.reset();
         return product;
     }
 
@@ -650,6 +659,12 @@ class ProductRepository {
      * @returns {Promise<{data: ProductModel[], meta: object}>}
      **/
     async list(options = {}) {
+        const cacheKey = `list-${JSON.stringify(arguments)}}`;
+        const cachedResult = await this.#cache.get(cacheKey);
+        if (cachedResult) {
+            return cachedResult;
+        }
+
         if (!options.transacting) {
             return this._Product.transaction((transacting) => {
                 return this.list({
@@ -658,7 +673,11 @@ class ProductRepository {
                 });
             });
         }
-        return this._Product.findPage(options);
+
+        const products = await this._Product.findPage(options);
+        await this.#cache.set(cacheKey, products);
+
+        return products;
     }
 
     async destroy() {
