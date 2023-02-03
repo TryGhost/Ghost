@@ -157,7 +157,11 @@
                                     </div>
                                     <div class="gh-dashboard-list-item-sub">
                                         <span class="gh-dashboard-list-subtext gh-dashboard-recent-mentioned">
-                                            {{mention.target}}
+                                            {{#if mention.resource}}
+                                                {{mention.resource.name}}
+                                            {{else}}
+                                                {{mention.target}}
+                                            {{/if}}
                                         </span>
                                     </div>
                                     <div class="gh-dashboard-list-item-sub gh-dashboard-list gh-dashboard-list-item-date">
