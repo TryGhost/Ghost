@@ -47,7 +47,7 @@ function PopulatedVideoCard({
             </div>
             {
                 isVideoLoading && (
-                    <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50">
+                    <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="video-progress">
                         <ProgressBar style={progressStyle} />
                     </div>
                 )

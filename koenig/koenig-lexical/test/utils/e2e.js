@@ -8,8 +8,8 @@ const {JSDOM} = jsdom;
 
 const BROWSER_NAME = process.env.browser || 'chromium';
 
-export async function startApp() {
-    const browser = await {chromium, webkit, firefox}[BROWSER_NAME].launch();
+export async function startApp(browserName = BROWSER_NAME) {
+    const browser = await {chromium, webkit, firefox}[browserName].launch();
     const page = await browser.newPage();
 
     return {

@@ -24,6 +24,7 @@ export function SettingsPanel({
     return (
         <div className="not-kg-prose absolute top-[40px] right-[-80px] z-[9999999] m-0 flex w-[320px] flex-col gap-2 overflow-y-auto rounded-lg bg-white bg-clip-padding p-6 font-sans shadow"
             ref={ref}
+            data-testid="video-settings-panel"
         >
             <CardWidthSetting label="Video width" onClick={onCardWidthChange} selectedName={cardWidth} />
             <ToggleSetting
@@ -31,6 +32,7 @@ export function SettingsPanel({
                 description='Autoplay your video on a loop without sound.'
                 isChecked={isLoopChecked}
                 onChange={onChangeLoop}
+                dataTestID="loop-video"
             />
 
             {
@@ -63,25 +65,28 @@ function CustomThumbnailSettings({onFileChange, src, isLoading, progress, onRemo
     const isEmpty = !isLoading && !src;
 
     return (
-        <div className="text-[1.3rem]">
+        <div className="text-[1.3rem]" data-testid="custom-thumbnail">
             <div className="font-bold text-grey-900">Custom thumbnail</div>
 
             {isEmpty && <EmptyCustomThumbnail onFileChange={onFileChange} />}
 
             {!isEmpty && (
-                <div className="relative flex h-[120px] items-center justify-center rounded">
+                <div className="relative flex h-[120px] items-center justify-center rounded" data-testid="custom-thumbnail-filled">
                     {src && (
                         <img className="mx-auto max-h-[120px]" src={src} alt="Custom thumbnail" />
                     )}
 
                     {!isLoading && (
-                        <button type="button" className="absolute top-1 right-1" onClick={onRemove}>
+                        <button type="button" className="absolute top-1 right-1" onClick={onRemove} data-testid="custom-thumbnail-replace">
                             <ReplaceIcon />
                         </button>
                     )}
 
                     {isLoading && (
-                        <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50">
+                        <div
+                            className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50"
+                            data-testid="custom-thumbnail-progress"
+                        >
                             <ProgressBar style={progressStyle} />
                         </div>
                     )}
@@ -99,7 +104,11 @@ function EmptyCustomThumbnail({onFileChange}) {
 
     return (
         <>
-            <div className="flex h-[120px] items-center justify-center rounded border border-dashed border-grey-300 bg-grey-100" onClick={onClick}>
+            <div
+                className="flex h-[120px] items-center justify-center rounded border border-dashed border-grey-300 bg-grey-100"
+                onClick={onClick}
+                data-testid="custom-thumbnail-empty"
+            >
                 <FileUploadIcon className="h-5 w-5 text-grey-600" />
             </div>
 
@@ -175,7 +184,7 @@ function IconButton({onClick, label, name, selectedName, children}) {
     );
 }
 
-export function ToggleSetting({label, description, isChecked, onChange}) {
+export function ToggleSetting({label, description, isChecked, onChange, dataTestID}) {
     return (
         <div className="flex w-full items-center justify-between border-b border-b-grey-200 text-[1.3rem] last-of-type:border-b-0">
             <div>
@@ -185,7 +194,7 @@ export function ToggleSetting({label, description, isChecked, onChange}) {
                 }
             </div>
             <div className="shrink-0 pl-2">
-                <Toggle isChecked={isChecked} onChange={onChange} />
+                <Toggle isChecked={isChecked} onChange={onChange} dataTestID={dataTestID} />
             </div>
         </div>
     );

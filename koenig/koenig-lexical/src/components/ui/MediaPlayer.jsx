@@ -9,7 +9,7 @@ export function MediaPlayer({type, duration, theme, ...args}) {
             <PlayIcon className={`mr-2 h-[1.4rem] w-[1.4rem] ${theme === 'light' ? 'fill-white' : 'fill-black'}`} />
             <div className="mb-[1px] font-sans text-sm font-medium text-grey-300">
                 <span className={`${theme === 'light' ? 'text-white' : 'text-black'}`}>0:00 </span>
-            / {duration}
+                / <span data-testid="video-duration">{duration}</span>
             </div>
             {/* <input type="range" max="100" value="0" className="relative grow bg-transparent mx-1" /> */}
             <div className={`relative mx-2 h-1 grow rounded ${theme === 'light' ? 'bg-white/40' : 'bg-grey/30'}`}>

@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export function Toggle({isChecked, onChange}) {
+export function Toggle({isChecked, onChange, dataTestID}) {
     return (
-        <label className="relative inline-block h-5 w-[34px] outline-none">
+        <label className="relative inline-block h-5 w-[34px] outline-none" data-testid={dataTestID}>
             <input
                 type="checkbox"
                 checked={isChecked}

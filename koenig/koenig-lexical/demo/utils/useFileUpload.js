@@ -11,11 +11,11 @@ export function useFileUpload() {
         // added delay for demo, helps to check progress bar
         setLoading(true);
         setProgress(30);
-        await delay(500);
+        await delay(200);
         setProgress(60);
-        await delay(500);
+        await delay(200);
         setProgress(90);
-        await delay(500);
+        await delay(200);
 
         // simulate upload errors for the sake of testing
         // Any file that has "fail" in the filename will return errors
