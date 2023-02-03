@@ -31,8 +31,6 @@ describe('Mentions Service', function () {
     });
 
     beforeEach(async function () {
-        await mockManager.mockLabsEnabled('webmentions');
-
         // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
         sinon.stub(dnsPromises, 'lookup').callsFake(function () {
             return Promise.resolve({address: '123.123.123.123'});
@@ -63,18 +61,6 @@ describe('Mentions Service', function () {
         describe(`does not send when we expect it to not send`, function () {
             it('New draft post created', async function () {
                 let publishedPost = {status: 'draft', ...mentionsPost};
-                await agent
-                    .post('posts/')
-                    .body({posts: [publishedPost]})
-                    .expectStatus(201);
-
-                assert.equal(mentionMock.isDone(), false);
-                assert.equal(endpointMock.isDone(), false);
-            });
-
-            it('Respects the disabled flag', async function () {
-                await mockManager.mockLabsDisabled('webmentions');
-                let publishedPost = {status: 'published', ...mentionsPost};
                 await agent
                     .post('posts/')
                     .body({posts: [publishedPost]})
