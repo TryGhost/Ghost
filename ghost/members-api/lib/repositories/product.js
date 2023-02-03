@@ -94,45 +94,46 @@ class ProductRepository {
                 });
             });
         }
+
+        let product = undefined;
+
         if ('stripe_product_id' in data) {
             const stripeProduct = await this._StripeProduct.findOne({
                 stripe_product_id: data.stripe_product_id
             }, options);
 
             if (!stripeProduct) {
-                return null;
+                product = null;
+            } else {
+                product = await stripeProduct.related('product').fetch(options);
             }
-
-            return await stripeProduct.related('product').fetch(options);
-        }
-
-        if ('stripe_price_id' in data) {
+        } else if ('stripe_price_id' in data) {
             const stripePrice = await this._StripePrice.findOne({
                 stripe_price_id: data.stripe_price_id
             }, options);
 
             if (!stripePrice) {
-                return null;
+                product = null;
+            } else {
+                const stripeProduct = await stripePrice.related('stripeProduct').fetch(options);
+
+                if (!stripeProduct) {
+                    product = null;
+                }
+
+                product = await stripeProduct.related('product').fetch(options);
             }
-
-            const stripeProduct = await stripePrice.related('stripeProduct').fetch(options);
-
-            if (!stripeProduct) {
-                return null;
-            }
-
-            return await stripeProduct.related('product').fetch(options);
+        } else if ('id' in data) {
+            product = await this._Product.findOne({id: data.id}, options);
+        } else if ('slug' in data) {
+            product = await this._Product.findOne({slug: data.slug}, options);
         }
 
-        if ('id' in data) {
-            return await this._Product.findOne({id: data.id}, options);
+        if (product === undefined) {
+            throw new NotFoundError({message: 'Missing id, slug, stripe_product_id or stripe_price_id from data'});
         }
 
-        if ('slug' in data) {
-            return await this._Product.findOne({slug: data.slug}, options);
-        }
-
-        throw new NotFoundError({message: 'Missing id, slug, stripe_product_id or stripe_price_id from data'});
+        return product;
     }
 
     /**
