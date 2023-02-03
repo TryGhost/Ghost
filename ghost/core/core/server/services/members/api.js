@@ -207,6 +207,9 @@ function createApiInstance(config) {
             MemberFeedback: models.MemberFeedback,
             EmailSpamComplaintEvent: models.EmailSpamComplaintEvent
         },
+        caches: {
+            productsCache: config.getProductsCache()
+        },
         stripeAPIService: stripeService.api,
         tiersService: tiersService,
         offersAPI: offersService.api,

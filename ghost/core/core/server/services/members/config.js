@@ -7,11 +7,13 @@ class MembersConfigProvider {
     /**
      * @param {object} options
      * @param {{get: (key: string) => any}} options.settingsCache
+     * @param {{get: (key: string) => any, set: (key: string, value: any) => any, reset: () => any}} options.productsCache
      * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, getNoReplyAddress(): string, isStripeConnected(): boolean}} options.settingsHelpers
      * @param {any} options.urlUtils
      */
-    constructor({settingsCache, settingsHelpers, urlUtils}) {
+    constructor({settingsCache, productsCache, settingsHelpers, urlUtils}) {
         this._settingsCache = settingsCache;
+        this._productsCache = productsCache;
         this._settingsHelpers = settingsHelpers;
         this._urlUtils = urlUtils;
     }
@@ -99,6 +101,10 @@ class MembersConfigProvider {
             signinURL.searchParams.set('r', referrer);
         }
         return signinURL.toString();
+    }
+
+    getProductsCache() {
+        return this._productsCache;
     }
 }
 

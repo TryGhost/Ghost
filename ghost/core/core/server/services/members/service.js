@@ -19,6 +19,7 @@ const tiersService = require('../tiers');
 const VerificationTrigger = require('@tryghost/verification-trigger');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
+const adapterManager = require('../../services/adapter-manager');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -31,6 +32,9 @@ const ghostMailer = new GhostMailer();
 const membersConfig = new MembersConfigProvider({
     settingsHelpers,
     settingsCache,
+    // the membersTiers cache is a default "in-memory" cache
+    // it should not be switched to a different one because it's small anyway
+    productsCache: adapterManager.getAdapter('cache:membersTiers'),
     urlUtils
 });
 

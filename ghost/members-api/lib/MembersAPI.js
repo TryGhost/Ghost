@@ -63,6 +63,7 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback
     },
+    caches,
     tiersService,
     stripeAPIService,
     offersAPI,
@@ -82,7 +83,8 @@ module.exports = function MembersAPI({
         Settings,
         StripeProduct,
         StripePrice,
-        stripeAPIService
+        stripeAPIService,
+        cache: caches.productsCache
     });
 
     const memberRepository = new MemberRepository({
@@ -207,15 +209,15 @@ module.exports = function MembersAPI({
     }
 
     /**
-     * 
-     * @param {string} email 
+     *
+     * @param {string} email
      * @param {'signin'|'signup'} type When you specify 'signin' this will prevent the creation of a new member if no member is found with the provided email
      * @param {*} [tokenData] Optional token data to add to the token
-     * @returns 
+     * @returns
      */
     function getMagicLink(email, type, tokenData = {}) {
         return magicLinkService.getMagicLink({
-            tokenData: {email, ...tokenData}, 
+            tokenData: {email, ...tokenData},
             type
         });
     }
