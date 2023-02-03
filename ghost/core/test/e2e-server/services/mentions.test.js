@@ -81,7 +81,6 @@ describe('Mentions Service', function () {
                 assert.equal(endpointMock.isDone(), false);
             });
 
-            // these don't actually trigger post.published
             it('Email only post published', async function () {
                 let publishedPost = {status: 'published', email_only: true, ...mentionsPost};
                 await agent
@@ -102,7 +101,6 @@ describe('Mentions Service', function () {
                     .body({posts: [publishedPost]})
                     .expectStatus(201);
 
-                // the r
                 await sleep(10);
 
                 assert.equal(mentionMock.isDone(), true);
@@ -135,7 +133,7 @@ describe('Mentions Service', function () {
                     mobiledoc: markdownToMobiledoc(mentionHtml + 'More content'),
                     updated_at: res.body.posts[0].updated_at
                 };
-                // moving back to draft is how we unpublish
+
                 await agent.put(`posts/${postId}/`)
                     .body({posts: [editedPost]})
                     .expectStatus(200);
