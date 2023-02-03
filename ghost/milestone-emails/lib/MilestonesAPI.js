@@ -67,7 +67,7 @@ module.exports = class MilestonesAPI {
      *
      * @returns {Promise<Milestone>}
      */
-    async processMilestone(milestone) {
+    async checkAndProcessMilestone(milestone) {
         const milestoneExists = await this.checkMilestoneExists(milestone);
 
         if (milestoneExists) {

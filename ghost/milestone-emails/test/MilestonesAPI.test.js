@@ -11,14 +11,14 @@ describe('MilestonesAPI', function () {
             repository
         });
 
-        const milestoneOne = await api.processMilestone({
+        const milestoneOne = await api.checkAndProcessMilestone({
             type: 'arr',
             value: 100,
             createdAt: '2023-01-01T00:00:00Z',
             emailSentAt: '2023-01-01T00:00:00Z'
         });
 
-        const milestoneTwo = await api.processMilestone({
+        const milestoneTwo = await api.checkAndProcessMilestone({
             type: 'arr',
             value: 500,
             createdAt: '2023-02-01T00:00:00Z',
@@ -41,14 +41,14 @@ describe('MilestonesAPI', function () {
             repository
         });
 
-        const milestoneOne = await api.processMilestone({
+        const milestoneOne = await api.checkAndProcessMilestone({
             type: 'members',
             value: 1000,
             createdAt: '2023-01-01T00:00:00Z',
             emailSentAt: '2023-01-01T00:00:00Z'
         });
 
-        const milestoneTwo = await api.processMilestone({
+        const milestoneTwo = await api.checkAndProcessMilestone({
             type: 'members',
             value: 5000,
             createdAt: '2023-02-01T00:00:00Z',
@@ -73,12 +73,12 @@ describe('MilestonesAPI', function () {
 
         let errored = false;
         try {
-            await api.processMilestone({
+            await api.checkAndProcessMilestone({
                 type: 'arr',
                 value: 100
             });
 
-            await api.processMilestone({
+            await api.checkAndProcessMilestone({
                 type: 'arr',
                 value: 100,
                 currency: 'usd'
@@ -92,12 +92,12 @@ describe('MilestonesAPI', function () {
         errored = false;
 
         try {
-            await api.processMilestone({
+            await api.checkAndProcessMilestone({
                 type: 'members',
                 value: 1000
             });
 
-            await api.processMilestone({
+            await api.checkAndProcessMilestone({
                 type: 'members',
                 value: 1000
             });
@@ -118,7 +118,7 @@ describe('MilestonesAPI', function () {
 
         assert(shouldSendEmailNoMilestones === true);
 
-        const milestone = await api.processMilestone({
+        const milestone = await api.checkAndProcessMilestone({
             type: 'members',
             value: 1000,
             createdAt: subDays(new Date(), 12),
@@ -131,7 +131,7 @@ describe('MilestonesAPI', function () {
 
         assert(shouldNotSendEmail === false);
 
-        const milestoneTwo = await api.processMilestone({
+        const milestoneTwo = await api.checkAndProcessMilestone({
             type: 'members',
             value: 2000,
             createdAt: subDays(new Date(), 14),

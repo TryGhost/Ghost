@@ -18,14 +18,6 @@ module.exports = class Milestone {
         return this.#type;
     }
 
-    /**
-     * @type {string}
-     */
-    #name;
-    get name() {
-        return this.#name;
-    }
-
     /** @type {number} */
     #value;
     get value() {
@@ -65,12 +57,21 @@ module.exports = class Milestone {
     /** @private */
     constructor(data) {
         this.#id = data.id;
-        this.#name = data.name;
         this.#type = data.type;
         this.#value = data.value;
         this.#currency = data.currency;
         this.#createdAt = data.createdAt;
         this.#emailSentAt = data.emailSentAt;
+    }
+
+    /**
+     * @returns {string}
+     */
+    get name() {
+        if (this.type === 'arr') {
+            return `arr-${this.value}-${this.currency}`;
+        }
+        return `members-${this.value}`;
     }
 
     /**
@@ -174,12 +175,8 @@ function validateCurrency(type, currency) {
         return null;
     }
 
-    if (!currency || (currency && typeof currency !== 'string')) {
+    if (!currency || (currency && typeof currency !== 'string' || currency.length > 3)) {
         return 'usd';
-    }
-
-    if (currency.length > 3) {
-        return currency.slice(0, 3);
     }
 
     return currency;
