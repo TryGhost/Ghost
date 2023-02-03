@@ -92,12 +92,15 @@ class StripeMocker {
      * @returns
      */
     async createTier({name, currency, monthly_price, yearly_price}) {
-        return await models.Product.add({
+        const result = await tiers.api.add({
             name: name ?? ('Tier ' + this.#generateRandomId()),
             type: 'paid',
             currency: currency.toUpperCase(),
-            monthly_price,
-            yearly_price
+            monthlyPrice: monthly_price,
+            yearlyPrice: yearly_price
+        });
+        return await models.Product.findOne({
+            id: result.id.toHexString()
         });
     }
 
