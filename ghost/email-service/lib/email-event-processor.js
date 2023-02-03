@@ -2,7 +2,7 @@ const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEv
 
 async function waitForEvent() {
     return new Promise((resolve) => {
-        setTimeout(resolve, 100);
+        setTimeout(resolve, 200);
     });
 }
 
