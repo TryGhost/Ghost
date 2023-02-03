@@ -109,11 +109,15 @@ describe('MemberRepository', function () {
                 }
             });
 
+            assert.equal(productStub.findPage.callCount, 0, 'should have no calls to the model yet');
+
             // first call going to the model
-            const firstResult = await productRepository.list({
+            await productRepository.list({
                 withRelated: ['monthlyPrice', 'yearlyPrice'],
                 transacting: true
             });
+
+            assert.equal(productStub.findPage.callCount, 1, 'should call the model for the first time');
 
             // second call going to the cache
             await productRepository.list({
