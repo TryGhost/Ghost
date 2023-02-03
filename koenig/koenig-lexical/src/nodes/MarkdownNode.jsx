@@ -59,6 +59,10 @@ export class MarkdownNode extends BaseMarkdownNode {
         this.__openInEditMode = _openInEditMode || false;
     }
 
+    getIcon() {
+        return MarkdownCardIcon;
+    }
+
     clearOpenInEditMode() {
         const self = this.getWritable();
         self.__openInEditMode = false;

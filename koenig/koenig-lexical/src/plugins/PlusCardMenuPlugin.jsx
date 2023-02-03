@@ -225,8 +225,8 @@ function usePlusCardMenu(editor) {
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes, {insert}));
-    }, [editor, insert, setCardMenu]);
+        setCardMenu(buildCardMenu(cardNodes));
+    }, [editor, setCardMenu]);
 
     const style = {
         top: `${topPosition}px`

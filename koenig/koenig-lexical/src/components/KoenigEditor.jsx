@@ -20,6 +20,7 @@ import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
 import {AudioPlugin} from '../plugins/AudioPlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
+import DragDropReorderPlugin from '../plugins/DragDropReorderPlugin';
 import '../styles/index.css';
 
 const KoenigEditor = ({
@@ -47,7 +48,7 @@ const KoenigEditor = ({
         <div className="koenig-lexical" ref={editorContainerRef} id="koenig-lexical">
             <RichTextPlugin
                 contentEditable={
-                    <div ref={onRef}>
+                    <div ref={onRef} data-kg="editor">
                         <ContentEditable className="kg-prose" />
                     </div>
                 }
@@ -70,6 +71,7 @@ const KoenigEditor = ({
             <DragDropPastePlugin />
             <HorizontalRulePlugin />
             <ExternalControlPlugin registerAPI={registerAPI} />
+            <DragDropReorderPlugin containerElem={editorContainerRef} />
         </div>
     );
 };

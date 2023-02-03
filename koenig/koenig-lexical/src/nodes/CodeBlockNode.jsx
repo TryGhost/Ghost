@@ -5,6 +5,7 @@ import {CodeBlockCard} from '../components/ui/cards/CodeBlockCard';
 import CardContext from '../context/CardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$getNodeByKey} from 'lexical';
+import {ReactComponent as CodeBlockIcon} from '../assets/icons/kg-card-type-gen-embed.svg';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_CODE_BLOCK_COMMAND} from '@tryghost/kg-default-nodes';
@@ -49,6 +50,10 @@ export class CodeBlockNode extends BaseCodeBlockNode {
 
         const {_openInEditMode} = dataset;
         this.__openInEditMode = _openInEditMode || false;
+    }
+
+    getIcon() {
+        return CodeBlockIcon;
     }
 
     clearOpenInEditMode() {

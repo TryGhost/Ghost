@@ -27,6 +27,10 @@ export class HorizontalRuleNode extends DecoratorNode {
         matches: ['divider', 'horizontal-rule', 'hr']
     };
 
+    getIcon() {
+        return DividerCardIcon;
+    }
+
     exportJSON() {
         return {
             type: 'horizontalrule',

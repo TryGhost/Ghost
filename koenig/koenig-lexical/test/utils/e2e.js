@@ -55,7 +55,8 @@ export async function assertHTML(
         ignoreInnerSVG = true,
         getBase64FileFormat = true,
         ignoreCardContents = false,
-        ignoreCardToolbarContents = false
+        ignoreCardToolbarContents = false,
+        ignoreDragDropAttrs = true
     } = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
@@ -65,7 +66,8 @@ export async function assertHTML(
         ignoreInnerSVG,
         getBase64FileFormat,
         ignoreCardContents,
-        ignoreCardToolbarContents
+        ignoreCardToolbarContents,
+        ignoreDragDropAttrs
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
@@ -73,7 +75,8 @@ export async function assertHTML(
         ignoreInnerSVG,
         getBase64FileFormat,
         ignoreCardContents,
-        ignoreCardToolbarContents
+        ignoreCardToolbarContents,
+        ignoreDragDropAttrs
     });
     expect(actual).toEqual(expected);
 }
@@ -96,6 +99,10 @@ export function prettifyHTML(string, options = {}) {
         output = output.replace(/(^|[\s">])data:([^;]*);([^"]*),([^"]*)/g, '$1data:$2;$3,BASE64DATA');
     }
 
+    if (options.ignoreDragDropAttrs) {
+        output = output.replace(/data-koenig-dnd-.*?=".*?"/g, '');
+    }
+
     // always ignore `blob:` urls because they are randomly generated and won't be consistent between tests
     output = output.replace(/"blob:(.*?)"/, '"blob:..."');
 
@@ -113,7 +120,6 @@ export function prettifyHTML(string, options = {}) {
         document.querySelectorAll(querySelectors.join(', ')).forEach((element) => {
             element.innerHTML = '';
         });
-
         output = document.body.innerHTML;
     }
 

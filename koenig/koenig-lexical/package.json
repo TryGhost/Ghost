@@ -48,7 +48,9 @@
     "@uiw/react-codemirror": "^4.19.6",
     "codemirror": "^6.0.1",
     "dompurify": "^2.4.3",
+    "eventemitter3": "^5.0.0",
     "lexical": "^0.7.0",
+    "lodash-es": "^4.17.21",
     "pluralize": "^8.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

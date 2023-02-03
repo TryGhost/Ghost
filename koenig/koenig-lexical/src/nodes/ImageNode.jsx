@@ -48,6 +48,10 @@ export class ImageNode extends BaseImageNode {
         this.__triggerFileDialog = (!dataset.src && triggerFileDialog) || false;
     }
 
+    getIcon() {
+        return ImageCardIcon;
+    }
+
     getDataset() {
         const dataset = super.getDataset();
 

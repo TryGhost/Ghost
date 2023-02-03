@@ -189,6 +189,10 @@ export class AudioNode extends BaseAudioNode {
         this.__triggerFileDialog = (!dataset.src && triggerFileDialog) || false;
     }
 
+    getIcon() {
+        return AudioCardIcon;
+    }
+
     setTriggerFileDialog(shouldTrigger) {
         const writable = this.getWritable();
         return writable.__triggerFileDialog = shouldTrigger;
