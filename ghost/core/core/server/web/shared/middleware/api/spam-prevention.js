@@ -137,8 +137,6 @@ const mentionsBlock = () => {
         knex: db.knex
     });
 
-    console.log(spamMentionsBlock);
-
     mentionsBlockInstance = mentionsBlockInstance || new ExpressBrute(store,
         extend({
             attachResetToRequest: false,
