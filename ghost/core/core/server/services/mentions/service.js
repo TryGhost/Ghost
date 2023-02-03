@@ -13,7 +13,6 @@ const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
 const urlUtils = require('../../../shared/url-utils');
 const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
-const labs = require('../../../shared/labs');
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
