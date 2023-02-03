@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-simplemde",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "A simple, beautiful, and embeddable JavaScript Markdown editor. Features autosaving and spell checking.",
   "keywords": [
     "embeddable",
