@@ -58,7 +58,7 @@ describe('AsyncEventEmitter', function () {
     });
 
     describe('emit', function () {
-        it('catchs errors in listeners', async function () {
+        it('catches errors in listeners', async function () {
             const ee = new AsyncEventEmitter();
             const stub = sinon.stub(logging, 'error').returns();
             let called = 0;
@@ -85,7 +85,7 @@ describe('AsyncEventEmitter', function () {
             assert.equal(stub.callCount, 4);
         });
 
-        it('catchs errors outside listeners', async function () {
+        it('catches errors outside listeners', async function () {
             const ee = new AsyncEventEmitter();
             ee.listeners = null;
             const stub = sinon.stub(logging, 'error').returns();
