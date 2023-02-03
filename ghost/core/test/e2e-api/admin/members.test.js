@@ -2072,7 +2072,8 @@ describe('Members API', function () {
                 email: 'member1@test.com'
             });
 
-        nock('https://api.stripe.com:443')
+        const getNock = nock('https://api.stripe.com:443')
+            .persist()
             .get(`/v1/subscriptions/${stripeSubscriptionId}`)
             .reply(200, stripeSubscriptionFixture());
 
@@ -2104,11 +2105,15 @@ describe('Members API', function () {
 
         const subscriptionId = res.body.members[0].subscriptions[0].id;
 
+        // Override getter back to one that returns a canceled subscription
+        getNock.persist(false);
+
         nock('https://api.stripe.com:443')
             .delete(`/v1/subscriptions/${stripeSubscriptionId}`)
             .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
 
         nock('https://api.stripe.com:443')
+            .persist()
             .get(`/v1/subscriptions/${stripeSubscriptionId}`)
             .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
 
@@ -2134,7 +2139,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
 
-        assert.equal('canceled', editRes.body.members[0].subscriptions[0].status);
+        assert.equal(editRes.body.members[0].subscriptions[0].status, 'canceled');
     });
 
     // Delete a member

@@ -102,10 +102,9 @@ module.exports = class MemberRepository {
             // Note: we don't return the promise, or we would create a deadlock, instead we override options.transacting.executionPromise, so that the dispatched event is awaited when we await the result of the transaction
             options.transacting.executionPromise = options.transacting.executionPromise.then(async () => {
                 // Note that we await here, so we properly wait for all the events to be handled before continuing
-                return await DomainEvents.dispatch(event);
-            }).catch((error) => {
+                await DomainEvents.dispatch(event);
+            }).catch(() => {
                 // catches transaction errors/rollback to not dispatch event
-                throw error;
             });
         } else {
             // Returns a promise
@@ -847,12 +846,17 @@ module.exports = class MemberRepository {
         }
 
         if (!options.transacting) {
-            return this._Member.transaction((transacting) => {
+            const transactor = this._Member.transaction((transacting) => {
                 return this.linkSubscription(data, {
                     ...options,
                     transacting
                 });
             });
+            await transactor;
+            if (transactor.executionPromise) {
+                // We override executionPromise, but the initial await executionPromise is not waiting for the overridden one (not possible in knex atm)
+                await transactor.executionPromise;
+            }
         }
 
         if (!options.batch_id) {
