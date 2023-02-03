@@ -17,6 +17,16 @@ export function useFileUpload() {
         setProgress(90);
         await delay(500);
 
+        // simulate upload errors for the sake of testing
+        // Any file that has "fail" in the filename will return errors
+        const fileErrors = Array.from(files).filter(file => file.name.includes('fail'));
+        if (fileErrors.length) {
+            setErrors(fileErrors.map(file => ({fileName: file.name, message: 'Upload failed'})));
+            setLoading(false);
+            setProgress(100);
+            return null;
+        }
+
         const uploadResult = Array.from(files).map(file => URL.createObjectURL(file));
 
         setProgress(100);

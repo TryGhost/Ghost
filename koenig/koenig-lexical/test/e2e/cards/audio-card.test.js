@@ -52,9 +52,13 @@ describe('Audio card', async () => {
     });
 
     test('renders audio card node', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
+
         await focusEditor(page);
+        const fileChooserPromise = page.waitForEvent('filechooser');
         await page.keyboard.type('/audio');
         await page.keyboard.press('Enter');
+        const fileChooser = await fileChooserPromise;
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -63,7 +67,9 @@ describe('Audio card', async () => {
             <p><br /></p>
         `, {ignoreCardContents: true});
 
-        await page.keyboard.press('Escape');
+        // Close the fileChooser by selecting a file
+        // Without this line, fileChooser stays open for subsequent tests
+        await fileChooser.setFiles([filePath]);
     });
 
     test('can upload an audio file', async function () {
@@ -79,7 +85,8 @@ describe('Audio card', async () => {
         await fileChooser.setFiles([filePath]);
 
         // Check that the progress bar is displayed
-        expect(await page.getByTestId('progress-bar')).not.toBeNull();
+        await page.waitForSelector('[data-testid="progress-bar"]');
+        expect(await page.getByTestId('progress-bar')).toBeVisible();
 
         // Check that audio file was uploaded
         await page.waitForSelector('input[name="title"]');
@@ -92,6 +99,27 @@ describe('Audio card', async () => {
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true}); // TODO: assert on HTML of inner card (not working due to error in prettier)
+    });
+
+    test('shows errors on failed audio upload', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample-fail.mp3');
+
+        await focusEditor(page);
+
+        // Upload audio file
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.keyboard.type('/audio');
+        await page.keyboard.press('Enter');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+
+        // Check that the progress bar is displayed
+        await page.waitForSelector('[data-testid="progress-bar"]');
+        expect(await page.getByTestId('progress-bar')).toBeVisible();
+
+        // Check that errors are displayed
+        await page.waitForSelector('[data-testid="audio-upload-errors"]');
+        expect(await page.getByTestId('audio-upload-errors')).toBeVisible();
     });
 
     test('file input opens immediately when added via card menu', async function () {
@@ -163,6 +191,26 @@ describe('Audio card', async () => {
         expect (await page.getByTestId('upload-thumbnail')).not.toBeNull();
     });
 
-    test.todo('upload progress is shown');
-    test.todo('upload is completed');
+    test('shows errors on a failed thumbnail upload', async function () {
+        const audioFilePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
+        const thumbnailFilePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-fail.jpeg');
+
+        await focusEditor(page);
+
+        // Upload audio file
+        const audioFileChooserPromise = page.waitForEvent('filechooser');
+        await page.keyboard.type('/audio');
+        await page.keyboard.press('Enter');
+        const audioFileChooser = await audioFileChooserPromise;
+        await audioFileChooser.setFiles([audioFilePath]);
+
+        // Upload thumbnail
+        const thumbnailFileChooserPromise = page.waitForEvent('filechooser');
+        await page.getByTestId('upload-thumbnail').click();
+        const thumbnailFileChooser = await thumbnailFileChooserPromise;
+        await thumbnailFileChooser.setFiles([thumbnailFilePath]);
+
+        await page.waitForSelector('[data-testid="thumbnail-errors"]');
+        expect (await page.getByTestId('thumbnail-errors').textContent()).toEqual('Upload failed');
+    });
 });

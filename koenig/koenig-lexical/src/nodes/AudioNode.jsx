@@ -17,21 +17,22 @@ export {INSERT_AUDIO_COMMAND} from '@tryghost/kg-default-nodes';
 function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, triggerFileDialog}) {
     const [editor] = useLexicalComposerContext();
     const {fileUploader} = React.useContext(KoenigComposerContext);
+    const [dragOver, setDragOver] = React.useState(false);
     const audioFileInputRef = React.useRef();
     const thumbnailFileInputRef = React.useRef();
     const cardContext = React.useContext(CardContext);
 
-    const {progress: audioProgress, isLoading: isUploadingAudio, upload: uploadAudio} = fileUploader.useFileUpload();
-    const {progress: thumbnailProgress, isLoading: isUploadingThumbnail, upload: uploadThumbnail} = fileUploader.useFileUpload();
+    const audioUploader = fileUploader.useFileUpload();
+    const thumbnailUploader = fileUploader.useFileUpload();
 
     const onAudioFileChange = async (e) => {
         const fls = e.target.files;
-        return await audioUploadHandler(fls, nodeKey, editor, uploadAudio);
+        return await audioUploadHandler(fls, nodeKey, editor, audioUploader.upload);
     };
 
     const onThumbnailFileChange = async (e) => {
         const fls = e.target.files;
-        return await thumbnailUploadHandler(fls, nodeKey, editor, uploadThumbnail);
+        return await thumbnailUploadHandler(fls, nodeKey, editor, thumbnailUploader.upload);
     };
 
     const setTitle = (newTitle) => {
@@ -46,6 +47,52 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
             const node = $getNodeByKey(nodeKey);
             node.setThumbnailSrc('');
         });
+    };
+
+    const handleAudioDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragOver(true);
+        } else if (e.type === 'dragleave') {
+            setDragOver(false);
+        }
+        return;
+    };
+
+    const handleAudioDrop = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const fls = e.dataTransfer.files;
+            if (fls) {
+                setDragOver(false);
+                await audioUploadHandler(fls, nodeKey, editor, audioUploader.upload);
+            }
+        }
+    };
+
+    const handleThumbnailDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragOver(true);
+        } else if (e.type === 'dragleave') {
+            setDragOver(false);
+        }
+        return;
+    };
+
+    const handleThumbnailDrop = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const fls = e.dataTransfer.files;
+            if (fls) {
+                setDragOver(false);
+                await thumbnailUploadHandler(fls, nodeKey, editor, thumbnailUploader.upload);
+            }
+        }
     };
 
     // when card is inserted from the card menu or slash command we want to show the file picker immediately
@@ -81,15 +128,18 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
             duration={duration}
             updateTitle={setTitle}
             triggerFileDialog={triggerFileDialog}
-            audioProgress={audioProgress}
-            isUploadingAudio={isUploadingAudio}
-            thumbnailProgress={thumbnailProgress}
-            isUploadingThumbnail={isUploadingThumbnail}
+            audioUploader={audioUploader}
+            thumbnailUploader={thumbnailUploader}
             audioFileInputRef={audioFileInputRef}
             thumbnailFileInputRef={thumbnailFileInputRef}
             onAudioFileChange={onAudioFileChange}
             onThumbnailFileChange={onThumbnailFileChange}
             removeThumbnail={removeThumbnail}
+            isDraggedOver={dragOver}
+            handleAudioDrag={handleAudioDrag}
+            handleAudioDrop={handleAudioDrop}
+            handleThumbnailDrag={handleThumbnailDrag}
+            handleThumbnailDrop={handleThumbnailDrop}
         />
     );
 }
