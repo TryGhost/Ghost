@@ -852,6 +852,7 @@ module.exports = class MemberRepository {
                     ...options,
                     transacting
                 });
+                // Catch updated executionPromise
                 executionPromise = transacting.executionPromise;
             });
             if (executionPromise) {
@@ -1359,7 +1360,7 @@ module.exports = class MemberRepository {
                     subscriptionId: subscriptionModel.get('id'),
                     tierId: ghostProduct?.get('id')
                 };
-                this.dispatchEvent(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp), options);
+                await this.dispatchEvent(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp), options);
             }
         }
     }
