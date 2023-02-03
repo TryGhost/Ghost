@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
-const membersService = require('../../../../../../../core/server/services/members');
+const tiersService = require('../../../../../../../core/server/services/tiers');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/output/posts', function () {
@@ -13,21 +13,18 @@ describe('Unit: endpoints/utils/serializers/output/posts', function () {
             return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
 
-        sinon.stub(membersService, 'api').get(() => {
-            return {
-                productRepository: {
-                    list: () => {
-                        return {data: null};
-                    }
-                }
-            };
-        });
+        tiersService.api = {
+            browse() {
+                return {data: null};
+            }
+        };
 
         sinon.stub(mappers, 'posts').returns({});
     });
 
     afterEach(function () {
         sinon.restore();
+        tiersService.api = null;
     });
 
     it('calls the mapper', async function () {
