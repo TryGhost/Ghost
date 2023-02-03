@@ -11,9 +11,12 @@ class TiersServiceWrapper {
         const models = require('../../models');
         const TierRepository = require('./TierRepository');
 
+        const adapterManager = require('../../services/adapter-manager');
+        const tiersCache = adapterManager.getAdapter('cache:membersTiers');
         const repository = new TierRepository({
             ProductModel: models.Product,
-            DomainEvents
+            DomainEvents,
+            cache: tiersCache
         });
 
         const slugService = {

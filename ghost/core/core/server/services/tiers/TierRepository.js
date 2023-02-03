@@ -14,14 +14,17 @@ module.exports = class TierRepository {
     /** @type {import('@tryghost/domain-events')} */
     #DomainEvents;
 
+    #cache;
     /**
      * @param {object} deps
      * @param {object} deps.ProductModel Bookshelf Model
      * @param {import('@tryghost/domain-events')} deps.DomainEvents
+     * @param {object} deps.cache
      */
     constructor(deps) {
         this.#ProductModel = deps.ProductModel;
         this.#DomainEvents = deps.DomainEvents;
+        this.#cache = deps.cache;
     }
 
     /**
@@ -109,6 +112,7 @@ module.exports = class TierRepository {
             });
         }
 
+        await this.#cache.reset();
         for (const event of tier.events) {
             this.#DomainEvents.dispatch(event);
         }
