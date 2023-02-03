@@ -86,6 +86,12 @@ class ProductRepository {
      * @returns {Promise<ProductModel>}
      */
     async get(data, options = {}) {
+        const cacheKey = `get-${JSON.stringify(arguments)}}`;
+        const cachedResult = await this.#cache.get(cacheKey);
+        if (cachedResult) {
+            return cachedResult;
+        }
+
         if (!options.transacting) {
             return this._Product.transaction((transacting) => {
                 return this.get(data, {
@@ -133,6 +139,7 @@ class ProductRepository {
             throw new NotFoundError({message: 'Missing id, slug, stripe_product_id or stripe_price_id from data'});
         }
 
+        await this.#cache.set(cacheKey, product);
         return product;
     }
 
