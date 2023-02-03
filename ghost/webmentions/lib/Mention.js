@@ -78,6 +78,11 @@ module.exports = class Mention {
         return this.#sourceFeaturedImage;
     }
 
+    #deleted = false;
+    delete() {
+        this.#deleted = true;
+    }
+
     toJSON() {
         return {
             id: this.id,
@@ -223,6 +228,14 @@ module.exports = class Mention {
             mention.events.push(MentionCreatedEvent.create({mention}));
         }
         return mention;
+    }
+
+    /**
+     * @param {Mention} mention
+     * @returns {boolean}
+     */
+    static isDeleted(mention) {
+        return mention.#deleted;
     }
 };
 

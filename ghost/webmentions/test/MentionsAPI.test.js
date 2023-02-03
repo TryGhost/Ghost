@@ -285,4 +285,136 @@ describe('MentionsAPI', function () {
 
         assert.equal(page.data[0].id, mention.id);
     });
+
+    it('Will delete an existing mention if the target page does not exist', async function () {
+        const repository = new InMemoryMentionRepository();
+        const api = new MentionsAPI({
+            repository,
+            routingService: {
+                pageExists: sinon.stub().onFirstCall().resolves(true).onSecondCall().resolves(false)
+            },
+            resourceService: {
+                async getByURL() {
+                    return {
+                        type: 'post',
+                        id: new ObjectID
+                    };
+                }
+            },
+            webmentionMetadata: mockWebmentionMetadata
+        });
+
+        checkFirstMention: {
+            const mention = await api.processWebmention({
+                source: new URL('https://source.com'),
+                target: new URL('https://target.com'),
+                payload: {}
+            });
+
+            const page = await api.listMentions({
+                limit: 'all'
+            });
+
+            assert.equal(page.data[0].id, mention.id);
+            break checkFirstMention;
+        }
+
+        checkMentionDeleted: {
+            await api.processWebmention({
+                source: new URL('https://source.com'),
+                target: new URL('https://target.com'),
+                payload: {}
+            });
+
+            const page = await api.listMentions({
+                limit: 'all'
+            });
+
+            assert.equal(page.data.length, 0);
+            break checkMentionDeleted;
+        }
+    });
+
+    it('Will delete an existing mention if the source page does not exist', async function () {
+        const repository = new InMemoryMentionRepository();
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: {
+                async getByURL() {
+                    return {
+                        type: 'post',
+                        id: new ObjectID
+                    };
+                }
+            },
+            webmentionMetadata: {
+                fetch: sinon.stub()
+                    .onFirstCall().resolves(mockWebmentionMetadata.fetch())
+                    .onSecondCall().rejects()
+            }
+        });
+
+        checkFirstMention: {
+            const mention = await api.processWebmention({
+                source: new URL('https://source.com'),
+                target: new URL('https://target.com'),
+                payload: {}
+            });
+
+            const page = await api.listMentions({
+                limit: 'all'
+            });
+
+            assert.equal(page.data[0].id, mention.id);
+            break checkFirstMention;
+        }
+
+        checkMentionDeleted: {
+            await api.processWebmention({
+                source: new URL('https://source.com'),
+                target: new URL('https://target.com'),
+                payload: {}
+            });
+
+            const page = await api.listMentions({
+                limit: 'all'
+            });
+
+            assert.equal(page.data.length, 0);
+            break checkMentionDeleted;
+        }
+    });
+
+    it('Will throw for new mentions if the source page is not found', async function () {
+        const repository = new InMemoryMentionRepository();
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: {
+                async getByURL() {
+                    return {
+                        type: 'post',
+                        id: new ObjectID
+                    };
+                }
+            },
+            webmentionMetadata: {
+                fetch: sinon.stub().rejects(new Error(''))
+            }
+        });
+
+        let error = null;
+        try {
+            await api.processWebmention({
+                source: new URL('https://source.com'),
+                target: new URL('https://target.com'),
+                payload: {}
+            });
+        } catch (err) {
+            error = err;
+        } finally {
+            assert(error);
+        }
+    });
 });
