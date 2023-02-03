@@ -19,6 +19,9 @@ const mentionsPost = {
     mobiledoc: markdownToMobiledoc(mentionHtml)
 };
 
+// NOTE: we need to sleep after the API calls because there's a race condition between the nock'd http response and the mentions service
+// TODO: move the mentions service to a jobbed process so we can await it
+
 describe('Mentions Service', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
