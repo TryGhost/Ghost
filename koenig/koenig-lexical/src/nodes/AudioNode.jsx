@@ -16,7 +16,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_AUDIO_COMMAND} from '@tryghost/kg-default-nodes';
 
-function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, triggerFileDialog}) {
+function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, duration, triggerFileDialog}) {
     const [editor] = useLexicalComposerContext();
     const {fileUploader} = React.useContext(KoenigComposerContext);
     const [dragOver, setDragOver] = React.useState(false);
@@ -27,6 +27,15 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
 
     const audioUploader = fileUploader.useFileUpload();
     const thumbnailUploader = fileUploader.useFileUpload();
+
+    React.useEffect(() => {
+        const uploadInitialFiles = async (files) => {
+            if (files?.length > 0 && !src && !audioUploader.isLoading) {
+                await audioUploadHandler(files, nodeKey, editor, audioUploader.upload);
+            }
+        };
+        uploadInitialFiles(initialFile);
+    }, [audioUploader.upload, audioUploader.isLoading, editor, initialFile, nodeKey, src]);
 
     const onAudioFileChange = async (e) => {
         const fls = e.target.files;
@@ -168,6 +177,7 @@ function AudioNodeComponent({nodeKey, src, thumbnailSrc, title, duration, trigge
 export class AudioNode extends BaseAudioNode {
     // transient properties used to control node behaviour
     __triggerFileDialog = false;
+    __initialFile = null;
 
     static kgMenu = [{
         label: 'Audio',
@@ -183,10 +193,12 @@ export class AudioNode extends BaseAudioNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        const {triggerFileDialog} = dataset;
+        const {triggerFileDialog, initialFile} = dataset;
 
         // don't trigger the file dialog when rendering if we've already been given a url
         this.__triggerFileDialog = (!dataset.src && triggerFileDialog) || false;
+
+        this.__initialFile = initialFile || null;
     }
 
     getIcon() {
@@ -208,6 +220,7 @@ export class AudioNode extends BaseAudioNode {
                     duration={this.__duration}
                     title={this.__title}
                     triggerFileDialog={this.__triggerFileDialog}
+                    initialFile={this.__initialFile}
                 />
             </KoenigCardWrapper>
         );

@@ -43,11 +43,6 @@ export const AudioPlugin = () => {
                     if (focusNode !== null) {
                         const audioNode = $createAudioNode(dataset);
 
-                        if (!dataset.src) {
-                            const audioNodeKey = audioNode.getKey();
-                            handleAudioUpload(dataset, audioNodeKey);
-                        }
-
                         // insert a paragraph if this will be the last card and
                         // we're not already on a blank paragraph so we always
                         // have a trailing paragraph in the doc

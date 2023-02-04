@@ -4,6 +4,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import {INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
+import {INSERT_AUDIO_COMMAND} from '../nodes/AudioNode';
 
 function isMimeType(file, acceptableMimeTypes) {
     const mimeType = file.type;
@@ -90,6 +91,10 @@ function DragDropPastePlugin() {
         if (processed.length) {
             if (node === 'image') {
                 editor.dispatchCommand(INSERT_IMAGE_COMMAND, processed);
+            } else if (node === 'audio') {
+                processed.forEach((file) => {
+                    editor.dispatchCommand(INSERT_AUDIO_COMMAND, {initialFile: [file]});
+                });
             }
         }
     }, [editor]);
