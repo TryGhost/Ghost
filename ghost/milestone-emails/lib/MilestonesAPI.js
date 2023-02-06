@@ -95,7 +95,7 @@ module.exports = class MilestonesAPI {
      */
     async shouldSendEmail() {
         // check the date of the last sent email.
-        // There should be at least a week in between sending another one
+        // There should be at least two weeks in between sending another one
         const lastMilestoneSent = await this.#repository.getLastEmailSent();
 
         if (!lastMilestoneSent) {

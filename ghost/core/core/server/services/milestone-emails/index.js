@@ -1,4 +1,5 @@
 const labs = require('../../../shared/labs');
+// const settingsCache = require('../../../shared/settings-cache');
 
 class MilestoneEmailsWrapper {
     async initAndSchedule() {
@@ -28,7 +29,10 @@ class MilestoneEmailsWrapper {
                 mailer,
                 api,
                 config,
-                queries
+                queries,
+                // TODO: do we need to check if Stripe is live enabled?
+                // TODO: evaluate the default currency of the products enabled
+                defaultCurrency: 'usd'
             });
 
             const s = Math.floor(Math.random() * 60); // 0-59 second
