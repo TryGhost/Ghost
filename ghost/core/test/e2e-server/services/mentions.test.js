@@ -2,9 +2,9 @@ const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-fr
 const sinon = require('sinon');
 const nock = require('nock');
 const assert = require('assert');
-const sleep = require('../../utils/sleep');
 const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
 const dnsPromises = require('dns').promises;
+const jobsService = require('../../../core/server/services/jobs');
 
 let agent;
 let mentionUrl = new URL('https://www.otherghostsite.com/');
@@ -18,9 +18,6 @@ const mentionsPost = {
     title: 'testing sending webmentions',
     mobiledoc: markdownToMobiledoc(mentionHtml)
 };
-
-// NOTE: we need to sleep after the API calls because there's a race condition between the nock'd http response and the mentions service
-// TODO: move the mentions service to a jobbed process so we can await it
 
 describe('Mentions Service', function () {
     before(async function () {
@@ -47,7 +44,7 @@ describe('Mentions Service', function () {
             .reply(201);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         mockManager.restore();
         nock.cleanAll();
     });
@@ -84,32 +81,36 @@ describe('Mentions Service', function () {
 
         describe(`does send when we expect it to send`, function () {
             it('Newly published post (post.published)', async function () {
+                let sendWebmentionsJob = jobsService.awaitCompletion('sendWebmentions');
+
                 let publishedPost = {status: 'published', ...mentionsPost};
                 await agent
                     .post('posts/')
                     .body({posts: [publishedPost]})
                     .expectStatus(201);
 
-                await sleep(10);
+                await sendWebmentionsJob;
 
                 assert.equal(mentionMock.isDone(), true);
                 assert.equal(endpointMock.isDone(), true);
             });
 
             it('Edited published post (post.published.edited)', async function () {
+                let sendWebmentionsJob = jobsService.awaitCompletion('sendWebmentions');
                 let publishedPost = {status: 'published', ...mentionsPost};
                 let res = await agent
                     .post('posts/')
                     .body({posts: [publishedPost]})
                     .expectStatus(201);
 
-                await sleep(10);
+                await sendWebmentionsJob;
 
                 // while not the point of the test, we should have real links/mentions to start with
                 assert.equal(mentionMock.isDone(), true);
                 assert.equal(endpointMock.isDone(), true);
 
                 // reset mocks for mention
+                sendWebmentionsJob = jobsService.awaitCompletion('sendWebmentions');
                 let mentionMockTwo = nock(mentionUrl.href)
                     .get('/')
                     .reply(200, targetHtml, {'content-type': 'text/html'});
@@ -127,26 +128,28 @@ describe('Mentions Service', function () {
                     .body({posts: [editedPost]})
                     .expectStatus(200);
 
-                await sleep(10);
+                await sendWebmentionsJob;
 
                 assert.equal(mentionMockTwo.isDone(), true);
                 assert.equal(endpointMockTwo.isDone(), true);
             });
             
             it('Unpublished post (post.unpublished)', async function () {
+                let sendWebmentionsJob = jobsService.awaitCompletion('sendWebmentions');
                 let publishedPost = {status: 'published', ...mentionsPost};
                 let res = await agent
                     .post('posts/')
                     .body({posts: [publishedPost]})
                     .expectStatus(201);
 
-                await sleep(10);
+                await sendWebmentionsJob;
 
                 // while not the point of the test, we should have real links/mentions to start with
                 assert.equal(mentionMock.isDone(), true);
                 assert.equal(endpointMock.isDone(), true);
 
                 // reset mocks for mention
+                sendWebmentionsJob = jobsService.awaitCompletion('sendWebmentions');
                 let mentionMockTwo = nock(mentionUrl.href)
                     .get('/')
                     .reply(200, targetHtml, {'content-type': 'text/html'});
@@ -164,26 +167,28 @@ describe('Mentions Service', function () {
                     .body({posts: [unpublishedPost]})
                     .expectStatus(200);
 
-                await sleep(10);
+                await sendWebmentionsJob;
 
                 assert.equal(mentionMockTwo.isDone(), true);
                 assert.equal(endpointMockTwo.isDone(), true);
             });
 
             it('Sends for links that got removed from a post', async function () {
+                let sendWebmentionsJob = jobsService.awaitCompletion('sendWebmentions');
                 let publishedPost = {status: 'published', ...mentionsPost};
                 let res = await agent
                     .post('posts/')
                     .body({posts: [publishedPost]})
                     .expectStatus(201);
 
-                await sleep(10);
+                await sendWebmentionsJob;
 
                 // while not the point of the test, we should have real links/mentions to start with
                 assert.equal(mentionMock.isDone(), true);
                 assert.equal(endpointMock.isDone(), true);
 
                 // reset mocks for mention
+                sendWebmentionsJob = jobsService.awaitCompletion('sendWebmentions');
                 let mentionMockTwo = nock(mentionUrl.href)
                     .get('/')
                     .reply(200, targetHtml, {'content-type': 'text/html'});
@@ -200,7 +205,7 @@ describe('Mentions Service', function () {
                     .body({posts: [editedPost]})
                     .expectStatus(200);
 
-                await sleep(10);
+                await sendWebmentionsJob;
 
                 assert.equal(mentionMockTwo.isDone(), true);
                 assert.equal(endpointMockTwo.isDone(), true);
@@ -208,13 +213,14 @@ describe('Mentions Service', function () {
 
             // there's no special handling for this atm, but could be down the road
             it('New paid post', async function () {
+                let sendWebmentionsJob = jobsService.awaitCompletion('sendWebmentions');
                 let publishedPost = {status: 'published', visibility: 'paid', ...mentionsPost};
                 await agent
                     .post('posts/')
                     .body({posts: [publishedPost]})
                     .expectStatus(201);
 
-                await sleep(10);
+                await sendWebmentionsJob;
 
                 assert.equal(mentionMock.isDone(), true);
                 assert.equal(endpointMock.isDone(), true);
