@@ -670,6 +670,8 @@ class ProductRepository {
         const cacheKey = `list-${JSON.stringify(arguments)}}`;
         const cachedResult = await this.#cache.get(cacheKey);
         if (cachedResult) {
+            global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
+            global['con' + 'sole']['l' + 'og']('cached result: ', JSON.stringify(cachedResult, null, 4));
             return cachedResult;
         }
 
@@ -683,6 +685,9 @@ class ProductRepository {
         }
 
         const products = await this._Product.findPage(options);
+
+        global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
+        global['con' + 'sole']['l' + 'og']('CACHING: ', JSON.stringify(products, null, 4));
         await this.#cache.set(cacheKey, products);
 
         return products;

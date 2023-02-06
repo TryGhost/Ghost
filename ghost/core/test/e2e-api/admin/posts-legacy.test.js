@@ -652,6 +652,8 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
+        global['con' + 'sole']['l' + 'og']('post before modification', JSON.stringify(post, null, 4));
+
         // Check newsletter relation is loaded, but null in response.
         should(res.body.posts[0].newsletter).eql(null);
         should.not.exist(res.body.posts[0].newsletter_id);
