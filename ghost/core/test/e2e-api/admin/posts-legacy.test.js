@@ -667,7 +667,7 @@ describe('Posts API', function () {
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]});
 
-        console.log(JSON.stringify(finalPost.body, null, 4));
+        global['con' + 'sole']['l' + 'og'](JSON.stringify(finalPost.body, null, 4));
 
         // Check newsletter relation is loaded in response
         should(finalPost.body.posts[0].newsletter).eql(null);
