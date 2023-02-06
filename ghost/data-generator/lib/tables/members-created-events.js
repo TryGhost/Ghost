@@ -17,6 +17,8 @@ class MembersCreatedEventsImporter extends TableImporter {
             source = 'admin';
         } else if (luck(5)) {
             source = 'api';
+        } else if (luck(5)) { // eslint-disable-line no-dupe-else-if
+            source = 'import';
         }
         return source;
     }
