@@ -89,7 +89,10 @@ class ProductRepository {
         global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
         global['con' + 'sole']['l' + 'og']('CACHING: ', JSON.stringify(product, null, 4));
 
-        await this.#cache.set(cacheKey, product);
+        if (product) {
+            await this.#cache.set(cacheKey, product);
+        }
+
         return product;
     }
 
@@ -696,7 +699,9 @@ class ProductRepository {
 
         global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
         global['con' + 'sole']['l' + 'og']('CACHING: ', JSON.stringify(products, null, 4));
-        await this.#cache.set(cacheKey, products);
+        if (products) {
+            await this.#cache.set(cacheKey, products);
+        }
 
         return products;
     }
