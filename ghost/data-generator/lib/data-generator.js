@@ -115,7 +115,7 @@ class DataGenerator {
             newsletters = await jsonImporter.import({
                 name: 'newsletters',
                 data: baseData.newsletters,
-                rows: ['sort_order']
+                rows: ['name', 'sort_order']
             });
             newsletters.sort((a, b) => a.sort_order - b.sort_order);
 
@@ -132,7 +132,7 @@ class DataGenerator {
                 data: baseData.posts
             });
             await postsImporter.addNewsletters({posts});
-            posts = await transaction.select('id', 'newsletter_id').from('posts');
+            posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug').from('posts');
 
             await transaction('tags').delete();
             tags = await jsonImporter.import({
@@ -338,6 +338,41 @@ class DataGenerator {
 
         this.logger.info('Completed member data generation');
         this.logger.ok('Completed import process.');
+    }
+
+    async importSingleTable(tableName, quantity) {
+        this.logger.info('Importing a single table');
+        const transaction = await this.knex.transaction();
+
+        const importMembers = async () => {
+            this.logger.info(`Importing ${quantity ?? this.modelQuantities.members} members`);
+            const membersImporter = new MembersImporter(transaction);
+            await membersImporter.import({amount: quantity ?? this.modelQuantities.members});
+        };
+
+        const importMentions = async () => {
+            const posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug').from('posts');
+            this.logger.info(`Importing up to ${posts.length * 4} mentions`);
+
+            const mentionsImporter = new MentionsImporter(transaction, {baseUrl: this.baseUrl});
+            await mentionsImporter.importForEach(posts, {amount: 4});
+        };
+
+        switch (tableName) {
+        case 'members':
+            await importMembers();
+            break;
+        case 'mentions':
+            await importMentions();
+            break;
+        default:
+            this.logger.warn(`Cannot import single table '${tableName}'`);
+            await transaction.commit(); // no-op, just close the transaction
+            return;
+        }
+
+        this.logger.ok('Completed import process.');
+        await transaction.commit();
     }
 }
 
