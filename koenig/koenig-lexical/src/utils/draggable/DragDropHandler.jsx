@@ -312,14 +312,38 @@ export class DragDropHandler {
             el.style.setProperty('cursor', 'default', 'important');
         });
 
-        // prevent card hover showing whilst dragging
-        // TODO: not currently working, adjust to work with tailwind classes
-        this._elementsWithHoverRemoved = document.querySelectorAll('.kg-card-hover');
-        this._elementsWithHoverRemoved.forEach((el) => {
-            el.classList.remove('kg-card-hover');
-        });
+        // prevent hover effects showing whilst dragging
+        this._removeHoverClasses();
 
         this._handleDrag();
+    }
+
+    _removeHoverClasses() {
+        this._restoreHoverClasses();
+
+        this._elementsWithHoverRemoved = new Map();
+
+        const elementsWithHover = document.querySelectorAll('[class*="hover:"]');
+
+        elementsWithHover.forEach((element) => {
+            const hoverClasses = Array.from(element.classList.values()).filter(cls => cls.startsWith('hover:'));
+
+            this._elementsWithHoverRemoved.set(element, hoverClasses);
+
+            element.classList.remove(...hoverClasses);
+        });
+    }
+
+    _restoreHoverClasses() {
+        if (!this._elementsWithHoverRemoved) {
+            return;
+        }
+
+        this._elementsWithHoverRemoved.forEach((hoverClasses, element) => {
+            element.classList.add(...hoverClasses);
+        });
+
+        this._elementsWithHoverRemoved = new Map();
     }
 
     // called when mouse moves whilst a drag is in progress
@@ -623,13 +647,7 @@ export class DragDropHandler {
             container.onDragEnd();
         });
 
-        // TODO: not currently working, adjust for Tailwind classes
-        if (this._elementsWithHoverRemoved) {
-            this._elementsWithHoverRemoved.forEach((el) => {
-                el.classList.add('kg-card-hover');
-            });
-        }
-        delete this._elementsWithHoverRemoved;
+        this._restoreHoverClasses();
 
         utils.applyUserSelect(document.body, '');
         document.querySelectorAll('[data-kg="editor"] [data-lexical-editor]').forEach((el) => {
