@@ -1,10 +1,22 @@
-const {agentProvider, fixtureManager, mockManager, matchers, sleep} = require('../../utils/e2e-framework');
+const {
+    agentProvider, 
+    fixtureManager, 
+    mockManager, 
+    matchers,
+    dbUtils,
+    configUtils,
+    matchers: {
+        anyContentVersion,
+        anyEtag
+    }
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('assert');
 const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/jobs');
 const DomainEvents = require('@tryghost/domain-events');
+const errors = require('@tryghost/errors');
 
 describe('Webmentions (receiving)', function () {
     let agent;
@@ -168,5 +180,42 @@ describe('Webmentions (receiving)', function () {
         await DomainEvents.allSettled();
 
         emailMockReceiver.sentEmailCount(0);
+    });
+
+    it('is rate limited against spamming mention requests', async function () {
+        await dbUtils.truncate('brute');
+        // +1 because this is a retry count, so we have one request + the retries, then blocked
+        const mentionBlock = configUtils.config.get('spam').mentions_block;
+        const targetUrl = new URL(urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-2/');
+        const html = `
+                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+            `;
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
+
+        for (let i = 0; i < mentionBlock.freeRetries + 1; i++) {
+            await agent.post('/receive/')
+                .body({
+                    source: sourceUrl.href,
+                    target: targetUrl.href,
+                    payload: {}
+                })
+                .expectStatus(202);
+        }
+
+        await agent
+            .post('/receive/')
+            .body({
+                source: sourceUrl.href,
+                target: targetUrl.href,
+                payload: {}
+            })
+            .expectStatus(429);
     });
 });

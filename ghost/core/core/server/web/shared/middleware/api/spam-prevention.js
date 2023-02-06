@@ -148,7 +148,7 @@ const mentionsBlock = () => {
                 }));
             },
             handleStoreError: handleStoreError
-        }, pick(spamGlobalBlock, spamConfigKeys))
+        }, pick(spamMentionsBlock, spamConfigKeys))
     );
 
     return mentionsBlockInstance;

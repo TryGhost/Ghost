@@ -104,9 +104,10 @@
             "freeRetries": 8
         },
         "mentions_block": {
-            "minWait": 600000,
-            "maxWait": 604800000,
-            "freeRetries": 4
+            "minWait": 60,
+            "maxWait": 600,
+            "lifetime": 6000,
+            "freeRetries": 2
         }
     },
     "caching": {
