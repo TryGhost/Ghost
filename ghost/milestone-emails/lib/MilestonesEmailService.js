@@ -60,12 +60,23 @@ module.exports = class MilestonesEmailService {
             .sort((a, b) => b - a)[0];
     };
 
-    _saveMileStoneAndSendEmail = async (milestone, hasMembersImported) => {
+    /**
+     *
+     * @param {number} milestone
+     * @param {'arr'|'members'} type
+     * @param {boolean} hasMembersImported
+     *
+     * @returns {Promise<Milestone>}
+     */
+    _saveMileStoneAndSendEmail = async (milestone, type, hasMembersImported) => {
         const milestoneData = {
-            type: 'arr',
-            value: milestone,
-            currency: this.#defaultCurrency
+            type,
+            value: milestone
         };
+
+        if (type === 'arr') {
+            milestoneData.currency = this.#defaultCurrency;
+        }
 
         // Two cases in which we don't want to send an email
         // 1. There has been an import of members within the last week
@@ -73,12 +84,12 @@ module.exports = class MilestonesEmailService {
         const shouldSendEmail = await this.#api.shouldSendEmail();
 
         if (shouldSendEmail && !hasMembersImported) {
-            // TODO: hook up GhostMailer or use StaffService to send email
-            await this.#mailer.send({
-                subject: 'Test',
-                html: '<div>Milestone achieved</div>',
-                to: 'test@example.com'
-            });
+            // TODO: hook up GhostMailer or use StaffService and trigger event to send email
+            // await this.#mailer.send({
+            //     subject: 'Test',
+            //     html: '<div>Milestone achieved</div>',
+            //     to: 'test@example.com'
+            // });
 
             milestoneData.emailSentAt = new Date();
         }
@@ -111,22 +122,28 @@ module.exports = class MilestonesEmailService {
                 const latestMilestone = await this.#api.getLatestArrMilestone(this.#defaultCurrency);
 
                 if (!latestMilestone || milestone > latestMilestone.value) {
-                    return await this._saveMileStoneAndSendEmail(milestone, hasMembersImported);
+                    return await this._saveMileStoneAndSendEmail(milestone, 'arr', hasMembersImported);
                 }
             }
         }
     }
 
-    // async runMemberQueries() {
-    //     // // Fetch the current data
-    //     // const membersCount = await this.#queries.getMembersCount();
-    //     // const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
+    async runMemberQueries() {
+        // Fetch the current data
+        const membersCount = await this.#queries.getMembersCount();
+        const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
 
-    //     // // Check the definitions in the config
-    //     // const definedMilestones = this.#config.milestones;
-    //     // const membersMilestones = definedMilestones.members;
+        // Check the definitions in the config
+        const membersMilestones = this.#config.milestones.members;
 
-    //     // // Fetch the latest achieved milestones
-    //     // const latestMembersMilestone = await this.#api.getLatestMembersCountMilestone();
-    // }
+        // get the closest milestone we're over now
+        const milestone = this._getMatchedMilestone(membersMilestones, membersCount);
+
+        // Fetch the latest achieved Members milestones
+        const latestMembersMilestone = await this.#api.getLatestMembersCountMilestone();
+
+        if (!latestMembersMilestone || milestone > latestMembersMilestone?.value) {
+            return await this._saveMileStoneAndSendEmail(milestone, 'members', hasMembersImported);
+        }
+    }
 };
