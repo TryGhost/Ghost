@@ -1,14 +1,9 @@
 const {
     agentProvider, 
     fixtureManager, 
-    mockManager, 
-    matchers,
+    mockManager,
     dbUtils,
-    configUtils,
-    matchers: {
-        anyContentVersion,
-        anyEtag
-    }
+    configUtils
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('assert');
@@ -16,7 +11,6 @@ const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/jobs');
 const DomainEvents = require('@tryghost/domain-events');
-const errors = require('@tryghost/errors');
 
 describe('Webmentions (receiving)', function () {
     let agent;
