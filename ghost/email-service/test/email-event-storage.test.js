@@ -10,6 +10,7 @@ describe('Email Event Storage', function () {
 
     beforeEach(function () {
         logError = sinon.stub(logging, 'error');
+        sinon.stub(logging, 'info');
     });
 
     afterEach(function () {
@@ -23,76 +24,51 @@ describe('Email Event Storage', function () {
     });
 
     it('Handles email delivered events', async function () {
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailDeliveredEvent) {
-                    handler(EmailDeliveredEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        emailRecipientId: '789',
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
+        const event = EmailDeliveredEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            timestamp: new Date(0)
+        });
 
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const db = createDb();
         const eventHandler = new EmailEventStorage({db});
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
+        await eventHandler.handleDelivered(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].delivered_at);
     });
 
     it('Handles email opened events', async function () {
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailOpenedEvent) {
-                    handler(EmailOpenedEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        emailRecipientId: '789',
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
+        const event = EmailOpenedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            timestamp: new Date(0)
+        });
 
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const db = createDb();
         const eventHandler = new EmailEventStorage({db});
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
+        await eventHandler.handleOpened(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].opened_at);
     });
 
     it('Handles email permanent bounce events with update', async function () {
-        let waitPromise;
+        const event = EmailBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: 'test',
+                code: 500,
+                enhancedCode: '5.5.5'
+            },
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailBouncedEvent) {
-                    waitPromise = handler(EmailBouncedEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        emailRecipientId: '789',
-                        error: {
-                            message: 'test',
-                            code: 500,
-                            enhancedCode: '5.5.5'
-                        },
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const db = createDb();
         const existing = {
             id: 1,
@@ -119,37 +95,26 @@ describe('Email Event Storage', function () {
                 EmailRecipientFailure
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(existing.save.calledOnce);
     });
 
     it('Handles email permanent bounce events with insert', async function () {
-        let waitPromise;
+        const event = EmailBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: 'test',
+                code: 500,
+                enhancedCode: '5.5.5'
+            },
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailBouncedEvent) {
-                    waitPromise = handler(EmailBouncedEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        emailRecipientId: '789',
-                        error: {
-                            message: 'test',
-                            code: 500,
-                            enhancedCode: '5.5.5'
-                        },
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const db = createDb();
         const EmailRecipientFailure = {
             transaction: async function (callback) {
@@ -165,68 +130,45 @@ describe('Email Event Storage', function () {
                 EmailRecipientFailure
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(EmailRecipientFailure.add.calledOnce);
     });
 
     it('Handles email permanent bounce event without error data', async function () {
-        let waitPromise;
+        const event = EmailBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: null,
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailBouncedEvent) {
-                    waitPromise = handler(EmailBouncedEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        emailRecipientId: '789',
-                        error: null,
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const db = createDb();
-
         const eventHandler = new EmailEventStorage({
             db,
             models: {}
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
     });
 
     it('Handles email permanent bounce events with skipped update', async function () {
-        let waitPromise;
+        const event = EmailBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: 'test',
+                code: 500,
+                enhancedCode: '5.5.5'
+            },
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailBouncedEvent) {
-                    waitPromise = handler(EmailBouncedEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        emailRecipientId: '789',
-                        error: {
-                            message: 'test',
-                            code: 500,
-                            enhancedCode: '5.5.5'
-                        },
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const db = createDb();
         const existing = {
             id: 1,
@@ -253,9 +195,7 @@ describe('Email Event Storage', function () {
                 EmailRecipientFailure
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(EmailRecipientFailure.findOne.called);
@@ -263,28 +203,19 @@ describe('Email Event Storage', function () {
     });
 
     it('Handles email temporary bounce events with update', async function () {
-        let waitPromise;
+        const event = EmailTemporaryBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: 'test',
+                code: 500,
+                enhancedCode: null
+            },
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailTemporaryBouncedEvent) {
-                    waitPromise = handler(EmailTemporaryBouncedEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        emailRecipientId: '789',
-                        error: {
-                            message: 'test',
-                            code: 500,
-                            enhancedCode: null
-                        },
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const existing = {
             id: 1,
             get: (key) => {
@@ -309,35 +240,24 @@ describe('Email Event Storage', function () {
                 EmailRecipientFailure
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handleTemporaryFailed(event);
         assert(existing.save.calledOnce);
     });
 
     it('Handles email temporary bounce events with skipped update', async function () {
-        let waitPromise;
+        const event = EmailTemporaryBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: 'test',
+                code: 500,
+                enhancedCode: '5.5.5'
+            },
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailTemporaryBouncedEvent) {
-                    waitPromise = handler(EmailTemporaryBouncedEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        emailRecipientId: '789',
-                        error: {
-                            message: 'test',
-                            code: 500,
-                            enhancedCode: '5.5.5'
-                        },
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const existing = {
             id: 1,
             get: (key) => {
@@ -362,29 +282,18 @@ describe('Email Event Storage', function () {
                 EmailRecipientFailure
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handleTemporaryFailed(event);
         assert(existing.save.notCalled);
     });
 
     it('Handles unsubscribe', async function () {
-        let waitPromise;
+        const event = EmailUnsubscribedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === EmailUnsubscribedEvent) {
-                    waitPromise = handler(EmailUnsubscribedEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const update = sinon.stub().resolves();
 
         const eventHandler = new EmailEventStorage({
@@ -392,30 +301,19 @@ describe('Email Event Storage', function () {
                 update
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handleUnsubscribed(event);
         assert(update.calledOnce);
         assert(update.firstCall.args[0].newsletters.length === 0);
     });
 
     it('Handles complaints', async function () {
-        let waitPromise;
+        const event = SpamComplaintEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === SpamComplaintEvent) {
-                    waitPromise = handler(SpamComplaintEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const EmailSpamComplaintEvent = {
             add: sinon.stub().resolves()
         };
@@ -425,29 +323,18 @@ describe('Email Event Storage', function () {
                 EmailSpamComplaintEvent
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handleComplained(event);
         assert(EmailSpamComplaintEvent.add.calledOnce);
     });
 
     it('Handles duplicate complaints', async function () {
-        let waitPromise;
+        const event = SpamComplaintEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === SpamComplaintEvent) {
-                    waitPromise = handler(SpamComplaintEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const EmailSpamComplaintEvent = {
             add: sinon.stub().rejects({code: 'ER_DUP_ENTRY'})
         };
@@ -457,30 +344,19 @@ describe('Email Event Storage', function () {
                 EmailSpamComplaintEvent
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handleComplained(event);
         assert(EmailSpamComplaintEvent.add.calledOnce);
         assert(!logError.calledOnce);
     });
 
     it('Handles logging failed complaint storage', async function () {
-        let waitPromise;
+        const event = SpamComplaintEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            timestamp: new Date(0)
+        });
 
-        const DomainEvents = {
-            subscribe: async (type, handler) => {
-                if (type === SpamComplaintEvent) {
-                    waitPromise = handler(SpamComplaintEvent.create({
-                        email: 'example@example.com',
-                        memberId: '123',
-                        emailId: '456',
-                        timestamp: new Date(0)
-                    }));
-                }
-            }
-        };
-
-        const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
         const EmailSpamComplaintEvent = {
             add: sinon.stub().rejects(new Error('Some database error'))
         };
@@ -490,9 +366,7 @@ describe('Email Event Storage', function () {
                 EmailSpamComplaintEvent
             }
         });
-        eventHandler.listen(DomainEvents);
-        sinon.assert.callCount(subscribeSpy, 6);
-        await waitPromise;
+        await eventHandler.handleComplained(event);
         assert(EmailSpamComplaintEvent.add.calledOnce);
         assert(logError.calledOnce);
     });

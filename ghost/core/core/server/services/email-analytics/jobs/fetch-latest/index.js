@@ -29,8 +29,7 @@ if (parentPort) {
     // This will start the email analytics job on the main thread (the wrapper service is listening for this event)
     parentPort.postMessage({
         event: {
-            type: StartEmailAnalyticsJobEvent.constructor.name,
-            data: {}
+            type: StartEmailAnalyticsJobEvent.name
         }
     });
 
