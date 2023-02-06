@@ -103,7 +103,6 @@ describe('Sending service', function () {
             ));
         });
 
-
         it('supports cache', async function () {
             const emailBodyCache = new EmailBodyCache();
             const sendingService = new SendingService({
