@@ -30,7 +30,7 @@ let spamUserReset = spam.user_reset || {};
 let spamUserLogin = spam.user_login || {};
 let spamMemberLogin = spam.member_login || {};
 let spamContentApiKey = spam.content_api_key || {};
-let spamMentionsBlock = spam.mentions_block || {}; // not yet implemented
+let spamMentionsBlock = spam.mentions_block || {};
 
 let store;
 let memoryStore;
