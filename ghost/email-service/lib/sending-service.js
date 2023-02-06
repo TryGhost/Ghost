@@ -104,7 +104,7 @@ class SendingService {
                 newsletter,
                 segment,
                 {
-                    clickTrackingEnabled: !!options.clickTrackingEnabled,
+                    clickTrackingEnabled: !!options.clickTrackingEnabled
                 }
             );
             if (options.emailBodyCache) {
