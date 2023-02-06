@@ -11,7 +11,7 @@ module.exports = class MilestoneQueries {
      * @returns {Promise<number>}
      */
     async getMembersCount() {
-        const [membersCount] = await this.#db.knex('members_subscribe_events').count('id as count');
+        const [membersCount] = await this.#db.knex('members').count('id as count');
 
         return membersCount?.count || 0;
     }

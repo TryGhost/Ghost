@@ -32,16 +32,26 @@ module.exports = class InMemoryMilestoneRepository {
 
     /**
      * @param {'arr'|'members'} type
+     * @param {string|null} currency
      *
      * @returns {Promise<Milestone>}
      */
-    async getLatestByType(type) {
-        return this.#store
-            .filter(item => item.type === type)
-            // sort by created at desc
-            .sort((a, b) => (b.createdAt.valueOf() - a.createdAt.valueOf()))
-            // if we end up with more values created at the same time, pick the highest value
-            .sort((a, b) => b.value - a.value)[0];
+    async getLatestByType(type, currency = 'usd') {
+        if (type === 'arr') {
+            return this.#store
+                .filter(item => item.type === type && item.currency === currency)
+                // sort by created at desc
+                .sort((a, b) => (b.createdAt.valueOf() - a.createdAt.valueOf()))
+                // if we end up with more values created at the same time, pick the highest value
+                .sort((a, b) => b.value - a.value)[0];
+        } else {
+            return this.#store
+                .filter(item => item.type === type)
+                // sort by created at desc
+                .sort((a, b) => (b.createdAt.valueOf() - a.createdAt.valueOf()))
+                // if we end up with more values created at the same time, pick the highest value
+                .sort((a, b) => b.value - a.value)[0];
+        }
     }
 
     /**

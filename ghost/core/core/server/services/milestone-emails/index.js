@@ -4,22 +4,28 @@ class MilestoneEmailsWrapper {
     async initAndSchedule() {
         if (labs.isSet('milestoneEmails')) {
             const jobsService = require('../jobs');
+            const db = require('../../data/db');
+            const MilestoneQueries = require('./MilestoneQueries');
+
             const {
-                MilestoneEmailsService,
+                MilestonesEmailService,
                 MilestonesAPI,
-                queries,
-                MileStonesInMemoryRepository
+                InMemoryMilestoneRepository
             } = require('@tryghost/milestone-emails');
             const config = require('../../../shared/config');
             const {GhostMailer} = require('../mail');
+
             const mailer = new GhostMailer();
 
+            const repository = new InMemoryMilestoneRepository();
             const api = new MilestonesAPI({
-                repository: new MileStonesInMemoryRepository()
+                repository
             });
 
-            const milestonesEmailService = new MilestoneEmailsService({
-                sendMail: mailer,
+            const queries = new MilestoneQueries({db});
+
+            const milestonesEmailService = new MilestonesEmailService({
+                mailer,
                 api,
                 config,
                 queries
@@ -32,8 +38,16 @@ class MilestoneEmailsWrapper {
 
             jobsService.addJob({
                 at: `${s} ${m} ${h} * * ${wd}`, // Every week
-                job: milestonesEmailService.runQueries(),
-                name: 'milestone-emails'
+                job: async () => await milestonesEmailService.runARRQueries(),
+                name: 'milestone-emails-arr',
+                offloaded: false
+            });
+
+            jobsService.addJob({
+                at: `${s} ${m} ${h} * * ${wd}`, // Every week
+                job: async () => await milestonesEmailService.runMemberQueries(),
+                name: 'milestone-emails-members',
+                offloaded: false
             });
         }
     }

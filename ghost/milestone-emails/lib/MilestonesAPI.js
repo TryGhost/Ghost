@@ -25,10 +25,12 @@ module.exports = class MilestonesAPI {
     }
 
     /**
+     * @param {string|null} currency
+     *
      * @returns {Promise<Milestone>}
      */
-    async getLatestArrMilestone() {
-        return this.#repository.getLatestByType('arr');
+    async getLatestArrMilestone(currency = 'usd') {
+        return this.#repository.getLatestByType('arr', currency);
     }
 
     /**

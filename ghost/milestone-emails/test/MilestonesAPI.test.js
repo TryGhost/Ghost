@@ -25,10 +25,19 @@ describe('MilestonesAPI', function () {
             emailSentAt: '2023-02-01T00:00:00Z'
         });
 
+        const milestoneThree = await api.checkAndProcessMilestone({
+            type: 'arr',
+            value: 1000,
+            currency: 'aud',
+            createdAt: '2023-02-02T00:00:00Z',
+            emailSentAt: '2023-02-02T00:00:00Z'
+        });
+
         assert(milestoneOne instanceof Milestone);
         assert(milestoneTwo instanceof Milestone);
+        assert(milestoneThree instanceof Milestone);
 
-        const milestone = await api.getLatestArrMilestone();
+        const milestone = await api.getLatestArrMilestone('usd');
 
         assert.equal(milestone.id, milestoneTwo.id);
         assert(milestone.value === 500);

@@ -20,6 +20,18 @@ describe('InMemoryMilestoneRepository', function () {
             },
             {
                 type: 'arr',
+                value: 1000,
+                createdAt: '2023-01-01T00:00:00Z',
+                currency: 'gbp'
+            },
+            {
+                type: 'arr',
+                value: 2000,
+                createdAt: '2023-01-30T00:00:00Z',
+                currency: 'gbp'
+            },
+            {
+                type: 'arr',
                 value: 50000,
                 createdAt: '2023-02-01T01:00:00Z',
                 emailSentAt: '2023-02-01T01:00:00Z',
@@ -76,6 +88,16 @@ describe('InMemoryMilestoneRepository', function () {
         assert(timeDiff === 0);
         assert(latestArrMilestone.value === 60000);
         assert(latestArrMilestone.type = 'arr');
+        assert(latestArrMilestone.currency === 'usd');
+    });
+
+    it('Can return the latest milestone for ARR for a specific currency', async function () {
+        const latestArrMilestone = await repository.getLatestByType('arr', 'gbp');
+        const timeDiff = new Date(latestArrMilestone.createdAt) - new Date('2023-01-30T00:00:00Z');
+        assert(timeDiff === 0);
+        assert(latestArrMilestone.value === 2000);
+        assert(latestArrMilestone.type = 'arr');
+        assert(latestArrMilestone.currency === 'gbp');
     });
 
     it('Can return the last sent email', async function () {
