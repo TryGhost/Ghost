@@ -21,10 +21,7 @@ const messages = {
         context: 'Too many login attempts.'
     },
     tooManyAttempts: 'Too many attempts.',
-    mentionsBlock: {
-        error: 'Only {rateMentions} mentions per IP address every {rateMentionsPeriod} seconds.',
-        context: 'Too many mentions.'
-    }
+    mentionsBlock: 'Too many attempts.'
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -146,8 +143,8 @@ const mentionsBlock = () => {
             failCallback(req, res, next) {
                 return next(new errors.TooManyRequestsError({
                     message: `Too many mention attempts`,
-                    context: tpl(messages.mentionsBlock.context),
-                    help: tpl(messages.mentionsBlock.context)
+                    context: tpl(messages.mentionsBlock,
+                        {rfa: spamMentionsBlock.freeRetries + 1 || 5, rfp: spamMentionsBlock.lifetime || 60 * 60})
                 }));
             },
             handleStoreError: handleStoreError

@@ -2,7 +2,6 @@ const express = require('../../../shared/express');
 const api = require('../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
 const shared = require('../shared');
-const errorHandler = require('@tryghost/mw-error-handler');
 
 const bodyParser = require('body-parser');
 
@@ -17,8 +16,6 @@ module.exports = function apiRoutes() {
 
     // Webmentions
     router.post('/receive', bodyParser.urlencoded({extended: true, limit: '5mb'}), http(api.mentions.receive));
-
-    router.use(errorHandler.resourceNotFound);
 
     return router;
 };
