@@ -181,6 +181,37 @@ describe('Sending service', function () {
             });
             assert.equal(response2.id, 'provider-123');
             sinon.assert.calledTwice(sendStub);
+            assert(sendStub.getCall(1).calledWith(
+                {
+                    subject: 'Hi',
+                    from: 'ghost@example.com',
+                    replyTo: 'ghost+reply@example.com',
+                    html: '<html><body>Hi {{name}}</body></html>',
+                    plaintext: 'Hi',
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
+                    ],
+                    recipients: [
+                        {
+                            email: 'member@example.com',
+                            replacements: [{
+                                id: 'name',
+                                token: '{{name}}',
+                                value: 'John'
+                            }]
+                        }
+                    ]
+                },
+                {
+                    clickTrackingEnabled: true,
+                    openTrackingEnabled: true
+                }
+            ));
 
             // Didn't call renderBody again
             sinon.assert.calledOnce(emailRenderer.renderBody);
