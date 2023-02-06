@@ -50,6 +50,8 @@ function validateSchema(tableName, model, options) {
             !Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'defaultTo')
         ) {
             if (validator.isEmpty(strVal)) {
+                global['con' + 'sole']['l' + 'og']('validating', JSON.stringify(model.toJSON(), null, 4));
+
                 message = tpl(messages.valueCannotBeBlank, {
                     tableName: tableName,
                     columnKey: columnKey

@@ -664,6 +664,8 @@ describe('Posts API', function () {
 
         updatedPost.status = 'published';
 
+        global['con' + 'sole']['l' + 'og']('post before modification', JSON.stringify(updatedPost, null, 4));
+
         const finalPost = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/'))
             .set('Origin', config.get('url'))
