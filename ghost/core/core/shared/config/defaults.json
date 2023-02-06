@@ -103,11 +103,11 @@
             "lifetime": 43200,
             "freeRetries": 8
         },
-        "mentions_block": {
-            "minWait": 60,
-            "maxWait": 600,
-            "lifetime": 6000,
-            "freeRetries": 2
+        "webmentions_block": {
+            "minWait": 10,
+            "maxWait": 100,
+            "lifetime": 1000,
+            "freeRetries": 100
         }
     },
     "caching": {

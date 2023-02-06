@@ -21,7 +21,7 @@ const messages = {
         context: 'Too many login attempts.'
     },
     tooManyAttempts: 'Too many attempts.',
-    mentionsBlock: 'Too many attempts.'
+    webMentionsBlock: 'Too many attempts.'
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -30,14 +30,14 @@ let spamUserReset = spam.user_reset || {};
 let spamUserLogin = spam.user_login || {};
 let spamMemberLogin = spam.member_login || {};
 let spamContentApiKey = spam.content_api_key || {};
-let spamMentionsBlock = spam.mentions_block || {};
+let spamWebMentionsBlock = spam.webmentions_block || {};
 
 let store;
 let memoryStore;
 let privateBlogInstance;
 let globalResetInstance;
 let globalBlockInstance;
-let mentionsBlockInstance;
+let webMentionsBlockInstance;
 let userLoginInstance;
 let membersAuthInstance;
 let membersAuthEnumerationInstance;
@@ -126,7 +126,7 @@ const globalReset = () => {
     return globalResetInstance;
 };
 
-const mentionsBlock = () => {
+const webMentionsBlock = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
     const db = require('../../../../data/db');
@@ -137,21 +137,19 @@ const mentionsBlock = () => {
         knex: db.knex
     });
 
-    mentionsBlockInstance = mentionsBlockInstance || new ExpressBrute(store,
+    webMentionsBlockInstance = webMentionsBlockInstance || new ExpressBrute(store,
         extend({
             attachResetToRequest: false,
             failCallback(req, res, next) {
                 return next(new errors.TooManyRequestsError({
-                    message: `Too many mention attempts`,
-                    context: tpl(messages.mentionsBlock,
-                        {rfa: spamMentionsBlock.freeRetries + 1 || 5, rfp: spamMentionsBlock.lifetime || 60 * 60})
+                    message: `Too many mention attempts`
                 }));
             },
             handleStoreError: handleStoreError
-        }, pick(spamMentionsBlock, spamConfigKeys))
+        }, pick(spamWebMentionsBlock, spamConfigKeys))
     );
 
-    return mentionsBlockInstance;
+    return webMentionsBlockInstance;
 };
 
 const membersAuth = () => {
@@ -350,7 +348,7 @@ module.exports = {
     userReset: userReset,
     privateBlog: privateBlog,
     contentApiKey: contentApiKey,
-    mentionsBlock: mentionsBlock,
+    webMentionsBlock: webMentionsBlock,
     reset: () => {
         store = undefined;
         memoryStore = undefined;
