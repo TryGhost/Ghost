@@ -668,10 +668,10 @@ class ProductRepository {
      **/
     async list(options = {}) {
         const cacheKey = `list-${JSON.stringify(arguments)}}`;
-        // const cachedResult = await this.#cache.get(cacheKey);
-        // if (cachedResult) {
-        //     return cachedResult;
-        // }
+        const cachedResult = await this.#cache.get(cacheKey);
+        if (cachedResult) {
+            return cachedResult;
+        }
 
         if (!options.transacting) {
             return this._Product.transaction((transacting) => {
