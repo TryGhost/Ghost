@@ -665,7 +665,7 @@ describe('Posts API', function () {
         const finalPost = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/'))
             .set('Origin', config.get('url'))
-            .send({posts: [{status: 'published'}]});
+            .send({posts: [updatedPost]});
 
         console.log(finalPost.body);
 
