@@ -178,7 +178,6 @@ describe('Webmentions (receiving)', function () {
 
     it('is rate limited against spamming mention requests', async function () {
         await dbUtils.truncate('brute');
-        // +1 because this is a retry count, so we have one request + the retries, then blocked
         const mentionBlock = configUtils.config.get('spam').mentions_block;
         const targetUrl = new URL(urlUtils.getSiteUrl());
         const sourceUrl = new URL('http://testpage.com/external-article-2/');
@@ -193,6 +192,7 @@ describe('Webmentions (receiving)', function () {
             .get(sourceUrl.pathname)
             .reply(200, html, {'Content-Type': 'text/html'});
 
+        // +1 because this is a retry count, so we have one request + the retries, then blocked
         for (let i = 0; i < mentionBlock.freeRetries + 1; i++) {
             await agent.post('/receive/')
                 .body({
