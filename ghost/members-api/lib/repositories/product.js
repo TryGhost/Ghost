@@ -77,6 +77,22 @@ class ProductRepository {
         this.#cache = cache;
     }
 
+    async get(data, options = {}) {
+        const cacheKey = `get-${JSON.stringify(arguments)}}`;
+        const cachedResult = await this.#cache.get(cacheKey);
+        if (cachedResult) {
+            return cachedResult;
+        }
+
+        const product = await this.dbGet(data, options);
+
+        global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
+        global['con' + 'sole']['l' + 'og']('CACHING: ', JSON.stringify(product, null, 4));
+
+        await this.#cache.set(cacheKey, product);
+        return product;
+    }
+
     /**
      * Retrieves a Product by either stripe_product_id, stripe_price_id, id or slug
      *
@@ -85,15 +101,7 @@ class ProductRepository {
      *
      * @returns {Promise<ProductModel>}
      */
-    async get(data, options = {}) {
-        const cacheKey = `get-${JSON.stringify(arguments)}}`;
-        const cachedResult = await this.#cache.get(cacheKey);
-        if (cachedResult) {
-            global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
-            global['con' + 'sole']['l' + 'og']('cached result: ', JSON.stringify(cachedResult, null, 4));
-            return cachedResult;
-        }
-
+    async dbGet(data, options = {}) {
         if (!options.transacting) {
             return this._Product.transaction((transacting) => {
                 return this.get(data, {
@@ -103,48 +111,44 @@ class ProductRepository {
             });
         }
 
-        let product = undefined;
-
         if ('stripe_product_id' in data) {
             const stripeProduct = await this._StripeProduct.findOne({
                 stripe_product_id: data.stripe_product_id
             }, options);
 
             if (!stripeProduct) {
-                product = null;
-            } else {
-                product = await stripeProduct.related('product').fetch(options);
+                return null;
             }
-        } else if ('stripe_price_id' in data) {
+
+            return await stripeProduct.related('product').fetch(options);
+        }
+        if ('stripe_price_id' in data) {
             const stripePrice = await this._StripePrice.findOne({
                 stripe_price_id: data.stripe_price_id
             }, options);
 
             if (!stripePrice) {
-                product = null;
-            } else {
-                const stripeProduct = await stripePrice.related('stripeProduct').fetch(options);
-
-                if (!stripeProduct) {
-                    product = null;
-                }
-
-                product = await stripeProduct.related('product').fetch(options);
+                return null;
             }
-        } else if ('id' in data) {
-            product = await this._Product.findOne({id: data.id}, options);
-        } else if ('slug' in data) {
-            product = await this._Product.findOne({slug: data.slug}, options);
+
+            const stripeProduct = await stripePrice.related('stripeProduct').fetch(options);
+
+            if (!stripeProduct) {
+                return null;
+            }
+
+            return await stripeProduct.related('product').fetch(options);
         }
 
-        if (product === undefined) {
-            throw new NotFoundError({message: 'Missing id, slug, stripe_product_id or stripe_price_id from data'});
+        if ('id' in data) {
+            return await this._Product.findOne({id: data.id}, options);
         }
 
-        global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
-        global['con' + 'sole']['l' + 'og']('CACHING: ', JSON.stringify(product, null, 4));
-        await this.#cache.set(cacheKey, product);
-        return product;
+        if ('slug' in data) {
+            return await this._Product.findOne({slug: data.slug}, options);
+        }
+
+        throw new NotFoundError({message: 'Missing id, slug, stripe_product_id or stripe_price_id from data'});
     }
 
     /**
