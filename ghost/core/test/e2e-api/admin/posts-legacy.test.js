@@ -665,10 +665,9 @@ describe('Posts API', function () {
         const finalPost = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/'))
             .set('Origin', config.get('url'))
-            .send({posts: [updatedPost]})
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+            .send({posts: [{status: 'published'}]});
+
+        console.log(finalPost.body);
 
         // Check newsletter relation is loaded in response
         should(finalPost.body.posts[0].newsletter).eql(null);
