@@ -87,7 +87,7 @@ class SendingService {
      * @returns {Promise<EmailProviderSuccessResponse>}
     */
     async send({post, newsletter, segment, members, emailId}, options) {
-        const cacheId = emailId + '-' + post.id + '-' + newsletter.id + '-' + (segment ?? 'null');
+        const cacheId = emailId + '-' + (segment ?? 'null');
 
         /**
          * @type {EmailBody | null}
