@@ -89,6 +89,8 @@ class ProductRepository {
         const cacheKey = `get-${JSON.stringify(arguments)}}`;
         const cachedResult = await this.#cache.get(cacheKey);
         if (cachedResult) {
+            global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
+            global['con' + 'sole']['l' + 'og']('cached result: ', JSON.stringify(cachedResult, null, 4));
             return cachedResult;
         }
 
@@ -139,6 +141,8 @@ class ProductRepository {
             throw new NotFoundError({message: 'Missing id, slug, stripe_product_id or stripe_price_id from data'});
         }
 
+        global['con' + 'sole']['l' + 'og']('cache key: ', cacheKey);
+        global['con' + 'sole']['l' + 'og']('CACHING: ', JSON.stringify(product, null, 4));
         await this.#cache.set(cacheKey, product);
         return product;
     }
