@@ -8,25 +8,23 @@ const Milestone = require('../lib/Milestone');
 describe('MilestonesEmailService', function () {
     let repository;
 
-    const milestoneConfig = {
-        milestones:
-        {
-            arr: [
-                {
-                    currency: 'usd',
-                    values: [1000, 10000, 50000, 100000, 250000, 500000, 1000000]
-                },
-                {
-                    currency: 'gbp',
-                    values: [500, 1000, 5000, 100000, 250000, 500000, 1000000]
-                },
-                {
-                    currency: 'idr',
-                    values: [1000, 10000, 50000, 100000, 250000, 500000, 1000000]
-                }
-            ],
-            members: [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
-        }
+    const milestonesConfig = {
+        arr: [
+            {
+                currency: 'usd',
+                values: [1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+            },
+            {
+                currency: 'gbp',
+                values: [500, 1000, 5000, 100000, 250000, 500000, 1000000]
+            },
+            {
+                currency: 'idr',
+                values: [1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+            }
+        ],
+        members: [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+
     };
 
     describe('ARR Milestones', function () {
@@ -39,7 +37,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getARR() {
                         return [{currency: 'usd', arr: 1298}, {currency: 'gbp', arr: 2600}];
@@ -94,7 +92,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getARR() {
                         return [{currency: 'usd', arr: 50005}];
@@ -123,7 +121,7 @@ describe('MilestonesEmailService', function () {
                 mailer: {
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getARR() {
                         return [{currency: 'nzd', arr: 1005}];
@@ -156,7 +154,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getARR() {
                         return [{currency: 'gbp', arr: 5005}];
@@ -181,7 +179,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getARR() {
                         return [{currency: 'usd', arr: 100000}, {currency: 'idr', arr: 2600}];
@@ -221,7 +219,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getARR() {
                         return [{currency: 'idr', arr: 10000}];
@@ -251,7 +249,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getMembersCount() {
                         return 110;
@@ -302,7 +300,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getMembersCount() {
                         return 50005;
@@ -338,7 +336,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getMembersCount() {
                         return 50555;
@@ -369,7 +367,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getMembersCount() {
                         return 1001;
@@ -406,7 +404,7 @@ describe('MilestonesEmailService', function () {
                     // TODO: make this a stub
                     send: async () => {}
                 },
-                config: milestoneConfig,
+                milestonesConfig,
                 queries: {
                     async getMembersCount() {
                         return 50010;

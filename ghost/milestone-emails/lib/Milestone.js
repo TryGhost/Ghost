@@ -153,7 +153,7 @@ function validateValue(value) {
  *
  * @param {'arr'|'members'} type
  *
- * @returns {string}
+ * @returns {'arr'|'members'}
  */
 function validateType(type) {
     if (type === 'arr') {
