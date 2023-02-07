@@ -85,13 +85,13 @@ export function ThumbnailSetting({label, onFileChange, handleDrag, handleDrop, i
         <div className="text-[1.3rem]" data-testid="custom-thumbnail">
             <div className="font-bold text-grey-900">{label}</div>
 
-            {isEmpty && 
+            {isEmpty &&
                 <>
                     <MediaPlaceholder
                         handleDrag={handleDrag}
                         handleDrop={handleDrop}
                         filePicker={() => openFileSelection({fileInputRef})}
-                        icon={icon} 
+                        icon={icon}
                         desc={desc}
                         size={size}
                         isDraggedOver={isDraggedOver}
@@ -111,7 +111,7 @@ export function ThumbnailSetting({label, onFileChange, handleDrag, handleDrop, i
                     )}
 
                     {!isLoading && (
-                        <button type="button" className="absolute top-1 right-1" onClick={onRemove} data-testid={dataTestID}>
+                        <button type="button" className="absolute top-1 right-1 max-w-[34px] w-full p-2" onClick={onRemove} data-testid={dataTestID}>
                             <DeleteIcon />
                         </button>
                     )}

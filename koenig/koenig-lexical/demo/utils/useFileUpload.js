@@ -19,7 +19,7 @@ export function useFileUpload() {
 
         // simulate upload errors for the sake of testing
         // Any file that has "fail" in the filename will return errors
-        const fileErrors = Array.from(files).filter(file => file.name.includes('fail'));
+        const fileErrors = Array.from(files).filter(file => file.name?.includes('fail'));
         if (fileErrors.length) {
             setErrors(fileErrors.map(file => ({fileName: file.name, message: 'Upload failed'})));
             setLoading(false);

@@ -121,8 +121,8 @@ describe('Video card', async () => {
         await expect(page.getByTestId('video-settings-panel')).toBeVisible();
 
         // Custom thumbnail should be visible
-        await page.waitForSelector('[data-testid="custom-thumbnail-empty"]');
-        const emptyThumbnail = page.getByTestId('custom-thumbnail-empty');
+        await page.waitForSelector('[data-testid="media-placeholder"]');
+        const emptyThumbnail = page.getByTestId('media-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
         // Upload thumbnail
@@ -143,8 +143,8 @@ describe('Video card', async () => {
         // Can remove thumbnail
         const replaceButton = page.getByTestId('custom-thumbnail-replace');
         replaceButton.click();
-        await page.waitForSelector('[data-testid="custom-thumbnail-empty"]');
-        await expect(page.getByTestId('custom-thumbnail-empty')).toBeVisible();
+        await page.waitForSelector('[data-testid="media-placeholder"]');
+        await expect(page.getByTestId('media-placeholder')).toBeVisible();
     });
 
     test('can hide custom thumbnail if loop enabled', async function () {
@@ -158,13 +158,13 @@ describe('Video card', async () => {
         await expect(await page.locator('[data-testid="loop-video"] input').isChecked()).toBeFalsy();
 
         // Custom thumbnail should be visible
-        await page.waitForSelector('[data-testid="custom-thumbnail-empty"]');
-        const emptyThumbnail = page.getByTestId('custom-thumbnail-empty');
+        await page.waitForSelector('[data-testid="media-placeholder"]');
+        const emptyThumbnail = page.getByTestId('media-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
         // Custom thumbnail should be hidden after loop enabled
         await loopButton.check();
-        await expect(page.getByTestId('custom-thumbnail-empty')).toBeHidden();
+        await expect(page.getByTestId('media-placeholder')).toBeHidden();
     });
 });
 
