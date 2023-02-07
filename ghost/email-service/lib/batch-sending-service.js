@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const EmailBodyCache = require('./email-body-cache');
 
 const messages = {
     emailErrorPartialFailure: 'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
@@ -317,6 +318,9 @@ class BatchSendingService {
     async sendBatches({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
 
+        // Reuse same HTML body if we send an email to the same segment
+        const emailBodyCache = new EmailBodyCache();
+
         // Loop batches and send them via the EmailProvider
         let succeededCount = 0;
         const queue = batches.slice();
@@ -326,7 +330,7 @@ class BatchSendingService {
         runNext = async () => {
             const batch = queue.shift();
             if (batch) {
-                if (await this.sendBatch({email, batch, post, newsletter})) {
+                if (await this.sendBatch({email, batch, post, newsletter, emailBodyCache})) {
                     succeededCount += 1;
                 }
                 await runNext();
@@ -353,7 +357,7 @@ class BatchSendingService {
      * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter}} data
      * @returns {Promise<boolean>} True when succeeded, false when failed with an error
      */
-    async sendBatch({email, batch: originalBatch, post, newsletter}) {
+    async sendBatch({email, batch: originalBatch, post, newsletter, emailBodyCache}) {
         logging.info(`Sending batch ${originalBatch.id} for email ${email.id}`);
 
         // Check the status of the email batch in a 'for update' transaction
@@ -397,7 +401,8 @@ class BatchSendingService {
                 members
             }, {
                 openTrackingEnabled: !!email.get('track_opens'),
-                clickTrackingEnabled: !!email.get('track_clicks')
+                clickTrackingEnabled: !!email.get('track_clicks'),
+                emailBodyCache
             });
             succeeded = true;
 
