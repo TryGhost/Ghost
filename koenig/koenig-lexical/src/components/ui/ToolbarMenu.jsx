@@ -47,7 +47,7 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, ...props}) {
         <li className="m-0 flex p-0 first:m-0" {...props}>
             <button
                 type="button"
-                className="flex h-9 w-9 items-center justify-center"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center"
                 onClick={onClick}
                 aria-label={label}
                 data-kg-active={isActive}
