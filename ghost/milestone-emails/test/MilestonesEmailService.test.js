@@ -21,6 +21,10 @@ describe('MilestonesEmailService', function () {
             {
                 currency: 'idr',
                 values: [1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+            },
+            {
+                currency: 'eur',
+                values: [1000, 10000, 50000, 100000, 250000, 500000, 1000000]
             }
         ],
         members: [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
@@ -40,13 +44,15 @@ describe('MilestonesEmailService', function () {
                 milestonesConfig,
                 queries: {
                     async getARR() {
-                        return [{currency: 'usd', arr: 1298}, {currency: 'gbp', arr: 2600}];
+                        return [{currency: 'usd', arr: 1298}, {currency: 'nzd', arr: 2600}];
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'usd';
                     }
-                },
-                defaultCurrency: 'usd'
+                }
             });
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
@@ -62,7 +68,7 @@ describe('MilestonesEmailService', function () {
 
             const milestoneOne = await Milestone.create({
                 type: 'arr',
-                value: 1000,
+                value: 100,
                 createdAt: '2023-01-01T00:00:00Z',
                 emailSentAt: '2023-01-01T00:00:00Z'
             });
@@ -77,7 +83,7 @@ describe('MilestonesEmailService', function () {
             const milestoneThree = await Milestone.create({
                 type: 'arr',
                 value: 1000,
-                currency: 'aud',
+                currency: 'eur',
                 createdAt: '2023-01-15T00:00:00Z',
                 emailSentAt: '2023-01-15T00:00:00Z'
             });
@@ -95,21 +101,24 @@ describe('MilestonesEmailService', function () {
                 milestonesConfig,
                 queries: {
                     async getARR() {
-                        return [{currency: 'usd', arr: 50005}];
+                        // Same ARR values for both supported currencies
+                        return [{currency: 'usd', arr: 10001}, {currency: 'eur', arr: 10001}];
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'usd';
                     }
-                },
-                defaultCurrency: 'usd'
+                }
             });
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
             assert(arrResult.type === 'arr');
             assert(arrResult.currency === 'usd');
-            assert(arrResult.value === 50000);
+            assert(arrResult.value === 10000);
             assert(arrResult.emailSentAt !== null);
-            assert(arrResult.name === 'arr-50000-usd');
+            assert(arrResult.name === 'arr-10000-usd');
         });
 
         it('Does not add ARR milestone for out of scope currency', async function () {
@@ -128,9 +137,11 @@ describe('MilestonesEmailService', function () {
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'nzd';
                     }
-                },
-                defaultCurrency: 'nzd'
+                }
             });
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
@@ -157,13 +168,15 @@ describe('MilestonesEmailService', function () {
                 milestonesConfig,
                 queries: {
                     async getARR() {
-                        return [{currency: 'gbp', arr: 5005}];
+                        return [{currency: 'gbp', arr: 5005}, {currency: 'usd', arr: 100}];
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'gbp';
                     }
-                },
-                defaultCurrency: 'gbp'
+                }
             });
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
@@ -186,9 +199,11 @@ describe('MilestonesEmailService', function () {
                     },
                     async hasImportedMembersInPeriod() {
                         return true;
+                    },
+                    async getDefaultCurrency() {
+                        return 'usd';
                     }
-                },
-                defaultCurrency: 'usd'
+                }
             });
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
@@ -226,9 +241,11 @@ describe('MilestonesEmailService', function () {
                     },
                     async hasImportedMembersInPeriod() {
                         return true;
+                    },
+                    async getDefaultCurrency() {
+                        return 'idr';
                     }
-                },
-                defaultCurrency: 'idr'
+                }
             });
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
@@ -256,6 +273,9 @@ describe('MilestonesEmailService', function () {
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'usd';
                     }
                 }
             });
@@ -307,9 +327,11 @@ describe('MilestonesEmailService', function () {
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'usd';
                     }
-                },
-                defaultCurrency: 'usd'
+                }
             });
 
             const membersResult = await milestoneEmailService.checkMilestones('members');
@@ -343,6 +365,9 @@ describe('MilestonesEmailService', function () {
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'usd';
                     }
                 }
             });
@@ -374,6 +399,9 @@ describe('MilestonesEmailService', function () {
                     },
                     async hasImportedMembersInPeriod() {
                         return true;
+                    },
+                    async getDefaultCurrency() {
+                        return 'usd';
                     }
                 }
             });
@@ -411,6 +439,9 @@ describe('MilestonesEmailService', function () {
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'usd';
                     }
                 }
             });
