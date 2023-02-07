@@ -111,7 +111,7 @@ export function ThumbnailSetting({label, onFileChange, handleDrag, handleDrop, i
                     )}
 
                     {!isLoading && (
-                        <button type="button" className="absolute top-1 right-1 max-w-[34px] w-full p-2" onClick={onRemove} data-testid={dataTestID}>
+                        <button type="button" className="absolute top-1 right-1 w-full max-w-[34px] p-2" onClick={onRemove} data-testid={dataTestID}>
                             <DeleteIcon />
                         </button>
                     )}
