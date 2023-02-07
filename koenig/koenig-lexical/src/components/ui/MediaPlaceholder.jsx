@@ -22,7 +22,7 @@ export const CardText = ({text}) => {
     );
 };
 
-export function MediaPlaceholder({desc, icon, filePicker, size, handleDrag, handleDrop, isDraggedOver, ...props}) {
+export function MediaPlaceholder({desc, icon, filePicker, size, borderStyle, handleDrag, handleDrop, isDraggedOver, ...props}) {
     const Icon = PLACEHOLDER_ICONS[icon];
 
     return (
@@ -31,10 +31,10 @@ export function MediaPlaceholder({desc, icon, filePicker, size, handleDrag, hand
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            className="border border-transparent" {...props}
+            className="h-full border border-transparent" {...props}
             data-testid="media-placeholder"
         >
-            <div className={`h-100 relative flex items-center justify-center border border-grey/20 bg-grey-50 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'}`}>
+            <div className={`relative flex h-full items-center justify-center border bg-grey-50 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'} ${borderStyle === 'dashed' ? 'rounded border-dashed border-grey/40' : 'border-grey/20'}`}>
                 {
                     isDraggedOver ?
                         <CardText text="Drop it like it's hot 🔥" />
@@ -52,5 +52,6 @@ export function MediaPlaceholder({desc, icon, filePicker, size, handleDrag, hand
 MediaPlaceholder.propTypes = {
     icon: PropTypes.string,
     desc: PropTypes.string,
-    size: PropTypes.oneOf(['xsmall', 'small', 'medium', 'large'])
+    size: PropTypes.oneOf(['xsmall', 'small', 'medium', 'large']),
+    borderStyle: PropTypes.oneOf(['solid', 'dashed'])
 };

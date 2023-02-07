@@ -187,8 +187,5 @@ export function VideoCard({
 }
 
 VideoCard.propTypes = {
-    thumbnail: PropTypes.string,
-    customThumbnail: PropTypes.string,
-    totalDuration: PropTypes.string,
     caption: PropTypes.string
 };

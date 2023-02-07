@@ -83,8 +83,8 @@ export function ThumbnailSetting({label, onFileChange, handleDrag, handleDrop, i
         <div className="text-[1.3rem]" data-testid="custom-thumbnail">
             <div className="font-bold text-grey-900">{label}</div>
 
-            {isEmpty &&
-                <>
+            {isEmpty && 
+                <div className="h-32">
                     <MediaPlaceholder
                         handleDrag={handleDrag}
                         handleDrop={handleDrop}
@@ -92,6 +92,7 @@ export function ThumbnailSetting({label, onFileChange, handleDrag, handleDrop, i
                         icon={icon}
                         desc={desc}
                         size={size}
+                        borderStyle='dashed'
                         isDraggedOver={isDraggedOver}
                     />
                     <ImageUploadForm
@@ -99,24 +100,27 @@ export function ThumbnailSetting({label, onFileChange, handleDrag, handleDrop, i
                         onFileChange={onFileChange}
                         fileInputRef={onFileInputRef}
                     />
-                </>
+                </div>
             }
 
             {!isEmpty && (
-                <div className="relative flex h-[120px] items-center justify-center rounded" data-testid="custom-thumbnail-filled">
+                <div className="group relative flex h-32 items-center justify-center rounded" data-testid="custom-thumbnail-filled">
                     {src && (
-                        <img className="mx-auto max-h-[120px]" src={src} alt={alt} />
+                        <>
+                            <img className="mx-auto h-full w-full rounded object-cover" src={src} alt={alt} />
+                            <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
+                        </>
                     )}
 
                     {!isLoading && (
-                        <button type="button" className="absolute top-1 right-1 w-full max-w-[34px] p-2" onClick={onRemove} data-testid={dataTestID}>
-                            <DeleteIcon />
+                        <button type="button" className="group absolute top-2 right-2 flex w-full max-w-[34px] cursor-pointer items-center justify-center rounded bg-white/90 px-2 py-[.6rem] opacity-0 transition-all hover:bg-white group-hover:opacity-100" onClick={onRemove} data-testid={dataTestID}>
+                            <DeleteIcon className="h-5 w-5 fill-grey-900" />
                         </button>
                     )}
 
                     {isLoading && (
                         <div
-                            className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50"
+                            className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden rounded border border-dashed border-grey/20 bg-grey-50"
                             data-testid="custom-thumbnail-progress"
                         >
                             <ProgressBar style={progressStyle} />

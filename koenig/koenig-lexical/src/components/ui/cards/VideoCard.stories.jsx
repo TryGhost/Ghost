@@ -52,9 +52,6 @@ const Template = ({display, ...args}) => (
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    cardWidth: 'regular',
-    thumbnail: '',
-    customThumbnail: '',
     caption: ''
 };
 
@@ -62,6 +59,7 @@ export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
     cardWidth: 'regular',
+    isLoopChecked: false,
     thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     customThumbnail: '',
     totalDuration: '2:27',
