@@ -44,7 +44,7 @@ export function cardTemplate({node, cardClasses}) {
 
     return (
         `
-        <figure class="${cardClasses}">
+        <figure class="${cardClasses}" data-kg-thumbnail=${node.getThumbnailSrc()} data-kg-custom-thumbnail=${node.getCustomThumbnailSrc()}>
             <div class="kg-video-container">
                 <video
                     src="${node.getSrc()}"

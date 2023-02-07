@@ -1,4 +1,3 @@
-// WIP
 export class VideoParser {
     constructor(NodeClass) {
         this.NodeClass = NodeClass;
@@ -8,11 +7,59 @@ export class VideoParser {
         const self = this;
 
         return {
-            video: () => ({
+            figure: () => ({
                 conversion(domNode) {
-                    if (domNode.tagName === 'VIDEO') {
-                        const {src, width, height} = domNode;
-                        const node = new self.NodeClass({src, width, height});
+                    const isKgVideoCard = domNode.classList?.contains('kg-video-card');
+                    if (domNode.tagName === 'FIGURE' && isKgVideoCard) {
+                        const videoNode = domNode.querySelector('.kg-video-container video');
+                        const durationNode = domNode.querySelector('.kg-video-duration');
+                        const videoSrc = videoNode && videoNode.src;
+                        const videoWidth = videoNode && videoNode.width;
+                        const videoHeight = videoNode && videoNode.height;
+                        const durationText = durationNode && durationNode.innerHTML.trim();
+                        const captionNode = domNode.querySelector('figcaption');
+                        const captionText = captionNode && captionNode.innerHTML.trim();
+
+                        if (!videoSrc) {
+                            return null;
+                        }
+
+                        const payload = {
+                            src: videoSrc,
+                            loop: !!videoNode.loop,
+                            cardWidth: getCardWidth(videoNode)
+                        };
+
+                        if (durationText) {
+                            const [minutes, seconds] = durationText.split(':');
+                            try {
+                                payload.duration = parseInt(minutes) * 60 + parseInt(seconds);
+                            } catch (e) {
+                                // ignore duration
+                            }
+                        }
+
+                        if (domNode.dataset.kgThumbnail) {
+                            payload.thumbnailSrc = domNode.dataset.kgThumbnail;
+                        }
+
+                        if (domNode.dataset.kgCustomThumbnail) {
+                            payload.customThumbnailSrc = domNode.dataset.kgCustomThumbnail;
+                        }
+
+                        if (captionText) {
+                            payload.caption = captionText;
+                        }
+
+                        if (videoWidth) {
+                            payload.width = videoWidth;
+                        }
+
+                        if (videoHeight) {
+                            payload.height = videoHeight;
+                        }
+
+                        const node = new self.NodeClass(payload);
                         return {node};
                     }
 
@@ -21,5 +68,15 @@ export class VideoParser {
                 priority: 1
             })
         };
+    }
+}
+
+function getCardWidth(domNode) {
+    if (domNode.classList.contains('kg-width-full')) {
+        return 'full';
+    } else if (domNode.classList.contains('kg-width-wide')) {
+        return 'wide';
+    } else {
+        return 'regular';
     }
 }

@@ -3,6 +3,7 @@ const {html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {VideoNode, $createVideoNode, $isVideoNode} = require('../../');
+const {$generateNodesFromDOM} = require("@lexical/html");
 
 const editorNodes = [VideoNode];
 
@@ -220,7 +221,7 @@ describe('VideoNode', function () {
             const {element} = videoNode.exportDOM(exportOptions);
 
             element.outerHTML.should.prettifyTo(html`
-                <figure class="kg-card kg-video-card kg-width-regular">
+                <figure class="kg-card kg-video-card kg-width-regular" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail="">
                     <div class="kg-video-container">
                         <video
                             src="/content/images/2022/11/koenig-lexical.mp4"
@@ -352,6 +353,44 @@ describe('VideoNode', function () {
         it('returns true', editorTest(function () {
             const videoNode = $createVideoNode(dataset);
             videoNode.hasEditMode().should.be.true;
+        }));
+    });
+
+    describe('importDOM', function () {
+        it('parses video card', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure class="kg-card kg-video-card kg-width-regular" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail=""> <div class="kg-video-container"> <video src="/content/images/2022/11/koenig-lexical.mp4" poster="https://img.spacergif.org/v1/200x100/0a/spacer.png" width="200" height="100" playsinline="" preload="metadata" style="background: transparent url('/content/images/2022/11/koenig-lexical.jpg') 50% 50% / cover no-repeat;" ></video> <div class="kg-video-overlay"> <button class="kg-video-large-play-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z"></path> </svg> </button> </div><div class="kg-video-player-container"> <div class="kg-video-player"> <button class="kg-video-play-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z"></path> </svg> </button> <button class="kg-video-pause-icon kg-video-hide"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <rect x="3" y="1" width="7" height="22" rx="1.5" ry="1.5"></rect> <rect x="14" y="1" width="7" height="22" rx="1.5" ry="1.5"></rect> </svg> </button> <span class="kg-video-current-time">0:00</span> <div class="kg-video-time"> /<span class="kg-video-duration">1:00</span> </div><input type="range" class="kg-video-seek-slider" max="100" value="0"> <button class="kg-video-playback-rate">1×</button> <button class="kg-video-unmute-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z"></path> </svg> </button> <button class="kg-video-mute-icon kg-video-hide"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z"></path> </svg> </button> <input type="range" class="kg-video-volume-slider" max="100" value="100"> </div></div></div><figcaption>Video caption</figcaption></figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+            nodes.length.should.equal(1);
+            nodes[0].getSrc().should.equal('/content/images/2022/11/koenig-lexical.mp4');
+            nodes[0].getVideoWidth().should.equal(200);
+            nodes[0].getVideoHeight().should.equal(100);
+            nodes[0].getThumbnailSrc().should.equal('/content/images/2022/11/koenig-lexical.jpg');
+            nodes[0].getCustomThumbnailSrc().should.equal('');
+            nodes[0].getDuration().should.equal(60);
+            nodes[0].getLoop().should.be.false;
+            nodes[0].getCaption().should.equal('Video caption');
+            nodes[0].getCardWidth().should.equal('regular');
+        }));
+
+        it('parses video card without caption', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure class="kg-card kg-video-card kg-width-regular" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail=""> <div class="kg-video-container"> <video src="/content/images/2022/11/koenig-lexical.mp4" poster="https://img.spacergif.org/v1/200x100/0a/spacer.png" width="200" height="100" playsinline="" preload="metadata" style="background: transparent url('/content/images/2022/11/koenig-lexical.jpg') 50% 50% / cover no-repeat;" ></video> <div class="kg-video-overlay"> <button class="kg-video-large-play-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z"></path> </svg> </button> </div><div class="kg-video-player-container"> <div class="kg-video-player"> <button class="kg-video-play-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z"></path> </svg> </button> <button class="kg-video-pause-icon kg-video-hide"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <rect x="3" y="1" width="7" height="22" rx="1.5" ry="1.5"></rect> <rect x="14" y="1" width="7" height="22" rx="1.5" ry="1.5"></rect> </svg> </button> <span class="kg-video-current-time">0:00</span> <div class="kg-video-time"> /<span class="kg-video-duration">1:00</span> </div><input type="range" class="kg-video-seek-slider" max="100" value="0"> <button class="kg-video-playback-rate">1×</button> <button class="kg-video-unmute-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z"></path> </svg> </button> <button class="kg-video-mute-icon kg-video-hide"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z"></path> </svg> </button> <input type="range" class="kg-video-volume-slider" max="100" value="100"> </div></div></div></figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+            nodes.length.should.equal(1);
+            nodes[0].getCaption().should.equal('');
+        }));
+
+        it('parses video card with custom thumbnail', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure class="kg-card kg-video-card kg-width-regular" data-kg-thumbnail="" data-kg-custom-thumbnail="/content/images/2022/11/koenig-lexical-custom.jpg"> <div class="kg-video-container"> <video src="/content/images/2022/11/koenig-lexical.mp4" poster="https://img.spacergif.org/v1/200x100/0a/spacer.png" width="200" height="100" playsinline="" preload="metadata" style="background: transparent url('/content/images/2022/11/koenig-lexical.jpg') 50% 50% / cover no-repeat;" ></video> <div class="kg-video-overlay"> <button class="kg-video-large-play-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z"></path> </svg> </button> </div><div class="kg-video-player-container"> <div class="kg-video-player"> <button class="kg-video-play-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z"></path> </svg> </button> <button class="kg-video-pause-icon kg-video-hide"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <rect x="3" y="1" width="7" height="22" rx="1.5" ry="1.5"></rect> <rect x="14" y="1" width="7" height="22" rx="1.5" ry="1.5"></rect> </svg> </button> <span class="kg-video-current-time">0:00</span> <div class="kg-video-time"> /<span class="kg-video-duration">1:00</span> </div><input type="range" class="kg-video-seek-slider" max="100" value="0"> <button class="kg-video-playback-rate">1×</button> <button class="kg-video-unmute-icon"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z"></path> </svg> </button> <button class="kg-video-mute-icon kg-video-hide"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z"></path> </svg> </button> <input type="range" class="kg-video-volume-slider" max="100" value="100"> </div></div></div></figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+            nodes.length.should.equal(1);
+            nodes[0].getThumbnailSrc().should.equal('');
+            nodes[0].getCustomThumbnailSrc().should.equal('/content/images/2022/11/koenig-lexical-custom.jpg');
         }));
     });
 });
