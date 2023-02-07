@@ -168,8 +168,7 @@ export async function assertSelection(page, expected) {
             return path.reverse();
         };
 
-        const {anchorNode, anchorOffset, focusNode, focusOffset} =
-        window.getSelection();
+        const {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
 
         return {
             anchorOffset,
@@ -178,8 +177,9 @@ export async function assertSelection(page, expected) {
             focusPath: getPathFromNode(focusNode)
         };
     }, expected);
+
     expect(selection.anchorPath).toEqual(expected.anchorPath);
-    expect(selection.focusPath).toEqual(expected.focusPath);
+
     if (Array.isArray(expected.anchorOffset)) {
         const [start, end] = expected.anchorOffset;
         expect(selection.anchorOffset).toBeGreaterThanOrEqual(start);
@@ -187,6 +187,9 @@ export async function assertSelection(page, expected) {
     } else {
         expect(selection.anchorOffset).toEqual(expected.anchorOffset);
     }
+
+    expect(selection.focusPath).toEqual(expected.focusPath);
+
     if (Array.isArray(expected.focusOffset)) {
         const [start, end] = expected.focusOffset;
         expect(selection.focusOffset).toBeGreaterThanOrEqual(start);
@@ -224,4 +227,41 @@ export async function pasteText(page, text) {
     `;
 
     await page.evaluate(pasteCommand);
+}
+
+export async function dragMouse(
+    page,
+    fromBoundingBox,
+    toBoundingBox,
+    positionStart = 'middle',
+    positionEnd = 'middle',
+    mouseUp = true,
+) {
+    let fromX = fromBoundingBox.x;
+    let fromY = fromBoundingBox.y;
+    if (positionStart === 'middle') {
+        fromX += fromBoundingBox.width / 2;
+        fromY += fromBoundingBox.height / 2;
+    } else if (positionStart === 'end') {
+        fromX += fromBoundingBox.width;
+        fromY += fromBoundingBox.height;
+    }
+    await page.mouse.move(fromX, fromY);
+    await page.mouse.down();
+
+    let toX = toBoundingBox.x;
+    let toY = toBoundingBox.y;
+    if (positionEnd === 'middle') {
+        toX += toBoundingBox.width / 2;
+        toY += toBoundingBox.height / 2;
+    } else if (positionEnd === 'end') {
+        toX += toBoundingBox.width;
+        toY += toBoundingBox.height;
+    }
+
+    await page.mouse.move(toX, toY);
+
+    if (mouseUp) {
+        await page.mouse.up();
+    }
 }

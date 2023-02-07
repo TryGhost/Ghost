@@ -58,11 +58,6 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
             setSelected(true);
         }
 
-        function deselect() {
-            setSelected(false);
-            setEditing(false);
-        }
-
         return mergeRegister(
             editor.registerUpdateListener(({editorState}) => {
                 const latestSelection = editorState.read(() => $getSelection());
@@ -90,9 +85,8 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
             editor.registerCommand(
                 CLICK_COMMAND,
                 (event) => {
-                    const cardNode = $getNodeByKey(nodeKey);
-
                     if (containerRef.current.contains(event.target)) {
+                        const cardNode = $getNodeByKey(nodeKey);
                         if (cardNode.hasEditMode?.() && isSelected) {
                             setEditing(true);
                             clearSelected();
@@ -100,15 +94,6 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
                         } else {
                             clearSelected();
                             select();
-                        }
-                    } else if (isSelected) {
-                        deselect();
-                        setEditing(false);
-
-                        if (cardNode.isEmpty?.()) {
-                            editor.update(() => {
-                                $removeOrReplaceNodeWithParagraph(cardNode);
-                            });
                         }
                     }
                     return false;
