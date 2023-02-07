@@ -198,5 +198,15 @@
     },
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
-    }
+    },
+    "milestones":
+        {
+            "arr": [
+                {
+                    "currency": "usd",
+                    "values": [1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+                }
+            ],
+            "members": [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+        }
 }
