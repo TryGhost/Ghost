@@ -52,7 +52,8 @@ class WebMentionsImporter extends TableImporter {
             created_at: dateToDatabaseString(timestamp),
             payload: JSON.stringify({
                 // TODO: Add some random payload
-            })
+            }),
+            deleted: Math.floor(Math.random() * 2) ? true : false
         };
     }
 }
