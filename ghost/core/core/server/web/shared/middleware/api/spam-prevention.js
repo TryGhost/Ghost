@@ -126,7 +126,7 @@ const globalReset = () => {
     return globalResetInstance;
 };
 
-const webMentionsBlock = () => {
+const webmentionsBlock = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
     const db = require('../../../../data/db');
@@ -348,7 +348,7 @@ module.exports = {
     userReset: userReset,
     privateBlog: privateBlog,
     contentApiKey: contentApiKey,
-    webMentionsBlock: webMentionsBlock,
+    webmentionsBlock: webmentionsBlock,
     reset: () => {
         store = undefined;
         memoryStore = undefined;
