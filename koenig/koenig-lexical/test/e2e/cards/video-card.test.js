@@ -61,6 +61,7 @@ describe('Video card', async () => {
         await focusEditor(page);
         const fileChooserPromise = page.waitForEvent('filechooser');
         await page.keyboard.type('/video');
+        await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         const fileChooser = await fileChooserPromise;
 
@@ -84,6 +85,7 @@ describe('Video card', async () => {
         // Upload video file
         const fileChooserPromise = page.waitForEvent('filechooser');
         await page.keyboard.type('/video');
+        await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
@@ -171,6 +173,7 @@ async function uploadVideo(page) {
 
     const fileChooserPromise = page.waitForEvent('filechooser');
     await page.keyboard.type('/video');
+    await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
     await page.keyboard.press('Enter');
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles([filePath]);
