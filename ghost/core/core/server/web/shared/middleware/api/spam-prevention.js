@@ -21,7 +21,7 @@ const messages = {
         context: 'Too many login attempts.'
     },
     tooManyAttempts: 'Too many attempts.',
-    webMentionsBlock: 'Too many attempts.'
+    webmentionsBlock: 'Too many mention attempts'
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -30,14 +30,14 @@ let spamUserReset = spam.user_reset || {};
 let spamUserLogin = spam.user_login || {};
 let spamMemberLogin = spam.member_login || {};
 let spamContentApiKey = spam.content_api_key || {};
-let spamWebMentionsBlock = spam.webmentions_block || {};
+let spamWebmentionsBlock = spam.webmentions_block || {};
 
 let store;
 let memoryStore;
 let privateBlogInstance;
 let globalResetInstance;
 let globalBlockInstance;
-let webMentionsBlockInstance;
+let webmentionsBlockInstance;
 let userLoginInstance;
 let membersAuthInstance;
 let membersAuthEnumerationInstance;
@@ -137,19 +137,19 @@ const webMentionsBlock = () => {
         knex: db.knex
     });
 
-    webMentionsBlockInstance = webMentionsBlockInstance || new ExpressBrute(store,
+    webmentionsBlockInstance = webmentionsBlockInstance || new ExpressBrute(store,
         extend({
             attachResetToRequest: false,
             failCallback(req, res, next) {
                 return next(new errors.TooManyRequestsError({
-                    message: `Too many mention attempts`
+                    message: messages.webmentionsBlock
                 }));
             },
             handleStoreError: handleStoreError
-        }, pick(spamWebMentionsBlock, spamConfigKeys))
+        }, pick(spamWebmentionsBlock, spamConfigKeys))
     );
 
-    return webMentionsBlockInstance;
+    return webmentionsBlockInstance;
 };
 
 const membersAuth = () => {
