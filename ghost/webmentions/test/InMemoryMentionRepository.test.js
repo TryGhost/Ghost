@@ -76,4 +76,35 @@ describe('InMemoryMentionRepository', function () {
         assert(pageThree.meta.pagination.prev === 2);
         assert(pageThree.meta.pagination.next === null);
     });
+
+    describe(`GetPage`, function () {
+        it(`Doesn't return deleted mentions`, async function () {
+            const repository = new InMemoryMentionRepository();
+
+            const validInput = {
+                source: 'https://source.com',
+                target: 'https://target.com',
+                sourceTitle: 'Title!',
+                sourceExcerpt: 'Excerpt!'
+            };
+
+            const mentions = await Promise.all([
+                Mention.create(validInput),
+                Mention.create(validInput)
+            ]);
+
+            for (const mention of mentions) {
+                await repository.save(mention);
+            }
+
+            const pageOne = await repository.getPage({page: 1, limit: 'all'});
+            assert(pageOne.meta.pagination.total === 2);
+
+            mentions[0].delete();
+            await repository.save(mentions[0]);
+
+            const pageTwo = await repository.getPage({page: 1, limit: 'all'});
+            assert(pageTwo.meta.pagination.total === 1);
+        });
+    });
 });
