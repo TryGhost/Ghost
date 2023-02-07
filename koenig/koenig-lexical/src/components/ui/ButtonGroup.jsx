@@ -2,11 +2,11 @@ import React from 'react';
 
 import PropTypes from 'prop-types';
 
-export function ButtonGroup({children, selectedName, onClick}) {
+export function ButtonGroup({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
             <ul className="flex items-center justify-evenly rounded bg-grey-100 font-sans text-md font-normal text-white">
-                {children.map(({label, name, Icon}, index) => (<IconButton
+                {buttons.map(({label, name, Icon}, index) => (<IconButton
                     key={index}
                     onClick={onClick}
                     label={label}

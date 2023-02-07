@@ -83,10 +83,15 @@ function PopulatedVideoCard({
                         customThumbnailUploadProgress={customThumbnailUploadProgress}
                         onRemoveCustomThumbnail={onRemoveCustomThumbnail}
                     >
-                        <ButtonGroupSetting label="Video width" onClick={onCardWidthChange} selectedName={cardWidth} children={buttonGroupChildren} />
-                        <ToggleSetting 
-                            label='Loop' 
-                            description='Autoplay your video on a loop without sound.' 
+                        <ButtonGroupSetting
+                            label="Video width"
+                            onClick={onCardWidthChange}
+                            selectedName={cardWidth}
+                            buttons={buttonGroupChildren}
+                        />
+                        <ToggleSetting
+                            label='Loop'
+                            description='Autoplay your video on a loop without sound.'
                             isChecked={isLoopChecked}
                             onChange={onChangeLoop}
                             dataTestID="loop-video"

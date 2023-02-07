@@ -71,17 +71,17 @@ const buttonGroupChildren = [
 export const VideoCard = Template.bind({});
 VideoCard.args = {
     children: [
-        <ButtonGroupSetting 
-            label='Video width' children={buttonGroupChildren} />,
-        <ToggleSetting 
-            label='Loop' 
+        <ButtonGroupSetting
+            label='Video width' buttons={buttonGroupChildren} />,
+        <ToggleSetting
+            label='Loop'
             description='Autoplay your video on a loop without sound.'
         />,
-        <ThumbnailSetting                                 
+        <ThumbnailSetting
             label='Custom thumbnail'
             icon='file'
             desc=''
-            size='xsmall' 
+            size='xsmall'
         />
     ]
 };

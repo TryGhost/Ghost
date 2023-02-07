@@ -25,9 +25,21 @@ const Template = (args) => {
 export const CardWidth = Template.bind({});
 CardWidth.args = {
     selectedName: 'regular',
-    children: [
-        <IconButton name='regular' Icon={ImageRegularIcon} {...IconButton.args} />,
-        <IconButton name='wide' Icon={ImageWideIcon} {...IconButton.args} />,
-        <IconButton name='full' Icon={ImageFullIcon} {...IconButton.args} />
+    buttons: [
+        {
+            label: 'Regular',
+            name: 'regular',
+            Icon: ImageRegularIcon
+        },
+        {
+            label: 'Wide',
+            name: 'wide',
+            Icon: ImageWideIcon
+        },
+        {
+            label: 'Full',
+            name: 'full',
+            Icon: ImageFullIcon
+        }
     ]
 };

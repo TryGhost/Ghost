@@ -49,15 +49,13 @@ export function InputSetting({label, description, value, placeholder}) {
     );
 }
 
-export function ButtonGroupSetting({label, onClick, selectedName, children}) {
+export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
     return (
         <div className="flex w-full items-center justify-between text-[1.3rem]">
             <div className="font-bold text-grey-900">{label}</div>
 
             <div className="shrink-0 pl-2">
-                <ButtonGroup onClick={onClick} selectedName={selectedName}>
-                    {children}
-                </ButtonGroup>
+                <ButtonGroup onClick={onClick} selectedName={selectedName} buttons={buttons} />
             </div>
         </div>
     );
