@@ -35,6 +35,8 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
+    "@codemirror/lang-css": "^6.0.2",
+    "@codemirror/lang-html": "^6.4.1",
     "@codemirror/lang-javascript": "^6.1.2",
     "@lexical/list": "^0.7.0",
     "@lexical/react": "^0.7.0",

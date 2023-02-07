@@ -6,7 +6,9 @@ import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {standardKeymap} from '@codemirror/commands';
 import {EditorView, lineNumbers, keymap} from '@codemirror/view';
 import {javascript} from '@codemirror/lang-javascript';
-import {tags} from '@lezer/highlight';
+import {html} from '@codemirror/lang-html';
+import {css} from '@codemirror/lang-css';
+import {tags as t} from '@lezer/highlight';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
@@ -76,21 +78,44 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     });
 
     const editorHighlightStyle = HighlightStyle.define([
-        {tag: tags.keyword, color: '#FF0000', fontWeight: 'bold'}
+        {tag: t.keyword, color: '#5A5CAD', fontWeight: 'bold'},
+        {tag: t.atom, color: '#6C8CD5'},
+        {tag: t.number, color: '#116644'},
+        {tag: t.definition(t.variableName), textDecoration: 'underline'},
+        {tag: t.variableName, color: 'black'},
+        {tag: t.comment, color: '#0080FF', fontStyle: 'italic'},
+        {tag: [t.string, t.special(t.brace)], color: 'red'},
+        {tag: t.meta, color: 'yellow'},
+        {tag: t.bracket, color: '#cc7'},
+        {tag: t.tagName, color: '#3F7F7F'},
+        {tag: t.attributeName, color: '#7F007F'}
     ]);
+
+    // Base extensions for the CodeMirror editor
+    const extensions = [
+        syntaxHighlighting(editorHighlightStyle), // customizes syntax highlighting rules
+        editorCSS, // customizes general editor appearance (does not include syntax highlighting)
+        lineNumbers(), // adds line numbers to the gutter
+        minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
+        keymap.of(standardKeymap) // add back in standardKeymap, which doesn't include Mod+Enter
+    ];
+
+    // If provided language is supported, add the corresponding extension
+    const languageMap = {
+        javascript: javascript,
+        html: html,
+        css: css
+    };
+    const highlighter = languageMap[language?.toLowerCase().trim()] || null;
+    if (highlighter) {
+        extensions.push(highlighter());
+    }
 
     return (
         <div className="not-kg-prose min-h-[170px] bg-[#F4F5F6]">
             <CodeMirror
                 value={code}
-                extensions={[
-                    syntaxHighlighting(editorHighlightStyle), // customizes syntax highlighting rules
-                    editorCSS, // customizes general editor appearance (does not include syntax highlighting)
-                    lineNumbers(), // adds line numbers to the gutter
-                    minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
-                    keymap.of(standardKeymap), // add back in standardKeymap, which doesn't include Mod+Enter
-                    javascript() // enable syntax highlighting for javascript
-                ]}
+                extensions={extensions}
                 autoFocus={true} // autofocus the editor whenever it is rendered
                 basicSetup={false} // basic setup includes unnecessary extensions
                 onChange={onChange}
