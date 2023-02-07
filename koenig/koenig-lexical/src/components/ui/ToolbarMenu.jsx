@@ -52,7 +52,7 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, ...props}) {
                 aria-label={label}
                 data-kg-active={isActive}
             >
-                <Icon className={isActive ? 'fill-green' : 'fill-white'} />
+                <Icon className={` h-4 w-4 ${isActive ? 'fill-green' : 'fill-white'} `} />
             </button>
         </li>
     );

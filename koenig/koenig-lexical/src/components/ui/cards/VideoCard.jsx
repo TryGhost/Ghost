@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
-import {SettingsPanel} from '../SettingsPanel';
+import {SettingsPanel, ToggleSetting, ButtonGroupSetting, ThumbnailSetting} from '../SettingsPanel';
+import {ReactComponent as ImageRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
+import {ReactComponent as ImageWideIcon} from '../../../assets/icons/kg-img-wide.svg';
+import {ReactComponent as ImageFullIcon} from '../../../assets/icons/kg-img-full.svg';
 import {ReactComponent as PlayIcon} from '../../../assets/icons/kg-play.svg';
 import {openFileSelection} from '../../../utils/openFileSelection';
 import {VideoNode} from '@tryghost/kg-default-nodes';
@@ -29,9 +32,27 @@ function PopulatedVideoCard({
         width: `${videoUploadProgress?.toFixed(0)}%`
     };
 
+    const buttonGroupChildren = [
+        {
+            label: 'Regular',
+            name: 'regular',
+            Icon: ImageRegularIcon
+        },
+        {
+            label: 'Wide',
+            name: 'wide',
+            Icon: ImageWideIcon
+        },
+        {
+            label: 'Full',
+            name: 'full',
+            Icon: ImageFullIcon
+        }
+    ];
+
     return (
         <>
-            <div className="not-kg-prose relative min-h-[430px]">
+            <div className="not-kg-prose relative">
                 <div>
                     <img className="mx-auto" src={thumbnail} alt="Video thumbnail" />
                     {customThumbnail && <img className="absolute inset-0 h-full w-full object-cover" src={customThumbnail} alt="Video custom thumbnail" />}
@@ -56,16 +77,36 @@ function PopulatedVideoCard({
             {
                 !!thumbnail && !isVideoLoading && isEditing && (
                     <SettingsPanel
-                        isLoopChecked={isLoopChecked}
-                        onChangeLoop={onChangeLoop}
-                        cardWidth={cardWidth}
-                        onCardWidthChange={onCardWidthChange}
                         customThumbnail={customThumbnail}
                         onCustomThumbnailChange={onCustomThumbnailChange}
                         isCustomThumbnailLoading={isCustomThumbnailLoading}
                         customThumbnailUploadProgress={customThumbnailUploadProgress}
                         onRemoveCustomThumbnail={onRemoveCustomThumbnail}
-                    />
+                    >
+                        <ButtonGroupSetting label="Video width" onClick={onCardWidthChange} selectedName={cardWidth} children={buttonGroupChildren} />
+                        <ToggleSetting 
+                            label='Loop' 
+                            description='Autoplay your video on a loop without sound.' 
+                            isChecked={isLoopChecked}
+                            onChange={onChangeLoop}
+                            dataTestID="loop-video"
+                        />
+                        {!isLoopChecked && (
+                            <ThumbnailSetting
+                                label='Custom thumbnail'
+                                icon='file'
+                                desc=''
+                                size='xsmall'
+                                src={customThumbnail}
+                                alt='Custom thumbnail'
+                                onFileChange={onCustomThumbnailChange}
+                                isLoading={isCustomThumbnailLoading}
+                                dataTestID="custom-thumbnail-replace"
+                                progress={customThumbnailUploadProgress}
+                                onRemoveCustomThumbnail={onRemoveCustomThumbnail}
+                            />
+                        )}
+                    </SettingsPanel>
                 )
             }
         </>

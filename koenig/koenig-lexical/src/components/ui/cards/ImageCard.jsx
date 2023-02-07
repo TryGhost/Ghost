@@ -12,7 +12,7 @@ function PopulatedImageCard({src, alt, previewSrc, progress}) {
     };
     return (
         <div>
-            <img className={`mx-auto ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : `upload in progress, ${progress} `} />
+            <img className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : `upload in progress, ${progress} `} />
             {previewSrc && progress && !src ?
                 <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50">
                     <ProgressBar style={progressStyle} />

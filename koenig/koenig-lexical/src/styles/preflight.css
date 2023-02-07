@@ -321,6 +321,10 @@
         color: theme('colors.grey.500'); /* 2 */
     }
 
+    input:focus-visible {
+        outline: none;
+    }
+
     /*
     1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
     2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)

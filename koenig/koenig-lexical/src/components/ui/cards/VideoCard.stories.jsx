@@ -33,7 +33,7 @@ const story = {
     },
     parameters: {
         status: {
-            type: 'uiReady'
+            type: 'functional'
         }
     }
 };
