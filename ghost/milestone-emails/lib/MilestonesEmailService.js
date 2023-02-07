@@ -1,6 +1,18 @@
+const Milestone = require('./Milestone');
+
 /**
- * @typedef {import('./MilestonesAPI')} MilestonesAPI
- * @typedef {import('./Milestone')} Milestone
+ * @template Model
+ * @typedef {object} Mention<Model>
+ * @prop {Model[]} data
+ */
+
+/**
+ * @typedef {object} IMilestoneRepository
+ * @prop {(milestone: Milestone) => Promise<void>} save
+ * @prop {(arr: number) => Promise<Milestone>} getByARR
+ * @prop {(count: number) => Promise<Milestone>} getByCount
+ * @prop {(type: 'arr'|'members') => Promise<Milestone>} getLatestByType
+ * @prop {() => Promise<Milestone>} getLastEmailSent
  */
 
 /**
@@ -16,8 +28,8 @@
  */
 
 module.exports = class MilestonesEmailService {
-    /** @type {import('./MilestonesAPI')} */
-    #api;
+    /** @type {IMilestoneRepository} */
+    #repository;
 
     /** @type {Function} */
     #mailer;
@@ -41,10 +53,64 @@ module.exports = class MilestonesEmailService {
      */
     constructor(deps) {
         this.#mailer = deps.mailer;
-        this.#api = deps.api;
         this.#config = deps.config;
         this.#queries = deps.queries;
         this.#defaultCurrency = deps.defaultCurrency;
+        this.#repository = deps.repository;
+    }
+
+    /**
+     * @param {string|null} currency
+     *
+     * @returns {Promise<Milestone>}
+     */
+    async #getLatestArrMilestone(currency = 'usd') {
+        return this.#repository.getLatestByType('arr', currency);
+    }
+
+    /**
+     * @returns {Promise<Milestone>}
+     */
+    async #getLatestMembersCountMilestone() {
+        return this.#repository.getLatestByType('members');
+    }
+
+    /**
+     * @param {object} milestone
+     * @param {'arr'|'members'} milestone.type
+     * @param {number} milestone.value
+     * @param {string} milestone.currency
+     *
+     * @returns {Promise<boolean>}
+     */
+    async #checkMilestoneExists(milestone) {
+        let foundExistingMilestone = false;
+        let existingMilestone = null;
+
+        if (milestone.type === 'arr') {
+            existingMilestone = await this.#repository.getByARR(milestone.value, milestone?.currency) || false;
+        } else if (milestone.type === 'members') {
+            existingMilestone = await this.#repository.getByCount(milestone.value) || false;
+        }
+
+        foundExistingMilestone = existingMilestone ? true : false;
+
+        return foundExistingMilestone;
+    }
+
+    /**
+     * @param {object} milestone
+     * @param {'arr'|'members'} milestone.type
+     * @param {number} milestone.value
+     *
+     * @returns {Promise<Milestone>}
+     */
+    async #createMilestone(milestone) {
+        const newMilestone = await Milestone.create(milestone);
+
+        await this.#repository.save(newMilestone);
+
+        return newMilestone;
     }
 
     /**
@@ -70,13 +136,8 @@ module.exports = class MilestonesEmailService {
      * @returns {Promise<Milestone>}
      */
     async #saveMileStoneAndSendEmail(milestone) {
-        const milestoneData = {
-            type: milestone.type,
-            value: milestone.value
-        };
-
         if (milestone.type === 'arr') {
-            milestoneData.currency = this.#defaultCurrency;
+            milestone.currency = this.#defaultCurrency;
         }
 
         const shouldSendEmail = await this.#shouldSendEmail();
@@ -89,12 +150,10 @@ module.exports = class MilestonesEmailService {
             //     to: 'test@example.com'
             // });
 
-            milestoneData.emailSentAt = new Date();
+            milestone.emailSentAt = new Date();
         }
 
-        const savedMilestone = await this.#api.checkAndProcessMilestone(milestoneData);
-
-        return savedMilestone;
+        return await this.#createMilestone(milestone);
     }
 
     /**
@@ -102,16 +161,30 @@ module.exports = class MilestonesEmailService {
      * @returns {Promise<boolean>}
      */
     async #shouldSendEmail() {
+        let shouldSendEmail;
         // Two cases in which we don't want to send an email
         // 1. There has been an import of members within the last week
         // 2. The last email has been sent less than two weeks ago
+        const lastMilestoneSent = await this.#repository.getLastEmailSent();
+
+        if (!lastMilestoneSent) {
+            shouldSendEmail = true;
+        } else {
+            const differenceInTime = new Date().getTime() - new Date(lastMilestoneSent.emailSentAt).getTime();
+            const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+
+            shouldSendEmail = differenceInDays >= 14;
+        }
+
         const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
-        const shouldSendEmail = await this.#api.shouldSendEmail();
 
         return shouldSendEmail && !hasMembersImported;
     }
 
-    async runARRQueries() {
+    /**
+     * @returns {Promise<Milestone>}
+    */
+    async #runARRQueries() {
         // Fetch the current data from queries
         const currentARR = await this.#queries.getARR();
 
@@ -130,16 +203,22 @@ module.exports = class MilestonesEmailService {
                 milestone = this.#getMatchedMilestone(milestonesForCurrency.values, currentARRForCurrency.arr);
 
                 // Fetch the latest milestone for this currency
-                const latestMilestone = await this.#api.getLatestArrMilestone(this.#defaultCurrency);
+                const latestMilestone = await this.#getLatestArrMilestone(this.#defaultCurrency);
 
-                if (!latestMilestone || milestone > latestMilestone.value) {
+                // Ensure the milestone doesn't already exist
+                const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'arr', currency: this.#defaultCurrency});
+
+                if ((!milestoneExists && !latestMilestone || milestone > latestMilestone.value)) {
                     return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr'});
                 }
             }
         }
     }
 
-    async runMemberQueries() {
+    /**
+     * @returns {Promise<Milestone>}
+    */
+    async #runMemberQueries() {
         // Fetch the current data
         const membersCount = await this.#queries.getMembersCount();
 
@@ -150,10 +229,26 @@ module.exports = class MilestonesEmailService {
         const milestone = this.#getMatchedMilestone(membersMilestones, membersCount);
 
         // Fetch the latest achieved Members milestones
-        const latestMembersMilestone = await this.#api.getLatestMembersCountMilestone();
+        const latestMembersMilestone = await this.#getLatestMembersCountMilestone();
 
-        if (!latestMembersMilestone || milestone > latestMembersMilestone?.value) {
+        // Ensure the milestone doesn't already exist
+        const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'members'});
+
+        if ((!milestoneExists && !latestMembersMilestone || milestone > latestMembersMilestone.value)) {
             return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members'});
         }
+    }
+
+    /**
+     * @param {'arr'|'members'} type
+     *
+     * @returns {Promise<Milestone>}
+    */
+    async checkMilestones(type) {
+        if (type === 'arr') {
+            return await this.#runARRQueries();
+        }
+
+        return await this.#runMemberQueries();
     }
 };
