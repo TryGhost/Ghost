@@ -54,36 +54,34 @@ module.exports = class MilestonesEmailService {
      *
      * @returns {Array}
      */
-    _getMatchedMilestone = (goalValues, current) => {
+    #getMatchedMilestone(goalValues, current) {
         // return highest suitable milestone
         return goalValues.filter(value => current >= value)
             .sort((a, b) => b - a)[0];
-    };
+    }
 
     /**
      *
-     * @param {number} milestone
-     * @param {'arr'|'members'} type
+     * @param {Object} milestone
+     * @param {number} milestone.value
+     * @param {'arr'|'members'} milestone.type
      * @param {boolean} hasMembersImported
      *
      * @returns {Promise<Milestone>}
      */
-    _saveMileStoneAndSendEmail = async (milestone, type, hasMembersImported) => {
+    async #saveMileStoneAndSendEmail(milestone) {
         const milestoneData = {
-            type,
-            value: milestone
+            type: milestone.type,
+            value: milestone.value
         };
 
-        if (type === 'arr') {
+        if (milestone.type === 'arr') {
             milestoneData.currency = this.#defaultCurrency;
         }
 
-        // Two cases in which we don't want to send an email
-        // 1. There has been an import of members within the last week
-        // 2. The last email has been sent less than two weeks ago
-        const shouldSendEmail = await this.#api.shouldSendEmail();
+        const shouldSendEmail = await this.#shouldSendEmail();
 
-        if (shouldSendEmail && !hasMembersImported) {
+        if (shouldSendEmail) {
             // TODO: hook up GhostMailer or use StaffService and trigger event to send email
             // await this.#mailer.send({
             //     subject: 'Test',
@@ -97,12 +95,25 @@ module.exports = class MilestonesEmailService {
         const savedMilestone = await this.#api.checkAndProcessMilestone(milestoneData);
 
         return savedMilestone;
-    };
+    }
+
+    /**
+     *
+     * @returns {Promise<boolean>}
+     */
+    async #shouldSendEmail() {
+        // Two cases in which we don't want to send an email
+        // 1. There has been an import of members within the last week
+        // 2. The last email has been sent less than two weeks ago
+        const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
+        const shouldSendEmail = await this.#api.shouldSendEmail();
+
+        return shouldSendEmail && !hasMembersImported;
+    }
 
     async runARRQueries() {
         // Fetch the current data from queries
         const currentARR = await this.#queries.getARR();
-        const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
 
         // Check the definitions in the config
         const arrMilestoneSettings = this.#config.milestones.arr;
@@ -116,13 +127,13 @@ module.exports = class MilestonesEmailService {
 
             if (milestonesForCurrency && currentARRForCurrency) {
                 // get the closest milestone we're over now
-                milestone = this._getMatchedMilestone(milestonesForCurrency.values, currentARRForCurrency.arr);
+                milestone = this.#getMatchedMilestone(milestonesForCurrency.values, currentARRForCurrency.arr);
 
                 // Fetch the latest milestone for this currency
                 const latestMilestone = await this.#api.getLatestArrMilestone(this.#defaultCurrency);
 
                 if (!latestMilestone || milestone > latestMilestone.value) {
-                    return await this._saveMileStoneAndSendEmail(milestone, 'arr', hasMembersImported);
+                    return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr'});
                 }
             }
         }
@@ -131,19 +142,18 @@ module.exports = class MilestonesEmailService {
     async runMemberQueries() {
         // Fetch the current data
         const membersCount = await this.#queries.getMembersCount();
-        const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
 
         // Check the definitions in the config
         const membersMilestones = this.#config.milestones.members;
 
         // get the closest milestone we're over now
-        const milestone = this._getMatchedMilestone(membersMilestones, membersCount);
+        const milestone = this.#getMatchedMilestone(membersMilestones, membersCount);
 
         // Fetch the latest achieved Members milestones
         const latestMembersMilestone = await this.#api.getLatestMembersCountMilestone();
 
         if (!latestMembersMilestone || milestone > latestMembersMilestone?.value) {
-            return await this._saveMileStoneAndSendEmail(milestone, 'members', hasMembersImported);
+            return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members'});
         }
     }
 };
