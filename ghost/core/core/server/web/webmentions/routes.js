@@ -12,7 +12,7 @@ module.exports = function apiRoutes() {
     router.use(shared.middleware.cacheControl('private'));
 
     // rate limiter
-    router.use(shared.middleware.brute.webMentionsLimiter);
+    router.use(shared.middleware.brute.webmentionsLimiter);
 
     // Webmentions
     router.post('/receive', bodyParser.urlencoded({extended: true, limit: '5mb'}), http(api.mentions.receive));

@@ -110,8 +110,8 @@ module.exports = {
      * Blocks webmention spam
      */
 
-    webMentionsLimiter(req, res, next) {
-        return spamPrevention.webMentionsBlock().getMiddleware({
+    webmentionsLimiter(req, res, next) {
+        return spamPrevention.webmentionsBlock().getMiddleware({
             ignoreIP: false,
             key(_req, _res, _next) {
                 return _next('webmention_blocked');
