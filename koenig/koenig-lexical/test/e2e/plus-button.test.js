@@ -331,5 +331,54 @@ describe('Plus button', async () => {
                 focusPath: [1]
             });
         });
+
+        it('deselects a selected card when plus button is clicked', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.click('[data-kg-card="horizontalrule"]');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+
+            const pHandle = await page.locator('[data-lexical-editor] > p').nth(0);
+            await pHandle.hover();
+            await page.click('[data-kg-plus-button]');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+        });
+
+        it('exits a card\'s edit mode when plus button is clicked', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/');
+            await page.click('[data-kg-card-menu-item="Markdown"]');
+            await page.waitForSelector('[data-kg-card="markdown"] .CodeMirror');
+            await page.keyboard.type('# Test');
+
+            const pHandle = await page.locator('[data-lexical-editor] > p').nth(0);
+            await pHandle.hover();
+            await page.click('[data-kg-plus-button]');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div><svg></svg></div>
+                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="markdown">
+                    </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardContents: true});
+        });
     });
 });

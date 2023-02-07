@@ -1,6 +1,6 @@
 import React from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {$getSelection, $isParagraphNode, $isRangeSelection} from 'lexical';
+import {$getSelection, $isParagraphNode, $isRangeSelection, $setSelection} from 'lexical';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {PlusButton, PlusMenu} from '../components/ui/PlusMenu';
 import {CardMenu} from '../components/ui/CardMenu';
@@ -51,9 +51,16 @@ function usePlusCardMenu(editor) {
 
     const openMenu = React.useCallback((event) => {
         event?.preventDefault();
+
+        // clear any existing selection so cards leave selected/editing mode
+        // uses {discrete: true} so update is synchronous and cursor movement to cached range works
+        editor.update(() => {
+            $setSelection(null);
+        }, {discrete: true});
+
         moveCursorToCachedRange();
         setIsShowingMenu(true);
-    }, [moveCursorToCachedRange, setIsShowingMenu]);
+    }, [editor, moveCursorToCachedRange, setIsShowingMenu]);
 
     const closeMenu = React.useCallback(({resetCursor = false} = {}) => {
         if (resetCursor) {
