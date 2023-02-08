@@ -7,10 +7,12 @@ import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import extractVideoMetadata from '../utils/extractVideoMetadata';
 import useDragAndDrop from '../hooks/useDragAndDrop';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 
 export function VideoNodeComponent({
     nodeKey,
-    thumbnailSrc,
+    thumbnail,
     customThumbnail,
     caption,
     totalDuration,
@@ -125,6 +127,12 @@ export function VideoNodeComponent({
         });
     };
 
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        cardContext.setEditing(true);
+    };
+
     // when card is inserted from the card menu or slash command we want to show the file picker immediately
     // uses a setTimeout to avoid issues with React rendering the component twice in dev mode 🙈
     React.useEffect(() => {
@@ -148,28 +156,42 @@ export function VideoNodeComponent({
         });
     });
 
+    const isCardPopulated = customThumbnail || thumbnail;
+
     return (
-        <VideoCard
-            thumbnail={previewThumbnail || thumbnailSrc}
-            customThumbnail={customThumbnail}
-            onCustomThumbnailChange={onCustomThumbnailChange}
-            onRemoveCustomThumbnail={onRemoveCustomThumbnail}
-            fileInputRef={videoFileInputRef}
-            onVideoFileChange={onVideoFileChange}
-            caption={caption}
-            onCaptionChange={onCaptionChange}
-            isLoopChecked={isLoopChecked}
-            onChangeLoop={onChangeLoop}
-            totalDuration={totalDuration}
-            videoUploader={videoUploader}
-            customThumbnailUploader={customThumbnailUploader}
-            isSelected={cardContext.isSelected}
-            isEditing={cardContext.isEditing}
-            cardWidth={cardWidth}
-            onCardWidthChange={onCardWidthChange}
-            thumbnailErrors={thumbnailErrors}
-            videoDragHandler={videoDragHandler}
-            thumbnailDragHandler={thumbnailDragHandler}
-        />
+        <>
+            <VideoCard
+                thumbnail={previewThumbnail || thumbnail}
+                customThumbnail={customThumbnail}
+                onCustomThumbnailChange={onCustomThumbnailChange}
+                onRemoveCustomThumbnail={onRemoveCustomThumbnail}
+                fileInputRef={videoFileInputRef}
+                onVideoFileChange={onVideoFileChange}
+                caption={caption}
+                onCaptionChange={onCaptionChange}
+                isLoopChecked={isLoopChecked}
+                onChangeLoop={onChangeLoop}
+                totalDuration={totalDuration}
+                videoUploader={videoUploader}
+                customThumbnailUploader={customThumbnailUploader}
+                isSelected={cardContext.isSelected}
+                isEditing={cardContext.isEditing}
+                cardWidth={cardWidth}
+                onCardWidthChange={onCardWidthChange}
+                thumbnailErrors={thumbnailErrors}
+                videoDragHandler={videoDragHandler}
+                thumbnailDragHandler={thumbnailDragHandler}
+            />
+            <ActionToolbar
+                isVisible={isCardPopulated && cardContext.isSelected && !cardContext.isEditing}
+                data-kg-card-toolbar="video"
+            >
+                <ToolbarMenu>
+                    <ToolbarMenuItem label="Edit" icon="edit" isActive={false} onClick={handleToolbarEdit} dataTestId="edit-video-card" />
+                    <ToolbarMenuSeparator />
+                    <ToolbarMenuItem label="Snippet" icon="snippet" isActive={false} />
+                </ToolbarMenu>
+            </ActionToolbar>
+        </>
     );
 }

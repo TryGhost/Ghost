@@ -40,7 +40,7 @@ export function ToolbarMenu({children, ...props}) {
     );
 }
 
-export function ToolbarMenuItem({label, isActive, onClick, icon, ...props}) {
+export function ToolbarMenuItem({label, isActive, onClick, icon, dataTestId, ...props}) {
     const Icon = TOOLBAR_ICONS[icon];
 
     return (
@@ -51,6 +51,7 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, ...props}) {
                 onClick={onClick}
                 aria-label={label}
                 data-kg-active={isActive}
+                data-testid={dataTestId}
             >
                 <Icon className={` h-4 w-4 ${isActive ? 'fill-green' : 'fill-white'} `} />
             </button>

@@ -41,7 +41,7 @@ export class VideoNode extends BaseVideoNode {
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
                 <VideoNodeComponent
                     nodeKey={this.getKey()}
-                    thumbnailSrc={this.getThumbnailSrc()}
+                    thumbnail={this.getThumbnailSrc()}
                     customThumbnail={this.getCustomThumbnailSrc()}
                     totalDuration={this.getFormattedDuration()}
                     caption={this.getCaption()}

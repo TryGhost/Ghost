@@ -226,6 +226,50 @@ describe('Video card', async () => {
         await page.waitForSelector('[data-testid="custom-thumbnail-filled"]');
         await expect(page.getByTestId('custom-thumbnail-filled')).toBeVisible();
     });
+
+    test('renders video card toolbar', async function () {
+        await focusEditor(page);
+
+        // Upload video
+        await uploadVideo(page);
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+
+        // Leave editing mode to display the toolbar
+        await page.keyboard.press('Escape');
+
+        // Check that the toolbar is displayed
+        await page.waitForSelector('[data-kg-card-toolbar="video"]');
+        await expect(page.locator('[data-kg-card-toolbar="video"]')).toBeVisible();
+    });
+
+    test('video card toolbar as Edit button', async function () {
+        await focusEditor(page);
+
+        // Upload video
+        await uploadVideo(page);
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+
+        // Leave editing mode to display the toolbar
+        await page.keyboard.press('Escape');
+
+        // Check that the toolbar is displayed
+        await page.waitForSelector('[data-kg-card-toolbar="video"]');
+        await expect(page.locator('[data-kg-card-toolbar="video"]')).toBeVisible();
+
+        // Edit video card
+        await page.waitForSelector('[data-testid="edit-video-card"]');
+        await page.getByTestId('edit-video-card').click();
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video"></div>
+            </div>
+            <figcaption>
+                <input placeholder="Type caption for video (optional)" value="" />
+            </figcaption>
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+    });
 });
 
 async function uploadVideo(page) {
