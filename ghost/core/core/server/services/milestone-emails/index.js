@@ -1,54 +1,71 @@
-const labs = require('../../../shared/labs');
+let hasScheduled = false;
 
-class MilestoneEmailsWrapper {
-    async initAndSchedule() {
-        if (labs.isSet('milestoneEmails')) {
-            const jobsService = require('../jobs');
-            const db = require('../../data/db');
-            const MilestoneQueries = require('./MilestoneQueries');
+/**
+ * @param {'arr'|'members'} milestoneType
+ *
+ * @returns {Promise<any>}
+ */
+module.exports = async (milestoneType) => {
+    // const labs = require('../../../shared/labs');
 
-            const {
-                MilestonesEmailService,
-                InMemoryMilestoneRepository
-            } = require('@tryghost/milestone-emails');
-            const config = require('../../../shared/config');
-            const milestonesConfig = config.get('milestones');
-            const {GhostMailer} = require('../mail');
+    // if (labs.isSet('milestoneEmails')) {
+    const db = require('../../data/db');
+    const MilestoneQueries = require('./MilestoneQueries');
 
-            const mailer = new GhostMailer();
-            const repository = new InMemoryMilestoneRepository();
-            const queries = new MilestoneQueries({db, milestonesConfig});
+    const {
+        MilestonesEmailService,
+        InMemoryMilestoneRepository
+    } = require('@tryghost/milestone-emails');
+    const config = require('../../../shared/config');
+    const milestonesConfig = config.get('milestones');
+    const {GhostMailer} = require('../mail');
 
-            const milestonesEmailService = new MilestonesEmailService({
-                mailer,
-                repository,
-                milestonesConfig, // avoid using getters and pass as JSON
-                queries
-                // TODO: do we need to check if Stripe is live enabled?
-            });
+    const mailer = new GhostMailer();
+    const repository = new InMemoryMilestoneRepository();
+    const queries = new MilestoneQueries({db, milestonesConfig});
 
-            const s = Math.floor(Math.random() * 60); // 0-59 second
-            const m = Math.floor(Math.random() * 60); // 0-59 minute
-            const h = Math.floor(Math.random() * 24); // 0-23 hour
-            const wd = Math.floor(Math.random() * 7); // 0-6 weekday
+    const milestonesEmailService = new MilestonesEmailService({
+        mailer,
+        repository,
+        milestonesConfig, // avoid using getters and pass as JSON
+        queries
+        // TODO: do we need to check if Stripe is live enabled?
+    });
 
-            jobsService.addJob({
-                at: `${s} ${m} ${h} * * ${wd}`, // Every week
-                job: async () => await milestonesEmailService.checkMilestones('arr'),
-                name: 'milestone-emails-arr',
-                // TODO: I don't think we can use offloading when we need to schedule the jobs with CRON
-                offloaded: false
-            });
+    return await milestonesEmailService.checkMilestones(milestoneType);
+    // }
+};
 
-            jobsService.addJob({
-                at: `${s} ${m} ${h} * * ${wd}`, // Every week
-                job: async () => await milestonesEmailService.checkMilestones('members'),
-                name: 'milestone-emails-members',
-                // TODO: I don't think we can use offloading when we need to schedule the jobs with CRON
-                offloaded: false
-            });
-        }
+/**
+ *
+ * @returns {Promise<boolean>}
+ */
+module.exports.scheduleRecurringJobs = async () => {
+    if (!hasScheduled) {
+        const jobsService = require('../jobs');
+        const path = require('path');
+
+        const s = Math.floor(Math.random() * 60); // 0-59 second
+        const m = Math.floor(Math.random() * 60); // 0-59 minute
+        const h = Math.floor(Math.random() * 24); // 0-23 hour
+        const wd = Math.floor(Math.random() * 7); // 0-6 weekday
+
+        jobsService.addJob({
+            at: `${s} ${m} ${h} * * ${wd}`, // Every week
+            // at: '55 * * * * *', // every minute for local development
+            job: path.resolve(__dirname, 'jobs/run-arr-milestones.js'),
+            name: 'milestone-emails-arr'
+        });
+
+        jobsService.addJob({
+            at: `${s} ${m} ${h} * * ${wd}`, // Every week
+            // at: '56 * * * * *', // every minute for local development
+            job: path.resolve(__dirname, 'jobs/run-members-milestones.js'),
+            name: 'milestone-emails-members'
+        });
+
+        hasScheduled = true;
     }
-}
 
-module.exports = new MilestoneEmailsWrapper();
+    return hasScheduled;
+};

@@ -369,7 +369,7 @@ async function initBackgroundServices({config}) {
     updateCheck.scheduleRecurringJobs();
 
     const milestoneEmails = require('./server/services/milestone-emails');
-    milestoneEmails.initAndSchedule();
+    milestoneEmails.scheduleRecurringJobs();
 
     debug('End: initBackgroundServices');
 }
