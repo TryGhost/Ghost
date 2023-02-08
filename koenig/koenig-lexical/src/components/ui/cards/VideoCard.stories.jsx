@@ -74,8 +74,22 @@ ProgressVideo.args = {
     customThumbnail: '',
     totalDuration: '2:27',
     caption: 'Introducing the newest accessory for your Mac.',
-    isVideoLoading: true,
-    videoUploadProgress: 60
+    videoUploader: {
+        isLoading: true,
+        progress: 60
+    }
+};
+
+export const DraggedOverVideo = Template.bind({});
+DraggedOverVideo.args = {
+    display: 'Editing',
+    cardWidth: 'regular',
+    thumbnail: '',
+    customThumbnail: '',
+    caption: '',
+    videoDragHandler: {
+        isDraggedOver: true
+    }
 };
 
 export const ProgressCustomThumbnail = Template.bind({});
@@ -86,8 +100,23 @@ ProgressCustomThumbnail.args = {
     customThumbnail: '',
     totalDuration: '2:27',
     caption: 'Introducing the newest accessory for your Mac.',
-    isCustomThumbnailLoading: true,
-    customThumbnailUploadProgress: 60
+    customThumbnailUploader: {
+        isLoading: true,
+        progress: 60
+    }
+};
+
+export const DraggedOverCustomThumbnail = Template.bind({});
+DraggedOverCustomThumbnail.args = {
+    display: 'Editing',
+    cardWidth: 'regular',
+    thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+    customThumbnail: '',
+    totalDuration: '2:27',
+    caption: 'Introducing the newest accessory for your Mac.',
+    thumbnailDragHandler: {
+        isDraggedOver: true
+    }
 };
 
 export const EnabledLoop = Template.bind({});

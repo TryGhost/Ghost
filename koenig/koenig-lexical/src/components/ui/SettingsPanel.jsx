@@ -61,7 +61,7 @@ export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
     );
 }
 
-export function ThumbnailSetting({label, onFileChange, handleDrag, handleDrop, isDraggedOver, src, alt, isLoading, dataTestID, progress, onRemoveCustomThumbnail, icon, desc, size}) {
+export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, dataTestID, progress, onRemoveCustomThumbnail, icon, desc = '', size}) {
     const fileInputRef = React.useRef(null);
 
     const onFileInputRef = (element) => {
@@ -83,17 +83,17 @@ export function ThumbnailSetting({label, onFileChange, handleDrag, handleDrop, i
         <div className="text-[1.3rem]" data-testid="custom-thumbnail">
             <div className="font-bold text-grey-900">{label}</div>
 
-            {isEmpty && 
+            {isEmpty &&
                 <div className="h-32">
                     <MediaPlaceholder
-                        handleDrag={handleDrag}
-                        handleDrop={handleDrop}
+                        placeholderRef={placeholderRef}
                         filePicker={() => openFileSelection({fileInputRef})}
                         icon={icon}
                         desc={desc}
                         size={size}
                         borderStyle='dashed'
                         isDraggedOver={isDraggedOver}
+                        dataTestId="thumbnail-media-placeholder"
                     />
                     <ImageUploadForm
                         filePicker={() => openFileSelection({fileInputRef})}

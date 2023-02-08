@@ -22,17 +22,18 @@ export const CardText = ({text}) => {
     );
 };
 
-export function MediaPlaceholder({desc, icon, filePicker, size, borderStyle, handleDrag, handleDrop, isDraggedOver, ...props}) {
+export function MediaPlaceholder({desc, icon, filePicker, size, borderStyle, handleDrag, handleDrop, isDraggedOver, placeholderRef, dataTestId = 'media-placeholder', ...props}) {
     const Icon = PLACEHOLDER_ICONS[icon];
 
     return (
         <div
+            ref={placeholderRef}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
             className="h-full border border-transparent" {...props}
-            data-testid="media-placeholder"
+            data-testid={dataTestId}
         >
             <div className={`relative flex h-full items-center justify-center border bg-grey-50 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'} ${borderStyle === 'dashed' ? 'rounded border-dashed border-grey/40' : 'border-grey/20'}`}>
                 {

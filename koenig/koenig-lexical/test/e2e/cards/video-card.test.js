@@ -2,6 +2,7 @@ import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {expect} from '@playwright/test';
 import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
 import path from 'path';
+import createDataTransfer from '../../utils/createDataTransfer.js';
 
 describe('Video card', async () => {
     let app;
@@ -121,8 +122,8 @@ describe('Video card', async () => {
         await expect(page.getByTestId('video-settings-panel')).toBeVisible();
 
         // Custom thumbnail should be visible
-        await page.waitForSelector('[data-testid="media-placeholder"]');
-        const emptyThumbnail = page.getByTestId('media-placeholder');
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        const emptyThumbnail = page.getByTestId('thumbnail-media-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
         // Upload thumbnail
@@ -143,8 +144,8 @@ describe('Video card', async () => {
         // Can remove thumbnail
         const replaceButton = page.getByTestId('custom-thumbnail-replace');
         replaceButton.click();
-        await page.waitForSelector('[data-testid="media-placeholder"]');
-        await expect(page.getByTestId('media-placeholder')).toBeVisible();
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        await expect(page.getByTestId('thumbnail-media-placeholder')).toBeVisible();
     });
 
     test('can hide custom thumbnail if loop enabled', async function () {
@@ -158,13 +159,72 @@ describe('Video card', async () => {
         await expect(await page.locator('[data-testid="loop-video"] input').isChecked()).toBeFalsy();
 
         // Custom thumbnail should be visible
-        await page.waitForSelector('[data-testid="media-placeholder"]');
-        const emptyThumbnail = page.getByTestId('media-placeholder');
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        const emptyThumbnail = page.getByTestId('thumbnail-media-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
         // Custom thumbnail should be hidden after loop enabled
         await loopButton.check();
-        await expect(page.getByTestId('media-placeholder')).toBeHidden();
+        await expect(page.getByTestId('thumbnail-media-placeholder')).toBeHidden();
+    });
+
+    test('can upload dropped video', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await focusEditor(page);
+
+        // Open video card and dismiss files chooser to prepare card for video dropping
+        await page.keyboard.type('/video');
+        await page.keyboard.press('Enter');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([]);
+
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'video.mp4', fileType: 'video/mp4'});
+        await page.getByTestId('media-placeholder').dispatchEvent('dragover', {dataTransfer});
+
+        // Dragover text should be visible
+        await expect(page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+
+        // Drop file
+        await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
+
+        // Check progress bar
+        await page.waitForSelector('[data-testid="video-progress"]');
+        expect(await page.getByTestId('video-progress')).toBeVisible();
+
+        // Check that video file was uploaded
+        await page.waitForSelector('[data-testid="video-duration"]');
+        await expect(page.getByTestId('video-duration')).toContainText('0:04');
+    });
+
+    test('can upload dropped custom thumbnail', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        // Wait for custom thumbnail
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('dragover', {dataTransfer});
+
+        // Dragover text should be visible
+        await expect(page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+
+        // Drop file
+        await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});
+
+        // Progress bar should be visible
+        await page.waitForSelector('[data-testid="custom-thumbnail-progress"]');
+        await expect(page.getByTestId('custom-thumbnail-progress')).toBeVisible();
+
+        // Thumbnail should be visible
+        await page.waitForSelector('[data-testid="custom-thumbnail-filled"]');
+        await expect(page.getByTestId('custom-thumbnail-filled')).toBeVisible();
     });
 });
 

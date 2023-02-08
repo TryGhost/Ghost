@@ -16,20 +16,19 @@ function PopulatedVideoCard({
     thumbnail,
     customThumbnail,
     onCustomThumbnailChange,
-    isCustomThumbnailLoading,
-    customThumbnailUploadProgress,
+    videoUploader = {},
+    customThumbnailUploader = {},
     onRemoveCustomThumbnail,
     totalDuration,
     cardWidth,
     isLoopChecked,
     onChangeLoop,
-    videoUploadProgress,
-    isVideoLoading,
     onCardWidthChange,
-    isEditing
+    isEditing,
+    thumbnailDragHandler = {}
 }) {
     const progressStyle = {
-        width: `${videoUploadProgress?.toFixed(0)}%`
+        width: `${videoUploader.progress?.toFixed(0)}%`
     };
 
     const buttonGroupChildren = [
@@ -67,7 +66,7 @@ function PopulatedVideoCard({
                 </div>
             </div>
             {
-                isVideoLoading && (
+                videoUploader.isLoading && (
                     <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="video-progress">
                         <ProgressBar style={progressStyle} />
                     </div>
@@ -75,14 +74,8 @@ function PopulatedVideoCard({
             }
 
             {
-                !!thumbnail && !isVideoLoading && isEditing && (
-                    <SettingsPanel
-                        customThumbnail={customThumbnail}
-                        onCustomThumbnailChange={onCustomThumbnailChange}
-                        isCustomThumbnailLoading={isCustomThumbnailLoading}
-                        customThumbnailUploadProgress={customThumbnailUploadProgress}
-                        onRemoveCustomThumbnail={onRemoveCustomThumbnail}
-                    >
+                !!thumbnail && !videoUploader.isLoading && isEditing && (
+                    <SettingsPanel>
                         <ButtonGroupSetting
                             label="Video width"
                             onClick={onCardWidthChange}
@@ -100,15 +93,16 @@ function PopulatedVideoCard({
                             <ThumbnailSetting
                                 label='Custom thumbnail'
                                 icon='file'
-                                desc=''
                                 size='xsmall'
                                 src={customThumbnail}
                                 alt='Custom thumbnail'
                                 onFileChange={onCustomThumbnailChange}
-                                isLoading={isCustomThumbnailLoading}
+                                isLoading={customThumbnailUploader.isLoading}
                                 dataTestID="custom-thumbnail-replace"
-                                progress={customThumbnailUploadProgress}
+                                progress={customThumbnailUploader.progress}
                                 onRemoveCustomThumbnail={onRemoveCustomThumbnail}
+                                isDraggedOver={thumbnailDragHandler.isDraggedOver}
+                                placeholderRef={thumbnailDragHandler.setRef}
                             />
                         )}
                     </SettingsPanel>
@@ -118,13 +112,15 @@ function PopulatedVideoCard({
     );
 }
 
-function EmptyVideoCard({onFileChange, fileInputRef}) {
+function EmptyVideoCard({onFileChange, fileInputRef, videoDragHandler = {}}) {
     return (
         <>
             <MediaPlaceholder
                 filePicker={() => openFileSelection({fileInputRef})}
                 desc="Click to select a video"
                 icon='video'
+                isDraggedOver={videoDragHandler.isDraggedOver}
+                placeholderRef={videoDragHandler.setRef}
             />
             <form onChange={onFileChange}>
                 <input
@@ -142,12 +138,10 @@ function EmptyVideoCard({onFileChange, fileInputRef}) {
 const VideoHolder = ({
     fileInputRef,
     onVideoFileChange,
-    handleDrag,
-    handleDrop,
-    isDraggedOver,
+    videoDragHandler,
     ...props
 }) => {
-    const showPopulatedCard = props.customThumbnail || props.thumbnail || props.isVideoLoading;
+    const showPopulatedCard = props.customThumbnail || props.thumbnail || props?.videoUploader?.isLoading;
     if (showPopulatedCard) {
         return (
             <PopulatedVideoCard {...props}/>
@@ -157,9 +151,7 @@ const VideoHolder = ({
             <EmptyVideoCard
                 onFileChange={onVideoFileChange}
                 fileInputRef={fileInputRef}
-                handleDrag={handleDrag}
-                handleDrop={handleDrop}
-                isDraggedOver={isDraggedOver}
+                videoDragHandler={videoDragHandler}
             />
         );
     }
