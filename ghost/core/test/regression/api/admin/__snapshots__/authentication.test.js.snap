@@ -567,6 +567,7 @@ Object {
       "id": "1",
       "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "location": "location",
+      "mention_notifications": false,
       "meta_description": null,
       "meta_title": null,
       "name": "test user edit",
