@@ -35,6 +35,7 @@ const author = (attrs, frame) => {
         delete attrs.free_member_signup_notification;
         delete attrs.paid_subscription_started_notification;
         delete attrs.paid_subscription_canceled_notification;
+        delete attrs.mention_notifications;
 
         // @NOTE: used for night shift
         delete attrs.accessibility;
