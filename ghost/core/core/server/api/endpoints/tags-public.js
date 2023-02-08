@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const tagsPublicService = require('../../services/tags-public');
 
 const ALLOWED_INCLUDES = ['count.posts'];
 
@@ -31,7 +32,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.TagPublic.findPage(frame.options);
+            return tagsPublicService.api.browse(frame.options);
         }
     },
 
