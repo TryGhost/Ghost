@@ -32,7 +32,7 @@ module.exports = class InMemoryMilestoneRepository {
 
     /**
      * @param {'arr'|'members'} type
-     * @param {string} [currency=usd]
+     * @param {string} [currency]
      *
      * @returns {Promise<Milestone>}
      */
@@ -68,7 +68,7 @@ module.exports = class InMemoryMilestoneRepository {
 
     /**
      * @param {number} value
-     * @param {string} [currency=usd]
+     * @param {string} [currency]
      *
      * @returns {Promise<Milestone>}
      */

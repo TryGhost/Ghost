@@ -17,23 +17,29 @@ const Milestone = require('./Milestone');
  * @prop {() => Promise<string>} getDefaultCurrency
  */
 
+/**
+ * @typedef {object} ghostMailer
+ * @property {Function} send
+ */
+
+/**
+ * @typedef {object} milestonesConfig
+ * @prop {Array<object>} milestonesConfig.arr
+ * @prop {string} milestonesConfig.arr.currency
+ * @prop {number[]} milestonesConfig.arr.values
+ * @prop {number[]} milestonesConfig.members
+ */
+
 module.exports = class MilestonesEmailService {
     /** @type {IMilestoneRepository} */
     #repository;
 
     /**
-     * @type {object}
-     * @property {Function} send
-    */
+     * @type {ghostMailer} */
     #mailer;
 
     /**
-     * @type {object} milestonesConfig
-     * @property {Array<object>} milestonesConfig.arr
-     * @property {string} milestonesConfig.arr.currency
-     * @property {Array<number>} milestonesConfig.arr.values
-     * @property {Array<number>} milestonesConfig.members
-    */
+     * @type {milestonesConfig} */
     #milestonesConfig;
 
     /** @type {IQueries} */
@@ -41,9 +47,9 @@ module.exports = class MilestonesEmailService {
 
     /**
      * @param {object} deps
-     * @param {object} deps.mailer
+     * @param {ghostMailer} deps.mailer
      * @param {IMilestoneRepository} deps.repository
-     * @param {object} deps.milestonesConfig
+     * @param {milestonesConfig} deps.milestonesConfig
      * @param {IQueries} deps.queries
      */
     constructor(deps) {
@@ -54,7 +60,7 @@ module.exports = class MilestonesEmailService {
     }
 
     /**
-     * @param {string} [currency=usd]
+     * @param {string} [currency]
      *
      * @returns {Promise<Milestone>}
      */
