@@ -15,6 +15,7 @@ Object {
       "id": "1",
       "last_seen": null,
       "location": null,
+      "mention_notifications": false,
       "meta_description": null,
       "meta_title": null,
       "name": "test user",
