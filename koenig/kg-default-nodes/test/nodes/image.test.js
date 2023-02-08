@@ -290,6 +290,116 @@ describe('ImageNode', function () {
             nodes[0].getImgWidth().should.equal(3000);
             nodes[0].getImgHeight().should.equal(2000);
         }));
+
+        it('parses IMG inside FIGURE to image card without caption', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure>
+                    <img src="http://example.com/test.png" alt="Alt test" title="Title test" />
+                </figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].getSrc().should.equal('http://example.com/test.png');
+            nodes[0].getAltText().should.equal('Alt test');
+            nodes[0].getTitle().should.equal('Title test');
+        }));
+
+        it('parses IMG inside FIGURE to image card with caption', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure>
+                    <img src="http://example.com/test.png">
+                    <figcaption>&nbsp; <strong>Caption test</strong></figcaption>
+                </figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].getSrc().should.equal('http://example.com/test.png');
+            nodes[0].getCaption().should.equal('<strong>Caption test</strong>');
+        }));
+
+        it('extracts Koenig card widths', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure class="kg-card kg-width-wide">
+                    <img src="http://example.com/test.png">
+                </figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].getCardWidth().should.equal('wide');
+        }));
+
+        it('extracts Medium card widths', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure class="graf--layoutFillWidth">
+                    <img src="http://example.com/test.png">
+                </figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].getCardWidth().should.equal('full');
+        }));
+
+        it('extracts IMG dimensions from width/height attrs', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure>
+                    <img src="http://example.com/test.png" width="640" height="480">
+                </figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].getSrc().should.equal('http://example.com/test.png');
+            nodes[0].getImgWidth().should.equal(640);
+            nodes[0].getImgHeight().should.equal(480);
+        }));
+
+        it('extracts IMG dimensions from dataset', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure>
+                    <img src="http://example.com/test.png" width="640" height="480">
+                </figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].getSrc().should.equal('http://example.com/test.png');
+            nodes[0].getImgWidth().should.equal(640);
+            nodes[0].getImgHeight().should.equal(480);
+        }));
+
+        it('extracts IMG dimensions from data-image-dimensions', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure>
+                    <img src="http://example.com/test.png" data-image-dimensions="640x480">
+                </figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].getSrc().should.equal('http://example.com/test.png');
+            nodes[0].getImgWidth().should.equal(640);
+            nodes[0].getImgHeight().should.equal(480);
+        }));
+
+        it('extracts href when img wrapped in anchor tag', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <figure>
+                    <a href="https://example.com/link">
+                        <img src="http://example.com/test.png">
+                    </a>
+                </figure>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].getSrc().should.equal('http://example.com/test.png');
+            // TODO: Add href support to image card
+            // nodes[0].getHref().should.equal('https://example.com/link');
+        }));
     });
 
     describe('exportJSON', function () {
