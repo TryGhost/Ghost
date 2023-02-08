@@ -1,9 +1,10 @@
 /**
  * @typedef {import('./Milestone')} Milestone
+ * @typedef {import('./MilestonesEmailService').IMilestoneRepository} IMilestoneRepository
  */
 
 /**
- * @typedef {object} IMilestoneRepository
+ * @implements {IMilestoneRepository}
  */
 module.exports = class InMemoryMilestoneRepository {
     /** @type {Milestone[]} */

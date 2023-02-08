@@ -53,7 +53,7 @@ module.exports = class MilestoneQueries {
 
         if (currentARR.length > 1) {
             const highestValues = currentARR.sort((a, b) => b.arr - a.arr);
-            // If the highest value is not in the supported currencies, use the first one
+            // If none of the currencies are supported, use the highest one
             const defaultCurrency = highestValues.find(value => supportedCurrencies.includes(value.currency)) && highestValues[0];
             return defaultCurrency.currency;
         } else {

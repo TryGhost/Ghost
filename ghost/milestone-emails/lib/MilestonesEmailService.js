@@ -1,13 +1,7 @@
 const Milestone = require('./Milestone');
 
 /**
- * @template Model
- * @typedef {Object} Mention<Model>
- * @prop {Model[]} data
- */
-
-/**
- * @typedef {Object} IMilestoneRepository
+ * @typedef {object} IMilestoneRepository
  * @prop {(milestone: Milestone) => Promise<void>} save
  * @prop {(arr: number, [currency]: string|null) => Promise<Milestone>} getByARR
  * @prop {(count: number) => Promise<Milestone>} getByCount
@@ -16,9 +10,9 @@ const Milestone = require('./Milestone');
  */
 
 /**
- * @typedef {Object} IQueries
+ * @typedef {object} IQueries
  * @prop {() => Promise<number>} getMembersCount
- * @prop {() => Promise<Object>} getARR
+ * @prop {() => Promise<object>} getARR
  * @prop {() => Promise<boolean>} hasImportedMembersInPeriod
  * @prop {() => Promise<string>} getDefaultCurrency
  */
@@ -28,15 +22,17 @@ module.exports = class MilestonesEmailService {
     #repository;
 
     /**
-     * @type {Object}
+     * @type {object}
      * @property {Function} send
     */
     #mailer;
 
     /**
-     * @type {Object}
-     * @property {Array} milestonesConfig.arr
-     * @property {Array} milestonesConfig.members
+     * @type {object} milestonesConfig
+     * @property {Array<object>} milestonesConfig.arr
+     * @property {string} milestonesConfig.arr.currency
+     * @property {Array<number>} milestonesConfig.arr.values
+     * @property {Array<number>} milestonesConfig.members
     */
     #milestonesConfig;
 
@@ -44,10 +40,10 @@ module.exports = class MilestonesEmailService {
     #queries;
 
     /**
-     * @param {Object} deps
-     * @param {Object} deps.mailer
+     * @param {object} deps
+     * @param {object} deps.mailer
      * @param {IMilestoneRepository} deps.repository
-     * @param {Object} deps.milestonesConfig
+     * @param {object} deps.milestonesConfig
      * @param {IQueries} deps.queries
      */
     constructor(deps) {
@@ -81,7 +77,7 @@ module.exports = class MilestonesEmailService {
     }
 
     /**
-     * @param {Object} milestone
+     * @param {object} milestone
      * @param {'arr'|'members'} milestone.type
      * @param {number} milestone.value
      * @param {string} milestone.currency
@@ -104,7 +100,7 @@ module.exports = class MilestonesEmailService {
     }
 
     /**
-     * @param {Object} milestone
+     * @param {object} milestone
      * @param {'arr'|'members'} milestone.type
      * @param {number} milestone.value
      *
@@ -120,7 +116,7 @@ module.exports = class MilestonesEmailService {
 
     /**
      *
-     * @param {Array.<number>} goalValues
+     * @param {number[]} goalValues
      * @param {number} current
      *
      * @returns {number}
@@ -133,7 +129,7 @@ module.exports = class MilestonesEmailService {
 
     /**
      *
-     * @param {Object} milestone
+     * @param {object} milestone
      * @param {number} milestone.value
      * @param {'arr'|'members'} milestone.type
      * @param {string|null} [milestone.currency]
