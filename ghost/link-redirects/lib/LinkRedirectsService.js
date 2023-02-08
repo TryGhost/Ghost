@@ -85,28 +85,32 @@ class LinkRedirectsService {
      * @returns {Promise<void>}
      */
     async handleRequest(req, res, next) {
-        // skip handling if original url doesn't match the prefix
-        const fullURLWithRedirectPrefix = `${this.#baseURL.pathname}${this.#redirectURLPrefix}`;
-        if (!req.originalUrl.startsWith(fullURLWithRedirectPrefix)) {
-            return next();
+        try {
+            // skip handling if original url doesn't match the prefix
+            const fullURLWithRedirectPrefix = `${this.#baseURL.pathname}${this.#redirectURLPrefix}`;
+            if (!req.originalUrl.startsWith(fullURLWithRedirectPrefix)) {
+                return next();
+            }
+
+            const url = new URL(req.originalUrl, this.#baseURL);
+            const link = await this.#linkRedirectRepository.getByURL(url);
+
+            if (!link) {
+                return next();
+            }
+
+            const event = RedirectEvent.create({
+                url,
+                link
+            });
+
+            DomainEvents.dispatch(event);
+
+            res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+            return res.redirect(link.to.href);
+        } catch (e) {
+            return next(e);
         }
-
-        const url = new URL(req.originalUrl, this.#baseURL);
-        const link = await this.#linkRedirectRepository.getByURL(url);
-
-        if (!link) {
-            return next();
-        }
-
-        const event = RedirectEvent.create({
-            url,
-            link
-        });
-
-        DomainEvents.dispatch(event);
-
-        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-        return res.redirect(link.to.href);
     }
 }
 
