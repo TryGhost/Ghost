@@ -154,6 +154,7 @@ module.exports = {
         free_member_signup_notification: {type: 'boolean', nullable: false, defaultTo: true},
         paid_subscription_started_notification: {type: 'boolean', nullable: false, defaultTo: true},
         paid_subscription_canceled_notification: {type: 'boolean', nullable: false, defaultTo: false},
+        mention_notifications: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
