@@ -13,7 +13,7 @@ class PostsImporter extends TableImporter {
     async addNewsletters({posts}) {
         for (const {id} of posts) {
             await this.knex('posts').update({
-                newsletter_id: luck(10) ? this.newsletters[0].id : this.newsletters[1].id
+                newsletter_id: luck(90) ? this.newsletters[0].id : this.newsletters[1].id
             }).where({id});
         }
     }
