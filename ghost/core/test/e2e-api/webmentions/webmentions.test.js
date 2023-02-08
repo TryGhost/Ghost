@@ -130,7 +130,7 @@ describe('Webmentions (receiving)', function () {
         await processWebmentionJob;
         await DomainEvents.allSettled();
 
-        const users = await models.User.findAll();
+        const users = await models.User.getEmailAlertUsers('mention-received');
         users.forEach(async (user) => {
             await mockManager.assert.sentEmail({
                 subject: 'You\'ve been mentioned!',
