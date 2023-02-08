@@ -892,6 +892,11 @@ const getFixtureOps = (toDos) => {
         }
     });
 
+    fixtureOps.push(() => {
+        const adapterManager = require('../../core/server/services/adapter-manager');
+        adapterManager.getAdapter('cache:membersTiers').reset();
+    });
+
     return fixtureOps;
 };
 
