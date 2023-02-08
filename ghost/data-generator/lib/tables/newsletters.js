@@ -7,7 +7,7 @@ class NewslettersImporter extends TableImporter {
     constructor(knex) {
         super('newsletters', knex);
         this.sortOrder = 0;
-        this.names = ['Occasional freebie', 'Regular premium'];
+        this.names = ['Regular premium', 'Occasional freebie'];
     }
 
     generate() {

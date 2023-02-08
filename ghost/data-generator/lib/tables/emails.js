@@ -19,9 +19,19 @@ class EmailsImporter extends TableImporter {
     generate() {
         const id = faker.database.mongodbObjectId();
 
-        const newsletter = luck(90)
-            ? this.newsletters.find(nl => nl.name === 'Regular premium')
-            : this.newsletters.find(nl => nl.name !== 'Regular premium');
+        let newsletter;
+        if (this.newsletters.length === 0) {
+            return null;
+        } else if (this.newsletters.length === 1) {
+            newsletter = this.newsletters[0];
+        } else {
+            // Choose between first two newsletters
+            newsletter = luck(90)
+                // Regular premium
+                ? this.newsletters[0]
+                // Occasional freebie
+                : this.newsletters[1];
+        }
 
         const timestamp = luck(60)
             ? new Date(this.model.published_at)
