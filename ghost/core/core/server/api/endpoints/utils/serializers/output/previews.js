@@ -4,7 +4,7 @@ const membersService = require('../../../../../services/members');
 module.exports = {
     async all(model, apiConfig, frame) {
         const tiersModels = await membersService.api.productRepository.list({
-            withRelated: ['monthlyPrice', 'yearlyPrice']
+            limit: 'all'
         });
         const tiers = tiersModels.data ? tiersModels.data.map(tierModel => tierModel.toJSON()) : [];
 
