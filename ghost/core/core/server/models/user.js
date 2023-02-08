@@ -505,6 +505,8 @@ User = ghostBookshelf.Model.extend({
             filter += '+paid_subscription_started_notification:true';
         } else if (type === 'paid-canceled') {
             filter += '+paid_subscription_canceled_notification:true';
+        } else if (type === 'mention-received') {
+            filter += '+mention_notifications:true';
         }
         const updatedOptions = _.merge({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {

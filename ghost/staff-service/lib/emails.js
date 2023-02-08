@@ -143,9 +143,11 @@ class StaffServiceEmails {
     }
 
     async notifyMentionReceived({mention}) {
-        const users = await this.models.User.findAll(); // sending to all staff users for now
+        // const users = await this.models.User.findAll(); // sending to all staff users for now
+        // send to all users with mention_notificaitons set to true
+        const users = await this.models.User.getEmailAlertUsers('mention-received');
         for (const user of users) {
-            const to = user.toJSON().email;
+            const to = user.email;
             const subject = `💌 New mention from: ${mention.sourceSiteTitle}`;
 
             const templateData = {
@@ -161,7 +163,7 @@ class StaffServiceEmails {
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.toJSON().slug}`)
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
             };
             const {html, text} = await this.renderEmailTemplate('new-mention-received', templateData);
 
