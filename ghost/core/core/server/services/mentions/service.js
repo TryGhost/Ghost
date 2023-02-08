@@ -88,7 +88,16 @@ module.exports = {
             externalRequest,
             getSiteUrl: () => urlUtils.urlFor('home', true),
             getPostUrl: post => getPostUrl(post),
-            isEnabled: () => !settingsCache.get('is_private')
+            isEnabled: () => !settingsCache.get('is_private'),
+            jobService: {
+                async addJob(name, fn) {
+                    jobsService.addJob({
+                        name,
+                        job: fn,
+                        offloaded: false
+                    });
+                }
+            }
         });
         sendingService.listen(events);
     }

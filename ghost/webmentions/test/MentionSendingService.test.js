@@ -7,6 +7,13 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {createModel} = require('./utils/index.js');
 
+// mock up job service
+let jobService = {
+    async addJob(name, fn) {
+        return fn();
+    }
+};
+
 describe('MentionSendingService', function () {
     let errorLogStub;
 
@@ -124,7 +131,8 @@ describe('MentionSendingService', function () {
         it('Sends on publish', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
-                getPostUrl: () => 'https://site.com/post/'
+                getPostUrl: () => 'https://site.com/post/',
+                jobService: jobService
             });
             const stub = sinon.stub(service, 'sendAll');
             await service.sendForPost(createModel({
@@ -145,7 +153,8 @@ describe('MentionSendingService', function () {
         it('Sends on html change', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
-                getPostUrl: () => 'https://site.com/post/'
+                getPostUrl: () => 'https://site.com/post/',
+                jobService: jobService
             });
             const stub = sinon.stub(service, 'sendAll');
             await service.sendForPost(createModel({
@@ -265,7 +274,8 @@ describe('MentionSendingService', function () {
                 getSiteUrl: () => new URL('https://site.com'),
                 discoveryService: {
                     getEndpoint: async () => new URL('https://example.org/webmentions-test')
-                }
+                },
+                jobService: jobService
             });
             await service.sendAll({url: new URL('https://site.com'),
                 html: `<a href="https://example.com">Example</a>`,
