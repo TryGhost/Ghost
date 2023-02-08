@@ -168,7 +168,7 @@ export default class PublishOptions {
     }
 
     get recipientFilter() {
-        return this.selectedRecipientFilter || this.post.emailSegment || this.defaultRecipientFilter;
+        return this.selectedRecipientFilter || (this.post.newsletter && this.post.emailSegment) || this.defaultRecipientFilter;
     }
 
     get defaultRecipientFilter() {
