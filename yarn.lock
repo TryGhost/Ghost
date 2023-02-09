@@ -19183,10 +19183,10 @@ metascraper-image@5.33.7:
   dependencies:
     "@metascraper/helpers" "^5.33.7"
 
-metascraper-logo-favicon@5.33.7:
-  version "5.33.7"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.33.7.tgz#1bff8e4a96089c84b2fdcb19bbe65ebee2e67fbb"
-  integrity sha512-G36oP/f0Taq5syQYhSesD7Q2pbhDqYVjV96TrknJzEpCqV83QpS/RDBSzsOsvxDj0k8bliyGAb5BABrBMDjRow==
+metascraper-logo-favicon@5.33.8:
+  version "5.33.8"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.33.8.tgz#162679bcb8cd14d5803777fe9443471ea2e87c3d"
+  integrity sha512-jz2ezD0B/Tgvpu6mP8GNIgDeu2kACkm53mYQGbfadcJXT8rsWmCLbOypeUsLs0Jbllo4utqhdQLq4iI4KC+rTQ==
   dependencies:
     "@keyvhq/memoize" "~1.6.14"
     "@metascraper/helpers" "^5.33.7"
@@ -19222,10 +19222,10 @@ metascraper-url@5.33.7:
   dependencies:
     "@metascraper/helpers" "^5.33.7"
 
-metascraper@5.33.7:
-  version "5.33.7"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.33.7.tgz#c871b2cd4e98a5ae8d3314b10735fc800109b29a"
-  integrity sha512-PKVQrIaXLSoA6xOyGLMtlGs3ij7Km7xxf6k1QZ+KCPdt0Ixj4tschRgQ+SsSn/hWbKQxDdLPcwnVTt2fYx0gDA==
+metascraper@5.33.8:
+  version "5.33.8"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.33.8.tgz#9e826ee7d9aac42226734d9b8db3169a1ddf3e21"
+  integrity sha512-ldVkhueT09bKshrdPyBJThyYVTF/Vpd5TaIWncew+acr/jpxe28yjDwZKcONcASZjWZykWl6dnm/K70z4do7rQ==
   dependencies:
     "@metascraper/helpers" "^5.33.7"
     cheerio "~1.0.0-rc.12"
