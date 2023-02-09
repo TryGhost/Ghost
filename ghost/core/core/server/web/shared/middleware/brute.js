@@ -104,5 +104,18 @@ module.exports = {
      */
     membersAuthEnumeration(req, res, next) {
         return spamPrevention.membersAuthEnumeration().prevent(req, res, next);
+    },
+
+    /**
+     * Blocks webmention spam
+     */
+
+    webmentionsLimiter(req, res, next) {
+        return spamPrevention.webmentionsBlock().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('webmention_blocked');
+            }
+        })(req, res, next);
     }
 };
