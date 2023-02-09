@@ -1,4 +1,3 @@
-const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, EmailTemporaryBouncedEvent, EmailUnsubscribedEvent, SpamComplaintEvent} = require('@tryghost/email-events');
 const moment = require('moment-timezone');
 const logging = require('@tryghost/logging');
 
@@ -11,35 +10,6 @@ class EmailEventStorage {
         this.#db = db;
         this.#models = models;
         this.#membersRepository = membersRepository;
-    }
-
-    /**
-     * @param {import('@tryghost/domain-events')} domainEvents
-     */
-    listen(domainEvents) {
-        domainEvents.subscribe(EmailDeliveredEvent, async (event) => {
-            await this.handleDelivered(event);
-        });
-
-        domainEvents.subscribe(EmailOpenedEvent, async (event) => {
-            await this.handleOpened(event);
-        });
-
-        domainEvents.subscribe(EmailBouncedEvent, async (event) => {
-            await this.handlePermanentFailed(event);
-        });
-
-        domainEvents.subscribe(EmailTemporaryBouncedEvent, async (event) => {
-            await this.handleTemporaryFailed(event);
-        });
-
-        domainEvents.subscribe(EmailUnsubscribedEvent, async (event) => {
-            await this.handleUnsubscribed(event);
-        });
-
-        domainEvents.subscribe(SpamComplaintEvent, async (event) => {
-            await this.handleComplained(event);
-        });
     }
 
     async handleDelivered(event) {
