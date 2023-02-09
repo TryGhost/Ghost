@@ -3,8 +3,8 @@ const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
 const assert = require('assert');
 const domainEvents = require('@tryghost/domain-events');
 const MailgunClient = require('@tryghost/mailgun-client');
-const {EmailDeliveredEvent} = require('@tryghost/email-events');
 const DomainEvents = require('@tryghost/domain-events');
+const emailAnalytics = require('../../../../core/server/services/email-analytics');
 
 async function resetFailures(models, emailId) {
     await models.EmailRecipientFailure.destroy({
@@ -31,7 +31,6 @@ describe('EmailEventStorage', function () {
 
         // Only reference services after Ghost boot
         models = require('../../../../core/server/models');
-        run = require('../../../../core/server/services/email-analytics/jobs/fetch-latest/run.js').run;
         membersService = require('../../../../core/server/services/members');
         jobsService = require('../../../../core/server/services/jobs');
 
@@ -78,9 +77,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.delivered, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -131,10 +128,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.delivered, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -182,10 +176,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('opened_at'), null);
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.opened, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -267,10 +258,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.permanentFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -367,10 +355,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('failed_at'), null, 'This test requires a failed email recipient');
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.permanentFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -462,10 +447,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('failed_at'), null);
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.permanentFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -583,10 +565,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('failed_at'), null);
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.temporaryFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -690,10 +669,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.temporaryFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -797,10 +773,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.permanentFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -866,10 +839,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.complained, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -920,10 +890,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.unsubscribed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -962,10 +929,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.unhandled, 1);
         assert.deepEqual(result.emailIds, []);
         assert.deepEqual(result.memberIds, []);
@@ -981,10 +945,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        // We use offloading to have correct coverage and usage of worker thread
-        const {eventStats: result} = await run({
-            domainEvents
-        });
+        const result = await emailAnalytics.startFetch();
         assert.equal(result.unhandled, 0);
         assert.deepEqual(result.emailIds, []);
         assert.deepEqual(result.memberIds, []);
