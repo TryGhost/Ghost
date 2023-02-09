@@ -994,6 +994,7 @@ module.exports = {
         resource_id: {type: 'string', maxlength: 24, nullable: true},
         resource_type: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        payload: {type: 'text', maxlength: 65535, nullable: true}
+        payload: {type: 'text', maxlength: 65535, nullable: true},
+        deleted: {type: 'boolean', nullable: false, defaultTo: false}
     }
 };
