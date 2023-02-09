@@ -57,10 +57,10 @@ describe('Video card', async () => {
     });
 
     test('renders video card node', async function () {
+        const fileChooserPromise = page.waitForEvent('filechooser');
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
 
         await focusEditor(page);
-        const fileChooserPromise = page.waitForEvent('filechooser');
         await page.keyboard.type('/video');
         await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
@@ -79,12 +79,12 @@ describe('Video card', async () => {
     });
 
     test('can upload video file from slash menu', async function () {
+        const fileChooserPromise = page.waitForEvent('filechooser');
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
 
         await focusEditor(page);
 
         // Upload video file
-        const fileChooserPromise = page.waitForEvent('filechooser');
         await page.keyboard.type('/video');
         await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
@@ -92,12 +92,10 @@ describe('Video card', async () => {
         await fileChooser.setFiles([filePath]);
 
         // Check progress bar
-        await page.waitForSelector('[data-testid="video-progress"]');
-        expect(await page.getByTestId('video-progress')).toBeVisible();
+        await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
-        await page.waitForSelector('[data-testid="video-duration"]');
-        await expect(page.getByTestId('video-duration')).toContainText('0:04');
+        await expect(await page.getByTestId('video-duration')).toContainText('0:04');
     });
 
     test('can upload video file from card menu', async function () {
@@ -105,12 +103,10 @@ describe('Video card', async () => {
         await uploadVideo(page);
 
         // Check progress bar
-        await page.waitForSelector('[data-testid="video-progress"]');
-        expect(await page.getByTestId('video-progress')).toBeVisible();
+        await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
-        await page.waitForSelector('[data-testid="video-duration"]');
-        await expect(page.getByTestId('video-duration')).toContainText('0:04');
+        await expect(await page.getByTestId('video-duration')).toContainText('0:04');
     });
 
     test('can show errors for failed video upload', async function () {
@@ -118,8 +114,7 @@ describe('Video card', async () => {
         await uploadVideo(page, 'video-fail.mp4');
 
         // Errors should be visible
-        await page.waitForSelector('[data-testid="media-placeholder-errors"]');
-        await expect(page.getByTestId('media-placeholder-errors')).toBeVisible();
+        await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
     });
 
     test('can manage custom thumbnail', async function () {
@@ -127,12 +122,10 @@ describe('Video card', async () => {
         await uploadVideo(page);
 
         // Settings panel should be visible
-        await page.waitForSelector('[data-testid="video-settings-panel"]');
-        await expect(page.getByTestId('video-settings-panel')).toBeVisible();
+        await expect(await page.getByTestId('video-settings-panel')).toBeVisible();
 
         // Custom thumbnail should be visible
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
-        const emptyThumbnail = page.getByTestId('thumbnail-media-placeholder');
+        const emptyThumbnail = await page.getByTestId('thumbnail-media-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
         // Upload thumbnail
@@ -143,18 +136,15 @@ describe('Video card', async () => {
         await fileChooser.setFiles([imagePath]);
 
         // Progress bar should be visible
-        await page.waitForSelector('[data-testid="custom-thumbnail-progress"]');
-        await expect(page.getByTestId('custom-thumbnail-progress')).toBeVisible();
+        await expect(await page.getByTestId('custom-thumbnail-progress')).toBeVisible();
 
         // Thumbnail should be visible
-        await page.waitForSelector('[data-testid="custom-thumbnail-filled"]');
-        await expect(page.getByTestId('custom-thumbnail-filled')).toBeVisible();
+        await expect(await page.getByTestId('custom-thumbnail-filled')).toBeVisible();
 
         // Can remove thumbnail
         const replaceButton = page.getByTestId('custom-thumbnail-replace');
         replaceButton.click();
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
-        await expect(page.getByTestId('thumbnail-media-placeholder')).toBeVisible();
+        await expect(await page.getByTestId('thumbnail-media-placeholder')).toBeVisible();
     });
 
     test('can show errors for custom thumbnail', async function () {
@@ -162,15 +152,13 @@ describe('Video card', async () => {
         await uploadVideo(page);
 
         // Settings panel should be visible
-        await page.waitForSelector('[data-testid="video-settings-panel"]');
-        await expect(page.getByTestId('video-settings-panel')).toBeVisible();
+        await expect(await page.getByTestId('video-settings-panel')).toBeVisible();
 
         // Errors shouldn't be visible
         await expect(page.getByTestId('media-placeholder-errors')).toBeHidden();
 
         // Custom thumbnail should be visible
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
-        const emptyThumbnail = page.getByTestId('thumbnail-media-placeholder');
+        const emptyThumbnail = await page.getByTestId('thumbnail-media-placeholder');
 
         // Upload thumbnail
         const imagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-fail.jpeg');
@@ -180,8 +168,7 @@ describe('Video card', async () => {
         await fileChooser.setFiles([imagePath]);
 
         // Errors should be visible
-        await page.waitForSelector('[data-testid="custom-thumbnails-errors"]');
-        await expect(page.getByTestId('custom-thumbnails-errors')).toBeVisible();
+        await expect(await page.getByTestId('custom-thumbnails-errors')).toBeVisible();
     });
 
     test('can hide custom thumbnail if loop enabled', async function () {
@@ -189,14 +176,12 @@ describe('Video card', async () => {
         await uploadVideo(page);
 
         // Loop toggle should be visible and unchecked
-        await page.waitForSelector('[data-testid="loop-video"]');
-        const loopButton = page.getByTestId('loop-video');
+        const loopButton = await page.getByTestId('loop-video');
         await expect(loopButton).toBeVisible();
         await expect(await page.locator('[data-testid="loop-video"] input').isChecked()).toBeFalsy();
 
         // Custom thumbnail should be visible
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
-        const emptyThumbnail = page.getByTestId('thumbnail-media-placeholder');
+        const emptyThumbnail = await page.getByTestId('thumbnail-media-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
         // Custom thumbnail should be hidden after loop enabled
@@ -228,12 +213,10 @@ describe('Video card', async () => {
         await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Check progress bar
-        await page.waitForSelector('[data-testid="video-progress"]');
-        expect(await page.getByTestId('video-progress')).toBeVisible();
+        await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
-        await page.waitForSelector('[data-testid="video-duration"]');
-        await expect(page.getByTestId('video-duration')).toContainText('0:04');
+        await expect(await page.getByTestId('video-duration')).toContainText('0:04');
     });
 
     test('can show errors if was dropped a file with wrong extension to video placeholder', async function () {
@@ -254,8 +237,7 @@ describe('Video card', async () => {
         await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Errors should be visible
-        await page.waitForSelector('[data-testid="media-placeholder-errors"]');
-        await expect(page.getByTestId('media-placeholder-errors')).toBeVisible();
+        await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
     });
 
     test('can upload dropped custom thumbnail', async function () {
@@ -278,12 +260,10 @@ describe('Video card', async () => {
         await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Progress bar should be visible
-        await page.waitForSelector('[data-testid="custom-thumbnail-progress"]');
-        await expect(page.getByTestId('custom-thumbnail-progress')).toBeVisible();
+        await expect(await page.getByTestId('custom-thumbnail-progress')).toBeVisible();
 
         // Thumbnail should be visible
-        await page.waitForSelector('[data-testid="custom-thumbnail-filled"]');
-        await expect(page.getByTestId('custom-thumbnail-filled')).toBeVisible();
+        await expect(await page.getByTestId('custom-thumbnail-filled')).toBeVisible();
     });
 
     test('can show errors if was dropped a file with wrong extension to custom thumbnail', async function () {
@@ -300,8 +280,7 @@ describe('Video card', async () => {
         await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Errors should be visible
-        await page.waitForSelector('[data-testid="custom-thumbnails-errors"]');
-        await expect(page.getByTestId('custom-thumbnails-errors')).toBeVisible();
+        await expect(await page.getByTestId('custom-thumbnails-errors')).toBeVisible();
     });
 
     test('renders video card toolbar', async function () {
@@ -315,8 +294,7 @@ describe('Video card', async () => {
         await page.keyboard.press('Escape');
 
         // Check that the toolbar is displayed
-        await page.waitForSelector('[data-kg-card-toolbar="video"]');
-        await expect(page.locator('[data-kg-card-toolbar="video"]')).toBeVisible();
+        await expect(await page.locator('[data-kg-card-toolbar="video"]')).toBeVisible();
     });
 
     test('video card toolbar as Edit button', async function () {
@@ -330,8 +308,7 @@ describe('Video card', async () => {
         await page.keyboard.press('Escape');
 
         // Check that the toolbar is displayed
-        await page.waitForSelector('[data-kg-card-toolbar="video"]');
-        await expect(page.locator('[data-kg-card-toolbar="video"]')).toBeVisible();
+        await expect(await page.locator('[data-kg-card-toolbar="video"]')).toBeVisible();
 
         // Edit video card
         await page.waitForSelector('[data-testid="edit-video-card"]');
