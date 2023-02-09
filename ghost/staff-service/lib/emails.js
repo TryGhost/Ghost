@@ -143,9 +143,24 @@ class StaffServiceEmails {
     }
 
     async notifyMentionReceived({mention}) {
-        const users = await this.models.User.findAll(); // sending to all staff users for now
+        const users = await this.models.User.getEmailAlertUsers('mention-received');
+        let resource = null;
+        if (mention.resourceId) {
+            try {
+                const postModel = await this.models.Post.findOne({id: mention.resourceId.toString()});
+                if (postModel) {
+                    resource = {
+                        id: postModel.id,
+                        name: postModel.get('title'),
+                        type: 'post'
+                    };
+                }
+            } catch (err) {
+                this.logging.error(err);
+            }
+        }
         for (const user of users) {
-            const to = user.toJSON().email;
+            const to = user.email;
             const subject = `💌 New mention from: ${mention.sourceSiteTitle}`;
 
             const templateData = {
@@ -155,13 +170,14 @@ class StaffServiceEmails {
                 sourceSiteTitle: mention.sourceSiteTitle,
                 sourceFavicon: mention.sourceFavicon,
                 sourceAuthor: mention.sourceAuthor,
+                resource,
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.toJSON().slug}`)
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
             };
             const {html, text} = await this.renderEmailTemplate('new-mention-received', templateData);
 

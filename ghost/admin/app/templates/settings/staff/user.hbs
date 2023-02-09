@@ -327,6 +327,27 @@
                                     {{/if}}
                                 {{/if}}
                                 {{/if}}
+                                {{#if (feature 'webmentions')}}
+                                <div class="user-setting-toggle">
+                                    <div>
+                                        <label for="user-email">New Mentions</label>
+                                        <p>When you receive a new webmention</p>
+                                    </div>
+                                    <div class="for-switch small">
+                                        <label class="switch" for="mention-notifications" data-test-label="mention-notifications">
+                                            <input
+                                                id="mention-notifications"
+                                                type="checkbox"
+                                                checked={{this.user.mentionNotifications}}
+                                                class="gh-input"
+                                                {{on "change" this.toggleMentionNotifications}}
+                                                data-test-checkbox="mention-notifications"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                {{/if}}
                             </GhFormGroup>
                         </div>
                         {{/if}}
