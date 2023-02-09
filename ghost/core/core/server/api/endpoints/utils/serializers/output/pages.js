@@ -13,7 +13,7 @@ module.exports = {
         let pages = [];
 
         const tiersModels = await membersService.api.productRepository.list({
-            withRelated: ['monthlyPrice', 'yearlyPrice']
+            limit: 'all'
         });
         const tiers = tiersModels.data ? tiersModels.data.map(tierModel => tierModel.toJSON()) : [];
 

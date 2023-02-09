@@ -650,14 +650,6 @@ class ProductRepository {
      * @returns {Promise<{data: ProductModel[], meta: object}>}
      **/
     async list(options = {}) {
-        if (!options.transacting) {
-            return this._Product.transaction((transacting) => {
-                return this.list({
-                    ...options,
-                    transacting
-                });
-            });
-        }
         return this._Product.findPage(options);
     }
 
