@@ -22,7 +22,21 @@ export const CardText = ({text}) => {
     );
 };
 
-export function MediaPlaceholder({desc, icon, filePicker, size, borderStyle, handleDrag, handleDrop, isDraggedOver, errors = [], placeholderRef, dataTestId = 'media-placeholder', errorDataTestId, ...props}) {
+export function MediaPlaceholder({
+    desc,
+    icon,
+    filePicker,
+    size,
+    borderStyle,
+    handleDrag,
+    handleDrop,
+    isDraggedOver,
+    errors = [],
+    placeholderRef,
+    dataTestId = 'media-placeholder',
+    errorDataTestId = 'media-placeholder-errors',
+    ...props
+}) {
     const Icon = PLACEHOLDER_ICONS[icon];
 
     return (
