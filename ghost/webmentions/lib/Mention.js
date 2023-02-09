@@ -78,6 +78,46 @@ module.exports = class Mention {
         return this.#sourceFeaturedImage;
     }
 
+    /**
+     * @param {object} metadata
+     */
+    setSourceMetadata(metadata) {
+        /** @type {string} */
+        let sourceTitle = validateString(metadata.sourceTitle, 2000, 'sourceTitle');
+        if (sourceTitle === null) {
+            sourceTitle = this.#source.host;
+        }
+        /** @type {string | null} */
+        const sourceExcerpt = validateString(metadata.sourceExcerpt, 2000, 'sourceExcerpt');
+        /** @type {string | null} */
+        const sourceSiteTitle = validateString(metadata.sourceSiteTitle, 2000, 'sourceSiteTitle');
+        /** @type {string | null} */
+        const sourceAuthor = validateString(metadata.sourceAuthor, 2000, 'sourceAuthor');
+
+        /** @type {URL | null} */
+        let sourceFavicon = null;
+        if (metadata.sourceFavicon instanceof URL) {
+            sourceFavicon = metadata.sourceFavicon;
+        } else if (metadata.sourceFavicon) {
+            sourceFavicon = new URL(metadata.sourceFavicon);
+        }
+
+        /** @type {URL | null} */
+        let sourceFeaturedImage = null;
+        if (metadata.sourceFeaturedImage instanceof URL) {
+            sourceFeaturedImage = metadata.sourceFeaturedImage;
+        } else if (metadata.sourceFeaturedImage) {
+            sourceFeaturedImage = new URL(metadata.sourceFeaturedImage);
+        }
+
+        this.#sourceTitle = sourceTitle;
+        this.#sourceExcerpt = sourceExcerpt;
+        this.#sourceSiteTitle = sourceSiteTitle;
+        this.#sourceAuthor = sourceAuthor;
+        this.#sourceFavicon = sourceFavicon;
+        this.#sourceFeaturedImage = sourceFeaturedImage;
+    }
+
     #deleted = false;
     delete() {
         this.#deleted = true;
@@ -108,12 +148,6 @@ module.exports = class Mention {
         this.#timestamp = data.timestamp;
         this.#payload = data.payload;
         this.#resourceId = data.resourceId;
-        this.#sourceTitle = data.sourceTitle;
-        this.#sourceSiteTitle = data.sourceSiteTitle;
-        this.#sourceAuthor = data.sourceAuthor;
-        this.#sourceExcerpt = data.sourceExcerpt;
-        this.#sourceFavicon = data.sourceFavicon;
-        this.#sourceFeaturedImage = data.sourceFeaturedImage;
     }
 
     /**
@@ -181,48 +215,16 @@ module.exports = class Mention {
             }
         }
 
-        /** @type {string} */
-        let sourceTitle = validateString(data.sourceTitle, 2000, 'sourceTitle');
-        if (sourceTitle === null) {
-            sourceTitle = source.host;
-        }
-        /** @type {string | null} */
-        const sourceExcerpt = validateString(data.sourceExcerpt, 2000, 'sourceExcerpt');
-        /** @type {string | null} */
-        const sourceSiteTitle = validateString(data.sourceSiteTitle, 2000, 'sourceSiteTitle');
-        /** @type {string | null} */
-        const sourceAuthor = validateString(data.sourceAuthor, 2000, 'sourceAuthor');
-
-        /** @type {URL | null} */
-        let sourceFavicon = null;
-        if (data.sourceFavicon instanceof URL) {
-            sourceFavicon = data.sourceFavicon;
-        } else if (data.sourceFavicon) {
-            sourceFavicon = new URL(data.sourceFavicon);
-        }
-
-        /** @type {URL | null} */
-        let sourceFeaturedImage = null;
-        if (data.sourceFeaturedImage instanceof URL) {
-            sourceFeaturedImage = data.sourceFeaturedImage;
-        } else if (data.sourceFeaturedImage) {
-            sourceFeaturedImage = new URL(data.sourceFeaturedImage);
-        }
-
         const mention = new Mention({
             id,
             source,
             target,
             timestamp,
             payload,
-            resourceId,
-            sourceTitle,
-            sourceSiteTitle,
-            sourceAuthor,
-            sourceExcerpt,
-            sourceFavicon,
-            sourceFeaturedImage
+            resourceId
         });
+
+        mention.setSourceMetadata(data);
 
         if (isNew) {
             mention.events.push(MentionCreatedEvent.create({mention}));
