@@ -10,8 +10,11 @@ const story = {
     subcomponents: {IconButton},
     parameters: {
         status: {
-            type: 'uiReady'
+            type: 'functional'
         }
+    },
+    argTypes: {
+        selectedName: {control: 'select', options: ['regular', 'wide', 'full']}
     }
 };
 export default story;

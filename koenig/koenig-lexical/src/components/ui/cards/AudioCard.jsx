@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {IconButton} from '../IconButton';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
 import {ProgressBar} from '../ProgressBar';
 import {ReactComponent as AudioFileIcon} from '../../../assets/icons/kg-audio-file.svg';
-import {ReactComponent as TrashIcon} from '../../../assets/icons/kg-trash.svg';
+import {ReactComponent as DeleteIcon} from '../../../assets/icons/kg-trash.svg';
 import {openFileSelection} from '../../../utils/openFileSelection';
 import {ReactComponent as FilePlaceholderIcon} from '../../../assets/icons/kg-file-placeholder.svg';
 import {AudioUploadForm} from '../AudioUploadForm';
@@ -16,9 +17,11 @@ function AudioUploading({progress}) {
     };
 
     return (
-        <div className="flex rounded border border-grey/30 p-2">
-            <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50">
-                <ProgressBar style={progressStyle} />
+        <div className="h-full border border-transparent">
+            <div className="relative flex h-full items-center justify-center border border-grey/20 bg-grey-50 before:pb-[12.5%]">
+                <div className="flex w-full items-center justify-center overflow-hidden">
+                    <ProgressBar style={progressStyle} />
+                </div>
             </div>
         </div>
     );
@@ -26,9 +29,13 @@ function AudioUploading({progress}) {
 
 function AudioErrors({errors}) {
     return (
-        <span className="h8 pl2 pr2 red sans-serif f6 fw5 flex items-center" data-testid="audio-upload-errors">
-            {errors[0].message}
-        </span>
+        <div className="h-full border border-transparent">
+            <div className="relative flex h-full items-center justify-center border border-grey/20 bg-grey-50 before:pb-[12.5%]">
+                <span className="flex items-center px-2 font-sans text-md font-medium text-red" data-testid="audio-upload-errors">
+                    {errors[0].message}
+                </span>
+            </div>
+        </div>
     );
 }
 
@@ -85,8 +92,6 @@ function AudioThumbnail({
     isDraggedOver,
     errors
 }) {
-    const [showTrash, setShowTrash] = React.useState(false);
-
     const fileInputRef = React.useRef(null);
 
     const onFileInputRef = (element) => {
@@ -98,47 +103,33 @@ function AudioThumbnail({
         width: `${progress?.toFixed(0)}%`
     };
 
-    // Show the trash icon on mouseover
-    const onMouseOver = (event) => {
-        setShowTrash(true);
-    };
-
-    // Hide the trash icon on mouseout
-    const onMouseOut = (event) => {
-        setShowTrash(false);
-    };
-
     if (isDraggedOver) { 
         return (
             <div className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
-                <span class="fw6 f7 white lh-1">
+                <p class="font-sans text-sm font-semibold text-white">
                     Drop it 🔥
-                </span>
+                </p>
             </div>
         );
     } else if (errors && errors.length > 0) {
         return (
-            <span className="db h8 pl2 pr2 red sans-serif f6 fw6 flex items-center" data-testid="thumbnail-errors">
+            <span className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-grey-200 text-center font-sans text-sm font-semibold text-red" data-testid="thumbnail-errors">
                 {errors[0].message}
             </span>
         );
     } else if (src) {
         return (
             <div className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
-                <img data-testid="audio-thumbnail" src={src} alt="Audio thumbnail" className="h-full w-full object-cover transition ease-in" />
-                <div className={`absolute inset-0 p-2 ${showTrash ? 'opacity-100' : 'opacity-0'} transition ease-in-out`} onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
-                    <div className="flex flex-row-reverse">
-                        <button onClick={removeThumbnail} data-testid="remove-thumbnail" className="br3 pe-auto bg-white opacity-90" type="button">
-                            <TrashIcon className="h-6 w-6 fill-[#394047] transition-all duration-75" />
-                        </button>
-                    </div>
+                <img data-testid="audio-thumbnail" src={src} alt="Audio thumbnail" className="h-full w-full rounded-sm object-cover transition ease-in" />
+                <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
+                    <IconButton onClick={removeThumbnail} Icon={DeleteIcon} dataTestID='remove-thumbnail' />
                 </div>
             </div>
         );
     } else if (isUploading) {
         return (
             <div className="group flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
-                <ProgressBar style={progressStyle} />
+                <ProgressBar style={progressStyle} bgStyle='transparent' />
             </div>
         );
     } else {
@@ -223,7 +214,6 @@ export function AudioCard({
     title,
     isEditing,
     updateTitle,
-    titlePlaceholder,
     duration,
     audioUploader,
     thumbnailUploader,
@@ -255,7 +245,7 @@ export function AudioCard({
             <div className="not-kg-prose">
                 <PopulatedAudioCard
                     title={title}
-                    placeholder={titlePlaceholder}
+                    placeholder='Add a title...'
                     duration={duration}
                     thumbnailUploader={thumbnailUploader}
                     setTitle={updateTitle}
@@ -289,90 +279,5 @@ export function AudioCard({
 
 AudioCard.propTypes = {
     src: PropTypes.string,
-    thumbnailSrc: PropTypes.string,
-    title: PropTypes.string,
-    isEditing: PropTypes.bool,
-    updateTitle: PropTypes.func,
-    titlePlaceholder: PropTypes.string,
-    duration: PropTypes.number,
-    audioUploader: PropTypes.shape({
-        isUploading: PropTypes.bool,
-        progress: PropTypes.number,
-        errors: PropTypes.arrayOf(PropTypes.object),
-        upload: PropTypes.func,
-        filesNumber: PropTypes.number
-    }),
-    thumbnailUploader: PropTypes.shape({
-        isUploading: PropTypes.bool,
-        progress: PropTypes.number,
-        errors: PropTypes.arrayOf(PropTypes.object),
-        upload: PropTypes.func,
-        filesNumber: PropTypes.number
-    }),
-    audioFileInputRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}),
-    thumbnailFileInputRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}),
-    onAudioFileChange: PropTypes.func,
-    onThumbnailFileChange: PropTypes.func,
-    handleAudioDrag: PropTypes.func,
-    handleAudioDrop: PropTypes.func,
-    handleThumbnailDrag: PropTypes.func,
-    handleThumbnailDrop: PropTypes.func,
-    isDraggedOver: PropTypes.bool,
-    removeThumbnail: PropTypes.func
-};
-
-EmptyAudioCard.propTypes = {
-    onFileChange: PropTypes.func,
-    setFileInputRef: PropTypes.func,
-    handleDrag: PropTypes.func,
-    handleDrop: PropTypes.func,
-    isDraggedOver: PropTypes.bool,
-    audioUploader: PropTypes.shape({
-        isUploading: PropTypes.bool,
-        progress: PropTypes.number,
-        errors: PropTypes.arrayOf(PropTypes.object),
-        upload: PropTypes.func,
-        filesNumber: PropTypes.number
-    })
-};
-
-AudioThumbnail.propTypes = {
-    src: PropTypes.string,
-    progress: PropTypes.number,
-    isUploading: PropTypes.bool,
-    isEditing: PropTypes.bool,
-    onFileChange: PropTypes.func,
-    setFileInputRef: PropTypes.func,
-    removeThumbnail: PropTypes.func,
-    isDraggedOver: PropTypes.bool
-};
-
-PopulatedAudioCard.propTypes = {
-    title: PropTypes.string,
-    placeholder: PropTypes.string,
-    duration: PropTypes.number,
-    thumbnailUploader: PropTypes.shape({
-        isUploading: PropTypes.bool,
-        progress: PropTypes.number,
-        errors: PropTypes.arrayOf(PropTypes.object),
-        upload: PropTypes.func,
-        filesNumber: PropTypes.number
-    }),
-    updateTitle: PropTypes.func,
-    isEditing: PropTypes.bool,
-    thumbnailSrc: PropTypes.string,
-    setFileInputRef: PropTypes.func,
-    onFileChange: PropTypes.func,
-    removeThumbnail: PropTypes.func,
-    handleDrag: PropTypes.func,
-    handleDrop: PropTypes.func,
-    isDraggedOver: PropTypes.bool
-};
-
-AudioUploading.propTypes = {
-    progress: PropTypes.number
-};
-
-AudioErrors.propTypes = {
-    errors: PropTypes.arrayOf(PropTypes.object)
+    title: PropTypes.string
 };

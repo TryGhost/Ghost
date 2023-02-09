@@ -2,6 +2,7 @@ import React from 'react';
 import {Toggle} from './Toggle';
 import {Input} from './Input';
 import {ButtonGroup} from './ButtonGroup';
+import {IconButton} from './IconButton';
 import {MediaPlaceholder} from './MediaPlaceholder';
 import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
 import {ProgressBar} from './ProgressBar';
@@ -113,9 +114,9 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
                     )}
 
                     {!isLoading && (
-                        <button type="button" className="group absolute top-2 right-2 flex w-full max-w-[34px] cursor-pointer items-center justify-center rounded bg-white/90 px-2 py-[.6rem] opacity-0 transition-all hover:bg-white group-hover:opacity-100" onClick={onRemove} data-testid={dataTestID}>
-                            <DeleteIcon className="h-5 w-5 fill-grey-900" />
-                        </button>
+                        <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
+                            <IconButton onClick={onRemove} Icon={DeleteIcon} dataTestID={dataTestID} />
+                        </div>
                     )}
 
                     {isLoading && (

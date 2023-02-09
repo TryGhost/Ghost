@@ -6,14 +6,16 @@ export function ButtonGroup({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
             <ul className="flex items-center justify-evenly rounded bg-grey-100 font-sans text-md font-normal text-white">
-                {buttons.map(({label, name, Icon}, index) => (<IconButton
-                    key={index}
-                    onClick={onClick}
-                    label={label}
-                    name={name}
-                    selectedName={selectedName}
-                    Icon={Icon}
-                />))}
+                {buttons.map(({label, name, Icon}, index) => (
+                    <IconButton
+                        key={index}
+                        onClick={onClick}
+                        label={label}
+                        name={name}
+                        selectedName={selectedName}
+                        Icon={Icon}
+                    />
+                ))}
             </ul>
         </div>
     );
@@ -25,7 +27,7 @@ export function IconButton({onClick, label, name, selectedName, Icon}) {
         <li>
             <button
                 type="button"
-                className={`flex h-7 w-8 items-center justify-center ${isActive ? 'rounded bg-white shadow-sm' : '' } m-1`}
+                className={`m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded bg-white shadow-sm' : '' }`}
                 onClick={() => onClick(name)}
                 aria-label={label}
             >

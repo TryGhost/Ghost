@@ -49,8 +49,43 @@ export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
     src: '',
+    duration: '',
     title: '',
-    audioTitlePlaceholder: 'Add a title...',
+    isDraggedOver: false,
+    audioUploader: {},
+    thumbnailUploader: {}
+};
+
+export const UploadingAudio = Template.bind({});
+UploadingAudio.args = {
+    display: 'Editing',
+    src: '',
+    duration: '',
+    title: '',
+    titlePlaceholder: 'Add a title...',
+    audioUploader: {progress: 50, isLoading: true},
+    thumbnailUploader: {}
+};
+
+export const EmptyDraggedOver = Template.bind({});
+EmptyDraggedOver.args = {
+    display: 'Editing',
+    src: '',
+    duration: '',
+    title: '',
+    isDraggedOver: true,
+    audioUploader: {},
+    thumbnailUploader: {}
+};
+
+export const PopulatedWithoutThumbnail = Template.bind({});
+PopulatedWithoutThumbnail.args = {
+    display: 'Editing',
+    thumbnailSrc: '',
+    src: 'audio.mp3',
+    duration: 19,
+    title: 'The Ghost Podcast',
+    titlePlaceholder: 'Add a title...',
     audioUploader: {},
     thumbnailUploader: {}
 };
@@ -64,34 +99,24 @@ Error.args = {
     thumbnailUploader: {}
 };
 
-export const EmptyDraggedOver = Template.bind({});
-EmptyDraggedOver.args = {
+export const UploadingThumbnail = Template.bind({});
+UploadingThumbnail.args = {
     display: 'Editing',
-    src: '',
-    title: '',
-    isDraggedOver: true,
-    audioUploader: {},
-    thumbnailUploader: {}
+    src: 'audio.mp3',
+    duration: 19,
+    title: 'The Ghost Podcast',
+    titlePlaceholder: 'Add a title...',
+    thumbnailUploader: {progress: 50, isLoading: true}
 };
 
 export const PopulatedDraggedOver = Template.bind({});
 PopulatedDraggedOver.args = {
     display: 'Editing',
     src: 'audio.mp3',
-    title: '',
-    isDraggedOver: true,
-    audioUploader: {},
-    thumbnailUploader: {}
-};
-
-export const PopulatedWithoutThumbnail = Template.bind({});
-PopulatedWithoutThumbnail.args = {
-    display: 'Editing',
-    thumbnailSrc: '',
-    src: 'audio.mp3',
     duration: 19,
-    title: 'Audio file title',
+    title: 'The Ghost Podcast',
     titlePlaceholder: 'Add a title...',
+    isDraggedOver: true,
     audioUploader: {},
     thumbnailUploader: {}
 };
@@ -99,32 +124,14 @@ PopulatedWithoutThumbnail.args = {
 export const PopulatedWithThumbnail = Template.bind({});
 PopulatedWithThumbnail.args = {
     display: 'Editing',
-    thumbnailSrc: 'https://via.placeholder.com/80x80',
+    thumbnailSrc: 'https://static.ghost.org/Orb4b.gif',
     src: 'audio.mp3',
     duration: 19,
-    title: 'Audio file title',
+    title: 'The Ghost Podcast',
     titlePlaceholder: 'Add a title...',
+    isDraggedOver: false,
     audioUploader: {},
     thumbnailUploader: {}
-};
-
-export const UploadingAudio = Template.bind({});
-UploadingAudio.args = {
-    display: 'Editing',
-    src: '',
-    title: '',
-    titlePlaceholder: 'Add a title...',
-    audioUploader: {progress: 50, isLoading: true}
-};
-
-export const UploadingThumbnail = Template.bind({});
-UploadingThumbnail.args = {
-    display: 'Editing',
-    src: 'audio.mp3',
-    duration: 19,
-    title: 'Audio file title',
-    titlePlaceholder: 'Add a title...',
-    thumbnailUploader: {progress: 50, isLoading: true}
 };
 
 export const UploadingThumbnailErrors = Template.bind({});
@@ -132,11 +139,11 @@ UploadingThumbnailErrors.args = {
     display: 'Editing',
     src: 'audio.mp3',
     duration: 19,
-    title: 'Audio file title',
+    title: 'The Ghost Podcast',
     titlePlaceholder: 'Add a title...',
     thumbnailUploader: {
         progress: 100,
         isLoading: false,
-        errors: [{filename: 'audio.mp3', message: 'Thumbnail file is too large'}]
+        errors: [{filename: 'audio.mp3', message: 'File is too large'}]
     }
 };

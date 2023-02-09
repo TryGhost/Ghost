@@ -7,7 +7,7 @@ const story = {
     component: MediaPlayer,
     parameters: {
         status: {
-            type: 'uiReady'
+            type: 'functional'
         }
     }
 };

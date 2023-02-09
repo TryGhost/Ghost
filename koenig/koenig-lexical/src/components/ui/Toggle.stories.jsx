@@ -7,7 +7,7 @@ const story = {
     component: Toggle,
     parameters: {
         status: {
-            type: 'uiReady'
+            type: 'functional'
         }
     }
 };

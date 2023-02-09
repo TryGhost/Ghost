@@ -6,7 +6,7 @@ const story = {
     component: ProgressBar,
     parameters: {
         status: {
-            type: 'uiReady'
+            type: 'functional'
         }
     }
 };
