@@ -140,18 +140,17 @@ module.exports = class MilestonesEmailService {
      * @param {'arr'|'members'} milestone.type
      * @param {string|null} [milestone.currency]
      * @param {Date|null} [milestone.emailSentAt]
-     * @param {boolean} [noEmail=false]
      *
      * @returns {Promise<Milestone>}
      */
-    async #saveMileStoneAndSendEmail(milestone, noEmail = false) {
+    async #saveMileStoneAndSendEmail(milestone) {
         if (milestone.type === 'arr') {
             milestone.currency = milestone.currency || await this.#getDefaultCurrency();
         }
 
         const shouldSendEmail = await this.#shouldSendEmail();
 
-        if (!noEmail && shouldSendEmail) {
+        if (shouldSendEmail) {
             // TODO: hook up Ghostmailer or use StaffService and trigger event to send email
             // await this.#mailer.send({
             //     subject: 'Test',
@@ -219,8 +218,10 @@ module.exports = class MilestonesEmailService {
                 // Ensure the milestone doesn't already exist
                 const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'arr', currency: defaultCurrency});
 
-                if (!milestoneExists && (!latestMilestone || milestone > latestMilestone.value)) {
-                    return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr', currency: defaultCurrency});
+                if (milestone && milestone > 0) {
+                    if (!milestoneExists && (!latestMilestone || milestone > latestMilestone.value)) {
+                        return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr', currency: defaultCurrency});
+                    }
                 }
             }
         }
@@ -245,8 +246,10 @@ module.exports = class MilestonesEmailService {
         // Ensure the milestone doesn't already exist
         const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'members', currency: null});
 
-        if (!milestoneExists && (!latestMembersMilestone || milestone > latestMembersMilestone.value)) {
-            return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members'});
+        if (milestone && milestone > 0) {
+            if (!milestoneExists && (!latestMembersMilestone || milestone > latestMembersMilestone.value)) {
+                return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members'});
+            }
         }
     }
 
