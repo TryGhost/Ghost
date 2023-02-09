@@ -77,7 +77,7 @@ class StaffService {
 
     /** @private */
     async handleEvent(type, event) {
-        if (type === MentionCreatedEvent && event.data.mention && this.labs.isSet('webmentionEmail')) {
+        if (type === MentionCreatedEvent && event.data.mention && this.labs.isSet('webmentions')) {
             await this.emails.notifyMentionReceived(event.data);
         }
         if (!['api', 'member'].includes(event.data.source)) {

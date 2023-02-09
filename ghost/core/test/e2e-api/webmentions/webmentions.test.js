@@ -19,7 +19,7 @@ describe('Webmentions (receiving)', function () {
         agent = await agentProvider.getWebmentionsAPIAgent();
         await fixtureManager.init('posts');
         nock.disableNetConnect();
-        mockManager.mockLabsEnabled('webmentionEmail');
+        mockManager.mockLabsEnabled('webmentions');
     });
 
     after(function () {
@@ -136,7 +136,7 @@ describe('Webmentions (receiving)', function () {
         await processWebmentionJob;
         await DomainEvents.allSettled();
 
-        const users = await models.User.findAll();
+        const users = await models.User.getEmailAlertUsers('mention-received');
         users.forEach(async (user) => {
             await mockManager.assert.sentEmail({
                 subject: 'You\'ve been mentioned!',
@@ -147,7 +147,7 @@ describe('Webmentions (receiving)', function () {
     });
 
     it('does not send notification with flag disabled', async function () {
-        mockManager.mockLabsDisabled('webmentionEmail');
+        mockManager.mockLabsDisabled('webmentions');
         const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
         const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
         const sourceUrl = new URL('http://testpage.com/external-article-123-email-test/');

@@ -269,7 +269,7 @@ describe('StaffService', function () {
                     urlUtils,
                     settingsHelpers,
                     labs: {
-                        isSet: () => 'webmentionEmail'
+                        isSet: () => 'webmentions'
                     }
                 });
             });
