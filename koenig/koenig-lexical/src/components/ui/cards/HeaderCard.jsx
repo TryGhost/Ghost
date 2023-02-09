@@ -15,7 +15,7 @@ export function HeaderCard({isEditing, size, backgroundColor, heading, headingPl
             { (isEditing || subHeading) && <h3 className={`w-full font-normal ${(size === 'small') ? 'mt-2 text-2xl' : (size === 'medium') ? 'mt-3 text-[2.7rem]' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'} ${subHeading || 'opacity-50'}`}>{subHeading || subHeadingPlaceholder}</h3>}
             { (isEditing || buttonText) && 
                 <div className={`${(size === 'small') ? 'mt-6' : (size === 'medium') ? 'mt-8' : 'mt-10'}`}>
-                    {((button && (backgroundColor === 'light')) && <Button value={buttonText} valuePlaceholder={buttonPlaceholder} size={size} />) || (button && <Button value={buttonText} valuePlaceholder={buttonPlaceholder} size={size} color='light' />)}
+                    {((button && (backgroundColor === 'light')) && <Button value={buttonText} placeholder={buttonPlaceholder} size={size} />) || (button && <Button value={buttonText} placeholder={buttonPlaceholder} size={size} color='light' />)}
                 </div>
             }
         </div>

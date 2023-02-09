@@ -49,7 +49,7 @@ export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
     value: '',
-    valuePlaceholder: 'Callout text...',
+    placeholder: 'Callout text...',
     backgroundColor: 'grey'
 };
 
@@ -57,7 +57,7 @@ export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
     value: 'Something to pay attention to.',
-    valuePlaceholder: 'Callout text...',
+    placeholder: 'Callout text...',
     backgroundColor: 'grey'
 };
 

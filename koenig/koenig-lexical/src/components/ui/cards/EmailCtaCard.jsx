@@ -12,7 +12,7 @@ export function EmailCtaCard({isEditing, visibility, alignment, separators, valu
             <input className={`w-full font-serif text-xl text-grey-900 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } value={value} placeholder={placeholder} />
             { (button && (isEditing || (buttonText && buttonUrl))) && 
                 <div className={`mt-6 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }>
-                    <Button valuePlaceholder="Add button text" value={buttonText} />
+                    <Button placeholder="Add button text" value={buttonText} />
                 </div>    
             }
             {separators && <hr className="mt-12 mb-0 block border-t-grey-300" />}

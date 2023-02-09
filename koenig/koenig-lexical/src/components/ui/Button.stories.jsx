@@ -23,14 +23,16 @@ export const Empty = Template.bind({});
 Empty.args = {
     color: 'accent',
     size: 'small',
+    width: 'regular',
     value: '',
-    valuePlaceholder: 'Add button text'
+    placeholder: 'Add button text'
 };
 
 export const WithText = Template.bind({});
 WithText.args = {
     color: 'accent',
     size: 'small',
+    width: 'regular',
     value: 'Subscribe',
-    valuePlaceholder: 'Add button text'
+    placeholder: 'Add button text'
 };

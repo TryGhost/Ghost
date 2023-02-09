@@ -12,11 +12,11 @@ export const CALLOUT_COLORS = {
     purple: 'bg-purple/10 border-transparent'
 };
 
-export function CalloutCard({backgroundColor, value, valuePlaceholder, isEditing}) {
+export function CalloutCard({backgroundColor, value, placeholder, isEditing}) {
     return (
         <div className={`flex items-center rounded border py-5 px-7 ${CALLOUT_COLORS[backgroundColor]} `}>
             <button className={`mr-2 h-8 rounded px-2 text-xl ${isEditing ? 'hover:bg-grey-500/20' : ''} ` }>&#128161;</button>
-            <input className="w-full bg-transparent font-serif text-xl font-normal text-black" value={value} placeholder={valuePlaceholder} />
+            <input className="w-full bg-transparent font-serif text-xl font-normal text-black" value={value} placeholder={placeholder} />
         </div>
     );
 }
@@ -24,7 +24,7 @@ export function CalloutCard({backgroundColor, value, valuePlaceholder, isEditing
 CalloutCard.propTypes = {
     backgroundColor: PropTypes.oneOf(['grey', 'white', 'blue', 'green', 'yellow', 'red', 'pink', 'purple']),
     value: PropTypes.string,
-    valuePlaceholder: PropTypes.string
+    placeholder: PropTypes.string
 };
 
 CalloutCard.defaultProps = {
