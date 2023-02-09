@@ -7,13 +7,15 @@ module.exports = class MentionSendingService {
     #getSiteUrl;
     #getPostUrl;
     #isEnabled;
+    #jobService;
 
-    constructor({discoveryService, externalRequest, getSiteUrl, getPostUrl, isEnabled}) {
+    constructor({discoveryService, externalRequest, getSiteUrl, getPostUrl, isEnabled, jobService}) {
         this.#discoveryService = discoveryService;
         this.#externalRequest = externalRequest;
         this.#getSiteUrl = getSiteUrl;
         this.#getPostUrl = getPostUrl;
         this.#isEnabled = isEnabled;
+        this.#jobService = jobService;
     }
 
     get siteUrl() {
@@ -57,10 +59,12 @@ module.exports = class MentionSendingService {
                 // Post should be or should have been published
                 return;
             }
-            await this.sendAll({
-                url: new URL(this.#getPostUrl(post)),
-                html: post.get('html'),
-                previousHtml: post.previous('status') === 'published' ? post.previous('html') : null
+            await this.#jobService.addJob('sendWebmentions', async () => {
+                await this.sendAll({
+                    url: new URL(this.#getPostUrl(post)),
+                    html: post.get('html'),
+                    previousHtml: post.previous('status') === 'published' ? post.previous('html') : null
+                });
             });
         } catch (e) {
             logging.error('Error in webmention sending service post update event handler:');

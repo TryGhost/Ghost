@@ -115,7 +115,7 @@ class DataGenerator {
             newsletters = await jsonImporter.import({
                 name: 'newsletters',
                 data: baseData.newsletters,
-                rows: ['name', 'sort_order']
+                rows: ['sort_order']
             });
             newsletters.sort((a, b) => a.sort_order - b.sort_order);
 
@@ -182,8 +182,8 @@ class DataGenerator {
         } else {
             this.logger.info('No base data pack specified, starting random base data generation');
             const newslettersImporter = new NewslettersImporter(transaction);
-            // First newsletter is free, second is paid
-            newsletters = await newslettersImporter.import({amount: 2, rows: ['name', 'sort_order']});
+            // First newsletter is paid, second is free
+            newsletters = await newslettersImporter.import({amount: 2, rows: ['sort_order']});
             newsletters.sort((a, b) => a.sort_order - b.sort_order);
 
             const postsImporter = new PostsImporter(transaction, {
@@ -267,7 +267,7 @@ class DataGenerator {
 
         const postsProductsImporter = new PostsProductsImporter(transaction, {products: products.slice(1)});
         // Paid newsletters
-        await postsProductsImporter.importForEach(posts.filter(post => newsletters.findIndex(newsletter => newsletter.id === post.newsletter_id) === 1), {
+        await postsProductsImporter.importForEach(posts.filter(post => newsletters.findIndex(newsletter => newsletter.id === post.newsletter_id) === 0), {
             // Each post is available on all 3 premium products
             amount: 3
         });
