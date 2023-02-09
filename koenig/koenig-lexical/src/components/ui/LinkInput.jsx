@@ -47,7 +47,7 @@ export function LinkInput({href, update, cancel}) {
     }, [onEscape]);
 
     return (
-        <div className="text-md after:border-t-green relative m-0 flex items-center justify-evenly rounded bg-transparent px-1 py-0 font-sans font-normal text-white after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent" ref={containerRef}>
+        <div className="relative m-0 flex items-center justify-evenly rounded bg-transparent px-1 py-0 font-sans text-md font-normal text-white after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent after:border-t-green" ref={containerRef}>
             <input
                 ref={inputRef}
                 placeholder="Enter url"
