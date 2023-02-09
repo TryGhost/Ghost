@@ -144,10 +144,6 @@ module.exports = class MilestonesEmailService {
      * @returns {Promise<Milestone>}
      */
     async #saveMileStoneAndSendEmail(milestone) {
-        if (milestone.type === 'arr') {
-            milestone.currency = milestone.currency || await this.#getDefaultCurrency();
-        }
-
         const shouldSendEmail = await this.#shouldSendEmail();
 
         if (shouldSendEmail) {

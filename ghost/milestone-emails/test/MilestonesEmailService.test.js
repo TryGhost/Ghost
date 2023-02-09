@@ -44,7 +44,7 @@ describe('MilestonesEmailService', function () {
                 milestonesConfig,
                 queries: {
                     async getARR() {
-                        return [{currency: 'usd', arr: 1298}, {currency: 'nzd', arr: 2600}];
+                        return [{currency: 'usd', arr: 1298}, {currency: 'nzd', arr: 600}];
                     },
                     async hasImportedMembersInPeriod() {
                         return false;
