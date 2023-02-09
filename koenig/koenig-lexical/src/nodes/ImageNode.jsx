@@ -86,6 +86,7 @@ export class ImageNode extends BaseImageNode {
                 <ImageNodeComponent
                     nodeKey={this.getKey()}
                     src={this.__src}
+                    href={this.__href}
                     altText={this.__altText}
                     caption={this.__caption}
                     triggerFileDialog={this.__triggerFileDialog}

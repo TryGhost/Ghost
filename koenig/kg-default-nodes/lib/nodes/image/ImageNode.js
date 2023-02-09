@@ -15,6 +15,7 @@ export class ImageNode extends KoenigDecoratorNode {
     __cardWidth;
     __width;
     __height;
+    __href;
 
     static getType() {
         return 'image';
@@ -31,6 +32,7 @@ export class ImageNode extends KoenigDecoratorNode {
     static get urlTransformMap() {
         return {
             src: 'url',
+            href: 'url',
             caption: 'html'
         };
     }
@@ -43,7 +45,8 @@ export class ImageNode extends KoenigDecoratorNode {
             altText: this.__altText,
             width: this.__width,
             height: this.__height,
-            cardWidth: this.__cardWidth
+            cardWidth: this.__cardWidth,
+            href: this.__href
         };
     }
 
@@ -51,7 +54,7 @@ export class ImageNode extends KoenigDecoratorNode {
     static extensionTypes = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
     static mimeTypes = ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
 
-    constructor({src, caption, title, altText, cardWidth, width, height} = {}, key) {
+    constructor({src, caption, title, altText, cardWidth, width, height, href} = {}, key) {
         super(key);
         this.__src = src || '';
         this.__title = title || '';
@@ -60,10 +63,11 @@ export class ImageNode extends KoenigDecoratorNode {
         this.__width = width || null;
         this.__height = height || null;
         this.__cardWidth = cardWidth || 'regular';
+        this.__href = href || '';
     }
 
     static importJSON(serializedNode) {
-        const {src, caption, title, altText, width, height, cardWidth} = serializedNode;
+        const {src, caption, title, altText, width, height, cardWidth, href} = serializedNode;
         const node = new this({
             src,
             caption,
@@ -71,6 +75,7 @@ export class ImageNode extends KoenigDecoratorNode {
             altText,
             width,
             height,
+            href,
             cardWidth
         });
         return node;
@@ -89,7 +94,8 @@ export class ImageNode extends KoenigDecoratorNode {
             title: this.getTitle(),
             altText: this.getAltText(),
             caption: this.getCaption(),
-            cardWidth: this.getCardWidth()
+            cardWidth: this.getCardWidth(),
+            href: this.getHref()
         };
         return dataset;
     }
@@ -137,6 +143,16 @@ export class ImageNode extends KoenigDecoratorNode {
     setTitle(title) {
         const writable = this.getWritable();
         return writable.__title = title;
+    }
+
+    getHref() {
+        const self = this.getLatest();
+        return self.__href;
+    }
+
+    setHref(href) {
+        const writable = this.getWritable();
+        return writable.__href = href;
     }
 
     setCardWidth(cardWidth) {

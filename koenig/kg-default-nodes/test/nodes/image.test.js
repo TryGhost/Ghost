@@ -33,6 +33,7 @@ describe('ImageNode', function () {
             src: '/content/images/2022/11/koenig-lexical.jpg',
             width: 3840,
             height: 2160,
+            href: '',
             title: 'This is a title',
             altText: 'This is some alt text',
             caption: 'This is a <b>caption</b>'
@@ -70,6 +71,7 @@ describe('ImageNode', function () {
             imageNode.getAltText().should.equal('This is some alt text');
             imageNode.getCaption().should.equal('This is a <b>caption</b>');
             imageNode.getCardWidth().should.equal('regular');
+            imageNode.getHref().should.equal('');
         }));
 
         it('has setters for all properties', editorTest(function () {
@@ -102,6 +104,10 @@ describe('ImageNode', function () {
             imageNode.getCardWidth().should.equal('regular');
             imageNode.setCardWidth('wide');
             imageNode.getCardWidth().should.equal('wide');
+
+            imageNode.getHref().should.equal('');
+            imageNode.setHref('https://example.com');
+            imageNode.getHref().should.equal('https://example.com');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -418,7 +424,8 @@ describe('ImageNode', function () {
                 title: 'This is a title',
                 altText: 'This is some alt text',
                 caption: 'This is a <b>caption</b>',
-                cardWidth: 'wide'
+                cardWidth: 'wide',
+                href: ''
             });
         }));
     });
