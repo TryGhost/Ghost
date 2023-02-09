@@ -153,6 +153,10 @@
                                             <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                         {{else if sub.trialUntil}}
                                             <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
+                                        {{else if (eq sub.status "past_due")}}
+                                            <span class="gh-badge pink" data-test-text="member-subscription-status">Past due</span>
+                                        {{else if (eq sub.status "unpaid")}}
+                                            <span class="gh-badge pink" data-test-text="member-subscription-status">Unpaid</span>
                                         {{else}}
                                             <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                         {{/if}}
