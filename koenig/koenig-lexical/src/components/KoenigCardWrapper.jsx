@@ -276,9 +276,14 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
         }
     }, [editor, nodeKey, openInEditMode]);
 
+    // isSelected will be true when the selection is a range covering a card
+    // but for our purposes we want to know if the card is the only thing selected
+    // for showing selected state, toolbars etc
+    const isFocused = $isNodeSelection(selection) && isSelected;
+
     return (
         <CardContext.Provider value={{
-            isSelected,
+            isSelected: isFocused,
             isEditing,
             cardWidth,
             setCardWidth,
@@ -287,7 +292,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
             cardContainerRef: containerRef
         }}>
             <CardWrapper
-                isSelected={isSelected}
+                isSelected={isFocused}
                 isEditing={isEditing}
                 cardType={cardType}
                 ref={containerRef}

@@ -1,5 +1,5 @@
 import {beforeAll, afterAll, beforeEach, describe, test} from 'vitest';
-import {startApp, initialize, focusEditor, assertSelection, dragMouse} from '../utils/e2e';
+import {startApp, initialize, focusEditor, assertSelection, dragMouse, assertHTML, html} from '../utils/e2e';
 
 describe('Selection behaviour', async () => {
     let app;
@@ -41,5 +41,28 @@ describe('Selection behaviour', async () => {
             focusPath: [2, 0, 0],
             focusOffset: 16
         });
+    });
+
+    test('cards do not show as selected in range selections', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('First paragraph');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('--- ');
+        await page.keyboard.type('Second paragraph');
+
+        const firstPBoundingBox = await page.locator('p').nth(0).boundingBox();
+        const secondPBoundingBox = await page.locator('p').nth(1).boundingBox();
+
+        await dragMouse(page, firstPBoundingBox, secondPBoundingBox, 'start', 'end');
+
+        await assertHTML(page, html`
+            <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <hr>
+                </div>
+            </div>
+            <p><span data-lexical-text="true">Second paragraph</span></p>
+        `);
     });
 });
