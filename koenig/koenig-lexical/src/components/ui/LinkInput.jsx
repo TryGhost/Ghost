@@ -66,7 +66,7 @@ export function LinkInput({href, update, cancel}) {
                     }
                 }}
             />
-            <button aria-label="Close" class="kg-input-bar-close" type="button" onClick={(e) => {
+            <button aria-label="Close" className="kg-input-bar-close" type="button" onClick={(e) => {
                 e.stopPropagation();
                 setHref('');
                 inputRef.current.focus();
