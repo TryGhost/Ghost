@@ -1,5 +1,4 @@
 const db = require('../../../../../core/server/data/db');
-const models = require('../../../../../core/server/models');
 const assert = require('assert');
 const sinon = require('sinon');
 
@@ -9,8 +8,6 @@ describe('MilestoneQueries', function () {
     let knexMock;
 
     before(function () {
-        models.init();
-
         queryMock = {
             groupBy: sinon.stub(),
             select: sinon.stub(),
