@@ -14,7 +14,7 @@ const TitleTextBox = React.forwardRef(({title, setTitle, editorAPI}, ref) => {
             titleEl.current.style.height = '58px';
             titleEl.current.style.height = titleEl.current.scrollHeight + 'px';
         }
-    }, [titleEl]);
+    }, [titleEl, title]);
 
     const handleTitleInput = (e) => {
         setTitle(e.target.value);
