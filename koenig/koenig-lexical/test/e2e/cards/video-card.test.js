@@ -176,6 +176,7 @@ describe('Video card', async () => {
 
         // Open video card and dismiss files chooser to prepare card for video dropping
         await page.keyboard.type('/video');
+        await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([]);
