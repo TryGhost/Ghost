@@ -35,6 +35,10 @@ body,
     overflow: auto;
 }
 
+.hljs {
+    background-color: inherit;
+}
+
 @font-face {
     font-family: "Inter", sans-serif;
     src: url("./assets/fonts/Inter.ttf") format("truetype-variations");

@@ -1,7 +1,8 @@
+import React from 'react';
+import Highlight from 'react-highlight';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
-import React from 'react';
-import CodeEditor from '@uiw/react-textarea-code-editor';
+import 'highlight.js/styles/atom-one-dark.css';
 
 const SerializedStateTextarea = () => {
     const [editor] = useLexicalComposerContext();
@@ -16,12 +17,11 @@ const SerializedStateTextarea = () => {
 
     return (
         <>
-            <CodeEditor
-                value={serializedJson}
-                language="JSON"
-                className="h-full w-full resize-none !overflow-auto bg-black !p-4 font-mono text-sm selection:bg-grey-800"
-                readOnly
-            />
+            <div className="h-full w-full resize-none !overflow-auto bg-black !p-4 font-mono text-sm text-grey-300 selection:bg-grey-800">
+                <Highlight className="json">
+                    {serializedJson}
+                </Highlight>
+            </div>
             <OnChangePlugin onChange={onChange} />
         </>
     );
