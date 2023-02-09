@@ -56,8 +56,8 @@ Empty.args = {
     thumbnailUploader: {}
 };
 
-export const UploadingAudio = Template.bind({});
-UploadingAudio.args = {
+export const Uploading = Template.bind({});
+Uploading.args = {
     display: 'Editing',
     src: '',
     duration: '',
@@ -67,8 +67,8 @@ UploadingAudio.args = {
     thumbnailUploader: {}
 };
 
-export const EmptyDraggedOver = Template.bind({});
-EmptyDraggedOver.args = {
+export const DraggedOver = Template.bind({});
+DraggedOver.args = {
     display: 'Editing',
     src: '',
     duration: '',
@@ -78,8 +78,8 @@ EmptyDraggedOver.args = {
     thumbnailUploader: {}
 };
 
-export const PopulatedWithoutThumbnail = Template.bind({});
-PopulatedWithoutThumbnail.args = {
+export const Populated = Template.bind({});
+Populated.args = {
     display: 'Editing',
     thumbnailSrc: '',
     src: 'audio.mp3',
@@ -95,12 +95,12 @@ Error.args = {
     display: 'Editing',
     src: '',
     title: '',
-    audioUploader: {errors: [{filename: 'audio.mp3', message: 'Audio file is too large'}]},
+    audioUploader: {errors: [{filename: 'audio.mp3', message: 'The file type you uploaded is not supported. Please use .MP3, .WAV, .OGG, .M4A'}]},
     thumbnailUploader: {}
 };
 
-export const UploadingThumbnail = Template.bind({});
-UploadingThumbnail.args = {
+export const ThumbnailUploading = Template.bind({});
+ThumbnailUploading.args = {
     display: 'Editing',
     src: 'audio.mp3',
     duration: 19,
@@ -109,8 +109,8 @@ UploadingThumbnail.args = {
     thumbnailUploader: {progress: 50, isLoading: true}
 };
 
-export const PopulatedDraggedOver = Template.bind({});
-PopulatedDraggedOver.args = {
+export const ThumbnailDraggedOver = Template.bind({});
+ThumbnailDraggedOver.args = {
     display: 'Editing',
     src: 'audio.mp3',
     duration: 19,
@@ -121,8 +121,8 @@ PopulatedDraggedOver.args = {
     thumbnailUploader: {}
 };
 
-export const PopulatedWithThumbnail = Template.bind({});
-PopulatedWithThumbnail.args = {
+export const ThumbnailPopulated = Template.bind({});
+ThumbnailPopulated.args = {
     display: 'Editing',
     thumbnailSrc: 'https://static.ghost.org/Orb4b.gif',
     src: 'audio.mp3',
@@ -134,8 +134,8 @@ PopulatedWithThumbnail.args = {
     thumbnailUploader: {}
 };
 
-export const UploadingThumbnailErrors = Template.bind({});
-UploadingThumbnailErrors.args = {
+export const ThumbnailError = Template.bind({});
+ThumbnailError.args = {
     display: 'Editing',
     src: 'audio.mp3',
     duration: 19,
@@ -144,6 +144,6 @@ UploadingThumbnailErrors.args = {
     thumbnailUploader: {
         progress: 100,
         isLoading: false,
-        errors: [{filename: 'audio.mp3', message: 'File is too large'}]
+        errors: [{filename: 'audio.mp3', message: 'File not supported'}]
     }
 };

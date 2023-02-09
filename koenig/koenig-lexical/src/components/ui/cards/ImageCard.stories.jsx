@@ -56,13 +56,13 @@ Empty.args = {
     isDraggedOver: false
 };
 
-export const inProgress = Template.bind({});
-inProgress.args = {
+export const Uploading = Template.bind({});
+Uploading.args = {
     display: 'Selected',
+    cardWidth: 'regular',
     setAltText: true,
     caption: '',
     altText: '',
-    cardWidth: 'regular',
     isDraggedOver: false,
     previewSrc: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
     uploadProgress: 50
@@ -71,10 +71,20 @@ inProgress.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Selected',
+    cardWidth: 'regular',
     src: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
     setAltText: true,
     caption: 'Welcome to your new Ghost publication',
     altText: 'Feature image',
-    cardWidth: 'regular',
     isDraggedOver: false
+};
+
+export const Errors = Template.bind({});
+Errors.args = {
+    display: 'Selected',
+    cardWidth: 'regular',
+    setAltText: true,
+    caption: '',
+    altText: '',
+    imageUploadErrors: [{message: 'The file type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP'}]
 };

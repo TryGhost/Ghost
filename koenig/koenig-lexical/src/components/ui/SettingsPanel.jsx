@@ -96,6 +96,7 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
                         isDraggedOver={isDraggedOver}
                         dataTestId="thumbnail-media-placeholder"
                         errors={errors}
+                        errorDataTestId="custom-thumbnails-errors"
                     />
                     <ImageUploadForm
                         filePicker={() => openFileSelection({fileInputRef})}
@@ -130,8 +131,6 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
                     )}
                 </div>
             )}
-
-            {!!errors.length && <Errors errors={errors} dataTestId="custom-thumbnails-errors" />}
         </div>
     );
 }
@@ -139,15 +138,5 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
 export function SettingsDivider() {
     return (
         <hr className="-mx-6 my-2 border-grey-200" />
-    );
-}
-
-function Errors({errors = [], dataTestId}) {
-    return (
-        <ul data-testid={dataTestId}>
-            {errors.map((error, index) => (
-                <li className="mt-1 font-sans text-[1.3rem] text-red" key={index}>{error.message}</li>
-            ))}
-        </ul>
     );
 }

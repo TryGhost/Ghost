@@ -23,7 +23,7 @@ function PopulatedImageCard({src, alt, previewSrc, progress}) {
     );
 }
 
-function EmptyImageCard({onFileChange, setFileInputRef, handleDrag, handleDrop, isDraggedOver}) {
+function EmptyImageCard({onFileChange, setFileInputRef, handleDrag, handleDrop, isDraggedOver, errors}) {
     const fileInputRef = React.useRef(null);
 
     const onFileInputRef = (element) => {
@@ -40,6 +40,7 @@ function EmptyImageCard({onFileChange, setFileInputRef, handleDrag, handleDrop, 
                 desc="Click to select an image"
                 icon='image'
                 isDraggedOver={isDraggedOver}
+                errors={errors}
             />
             <ImageUploadForm
                 filePicker={() => openFileSelection({fileInputRef})}
@@ -59,7 +60,8 @@ const ImageHolder = ({
     setFileInputRef,
     handleDrag,
     handleDrop,
-    isDraggedOver
+    isDraggedOver,
+    imageUploadErrors
 }) => {
     if (previewSrc || src) {
         return (
@@ -78,6 +80,7 @@ const ImageHolder = ({
                 setFileInputRef={setFileInputRef}
                 handleDrop={handleDrop}
                 isDraggedOver={isDraggedOver}
+                errors={imageUploadErrors}
             />
         );
     }
@@ -98,7 +101,8 @@ export function ImageCard({
     isDraggedOver,
     cardWidth,
     previewSrc,
-    uploadProgress
+    uploadProgress,
+    imageUploadErrors
 }) {
     const figureRef = React.useRef(null);
 
@@ -126,6 +130,7 @@ export function ImageCard({
                     handleDrag={handleDrag}
                     handleDrop={handleDrop}
                     isDraggedOver={isDraggedOver}
+                    imageUploadErrors={imageUploadErrors}
                 />
                 <CardCaptionEditor
                     altText={altText || ''}
@@ -142,12 +147,10 @@ export function ImageCard({
 }
 
 ImageCard.propTypes = {
-    setAltText: PropTypes.func,
     caption: PropTypes.string,
     altText: PropTypes.string,
     setCaption: PropTypes.func,
     src: PropTypes.string,
     isDraggedOver: PropTypes.bool,
-    previewSrc: PropTypes.string,
-    uploadProgress: PropTypes.number
+    previewSrc: PropTypes.string
 };

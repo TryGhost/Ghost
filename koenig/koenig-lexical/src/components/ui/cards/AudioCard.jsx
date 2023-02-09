@@ -27,18 +27,6 @@ function AudioUploading({progress}) {
     );
 }
 
-function AudioErrors({errors}) {
-    return (
-        <div className="h-full border border-transparent">
-            <div className="relative flex h-full items-center justify-center border border-grey/20 bg-grey-50 before:pb-[12.5%]">
-                <span className="flex items-center px-2 font-sans text-md font-medium text-red" data-testid="audio-upload-errors">
-                    {errors[0].message}
-                </span>
-            </div>
-        </div>
-    );
-}
-
 function EmptyAudioCard({
     audioUploader,
     onFileChange,
@@ -57,8 +45,6 @@ function EmptyAudioCard({
 
     if (isUploading) {
         return (<AudioUploading progress={progress} />);
-    } else if (errors && errors.length > 0) {
-        return (<AudioErrors errors={errors} />);
     } else {
         return (
             <>
@@ -70,6 +56,8 @@ function EmptyAudioCard({
                     desc='Click to upload an audio file'
                     icon='audio'
                     size='xsmall'
+                    errors={errors}
+                    errorDataTestId="audio-upload-errors"
                 />
                 <AudioUploadForm
                     filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
@@ -113,7 +101,7 @@ function AudioThumbnail({
         );
     } else if (errors && errors.length > 0) {
         return (
-            <span className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-grey-200 text-center font-sans text-sm font-semibold text-red" data-testid="thumbnail-errors">
+            <span className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-grey-200 px-1 text-center font-sans text-xs font-semibold leading-snug text-red" data-testid="thumbnail-errors">
                 {errors[0].message}
             </span>
         );

@@ -55,33 +55,22 @@ Empty.args = {
     caption: ''
 };
 
-export const Populated = Template.bind({});
-Populated.args = {
-    display: 'Editing',
-    cardWidth: 'regular',
-    isLoopChecked: false,
-    thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
-    customThumbnail: '',
-    totalDuration: '2:27',
-    caption: 'Introducing the newest accessory for your Mac.'
-};
-
-export const ProgressVideo = Template.bind({});
-ProgressVideo.args = {
+export const Uploading = Template.bind({});
+Uploading.args = {
     display: 'Editing',
     cardWidth: 'regular',
     thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     customThumbnail: '',
-    totalDuration: '2:27',
-    caption: 'Introducing the newest accessory for your Mac.',
+    totalDuration: '32:27',
+    caption: '',
     videoUploader: {
         isLoading: true,
         progress: 60
     }
 };
 
-export const DraggedOverVideo = Template.bind({});
-DraggedOverVideo.args = {
+export const DraggedOver = Template.bind({});
+DraggedOver.args = {
     display: 'Editing',
     cardWidth: 'regular',
     thumbnail: '',
@@ -92,65 +81,77 @@ DraggedOverVideo.args = {
     }
 };
 
-export const ErrorUploadVideo = Template.bind({});
-ErrorUploadVideo.args = {
+export const Populated = Template.bind({});
+Populated.args = {
+    display: 'Editing',
+    cardWidth: 'regular',
+    isLoopChecked: false,
+    thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+    customThumbnail: '',
+    totalDuration: '32:27',
+    caption: 'Watch the full documentary here.'
+};
+
+export const Error = Template.bind({});
+Error.args = {
     display: 'Editing',
     cardWidth: 'regular',
     thumbnail: '',
     customThumbnail: '',
-    totalDuration: '2:27',
-    caption: 'Introducing the newest accessory for your Mac.',
-    videoUploadErrors: [{message: 'The file type you uploaded is not supported. Please use .PNG'}]
+    totalDuration: '32:27',
+    caption: '',
+    videoUploadErrors: [{message: 'The file type you uploaded is not supported. Please use .MP4, .WEBM, .OGV'}]
 };
 
-export const ProgressCustomThumbnail = Template.bind({});
-ProgressCustomThumbnail.args = {
+export const ThumbnailUploading = Template.bind({});
+ThumbnailUploading.args = {
     display: 'Editing',
     cardWidth: 'regular',
     thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     customThumbnail: '',
-    totalDuration: '2:27',
-    caption: 'Introducing the newest accessory for your Mac.',
+    totalDuration: '32:27',
+    caption: 'Watch the full documentary here.',
     customThumbnailUploader: {
         isLoading: true,
         progress: 60
     }
 };
 
-export const DraggedOverCustomThumbnail = Template.bind({});
-DraggedOverCustomThumbnail.args = {
+export const ThumbnailDraggedOver = Template.bind({});
+ThumbnailDraggedOver.args = {
     display: 'Editing',
     cardWidth: 'regular',
     thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     customThumbnail: '',
-    totalDuration: '2:27',
-    caption: 'Introducing the newest accessory for your Mac.',
+    totalDuration: '32:27',
+    caption: 'Watch the full documentary here.',
     thumbnailDragHandler: {
         isDraggedOver: true
     }
 };
 
-export const ErrorCustomThumbnail = Template.bind({});
-ErrorCustomThumbnail.args = {
+export const ThumbnailPopulated = Template.bind({});
+ThumbnailPopulated.args = {
     display: 'Editing',
     cardWidth: 'regular',
+    isLoopChecked: false,
     thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
-    customThumbnail: '',
-    totalDuration: '2:27',
-    caption: 'Introducing the newest accessory for your Mac.',
-    customThumbnailUploader: {
-        errors: [{message: 'The file type you uploaded is not supported. Please use .PNG'}]
-    }
+    customThumbnail: 'https://images.unsplash.com/photo-1543242594-c8bae8b9e708?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2970&q=80',
+    totalDuration: '32:27',
+    caption: 'Watch the full documentary here.'
 };
 
-export const EnabledLoop = Template.bind({});
-EnabledLoop.args = {
+export const ThumbnailError = Template.bind({});
+ThumbnailError.args = {
     display: 'Editing',
     cardWidth: 'regular',
+    isLoopChecked: false,
     thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     customThumbnail: '',
-    totalDuration: '2:27',
-    caption: 'Introducing the newest accessory for your Mac.',
-    isLoopChecked: true
+    totalDuration: '32:27',
+    caption: 'Watch the full documentary here.',
+    customThumbnailUploader: {
+        errors: [{message: 'This file type is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP'}]
+    }
 };
 

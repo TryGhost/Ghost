@@ -57,9 +57,11 @@ function PopulatedVideoCard({
                     {customThumbnail && <img className="absolute inset-0 h-full w-full object-cover" src={customThumbnail} alt="Video custom thumbnail" />}
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/0 via-black/5 to-black/30">
-                    <button className="flex h-20 w-20 items-center justify-center rounded-full bg-black/50">
-                        <PlayIcon className="h-auto w-5 fill-white" />
-                    </button>
+                    {videoUploader.isLoading || (
+                        <button className="flex h-20 w-20 items-center justify-center rounded-full bg-black/50">
+                            <PlayIcon className="h-auto w-5 fill-white" />
+                        </button>
+                    )}
                 </div>
                 <div className={`absolute bottom-0 flex h-20 w-full justify-end bg-gradient-to-b from-black/0 to-black/50 ${cardWidth === 'full' ? 'px-7 py-4' : 'px-4'}`}>
                     <MediaPlayer duration={totalDuration} theme='light' />
@@ -68,7 +70,7 @@ function PopulatedVideoCard({
             {
                 videoUploader.isLoading && (
                     <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="video-progress">
-                        <ProgressBar style={progressStyle} />
+                        <ProgressBar style={progressStyle} bgStyle='transparent' />
                     </div>
                 )
             }
