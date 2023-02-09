@@ -11,11 +11,15 @@ export default defineConfig({
     ],
     base: '/',
     optimizeDeps: {
-        include: ['@tryghost/kg-markdown-html-renderer', '@tryghost/kg-simplemde']
+        include: [
+            '@tryghost/kg-clean-basic-html',
+            '@tryghost/kg-markdown-html-renderer',
+            '@tryghost/kg-simplemde'
+        ]
     },
     build: {
         commonjsOptions: {
-            include: [/packages/, /node_modules/],
+            include: [/packages/, /node_modules/]
         },
         sourcemap: true,
         rollupOptions: {
