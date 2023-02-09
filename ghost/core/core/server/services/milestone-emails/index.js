@@ -27,7 +27,7 @@ module.exports = {
                 repository,
                 milestonesConfig, // avoid using getters and pass as JSON
                 queries
-            // @TODO: do we need to check if Stripe is live enabled?
+                // @TODO: do we need to check if Stripe is live enabled?
             });
 
             // @TODO: schedule recurring jobs instead
