@@ -155,6 +155,16 @@ module.exports = class MentionsAPI {
         let metadata;
         try {
             metadata = await this.#webmentionMetadata.fetch(webmention.source);
+            if (mention) {
+                mention.setSourceMetadata({
+                    sourceTitle: metadata.title,
+                    sourceSiteTitle: metadata.siteTitle,
+                    sourceAuthor: metadata.author,
+                    sourceExcerpt: metadata.excerpt,
+                    sourceFavicon: metadata.favicon,
+                    sourceFeaturedImage: metadata.image
+                });
+            }
         } catch (err) {
             if (!mention) {
                 throw err;
