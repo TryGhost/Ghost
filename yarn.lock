@@ -19806,10 +19806,10 @@ mysql2@3.0.0:
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
-mysql2@3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.1.1.tgz#cd6ecb0b3b5a090f4749b9bb9c7b9d2ed2aabecc"
-  integrity sha512-mXz4wEj7AIKPdHQJLJcvq8GJ75BDMH9K4V8Lthra8WH7o/xjV6TXp+dXAXDaMFkLa8YhdZr5X6rxIGQSHPPfhg==
+mysql2@3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.1.2.tgz#024a8bf7c84a300a8ed5c8e39b20ba57e47a2e24"
+  integrity sha512-NXz6sUvHSEOKz1jv3koSga7eb2dHrwD/mnPmqbbZzMRvjQcSpb0Eh0ectWyYt1U60CLlEbjoA3XYjjbbReRF5Q==
   dependencies:
     denque "^2.1.0"
     generate-function "^2.3.1"
