@@ -1,5 +1,5 @@
 import React from 'react';
-import {$getNodeByKey} from 'lexical';
+import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
@@ -9,10 +9,12 @@ import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {openFileSelection} from '../utils/openFileSelection';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
+import {LinkInput} from '../components/ui/LinkInput';
 
-export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog, previewSrc}) {
+export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();
     const [dragOver, setDragOver] = React.useState(false);
+    const [showLink, setShowLink] = React.useState(false);
     const {fileUploader} = React.useContext(KoenigComposerContext);
     const {isSelected, cardWidth, setCardWidth} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
@@ -27,6 +29,13 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setCaption(newCaption);
+        });
+    };
+
+    const setHref = (newHref) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setHref(newHref);
         });
     };
 
@@ -65,6 +74,19 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
             const node = $getNodeByKey(nodeKey);
             node.setCardWidth(newWidth); // this is a property on the node, not the card
             setCardWidth(newWidth); // sets the state of the toolbar component
+        });
+    };
+
+    const cancelLinkAndReselect = () => {
+        setShowLink(false);
+        reselectImageCard();
+    };
+
+    const reselectImageCard = () => {
+        editor.update(() => {
+            const nodeSelection = $createNodeSelection();
+            nodeSelection.add(nodeKey);
+            $setSelection(nodeSelection);
         });
     };
 
@@ -111,8 +133,23 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
                 previewSrc={previewSrc}
                 uploadProgress={uploadProgress}
             />
+
             <ActionToolbar
-                isVisible={src && isSelected}
+                isVisible={showLink}
+                data-kg-card-toolbar="image"
+            >
+                <LinkInput
+                    update={(_href) => {
+                        setHref(_href);
+                        cancelLinkAndReselect();
+                    }}
+                    href={href}
+                    cancel={cancelLinkAndReselect}
+                />
+            </ActionToolbar>
+
+            <ActionToolbar
+                isVisible={src && isSelected && !showLink}
                 data-kg-card-toolbar="image"
             >
                 <ImageUploadForm
@@ -124,7 +161,9 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
                     <ToolbarMenuItem label="Wide" icon="imageWide" isActive={cardWidth === 'wide' ? true : false} onClick={() => handleImageCardResize('wide')}/>
                     <ToolbarMenuItem label="Full" icon="imageFull" isActive={cardWidth === 'full' ? true : false} onClick={() => handleImageCardResize('full')} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem label="Link" icon="link" isActive={false} />
+                    <ToolbarMenuItem label="Link" icon="link" isActive={false} onClick = {() => {
+                        setShowLink(true);
+                    }} />
                     <ToolbarMenuItem label="Replace" icon="imageReplace" isActive={false} onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})} />
                     <ToolbarMenuSeparator />
                     <ToolbarMenuItem label="Snippet" icon="snippet" isActive={false} />
