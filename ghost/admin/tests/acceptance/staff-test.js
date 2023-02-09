@@ -12,7 +12,6 @@ import {
     find,
     findAll,
     focus,
-    pauseTest,
     triggerEvent
 } from '@ember/test-helpers';
 import {enableLabsFlag} from '../helpers/labs-flag';

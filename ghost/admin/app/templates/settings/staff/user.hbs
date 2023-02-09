@@ -340,7 +340,7 @@
                                                 type="checkbox"
                                                 checked={{this.user.mentionNotifications}}
                                                 class="gh-input"
-                                                {{on "change" (fn this.toggleMentionNotifications)}}
+                                                {{on "change" this.toggleMentionNotifications}}
                                                 data-test-checkbox="mention-notifications"
                                             >
                                             <span class="input-toggle-component"></span>
