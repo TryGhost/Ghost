@@ -44,6 +44,7 @@
     "@lexical/text": "^0.7.0",
     "@lexical/utils": "^0.7.0",
     "@lezer/highlight": "^1.1.3",
+    "@tryghost/kg-clean-basic-html": "^3.0.4",
     "@tryghost/kg-default-nodes": "^0.0.8",
     "@tryghost/kg-markdown-html-renderer": "^6.0.3",
     "@tryghost/kg-simplemde": "^2.0.4",
