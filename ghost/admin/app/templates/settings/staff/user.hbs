@@ -334,13 +334,13 @@
                                         <p>When you receive a new webmention</p>
                                     </div>
                                     <div class="for-switch small">
-                                        <label class="switch" for="mention-notifications">
+                                        <label class="switch" for="mention-notifications" data-test-label="mention-notifications">
                                             <input
                                                 id="mention-notifications"
                                                 type="checkbox"
                                                 checked={{this.user.mentionNotifications}}
                                                 class="gh-input"
-                                                {{on "change" this.toggleMentionNotifications}}
+                                                {{on "change" (fn this.toggleMentionNotifications)}}
                                                 data-test-checkbox="mention-notifications"
                                             >
                                             <span class="input-toggle-component"></span>

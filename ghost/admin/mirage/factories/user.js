@@ -19,7 +19,6 @@ export default Factory.extend({
     updatedAt: '2015-11-02T16:12:05.000Z',
     updatedBy: '1',
     website: 'http://example.com',
-
     posts() { return []; },
     roles() { return []; }
 });
