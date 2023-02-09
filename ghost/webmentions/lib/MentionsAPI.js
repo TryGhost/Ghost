@@ -133,22 +133,34 @@ module.exports = class MentionsAPI {
      * @returns {Promise<Mention>}
      */
     async processWebmention(webmention) {
-        const targetExists = await this.#routingService.pageExists(webmention.target);
-
-        if (!targetExists) {
-            throw new errors.BadRequestError({
-                message: `${webmention.target} is not a valid URL for this site.`
-            });
-        }
-
-        const resourceInfo = await this.#resourceService.getByURL(webmention.target);
-
-        const metadata = await this.#webmentionMetadata.fetch(webmention.source);
-
         let mention = await this.#repository.getBySourceAndTarget(
             webmention.source,
             webmention.target
         );
+
+        const targetExists = await this.#routingService.pageExists(webmention.target);
+
+        if (!targetExists) {
+            if (!mention) {
+                throw new errors.BadRequestError({
+                    message: `${webmention.target} is not a valid URL for this site.`
+                });
+            } else {
+                mention.delete();
+            }
+        }
+
+        const resourceInfo = await this.#resourceService.getByURL(webmention.target);
+
+        let metadata;
+        try {
+            metadata = await this.#webmentionMetadata.fetch(webmention.source);
+        } catch (err) {
+            if (!mention) {
+                throw err;
+            }
+            mention.delete();
+        }
 
         if (!mention) {
             mention = await Mention.create({

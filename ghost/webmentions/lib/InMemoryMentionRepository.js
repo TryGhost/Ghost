@@ -1,4 +1,5 @@
 const nql = require('@tryghost/nql');
+const Mention = require('./Mention');
 
 /**
  * @typedef {import('./Mention')} Mention
@@ -55,7 +56,7 @@ module.exports = class InMemoryMentionRepository {
      */
     async getBySourceAndTarget(source, target) {
         return this.#store.find((item) => {
-            return item.source.href === source.href && item.target.href === target.href;
+            return item.source.href === source.href && item.target.href === target.href && !Mention.isDeleted(item);
         });
     }
 
@@ -72,7 +73,7 @@ module.exports = class InMemoryMentionRepository {
         const data = this.#store.slice();
 
         const results = data.slice().filter((item) => {
-            return filter.queryJSON(this.toPrimitive(item));
+            return filter.queryJSON(this.toPrimitive(item)) && !Mention.isDeleted(item);
         });
 
         if (options.order === 'created_at desc') {
