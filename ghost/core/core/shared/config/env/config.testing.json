@@ -43,6 +43,12 @@
             "maxWait": 3600000,
             "lifetime": 3600,
             "freeRetries":99
+        },
+        "webmentions_block": {
+            "minWait": 10,
+            "maxWait": 100,
+            "lifetime": 1000,
+            "freeRetries": 100
         }
     },
     "privacy": {
