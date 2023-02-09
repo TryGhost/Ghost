@@ -4,6 +4,9 @@ const Mention = ghostBookshelf.Model.extend({
     tableName: 'mentions',
     defaults: {
         deleted: false
+    },
+    enforcedFilters() {
+        return 'deleted:false';
     }
 });
 

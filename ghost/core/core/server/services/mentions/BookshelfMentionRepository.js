@@ -106,7 +106,8 @@ module.exports = class BookshelfMentionRepository {
             target: mention.target.href,
             resource_id: mention.resourceId?.toHexString(),
             resource_type: mention.resourceId ? 'post' : null,
-            payload: mention.payload ? JSON.stringify(mention.payload) : null
+            payload: mention.payload ? JSON.stringify(mention.payload) : null,
+            deleted: Mention.isDeleted(mention)
         };
 
         const existing = await this.#MentionModel.findOne({id: data.id}, {require: false});
