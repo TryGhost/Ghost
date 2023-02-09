@@ -63,9 +63,7 @@ module.exports = class BookshelfMentionRepository {
      * @returns {Promise<Page<import('@tryghost/webmentions/lib/Mention')>>}
      */
     async getPage(options) {
-        // TODO: sqlite uses 0, mysql uses false... how do we construct this filter properly?
-        const filter = `deleted:[0,false]` + (options.filter ? `+(${options.filter})` : '');
-        const page = await this.#MentionModel.findPage({...options, filter});
+        const page = await this.#MentionModel.findPage(options);
 
         return {
             data: await Promise.all(page.data.map(model => this.#modelToMention(model))),
