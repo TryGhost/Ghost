@@ -1,4 +1,5 @@
 const {parentPort} = require('worker_threads');
+const StartEmailAnalyticsJobEvent = require('../../events/StartEmailAnalyticsJobEvent');
 
 // recurring job to fetch analytics since the most recently seen event timestamp
 
@@ -24,22 +25,15 @@ if (parentPort) {
 }
 
 (async () => {
-    const {run} = require('./run');
-    const {eventStats, aggregateEndDate, fetchStartDate} = await run({
-        domainEvents: {
-            dispatch(event) {
-                parentPort.postMessage({
-                    event: {
-                        type: event.constructor.name, 
-                        data: event
-                    }
-                });
-            }
+    // We send an evnet message, so that it is emitted on the main thread by the job manager
+    // This will start the email analytics job on the main thread (the wrapper service is listening for this event)
+    parentPort.postMessage({
+        event: {
+            type: StartEmailAnalyticsJobEvent.name
         }
     });
 
     if (parentPort) {
-        parentPort.postMessage(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
         parentPort.postMessage('done');
     } else {
         // give the logging pipes time finish writing before exit

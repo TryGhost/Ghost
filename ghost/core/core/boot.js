@@ -292,6 +292,7 @@ async function initServices({config}) {
     const audienceFeedback = require('./server/services/audience-feedback');
     const emailSuppressionList = require('./server/services/email-suppression-list');
     const emailService = require('./server/services/email-service');
+    const emailAnalytics = require('./server/services/email-analytics');
     const mentionsService = require('./server/services/mentions');
 
     const urlUtils = require('./shared/url-utils');
@@ -316,6 +317,7 @@ async function initServices({config}) {
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
+        emailAnalytics.init(),
         mega.listen(),
         webhooks.listen(),
         appService.init(),

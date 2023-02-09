@@ -2,7 +2,7 @@ const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEv
 
 async function waitForEvent() {
     return new Promise((resolve) => {
-        setTimeout(resolve, 200);
+        setTimeout(resolve, 70);
     });
 }
 
@@ -21,15 +21,27 @@ async function waitForEvent() {
  */
 
 /**
+ * @typedef EmailEventStorage
+ * @property {(event: EmailDeliveredEvent) => Promise<void>} handleDelivered
+ * @property {(event: EmailOpenedEvent) => Promise<void>} handleOpened
+ * @property {(event: EmailBouncedEvent) => Promise<void>} handlePermanentFailed
+ * @property {(event: EmailTemporaryBouncedEvent) => Promise<void>} handleTemporaryFailed
+ * @property {(event: EmailUnsubscribedEvent) => Promise<void>} handleUnsubscribed
+ * @property {(event: SpamComplaintEvent) => Promise<void>} handleComplained
+ */
+
+/**
  * WARNING: this class is used in a separate thread (an offloaded job). Be careful when working with settings and models.
  */
 class EmailEventProcessor {
     #domainEvents;
     #db;
+    #eventStorage;
 
-    constructor({domainEvents, db}) {
+    constructor({domainEvents, db, eventStorage}) {
         this.#domainEvents = domainEvents;
         this.#db = db;
+        this.#eventStorage = eventStorage;
 
         // Avoid having to query email_batch by provider_id for every event
         this.providerIdEmailIdMap = {};
@@ -42,15 +54,16 @@ class EmailEventProcessor {
     async handleDelivered(emailIdentification, timestamp) {
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
-            this.#domainEvents.dispatch(EmailDeliveredEvent.create({
+            const event = EmailDeliveredEvent.create({
                 email: emailIdentification.email,
                 emailRecipientId: recipient.emailRecipientId,
                 memberId: recipient.memberId,
                 emailId: recipient.emailId,
                 timestamp
-            }));
-            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
-            await waitForEvent();
+            });
+            await this.#eventStorage.handleDelivered(event);
+
+            this.#domainEvents.dispatch(event);
         }
         return recipient;
     }
@@ -62,15 +75,17 @@ class EmailEventProcessor {
     async handleOpened(emailIdentification, timestamp) {
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
-            this.#domainEvents.dispatch(EmailOpenedEvent.create({
+            const event = EmailOpenedEvent.create({
                 email: emailIdentification.email,
                 emailRecipientId: recipient.emailRecipientId,
                 memberId: recipient.memberId,
                 emailId: recipient.emailId,
                 timestamp
-            }));
-            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
-            await waitForEvent();
+            });
+            await this.#eventStorage.handleOpened(event);
+
+            this.#domainEvents.dispatch(event);
+            await waitForEvent(); // Avoids knex connection pool to run dry
         }
         return recipient;
     }
@@ -82,7 +97,7 @@ class EmailEventProcessor {
     async handleTemporaryFailed(emailIdentification, {timestamp, error, id}) {
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
-            this.#domainEvents.dispatch(EmailTemporaryBouncedEvent.create({
+            const event = EmailTemporaryBouncedEvent.create({
                 id,
                 error,
                 email: emailIdentification.email,
@@ -90,9 +105,10 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 emailRecipientId: recipient.emailRecipientId,
                 timestamp
-            }));
-            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
-            await waitForEvent();
+            });
+            await this.#eventStorage.handleTemporaryFailed(event);
+
+            this.#domainEvents.dispatch(event);
         }
         return recipient;
     }
@@ -104,7 +120,7 @@ class EmailEventProcessor {
     async handlePermanentFailed(emailIdentification, {timestamp, error, id}) {
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
-            this.#domainEvents.dispatch(EmailBouncedEvent.create({
+            const event = EmailBouncedEvent.create({
                 id,
                 error,
                 email: emailIdentification.email,
@@ -112,9 +128,11 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 emailRecipientId: recipient.emailRecipientId,
                 timestamp
-            }));
-            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
-            await waitForEvent();
+            });
+            await this.#eventStorage.handlePermanentFailed(event);
+
+            this.#domainEvents.dispatch(event);
+            await waitForEvent(); // Avoids knex connection pool to run dry
         }
         return recipient;
     }
@@ -126,14 +144,15 @@ class EmailEventProcessor {
     async handleUnsubscribed(emailIdentification, timestamp) {
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
-            this.#domainEvents.dispatch(EmailUnsubscribedEvent.create({
+            const event = EmailUnsubscribedEvent.create({
                 email: emailIdentification.email,
                 memberId: recipient.memberId,
                 emailId: recipient.emailId,
                 timestamp
-            }));
-            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
-            await waitForEvent();
+            });
+            await this.#eventStorage.handleUnsubscribed(event);
+
+            this.#domainEvents.dispatch(event);
         }
         return recipient;
     }
@@ -145,14 +164,16 @@ class EmailEventProcessor {
     async handleComplained(emailIdentification, timestamp) {
         const recipient = await this.getRecipient(emailIdentification);
         if (recipient) {
-            this.#domainEvents.dispatch(SpamComplaintEvent.create({
+            const event = SpamComplaintEvent.create({
                 email: emailIdentification.email,
                 memberId: recipient.memberId,
                 emailId: recipient.emailId,
                 timestamp
-            }));
-            // We cannot await the dispatched domainEvent, but we need to limit the number of events thare are processed at the same time
-            await waitForEvent();
+            });
+            await this.#eventStorage.handleComplained(event);
+
+            this.#domainEvents.dispatch(event);
+            await waitForEvent(); // Avoids knex connection pool to run dry
         }
         return recipient;
     }
