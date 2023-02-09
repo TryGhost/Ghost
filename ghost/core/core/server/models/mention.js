@@ -1,7 +1,10 @@
 const ghostBookshelf = require('./base');
 
 const Mention = ghostBookshelf.Model.extend({
-    tableName: 'mentions'
+    tableName: 'mentions',
+    defaults: {
+        deleted: false
+    }
 });
 
 module.exports = {
