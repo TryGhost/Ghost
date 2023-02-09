@@ -7,6 +7,7 @@ const moment = require('moment');
 
 const milestoneEmailsService = require('../../../core/server/services/milestone-emails');
 const labs = require('../../../core/shared/labs');
+const stripeService = require('../../../core/server/services/stripe');
 
 let agent;
 let counter = 0;
@@ -139,6 +140,8 @@ async function createFreeMembers(amount, amountImported = 0) {
 }
 
 describe('Milestone Emails Service', function () {
+    let labsStub;
+    let stripeModeStub;
     const milestonesConfig = {
         arr: [{currency: 'usd', values: [100]}],
         members: [10, 100]
@@ -154,6 +157,15 @@ describe('Milestone Emails Service', function () {
 
     after(async function () {
         await configUtils.restore();
+        sinon.restore();
+    });
+
+    beforeEach(function () {
+        labsStub = sinon.stub(labs, 'isSet').returns(true);
+        stripeModeStub = sinon.stub(stripeService.api, 'mode').get(() => 'live');
+    });
+
+    afterEach(function () {
         sinon.restore();
     });
 
@@ -192,10 +204,19 @@ describe('Milestone Emails Service', function () {
     });
 
     it('Does not run when milestoneEmails labs flag is not set', async function () {
-        const labsStub = sinon.stub(labs, 'isSet').returns(false);
+        labsStub.returns(false);
 
         const result = await milestoneEmailsService.initAndRun();
         assert(result === undefined);
-        assert(labsStub.calledOnce);
+    });
+
+    it('Does not run ARR milestones when Stripe is not live enabled', async function () {
+        stripeModeStub.get(() => 'test');
+        await createFreeMembers(10);
+
+        const result = await milestoneEmailsService.initAndRun();
+        assert(result.members.value === 10);
+        assert(result.members.emailSentAt !== undefined);
+        assert(result.arr === undefined);
     });
 });

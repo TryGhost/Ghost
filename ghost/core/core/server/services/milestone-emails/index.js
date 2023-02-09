@@ -9,6 +9,10 @@ module.exports = {
         if (labs.isSet('milestoneEmails')) {
             const db = require('../../data/db');
             const MilestoneQueries = require('./MilestoneQueries');
+            const stripeService = require('../stripe');
+            // This seems to be the only true way to check if Stripe is configured in live mode
+            // settingsCache only cares if Stripe is enabled
+            const isStripeLiveEnabled = stripeService.api.configured && stripeService.api.mode === 'live';
 
             const {
                 MilestonesEmailService,
@@ -27,12 +31,16 @@ module.exports = {
                 repository,
                 milestonesConfig, // avoid using getters and pass as JSON
                 queries
-                // @TODO: do we need to check if Stripe is live enabled?
             });
+
+            let arrResult;
 
             // @TODO: schedule recurring jobs instead
             const membersResult = await milestonesEmailService.checkMilestones('members');
-            const arrResult = await milestonesEmailService.checkMilestones('arr');
+
+            if (isStripeLiveEnabled) {
+                arrResult = await milestonesEmailService.checkMilestones('arr');
+            }
 
             return {
                 members: membersResult,
