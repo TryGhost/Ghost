@@ -17,7 +17,11 @@ export default defineConfig({
         'process.env.VITEST_SEGFAULT_RETRY': 3
     },
     optimizeDeps: {
-        include: ['@tryghost/kg-markdown-html-renderer', '@tryghost/kg-simplemde']
+        include: [
+            '@tryghost/kg-clean-basic-html',
+            '@tryghost/kg-markdown-html-renderer',
+            '@tryghost/kg-simplemde'
+        ]
     },
     build: {
         minify: true,
