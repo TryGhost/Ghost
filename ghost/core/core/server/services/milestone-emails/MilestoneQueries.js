@@ -4,11 +4,8 @@ const MIN_DAYS_SINCE_IMPORTED = 7;
 module.exports = class MilestoneQueries {
     #db;
 
-    #milestonesConfig;
-
     constructor(deps) {
         this.#db = deps.db;
-        this.#milestonesConfig = deps.milestonesConfig;
     }
 
     /**
@@ -48,16 +45,15 @@ module.exports = class MilestoneQueries {
      */
     async getDefaultCurrency() {
         const currentARR = await this.getARR();
-        const arrMilestoneSettings = this.#milestonesConfig.arr;
-        const supportedCurrencies = arrMilestoneSettings.map(setting => setting.currency);
 
+        // Set the default currency as the one with the highest value
         if (currentARR.length > 1) {
             const highestValues = currentARR.sort((a, b) => b.arr - a.arr);
-            // If none of the currencies are supported, use the highest one
-            const defaultCurrency = highestValues.find(value => supportedCurrencies.includes(value.currency)) && highestValues[0];
-            return defaultCurrency.currency;
-        } else {
+            return highestValues[0].currency;
+        } else if (currentARR) {
             return currentARR[0].currency;
+        } else {
+            return 'usd';
         }
     }
 };
