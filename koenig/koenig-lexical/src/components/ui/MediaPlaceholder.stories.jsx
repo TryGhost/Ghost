@@ -66,3 +66,12 @@ Product.args = {
     size: 'small',
     borderStyle: 'solid'
 };
+
+export const Error = Template.bind({});
+Error.args = {
+    icon: 'video',
+    desc: 'Click to select a video',
+    size: 'medium',
+    borderStyle: 'solid',
+    errors: [{message: 'The file type you uploaded is not supported. Please use .MP4, .WEBM, .OGV'}]
+};

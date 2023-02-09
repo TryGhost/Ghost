@@ -100,6 +100,7 @@ function PopulatedVideoCard({
                                 isLoading={customThumbnailUploader.isLoading}
                                 dataTestID="custom-thumbnail-replace"
                                 progress={customThumbnailUploader.progress}
+                                errors={customThumbnailUploader.errors}
                                 onRemoveCustomThumbnail={onRemoveCustomThumbnail}
                                 isDraggedOver={thumbnailDragHandler.isDraggedOver}
                                 placeholderRef={thumbnailDragHandler.setRef}
@@ -112,7 +113,7 @@ function PopulatedVideoCard({
     );
 }
 
-function EmptyVideoCard({onFileChange, fileInputRef, videoDragHandler = {}}) {
+function EmptyVideoCard({onFileChange, fileInputRef, errors, videoDragHandler = {}}) {
     return (
         <>
             <MediaPlaceholder
@@ -121,6 +122,7 @@ function EmptyVideoCard({onFileChange, fileInputRef, videoDragHandler = {}}) {
                 icon='video'
                 isDraggedOver={videoDragHandler.isDraggedOver}
                 placeholderRef={videoDragHandler.setRef}
+                errors={errors}
             />
             <form onChange={onFileChange}>
                 <input
@@ -139,16 +141,19 @@ const VideoHolder = ({
     fileInputRef,
     onVideoFileChange,
     videoDragHandler,
+    videoUploader = {},
+    videoUploadErrors,
     ...props
 }) => {
-    const showPopulatedCard = props.customThumbnail || props.thumbnail || props?.videoUploader?.isLoading;
+    const showPopulatedCard = props.customThumbnail || props.thumbnail || videoUploader.isLoading;
     if (showPopulatedCard) {
         return (
-            <PopulatedVideoCard {...props}/>
+            <PopulatedVideoCard {...props} videoUploader={videoUploader}/>
         );
     } else {
         return (
             <EmptyVideoCard
+                errors={videoUploadErrors}
                 onFileChange={onVideoFileChange}
                 fileInputRef={fileInputRef}
                 videoDragHandler={videoDragHandler}

@@ -113,6 +113,15 @@ describe('Video card', async () => {
         await expect(page.getByTestId('video-duration')).toContainText('0:04');
     });
 
+    test('can show errors for failed video upload', async function () {
+        await focusEditor(page);
+        await uploadVideo(page, 'video-fail.mp4');
+
+        // Errors should be visible
+        await page.waitForSelector('[data-testid="media-placeholder-errors"]');
+        await expect(page.getByTestId('media-placeholder-errors')).toBeVisible();
+    });
+
     test('can manage custom thumbnail', async function () {
         await focusEditor(page);
         await uploadVideo(page);
@@ -146,6 +155,33 @@ describe('Video card', async () => {
         replaceButton.click();
         await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
         await expect(page.getByTestId('thumbnail-media-placeholder')).toBeVisible();
+    });
+
+    test('can show errors for custom thumbnail', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        // Settings panel should be visible
+        await page.waitForSelector('[data-testid="video-settings-panel"]');
+        await expect(page.getByTestId('video-settings-panel')).toBeVisible();
+
+        // Errors shouldn't be visible
+        await expect(page.getByTestId('media-placeholder-errors')).toBeHidden();
+
+        // Custom thumbnail should be visible
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        const emptyThumbnail = page.getByTestId('thumbnail-media-placeholder');
+
+        // Upload thumbnail
+        const imagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-fail.jpeg');
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        emptyThumbnail.click();
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([imagePath]);
+
+        // Errors should be visible
+        await page.waitForSelector('[data-testid="custom-thumbnails-errors"]');
+        await expect(page.getByTestId('custom-thumbnails-errors')).toBeVisible();
     });
 
     test('can hide custom thumbnail if loop enabled', async function () {
@@ -200,6 +236,28 @@ describe('Video card', async () => {
         await expect(page.getByTestId('video-duration')).toContainText('0:04');
     });
 
+    test('can show errors if was dropped a file with wrong extension to video placeholder', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await focusEditor(page);
+
+        // Open video card and dismiss files chooser to prepare card for video dropping
+        await page.keyboard.type('/video');
+        await page.keyboard.press('Enter');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([]);
+
+        //  Drop file
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        await page.getByTestId('media-placeholder').dispatchEvent('dragover', {dataTransfer});
+        await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
+
+        // Errors should be visible
+        await page.waitForSelector('[data-testid="media-placeholder-errors"]');
+        await expect(page.getByTestId('media-placeholder-errors')).toBeVisible();
+    });
+
     test('can upload dropped custom thumbnail', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
@@ -226,6 +284,24 @@ describe('Video card', async () => {
         // Thumbnail should be visible
         await page.waitForSelector('[data-testid="custom-thumbnail-filled"]');
         await expect(page.getByTestId('custom-thumbnail-filled')).toBeVisible();
+    });
+
+    test('can show errors if was dropped a file with wrong extension to custom thumbnail', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
+
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        // Wait for custom thumbnail
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'video.mp4', fileType: 'video/mp4'});
+        await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});
+
+        // Errors should be visible
+        await page.waitForSelector('[data-testid="custom-thumbnails-errors"]');
+        await expect(page.getByTestId('custom-thumbnails-errors')).toBeVisible();
     });
 
     test('renders video card toolbar', async function () {
@@ -273,8 +349,8 @@ describe('Video card', async () => {
     });
 });
 
-async function uploadVideo(page) {
-    const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
+async function uploadVideo(page, fileName = 'video.mp4') {
+    const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/${fileName}`);
 
     const fileChooserPromise = page.waitForEvent('filechooser');
     await page.keyboard.type('/video');

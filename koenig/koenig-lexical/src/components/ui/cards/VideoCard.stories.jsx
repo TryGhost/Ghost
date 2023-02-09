@@ -92,6 +92,17 @@ DraggedOverVideo.args = {
     }
 };
 
+export const ErrorUploadVideo = Template.bind({});
+ErrorUploadVideo.args = {
+    display: 'Editing',
+    cardWidth: 'regular',
+    thumbnail: '',
+    customThumbnail: '',
+    totalDuration: '2:27',
+    caption: 'Introducing the newest accessory for your Mac.',
+    videoUploadErrors: [{message: 'The file type you uploaded is not supported. Please use .PNG'}]
+};
+
 export const ProgressCustomThumbnail = Template.bind({});
 ProgressCustomThumbnail.args = {
     display: 'Editing',
@@ -116,6 +127,19 @@ DraggedOverCustomThumbnail.args = {
     caption: 'Introducing the newest accessory for your Mac.',
     thumbnailDragHandler: {
         isDraggedOver: true
+    }
+};
+
+export const ErrorCustomThumbnail = Template.bind({});
+ErrorCustomThumbnail.args = {
+    display: 'Editing',
+    cardWidth: 'regular',
+    thumbnail: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+    customThumbnail: '',
+    totalDuration: '2:27',
+    caption: 'Introducing the newest accessory for your Mac.',
+    customThumbnailUploader: {
+        errors: [{message: 'The file type you uploaded is not supported. Please use .PNG'}]
     }
 };
 

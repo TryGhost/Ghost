@@ -86,6 +86,25 @@ VideoCard.args = {
     ]
 };
 
+export const ThumbnailsErrors = Template.bind({});
+ThumbnailsErrors.args = {
+    children: [
+        <ButtonGroupSetting
+            label='Video width' buttons={buttonGroupChildren} />,
+        <ToggleSetting
+            label='Loop'
+            description='Autoplay your video on a loop without sound.'
+        />,
+        <ThumbnailSetting
+            label='Custom thumbnail'
+            icon='file'
+            desc=''
+            size='xsmall'
+            errors={[{message: 'Upload error'}]}
+        />
+    ]
+};
+
 export const ProductCard = Template.bind({});
 ProductCard.args = {
     children: [

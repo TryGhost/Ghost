@@ -9,6 +9,8 @@ import extractVideoMetadata from '../utils/extractVideoMetadata';
 import useDragAndDrop from '../hooks/useDragAndDrop';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {VideoNode as BaseVideoNode} from '@tryghost/kg-default-nodes';
+import {IMAGE_EXTENSIONS} from '../utils/constants';
 
 export function VideoNodeComponent({
     nodeKey,
@@ -25,22 +27,37 @@ export function VideoNodeComponent({
     const cardContext = React.useContext(CardContext);
     const videoFileInputRef = React.useRef();
     const [previewThumbnail, setPreviewThumbnail] = useState('');
-    const videoUploader = fileUploader.useFileUpload();
+    const videoUploader = fileUploader.useFileUpload(BaseVideoNode.extensionTypes);
     const {upload: uploadThumbnail, errors: thumbnailErrors} = fileUploader.useFileUpload();
-    const customThumbnailUploader = fileUploader.useFileUpload();
+    const customThumbnailUploader = fileUploader.useFileUpload(IMAGE_EXTENSIONS);
 
     const videoDragHandler = useDragAndDrop(handleVideoDrop);
     const thumbnailDragHandler = useDragAndDrop(handleThumbnailDrop);
+    const [metadataExtractionErrors, setMetadataExtractionErrors] = useState([]);
 
     const handleVideoUpload = async (files) => {
         const file = files[0];
         if (!file) {
             return;
         }
-        const {thumbnailBlob, duration, width, height} = await extractVideoMetadata(file);
+        let thumbnailBlob, duration, width, height;
+        try {
+            ({thumbnailBlob, duration, width, height} = await extractVideoMetadata(file));
+        } catch (error) {
+            setMetadataExtractionErrors([{
+                name: file.name,
+                message: `The file type you uploaded is not supported. Please use .${BaseVideoNode.extensionTypes.join(', .').toUpperCase()}`
+            }]);
+        }
+
         setPreviewThumbnail(URL.createObjectURL(thumbnailBlob));
 
         const videoUploadResult = await videoUploader.upload([file]);
+
+        if (!videoUploadResult) {
+            setPreviewThumbnail('');
+            return;
+        }
         const videoUrl = videoUploadResult[0];
 
         if (videoUrl) {
@@ -83,7 +100,7 @@ export function VideoNodeComponent({
 
     const handleCustomThumbnailChange = async (files) => {
         const urls = await customThumbnailUploader.upload(files);
-        const imageUrl = urls[0];
+        const imageUrl = urls && urls[0];
 
         if (imageUrl) {
             editor.update(() => {
@@ -178,7 +195,7 @@ export function VideoNodeComponent({
                 isEditing={cardContext.isEditing}
                 cardWidth={cardWidth}
                 onCardWidthChange={onCardWidthChange}
-                thumbnailErrors={thumbnailErrors}
+                videoUploadErrors={[...thumbnailErrors, ...metadataExtractionErrors, ...videoUploader.errors]}
                 videoDragHandler={videoDragHandler}
                 thumbnailDragHandler={thumbnailDragHandler}
             />
