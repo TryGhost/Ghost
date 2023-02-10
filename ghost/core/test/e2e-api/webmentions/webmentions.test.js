@@ -3,8 +3,7 @@ const {
     fixtureManager, 
     mockManager,
     dbUtils,
-    configUtils,
-    resetRateLimits
+    configUtils
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('assert');
@@ -176,49 +175,40 @@ describe('Webmentions (receiving)', function () {
 
         emailMockReceiver.sentEmailCount(0);
     });
+    it('is rate limited against spamming mention requests', async function () {
+        await dbUtils.truncate('brute');
+        const webmentionBlock = configUtils.config.get('spam').webmentions_block;
+        const targetUrl = new URL(urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-2/');
+        const html = `
+                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+            `;
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
 
-    describe('Rate limiting', function () {
-        let clock;
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
 
-        beforeEach(async function () {
-            await dbUtils.truncate('brute');
-            await resetRateLimits();
-        });
-
-        it('is rate limited against spamming mention requests', async function () {
-            const webmentionBlock = configUtils.config.get('spam').webmentions_block;
-            const targetUrl = new URL(urlUtils.getSiteUrl());
-            const sourceUrl = new URL('http://testpage.com/external-article-2/');
-            const html = `
-                    <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-                `;
-            nock(targetUrl.origin)
-                .head(targetUrl.pathname)
-                .reply(200);
-    
-            nock(sourceUrl.origin)
-                .get(sourceUrl.pathname)
-                .reply(200, html, {'Content-Type': 'text/html'});
-    
-            // +1 because this is a retry count, so we have one request + the retries, then blocked
-            for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
-                await agent.post('/receive/')
-                    .body({
-                        source: sourceUrl.href,
-                        target: targetUrl.href,
-                        payload: {}
-                    })
-                    .expectStatus(202);
-            }
-    
-            await agent
-                .post('/receive/')
+        // +1 because this is a retry count, so we have one request + the retries, then blocked
+        for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
+            await agent.post('/receive/')
                 .body({
                     source: sourceUrl.href,
                     target: targetUrl.href,
                     payload: {}
                 })
-                .expectStatus(429);
-        });
+                .expectStatus(202);
+        }
+
+        await agent
+            .post('/receive/')
+            .body({
+                source: sourceUrl.href,
+                target: targetUrl.href,
+                payload: {}
+            })
+            .expectStatus(429);
     });
 });
