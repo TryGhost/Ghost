@@ -45,10 +45,9 @@
             "freeRetries":99
         },
         "webmentions_block": {
-            "minWait": 10,
-            "maxWait": 100,
-            "lifetime": 1000,
-            "freeRetries": 100
+            "minWait": 600000,
+            "maxWait": 604800000,
+            "freeRetries": 3
         }
     },
     "privacy": {
