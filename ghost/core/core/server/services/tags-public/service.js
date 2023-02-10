@@ -8,8 +8,13 @@ class TagsPublicServiceWrapper {
         // Wire up all the dependencies
         const models = require('../../models');
         const adapterManager = require('../adapter-manager');
+        const config = require('../../../shared/config');
 
-        const tagsCache = adapterManager.getAdapter('cache:tagsPublic');
+        let tagsCache;
+        if (config.get('hostSettings:tagsPublicCache:enabled')) {
+            tagsCache = adapterManager.getAdapter('cache:tagsPublic');
+        }
+
         const {TagsPublicRepository} = require('@tryghost/tags-public');
 
         this.linkRedirectRepository = new TagsPublicRepository({
