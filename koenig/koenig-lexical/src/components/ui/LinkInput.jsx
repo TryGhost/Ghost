@@ -67,7 +67,7 @@ export function LinkInput({href, update, cancel}) {
                     }
                 }}
             />
-            <button aria-label="Close" className="absolute right-3" type="button" onClick={(e) => {
+            <button aria-label="Close" className="absolute right-3 cursor-pointer" type="button" onClick={(e) => {
                 e.stopPropagation();
                 setHref('');
                 inputRef.current.focus();
