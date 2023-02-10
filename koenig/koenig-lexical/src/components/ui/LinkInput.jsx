@@ -1,4 +1,6 @@
 import React, {useEffect, useRef} from 'react';
+import PropTypes from 'prop-types';
+import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 
 export function LinkInput({href, update, cancel}) {
     const [_href, setHref] = React.useState(href);
@@ -47,13 +49,12 @@ export function LinkInput({href, update, cancel}) {
     }, [onEscape]);
 
     return (
-        <div className="relative m-0 flex items-center justify-evenly rounded bg-transparent px-1 py-0 font-sans text-md font-normal text-white after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent after:border-t-green" ref={containerRef}>
+        <div className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black py-0 font-sans text-md font-medium after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent after:border-t-black" ref={containerRef}>
             <input
                 ref={inputRef}
                 placeholder="Enter url"
                 value={_href}
-                className="kg-link-input h-10 rounded-md bg-white px-2 text-black"
-                style={{height: '36px'}}
+                className="mb-[1px] h-auto w-full rounded bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40"
                 onInput={(e) => {
                     setHref(e.target.value);
                 }}
@@ -66,13 +67,17 @@ export function LinkInput({href, update, cancel}) {
                     }
                 }}
             />
-            <button aria-label="Close" className="kg-input-bar-close" type="button" onClick={(e) => {
+            <button aria-label="Close" className="absolute right-3" type="button" onClick={(e) => {
                 e.stopPropagation();
                 setHref('');
                 inputRef.current.focus();
             }}>
-                x
+                <CloseIcon className="h-3 w-3 stroke-2 text-grey" />
             </button>
         </div>
     );
 }
+
+LinkInput.propTypes = {
+    href: PropTypes.string
+};

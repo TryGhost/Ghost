@@ -321,6 +321,7 @@
         color: theme('colors.grey.500'); /* 2 */
     }
 
+    button:focus-visible,
     input:focus-visible {
         outline: none;
     }

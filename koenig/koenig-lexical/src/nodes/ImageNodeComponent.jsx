@@ -161,7 +161,7 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
                     <ToolbarMenuItem label="Wide" icon="imageWide" isActive={cardWidth === 'wide' ? true : false} onClick={() => handleImageCardResize('wide')}/>
                     <ToolbarMenuItem label="Full" icon="imageFull" isActive={cardWidth === 'full' ? true : false} onClick={() => handleImageCardResize('full')} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem label="Link" icon="link" isActive={false} onClick = {() => {
+                    <ToolbarMenuItem label="Link" icon="link" isActive={href === true || false} onClick = {() => {
                         setShowLink(true);
                     }} />
                     <ToolbarMenuItem label="Replace" icon="imageReplace" isActive={false} onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})} />

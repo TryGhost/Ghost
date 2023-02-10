@@ -21,5 +21,12 @@ const Template = (args) => {
     );
 };
 
-export const Basic = Template.bind({});
-Basic.args = {};
+export const Empty = Template.bind({});
+Empty.args = {
+    href: ''
+};
+
+export const Populated = Template.bind({});
+Populated.args = {
+    href: 'https://ghost.org'
+};
