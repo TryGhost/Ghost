@@ -1,5 +1,6 @@
 const EventProcessingResult = require('./event-processing-result');
 const debug = require('@tryghost/debug')('services:email-analytics');
+const logging = require('@tryghost/logging');
 
 /**
  * @typedef {import('@tryghost/email-service').EmailEventProcessor} EmailEventProcessor
@@ -176,9 +177,12 @@ module.exports = class EmailAnalyticsService {
     }
 
     async aggregateStats({emailIds = [], memberIds = []}) {
+        logging.info(`Aggregating email analytics for ${emailIds.length} emails`);
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId);
         }
+
+        logging.info(`Aggregating email analytics for ${memberIds.length} members`);
         for (const memberId of memberIds) {
             await this.aggregateMemberStats(memberId);
         }

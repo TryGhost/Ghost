@@ -82,6 +82,9 @@ class EmailAnalyticsServiceWrapper {
             return eventStats;
         } catch (e) {
             logging.error(e, 'Error while fetching email analytics');
+
+            // Log again only the error, otherwise we lose the stack trace
+            logging.error(e);
         }
         this.fetching = false;
     }
