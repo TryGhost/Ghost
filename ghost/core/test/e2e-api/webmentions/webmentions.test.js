@@ -193,16 +193,20 @@ describe('Webmentions (receiving)', function () {
             .get(sourceUrl.pathname)
             .reply(200, html, {'Content-Type': 'text/html'});
 
-        // +1 because this is a retry count, so we have one request + the retries, then blocked
+        const requests = [];
         for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
-            await agent.post('/receive/')
+            const req = agent.post('/receive/')
                 .body({
                     source: sourceUrl.href,
                     target: targetUrl.href,
                     payload: {}
                 })
                 .expectStatus(202);
+
+            requests.push(req);
         }
+
+        await Promise.all(requests);
 
         await agent
             .post('/receive/')
