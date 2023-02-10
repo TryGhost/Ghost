@@ -34,6 +34,7 @@ describe('Webmentions (receiving)', function () {
     afterEach(async function () {
         await DomainEvents.allSettled();
         mockManager.restore();
+        await dbUtils.truncate('brute');
     });
 
     it('can receive a webmention', async function () {
@@ -175,6 +176,7 @@ describe('Webmentions (receiving)', function () {
 
         emailMockReceiver.sentEmailCount(0);
     });
+
     it('is rate limited against spamming mention requests', async function () {
         await dbUtils.truncate('brute');
         const webmentionBlock = configUtils.config.get('spam').webmentions_block;
@@ -191,16 +193,20 @@ describe('Webmentions (receiving)', function () {
             .get(sourceUrl.pathname)
             .reply(200, html, {'Content-Type': 'text/html'});
 
-        // +1 because this is a retry count, so we have one request + the retries, then blocked
+        const requests = [];
         for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
-            await agent.post('/receive/')
+            const req = agent.post('/receive/')
                 .body({
                     source: sourceUrl.href,
                     target: targetUrl.href,
                     payload: {}
                 })
                 .expectStatus(202);
+
+            requests.push(req);
         }
+
+        await Promise.all(requests);
 
         await agent
             .post('/receive/')
