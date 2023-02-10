@@ -5,7 +5,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
 
 const UnsplashPlugin = ({nodeKey, handleModalClose}) => {
-    const {unsplashConf} = React.useContext(KoenigComposerContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
 
     const onClose = () => {
@@ -38,7 +38,7 @@ const UnsplashPlugin = ({nodeKey, handleModalClose}) => {
         <UnsplashModal
             onClose={onClose}
             onImageInsert={insertImageToNode}
-            unsplashConf={unsplashConf}
+            unsplashConf={cardConfig.unsplash}
         />
     );
 };

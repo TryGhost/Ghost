@@ -21,7 +21,7 @@ const KoenigComposer = ({
     nodes = [...DEFAULT_NODES],
     onError = defaultOnError,
     fileUploadFunction,
-    unsplashConfig,
+    cardConfig = {},
     children
 }) => {
     const initialConfig = React.useMemo(() => {
@@ -35,18 +35,13 @@ const KoenigComposer = ({
     const editorContainerRef = React.useRef(null);
 
     const fileUploader = fileUploadFunction || function () {
-        console.error('requires imageUploadFunction to be passed to KoenigComposer component, eg <KoenigComposer imageUploadFunction={function} />'); // eslint-disable-line no-console
-        return;
-    };
-
-    const unsplashConf = unsplashConfig || function () {
-        console.error('requires unsplashConfig to be passed to KoenigComposer component, eg <KoenigComposer unsplashConfig={config} />'); // eslint-disable-line no-console
+        console.error('requires fileUploadFunction to be passed to KoenigComposer component, eg <KoenigComposer fileUploadFunction={function} />'); // eslint-disable-line no-console
         return;
     };
 
     return (
         <LexicalComposer initialConfig={initialConfig}>
-            <KoenigComposerContext.Provider value={{fileUploader, editorContainerRef, unsplashConf}}>
+            <KoenigComposerContext.Provider value={{fileUploader, editorContainerRef, cardConfig}}>
                 {children}
             </KoenigComposerContext.Provider>
         </LexicalComposer>

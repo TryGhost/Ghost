@@ -10,7 +10,7 @@ import content from './content/content.json';
 import ToggleButton from './components/ToggleButton';
 import {useLocation} from 'react-router-dom';
 import TitleTextBox from './components/TitleTextBox';
-import {defaultHeaders as unsplashConfig} from './utils/unsplashConfig';
+import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {KoenigDecoratorNode} from '@tryghost/kg-default-nodes';
 
 const loadContent = () => {
@@ -23,6 +23,10 @@ function useQuery() {
 
     return React.useMemo(() => new URLSearchParams(search), [search]);
 }
+
+const cardConfig = {
+    unsplash: {defaultHeaders: defaultUnsplashHeaders}
+};
 
 function DemoApp() {
     let query = useQuery();
@@ -72,18 +76,18 @@ function DemoApp() {
 
                 //scroll to the bottom of the container
                 containerRef.current.scrollTop = containerRef.current.scrollHeight;
-            }   
+            }
         }
     }
 
     return (
-        <div 
+        <div
             className="koenig-lexical top"
         >
             <KoenigComposer
                 initialEditorState={defaultContent}
                 fileUploadFunction={{fileUploader, useFileUpload}}
-                unsplashConfig={unsplashConfig}>
+                cardConfig={cardConfig}>
                 <div className="relative h-full grow">
                     {
                         query.get('content') !== 'false'

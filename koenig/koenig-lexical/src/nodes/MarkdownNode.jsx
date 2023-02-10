@@ -15,7 +15,7 @@ export {INSERT_MARKDOWN_COMMAND} from '@tryghost/kg-default-nodes';
 function MarkdownNodeComponent({nodeKey, markdown}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
-    const {fileUploader, unsplashConf} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
 
     const updateMarkdown = (value) => {
         editor.update(() => {
@@ -31,7 +31,7 @@ function MarkdownNodeComponent({nodeKey, markdown}) {
             updateMarkdown={updateMarkdown}
             isEditing={cardContext.isEditing}
             imageUploader={fileUploader.useFileUpload}
-            unsplashConf={unsplashConf}
+            unsplashConf={cardConfig.unsplash}
         />
     );
 }

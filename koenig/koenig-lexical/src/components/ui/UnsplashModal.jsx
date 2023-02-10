@@ -8,7 +8,7 @@ import {useMemo} from 'react';
 const API_URL = 'https://api.unsplash.com';
 
 const UnsplashModal = ({onClose, onImageInsert, unsplashConf}) => {
-    const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf}), [unsplashConf]);
+    const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf.defaultHeaders}), [unsplashConf.defaultHeaders]);
 
     const galleryRef = React.useRef(null);
     const [scrollPos, setScrollPos] = React.useState(0);

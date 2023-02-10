@@ -5,6 +5,10 @@ import {ReactComponent as MarkdownIndicatorIcon} from '../../../assets/icons/kg-
 import {useFileUpload} from '../../../../demo/utils/useFileUpload';
 import {defaultHeaders} from '../../../../demo/utils/unsplashConfig';
 
+const unsplashConfig = {
+    defaultHeaders
+};
+
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
     Selected: {isSelected: true, isEditing: false},
@@ -56,7 +60,7 @@ const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
             <CardWrapper wrapperStyle='wide' IndicatorIcon={MarkdownIndicatorIcon} {...display} {...args}>
-                <MarkdownCard {...display} {...args} unsplashConf={defaultHeaders} />
+                <MarkdownCard {...display} {...args} unsplashConf={unsplashConfig} />
             </CardWrapper>
         </div>
     </div>
