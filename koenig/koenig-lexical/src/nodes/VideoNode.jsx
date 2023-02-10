@@ -22,6 +22,10 @@ export class VideoNode extends BaseVideoNode {
         matches: ['video']
     }];
 
+    getIcon() {
+        return VideoCardIcon;
+    }
+
     constructor(dataset = {}, key) {
         super(dataset, key);
 
