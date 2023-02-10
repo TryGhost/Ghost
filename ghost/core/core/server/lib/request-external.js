@@ -20,18 +20,21 @@ function isPrivateIp(addr) {
 async function errorIfHostnameResolvesToPrivateIp(options) {
     // allow requests through to local Ghost instance
     const siteUrl = new URL(config.get('url'));
-    const requestUrl = new URL(options.href);
+    const requestUrl = new URL(options.url.href);
     if (requestUrl.host === siteUrl.host) {
         return Promise.resolve();
     }
 
-    const result = await dnsPromises.lookup(options.hostname);
+    // console.log(`options.url.hostname`,options.url.hostname)
+    const result = await dnsPromises.lookup(options.url.hostname);
+    // console.log(`dns result`,result)
+    // console.log(`isPrivateIp`,isPrivateIp(result.address));
 
     if (isPrivateIp(result.address)) {
         return Promise.reject(new errors.InternalServerError({
             message: 'URL resolves to a non-permitted private IP block',
             code: 'URL_PRIVATE_INVALID',
-            context: options.href
+            context: options.url.href
         }));
     }
 }
@@ -44,11 +47,11 @@ const externalRequest = got.extend({
     },
     hooks: {
         init: [(options) => {
-            if (!options.hostname || !validator.isURL(options.hostname)) {
+            if (!options.url.hostname || !validator.isURL(options.url.hostname)) {
                 throw new errors.InternalServerError({
                     message: 'URL empty or invalid.',
                     code: 'URL_MISSING_INVALID',
-                    context: options.href
+                    context: options.url.href
                 });
             }
         }],
