@@ -2298,11 +2298,6 @@ p.gh-members-import-errordetail:first-of-type {
     font-size: 1.2rem;
 }
 
-.gh-membertier-subscription span.pink {
-    color: var(--pink);
-    background: color-mod(var(--pink) a(20%));
-}
-
 .gh-cp-membertier.multiple-subs .gh-membertier-subscription {
     margin-top: 12px;
     padding-top: 12px;
