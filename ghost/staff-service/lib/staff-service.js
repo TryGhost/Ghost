@@ -1,4 +1,4 @@
-const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
 const {MentionCreatedEvent} = require('@tryghost/webmentions');
 
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
@@ -93,7 +93,8 @@ class StaffService {
 
         if (type === MemberCreatedEvent && member.status === 'free') {
             await this.emails.notifyFreeMemberSignup(member);
-        } else if (type === SubscriptionCreatedEvent) {
+        } else if (type === SubscriptionActivatedEvent) {
+            // Only send an email if the subscription has a positive MRR (ignore incomplete subscriptions)
             await this.emails.notifyPaidSubscriptionStarted({
                 member,
                 offer,
@@ -116,16 +117,16 @@ class StaffService {
             try {
                 await this.handleEvent(MemberCreatedEvent, event);
             } catch (e) {
-                this.logging.error(`Failed to notify free member signup - ${event?.data?.memberId}`);
+                this.logging.error(e, `Failed to notify free member signup - ${event?.data?.memberId}`);
             }
         });
 
         // Trigger email on paid subscription start
-        this.DomainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
+        this.DomainEvents.subscribe(SubscriptionActivatedEvent, async (event) => {
             try {
-                await this.handleEvent(SubscriptionCreatedEvent, event);
+                await this.handleEvent(SubscriptionActivatedEvent, event);
             } catch (e) {
-                this.logging.error(`Failed to notify paid member subscription start - ${event?.data?.memberId}`);
+                this.logging.error(e, `Failed to notify paid member subscription start - ${event?.data?.memberId}`);
             }
         });
 
@@ -134,7 +135,7 @@ class StaffService {
             try {
                 await this.handleEvent(SubscriptionCancelledEvent, event);
             } catch (e) {
-                this.logging.error(`Failed to notify paid member subscription cancel - ${event?.data?.memberId}`);
+                this.logging.error(e, `Failed to notify paid member subscription cancel - ${event?.data?.memberId}`);
             }
         });
 
@@ -143,7 +144,7 @@ class StaffService {
             try {
                 await this.handleEvent(MentionCreatedEvent, event);
             } catch (e) {
-                this.logging.error(`Failed to notify webmention`);
+                this.logging.error(e, `Failed to notify webmention`);
             }
         });
     }
