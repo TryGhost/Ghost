@@ -174,7 +174,7 @@ describe('Milestone Emails Service', function () {
 
         await createFreeMembers(7);
         await createMemberWithSubscription('year', 5000, 'usd', '2000-01-10');
-        await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
+        await createMemberWithSubscription('month', 100, 'usd', '2000-01-10');
         const secondRun = await milestoneEmailsService.initAndRun();
         assert(secondRun.members === undefined);
         assert(secondRun.arr === undefined);
@@ -188,6 +188,7 @@ describe('Milestone Emails Service', function () {
 
         // Reached the first milestone for ARR
         await createMemberWithSubscription('month', 500, 'usd', '2000-01-10');
+        await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
         const fourthRun = await milestoneEmailsService.initAndRun();
         // This will be false once we hook up to the DB
         assert(fourthRun.members.value === 10);

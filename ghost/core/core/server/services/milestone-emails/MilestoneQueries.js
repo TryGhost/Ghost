@@ -1,4 +1,3 @@
-// TODO: should this be a config value?
 const MIN_DAYS_SINCE_IMPORTED = 7;
 
 module.exports = class MilestoneQueries {
