@@ -109,15 +109,16 @@ export default class KoenigLexicalEditor extends Component {
     }
 
     ReactComponent = () => {
-        const API_VERSION = 'v1';
-        const APPLICATION_ID = '8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980';
-
-        const defaultHeaders = {
-            Authorization: `Client-ID ${APPLICATION_ID}`,
-            'Accept-Version': API_VERSION,
-            'Content-Type': 'application/json',
-            'App-Pragma': 'no-cache',
-            'X-Unsplash-Cache': true
+        const cardConfig = {
+            unsplash: {
+                defaultHeaders: {
+                    Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
+                    'Accept-Version': 'v1',
+                    'Content-Type': 'application/json',
+                    'App-Pragma': 'no-cache',
+                    'X-Unsplash-Cache': true
+                }
+            }
         };
 
         const [uploadProgress, setUploadProgress] = React.useState(0);
@@ -158,7 +159,7 @@ export default class KoenigLexicalEditor extends Component {
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
-                            unsplashConfig={defaultHeaders}
+                            cardConfig={cardConfig}
                             initialEditorState={this.args.lexical}
                             onError={this.onError}
                             imageUploadFunction={{imageUploader, uploadProgress}}
