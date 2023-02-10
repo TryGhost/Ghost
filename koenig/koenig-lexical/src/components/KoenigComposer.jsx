@@ -20,7 +20,7 @@ const KoenigComposer = ({
     initialEditorState,
     nodes = [...DEFAULT_NODES],
     onError = defaultOnError,
-    fileUploadFunction,
+    fileUploader = {},
     cardConfig = {},
     children
 }) => {
@@ -34,10 +34,12 @@ const KoenigComposer = ({
 
     const editorContainerRef = React.useRef(null);
 
-    const fileUploader = fileUploadFunction || function () {
-        console.error('requires fileUploadFunction to be passed to KoenigComposer component, eg <KoenigComposer fileUploadFunction={function} />'); // eslint-disable-line no-console
-        return;
-    };
+    if (!fileUploader.useFileUpload) {
+        fileUploader.useFileUpload = function () {
+            console.error('<KoenigComposer> requires a `fileUploader` prop object to be passed containing a `useFileUpload` custom hook'); // eslint-disable-line no-console
+            return;
+        };
+    }
 
     return (
         <LexicalComposer initialConfig={initialConfig}>

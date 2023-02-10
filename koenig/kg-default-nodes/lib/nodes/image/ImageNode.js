@@ -50,10 +50,6 @@ export class ImageNode extends KoenigDecoratorNode {
         };
     }
 
-    // from https://github.com/TryGhost/Ghost/blob/main/ghost/admin/app/components/gh-image-uploader.js#L18
-    static extensionTypes = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
-    static mimeTypes = ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
-
     constructor({src, caption, title, altText, cardWidth, width, height, href} = {}, key) {
         super(key);
         this.__src = src || '';

@@ -22,6 +22,8 @@ export class VideoNode extends BaseVideoNode {
         matches: ['video']
     }];
 
+    static uploadType = 'video';
+
     getIcon() {
         return VideoCardIcon;
     }

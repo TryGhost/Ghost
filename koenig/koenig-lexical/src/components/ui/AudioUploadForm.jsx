@@ -1,14 +1,12 @@
-import {AudioNode} from '@tryghost/kg-default-nodes';
-
-export function AudioUploadForm({onFileChange, fileInputRef}) {
+export function AudioUploadForm({onFileChange, fileInputRef, mimeTypes = ['audio/*']}) {
     return (
         <form onChange={onFileChange}>
             <input
+                ref={fileInputRef}
                 name="audio-input"
                 type='file'
-                accept={AudioNode.mimeTypes}
-                ref={fileInputRef}
                 hidden={true}
+                accept={mimeTypes.join(',')}
             />
         </form>
     );

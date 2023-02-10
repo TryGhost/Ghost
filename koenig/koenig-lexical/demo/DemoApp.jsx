@@ -3,8 +3,7 @@ import {KoenigComposer, KoenigEditor} from '../src';
 import FloatingButton from './components/FloatingButton';
 import {useState} from 'react';
 import Watermark from './components/Watermark';
-import {fileUploader} from './utils/fileUploader';
-import {useFileUpload} from './utils/useFileUpload.js';
+import {useFileUpload, fileTypes} from './utils/useFileUpload';
 import Sidebar from './components/Sidebar';
 import content from './content/content.json';
 import ToggleButton from './components/ToggleButton';
@@ -58,8 +57,7 @@ function DemoApp() {
             let {bottom} = editor._rootElement.getBoundingClientRect();
 
             // if a mousedown and subsequent mouseup occurs below the editor
-            // canvas, focus the editor and put the cursor at the end of the
-            // documentyarn
+            // canvas, focus the editor and put the cursor at the end of the document
             if (event.pageY > bottom && event.clientY > bottom) {
                 event.preventDefault();
 
@@ -86,8 +84,9 @@ function DemoApp() {
         >
             <KoenigComposer
                 initialEditorState={defaultContent}
-                fileUploadFunction={{fileUploader, useFileUpload}}
-                cardConfig={cardConfig}>
+                fileUploader={{useFileUpload, fileTypes}}
+                cardConfig={cardConfig}
+            >
                 <div className="relative h-full grow">
                     {
                         query.get('content') !== 'false'

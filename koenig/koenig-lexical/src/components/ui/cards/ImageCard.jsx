@@ -10,11 +10,14 @@ function PopulatedImageCard({src, alt, previewSrc, progress}) {
     const progressStyle = {
         width: `${progress?.toFixed(0)}%`
     };
+
+    const progressAlt = progress.toFixed(0) < 100 ? `upload in progress, ${progress}` : '';
+
     return (
         <div>
-            <img className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : `upload in progress, ${progress} `} />
+            <img className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : progressAlt} />
             {previewSrc && progress && !src ?
-                <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50">
+                <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="upload-progress">
                     <ProgressBar style={progressStyle} />
                 </div>
                 : <></>
@@ -65,18 +68,18 @@ const ImageHolder = ({
 }) => {
     if (previewSrc || src) {
         return (
-            <PopulatedImageCard 
-                src={src} 
+            <PopulatedImageCard
+                src={src}
                 alt={altText}
-                previewSrc={previewSrc} 
-                progress={uploadProgress} 
+                previewSrc={previewSrc}
+                progress={uploadProgress}
             />
         );
     } else {
         return (
             <EmptyImageCard
-                handleDrag={handleDrag} 
-                onFileChange={onFileChange} 
+                handleDrag={handleDrag}
+                onFileChange={onFileChange}
                 setFileInputRef={setFileInputRef}
                 handleDrop={handleDrop}
                 isDraggedOver={isDraggedOver}

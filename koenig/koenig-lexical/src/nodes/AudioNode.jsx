@@ -12,7 +12,6 @@ import {thumbnailUploadHandler} from '../utils/thumbnailUploadHandler';
 import CardContext from '../context/CardContext';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {IMAGE_EXTENSIONS} from '../utils/constants';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_AUDIO_COMMAND} from '@tryghost/kg-default-nodes';
@@ -26,8 +25,8 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
     const thumbnailFileInputRef = React.useRef();
     const cardContext = React.useContext(CardContext);
 
-    const audioUploader = fileUploader.useFileUpload(BaseAudioNode.extensionTypes);
-    const thumbnailUploader = fileUploader.useFileUpload(IMAGE_EXTENSIONS);
+    const audioUploader = fileUploader.useFileUpload('audio');
+    const thumbnailUploader = fileUploader.useFileUpload('image');
 
     React.useEffect(() => {
         const uploadInitialFiles = async (files) => {
@@ -149,7 +148,9 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
                 updateTitle={setTitle}
                 triggerFileDialog={triggerFileDialog}
                 audioUploader={audioUploader}
+                audioMimeTypes={fileUploader.fileTypes.audio?.mimeTypes}
                 thumbnailUploader={thumbnailUploader}
+                thumbnailMimeTypes={fileUploader.fileTypes.image?.mimeTypes}
                 audioFileInputRef={audioFileInputRef}
                 thumbnailFileInputRef={thumbnailFileInputRef}
                 onAudioFileChange={onAudioFileChange}
@@ -190,6 +191,8 @@ export class AudioNode extends BaseAudioNode {
         },
         matches: ['audio']
     }];
+
+    static uploadType = 'audio';
 
     constructor(dataset = {}, key) {
         super(dataset, key);

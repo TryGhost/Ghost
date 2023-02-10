@@ -39,9 +39,6 @@ export class VideoNode extends KoenigDecoratorNode {
         };
     }
 
-    static extensionTypes = ['mp4', 'webm', 'ogv'];
-    static mimeTypes = ['video/mp4', 'video/webm', 'video/ogg'];
-
     getDataset() {
         return {
             src: this.__src,

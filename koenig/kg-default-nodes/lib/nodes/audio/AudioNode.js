@@ -42,9 +42,6 @@ export class AudioNode extends KoenigDecoratorNode {
         };
     }
 
-    static extensionTypes = ['mp3', 'wav', 'ogg', 'm4a'];
-    static mimeTypes = ['audio/mp3', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/vnd.wav', 'audio/wave', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a'];
-
     constructor({src, title, duration, thumbnailSrc, mimeType} = {}, key) {
         super(key);
         this.__src = src || '';

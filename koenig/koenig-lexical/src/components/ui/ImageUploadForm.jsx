@@ -1,12 +1,15 @@
-export function ImageUploadForm({onFileChange, fileInputRef}) {
+export function ImageUploadForm({onFileChange, fileInputRef, mimeTypes = ['image/*'], multiple = false}) {
+    const accept = mimeTypes.join(',');
+
     return (
         <form onChange={onFileChange}>
             <input
+                ref={fileInputRef}
                 name="image-input"
                 type='file'
-                accept='image/*'
-                ref={fileInputRef}
                 hidden={true}
+                accept={accept}
+                multiple={multiple}
             />
         </form>
     );

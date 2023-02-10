@@ -5,13 +5,14 @@ import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import {INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
 import {INSERT_AUDIO_COMMAND} from '../nodes/AudioNode';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 
 function isMimeType(file, acceptableMimeTypes) {
     const mimeType = file.type;
     let key = Object.keys(acceptableMimeTypes).find(k => acceptableMimeTypes[k].includes(mimeType));
     return key;
 }
-  
+
 function mediaFileReader(files, acceptableMimeTypes) {
     const filesIterator = files[Symbol.iterator]();
     return new Promise((resolve, reject) => {
@@ -44,12 +45,12 @@ function mediaFileReader(files, acceptableMimeTypes) {
     });
 }
 
-async function getListofAcceptableMimeTypes(editor) {
+async function getListofAcceptableMimeTypes(editor, uploadFileTypes) {
     const nodes = getEditorCardNodes(editor);
     let acceptableMimeTypes = {};
     for (const [nodeType, node] of nodes) {
-        if (nodeType && node.mimeTypes) {
-            acceptableMimeTypes[nodeType] = node.mimeTypes;
+        if (nodeType && node.uploadType) {
+            acceptableMimeTypes[nodeType] = uploadFileTypes[node.uploadType].mimeTypes;
         }
     }
     return {
@@ -59,6 +60,7 @@ async function getListofAcceptableMimeTypes(editor) {
 
 function DragDropPastePlugin() {
     const [editor] = useLexicalComposerContext();
+    const {fileUploader} = React.useContext(KoenigComposerContext);
 
     const handleDrag = React.useCallback((e) => {
         e.preventDefault();
@@ -86,7 +88,7 @@ function DragDropPastePlugin() {
     }, [handleDrop, handleDrag]);
 
     const handleFileUpload = React.useCallback(async (files) => {
-        const {acceptableMimeTypes} = await getListofAcceptableMimeTypes(editor);
+        const {acceptableMimeTypes} = await getListofAcceptableMimeTypes(editor, fileUploader.fileTypes);
         const {processed, node} = await mediaFileReader(files, acceptableMimeTypes);
         if (processed.length) {
             if (node === 'image') {
@@ -97,7 +99,7 @@ function DragDropPastePlugin() {
                 });
             }
         }
-    }, [editor]);
+    }, [editor, fileUploader.fileTypes]);
 
     React.useEffect(() => {
         return editor.registerCommand(
@@ -109,7 +111,7 @@ function DragDropPastePlugin() {
                     console.error(error); // eslint-disable-line no-console
                 }
             },
-            COMMAND_PRIORITY_LOW 
+            COMMAND_PRIORITY_LOW
         );
     }, [editor, handleFileUpload]);
     return null;

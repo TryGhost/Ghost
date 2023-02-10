@@ -6,17 +6,23 @@ export const audioUploadHandler = async (files, nodeKey, editor, upload) => {
     if (!files) {
         return;
     }
-    let url = URL.createObjectURL(files[0]);
-    let filename = files[0].name;
-    let title = prettifyFileName(filename);
 
-    const filesSrc = await upload(files);
-    const fileSrc = filesSrc && filesSrc[0];
+    // perform the actual upload
+    const result = await upload(files);
+    const fileSrc = result?.[0].url;
 
     if (!fileSrc) {
         return;
     }
-    const {duration, mimeType} = await getAudioMetadata(url);
+
+    // grab basic metadata from the file directly
+    const filename = files[0].name;
+    const title = prettifyFileName(filename);
+
+    // read file into an object URL so we can grab extra metadata
+    const objectURL = URL.createObjectURL(files[0]);
+    const {duration, mimeType} = await getAudioMetadata(objectURL);
+
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
         node.setDuration(duration);
@@ -24,5 +30,6 @@ export const audioUploadHandler = async (files, nodeKey, editor, upload) => {
         node.setMimeType(mimeType);
         node.setTitle(title);
     });
+
     return;
 };

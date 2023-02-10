@@ -1,4 +1,5 @@
-import {afterAll, beforeAll, beforeEach, describe, test, expect} from 'vitest';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {expect} from '@playwright/test';
 import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
 import path from 'path';
 import {readFileSync} from 'fs';
@@ -84,7 +85,7 @@ describe('Image card', async () => {
                                 </button>
                             </div>
                         </div>
-                        <form><input name="image-input" type="file" accept="image/*" hidden="" /></form>
+                        <form><input name="image-input" type="file" hidden="" accept="image/*" /></form>
                     </figure>
                 </div>
             </div>
@@ -104,11 +105,17 @@ describe('Image card', async () => {
         ]);
         await fileChooser.setFiles([filePath]);
 
+        // Check progress bar
+        await expect(await page.getByTestId('upload-progress')).toBeVisible();
+
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img src="data:image/png;base64,BASE64DATA" alt="upload in progress, 0 " /></div>
+                        <div><img src="blob:..." alt="" /></div>
                         <figcaption>
                             <input placeholder="Type caption for image (optional)" value="" />
                             <button name="alt-toggle-button">Alt</button>
@@ -134,13 +141,16 @@ describe('Image card', async () => {
         ]);
         await fileChooser.setFiles([filePath]);
 
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         await page.click('button[name="alt-toggle-button"]');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img src="data:image/png;base64,BASE64DATA" alt="upload in progress, 0 " /></div>
+                        <div><img src="blob:..." alt="" /></div>
                         <figcaption>
                             <input placeholder="Type alt text for image (optional)" value=""/>
                             <button name="alt-toggle-button">Alt</button>
@@ -164,6 +174,9 @@ describe('Image card', async () => {
         ]);
         await fileChooser.setFiles([filePath]);
 
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         await page.click('input[placeholder="Type caption for image (optional)"]');
         await page.keyboard.type('This is a caption');
 
@@ -171,7 +184,7 @@ describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img src="data:image/png;base64,BASE64DATA" alt="upload in progress, 0 " /></div>
+                        <div><img src="blob:..." alt="" /></div>
                         <figcaption>
                             <input placeholder="Type caption for image (optional)" value="This is a caption" />
                             <button name="alt-toggle-button">Alt</button>
@@ -196,6 +209,9 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
         await page.click('[data-kg-card="image"]');
 
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
     });
 
@@ -211,6 +227,9 @@ describe('Image card', async () => {
         ]);
         await fileChooser.setFiles([filePath]);
         await page.click('[data-kg-card="image"]');
+
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Regular"]')).not.toBeNull();
     });
@@ -228,6 +247,9 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
         await page.click('[data-kg-card="image"]');
 
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Wide"]')).not.toBeNull();
     });
 
@@ -243,6 +265,9 @@ describe('Image card', async () => {
         ]);
         await fileChooser.setFiles([filePath]);
         await page.click('[data-kg-card="image"]');
+
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Full"]')).not.toBeNull();
     });
@@ -260,6 +285,9 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
         await page.click('[data-kg-card="image"]');
 
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Link"]')).not.toBeNull();
     });
 
@@ -275,6 +303,9 @@ describe('Image card', async () => {
         ]);
         await fileChooser.setFiles([filePath]);
         await page.click('[data-kg-card="image"]');
+
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Replace"]')).not.toBeNull();
     });
@@ -292,6 +323,9 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
         await page.click('[data-kg-card="image"]');
 
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Snippet"]')).not.toBeNull();
     });
 
@@ -307,6 +341,10 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.setFiles([filePath]);
+
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
@@ -316,11 +354,15 @@ describe('Image card', async () => {
             await page.click('[data-kg-card-toolbar="image"] button[aria-label="Replace"]')
         ]);
         await replacefileChooser.setFiles([filePath2]);
+
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img src="data:image/jpeg;base64,BASE64DATA" alt="upload in progress, 0 " /></div>
+                        <div><img src="blob:..." alt="" /></div>
                         <figcaption>
                             <input placeholder="Type caption for image (optional)" value="" />
                             <button name="alt-toggle-button">Alt</button>
@@ -343,6 +385,10 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.setFiles([filePath]);
+
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         await page.click('[data-kg-card="image"]');
 
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
@@ -368,6 +414,9 @@ describe('Image card', async () => {
             await page.click('button[name="placeholder-button"]')
         ]);
         await fileChooser.setFiles([filePath]);
+
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         await page.click('figure');
 
@@ -442,15 +491,20 @@ describe('Image card', async () => {
             {dataTransfer}
         );
 
+        // wait for upload to complete
+        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+
         // placeholder is replaced with uploading image
+        // TODO: upload-progress should not be visible here
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
-                            <img
-                                src="blob:..."
-                                alt="upload in progress, 0 " />
+                            <img src="blob:..." alt="" />
+                            <div data-testid="upload-progress">
+                                <div data-testid="progress-bar"><div></div></div>
+                            </div>
                         </div>
                     </figure>
                 </div>
@@ -485,7 +539,4 @@ describe('Image card', async () => {
             <p><br /></p>
         `, {ignoreCardToolbarContents: true});
     });
-
-    test.todo('upload progress is shown');
-    test.todo('upload is completed');
 });

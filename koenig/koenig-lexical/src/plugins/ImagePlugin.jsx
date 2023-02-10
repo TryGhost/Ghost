@@ -21,11 +21,13 @@ export const ImagePlugin = () => {
     const [selectedKey, setSelectedKey] = React.useState(null);
     const [showModal, setShowModal] = React.useState(false);
 
+    const imageUploader = fileUploader.useFileUpload('image');
+
     const handleImageUpload = React.useCallback(async (files, imageNodeKey) => {
         if (files?.length > 0) {
-            return await imageUploadHandler(files, imageNodeKey, editor, fileUploader);
+            return await imageUploadHandler(files, imageNodeKey, editor, imageUploader.upload);
         }
-    }, [fileUploader, editor]);
+    }, [imageUploader.upload, editor]);
 
     React.useEffect(() => {
         if (!editor.hasNodes([ImageNode])){

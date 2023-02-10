@@ -20,9 +20,18 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
 
+    const imageUploader = fileUploader.useFileUpload('image');
+
     const onFileChange = async (e) => {
-        const fls = e.target.files;
-        return await imageUploadHandler(fls, nodeKey, editor, fileUploader);
+        const files = e.target.files;
+
+        // reset original src so it can be replaced with preview and upload progress
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setSrc('');
+        });
+
+        return await imageUploadHandler(files, nodeKey, editor, imageUploader.upload);
     };
 
     const setCaption = (newCaption) => {
@@ -108,12 +117,10 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
             const fls = e.dataTransfer.files;
             if (fls) {
                 setDragOver(false);
-                await imageUploadHandler(fls, nodeKey, editor, fileUploader);
+                await imageUploadHandler(fls, nodeKey, editor, imageUploader.upload);
             }
         }
     };
-
-    const uploadProgress = fileUploader?.uploadProgress || 0;
 
     return (
         <>
@@ -131,7 +138,7 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
                 isDraggedOver={dragOver}
                 cardWidth={cardWidth}
                 previewSrc={previewSrc}
-                uploadProgress={uploadProgress}
+                uploadProgress={imageUploader.progress}
             />
 
             <ActionToolbar
@@ -155,6 +162,7 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
                 <ImageUploadForm
                     onFileChange={onFileChange}
                     fileInputRef={toolbarFileInputRef}
+                    mimeTypes={fileUploader.fileTypes.image?.mimeTypes}
                 />
                 <ToolbarMenu>
                     <ToolbarMenuItem label="Regular" icon="imageRegular" isActive={cardWidth === 'regular' ? true : false} onClick={() => handleImageCardResize('regular')} />

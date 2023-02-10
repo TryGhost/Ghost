@@ -29,6 +29,7 @@ function AudioUploading({progress}) {
 
 function EmptyAudioCard({
     audioUploader,
+    audioMimeTypes,
     onFileChange,
     setFileInputRef,
     handleDrag,
@@ -63,6 +64,7 @@ function EmptyAudioCard({
                     filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
                     onFileChange={onFileChange}
                     fileInputRef={onFileInputRef}
+                    mimeTypes={audioMimeTypes}
                 />
             </>
         );
@@ -70,6 +72,7 @@ function EmptyAudioCard({
 }
 
 function AudioThumbnail({
+    mimeTypes,
     src,
     progress,
     isUploading,
@@ -138,6 +141,7 @@ function AudioThumbnail({
                     filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
                     onFileChange={onFileChange}
                     fileInputRef={onFileInputRef}
+                    mimeTypes={mimeTypes}
                 />
             </div>
         );
@@ -149,6 +153,7 @@ function PopulatedAudioCard({
     title,
     placeholder,
     thumbnailUploader,
+    thumbnailMimeTypes,
     duration,
     updateTitle,
     thumbnailSrc,
@@ -182,6 +187,7 @@ function PopulatedAudioCard({
             onDrop={handleDrop}
         >
             <AudioThumbnail
+                mimeTypes={thumbnailMimeTypes}
                 progress={progress}
                 isUploading={isUploading}
                 src={thumbnailSrc}
@@ -208,7 +214,9 @@ export function AudioCard({
     updateTitle,
     duration,
     audioUploader,
+    audioMimeTypes,
     thumbnailUploader,
+    thumbnailMimeTypes,
     audioFileInputRef,
     thumbnailFileInputRef,
     onAudioFileChange,
@@ -240,6 +248,7 @@ export function AudioCard({
                     placeholder='Add a title...'
                     duration={duration}
                     thumbnailUploader={thumbnailUploader}
+                    thumbnailMimeTypes={thumbnailMimeTypes}
                     setTitle={updateTitle}
                     isEditing={isEditing}
                     updateTitle={updateTitle}
@@ -263,6 +272,7 @@ export function AudioCard({
                     handleDrop={handleAudioDrop}
                     isDraggedOver={isDraggedOver}
                     audioUploader={audioUploader}
+                    audioMimeTypes={audioMimeTypes}
                 />
             </div>
         );

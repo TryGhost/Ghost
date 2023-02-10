@@ -9,7 +9,6 @@ import {ReactComponent as ImageWideIcon} from '../../../assets/icons/kg-img-wide
 import {ReactComponent as ImageFullIcon} from '../../../assets/icons/kg-img-full.svg';
 import {ReactComponent as PlayIcon} from '../../../assets/icons/kg-play.svg';
 import {openFileSelection} from '../../../utils/openFileSelection';
-import {VideoNode} from '@tryghost/kg-default-nodes';
 import {ProgressBar} from '../ProgressBar';
 
 function PopulatedVideoCard({
@@ -22,9 +21,10 @@ function PopulatedVideoCard({
     totalDuration,
     cardWidth,
     isLoopChecked,
-    onChangeLoop,
+    onLoopChange,
     onCardWidthChange,
     isEditing,
+    thumbnailMimeTypes,
     thumbnailDragHandler = {}
 }) {
     const progressStyle = {
@@ -88,7 +88,7 @@ function PopulatedVideoCard({
                             label='Loop'
                             description='Autoplay your video on a loop without sound.'
                             isChecked={isLoopChecked}
-                            onChange={onChangeLoop}
+                            onChange={onLoopChange}
                             dataTestID="loop-video"
                         />
                         {!isLoopChecked && (
@@ -106,6 +106,7 @@ function PopulatedVideoCard({
                                 onRemoveCustomThumbnail={onRemoveCustomThumbnail}
                                 isDraggedOver={thumbnailDragHandler.isDraggedOver}
                                 placeholderRef={thumbnailDragHandler.setRef}
+                                mimeTypes={thumbnailMimeTypes}
                             />
                         )}
                     </SettingsPanel>
@@ -115,7 +116,7 @@ function PopulatedVideoCard({
     );
 }
 
-function EmptyVideoCard({onFileChange, fileInputRef, errors, videoDragHandler = {}}) {
+function EmptyVideoCard({onFileChange, fileInputRef, errors, videoMimeTypes, videoDragHandler = {}}) {
     return (
         <>
             <MediaPlaceholder
@@ -130,7 +131,7 @@ function EmptyVideoCard({onFileChange, fileInputRef, errors, videoDragHandler = 
                 <input
                     name="image-input"
                     type='file'
-                    accept={VideoNode.mimeTypes}
+                    accept={videoMimeTypes.join(',')}
                     ref={fileInputRef}
                     hidden={true}
                 />
@@ -145,6 +146,7 @@ const VideoHolder = ({
     videoDragHandler,
     videoUploader = {},
     videoUploadErrors,
+    videoMimeTypes,
     ...props
 }) => {
     const showPopulatedCard = props.customThumbnail || props.thumbnail || videoUploader.isLoading;
@@ -159,6 +161,7 @@ const VideoHolder = ({
                 onFileChange={onVideoFileChange}
                 fileInputRef={fileInputRef}
                 videoDragHandler={videoDragHandler}
+                videoMimeTypes={videoMimeTypes}
             />
         );
     }

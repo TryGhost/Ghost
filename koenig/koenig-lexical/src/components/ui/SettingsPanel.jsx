@@ -62,7 +62,7 @@ export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
     );
 }
 
-export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, dataTestID, errors = [], progress, onRemoveCustomThumbnail, icon, desc = '', size}) {
+export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, dataTestID, errors = [], progress, onRemoveCustomThumbnail, icon, desc = '', size, mimeTypes}) {
     const fileInputRef = React.useRef(null);
 
     const onFileInputRef = (element) => {
@@ -102,6 +102,7 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
                         filePicker={() => openFileSelection({fileInputRef})}
                         onFileChange={onFileChange}
                         fileInputRef={onFileInputRef}
+                        mimeTypes={mimeTypes}
                     />
                 </div>
             }

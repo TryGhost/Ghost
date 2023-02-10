@@ -38,6 +38,8 @@ export class ImageNode extends BaseImageNode {
         queryParams: ['src']
     }];
 
+    static uploadType = 'image';
+
     constructor(dataset = {}, key) {
         super(dataset, key);
 
