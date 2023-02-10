@@ -34,6 +34,7 @@ describe('Webmentions (receiving)', function () {
     afterEach(async function () {
         await DomainEvents.allSettled();
         mockManager.restore();
+        await dbUtils.truncate('brute');
     });
 
     it('can receive a webmention', async function () {
