@@ -263,7 +263,7 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with invalid url message');
             }, (err) => {
                 should.exist(err);
-                err.message.should.be.equal('Invalid URL');
+                err.code.should.be.equal('ERR_INVALID_URL');
             });
         });
 
