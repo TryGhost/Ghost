@@ -25,10 +25,7 @@ async function errorIfHostnameResolvesToPrivateIp(options) {
         return Promise.resolve();
     }
 
-    // console.log(`options.url.hostname`,options.url.hostname)
     const result = await dnsPromises.lookup(options.url.hostname);
-    // console.log(`dns result`,result)
-    // console.log(`isPrivateIp`,isPrivateIp(result.address));
 
     if (isPrivateIp(result.address)) {
         return Promise.reject(new errors.InternalServerError({
@@ -39,6 +36,16 @@ async function errorIfHostnameResolvesToPrivateIp(options) {
     }
 }
 
+async function errorIfInvalidUrl(options) {
+    if (!options.url.hostname || !validator.isURL(options.url.hostname)) {
+        throw new errors.InternalServerError({
+            message: 'URL invalid.',
+            code: 'URL_MISSING_INVALID',
+            context: options.url.href
+        });
+    }
+}
+
 // same as our normal request lib but if any request in a redirect chain resolves
 // to a private IP address it will be blocked before the request is made.
 const externalRequest = got.extend({
@@ -46,16 +53,7 @@ const externalRequest = got.extend({
         'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
     },
     hooks: {
-        init: [(options) => {
-            if (!options.url.hostname || !validator.isURL(options.url.hostname)) {
-                throw new errors.InternalServerError({
-                    message: 'URL empty or invalid.',
-                    code: 'URL_MISSING_INVALID',
-                    context: options.url.href
-                });
-            }
-        }],
-        beforeRequest: [errorIfHostnameResolvesToPrivateIp],
+        beforeRequest: [errorIfInvalidUrl,errorIfHostnameResolvesToPrivateIp],
         beforeRedirect: [errorIfHostnameResolvesToPrivateIp]
     }
 });

@@ -134,11 +134,6 @@ class OEmbed {
                 responseType: 'buffer'
             });
 
-        //https://github.com/sindresorhus/got/issues/958
-        // for whatever reason, got v10 encodes all buffer responses at utf8
-        // hopefully fixed when we bump this to got v11
-        body = iconv.decode(body,'utf8');
-
         try {
             // Detect page encoding which might not be utf-8
             // and decode content
