@@ -1,3 +1,13 @@
+// Stubbing stripe in test was causing issues. Moved it
+// into this function to be able to rewire and stub the
+// expected return value.
+function getStripeLiveEnabled() {
+    const stripeService = require('../stripe');
+    // This seems to be the only true way to check if Stripe is configured in live mode
+    // settingsCache only cares if Stripe is enabled
+    return stripeService.api.configured && stripeService.api.mode === 'live';
+}
+
 /**
  *
  * @returns {Promise<any>}
@@ -9,10 +19,6 @@ module.exports = {
         if (labs.isSet('milestoneEmails')) {
             const db = require('../../data/db');
             const MilestoneQueries = require('./MilestoneQueries');
-            const stripeService = require('../stripe');
-            // This seems to be the only true way to check if Stripe is configured in live mode
-            // settingsCache only cares if Stripe is enabled
-            const isStripeLiveEnabled = stripeService.api.configured && stripeService.api.mode === 'live';
 
             const {
                 MilestonesEmailService,
@@ -38,7 +44,7 @@ module.exports = {
             // @TODO: schedule recurring jobs instead
             const membersResult = await milestonesEmailService.checkMilestones('members');
 
-            if (isStripeLiveEnabled) {
+            if (getStripeLiveEnabled()) {
                 arrResult = await milestonesEmailService.checkMilestones('arr');
             }
 
@@ -49,36 +55,3 @@ module.exports = {
         }
     }
 };
-
-// /**
-//  *
-//  * @returns {Promise<boolean>}
-//  */
-// module.exports.scheduleRecurringJobs = async () => {
-//     if (!hasScheduled) {
-//         const jobsService = require('../jobs');
-//         const path = require('path');
-
-//         const s = Math.floor(Math.random() * 60); // 0-59 second
-//         const m = Math.floor(Math.random() * 60); // 0-59 minute
-//         const h = Math.floor(Math.random() * 24); // 0-23 hour
-//         const wd = Math.floor(Math.random() * 7); // 0-6 weekday
-
-//         jobsService.addJob({
-//             at: `${s} ${m} ${h} * * ${wd}`, // Every week
-//             // at: '55 * * * * *', // every minute for local development
-//             job: path.resolve(__dirname, 'jobs/run-arr-milestones.js'),
-//             name: 'milestone-emails-arr'
-//         });
-
-//         jobsService.addJob({
-//             at: `${s} ${m} ${h} * * ${wd}`, // Every week
-//             // at: '56 * * * * *', // every minute for local development
-//             job: path.resolve(__dirname, 'jobs/run-members-milestones.js'),
-//             name: 'milestone-emails-members'
-//         });
-
-//         hasScheduled = true;
-//     }
-//     return hasScheduled;
-// };

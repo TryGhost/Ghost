@@ -4,10 +4,9 @@ const nock = require('nock');
 const sinon = require('sinon');
 const models = require('../../../core/server/models');
 const moment = require('moment');
+const rewire = require('rewire');
 
-const milestoneEmailsService = require('../../../core/server/services/milestone-emails');
-const labs = require('../../../core/shared/labs');
-const stripeService = require('../../../core/server/services/stripe');
+const milestoneEmailsService = rewire('../../../core/server/services/milestone-emails');
 
 let agent;
 let counter = 0;
@@ -140,8 +139,8 @@ async function createFreeMembers(amount, amountImported = 0) {
 }
 
 describe('Milestone Emails Service', function () {
-    let labsStub;
     let stripeModeStub;
+
     const milestonesConfig = {
         arr: [{currency: 'usd', values: [100]}],
         members: [10, 100]
@@ -151,21 +150,19 @@ describe('Milestone Emails Service', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters');
         await agent.loginAsOwner();
-        configUtils.set('milestones', milestonesConfig);
+    });
+
+    beforeEach(async function () {
         sinon.createSandbox();
+        stripeModeStub = sinon.stub().returns(true);
+        milestoneEmailsService.__set__('getStripeLiveEnabled', stripeModeStub);
+        configUtils.set('milestones', milestonesConfig);
+        mockManager.mockLabsEnabled('milestoneEmails');
     });
 
-    after(async function () {
+    afterEach(async function () {
         await configUtils.restore();
-        sinon.restore();
-    });
-
-    beforeEach(function () {
-        labsStub = sinon.stub(labs, 'isSet').returns(true);
-        stripeModeStub = sinon.stub(stripeService.api, 'mode').get(() => 'live');
-    });
-
-    afterEach(function () {
+        mockManager.restore();
         sinon.restore();
     });
 
@@ -195,8 +192,10 @@ describe('Milestone Emails Service', function () {
     });
 
     it('Does not send emails for milestones when imported members present', async function () {
-        await createFreeMembers(5, 1);
+        await createFreeMembers(10, 1);
+        await createMemberWithSubscription('month', 1000, 'usd', '2023-01-10');
         const result = await milestoneEmailsService.initAndRun();
+
         assert(result.members.value === 10);
         assert(result.members.emailSentAt === null);
         assert(result.arr.value === 100);
@@ -204,14 +203,15 @@ describe('Milestone Emails Service', function () {
     });
 
     it('Does not run when milestoneEmails labs flag is not set', async function () {
-        labsStub.returns(false);
+        mockManager.mockLabsDisabled('milestoneEmails');
 
         const result = await milestoneEmailsService.initAndRun();
         assert(result === undefined);
     });
 
     it('Does not run ARR milestones when Stripe is not live enabled', async function () {
-        stripeModeStub.get(() => 'test');
+        stripeModeStub = sinon.stub().returns(false);
+        milestoneEmailsService.__set__('getStripeLiveEnabled', stripeModeStub);
         await createFreeMembers(10);
 
         const result = await milestoneEmailsService.initAndRun();
