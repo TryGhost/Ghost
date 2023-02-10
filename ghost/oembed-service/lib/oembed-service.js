@@ -205,7 +205,6 @@ class OEmbed {
         } catch (err) {
             // Log to avoid being blind to errors happenning in metascraper
             logging.error(err);
-            console.log(err);
             return this.unknownProvider(url);
         }
 
@@ -245,7 +244,6 @@ class OEmbed {
         try {
             oembedUrl = cheerio('link[type="application/json+oembed"]', html).attr('href');
         } catch (e) {
-            console.log(e);
             return this.unknownProvider(url);
         }
 

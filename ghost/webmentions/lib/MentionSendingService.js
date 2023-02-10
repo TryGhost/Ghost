@@ -1,6 +1,5 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const got = require('got');
 
 module.exports = class MentionSendingService {
     #discoveryService;
