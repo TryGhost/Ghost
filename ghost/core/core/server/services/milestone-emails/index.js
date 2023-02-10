@@ -1,12 +1,12 @@
 // Stubbing stripe in test was causing issues. Moved it
 // into this function to be able to rewire and stub the
 // expected return value.
-function getStripeLiveEnabled() {
+const getStripeLiveEnabled = () => {
     const stripeService = require('../stripe');
     // This seems to be the only true way to check if Stripe is configured in live mode
     // settingsCache only cares if Stripe is enabled
     return stripeService.api.configured && stripeService.api.mode === 'live';
-}
+};
 
 /**
  *

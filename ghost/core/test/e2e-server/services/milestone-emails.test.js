@@ -167,28 +167,33 @@ describe('Milestone Emails Service', function () {
     });
 
     it('Runs ARR and Members milestone jobs', async function () {
-        await createFreeMembers(7);
-        await createMemberWithSubscription('year', 5000, 'usd', '2000-01-10');
-        await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
+        // No ARR and no members
         const firstRun = await milestoneEmailsService.initAndRun();
         assert(firstRun.members === undefined);
         assert(firstRun.arr === undefined);
 
+        await createFreeMembers(7);
+        await createMemberWithSubscription('year', 5000, 'usd', '2000-01-10');
+        await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
+        const secondRun = await milestoneEmailsService.initAndRun();
+        assert(secondRun.members === undefined);
+        assert(secondRun.arr === undefined);
+
         // Reached the first milestone for members
         await createFreeMembers(1);
-        const secondRun = await milestoneEmailsService.initAndRun();
-        assert(secondRun.members.value === 10);
-        assert(secondRun.members.emailSentAt !== undefined);
-        assert(secondRun.arr === undefined);
+        const thirdRun = await milestoneEmailsService.initAndRun();
+        assert(thirdRun.members.value === 10);
+        assert(thirdRun.members.emailSentAt !== undefined);
+        assert(thirdRun.arr === undefined);
 
         // Reached the first milestone for ARR
         await createMemberWithSubscription('month', 500, 'usd', '2000-01-10');
-        const thirdRun = await milestoneEmailsService.initAndRun();
+        const fourthRun = await milestoneEmailsService.initAndRun();
         // This will be false once we hook up to the DB
-        assert(thirdRun.members.value === 10);
-        assert(thirdRun.members.emailSentAt !== undefined);
-        assert(thirdRun.arr.value === 100);
-        assert(thirdRun.arr.emailSentAt !== undefined);
+        assert(fourthRun.members.value === 10);
+        assert(fourthRun.members.emailSentAt !== undefined);
+        assert(fourthRun.arr.value === 100);
+        assert(fourthRun.arr.emailSentAt !== undefined);
     });
 
     it('Does not send emails for milestones when imported members present', async function () {

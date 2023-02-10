@@ -49,8 +49,8 @@ module.exports = class MilestoneQueries {
         // Set the default currency as the one with the highest value
         if (currentARR.length > 1) {
             const highestValues = currentARR.sort((a, b) => b.arr - a.arr);
-            return highestValues[0].currency;
-        } else if (currentARR) {
+            return highestValues?.[0]?.currency;
+        } else if (currentARR?.[0]?.currency) {
             return currentARR[0].currency;
         } else {
             return 'usd';
