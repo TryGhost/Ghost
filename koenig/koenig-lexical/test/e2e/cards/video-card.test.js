@@ -95,7 +95,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
-        await expect(await page.getByTestId('video-duration')).toContainText('0:04');
+        await expect(await page.getByTestId('media-duration')).toContainText('0:04');
     });
 
     test('can upload video file from card menu', async function () {
@@ -106,7 +106,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
-        await expect(await page.getByTestId('video-duration')).toContainText('0:04');
+        await expect(await page.getByTestId('media-duration')).toContainText('0:04');
     });
 
     test('can show errors for failed video upload', async function () {
@@ -207,7 +207,7 @@ describe('Video card', async () => {
         await page.getByTestId('media-placeholder').dispatchEvent('dragover', {dataTransfer});
 
         // Dragover text should be visible
-        await expect(page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+        await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
 
         // Drop file
         await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
@@ -216,7 +216,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
-        await expect(await page.getByTestId('video-duration')).toContainText('0:04');
+        await expect(await page.getByTestId('media-duration')).toContainText('0:04');
     });
 
     test('can show errors if was dropped a file with wrong extension to video placeholder', async function () {
@@ -255,7 +255,7 @@ describe('Video card', async () => {
         await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('dragover', {dataTransfer});
 
         // Dragover text should be visible
-        await expect(page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+        await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
 
         // Drop file
         await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});

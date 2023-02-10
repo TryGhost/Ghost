@@ -2,6 +2,7 @@ import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {expect} from '@playwright/test';
 import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
 import path from 'path';
+import createDataTransfer from '../../utils/createDataTransfer';
 
 describe('Audio card', async () => {
     let app;
@@ -103,6 +104,36 @@ describe('Audio card', async () => {
         `, {ignoreCardContents: true}); // TODO: assert on HTML of inner card (not working due to error in prettier)
     });
 
+    test('can upload dropped audio', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await focusEditor(page);
+
+        // Open audio card and dismiss files chooser to prepare card for audio dropping
+        await page.keyboard.type('/audio');
+        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([]);
+
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'audio-sample.mp3', fileType: 'audio/mp3'});
+        await page.getByTestId('media-placeholder').dispatchEvent('dragover', {dataTransfer});
+
+        // Dragover text should be visible
+        await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+
+        // Drop file
+        await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
+
+        // Check progress bar
+        await expect(await page.getByTestId('progress-bar')).toBeVisible();
+
+        // Check that audio file was uploaded
+        await expect(await page.getByTestId('media-duration')).toContainText('0:19');
+    });
+
     test('shows errors on failed audio upload', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample-fail.mp3');
 
@@ -123,6 +154,27 @@ describe('Audio card', async () => {
         // Check that errors are displayed
         await page.waitForSelector('[data-testid="audio-upload-errors"]');
         expect(await page.getByTestId('audio-upload-errors')).toBeVisible();
+    });
+
+    test('can show errors if was dropped a file with wrong extension to audio placeholder', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await focusEditor(page);
+
+        // Open audio card and dismiss files chooser to prepare card for audio dropping
+        await page.keyboard.type('/audio');
+        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([]);
+
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
+
+        // Errors should be visible
+        await expect(await page.getByTestId('audio-upload-errors')).toBeVisible();
     });
 
     test('file input opens immediately when added via card menu', async function () {
@@ -195,6 +247,47 @@ describe('Audio card', async () => {
         // Remove thumbnail
         await page.getByTestId('remove-thumbnail').click();
         expect (await page.getByTestId('upload-thumbnail')).not.toBeNull();
+    });
+
+    test('can upload dropped thumbnail', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        await focusEditor(page);
+        await uploadAudio(page);
+
+        // Check that audio file was uploaded
+        await expect(await page.getByTestId('media-duration')).toContainText('0:19');
+
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        await page.getByTestId('audio-card-populated').dispatchEvent('dragover', {dataTransfer});
+
+        // Dragover text should be visible
+        await expect(await page.getByTestId('audio-thumbnail-dragover')).toBeVisible();
+
+        // Drop file
+        await page.getByTestId('audio-card-populated').dispatchEvent('drop', {dataTransfer});
+
+        // Check progress bar
+        await expect(await page.getByTestId('progress-bar')).toBeVisible();
+
+        // Check that audio file was uploaded
+        await expect (await page.getByTestId('audio-thumbnail')).toBeVisible();
+    });
+
+    test('can show errors if was dropped a file with wrong extension to thumbnail', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
+        await focusEditor(page);
+        await uploadAudio(page);
+
+        // Check that audio file was uploaded
+        await expect(await page.getByTestId('media-duration')).toContainText('0:19');
+
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'video.mp4', fileType: 'video/mp4'});
+        await page.getByTestId('audio-card-populated').dispatchEvent('drop', {dataTransfer});
+
+        // Errors should be visible
+        await expect(await page.getByTestId('thumbnail-errors')).toBeVisible();
     });
 
     test('shows errors on a failed thumbnail upload', async function () {
@@ -274,3 +367,14 @@ describe('Audio card', async () => {
         `, {ignoreCardContents: true});
     });
 });
+
+async function uploadAudio(page) {
+    const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
+
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.keyboard.type('/audio');
+    await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
+    await page.keyboard.press('Enter');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles([filePath]);
+}

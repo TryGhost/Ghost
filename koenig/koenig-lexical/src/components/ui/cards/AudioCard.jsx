@@ -91,9 +91,12 @@ function AudioThumbnail({
         width: `${progress?.toFixed(0)}%`
     };
 
-    if (isDraggedOver) { 
+    if (isDraggedOver) {
         return (
-            <div className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
+            <div
+                className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple"
+                data-testid="audio-thumbnail-dragover"
+            >
                 <p class="font-sans text-sm font-semibold text-white">
                     Drop it 🔥
                 </p>
@@ -125,7 +128,7 @@ function AudioThumbnail({
             <div className="group flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
                 <button
                     data-testid="upload-thumbnail"
-                    type="button" 
+                    type="button"
                     onClick={() => openFileSelection({fileInputRef: fileInputRef})}
                     className="flex h-20 w-20 items-center justify-center"
                 >
@@ -170,8 +173,9 @@ function PopulatedAudioCard({
     };
 
     return (
-        <div 
+        <div
             className="flex rounded border border-grey/30 p-2"
+            data-testid="audio-card-populated"
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
@@ -180,9 +184,9 @@ function PopulatedAudioCard({
             <AudioThumbnail
                 progress={progress}
                 isUploading={isUploading}
-                src={thumbnailSrc} 
-                isEditing={isEditing} 
-                onFileChange={onFileChange} 
+                src={thumbnailSrc}
+                isEditing={isEditing}
+                onFileChange={onFileChange}
                 setFileInputRef={setFileInputRef}
                 removeThumbnail={removeThumbnail}
                 isDraggedOver={isDraggedOver}

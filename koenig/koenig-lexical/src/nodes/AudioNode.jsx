@@ -12,6 +12,7 @@ import {thumbnailUploadHandler} from '../utils/thumbnailUploadHandler';
 import CardContext from '../context/CardContext';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {IMAGE_EXTENSIONS} from '../utils/constants';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_AUDIO_COMMAND} from '@tryghost/kg-default-nodes';
@@ -25,8 +26,8 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
     const thumbnailFileInputRef = React.useRef();
     const cardContext = React.useContext(CardContext);
 
-    const audioUploader = fileUploader.useFileUpload();
-    const thumbnailUploader = fileUploader.useFileUpload();
+    const audioUploader = fileUploader.useFileUpload(BaseAudioNode.extensionTypes);
+    const thumbnailUploader = fileUploader.useFileUpload(IMAGE_EXTENSIONS);
 
     React.useEffect(() => {
         const uploadInitialFiles = async (files) => {
