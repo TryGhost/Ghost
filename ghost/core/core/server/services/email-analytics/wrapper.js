@@ -55,6 +55,24 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
+    async fetchLatest() {
+        const fetchStartDate = new Date();
+        debug('Starting email analytics fetch of latest events');
+        const eventStats = await this.service.fetchLatest();
+        const fetchEndDate = new Date();
+        debug(`Finished fetching ${eventStats.totalEvents} analytics events in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
+
+        const aggregateStartDate = new Date();
+        debug(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
+        await this.service.aggregateStats(eventStats);
+        const aggregateEndDate = new Date();
+        debug(`Finished aggregating email analytics in ${aggregateEndDate.getTime() - aggregateStartDate.getTime()}ms`);
+
+        logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate.getTime() - fetchStartDate.getTime()}ms`);
+
+        return eventStats;
+    }
+
     async startFetch() {
         if (this.fetching) {
             logging.info('Email analytics fetch already running, skipping');
@@ -64,19 +82,7 @@ class EmailAnalyticsServiceWrapper {
 
         logging.info('Email analytics fetch started');
         try {
-            const fetchStartDate = new Date();
-            debug('Starting email analytics fetch of latest events');
-            const eventStats = await this.service.fetchLatest();
-            const fetchEndDate = new Date();
-            debug(`Finished fetching ${eventStats.totalEvents} analytics events in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
-
-            const aggregateStartDate = new Date();
-            debug(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
-            await this.service.aggregateStats(eventStats);
-            const aggregateEndDate = new Date();
-            debug(`Finished aggregating email analytics in ${aggregateEndDate.getTime() - aggregateStartDate.getTime()}ms`);
-
-            logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate.getTime() - fetchStartDate.getTime()}ms`);
+            const eventStats = await this.fetchLatest();
 
             this.fetching = false;
             return eventStats;
