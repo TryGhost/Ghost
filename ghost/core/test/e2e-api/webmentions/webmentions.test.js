@@ -195,7 +195,7 @@ describe('Webmentions (receiving)', function () {
 
         const requests = [];
         for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
-            const req = agent.post('/receive/')
+            const req = await agent.post('/receive/')
                 .body({
                     source: sourceUrl.href,
                     target: targetUrl.href,
@@ -205,7 +205,6 @@ describe('Webmentions (receiving)', function () {
 
             requests.push(req);
         }
-
         await Promise.all(requests);
 
         await agent
