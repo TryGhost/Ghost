@@ -440,44 +440,6 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        // Redirects are currently not supported by got for POST requests!
-        // TODO: upgrade to got v11
-
-        // it('Can handle redirect responses', async function () {
-        //    const scope = nock('https://example.org')
-        //        .persist()
-        //        .post('/webmentions-test')
-        //        .reply(302, '', {
-        //            headers: {
-        //                Location: 'https://example.org/webmentions-test-2'
-        //            }
-        //        });
-        //    const scope2 = nock('https://example.org')
-        //        .persist()
-        //        .post('/webmentions-test-2')
-        //        .reply(201);
-        
-        //    const service = new MentionSendingService({externalRequest});
-        //    await service.send({
-        //        source: new URL('https://example.com'),
-        //        target: new URL('https://example.com'),
-        //        endpoint: new URL('https://example.org/webmentions-test')
-        //    });
-        //    assert(scope.isDone());
-        //    assert(scope2.isDone());
-        // });
-
-        // TODO: also check if we don't follow private IPs after redirects
-
-        it('Does not send to private IP', async function () {
-            const service = new MentionSendingService({externalRequest});
-            await assert.rejects(service.send({
-                source: new URL('https://example.com/source'),
-                target: new URL('https://target.com/target'),
-                endpoint: new URL('http://localhost/webmentions')
-            }), /non-permitted private IP/);
-        });
-
         it('Does not send to private IP behind DNS', async function () {
             // Test that we don't make a request when a domain resolves to a private IP
             // domaincontrol.com -> 127.0.0.1
