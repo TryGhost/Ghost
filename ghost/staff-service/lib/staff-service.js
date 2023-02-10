@@ -94,7 +94,6 @@ class StaffService {
         if (type === MemberCreatedEvent && member.status === 'free') {
             await this.emails.notifyFreeMemberSignup(member);
         } else if (type === SubscriptionActivatedEvent) {
-            // Only send an email if the subscription has a positive MRR (ignore incomplete subscriptions)
             await this.emails.notifyPaidSubscriptionStarted({
                 member,
                 offer,
