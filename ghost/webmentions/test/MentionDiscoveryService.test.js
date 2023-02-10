@@ -41,7 +41,7 @@ describe('MentionDiscoveryService', function () {
         let url = new URL('http://redirector.io/');
         let nextUrl = new URL('http://testpage.com/');
 
-        let mockRedirect = nock(url.href)
+        nock(url.href)
             .intercept('/', 'HEAD')
             .reply(301, undefined, {location: nextUrl.href})
             .get('/')
