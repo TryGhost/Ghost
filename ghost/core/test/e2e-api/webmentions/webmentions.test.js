@@ -11,7 +11,6 @@ const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/jobs');
 const DomainEvents = require('@tryghost/domain-events');
-require('should');
 
 describe('Webmentions (receiving)', function () {
     let agent;
@@ -194,6 +193,20 @@ describe('Webmentions (receiving)', function () {
             .get(sourceUrl.pathname)
             .reply(200, html, {'Content-Type': 'text/html'});
 
+        const requests = [];
+        for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
+            const req = await agent.post('/receive/')
+                .body({
+                    source: sourceUrl.href,
+                    target: targetUrl.href,
+                    payload: {}
+                })
+                .expectStatus(202);
+
+            requests.push(req);
+        }
+        await Promise.all(requests);
+
         await agent
             .post('/receive/')
             .body({
@@ -201,23 +214,6 @@ describe('Webmentions (receiving)', function () {
                 target: targetUrl.href,
                 payload: {}
             })
-            .expectStatus(202);
-
-        const requests = [];
-        for (let i = 0; i < webmentionBlock.freeRetries + 2; i++) {
-            const req = await agent.post('/receive/')
-                .body({
-                    source: sourceUrl.href,
-                    target: targetUrl.href,
-                    payload: {}
-                });
-            if (i < webmentionBlock.freeRetries) {
-                req.statusCode.should.eql(202);
-            } else {
-                req.statusCode.should.eql(429);
-            }
-            requests.push(req);
-        }
-        await Promise.all(requests);
+            .expectStatus(429);
     });
 });
