@@ -30,7 +30,7 @@ module.exports = {
 
             const mailer = new GhostMailer();
             const repository = new InMemoryMilestoneRepository();
-            const queries = new MilestoneQueries({db, milestonesConfig});
+            const queries = new MilestoneQueries({db});
 
             const milestonesEmailService = new MilestonesEmailService({
                 mailer,
@@ -43,8 +43,9 @@ module.exports = {
 
             // @TODO: schedule recurring jobs instead
             const membersResult = await milestonesEmailService.checkMilestones('members');
+            const stripeLiveEnabled = getStripeLiveEnabled();
 
-            if (getStripeLiveEnabled()) {
+            if (stripeLiveEnabled) {
                 arrResult = await milestonesEmailService.checkMilestones('arr');
             }
 
