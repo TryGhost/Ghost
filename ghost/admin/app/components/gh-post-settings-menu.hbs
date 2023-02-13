@@ -245,7 +245,7 @@
                                             </div>
                                             <div class="gh-seo-preview-link">{{this.seoURL}}</div>
                                             <div class="gh-seo-preview-title">{{truncate this.seoTitle 60}}</div>
-                                            <div class="gh-seo-preview-desc">{{moment-format (now) "DD MMM YYYY"}} — {{truncate this.seoDescription 149}}</div>
+                                            <div class="gh-seo-preview-desc">{{moment-format (now) "DD MMM YYYY"}} — {{#if this.seoDescription}}{{truncate this.seoDescription 149}}{{else}}Search engines will automatically show a custom preview of content related to the search term here if no custom meta description is set.{{/if}}</div>
                                         </div>
                                     </div>
                                 </div>
