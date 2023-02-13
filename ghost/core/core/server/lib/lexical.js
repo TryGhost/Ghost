@@ -1,23 +1,56 @@
+const path = require('path');
 const urlUtils = require('../../shared/url-utils');
+const config = require('../../shared/config');
+const storage = require('../adapters/storage');
 
 let nodes;
 let lexicalHtmlRenderer;
 let urlTransformMap;
 
+function populateNodes() {
+    const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
+    nodes = DEFAULT_NODES;
+}
+
 module.exports = {
     get lexicalHtmlRenderer() {
         if (!lexicalHtmlRenderer) {
+            if (!nodes) {
+                populateNodes();
+            }
+
             const LexicalHtmlRenderer = require('@tryghost/kg-lexical-html-renderer');
-            lexicalHtmlRenderer = new LexicalHtmlRenderer();
+            lexicalHtmlRenderer = new LexicalHtmlRenderer({nodes});
         }
 
         return lexicalHtmlRenderer;
     },
 
+    render(lexical, userOptions = {}) {
+        const options = Object.assign({
+            siteUrl: config.get('url'),
+            imageOptimization: config.get('imageOptimization'),
+            canTransformImage(storagePath) {
+                const imageTransform = require('@tryghost/image-transform');
+                const {ext} = path.parse(storagePath);
+
+                // NOTE: the "saveRaw" check is smelly
+                return imageTransform.canTransformFiles()
+                    && imageTransform.shouldResizeFileExtension(ext)
+                    && typeof storage.getStorage('images').saveRaw === 'function';
+            },
+            createDocument() {
+                const {JSDOM} = require('jsdom');
+                return (new JSDOM()).window.document;
+            }
+        }, userOptions);
+
+        return this.lexicalHtmlRenderer.render(lexical, options);
+    },
+
     get nodes() {
         if (!nodes) {
-            const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
-            nodes = DEFAULT_NODES;
+            populateNodes();
         }
 
         return nodes;
