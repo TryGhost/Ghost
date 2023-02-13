@@ -136,7 +136,7 @@ function frontendTemplate(node, document) {
 
     const playbackRate = document.createElement('button');
     playbackRate.setAttribute('class', 'kg-audio-playback-rate');
-    playbackRate.textContent = '1&#215;';
+    playbackRate.innerHTML = '1&#215;'; // innerHTML not textContent because we need the HTML entity
     audioPlayer.appendChild(playbackRate);
 
     const unmuteIcon = document.createElement('button');
