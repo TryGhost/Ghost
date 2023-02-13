@@ -64,8 +64,11 @@ module.exports = class MemberBREADService {
         }
 
         const subscriptionProducts = (member.subscriptions || [])
-            .filter(sub => sub.status !== 'canceled')
+            .filter(sub => this.memberRepository.isActiveSubscriptionStatus(sub.status))
             .map(sub => sub.price.product.product_id);
+
+        // Remove incomplete subscriptions from the API
+        member.subscriptions = member.subscriptions.filter(sub => sub.status !== 'incomplete' && sub.status !== 'incomplete_expired');
 
         for (const product of member.products) {
             if (!subscriptionProducts.includes(product.id)) {

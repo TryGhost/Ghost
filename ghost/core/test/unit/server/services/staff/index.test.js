@@ -6,7 +6,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {mockManager} = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models');
 
-const {SubscriptionCreatedEvent, SubscriptionCancelledEvent, MemberCreatedEvent} = require('@tryghost/member-events');
+const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
 
 describe('Staff Service:', function () {
     before(function () {
@@ -132,7 +132,7 @@ describe('Staff Service:', function () {
 
         it('sends email for member source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCreatedEvent.create({
+            DomainEvents.dispatch(SubscriptionActivatedEvent.create({
                 source: 'member',
                 ...eventData
             }));
@@ -148,7 +148,7 @@ describe('Staff Service:', function () {
 
         it('sends email for api source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCreatedEvent.create({
+            DomainEvents.dispatch(SubscriptionActivatedEvent.create({
                 source: 'api',
                 ...eventData
             }));
@@ -164,7 +164,7 @@ describe('Staff Service:', function () {
 
         it('does not send email for importer source', async function () {
             await staffService.init();
-            DomainEvents.dispatch(SubscriptionCreatedEvent.create({
+            DomainEvents.dispatch(SubscriptionActivatedEvent.create({
                 source: 'import',
                 ...eventData
             }));
