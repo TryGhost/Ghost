@@ -1,6 +1,6 @@
 const {
-    agentProvider, 
-    fixtureManager, 
+    agentProvider,
+    fixtureManager,
     mockManager,
     dbUtils,
     configUtils
@@ -23,7 +23,6 @@ describe('Webmentions (receiving)', function () {
     });
 
     after(function () {
-        nock.cleanAll();
         nock.enableNetConnect();
     });
 
@@ -32,6 +31,7 @@ describe('Webmentions (receiving)', function () {
     });
 
     afterEach(async function () {
+        nock.cleanAll();
         await DomainEvents.allSettled();
         mockManager.restore();
         await dbUtils.truncate('brute');
@@ -144,6 +144,71 @@ describe('Webmentions (receiving)', function () {
         }
     });
 
+    it('will delete a mention when the target in Ghost was deleted', async function () {
+        const post = await models.Post.findOne({id: fixtureManager.get('posts', 0).id});
+        const targetUrl = new URL(urlUtils.getSiteUrl() + post.get('slug') + '/');
+        const sourceUrl = new URL('http://testpage.com/update-mention-test-2/');
+        const html = `
+            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+        `;
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'})
+            .persist();
+
+        testCreatingTheMention: {
+            const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+            await agent.post('/receive')
+                .body({
+                    source: sourceUrl.href,
+                    target: targetUrl.href
+                })
+                .expectStatus(202);
+
+            await processWebmentionJob;
+
+            const mention = await models.Mention.findOne({source: 'http://testpage.com/update-mention-test-2/'});
+            assert(mention);
+            assert.equal(mention.get('resource_id'), post.id);
+            assert.equal(mention.get('source_title'), 'Test Page');
+            assert.equal(mention.get('source_excerpt'), 'Test description');
+            assert.equal(mention.get('source_author'), 'John Doe');
+
+            break testCreatingTheMention;
+        }
+
+        // Move post to draft and mark page as 404
+        await models.Post.edit({status: 'draft'}, {id: post.id});
+
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(404);
+
+        testUpdatingTheMention: {
+            const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+
+            await agent.post('/receive')
+                .body({
+                    source: sourceUrl.href,
+                    target: targetUrl.href
+                })
+                .expectStatus(202);
+
+            await processWebmentionJob;
+
+            const mention = await models.Mention.findOne({source: 'http://testpage.com/update-mention-test-2/'});
+            assert(mention);
+
+            // Check resource id was not cleared
+            assert.equal(mention.get('resource_id'), post.id);
+
+            // Check deleted
+            assert.equal(mention.get('deleted'), true);
+
+            break testUpdatingTheMention;
+        }
+    });
+
     it('can receive a webmention to homepage', async function () {
         const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
         const targetUrl = new URL(urlUtils.getSiteUrl());
@@ -207,12 +272,12 @@ describe('Webmentions (receiving)', function () {
         await DomainEvents.allSettled();
 
         const users = await models.User.getEmailAlertUsers('mention-received');
-        users.forEach(async (user) => {
+        for (const user of users) {
             await mockManager.assert.sentEmail({
-                subject: 'You\'ve been mentioned!',
-                to: user.toJSON().email
+                subject: /New mention from/,
+                to: user.email
             });
-        });
+        }
         emailMockReceiver.sentEmailCount(users.length);
     });
 
@@ -255,10 +320,12 @@ describe('Webmentions (receiving)', function () {
                 <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
             `;
         nock(targetUrl.origin)
+            .persist()
             .head(targetUrl.pathname)
             .reply(200);
 
         nock(sourceUrl.origin)
+            .persist()
             .get(sourceUrl.pathname)
             .reply(200, html, {'Content-Type': 'text/html'});
 
