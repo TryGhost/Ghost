@@ -1,6 +1,9 @@
 const {JSDOM} = require('jsdom');
 const Prettier = require('prettier');
 const Renderer = require('../index');
+const {ImageNode} = require('@tryghost/kg-default-nodes');
+
+const nodes = [ImageNode];
 
 describe('Cards', function () {
     let lexicalState;
@@ -42,7 +45,7 @@ describe('Cards', function () {
         };
         lexicalState.root.children.push(imageCard);
 
-        const output = Prettier.format((new Renderer()).render(JSON.stringify(lexicalState), options), {parser: 'html'});
+        const output = Prettier.format((new Renderer({nodes})).render(JSON.stringify(lexicalState), options), {parser: 'html'});
 
         const expected =
 `<figure class="kg-card kg-image-card">

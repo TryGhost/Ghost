@@ -1,13 +1,15 @@
 class LexicalHTMLRenderer {
+    constructor({nodes} = {}) {
+        this.nodes = nodes || [];
+    }
+
     render(lexicalState, userOptions = {}) {
         const {createHeadlessEditor} = require('@lexical/headless');
         const {ListItemNode, ListNode} = require('@lexical/list');
         const {HeadingNode, QuoteNode} = require('@lexical/rich-text');
-        const {CodeNode} = require('@lexical/code');
         const {LinkNode} = require('@lexical/link');
         const {HorizontalRuleNode} = require('./nodes/HorizontalRuleNode');
         const {AsideNode} = require('./nodes/AsideNode');
-        const {ImageNode} = require('@tryghost/kg-default-nodes');
         const {$convertToHtmlString} = require('./convert-to-html-string');
 
         const defaultOptions = {
@@ -23,8 +25,7 @@ class LexicalHTMLRenderer {
             AsideNode,
             LinkNode,
             HorizontalRuleNode,
-            ImageNode,
-            CodeNode // TODO: replace with our own card
+            ...this.nodes
         ];
 
         const editor = createHeadlessEditor({
