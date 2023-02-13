@@ -2564,9 +2564,10 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-cp-membertier-attribution .gh-tier-card-header {
     display: flex;
     align-items: flex-start;
+    position: relative;
 }
 
-.gh-cp-membertier-attribution .gh-tier-card-header:nth-of-type(2) {
+.gh-cp-membertier-attribution .gh-tier-card-header:not(:first-child) {
     margin-top: 16px;
     border-top: 1px solid var(--whitegrey);
     padding-top: 16px;
@@ -2609,8 +2610,12 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-cp-membertier-attribution .action-menu {
     position: absolute;
-    top: 24px;
-    right: 24px;
+    top: 0px;
+    right: 0px;
+}
+
+.gh-cp-membertier-attribution .gh-tier-card-header:not(:first-child) .action-menu {
+    top: 16px;
 }
 
 .gh-cp-membertier-attribution span.archived {
