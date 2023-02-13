@@ -34,6 +34,8 @@ const db = require('./db-utils');
 // Services that need resetting
 const settingsService = require('../../core/server/services/settings/settings-service');
 const supertest = require('supertest');
+const {stopGhost} = require('./e2e-utils');
+const adapterManager = require('../../core/server/services/adapter-manager');
 
 /**
  * @param {Object} [options={}]
@@ -52,6 +54,9 @@ const startGhost = async (options = {}) => {
 
     // NOTE: need to pass this config to the server instance
     configUtils.set('paths:contentPath', contentFolder);
+
+    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
+    adapterManager.clearCache();
 
     const defaults = {
         backend: true,
@@ -232,6 +237,31 @@ const getMembersAPIAgent = async () => {
 };
 
 /**
+ * Creates a MembersAPITestAgent which is a drop-in substitution for supertest
+ * It is automatically hooked up to the Members API so you can make requests to e.g.
+ * agent.get('/webhooks/stripe/') without having to worry about URL paths
+ *
+ * @returns {Promise<InstanceType<GhostAPITestAgent>>} agent
+ */
+const getWebmentionsAPIAgent = async () => {
+    const bootOptions = {
+        frontend: true
+    };
+    try {
+        const app = await startGhost(bootOptions);
+        const originURL = configUtils.config.get('url');
+
+        return new GhostAPITestAgent(app, {
+            apiURL: '/webmentions/',
+            originURL
+        });
+    } catch (error) {
+        error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
+    }
+};
+
+/**
  * Creates a GhostAPITestAgent, which is a drop-in substitution for supertest
  * It is automatically hooked up to the Ghost API so you can make requests to e.g.
  * agent.get('/well-known/jwks.json') without having to worry about URL paths
@@ -293,6 +323,7 @@ const getAgentsForMembers = async () => {
 };
 
 /**
+ * WARNING: when using this, you should stop the returned ghostServer after the tests.
  * @NOTE: for now method returns a supertest agent for Frontend instead of test agent with snapshot support.
  *        frontendAgent should be returning an instance of TestAgent (related: https://github.com/TryGhost/Toolbox/issues/471)
  *  @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>, frontendAgent: InstanceType<supertest.SuperAgentTest>, contentAPIAgent: InstanceType<ContentAPITestAgent>, ghostServer: Express.Application}>} agents
@@ -309,6 +340,11 @@ const getAgentsWithFrontend = async () => {
         server: true
     };
     try {
+        // Possible that we still have a running Ghost server from a previous old E2E test
+        // Those tests never stopped the server in the tests manually
+        await stopGhost();
+
+        // Start a new Ghost server with real HTTP listener
         ghostServer = await startGhost(bootOptions);
         const app = ghostServer.rootApp;
 
@@ -380,6 +416,7 @@ module.exports = {
     agentProvider: {
         getAdminAPIAgent,
         getMembersAPIAgent,
+        getWebmentionsAPIAgent,
         getContentAPIAgent,
         getAgentsForMembers,
         getGhostAPIAgent,

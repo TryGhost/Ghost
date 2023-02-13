@@ -40,8 +40,6 @@ export default Model.extend(ValidationEngine, {
     mailgunApiKey: attr('string'),
     mailgunDomain: attr('string'),
     mailgunBaseUrl: attr('string'),
-    emailTrackOpens: attr('boolean'),
-    emailTrackClicks: attr('boolean'),
     portalButton: attr('boolean'),
     portalName: attr('boolean'),
     portalPlans: attr('json-string'),
@@ -51,6 +49,13 @@ export default Model.extend(ValidationEngine, {
     portalButtonSignupText: attr('string'),
     sharedViews: attr('string'),
     /**
+     * Analytics settings
+     */
+    emailTrackOpens: attr('boolean'),
+    emailTrackClicks: attr('boolean'),
+    outboundLinkTagging: attr('boolean'),
+    membersTrackSources: attr('boolean'),
+    /**
      * Members settings
      */
     membersSignupAccess: attr('string'),
@@ -59,7 +64,6 @@ export default Model.extend(ValidationEngine, {
     membersSupportAddress: attr('string'),
     membersMonthlyPriceId: attr('string'),
     membersYearlyPriceId: attr('string'),
-    membersTrackSources: attr('boolean'),
     stripeSecretKey: attr('string'),
     stripePublishableKey: attr('string'),
     stripePlans: attr('json-string'),

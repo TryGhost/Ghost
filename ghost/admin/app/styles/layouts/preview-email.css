@@ -138,13 +138,14 @@
     line-height: 1.8em;
 }
 
-p.gh-preview-newsletter-name {
+.gh-email-preview-newsletter-select p.gh-preview-newsletter-name {
     color: var(--darkgrey);
     font-weight: 600;
 }
 
 p .gh-preview-email-address {
     color: var(--midlightgrey);
+    font-weight: 500;
 }
 
 .gh-preview-email-subject {

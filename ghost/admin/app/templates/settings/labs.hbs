@@ -203,26 +203,52 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Suppression list</h4>
+                            <h4 class="gh-expandable-title">Webmentions</h4>
                             <p class="gh-expandable-description">
-                                Allows checking whether a member's email is blocked and removing emails from the suppression list.
+                                Allows receiving webmentions from external sites and viewing them on the dashboard.
                             </p>
                         </div>
                         <div class="for-switch">
-                            <GhFeatureFlag @flag="suppressionList" />
+                            <GhFeatureFlag @flag="webmentions" />
                         </div>
                     </div>
                 </div>
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Email stability</h4>
+                            <h4 class="gh-expandable-title">External attribution</h4>
                             <p class="gh-expandable-description">
-                                Use a new email sending flow that improves how email errors are handled.
+                                Adds ?ref to external links in web posts and adds a setting to control this for both web and newsletters.
                             </p>
                         </div>
                         <div class="for-switch">
-                            <GhFeatureFlag @flag="emailStability" />
+                            <GhFeatureFlag @flag="outboundLinkTagging" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Show email errors</h4>
+                            <p class="gh-expandable-description">
+                                This makes email errors visible in the UI.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="emailErrors" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Milestone emails</h4>
+                            <p class="gh-expandable-description">
+                                Send emails for reaching specific milestones.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="milestoneEmails" />
                         </div>
                     </div>
                 </div>

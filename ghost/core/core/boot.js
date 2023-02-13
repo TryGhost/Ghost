@@ -165,7 +165,7 @@ async function initServicesForFrontend({bootLogger}) {
     debug('End: Link Redirects');
 
     debug('Begin: Themes');
-    // customThemSettingsService.api must be initialized before any theme activation occurs
+    // customThemeSettingsService.api must be initialized before any theme activation occurs
     const customThemeSettingsService = require('./server/services/custom-theme-settings');
     customThemeSettingsService.init();
 
@@ -292,6 +292,9 @@ async function initServices({config}) {
     const audienceFeedback = require('./server/services/audience-feedback');
     const emailSuppressionList = require('./server/services/email-suppression-list');
     const emailService = require('./server/services/email-service');
+    const emailAnalytics = require('./server/services/email-analytics');
+    const mentionsService = require('./server/services/mentions');
+    const tagsPublic = require('./server/services/tags-public');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -305,15 +308,18 @@ async function initServices({config}) {
 
     await Promise.all([
         memberAttribution.init(),
+        mentionsService.init(),
         staffService.init(),
         members.init(),
         tiers.init(),
+        tagsPublic.init(),
         membersEvents.init(),
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
+        emailAnalytics.init(),
         mega.listen(),
         webhooks.listen(),
         appService.init(),
@@ -363,6 +369,9 @@ async function initBackgroundServices({config}) {
 
     const updateCheck = require('./server/update-check');
     updateCheck.scheduleRecurringJobs();
+
+    const milestoneEmails = require('./server/services/milestone-emails');
+    milestoneEmails.initAndRun();
 
     debug('End: initBackgroundServices');
 }

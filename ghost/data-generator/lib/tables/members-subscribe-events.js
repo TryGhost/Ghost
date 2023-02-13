@@ -27,10 +27,10 @@ class MembersSubscribeEventsImporter extends TableImporter {
         let subscribed = luck(80);
 
         // Free newsletter by default
-        let newsletterId = this.newsletters[0].id;
+        let newsletterId = this.newsletters[1].id;
         if (this.model.status === 'paid' && count === 0) {
             // Paid newsletter
-            newsletterId = this.newsletters[1].id;
+            newsletterId = this.newsletters[0].id;
             createdAt = this.subscriptions.find(s => s.member_id === this.model.id).created_at;
             subscribed = luck(98);
         }

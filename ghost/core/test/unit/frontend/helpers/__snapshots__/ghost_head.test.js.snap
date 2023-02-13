@@ -135,6 +135,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script><style>:root {--ghost-accent-color: #123456;}</style>",
 }
 `;
@@ -282,7 +283,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -291,7 +293,8 @@ Object {
   "rendered": "<meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #123456;}</style>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #123456;}</style>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -366,7 +369,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #123456;}</style>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #123456;}</style>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -440,7 +444,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -835,6 +840,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
 `;
@@ -949,7 +955,8 @@ Object {
 .gh-post-upgrade-cta a.gh-btn:hover {
     opacity: 0.92;
 }</style>
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1064,6 +1071,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
 `;
@@ -1179,6 +1187,7 @@ Object {
     opacity: 0.92;
 }</style><script async src=\\"https://js.stripe.com/v3/\\"></script>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
 `;
@@ -1230,7 +1239,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1345,6 +1355,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
 `;
@@ -1396,7 +1407,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1408,7 +1420,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/site/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/site/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/site/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/site/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1421,6 +1434,7 @@ Object {
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />
     <style>body {background: red;}</style>",
 }
 `;
@@ -1434,6 +1448,7 @@ Object {
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />
     <style>body {background: red;}</style>",
 }
 `;
@@ -1447,6 +1462,7 @@ Object {
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />
     <style>body {background: red;}</style>
     post-codeinjection",
 }
@@ -1461,6 +1477,7 @@ Object {
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />
     <style>body {background: red;}</style>",
 }
 `;
@@ -1546,7 +1563,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/site/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/site/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/site/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1560,7 +1578,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1584,7 +1603,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost \\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1635,7 +1655,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1646,7 +1667,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1657,7 +1679,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1719,6 +1742,7 @@ Object {
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />
     <script defer src=\\"/public/comment-counts.min.js?v=asset-hash\\" data-ghost-comments-counts-api=\\"http://localhost:65530/members/api/comments/counts/\\"></script>",
 }
 `;
@@ -1771,6 +1795,7 @@ Object {
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />
     <script defer src=\\"/public/comment-counts.min.js?v=asset-hash\\" data-ghost-comments-counts-api=\\"http://localhost:65530/members/api/comments/counts/\\"></script>",
 }
 `;
@@ -1791,7 +1816,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1857,7 +1883,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1908,7 +1935,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1928,7 +1956,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.9\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1939,7 +1968,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1952,7 +1982,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -1965,7 +1996,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2018,7 +2050,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2069,7 +2102,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2151,7 +2185,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2281,7 +2316,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2363,7 +2399,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2445,7 +2482,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2515,7 +2553,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2589,7 +2628,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2663,7 +2703,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2737,7 +2778,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2812,7 +2854,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2879,7 +2922,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2928,7 +2972,8 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;
 
@@ -2981,6 +3026,7 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\" />",
 }
 `;

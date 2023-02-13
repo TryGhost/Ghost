@@ -31,7 +31,8 @@ module.exports = [
                 'twitter_title',
                 'twitter_description',
                 'custom_template',
-                'locale'
+                'locale',
+                'tiers'
             ],
             withRelated: ['tags', 'authors'],
             withRelatedPrimary: {
@@ -79,7 +80,8 @@ module.exports = [
                 'tags',
                 'authors',
                 'primary_tag',
-                'primary_author'
+                'primary_author',
+                'tiers'
             ],
             filter: 'status:published+type:page'
         },
@@ -126,7 +128,8 @@ module.exports = [
                 'accessibility',
                 'meta_title',
                 'meta_description',
-                'tour'
+                'tour',
+                'last_seen'
             ],
             filter: 'visibility:public',
             shouldHavePosts: {

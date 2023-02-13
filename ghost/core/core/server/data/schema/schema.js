@@ -154,6 +154,7 @@ module.exports = {
         free_member_signup_notification: {type: 'boolean', nullable: false, defaultTo: true},
         paid_subscription_started_notification: {type: 'boolean', nullable: false, defaultTo: true},
         paid_subscription_canceled_notification: {type: 'boolean', nullable: false, defaultTo: false},
+        mention_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
@@ -979,5 +980,21 @@ module.exports = {
         '@@UNIQUE_CONSTRAINTS@@': [
             ['email_id', 'member_id']
         ]
+    },
+    mentions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        source: {type: 'string', maxlength: 2000, nullable: false},
+        source_title: {type: 'string', maxlength: 2000, nullable: true},
+        source_site_title: {type: 'string', maxlength: 2000, nullable: true},
+        source_excerpt: {type: 'string', maxlength: 2000, nullable: true},
+        source_author: {type: 'string', maxlength: 2000, nullable: true},
+        source_featured_image: {type: 'string', maxlength: 2000, nullable: true},
+        source_favicon: {type: 'string', maxlength: 2000, nullable: true},
+        target: {type: 'string', maxlength: 2000, nullable: false},
+        resource_id: {type: 'string', maxlength: 24, nullable: true},
+        resource_type: {type: 'string', maxlength: 50, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        payload: {type: 'text', maxlength: 65535, nullable: true},
+        deleted: {type: 'boolean', nullable: false, defaultTo: false}
     }
 };

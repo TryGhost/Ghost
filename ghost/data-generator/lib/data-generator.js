@@ -1,3 +1,4 @@
+const tables = require('./tables');
 const {
     PostsImporter,
     NewslettersImporter,
@@ -22,8 +23,10 @@ const {
     MembersStripeCustomersSubscriptionsImporter,
     MembersPaidSubscriptionEventsImporter,
     MembersSubscriptionCreatedEventsImporter,
-    MembersSubscribeEventsImporter
-} = require('./tables');
+    MembersSubscribeEventsImporter,
+    MentionsImporter,
+    EmailsImporter
+} = tables;
 const path = require('path');
 const fs = require('fs/promises');
 const {faker} = require('@faker-js/faker');
@@ -37,6 +40,7 @@ const {getProcessRoot} = require('@tryghost/root-utils');
  * @property {Object} schema
  * @property {Object} logger
  * @property {Object} modelQuantities
+ * @property {string} baseUrl
  */
 
 const defaultQuantities = {
@@ -61,7 +65,8 @@ class DataGenerator {
         knex,
         schema,
         logger,
-        modelQuantities = {}
+        modelQuantities = {},
+        baseUrl
     }) {
         this.useBaseData = baseDataPack !== '';
         this.baseDataPack = baseDataPack;
@@ -69,6 +74,7 @@ class DataGenerator {
         this.schema = schema;
         this.logger = logger;
         this.modelQuantities = Object.assign({}, defaultQuantities, modelQuantities);
+        this.baseUrl = baseUrl;
     }
 
     async importData() {
@@ -126,7 +132,7 @@ class DataGenerator {
                 data: baseData.posts
             });
             await postsImporter.addNewsletters({posts});
-            posts = await transaction.select('id', 'newsletter_id').from('posts');
+            posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug').from('posts');
 
             await transaction('tags').delete();
             tags = await jsonImporter.import({
@@ -176,7 +182,7 @@ class DataGenerator {
         } else {
             this.logger.info('No base data pack specified, starting random base data generation');
             const newslettersImporter = new NewslettersImporter(transaction);
-            // First newsletter is free, second is paid
+            // First newsletter is paid, second is free
             newsletters = await newslettersImporter.import({amount: 2, rows: ['sort_order']});
             newsletters.sort((a, b) => a.sort_order - b.sort_order);
 
@@ -185,7 +191,7 @@ class DataGenerator {
             });
             posts = await postsImporter.import({
                 amount: this.modelQuantities.posts,
-                rows: ['newsletter_id']
+                rows: ['newsletter_id', 'published_at', 'slug']
             });
 
             const tagsImporter = new TagsImporter(transaction, {
@@ -261,7 +267,7 @@ class DataGenerator {
 
         const postsProductsImporter = new PostsProductsImporter(transaction, {products: products.slice(1)});
         // Paid newsletters
-        await postsProductsImporter.importForEach(posts.filter(post => newsletters.findIndex(newsletter => newsletter.id === post.newsletter_id) === 1), {
+        await postsProductsImporter.importForEach(posts.filter(post => newsletters.findIndex(newsletter => newsletter.id === post.newsletter_id) === 0), {
             // Each post is available on all 3 premium products
             amount: 3
         });
@@ -303,7 +309,7 @@ class DataGenerator {
         const membersSubscribeEventsImporter = new MembersSubscribeEventsImporter(transaction, {newsletters, subscriptions});
         const membersSubscribeEvents = await membersSubscribeEventsImporter.importForEach(members, {
             amount: 2,
-            rows: ['member_id', 'newsletter_id']
+            rows: ['member_id', 'newsletter_id', 'created_at']
         });
 
         const membersNewslettersImporter = new MembersNewslettersImporter(transaction);
@@ -317,7 +323,12 @@ class DataGenerator {
         const membersSubscriptionCreatedEventsImporter = new MembersSubscriptionCreatedEventsImporter(transaction, {subscriptions});
         await membersSubscriptionCreatedEventsImporter.importForEach(membersStripeCustomersSubscriptions, {amount: 1});
 
-        // TODO: Emails! (relies on posts & newsletters)
+        const mentionsImporter = new MentionsImporter(transaction, {baseUrl: this.baseUrl});
+        // Generate up to 4 webmentions per post
+        await mentionsImporter.importForEach(posts, {amount: 4});
+
+        const emailsImporter = new EmailsImporter(transaction, {newsletters, members, membersSubscribeEvents});
+        await emailsImporter.importForEach(posts, {amount: 1});
 
         // TODO: Email clicks - redirect, members_click_events (relies on emails)
 
@@ -328,6 +339,42 @@ class DataGenerator {
         this.logger.info('Completed member data generation');
         this.logger.ok('Completed import process.');
     }
+
+    async importSingleTable(tableName, quantity) {
+        this.logger.info('Importing a single table');
+        const transaction = await this.knex.transaction();
+
+        const importMembers = async () => {
+            this.logger.info(`Importing ${quantity ?? this.modelQuantities.members} members`);
+            const membersImporter = new MembersImporter(transaction);
+            await membersImporter.import({amount: quantity ?? this.modelQuantities.members});
+        };
+
+        const importMentions = async () => {
+            const posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug').from('posts');
+            this.logger.info(`Importing up to ${posts.length * 4} mentions`);
+
+            const mentionsImporter = new MentionsImporter(transaction, {baseUrl: this.baseUrl});
+            await mentionsImporter.importForEach(posts, {amount: 4});
+        };
+
+        switch (tableName) {
+        case 'members':
+            await importMembers();
+            break;
+        case 'mentions':
+            await importMentions();
+            break;
+        default:
+            this.logger.warn(`Cannot import single table '${tableName}'`);
+            await transaction.commit(); // no-op, just close the transaction
+            return;
+        }
+
+        this.logger.ok('Completed import process.');
+        await transaction.commit();
+    }
 }
 
 module.exports = DataGenerator;
+module.exports.tables = tables;

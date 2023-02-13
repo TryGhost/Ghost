@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const rssCache = require('../../../../../core/frontend/services/rss/cache');
 const renderer = require('../../../../../core/frontend/services/rss/renderer');
 
@@ -26,7 +25,7 @@ describe('RSS: Renderer', function () {
     });
 
     it('calls the cache and attempts to render, even without data', function (done) {
-        rssCacheStub.returns(new Promise.resolve('dummyxml'));
+        rssCacheStub.returns(Promise.resolve('dummyxml'));
 
         renderer.render(res, baseUrl).then(function () {
             rssCacheStub.calledOnce.should.be.true();
@@ -43,7 +42,7 @@ describe('RSS: Renderer', function () {
     });
 
     it('correctly merges locals into empty data before rendering', function (done) {
-        rssCacheStub.returns(new Promise.resolve('dummyxml'));
+        rssCacheStub.returns(Promise.resolve('dummyxml'));
 
         res.locals = {foo: 'bar'};
 
@@ -62,7 +61,7 @@ describe('RSS: Renderer', function () {
     });
 
     it('correctly merges locals into non-empty data before rendering', function (done) {
-        rssCacheStub.returns(new Promise.resolve('dummyxml'));
+        rssCacheStub.returns(Promise.resolve('dummyxml'));
 
         res.locals = {foo: 'bar'};
         const data = {foo: 'baz', fizz: 'buzz'};
@@ -82,7 +81,7 @@ describe('RSS: Renderer', function () {
     });
 
     it('does nothing if it gets an error', function (done) {
-        rssCacheStub.returns(new Promise.reject(new Error('Fake Error')));
+        rssCacheStub.returns(Promise.reject(new Error('Fake Error')));
 
         renderer.render(res, baseUrl).then(function () {
             done('This should have errored');

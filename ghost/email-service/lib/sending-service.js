@@ -1,3 +1,6 @@
+const validator = require('@tryghost/validator');
+const logging = require('@tryghost/logging');
+
 /**
  * @typedef {object} EmailData
  * @prop {string} html
@@ -19,12 +22,14 @@
 
 /**
  * @typedef {import("./email-renderer")} EmailRenderer
+ * @typedef {import("./email-renderer").EmailBody} EmailBody
  */
 
 /**
  * @typedef {object} EmailSendingOptions
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
+ * @prop {{get(id: string): EmailBody | null, set(id: string, body: EmailBody): void}} [emailBodyCache]
  */
 
 /**
@@ -82,12 +87,30 @@ class SendingService {
      * @returns {Promise<EmailProviderSuccessResponse>}
     */
     async send({post, newsletter, segment, members, emailId}, options) {
-        const emailBody = await this.#emailRenderer.renderBody(
-            post,
-            newsletter,
-            segment,
-            options
-        );
+        const cacheId = emailId + '-' + (segment ?? 'null');
+
+        /**
+         * @type {EmailBody | null}
+         */
+        let emailBody = null;
+
+        if (options.emailBodyCache) {
+            emailBody = options.emailBodyCache.get(cacheId);
+        }
+
+        if (!emailBody) {
+            emailBody = await this.#emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                {
+                    clickTrackingEnabled: !!options.clickTrackingEnabled
+                }
+            );
+            if (options.emailBodyCache) {
+                options.emailBodyCache.set(cacheId, emailBody);
+            }
+        }
 
         const recipients = this.buildRecipients(members, emailBody.replacements);
         return await this.#emailProvider.send({
@@ -99,7 +122,10 @@ class SendingService {
             recipients,
             emailId: emailId,
             replacementDefinitions: emailBody.replacements
-        }, options);
+        }, {
+            clickTrackingEnabled: !!options.clickTrackingEnabled,
+            openTrackingEnabled: !!options.openTrackingEnabled
+        });
     }
 
     /**
@@ -111,15 +137,22 @@ class SendingService {
     buildRecipients(members, replacementDefinitions) {
         return members.map((member) => {
             return {
-                email: member.email,
+                email: member.email?.trim(),
                 replacements: replacementDefinitions.map((def) => {
                     return {
                         id: def.id,
                         token: def.token,
-                        value: def.getValue(member)
+                        value: def.getValue(member) || ''
                     };
                 })
             };
+        }).filter((recipient) => {
+            // Remove invalid recipient email addresses
+            const isValidRecipient = validator.isEmail(recipient.email, {legacy: false});
+            if (!isValidRecipient) {
+                logging.warn(`Removed recipient ${recipient.email} from list because it is not a valid email address`);
+            }
+            return isValidRecipient;
         });
     }
 }

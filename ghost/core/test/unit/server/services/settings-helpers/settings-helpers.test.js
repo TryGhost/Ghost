@@ -40,8 +40,8 @@ describe('Settings Helpers - getActiveStripeKeys', function () {
         });
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     it('Uses direct keys when stripeDirect is true, regardles of which keys exist', function () {

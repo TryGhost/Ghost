@@ -29,4 +29,12 @@ export default class Analytics extends Component {
         }
         this.settings.membersTrackSources = !this.settings.membersTrackSources;
     }
+
+    @action
+    toggleOutboundLinkTagging(event) {
+        if (event) {
+            event.preventDefault();
+        }
+        this.settings.outboundLinkTagging = !this.settings.outboundLinkTagging;
+    }
 }

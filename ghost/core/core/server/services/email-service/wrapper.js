@@ -13,8 +13,8 @@ class EmailServiceWrapper {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, EmailEventStorage, MailgunEmailProvider} = require('@tryghost/email-service');
-        const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member, EmailRecipientFailure, EmailSpamComplaintEvent} = require('../../models');
+        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
+        const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('@tryghost/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
@@ -25,7 +25,6 @@ class EmailServiceWrapper {
         const sentry = require('../../../shared/sentry');
         const membersRepository = membersService.api.members;
         const limitService = require('../limits');
-        const domainEvents = require('@tryghost/domain-events');
 
         const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
@@ -35,6 +34,8 @@ class EmailServiceWrapper {
         const linkTracking = require('../link-tracking');
         const audienceFeedback = require('../audience-feedback');
         const storageUtils = require('../../adapters/storage/utils');
+        const emailAnalyticsJobs = require('../email-analytics/jobs');
+        const {imageSize} = require('../../lib/image');
 
         // capture errors from mailgun client and log them in sentry
         const errorHandler = (error) => {
@@ -57,9 +58,9 @@ class EmailServiceWrapper {
             settingsHelpers,
             renderers: {
                 mobiledoc: mobiledocLib.mobiledocHtmlRenderer,
-                lexical: lexicalLib.lexicalHtmlRenderer
+                lexical: lexicalLib
             },
-            imageSize: null,
+            imageSize,
             urlUtils,
             storageUtils,
             getPostUrl: this.getPostUrl,
@@ -88,7 +89,8 @@ class EmailServiceWrapper {
             jobsService,
             emailSegmenter,
             emailRenderer,
-            db
+            db,
+            sentry
         });
 
         this.service = new EmailService({
@@ -102,7 +104,8 @@ class EmailServiceWrapper {
             emailSegmenter,
             limitService,
             membersRepository,
-            verificationTrigger: membersService.verificationTrigger
+            verificationTrigger: membersService.verificationTrigger,
+            emailAnalyticsJobs
         });
 
         this.controller = new EmailController(this.service, {
@@ -112,16 +115,6 @@ class EmailServiceWrapper {
                 Email
             }
         });
-
-        this.eventStorage = new EmailEventStorage({
-            db,
-            membersRepository,
-            models: {
-                EmailRecipientFailure,
-                EmailSpamComplaintEvent
-            }
-        });
-        this.eventStorage.listen(domainEvents);
     }
 }
 

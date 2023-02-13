@@ -37,6 +37,9 @@ const Member = ghostBookshelf.Model.extend({
             key: 'tiers',
             replacement: 'products.slug'
         }, {
+            key: 'tier_id',
+            replacement: 'products.id'
+        },{
             key: 'newsletters',
             replacement: 'newsletters.slug'
         }, {
@@ -219,8 +222,8 @@ const Member = ghostBookshelf.Model.extend({
 
     async updateTierExpiry(products = [], options = {}) {
         for (const product of products) {
-            if (product?.expiry_at) {
-                const expiry = new Date(product.expiry_at);
+            if (product?.id) {
+                const expiry = product.expiry_at ? new Date(product.expiry_at) : null;
                 const queryOptions = _.extend({}, options, {
                     query: {where: {product_id: product.id}}
                 });

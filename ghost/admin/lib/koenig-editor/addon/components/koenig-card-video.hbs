@@ -173,19 +173,13 @@
                                 />
                             </div>
                     </div>
-                    {{#if true}}
-                        <div class="kg-settings-panel-control-info">
-                            <span class="red">The file type you uploaded is not supported. Please use .MP4, .WEBM, .OGV</span>
-                        </div>
-                    {{/if}}
-
-                    {{!-- {{#if uploader.errors}}
+                    {{#if uploader.errors}}
                         <div class="kg-settings-panel-control-info">
                             {{#each uploader.errors as |error|}}
                                 <span class="red">{{error.message}}</span>
                             {{/each}}
                         </div>
-                    {{/if}} --}}
+                    {{/if}}
                 </div>
             {{/unless}}
         </GhUploader>

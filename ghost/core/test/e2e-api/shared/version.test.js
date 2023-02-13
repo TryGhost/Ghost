@@ -25,7 +25,7 @@ describe('API Versioning', function () {
             mockManager.restore();
         });
 
-        it('responds with no content version header when accept version header is NOT PRESENT', async function () {
+        it('responds with content version header even when accept version header is NOT PRESENT', async function () {
             await agentAdminAPI
                 .get('site/')
                 .expectStatus(200)
@@ -36,6 +36,7 @@ describe('API Versioning', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-length': anyContentLength,
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -290,7 +291,8 @@ describe('API Versioning', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .matchBodySnapshot(settingsMatcher);
         });

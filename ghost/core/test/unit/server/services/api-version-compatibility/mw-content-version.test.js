@@ -14,6 +14,7 @@ describe('MW Content Version', function () {
         };
 
         res = {
+            header: sinon.stub(),
             vary: sinon.stub()
         };
 

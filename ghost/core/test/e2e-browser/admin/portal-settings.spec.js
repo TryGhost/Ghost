@@ -91,8 +91,7 @@ test.describe('Portal Settings', () => {
             await page.goto(portalUrl);
 
             // expect stripe checkout to have opeened
-            await page.waitForNavigation();
-            await expect(page).toHaveURL(/^https:\/\/checkout.stripe.com/);
+            await page.waitForURL(/^https:\/\/checkout.stripe.com/);
         });
 
         test('can open portal directly on yearly signup', async ({page}) => {
@@ -112,8 +111,7 @@ test.describe('Portal Settings', () => {
             await page.goto(portalUrl);
 
             // expect stripe checkout to have opeened
-            await page.waitForNavigation();
-            await expect(page).toHaveURL(/^https:\/\/checkout.stripe.com/);
+            await page.waitForURL(/^https:\/\/checkout.stripe.com/);
         });
     });
 });

@@ -34,8 +34,8 @@ describe('Stripe - config', function () {
         });
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     it('Returns null if Stripe not connected', function () {

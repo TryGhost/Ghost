@@ -1,7 +1,8 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const sinon = require('sinon');
-const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
+const {MentionCreatedEvent} = require('@tryghost/webmentions');
 
 require('./utils');
 const StaffService = require('../lib/staff-service');
@@ -181,10 +182,11 @@ describe('StaffService', function () {
         describe('subscribeEvents', function () {
             it('subscribes to events', async function () {
                 service.subscribeEvents();
-                subscribeStub.calledThrice.should.be.true();
-                subscribeStub.calledWith(SubscriptionCreatedEvent).should.be.true();
+                subscribeStub.callCount.should.eql(4);
+                subscribeStub.calledWith(SubscriptionActivatedEvent).should.be.true();
                 subscribeStub.calledWith(SubscriptionCancelledEvent).should.be.true();
                 subscribeStub.calledWith(MemberCreatedEvent).should.be.true();
+                subscribeStub.calledWith(MentionCreatedEvent).should.be.true();
             });
         });
 
@@ -195,6 +197,12 @@ describe('StaffService', function () {
                         getEmailAlertUsers: sinon.stub().resolves([{
                             email: 'owner@ghost.org',
                             slug: 'ghost'
+                        }]),
+                        findAll: sinon.stub().resolves([{
+                            toJSON: sinon.stub().returns({
+                                email: 'owner@ghost.org',
+                                slug: 'ghost'
+                            })
                         }])
                     },
                     Member: {
@@ -259,7 +267,10 @@ describe('StaffService', function () {
                     },
                     settingsCache,
                     urlUtils,
-                    settingsHelpers
+                    settingsHelpers,
+                    labs: {
+                        isSet: () => 'webmentions'
+                    }
                 });
             });
             it('handles free member created event', async function () {
@@ -276,7 +287,7 @@ describe('StaffService', function () {
             });
 
             it('handles paid member created event', async function () {
-                await service.handleEvent(SubscriptionCreatedEvent, {
+                await service.handleEvent(SubscriptionActivatedEvent, {
                     data: {
                         source: 'member',
                         memberId: 'member-1',
@@ -303,6 +314,21 @@ describe('StaffService', function () {
 
                 mailStub.calledWith(
                     sinon.match({subject: '⚠️ Cancellation: Jamie'})
+                ).should.be.true();
+            });
+
+            it('handles new mention notification', async function () {
+                await service.handleEvent(MentionCreatedEvent, {
+                    data: {
+                        mention: {
+                            source: 'https://exmaple.com/some-post',
+                            target: 'https://exmaple.com/some-mentioned-post',
+                            sourceSiteTitle: 'Exmaple'
+                        }
+                    }
+                });
+                mailStub.calledWith(
+                    sinon.match({subject: `💌 New mention from: Exmaple`})
                 ).should.be.true();
             });
         });

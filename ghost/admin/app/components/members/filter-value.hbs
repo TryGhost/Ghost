@@ -32,7 +32,7 @@
         @allowEdit={{true}}
     />
 
-{{else if (eq @filter.type 'tier')}}
+{{else if (eq @filter.type 'tier_id')}}
     <div class="relative">
         <Tiers::SegmentSelect
             @onChange={{fn this.setTiersFilterValue @filter}}

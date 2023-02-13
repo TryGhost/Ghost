@@ -8,10 +8,10 @@
 // Usage: `{{price 500 currency="USD"}}`
 // Usage: `{{price currency="USD"}}`
 //
-// Returns amount equal to the dominant denomintation of the currency.
+// Returns amount equal to the dominant denomination of the currency.
 // For example, if 2100 is passed, it will return 21.
-const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const logging = require('@tryghost/logging');
 const _ = require('lodash');
 
 const messages = {
@@ -82,22 +82,19 @@ module.exports = function price(planOrAmount, options) {
 
     // CASE: if no amount is passed, e.g. `{{price}}` we throw an error
     if (arguments.length < 2) {
-        throw new errors.IncorrectUsageError({
-            message: tpl(messages.attrIsRequired)
-        });
+        logging.warn(tpl(messages.attrIsRequired));
+        return '';
     }
 
     // CASE: if amount is passed, but it is undefined we throw an error
     if (amount === undefined) {
-        throw new errors.IncorrectUsageError({
-            message: tpl(messages.attrIsRequired)
-        });
+        logging.warn(tpl(messages.attrIsRequired));
+        return '';
     }
 
     if (!_.isNumber(amount)) {
-        throw new errors.IncorrectUsageError({
-            message: tpl(messages.attrMustBeNumeric)
-        });
+        logging.warn(tpl(messages.attrMustBeNumeric));
+        return '';
     }
 
     return amount / 100;

@@ -95,6 +95,10 @@ export default function mockMembers(server) {
                             replacement: 'tiers.slug'
                         },
                         {
+                            key: 'tier_id',
+                            replacement: 'tiers.id'
+                        },
+                        {
                             key: 'offer_redemptions',
                             replacement: 'subscriptions.offer_id'
                         }
@@ -113,7 +117,6 @@ export default function mockMembers(server) {
                     // similar deal for associated models
                     ['labels', 'tiers', 'subscriptions', 'newsletters'].forEach((association) => {
                         serializedMember[association] = [];
-
                         member[association].models.forEach((associatedModel) => {
                             const serializedAssociation = {};
                             Object.keys(associatedModel.attrs).forEach((key) => {
@@ -132,7 +135,6 @@ export default function mockMembers(server) {
 
         if (search) {
             const query = search.toLowerCase();
-
             collection = collection.filter((member) => {
                 return member.name.toLowerCase().indexOf(query) !== -1
                     || member.email.toLowerCase().indexOf(query) !== -1;

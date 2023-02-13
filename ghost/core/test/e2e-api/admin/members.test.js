@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
 const ObjectId = require('bson-objectid').default;
 
 const assert = require('assert');
@@ -164,6 +164,7 @@ describe('Members API without Stripe', function () {
             .body({members: [newMember]})
             .expectStatus(422)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -224,6 +225,7 @@ describe('Members API - member attribution', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -266,6 +268,7 @@ describe('Members API - member attribution', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -308,6 +311,7 @@ describe('Members API - member attribution', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -350,6 +354,7 @@ describe('Members API - member attribution', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -389,6 +394,7 @@ describe('Members API - member attribution', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -412,6 +418,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/events/?filter=type:signup_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -457,6 +464,7 @@ describe('Members API', function () {
                 members: new Array(8).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -469,6 +477,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -481,6 +490,7 @@ describe('Members API', function () {
                 members: new Array(3).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -493,6 +503,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -505,6 +516,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -517,6 +529,21 @@ describe('Members API', function () {
                 members: new Array(5).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can filter by tier id', async function () {
+        const products = await getPaidProduct();
+        await agent
+            .get(`/members/?filter=tier_id:[${products.toJSON().id}]`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(4).fill(memberMatcherShallowIncludes)
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -529,6 +556,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -541,6 +569,7 @@ describe('Members API', function () {
                 members: new Array(5).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -551,7 +580,8 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-length': anyContentLength
+                'content-length': anyContentLength,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 members: new Array(8).fill(memberMatcherShallowIncludes)
@@ -566,7 +596,8 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-length': anyContentLength
+                'content-length': anyContentLength,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 members: new Array(8).fill(memberMatcherShallowIncludes)
@@ -585,6 +616,7 @@ describe('Members API', function () {
                 members: [memberMatcherShallowIncludes]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -597,6 +629,7 @@ describe('Members API', function () {
                 members: [memberMatcherShallowIncludes]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -609,6 +642,7 @@ describe('Members API', function () {
                 members: [memberMatcherShallowIncludes]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -618,6 +652,7 @@ describe('Members API', function () {
             .get('members/?search=do_not_exist')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -635,6 +670,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -647,6 +683,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -659,6 +696,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers())
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -682,6 +720,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -728,6 +767,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -749,6 +789,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -764,7 +805,7 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberPassVerification.id}`);
         await agent.delete(`/members/${memberFailVerification.id}`);
 
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -789,6 +830,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyString
             });
@@ -832,6 +874,7 @@ describe('Members API', function () {
         await agent
             .delete(`members/${body.members[0].id}/`)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expectStatus(204);
@@ -857,6 +900,7 @@ describe('Members API', function () {
             .body({members: [newMember]})
             .expectStatus(422)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -927,6 +971,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -941,6 +986,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1144,6 +1190,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1259,6 +1306,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1387,6 +1435,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1611,6 +1660,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1642,6 +1692,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1689,6 +1740,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -1709,6 +1761,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -1737,6 +1790,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1769,6 +1823,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1803,6 +1858,7 @@ describe('Members API', function () {
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1868,6 +1924,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1953,6 +2010,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1972,6 +2030,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2039,6 +2098,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2070,6 +2130,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2092,6 +2153,7 @@ describe('Members API', function () {
                 members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2103,6 +2165,7 @@ describe('Members API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2115,6 +2178,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2129,6 +2193,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2162,6 +2227,7 @@ describe('Members API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2177,6 +2243,7 @@ describe('Members API', function () {
             .expectEmptyBody() // express-test body parsing doesn't support CSV
             .matchHeaderSnapshot({
                 etag: anyEtag,
+                'content-version': anyContentVersion,
                 'content-length': anyContentLength,
                 'content-disposition': anyString
             });
@@ -2199,6 +2266,7 @@ describe('Members API', function () {
             .expectEmptyBody() // express-test body parsing doesn't support CSV
             .matchHeaderSnapshot({
                 etag: anyEtag,
+                'content-version': anyContentVersion,
                 'content-disposition': anyString
             });
 
@@ -2225,6 +2293,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2234,6 +2303,7 @@ describe('Members API', function () {
             .get('members/stats/?days=nope')
             .expectStatus(422)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -2251,6 +2321,7 @@ describe('Members API', function () {
                 members: new Array(4).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2263,6 +2334,7 @@ describe('Members API', function () {
                 members: new Array(8).fill(buildMemberMatcherShallowIncludesWithTiers())
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2295,6 +2367,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2321,6 +2394,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2365,6 +2439,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2391,6 +2466,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
         const changedMember = body2.members[0];
@@ -2422,6 +2498,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyString
             });
@@ -2460,6 +2537,7 @@ describe('Members API', function () {
         await agent
             .delete(`members/${body.members[0].id}/`)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expectStatus(204);
@@ -2495,6 +2573,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyString
             });
@@ -2550,6 +2629,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2585,6 +2665,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2632,6 +2713,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2663,6 +2745,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2722,6 +2805,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2749,6 +2833,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2805,6 +2890,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2832,6 +2918,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2871,6 +2958,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2898,6 +2986,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2938,6 +3027,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2987,6 +3077,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 

@@ -73,7 +73,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
 
         try {
             const collection = await this.Suppression.findAll({
-                filter: `email:[${emails.join(',')}]`
+                filter: `email:[${emails.map(email => `'${email}'`).join(',')}]`
             });
 
             return emails.map((email) => {
