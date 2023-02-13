@@ -142,6 +142,36 @@ describe('ImageNode', function () {
             `);
         }));
 
+        it('creates a full-featured image card with link', editorTest(function () {
+            const imageNode = $createImageNode({
+                ...dataset,
+                href: 'https://example.com'
+            });
+            const {element} = imageNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <figure class="kg-card kg-image-card">
+                    <a href="https://example.com"
+                        ><img
+                        src="/content/images/2022/11/koenig-lexical.jpg"
+                        alt="This is some alt text"
+                        loading="lazy"
+                        title="This is a title"
+                        width="3840"
+                        height="2160"
+                        srcset="
+                            /content/images/size/w600/2022/11/koenig-lexical.jpg   600w,
+                            /content/images/size/w1000/2022/11/koenig-lexical.jpg 1000w,
+                            /content/images/size/w1600/2022/11/koenig-lexical.jpg 1600w,
+                            /content/images/size/w2400/2022/11/koenig-lexical.jpg 2400w
+                        "
+                        sizes="(min-width: 720px) 720px"
+                    /></a>
+                    <figcaption>This is a <b>caption</b></figcaption>
+                </figure>
+            `);
+        }));
+
         it('creates a minimal image card', editorTest(function () {
             const imageNode = $createImageNode({src: '/image.png'});
             const {element} = imageNode.exportDOM(exportOptions);
@@ -403,8 +433,7 @@ describe('ImageNode', function () {
 
             nodes.length.should.equal(1);
             nodes[0].getSrc().should.equal('http://example.com/test.png');
-            // TODO: Add href support to image card
-            // nodes[0].getHref().should.equal('https://example.com/link');
+            nodes[0].getHref().should.equal('https://example.com/link');
         }));
     });
 

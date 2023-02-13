@@ -116,7 +116,14 @@ export function renderImageNodeToDOM(node, options = {}) {
         }
     }
 
-    figure.appendChild(img);
+    if (node.getHref()) {
+        const a = document.createElement('a');
+        a.setAttribute('href', node.getHref());
+        a.appendChild(img);
+        figure.appendChild(a);
+    } else {
+        figure.appendChild(img);
+    }
 
     if (node.getCaption()) {
         const caption = document.createElement('figcaption');

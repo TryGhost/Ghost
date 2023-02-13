@@ -113,8 +113,8 @@ export class ImageParser {
                         };
                         addFigCaptionToPayload(domNode, payload, {options});
 
-                        const {src, width, height, alt: altText, title, caption, cardWidth} = payload;
-                        const node = new self.NodeClass({altText, src, title, width, height, caption, cardWidth});
+                        const {src, width, height, alt: altText, title, caption, cardWidth, href} = payload;
+                        const node = new self.NodeClass({altText, src, title, width, height, caption, cardWidth, href});
                         return {node};
                     },
                     priority: 1
