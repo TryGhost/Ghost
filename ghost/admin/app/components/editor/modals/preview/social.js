@@ -66,11 +66,11 @@ export default class ModalPostPreviewSocialComponent extends Component {
             urlParts.push(this.args.post.slug);
         }
 
-        return urlParts.join(' > ');
+        return urlParts.join(' › ');
     }
 
     get serpDescription() {
-        return this.args.post.metaDescription || this.args.post.excerpt;
+        return this.args.post.metaDescription;
     }
 
     @action
