@@ -50,9 +50,6 @@ class MailgunEmailProvider {
 
         recipientData = replacements.reduce((acc, replacement) => {
             const {id, value} = replacement;
-            if (!acc[id]) {
-                acc[id] = {};
-            }
             acc[id] = value;
             return acc;
         }, {});

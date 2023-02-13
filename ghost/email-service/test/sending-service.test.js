@@ -103,6 +103,62 @@ describe('Sending service', function () {
             ));
         });
 
+        it('defaults to empty string if replacement returns undefined', async function () {
+            const sendingService = new SendingService({
+                emailRenderer,
+                emailProvider
+            });
+
+            const response = await sendingService.send({
+                post: {},
+                newsletter: {},
+                segment: null,
+                emailId: '123',
+                members: [
+                    {
+                        email: 'member@example.com',
+                        name: undefined
+                    }
+                ]
+            }, {
+                clickTrackingEnabled: true,
+                openTrackingEnabled: true
+            });
+            assert.equal(response.id, 'provider-123');
+            sinon.assert.calledOnce(sendStub);
+            assert(sendStub.calledWith(
+                {
+                    subject: 'Hi',
+                    from: 'ghost@example.com',
+                    replyTo: 'ghost+reply@example.com',
+                    html: '<html><body>Hi {{name}}</body></html>',
+                    plaintext: 'Hi',
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
+                    ],
+                    recipients: [
+                        {
+                            email: 'member@example.com',
+                            replacements: [{
+                                id: 'name',
+                                token: '{{name}}',
+                                value: ''
+                            }]
+                        }
+                    ]
+                },
+                {
+                    clickTrackingEnabled: true,
+                    openTrackingEnabled: true
+                }
+            ));
+        });
+
         it('supports cache', async function () {
             const emailBodyCache = new EmailBodyCache();
             const sendingService = new SendingService({
