@@ -4551,12 +4551,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.0.tgz#01212a872cbac937aa11b13c904442fa369abbc8"
   integrity sha512-8u7bAV+Sc0uKBYOEDK4wiD7xYvtNX5vxdat4S/8/qutUlq2iHvzI44jfosRPV2eWBzKTkiWA98Vlq9TQhXko1Q==
 
-"@tryghost/kg-clean-basic-html@3.0.0", "@tryghost/kg-clean-basic-html@^3.0.0":
+"@tryghost/kg-clean-basic-html@3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.0.tgz#a0b64168620a2477eb3d94cdf40c8840b6f7db4f"
   integrity sha512-x8IobSKd+jEqYpDzrbxqaxS01BcODZau1sgAueZxKY9EzdKZIc2wJy+o9jj5XwIVqVcdg0ivoYr3+I4jTilyJw==
 
-"@tryghost/kg-clean-basic-html@^3.0.4":
+"@tryghost/kg-clean-basic-html@^3.0.0", "@tryghost/kg-clean-basic-html@^3.0.4":
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.4.tgz#e7a7f429ab256b16be34d2dda0783ff72db58b9c"
   integrity sha512-aXB1Mrh5fs3byJiNrUoiC5aLmcgQ6ToX6NETKTIy2d/6rEScKfNbRq7GcNM7UDfcf1fBJtxoh5RSWSITCqeF1w==
@@ -12508,10 +12508,10 @@ ember-template-imports@^3.4.1:
     string.prototype.matchall "^4.0.6"
     validate-peer-dependencies "^1.1.0"
 
-ember-template-lint@5.5.0:
-  version "5.5.0"
-  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-5.5.0.tgz#b1603fe378480bd069ef8401d9dd9eff4c09009e"
-  integrity sha512-mKmJy+pnQhkMif/tMCdAxrPgR7h5BDE+qZrb0xPDuOl9kzNRC0gcTjx0xrXMj78BCdO3mi/JEkwI9kzMPWS3gg==
+ember-template-lint@5.5.1:
+  version "5.5.1"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-5.5.1.tgz#6a37b2770b1febc567a092013fd8927c5e305d72"
+  integrity sha512-EQgHRBWhSV46REzjaIp7B99tswBpY0IeKh2VNQT+AocL4oEQ9Bt0nqtNhtePA1ZX6xq5S8gBGIfAPN/FzIXkPQ==
   dependencies:
     "@lint-todo/utils" "^13.0.3"
     aria-query "^5.0.2"
@@ -13241,10 +13241,10 @@ eslint-webpack-plugin@^3.1.1:
     normalize-path "^3.0.0"
     schema-utils "^4.0.0"
 
-eslint@8.33.0, eslint@^8.3.0:
-  version "8.33.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-8.33.0.tgz#02f110f32998cb598c6461f24f4d306e41ca33d7"
-  integrity sha512-WjOpFQgKK8VrCnAtl8We0SUOy/oVZ5NHykyMiagV1M9r8IFpIJX7DduK6n1mpfhlG7T1NLWm2SuD8QB7KFySaA==
+eslint@8.34.0, eslint@^8.3.0:
+  version "8.34.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-8.34.0.tgz#fe0ab0ef478104c1f9ebc5537e303d25a8fb22d6"
+  integrity sha512-1Z8iFsucw+7kSqXNZVslXS8Ioa4u2KM7GPwuKtkTFAqZ/cHMcEaR+1+Br0wLlot49cNxIiZk5wp8EAbPcYZxTg==
   dependencies:
     "@eslint/eslintrc" "^1.4.1"
     "@humanwhocodes/config-array" "^0.11.8"
