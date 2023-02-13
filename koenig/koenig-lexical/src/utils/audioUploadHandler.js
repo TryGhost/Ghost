@@ -26,7 +26,7 @@ export const audioUploadHandler = async (files, nodeKey, editor, upload) => {
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
         node.setDuration(duration);
-        node.setSrc(fileSrc[0]);
+        node.setSrc(fileSrc);
         node.setMimeType(mimeType);
         node.setTitle(title);
     });
