@@ -171,8 +171,8 @@ class OEmbed {
      * @returns {Promise<{url: string, body: Object}>}
      */
     async fetchPageJson(url) {
-        const res = await this.fetchPage(url, {}); // .json() doesn't seem to parse appropriately... bug with got v10?
-        const body = JSON.parse(res.body);
+        const res = await this.fetchPage(url, {responseType: 'json'});
+        const body = res.body;
         const pageUrl = res.url;
         return {
             body,
