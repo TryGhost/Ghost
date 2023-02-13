@@ -195,7 +195,6 @@ describe('Webmentions (receiving)', function () {
 
         const requests = [];
         for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
-            console.log(i); // eslint-disable-line no-console
             const req = await agent.post('/receive/')
                 .body({
                     source: sourceUrl.href,
