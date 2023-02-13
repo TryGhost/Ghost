@@ -26,7 +26,7 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
     const cardContext = React.useContext(CardContext);
 
     const audioUploader = fileUploader.useFileUpload('audio');
-    const thumbnailUploader = fileUploader.useFileUpload('image');
+    const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
 
     React.useEffect(() => {
         const uploadInitialFiles = async (files) => {

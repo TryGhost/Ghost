@@ -26,7 +26,7 @@ export function VideoNodeComponent({
     const videoFileInputRef = React.useRef();
     const [previewThumbnail, setPreviewThumbnail] = useState('');
     const videoUploader = fileUploader.useFileUpload('video');
-    const thumbnailUploader = fileUploader.useFileUpload('image');
+    const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
     const customThumbnailUploader = fileUploader.useFileUpload('image');
 
     const videoDragHandler = useDragAndDrop(handleVideoDrop);
@@ -70,7 +70,7 @@ export function VideoNodeComponent({
             });
         }
 
-        const imageUploadResult = await thumbnailUploader.upload([new File([thumbnailBlob], `${file.name}.jpg`)]);
+        const imageUploadResult = await thumbnailUploader.upload([new File([thumbnailBlob], `${file.name}.jpg`)], {formData: {url: videoUrl}});
         const imageUrl = imageUploadResult?.[0]?.url;
 
         if (imageUrl) {

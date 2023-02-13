@@ -4,10 +4,20 @@ export const thumbnailUploadHandler = async (files, nodeKey, editor, upload) => 
     if (!files) {
         return;
     }
-    const fileSrc = await upload(files);
+
+    let mediaSrc = '';
+
+    editor.getEditorState().read(() => {
+        const node = $getNodeByKey(nodeKey);
+        mediaSrc = node.getSrc();
+    });
+
+    const uploadResult = await upload(files, {formData: {url: mediaSrc}});
+
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
-        node.setThumbnailSrc(fileSrc[0]);
+        node.setThumbnailSrc(uploadResult[0].url);
     });
+
     return;
 };

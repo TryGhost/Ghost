@@ -12,6 +12,10 @@ export const fileTypes = {
     audio: {
         mimeTypes: ['audio/mp3', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/vnd.wav', 'audio/wave', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a'],
         extensions: ['mp3', 'wav', 'ogg', 'm4a']
+    },
+    mediaThumbnail: {
+        mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/webp'],
+        extensions: ['gif', 'jpg', 'jpeg', 'png', 'webp']
     }
 };
 
@@ -58,7 +62,7 @@ export function useFileUpload(type = '') {
         return validationResult;
     }
 
-    async function upload(files = []) {
+    async function upload(files = [], options = {}) {
         setFilesNumber(files.length);
         // added delay for demo, helps to check progress bar
         setLoading(true);
