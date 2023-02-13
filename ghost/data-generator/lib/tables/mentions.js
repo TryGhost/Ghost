@@ -44,8 +44,8 @@ class WebMentionsImporter extends TableImporter {
             source_site_title: `${author}'s ${faker.word.noun()}`,
             source_excerpt: faker.lorem.paragraph(),
             source_author: author,
-            source_featured_image: 'https://via.placeholder.com/650x150.png',
-            source_favicon: 'https://via.placeholder.com/32x32.png',
+            source_featured_image: `https://api.dicebear.com/5.x/shapes/png?size=256&seed=${id}`,
+            source_favicon: `https://api.dicebear.com/5.x/bottts/png?size=32&seed=${id}`,
             target: `${this.baseUrl}${this.model.slug}/`,
             resource_id: this.model.id,
             resource_type: 'post', // TODO: Randomise resource type - should also include pages
