@@ -12,6 +12,23 @@ module.exports = class Mention {
         return this.#id;
     }
 
+    /** @type {boolean} */
+    #verified = false;
+    get verified() {
+        return this.#verified;
+    }
+
+    /**
+     * @param {string} html
+     */
+    verify(html) {
+        if (html.includes(this.target.href)) {
+            this.#verified = true;
+        } else {
+            this.#verified = false;
+        }
+    }
+
     /** @type {URL} */
     #source;
     get source() {
