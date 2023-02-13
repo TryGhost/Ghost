@@ -62,7 +62,7 @@ export default class GhPostSettingsMenu extends Component {
     @boundOneWay('post.uuid')
         uuidValue;
 
-    @or('metaDescriptionScratch', 'customExcerptScratch', 'post.excerpt')
+    @or('metaDescriptionScratch', 'customExcerptScratch')
         seoDescription;
 
     @or(
