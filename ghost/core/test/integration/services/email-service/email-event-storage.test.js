@@ -77,7 +77,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.delivered, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -128,7 +128,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.delivered, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -176,7 +176,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('opened_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.opened, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -258,7 +258,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.permanentFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -283,6 +283,104 @@ describe('EmailEventStorage', function () {
         assert.equal(permanentFailures.length, 1);
 
         assert.equal(permanentFailures.models[0].get('message'), 'Not delivering to previously bounced address');
+        assert.equal(permanentFailures.models[0].get('code'), 605);
+        assert.equal(permanentFailures.models[0].get('enhanced_code'), null);
+        assert.equal(permanentFailures.models[0].get('email_id'), emailId);
+        assert.equal(permanentFailures.models[0].get('member_id'), memberId);
+        assert.equal(permanentFailures.models[0].get('event_id'), 'pl271FzxTTmGRW8Uj3dUWw');
+        assert.equal(permanentFailures.models[0].get('severity'), 'permanent');
+        assert.equal(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
+    });
+
+    it('Can handle permanent failure events without message and description', async function () {
+        const emailBatch = fixtureManager.get('email_batches', 0);
+        const emailId = emailBatch.email_id;
+
+        const emailRecipient = fixtureManager.get('email_recipients', 4);
+        assert(emailRecipient.batch_id === emailBatch.id);
+        const memberId = emailRecipient.member_id;
+        const providerId = emailBatch.provider_id;
+        const timestamp = new Date(2000, 0, 1);
+
+        events = [{
+            event: 'failed',
+            id: 'pl271FzxTTmGRW8Uj3dUWw',
+            'log-level': 'error',
+            severity: 'permanent',
+            reason: 'suppress-bounce',
+            envelope: {
+                sender: 'john@example.org',
+                transport: 'smtp',
+                targets: 'joan@example.com'
+            },
+            flags: {
+                'is-routed': false,
+                'is-authenticated': true,
+                'is-system-test': false,
+                'is-test-mode': false
+            },
+            'delivery-status': {
+                'attempt-no': 1,
+                message: '',
+                code: 605,
+                description: '',
+                'session-seconds': 0.0
+            },
+            message: {
+                headers: {
+                    to: 'joan@example.com',
+                    'message-id': providerId,
+                    from: 'john@example.org',
+                    subject: 'Test Subject'
+                },
+                attachments: [],
+                size: 867
+            },
+            storage: {
+                url: 'https://se.api.mailgun.net/v3/domains/example.org/messages/eyJwI...',
+                key: 'eyJwI...'
+            },
+            recipient: emailRecipient.member_email,
+            'recipient-domain': 'mailgun.com',
+            campaigns: [],
+            tags: [],
+            'user-variables': {},
+            timestamp: Math.round(timestamp.getTime() / 1000)
+        }];
+
+        const initialModel = await models.EmailRecipient.findOne({
+            id: emailRecipient.id
+        }, {require: true});
+
+        assert.equal(initialModel.get('failed_at'), null);
+        assert.notEqual(initialModel.get('delivered_at'), null);
+
+        // Fire event processing
+        const result = await emailAnalytics.fetchLatest();
+        assert.equal(result.permanentFailed, 1);
+        assert.deepEqual(result.emailIds, [emailId]);
+        assert.deepEqual(result.memberIds, [memberId]);
+
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
+
+        // Check if status has changed to delivered, with correct timestamp
+        const updatedEmailRecipient = await models.EmailRecipient.findOne({
+            id: emailRecipient.id
+        }, {require: true});
+
+        assert.equal(updatedEmailRecipient.get('failed_at').toUTCString(), timestamp.toUTCString());
+
+        // Check delivered at is NOT reset back to null
+        assert.notEqual(updatedEmailRecipient.get('delivered_at'), null);
+
+        // Check we have a stored permanent failure
+        const permanentFailures = await models.EmailRecipientFailure.findAll({
+            filter: `email_recipient_id:${emailRecipient.id}`
+        });
+        assert.equal(permanentFailures.length, 1);
+
+        assert.equal(permanentFailures.models[0].get('message'), 'Error 605');
         assert.equal(permanentFailures.models[0].get('code'), 605);
         assert.equal(permanentFailures.models[0].get('enhanced_code'), null);
         assert.equal(permanentFailures.models[0].get('email_id'), emailId);
@@ -355,7 +453,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('failed_at'), null, 'This test requires a failed email recipient');
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.permanentFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -447,7 +545,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('failed_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.permanentFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -565,7 +663,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('failed_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.temporaryFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -669,7 +767,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.temporaryFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -701,6 +799,110 @@ describe('EmailEventStorage', function () {
         assert.equal(failures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
     });
 
+    it('Correctly overwrites temporary failure event with other temporary one without message', async function () {
+        const emailBatch = fixtureManager.get('email_batches', 0);
+        const emailId = emailBatch.email_id;
+
+        const emailRecipient = fixtureManager.get('email_recipients', 0);
+        assert(emailRecipient.batch_id === emailBatch.id);
+        const memberId = emailRecipient.member_id;
+        const providerId = emailBatch.provider_id;
+        const timestamp = new Date(2001, 0, 2);
+
+        events = [{
+            event: 'failed',
+            severity: 'temporary',
+            recipient: emailRecipient.member_email,
+            'user-variables': {
+                'email-id': emailId
+            },
+            // unix timestamp
+            timestamp: Math.round(timestamp.getTime() / 1000),
+            tags: [],
+            storage: {
+                url: 'https://storage-us-east4.api.mailgun.net/v3/domains/...',
+                region: 'us-east4',
+                key: 'AwABB...',
+                env: 'production'
+            },
+            'delivery-status': {
+                tls: true,
+                code: 555,
+                description: '',
+                utf8: true,
+                'retry-seconds': 600,
+                'attempt-no': 1,
+                message: '',
+                'certificate-verified': true
+            },
+            batch: {
+                id: '633ee6154618b2fed628ccb0'
+            },
+            'recipient-domain': 'test.com',
+            id: 'updated_event_id',
+            campaigns: [],
+            reason: 'generic',
+            flags: {
+                'is-routed': false,
+                'is-authenticated': true,
+                'is-system-test': false,
+                'is-test-mode': false
+            },
+            'log-level': 'warn',
+            template: {
+                name: 'test'
+            },
+            envelope: {
+                transport: 'smtp',
+                sender: 'test@test.com',
+                'sending-ip': 'xxx.xxx.xxx.xxx',
+                targets: 'test@test.com'
+            },
+            message: {
+                headers: {
+                    to: 'test@test.net',
+                    'message-id': providerId,
+                    from: 'test@test.com',
+                    subject: 'Test send'
+                },
+                attachments: [],
+                size: 3499
+            }
+        }];
+
+        // Fire event processing
+        const result = await emailAnalytics.fetchLatest();
+        assert.equal(result.temporaryFailed, 1);
+        assert.deepEqual(result.emailIds, [emailId]);
+        assert.deepEqual(result.memberIds, [memberId]);
+
+        // Since this is all event based we should wait for all dispatched events to be completed.
+        await DomainEvents.allSettled();
+
+        // Check if status has changed to delivered, with correct timestamp
+        const updatedEmailRecipient = await models.EmailRecipient.findOne({
+            id: emailRecipient.id
+        }, {require: true});
+
+        // Not mark as failed
+        assert.equal(updatedEmailRecipient.get('failed_at'), null);
+
+        // Check we have a stored temporary failure
+        const failures = await models.EmailRecipientFailure.findAll({
+            filter: `email_recipient_id:${emailRecipient.id}`
+        });
+        assert.equal(failures.length, 1);
+
+        assert.equal(failures.models[0].get('email_id'), emailId);
+        assert.equal(failures.models[0].get('member_id'), memberId);
+        assert.equal(failures.models[0].get('severity'), 'temporary');
+        assert.equal(failures.models[0].get('event_id'), 'updated_event_id');
+        assert.equal(failures.models[0].get('message'), 'Error 555');
+        assert.equal(failures.models[0].get('code'), 555);
+        assert.equal(failures.models[0].get('enhanced_code'), null); // should be set to null instead of kept
+        assert.equal(failures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
+    });
+
     it('Correctly overwrites permanent failure event with other permanent one', async function () {
         const emailBatch = fixtureManager.get('email_batches', 0);
         const emailId = emailBatch.email_id;
@@ -709,7 +911,7 @@ describe('EmailEventStorage', function () {
         assert(emailRecipient.batch_id === emailBatch.id);
         const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
-        const timestamp = new Date(2001, 0, 1);
+        const timestamp = new Date(2001, 0, 3);
 
         events = [{
             event: 'failed',
@@ -773,7 +975,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.permanentFailed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -839,7 +1041,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.complained, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -890,7 +1092,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.unsubscribed, 1);
         assert.deepEqual(result.emailIds, [emailId]);
         assert.deepEqual(result.memberIds, [memberId]);
@@ -929,7 +1131,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.unhandled, 1);
         assert.deepEqual(result.emailIds, []);
         assert.deepEqual(result.memberIds, []);
@@ -945,7 +1147,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.startFetch();
+        const result = await emailAnalytics.fetchLatest();
         assert.equal(result.unhandled, 0);
         assert.deepEqual(result.emailIds, []);
         assert.deepEqual(result.memberIds, []);

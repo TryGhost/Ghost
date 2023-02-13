@@ -17,8 +17,9 @@ class EmailEventStorage {
         // only set if delivered_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
+            .whereNull('delivered_at')
             .update({
-                delivered_at: this.#db.knex.raw('COALESCE(delivered_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+                delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
     }
 
@@ -27,8 +28,9 @@ class EmailEventStorage {
         // only set if opened_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
+            .whereNull('opened_at')
             .update({
-                opened_at: this.#db.knex.raw('COALESCE(opened_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+                opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
     }
 
@@ -37,8 +39,9 @@ class EmailEventStorage {
         // only set if failed_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
+            .whereNull('failed_at')
             .update({
-                failed_at: this.#db.knex.raw('COALESCE(failed_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+                failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
         await this.saveFailure('permanent', event);
     }
@@ -78,7 +81,7 @@ class EmailEventStorage {
                 member_id: event.memberId,
                 email_recipient_id: event.emailRecipientId,
                 severity,
-                message: event.error.message,
+                message: event.error.message || `Error ${event.error.enhancedCode ?? event.error.code}`,
                 code: event.error.code,
                 enhanced_code: event.error.enhancedCode,
                 failed_at: event.timestamp,
@@ -98,7 +101,7 @@ class EmailEventStorage {
             // Update the existing failure
             await existing.save({
                 severity,
-                message: event.error.message,
+                message: event.error.message || `Error ${event.error.enhancedCode ?? event.error.code}`,
                 code: event.error.code,
                 enhanced_code: event.error.enhancedCode ?? null,
                 failed_at: event.timestamp,

@@ -101,6 +101,97 @@ describe('Email Event Storage', function () {
         assert(existing.save.calledOnce);
     });
 
+    it('Handles email permanent bounce events with update and empty message', async function () {
+        const event = EmailBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: '',
+                code: 500,
+                enhancedCode: '5.5.5'
+            },
+            timestamp: new Date(0)
+        });
+
+        const db = createDb();
+        const existing = {
+            id: 1,
+            get: (key) => {
+                if (key === 'severity') {
+                    return 'temporary';
+                }
+                if (key === 'failed_at') {
+                    return new Date(-5);
+                }
+            },
+            save: sinon.stub().resolves()
+        };
+        const EmailRecipientFailure = {
+            transaction: async function (callback) {
+                return await callback(1);
+            },
+            findOne: sinon.stub().resolves(existing)
+        };
+
+        const eventHandler = new EmailEventStorage({
+            db,
+            models: {
+                EmailRecipientFailure
+            }
+        });
+        await eventHandler.handlePermanentFailed(event);
+        sinon.assert.calledOnce(db.update);
+        assert(!!db.update.firstCall.args[0].failed_at);
+        assert(existing.save.calledOnce);
+    });
+
+    it('Handles email permanent bounce events with update and empty message and without enhanced code', async function () {
+        const event = EmailBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: '',
+                code: 500
+            },
+            timestamp: new Date(0)
+        });
+
+        const db = createDb();
+        const existing = {
+            id: 1,
+            get: (key) => {
+                if (key === 'severity') {
+                    return 'temporary';
+                }
+                if (key === 'failed_at') {
+                    return new Date(-5);
+                }
+            },
+            save: sinon.stub().resolves()
+        };
+        const EmailRecipientFailure = {
+            transaction: async function (callback) {
+                return await callback(1);
+            },
+            findOne: sinon.stub().resolves(existing)
+        };
+
+        const eventHandler = new EmailEventStorage({
+            db,
+            models: {
+                EmailRecipientFailure
+            }
+        });
+        await eventHandler.handlePermanentFailed(event);
+        sinon.assert.calledOnce(db.update);
+        assert(!!db.update.firstCall.args[0].failed_at);
+        assert(existing.save.calledOnce);
+    });
+
     it('Handles email permanent bounce events with insert', async function () {
         const event = EmailBouncedEvent.create({
             email: 'example@example.com',
@@ -111,6 +202,75 @@ describe('Email Event Storage', function () {
                 message: 'test',
                 code: 500,
                 enhancedCode: '5.5.5'
+            },
+            timestamp: new Date(0)
+        });
+
+        const db = createDb();
+        const EmailRecipientFailure = {
+            transaction: async function (callback) {
+                return await callback(1);
+            },
+            findOne: sinon.stub().resolves(undefined),
+            add: sinon.stub().resolves()
+        };
+
+        const eventHandler = new EmailEventStorage({
+            db,
+            models: {
+                EmailRecipientFailure
+            }
+        });
+        await eventHandler.handlePermanentFailed(event);
+        sinon.assert.calledOnce(db.update);
+        assert(!!db.update.firstCall.args[0].failed_at);
+        assert(EmailRecipientFailure.add.calledOnce);
+    });
+
+    it('Handles email permanent bounce events with insert and empty message', async function () {
+        const event = EmailBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: '',
+                code: 500,
+                enhancedCode: '5.5.5'
+            },
+            timestamp: new Date(0)
+        });
+
+        const db = createDb();
+        const EmailRecipientFailure = {
+            transaction: async function (callback) {
+                return await callback(1);
+            },
+            findOne: sinon.stub().resolves(undefined),
+            add: sinon.stub().resolves()
+        };
+
+        const eventHandler = new EmailEventStorage({
+            db,
+            models: {
+                EmailRecipientFailure
+            }
+        });
+        await eventHandler.handlePermanentFailed(event);
+        sinon.assert.calledOnce(db.update);
+        assert(!!db.update.firstCall.args[0].failed_at);
+        assert(EmailRecipientFailure.add.calledOnce);
+    });
+
+    it('Handles email permanent bounce events with insert and empty message and without enhanced code', async function () {
+        const event = EmailBouncedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            error: {
+                message: '',
+                code: 500
             },
             timestamp: new Date(0)
         });
