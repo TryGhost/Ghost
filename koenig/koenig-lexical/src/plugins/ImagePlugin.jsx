@@ -5,7 +5,8 @@ import {
     $isRangeSelection,
     $createNodeSelection,
     $setSelection,
-    $isParagraphNode
+    $isParagraphNode,
+    $isNodeSelection
 } from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {mergeRegister} from '@lexical/utils';
@@ -13,6 +14,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import UnsplashPlugin from '../components/ui/UnsplashPlugin';
+import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
 
 export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -29,6 +31,30 @@ export const ImagePlugin = () => {
         }
     }, [imageUploader.upload, editor]);
 
+    const setNodeSelection = ({selection, selectedNode, imageNode, dataset}) => {
+        const selectedIsParagraph = $isParagraphNode(selectedNode);
+        const selectedIsEmpty = selectedNode.getTextContent() === '';
+        if (dataset.initialFile) {
+            // Audio file was dragged/dropped directly into the editor
+            // so we insert the AudioNode after the selected node
+            selectedNode
+                .getTopLevelElementOrThrow()
+                .insertAfter(imageNode);
+            if (selectedIsParagraph && selectedIsEmpty) {
+                selectedNode.remove();
+            }
+        } else {
+            // Audio node was added without an initial file (via Slash or Plus menu)
+            // so we insert the AudioNode before the selected node
+            selectedNode
+                .getTopLevelElementOrThrow()
+                .insertBefore(imageNode);
+        }
+        const nodeSelection = $createNodeSelection();
+        nodeSelection.add(imageNode.getKey());
+        $setSelection(nodeSelection);
+    };
+
     React.useEffect(() => {
         if (!editor.hasNodes([ImageNode])){
             console.error('ImagePlugin: ImageNode not registered'); // eslint-disable-line no-console
@@ -39,12 +65,15 @@ export const ImagePlugin = () => {
                 INSERT_IMAGE_COMMAND,
                 async (dataset) => {
                     const selection = $getSelection();
-
-                    if (!$isRangeSelection(selection)) {
+                    
+                    let focusNode;
+                    if ($isRangeSelection(selection)) {
+                        focusNode = selection.focus.getNode();
+                    } else if ($isNodeSelection(selection)) {
+                        focusNode = selection.getNodes()[0];
+                    } else {
                         return false;
                     }
-
-                    const focusNode = selection.focus.getNode();
 
                     if (focusNode !== null) {
                         const imageNode = $createImageNode(dataset);
@@ -56,35 +85,21 @@ export const ImagePlugin = () => {
                             setSelector('unsplash');
                         }
 
-                        if (!dataset.src) {
-                            const imageNodeKey = imageNode.getKey();
-                            handleImageUpload(dataset, imageNodeKey);
-                        }
-
-                        // insert a paragraph if this will be the last card and
-                        // we're not already on a blank paragraph so we always
-                        // have a trailing paragraph in the doc
-
-                        const selectedNode = selection.focus.getNode();
-                        const selectedIsBlankParagraph = $isParagraphNode(selectedNode) && selectedNode.getTextContent() === '';
-                        const nextNode = selectedNode.getTopLevelElementOrThrow().getNextSibling();
-                        if (!selectedIsBlankParagraph && !nextNode) {
-                            selection.insertParagraph();
-                        }
-
-                        selection.focus
-                            .getNode()
-                            .getTopLevelElementOrThrow()
-                            .insertBefore(imageNode);
-
-                        // move the focus away from the paragraph to the inserted
-                        // decorator node
-                        const nodeSelection = $createNodeSelection();
-                        nodeSelection.add(imageNode.getKey());
-                        $setSelection(nodeSelection);
+                        setNodeSelection({selection, selectedNode: focusNode, imageNode, dataset});
                     }
 
                     return true;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                INSERT_MEDIA_COMMAND,
+                async (dataset) => {
+                    if (dataset.type === 'image') {
+                        editor.dispatchCommand(INSERT_IMAGE_COMMAND, {initialFile: dataset.file});
+                        return true;
+                    }
+                    return false;
                 },
                 COMMAND_PRIORITY_HIGH
             )

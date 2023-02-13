@@ -29,13 +29,16 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
     const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
 
     React.useEffect(() => {
-        const uploadInitialFiles = async (files) => {
-            if (files?.length > 0 && !src && !audioUploader.isLoading) {
-                await audioUploadHandler(files, nodeKey, editor, audioUploader.upload);
+        const uploadInitialFiles = async (file) => {
+            if (file && !src && !audioUploader.isLoading) {
+                await audioUploadHandler([file], nodeKey, editor, audioUploader.upload);
             }
         };
         uploadInitialFiles(initialFile);
-    }, [audioUploader.upload, audioUploader.isLoading, editor, initialFile, nodeKey, src]);
+        
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const onAudioFileChange = async (e) => {
         const fls = e.target.files;

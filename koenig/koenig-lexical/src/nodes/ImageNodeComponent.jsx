@@ -11,7 +11,7 @@ import {openFileSelection} from '../utils/openFileSelection';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {LinkInput} from '../components/ui/LinkInput';
 
-export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileDialog, previewSrc, href}) {
+export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();
     const [dragOver, setDragOver] = React.useState(false);
     const [showLink, setShowLink] = React.useState(false);
@@ -21,6 +21,19 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
     const toolbarFileInputRef = React.useRef();
 
     const imageUploader = fileUploader.useFileUpload('image');
+
+    React.useEffect(() => {
+        const uploadInitialFile = async (file) => {
+            if (file && !src) {
+                await imageUploadHandler([file], nodeKey, editor, imageUploader.upload);
+            }
+        };
+
+        uploadInitialFile(initialFile);
+
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const onFileChange = async (e) => {
         const files = e.target.files;
@@ -138,7 +151,7 @@ export function ImageNodeComponent({nodeKey, src, altText, caption, triggerFileD
                 isDraggedOver={dragOver}
                 cardWidth={cardWidth}
                 previewSrc={previewSrc}
-                uploadProgress={imageUploader.progress}
+                imageUploader={imageUploader}
             />
 
             <ActionToolbar

@@ -18,7 +18,8 @@ export function VideoNodeComponent({
     totalDuration,
     cardWidth,
     triggerFileDialog,
-    isLoopChecked
+    isLoopChecked,
+    initialFile
 }) {
     const [editor] = useLexicalComposerContext();
     const {fileUploader} = React.useContext(KoenigComposerContext);
@@ -35,6 +36,18 @@ export function VideoNodeComponent({
 
     const videoMimeTypes = fileUploader.fileTypes.video?.mimeTypes || ['video/*'];
 
+    React.useEffect(() => {
+        const uploadInitialFiles = async (file) => {
+            if (file && !videoUploader.isLoading) {
+                await handleVideoUpload([file]);
+            }
+        };
+        uploadInitialFiles(initialFile);
+        
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    
     const handleVideoUpload = async (files) => {
         const file = files[0];
         if (!file) {

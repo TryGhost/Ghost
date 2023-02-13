@@ -142,6 +142,7 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         await page.click('button[name="alt-toggle-button"]');
@@ -175,6 +176,7 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         await page.click('input[placeholder="Type caption for image (optional)"]');
@@ -210,6 +212,7 @@ describe('Image card', async () => {
         await page.click('[data-kg-card="image"]');
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
@@ -229,6 +232,7 @@ describe('Image card', async () => {
         await page.click('[data-kg-card="image"]');
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Regular"]')).not.toBeNull();
@@ -248,6 +252,7 @@ describe('Image card', async () => {
         await page.click('[data-kg-card="image"]');
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Wide"]')).not.toBeNull();
@@ -267,6 +272,7 @@ describe('Image card', async () => {
         await page.click('[data-kg-card="image"]');
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Full"]')).not.toBeNull();
@@ -286,6 +292,7 @@ describe('Image card', async () => {
         await page.click('[data-kg-card="image"]');
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Link"]')).not.toBeNull();
@@ -305,6 +312,7 @@ describe('Image card', async () => {
         await page.click('[data-kg-card="image"]');
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Replace"]')).not.toBeNull();
@@ -324,6 +332,7 @@ describe('Image card', async () => {
         await page.click('[data-kg-card="image"]');
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Snippet"]')).not.toBeNull();
@@ -343,11 +352,12 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         await page.click('[data-kg-card="image"]');
 
-        expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
+        expect(await page.locator('[data-kg-card-toolbar="image"]')).not.toBeNull();
 
         const [replacefileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -356,6 +366,7 @@ describe('Image card', async () => {
         await replacefileChooser.setFiles([filePath2]);
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         await assertHTML(page, html`
@@ -387,20 +398,21 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         await page.click('[data-kg-card="image"]');
 
-        expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
+        expect(await page.locator('[data-kg-card-toolbar="image"]')).not.toBeNull();
 
         await page.click('[data-kg-card-toolbar="image"] button[aria-label="Wide"]');
-        expect (await page.$('[data-kg-card-width="wide"]')).not.toBeNull();
+        expect (await page.locator('[data-kg-card-width="wide"]')).not.toBeNull();
 
         await page.click('[data-kg-card-toolbar="image"] button[aria-label="Full"]');
-        expect (await page.$('[data-kg-card-width="full"]')).not.toBeNull();
+        expect (await page.locator('[data-kg-card-width="full"]')).not.toBeNull();
 
         await page.click('[data-kg-card-toolbar="image"] button[aria-label="Regular"]');
-        expect (await page.$('[data-kg-card-width="regular"]')).not.toBeNull();
+        expect (await page.locator('[data-kg-card-width="regular"]')).not.toBeNull();
     });
 
     test('toolbar does not disappear on click', async function () {
@@ -416,6 +428,7 @@ describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
 
         // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         await page.click('figure');
@@ -495,16 +508,12 @@ describe('Image card', async () => {
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
         // placeholder is replaced with uploading image
-        // TODO: upload-progress should not be visible here
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
                             <img src="blob:..." alt="" />
-                            <div data-testid="upload-progress">
-                                <div data-testid="progress-bar"><div></div></div>
-                            </div>
                         </div>
                     </figure>
                 </div>

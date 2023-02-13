@@ -43,11 +43,14 @@ export class ImageNode extends BaseImageNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        const {previewSrc, triggerFileDialog} = dataset;
+        const {previewSrc, triggerFileDialog, initialFile} = dataset;
 
         this.__previewSrc = previewSrc || '';
         // don't trigger the file dialog when rendering if we've already been given a url
         this.__triggerFileDialog = (!dataset.src && triggerFileDialog) || false;
+
+        // passed via INSERT_MEDIA_COMMAND on drag+drop or paste
+        this.__initialFile = initialFile || null;
     }
 
     getIcon() {
@@ -93,6 +96,7 @@ export class ImageNode extends BaseImageNode {
                     caption={this.__caption}
                     triggerFileDialog={this.__triggerFileDialog}
                     previewSrc={this.getPreviewSrc()}
+                    initialFile={this.__initialFile}
                 />
             </KoenigCardWrapper>
         );

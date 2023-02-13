@@ -6,17 +6,17 @@ import {ProgressBar} from '../ProgressBar';
 import {openFileSelection} from '../../../utils/openFileSelection';
 import ImageUploadForm from '../ImageUploadForm';
 
-function PopulatedImageCard({src, alt, previewSrc, progress}) {
+function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
     const progressStyle = {
-        width: `${progress?.toFixed(0)}%`
+        width: `${imageUploader.progress?.toFixed(0)}%`
     };
 
-    const progressAlt = progress.toFixed(0) < 100 ? `upload in progress, ${progress}` : '';
+    const progressAlt = imageUploader.progress.toFixed(0) < 100 ? `upload in progress, ${imageUploader.progress}` : '';
 
     return (
         <div>
             <img className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : progressAlt} />
-            {previewSrc && progress && !src ?
+            {imageUploader.isLoading ?
                 <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="upload-progress">
                     <ProgressBar style={progressStyle} />
                 </div>
@@ -58,7 +58,7 @@ const ImageHolder = ({
     src,
     altText,
     previewSrc,
-    uploadProgress,
+    imageUploader,
     onFileChange,
     setFileInputRef,
     handleDrag,
@@ -72,7 +72,7 @@ const ImageHolder = ({
                 src={src}
                 alt={altText}
                 previewSrc={previewSrc}
-                progress={uploadProgress}
+                imageUploader={imageUploader}
             />
         );
     } else {
@@ -104,7 +104,7 @@ export function ImageCard({
     isDraggedOver,
     cardWidth,
     previewSrc,
-    uploadProgress,
+    imageUploader,
     imageUploadErrors
 }) {
     const figureRef = React.useRef(null);
@@ -127,7 +127,7 @@ export function ImageCard({
                     src={src}
                     altText={altText}
                     previewSrc={previewSrc}
-                    uploadProgress={uploadProgress}
+                    imageUploader={imageUploader}
                     onFileChange={onFileChange}
                     setFileInputRef={setFileInputRef}
                     handleDrag={handleDrag}

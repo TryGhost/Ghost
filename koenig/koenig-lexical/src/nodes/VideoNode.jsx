@@ -10,6 +10,7 @@ export {INSERT_VIDEO_COMMAND} from '@tryghost/kg-default-nodes';
 export class VideoNode extends BaseVideoNode {
     // transient properties used to control node behaviour
     __triggerFileDialog = false;
+    __initialFile = null;
 
     static kgMenu = [{
         label: 'Video',
@@ -31,10 +32,12 @@ export class VideoNode extends BaseVideoNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        const {triggerFileDialog} = dataset;
+        const {triggerFileDialog, initialFile} = dataset;
 
         // don't trigger the file dialog when rendering if we've already been given a url
         this.__triggerFileDialog = !dataset.src && triggerFileDialog;
+
+        this.__initialFile = initialFile || null;
     }
 
     setTriggerFileDialog(shouldTrigger) {
@@ -54,6 +57,7 @@ export class VideoNode extends BaseVideoNode {
                     cardWidth={this.getCardWidth()}
                     isLoopChecked={this.getLoop()}
                     triggerFileDialog={this.__triggerFileDialog}
+                    initialFile={this.__initialFile}
                 />
             </KoenigCardWrapper>
         );

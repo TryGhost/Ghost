@@ -103,8 +103,8 @@ export function prettifyHTML(string, options = {}) {
         output = output.replace(/data-koenig-dnd-.*?=".*?"/g, '');
     }
 
-    // always ignore `blob:` urls because they are randomly generated and won't be consistent between tests
-    output = output.replace(/"blob:(.*?)"/, '"blob:..."');
+    // replace all instances of blob:http with "blob:..."
+    output = output.replace(/blob:http[^"]*/g, 'blob:...');
 
     if (options.ignoreCardContents || options.ignoreCardToolbarContents) {
         const {document} = (new JSDOM(output)).window;
