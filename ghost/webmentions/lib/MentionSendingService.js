@@ -75,8 +75,9 @@ module.exports = class MentionSendingService {
     async send({source, target, endpoint}) {
         logging.info('[Webmention] Sending webmention from ' + source.href + ' to ' + target.href + ' via ' + endpoint.href);
         
+        // default content type is application/x-www-form-encoded which is what we need for the webmentions spec
         const response = await this.#externalRequest.post(endpoint.href, {
-            json: {
+            form: {
                 source: source.href,
                 target: target.href,
                 source_is_ghost: true
@@ -84,7 +85,6 @@ module.exports = class MentionSendingService {
             throwHttpErrors: false,
             maxRedirects: 10,
             followRedirect: true,
-            methodRewriting: false, // WARNING! this setting has a different meaning in got v12!
             timeout: 10000
         });
 

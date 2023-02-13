@@ -357,11 +357,7 @@ describe('MentionSendingService', function () {
             const endpoint = new URL('https://example.org/webmentions-test');
             const scope = nock('https://example.org')
                 .persist()
-                .post('/webmentions-test', {
-                    source: source.href,
-                    target: target.href,
-                    source_is_ghost: true
-                })
+                .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}&source_is_ghost=true`)
                 .reply(202);
 
             const service = new MentionSendingService({externalRequest});
@@ -379,11 +375,7 @@ describe('MentionSendingService', function () {
             const endpoint = new URL('https://example.org/webmentions-test');
             const scope = nock('https://example.org')
                 .persist()
-                .post('/webmentions-test', {
-                    source: source.href,
-                    target: target.href,
-                    source_is_ghost: true
-                })
+                .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}&source_is_ghost=true`)
                 .reply(201);
 
             const service = new MentionSendingService({externalRequest});
@@ -424,6 +416,31 @@ describe('MentionSendingService', function () {
             }), /sending failed/);
             assert(scope.isDone());
         });
+
+        // // TODO: should be able to handle this
+        // it('Can handle redirect responses', async function () {
+        //    const scope = nock('https://example.org')
+        //        .persist()
+        //        .post('/webmentions-test')
+        //        .reply(302, '', {
+        //            headers: {
+        //                Location: 'https://example.org/webmentions-test-2'
+        //            }
+        //        });
+        //    const scope2 = nock('https://example.org')
+        //        .persist()
+        //        .post('/webmentions-test-2')
+        //        .reply(201);
+        
+        //    const service = new MentionSendingService({externalRequest});
+        //    const res = await service.send({
+        //        source: new URL('https://example.com'),
+        //        target: new URL('https://example.com'),
+        //        endpoint: new URL('https://example.org/webmentions-test')
+        //    });
+        //    assert(scope.isDone());
+        //    assert(scope2.isDone());
+        // });
 
         it('Can handle network errors', async function () {
             const scope = nock('https://example.org')
