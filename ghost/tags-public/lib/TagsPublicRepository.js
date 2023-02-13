@@ -40,11 +40,15 @@ module.exports = class TagsPublicRepository {
                 .filter(option => (option !== 'context'));
             const optionsForCacheKey = _.pick(options, permittedOptions);
 
-            // TODO: filter options, for example do we care make a distinction about
-            //       logged in member on the tags level?
+            // NOTE: can be more aggressive here with filtering options,
+            //       for example, do we care make a distinction for logged
+            //       in member on the tags level?
             cacheKey = `get-all-${JSON.stringify(optionsForCacheKey)}`;
-            const cachedResult = this.#cache.get(cacheKey);
+            const cachedResult = await this.#cache.get(cacheKey);
 
+            // NOTE: if the cache result is empty still going to the DB
+            //       this check can be removed if we want to be more aggressive
+            //       with caching and avoid and extra DB call
             if (cachedResult) {
                 return cachedResult;
             }
@@ -53,7 +57,7 @@ module.exports = class TagsPublicRepository {
         const dbResult = await this.#getAllDB(options);
 
         if (this.#cache) {
-            this.#cache.set(cacheKey, dbResult);
+            await this.#cache.set(cacheKey, dbResult);
         }
 
         return dbResult;

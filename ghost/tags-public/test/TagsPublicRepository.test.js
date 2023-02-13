@@ -100,5 +100,34 @@ describe('TagsPublicRepository', function () {
             assert.equal(tagStub.findPage.callCount, 2, 'should be called every time the item is not in the cache');
             assert.ok(tagStub.findPage.calledWith({limit: 'all'}));
         });
+
+        it('works with a cache that has an asynchronous interface', async function () {
+            const tagStub = {
+                findPage: sinon.stub().resolves({
+                    data: [{
+                        get(key) {
+                            return key;
+                        }
+                    }],
+                    meta: {}
+                }),
+                permittedOptions: sinon.stub().returns(['limit'])
+            };
+
+            const asyncMemoryCache = {
+                get: sinon.stub().resolves('test'),
+                set: sinon.stub().resolves()
+            };
+
+            const repo = new TagsPublicRepository({
+                Tag: tagStub,
+                cache: asyncMemoryCache
+            });
+
+            const result = await repo.getAll();
+
+            assert.ok(asyncMemoryCache.get.calledOnce);
+            assert.equal('test', result, 'should return the value from the cache');
+        });
     });
 });
