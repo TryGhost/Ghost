@@ -1,66 +1,66 @@
 const Milestone = require('./Milestone');
 
 /**
- * @template Model
- * @typedef {object} Mention<Model>
- * @prop {Model[]} data
- */
-
-/**
  * @typedef {object} IMilestoneRepository
  * @prop {(milestone: Milestone) => Promise<void>} save
- * @prop {(arr: number) => Promise<Milestone>} getByARR
+ * @prop {(arr: number, [currency]: string|null) => Promise<Milestone>} getByARR
  * @prop {(count: number) => Promise<Milestone>} getByCount
- * @prop {(type: 'arr'|'members') => Promise<Milestone>} getLatestByType
+ * @prop {(type: 'arr'|'members', [currency]: string|null) => Promise<Milestone>} getLatestByType
  * @prop {() => Promise<Milestone>} getLastEmailSent
  */
 
 /**
- * @template Model
- * @typedef {import('./MilestonesAPI')} <Model>
+ * @typedef {object} IQueries
+ * @prop {() => Promise<number>} getMembersCount
+ * @prop {() => Promise<object>} getARR
+ * @prop {() => Promise<boolean>} hasImportedMembersInPeriod
+ * @prop {() => Promise<string>} getDefaultCurrency
  */
 
 /**
- * @typedef {Object} IQueries
- * @prop {() => Promise<number>} getMembersCount
- * @prop {() => Promise<Object>} getARR
- * @prop {() => Promise<boolean>} hasImportedMembersInPeriod
+ * @typedef {object} ghostMailer
+ * @property {Function} send
+ */
+
+/**
+ * @typedef {object} milestonesConfig
+ * @prop {Array<object>} milestonesConfig.arr
+ * @prop {string} milestonesConfig.arr.currency
+ * @prop {number[]} milestonesConfig.arr.values
+ * @prop {number[]} milestonesConfig.members
  */
 
 module.exports = class MilestonesEmailService {
     /** @type {IMilestoneRepository} */
     #repository;
 
-    /** @type {Function} */
+    /**
+     * @type {ghostMailer} */
     #mailer;
 
-    /** @type {Object} */
-    #config;
+    /**
+     * @type {milestonesConfig} */
+    #milestonesConfig;
 
     /** @type {IQueries} */
     #queries;
 
-    /** @type {string} */
-    #defaultCurrency;
-
     /**
      * @param {object} deps
-     * @param {Function} deps.mailer
-     * @param {MilestonesAPI} deps.api
-     * @param {Object} deps.config
+     * @param {ghostMailer} deps.mailer
+     * @param {IMilestoneRepository} deps.repository
+     * @param {milestonesConfig} deps.milestonesConfig
      * @param {IQueries} deps.queries
-     * @param {string} deps.defaultCurrency
      */
     constructor(deps) {
         this.#mailer = deps.mailer;
-        this.#config = deps.config;
+        this.#milestonesConfig = deps.milestonesConfig;
         this.#queries = deps.queries;
-        this.#defaultCurrency = deps.defaultCurrency;
         this.#repository = deps.repository;
     }
 
     /**
-     * @param {string|null} currency
+     * @param {string} [currency]
      *
      * @returns {Promise<Milestone>}
      */
@@ -72,7 +72,14 @@ module.exports = class MilestonesEmailService {
      * @returns {Promise<Milestone>}
      */
     async #getLatestMembersCountMilestone() {
-        return this.#repository.getLatestByType('members');
+        return this.#repository.getLatestByType('members', null);
+    }
+
+    /**
+     * @returns {Promise<string>}
+     */
+    async #getDefaultCurrency() {
+        return await this.#queries.getDefaultCurrency();
     }
 
     /**
@@ -88,7 +95,7 @@ module.exports = class MilestonesEmailService {
         let existingMilestone = null;
 
         if (milestone.type === 'arr') {
-            existingMilestone = await this.#repository.getByARR(milestone.value, milestone?.currency) || false;
+            existingMilestone = await this.#repository.getByARR(milestone.value, milestone.currency) || false;
         } else if (milestone.type === 'members') {
             existingMilestone = await this.#repository.getByCount(milestone.value) || false;
         }
@@ -115,10 +122,10 @@ module.exports = class MilestonesEmailService {
 
     /**
      *
-     * @param {Array} goalValues
+     * @param {number[]} goalValues
      * @param {number} current
      *
-     * @returns {Array}
+     * @returns {number}
      */
     #getMatchedMilestone(goalValues, current) {
         // return highest suitable milestone
@@ -128,22 +135,19 @@ module.exports = class MilestonesEmailService {
 
     /**
      *
-     * @param {Object} milestone
+     * @param {object} milestone
      * @param {number} milestone.value
      * @param {'arr'|'members'} milestone.type
-     * @param {boolean} hasMembersImported
+     * @param {string|null} [milestone.currency]
+     * @param {Date|null} [milestone.emailSentAt]
      *
      * @returns {Promise<Milestone>}
      */
     async #saveMileStoneAndSendEmail(milestone) {
-        if (milestone.type === 'arr') {
-            milestone.currency = this.#defaultCurrency;
-        }
-
         const shouldSendEmail = await this.#shouldSendEmail();
 
         if (shouldSendEmail) {
-            // TODO: hook up GhostMailer or use StaffService and trigger event to send email
+            // TODO: hook up Ghostmailer or use StaffService and trigger event to send email
             // await this.#mailer.send({
             //     subject: 'Test',
             //     html: '<div>Milestone achieved</div>',
@@ -187,29 +191,33 @@ module.exports = class MilestonesEmailService {
     async #runARRQueries() {
         // Fetch the current data from queries
         const currentARR = await this.#queries.getARR();
+        const defaultCurrency = await this.#getDefaultCurrency();
 
-        // Check the definitions in the config
-        const arrMilestoneSettings = this.#config.milestones.arr;
+        // Check the definitions in the milestonesConfig
+        const arrMilestoneSettings = this.#milestonesConfig.arr;
+        const supportedCurrencies = arrMilestoneSettings.map(setting => setting.currency);
 
         // First check the currency matches
         if (currentARR.length) {
             let milestone;
 
-            const currentARRForCurrency = currentARR.filter(arr => arr.currency === this.#defaultCurrency)[0];
-            const milestonesForCurrency = arrMilestoneSettings.filter(milestoneSetting => milestoneSetting.currency === this.#defaultCurrency)[0];
+            const currentARRForCurrency = currentARR.filter(arr => arr.currency === defaultCurrency && supportedCurrencies.includes(defaultCurrency))[0];
+            const milestonesForCurrency = arrMilestoneSettings.filter(milestoneSetting => milestoneSetting.currency === defaultCurrency)[0];
 
             if (milestonesForCurrency && currentARRForCurrency) {
                 // get the closest milestone we're over now
                 milestone = this.#getMatchedMilestone(milestonesForCurrency.values, currentARRForCurrency.arr);
 
                 // Fetch the latest milestone for this currency
-                const latestMilestone = await this.#getLatestArrMilestone(this.#defaultCurrency);
+                const latestMilestone = await this.#getLatestArrMilestone(defaultCurrency);
 
                 // Ensure the milestone doesn't already exist
-                const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'arr', currency: this.#defaultCurrency});
+                const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'arr', currency: defaultCurrency});
 
-                if ((!milestoneExists && !latestMilestone || milestone > latestMilestone.value)) {
-                    return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr'});
+                if (milestone && milestone > 0) {
+                    if (!milestoneExists && (!latestMilestone || milestone > latestMilestone.value)) {
+                        return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr', currency: defaultCurrency});
+                    }
                 }
             }
         }
@@ -222,20 +230,22 @@ module.exports = class MilestonesEmailService {
         // Fetch the current data
         const membersCount = await this.#queries.getMembersCount();
 
-        // Check the definitions in the config
-        const membersMilestones = this.#config.milestones.members;
+        // Check the definitions in the milestonesConfig
+        const membersMilestones = this.#milestonesConfig.members;
 
         // get the closest milestone we're over now
-        const milestone = this.#getMatchedMilestone(membersMilestones, membersCount);
+        let milestone = this.#getMatchedMilestone(membersMilestones, membersCount);
 
         // Fetch the latest achieved Members milestones
         const latestMembersMilestone = await this.#getLatestMembersCountMilestone();
 
         // Ensure the milestone doesn't already exist
-        const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'members'});
+        const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'members', currency: null});
 
-        if ((!milestoneExists && !latestMembersMilestone || milestone > latestMembersMilestone.value)) {
-            return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members'});
+        if (milestone && milestone > 0) {
+            if (!milestoneExists && (!latestMembersMilestone || milestone > latestMembersMilestone.value)) {
+                return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members'});
+            }
         }
     }
 

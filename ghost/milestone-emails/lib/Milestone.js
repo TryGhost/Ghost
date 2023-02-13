@@ -151,9 +151,9 @@ function validateValue(value) {
 
 /**
  *
- * @param {'arr'|'members'} type
+ * @param {unknown} type
  *
- * @returns {string}
+ * @returns {'arr'|'members'}
  */
 function validateType(type) {
     if (type === 'arr') {
@@ -201,7 +201,7 @@ function validateName(name, value, type, currency) {
 
 /**
  *
- * @param {Object} data
+ * @param {object} data
  * @param {Date|null} data.emailSentAt
  *
  * @returns {Date|null}
