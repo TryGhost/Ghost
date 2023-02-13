@@ -303,7 +303,7 @@ const PostEmailSerializer = {
         }
 
         if (post.lexical) {
-            post.html = lexicalLib.lexicalHtmlRenderer.render(
+            post.html = lexicalLib.render(
                 post.lexical, {target: 'email', postUrl: post.url}
             );
         } else {
