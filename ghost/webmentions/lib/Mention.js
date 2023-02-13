@@ -78,6 +78,12 @@ module.exports = class Mention {
         return this.#sourceFeaturedImage;
     }
 
+    /** @type {boolean} */
+    #verified;
+    get verified() {
+        return this.#verified;
+    }
+
     /**
      * @param {object} metadata
      */
