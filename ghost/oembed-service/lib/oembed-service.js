@@ -67,7 +67,7 @@ class OEmbed {
         this.config = config;
 
         /** @type {IExternalRequest} */
-        this.externalRequest = externalRequest; // changed this because this is already happening in externalRequest + we can't await because we lose .json() possibility on promise
+        this.externalRequest = externalRequest;
 
         /** @type {ICustomProvider[]} */
         this.customProviders = [];

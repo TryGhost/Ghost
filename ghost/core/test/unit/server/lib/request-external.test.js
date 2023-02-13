@@ -303,9 +303,7 @@ describe('External Request', function () {
             }, (err) => {
                 requestMock.isDone().should.be.true();
                 should.exist(err);
-                // console.log(err);
-                // TODO: no error code or status message
-                err.code.should.be.equal(`ERR_NON_2XX_3XX_RESPONSE`);
+                err.response.statusMessage.should.be.equal('Not Found');
             });
         });
 
@@ -327,11 +325,7 @@ describe('External Request', function () {
             }, (err) => {
                 requestMock.isDone().should.be.true();
                 should.exist(err);
-                // TODO: checking in on status code options... Got seems to throw a generic code
-                err.code.should.be.equal(`ERR_NON_2XX_3XX_RESPONSE`);
-                // err.statusMessage.should.be.equal('Internal Server Error');
-                // err.body.should.match(/something awful happened/);
-                // err.body.should.match(/AWFUL_ERROR/);
+                err.response.statusMessage.should.be.equal(`Internal Server Error`);
             });
         });
     });
