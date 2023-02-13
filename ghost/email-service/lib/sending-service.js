@@ -142,7 +142,7 @@ class SendingService {
                     return {
                         id: def.id,
                         token: def.token,
-                        value: def.getValue(member)
+                        value: def.getValue(member) || ''
                     };
                 })
             };
