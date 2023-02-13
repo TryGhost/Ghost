@@ -29,7 +29,8 @@ export const fileTypes = {
         mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/webp'],
         extensions: ['gif', 'jpg', 'jpeg', 'png', 'webp'],
         endpoint: '/media/thumbnail/upload/',
-        resourceName: 'images'
+        requestMethod: 'put',
+        resourceName: 'media'
     }
 };
 
@@ -151,7 +152,7 @@ export default class KoenigLexicalEditor extends Component {
             }
         };
 
-        const useFileUpload = (type = 'image', {formData = {}, requestMethod = 'post'} = {}) => {
+        const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
             const [isLoading, setLoading] = React.useState(false);
             const [errors, setErrors] = React.useState([]);
@@ -211,7 +212,7 @@ export default class KoenigLexicalEditor extends Component {
                 return validationResult;
             };
 
-            const _uploadFile = async (file) => {
+            const _uploadFile = async (file, {formData = {}} = {}) => {
                 progressTracker.current[file] = 0;
 
                 const fileFormData = new FormData();
@@ -224,6 +225,7 @@ export default class KoenigLexicalEditor extends Component {
                 const url = `${ghostPaths().apiRoot}${fileTypes[type].endpoint}`;
 
                 try {
+                    const requestMethod = fileTypes[type].requestMethod || 'post';
                     const response = await this.ajax[requestMethod](url, {
                         data: fileFormData,
                         processData: false,
@@ -292,7 +294,7 @@ export default class KoenigLexicalEditor extends Component {
                 }
             };
 
-            const upload = async (files = []) => {
+            const upload = async (files = [], options = {}) => {
                 setFilesNumber(files.length);
                 setLoading(true);
 
@@ -310,7 +312,7 @@ export default class KoenigLexicalEditor extends Component {
 
                 for (let i = 0; i < files.length; i += 1) {
                     const file = files[i];
-                    uploadPromises.push(_uploadFile(file));
+                    uploadPromises.push(_uploadFile(file, options));
                 }
 
                 try {
