@@ -33,6 +33,19 @@ describe('Mention', function () {
         });
     });
 
+    describe('verify', function () {
+        it('Does basic check for the target URL and updates verified property', async function () {
+            const mention = await Mention.create(validInput);
+            assert(!mention.verified);
+
+            mention.verify('<a href="https://target.com/">');
+            assert(mention.verified);
+
+            mention.verify('<a href="https://not-da-target.com">');
+            assert(!mention.verified);
+        });
+    });
+
     describe('create', function () {
         it('Will error with invalid inputs', async function () {
             const invalidInputs = [

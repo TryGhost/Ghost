@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent} = require('@tryghost/member-events');
+const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
@@ -970,6 +970,25 @@ module.exports = class MemberRepository {
             offer_id: offerId
         };
 
+        const getStatus = (modelToCheck) => {
+            const status = modelToCheck.get('status');
+            const canceled = modelToCheck.get('cancel_at_period_end');
+
+            if (status === 'canceled') {
+                return 'expired';
+            }
+
+            if (canceled) {
+                return 'canceled';
+            }
+
+            if (this.isActiveSubscriptionStatus(status)) {
+                return 'active';
+            }
+
+            return 'inactive';
+        };
+
         let eventData = {};
         if (model) {
             // CASE: Offer is already mapped against sub, don't overwrite it with NULL
@@ -985,25 +1004,6 @@ module.exports = class MemberRepository {
             if (model.get('mrr') !== updated.get('mrr') || model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status') || model.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
                 const originalMrrDelta = model.get('mrr');
                 const updatedMrrDelta = updated.get('mrr');
-
-                const getStatus = (modelToCheck) => {
-                    const status = modelToCheck.get('status');
-                    const canceled = modelToCheck.get('cancel_at_period_end');
-
-                    if (status === 'canceled') {
-                        return 'expired';
-                    }
-
-                    if (canceled) {
-                        return 'canceled';
-                    }
-
-                    if (this.isActiveSubscriptionStatus(status)) {
-                        return 'active';
-                    }
-
-                    return 'inactive';
-                };
 
                 const getEventName = (originalStatus, updatedStatus) => {
                     if (originalStatus === updatedStatus) {
@@ -1031,6 +1031,24 @@ module.exports = class MemberRepository {
                     currency: subscriptionPriceData.currency,
                     mrr_delta: mrrDelta
                 }, options);
+
+                // Did we activate this subscription?
+                // This happens when an incomplete subscription is completed
+                // This always happens during the 3D secure flow, so it is important to catch
+                if (originalStatus !== 'active' && updatedStatus === 'active') {
+                    const context = options?.context || {};
+                    const source = this._resolveContextSource(context);
+
+                    const event = SubscriptionActivatedEvent.create({
+                        source,
+                        tierId: ghostProduct?.get('id'),
+                        memberId: member.id,
+                        subscriptionId: updated.get('id'),
+                        offerId: offerId,
+                        batchId: options.batch_id
+                    });
+                    this.dispatchEvent(event, options);
+                }
             }
         } else {
             eventData.created_at = new Date(subscription.start_date * 1000);
@@ -1060,6 +1078,18 @@ module.exports = class MemberRepository {
                 batchId: options.batch_id
             });
             this.dispatchEvent(event, options);
+
+            if (getStatus(subscriptionModel) === 'active') {
+                const activatedEvent = SubscriptionActivatedEvent.create({
+                    source,
+                    tierId: ghostProduct?.get('id'),
+                    memberId: member.id,
+                    subscriptionId: subscriptionModel.get('id'),
+                    offerId: offerId,
+                    batchId: options.batch_id
+                });
+                this.dispatchEvent(activatedEvent, options);
+            }
         }
 
         let memberProducts = (await member.related('products').fetch(options)).toJSON();

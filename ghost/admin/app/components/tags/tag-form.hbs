@@ -173,7 +173,7 @@
                                 </div>
                                 <div class="gh-seo-preview-link">{{this.seoURL}}</div>
                                 <div class="gh-seo-preview-title">{{this.seoTitle}}</div>
-                                <div class="gh-seo-preview-desc">{{this.seoDescription}}</div>
+                                <div class="gh-seo-preview-desc">{{#if this.seoDescription}}{{truncate this.seoDescription 149}}{{else}}Search engines will automatically show a custom preview of content related to the search term here if no custom meta description is set.{{/if}}</div>
                             </div>
                         </div>
                     </div>

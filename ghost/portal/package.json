@@ -18,8 +18,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@sentry/react": "7.36.0",
-    "@sentry/tracing": "7.36.0",
+    "@sentry/react": "7.37.1",
+    "@sentry/tracing": "7.37.1",
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.4.3",
@@ -87,7 +87,7 @@
     "chokidar": "3.5.3",
     "copy-webpack-plugin": "11.0.0",
     "jest-raw-loader": "1.0.1",
-    "minimist": "1.2.7",
+    "minimist": "1.2.8",
     "ora": "5.4.1",
     "raw-loader": "4.0.2",
     "rewire": "6.0.0",

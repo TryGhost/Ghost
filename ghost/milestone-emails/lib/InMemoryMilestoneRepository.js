@@ -1,6 +1,6 @@
 /**
  * @typedef {import('./Milestone')} Milestone
- * @typedef {import('./MilestonesAPI').IMilestoneRepository} IMilestoneRepository
+ * @typedef {import('./MilestonesEmailService').IMilestoneRepository} IMilestoneRepository
  */
 
 /**
@@ -32,7 +32,7 @@ module.exports = class InMemoryMilestoneRepository {
 
     /**
      * @param {'arr'|'members'} type
-     * @param {string|null} currency
+     * @param {string} [currency]
      *
      * @returns {Promise<Milestone>}
      */
@@ -68,7 +68,7 @@ module.exports = class InMemoryMilestoneRepository {
 
     /**
      * @param {number} value
-     * @param {string} currency
+     * @param {string} [currency]
      *
      * @returns {Promise<Milestone>}
      */
