@@ -119,7 +119,7 @@
     "concurrently": "7.6.0",
     "eslint-plugin-ghost": "2.16.0",
     "husky": "8.0.3",
-    "lint-staged": "13.1.1",
+    "lint-staged": "13.1.2",
     "nodemon": "2.0.20"
   }
 }
