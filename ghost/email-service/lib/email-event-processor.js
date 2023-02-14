@@ -82,10 +82,8 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 timestamp
             });
-            await this.#eventStorage.handleOpened(event);
-
             this.#domainEvents.dispatch(event);
-            await waitForEvent(); // Avoids knex connection pool to run dry
+            await this.#eventStorage.handleOpened(event);
         }
         return recipient;
     }

@@ -107,13 +107,19 @@ module.exports = class MailgunClient {
         }
     }
 
+    /**
+     * Fetches events from Mailgun
+     * @param {Object} mailgunOptions
+     * @param {Function} batchHandler
+     * @param {Object} options
+     * @param {Number} options.maxEvents Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @returns {Promise<void>}
+     */
     async fetchEvents(mailgunOptions, batchHandler, {maxEvents = Infinity} = {}) {
-        let result = [];
-
         const mailgunInstance = this.getInstance();
         if (!mailgunInstance) {
             logging.warn(`Mailgun is not configured`);
-            return result;
+            return;
         }
 
         debug(`fetchEvents: starting fetching first events page`);
@@ -132,16 +138,14 @@ module.exports = class MailgunClient {
             debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
+            let firstEventTimestamp = events[0]?.timestamp;
 
-            pagesLoop:
             while (events.length !== 0) {
-                const batchResult = await batchHandler(events);
-
-                result = result.concat(batchResult);
+                await batchHandler(events);
                 eventCount += events.length;
 
-                if (eventCount >= maxEvents) {
-                    break pagesLoop;
+                if (eventCount >= maxEvents && (firstEventTimestamp && firstEventTimestamp < events[events.length - 1].timestamp)) {
+                    break;
                 }
 
                 const nextPageId = page.pages.next.page;
@@ -159,8 +163,6 @@ module.exports = class MailgunClient {
                 events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
                 debug(`fetchEvents: finished fetching next page with ${events.length} events`);
             }
-
-            return result;
         } catch (error) {
             // Log and re-throw Mailgun errors
             logging.error(error);
