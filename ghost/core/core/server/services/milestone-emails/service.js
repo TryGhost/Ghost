@@ -8,15 +8,15 @@ const getStripeLiveEnabled = () => {
     return stripeService.api.configured && stripeService.api.mode === 'live';
 };
 
-/**
- *
- * @returns {Promise<any>}
- */
 module.exports = {
-    async initAndRun() {
-        const labs = require('../../../shared/labs');
+    /** @type {import('@tryghost/milestone-emails/lib/MilestonesEmailService')} */
+    api: null,
 
-        if (labs.isSet('milestoneEmails')) {
+    /**
+     * @returns {Promise<void>}
+     */
+    async init() {
+        if (!this.api) {
             const db = require('../../data/db');
             const MilestoneQueries = require('./MilestoneQueries');
 
@@ -32,27 +32,36 @@ module.exports = {
             const repository = new InMemoryMilestoneRepository();
             const queries = new MilestoneQueries({db});
 
-            const milestonesEmailService = new MilestonesEmailService({
+            this.api = new MilestonesEmailService({
                 mailer,
                 repository,
                 milestonesConfig, // avoid using getters and pass as JSON
                 queries
             });
+        }
+    },
 
-            let arrResult;
+    /**
+     * @returns {Promise<void>}
+     */
+    async run() {
+        const labs = require('../../../shared/labs');
 
-            // @TODO: schedule recurring jobs instead
-            const membersResult = await milestonesEmailService.checkMilestones('members');
+        if (labs.isSet('milestoneEmails')) {
+            await this.api.checkMilestones('members');
             const stripeLiveEnabled = getStripeLiveEnabled();
 
             if (stripeLiveEnabled) {
-                arrResult = await milestonesEmailService.checkMilestones('arr');
+                await this.api.checkMilestones('arr');
             }
-
-            return {
-                members: membersResult,
-                arr: arrResult
-            };
         }
+    },
+
+    /**
+     * @returns {Promise<void>}
+     */
+    async initAndRun() {
+        await this.init();
+        await this.run();
     }
 };
