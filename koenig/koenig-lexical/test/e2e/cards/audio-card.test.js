@@ -75,25 +75,16 @@ describe('Audio card', async () => {
     });
 
     test('can upload an audio file', async function () {
-        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
-
         await focusEditor(page);
-
-        // Upload audio file
-        const fileChooserPromise = page.waitForEvent('filechooser');
-        await page.keyboard.type('/audio');
-        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles([filePath]);
+        await uploadAudio(page);
 
         // Check that the progress bar is displayed
         await page.waitForSelector('[data-testid="progress-bar"]');
         expect(await page.getByTestId('progress-bar')).toBeVisible();
 
         // Check that audio file was uploaded
-        await page.waitForSelector('input[name="title"]');
-        expect(await page.locator('input[name="title"]').inputValue()).toEqual('Audio sample');
+        await expect(await page.getByTestId('audio-caption')).toBeVisible();
+        expect(await page.getByTestId('audio-caption').inputValue()).toEqual('Audio sample');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -135,17 +126,8 @@ describe('Audio card', async () => {
     });
 
     test('shows errors on failed audio upload', async function () {
-        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample-fail.mp3');
-
         await focusEditor(page);
-
-        // Upload audio file
-        const fileChooserPromise = page.waitForEvent('filechooser');
-        await page.keyboard.type('/audio');
-        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles([filePath]);
+        await uploadAudio(page, 'audio-sample-fail.mp3');
 
         // Check that the progress bar is displayed
         await page.waitForSelector('[data-testid="progress-bar"]');
@@ -201,40 +183,23 @@ describe('Audio card', async () => {
     });
 
     test('can change the title of the audio card', async function () {
-        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
-
         await focusEditor(page);
-
-        // Upload audio
-        const fileChooserPromise = page.waitForEvent('filechooser');
-        await page.keyboard.type('/audio');
-        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles([filePath]);
+        await uploadAudio(page);
 
         // Change title
-        await page.waitForSelector('input[name="title"]');
-        await page.locator('input[name="title"]').click();
+        await expect(await page.getByTestId('audio-caption')).toBeVisible();
+        await page.getByTestId('audio-caption').click();
         await page.keyboard.type(' 1');
 
         // Check that title updated
-        expect(await page.locator('input[name="title"]').inputValue()).toEqual('Audio sample 1');
+        expect(await page.getByTestId('audio-caption').inputValue()).toEqual('Audio sample 1');
     });
 
     test('can upload and remove a thumbnail image', async function () {
-        const audioFilePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
         const thumbnailFilePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
 
         await focusEditor(page);
-
-        // Upload audio file
-        const audioFileChooserPromise = page.waitForEvent('filechooser');
-        await page.keyboard.type('/audio');
-        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
-        const audioFileChooser = await audioFileChooserPromise;
-        await audioFileChooser.setFiles([audioFilePath]);
+        await uploadAudio(page);
 
         // Upload thumbnail
         const thumbnailFileChooserPromise = page.waitForEvent('filechooser');
@@ -291,18 +256,10 @@ describe('Audio card', async () => {
     });
 
     test('shows errors on a failed thumbnail upload', async function () {
-        const audioFilePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
         const thumbnailFilePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-fail.jpeg');
 
         await focusEditor(page);
-
-        // Upload audio file
-        const audioFileChooserPromise = page.waitForEvent('filechooser');
-        await page.keyboard.type('/audio');
-        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
-        const audioFileChooser = await audioFileChooserPromise;
-        await audioFileChooser.setFiles([audioFilePath]);
+        await uploadAudio(page);
 
         // Upload thumbnail
         const thumbnailFileChooserPromise = page.waitForEvent('filechooser');
@@ -315,20 +272,11 @@ describe('Audio card', async () => {
     });
 
     test('renders audio card toolbar', async function () {
-        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
-
         await focusEditor(page);
-
-        // Upload audio file
-        const fileChooserPromise = page.waitForEvent('filechooser');
-        await page.keyboard.type('/audio');
-        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles([filePath]);
+        await uploadAudio(page);
 
         // Leave editing mode to display the toolbar
-        await page.waitForSelector('input[name="title"]');
+        await expect(await page.getByTestId('audio-caption')).toBeVisible();
         await page.keyboard.press('Escape');
 
         // Check that the toolbar is displayed
@@ -336,20 +284,11 @@ describe('Audio card', async () => {
     });
 
     test('audio card toolbar as Edit button', async function () {
-        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
-
         await focusEditor(page);
-
-        // Upload audio file
-        const fileChooserPromise = page.waitForEvent('filechooser');
-        await page.keyboard.type('/audio');
-        await page.waitForSelector('[data-kg-card-menu-item="Audio"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles([filePath]);
+        await uploadAudio(page);
 
         // Leave editing mode to display the toolbar
-        await page.waitForSelector('input[name="title"]');
+        await expect(await page.getByTestId('audio-caption')).toBeVisible();
         await page.keyboard.press('Escape');
 
         // Check that the toolbar is displayed
@@ -366,10 +305,30 @@ describe('Audio card', async () => {
         <p><br /></p>
         `, {ignoreCardContents: true});
     });
+
+    test('should not be available for editing in preview mode', async function () {
+        await focusEditor(page);
+        await uploadAudio(page);
+
+        // Check that audio file was uploaded
+        await expect(await page.getByTestId('media-duration')).toContainText('0:19');
+        await page.keyboard.press('Escape');
+
+        // Caption input should be read only
+        await expect(await page.getByTestId('audio-caption')).toHaveAttribute('readOnly', '');
+
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        await page.getByTestId('audio-card-populated').dispatchEvent('dragover', {dataTransfer});
+
+        // Dragover text shouldn't be visible
+        await expect(await page.getByTestId('audio-thumbnail-dragover')).toBeHidden();
+    });
 });
 
-async function uploadAudio(page) {
-    const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
+async function uploadAudio(page, fileName = 'audio-sample.mp3') {
+    const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/${fileName}`);
 
     const fileChooserPromise = page.waitForEvent('filechooser');
     await page.keyboard.type('/audio');

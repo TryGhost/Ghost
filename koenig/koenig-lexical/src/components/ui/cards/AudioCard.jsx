@@ -32,9 +32,7 @@ function EmptyAudioCard({
     audioMimeTypes,
     onFileChange,
     setFileInputRef,
-    handleDrag,
-    handleDrop,
-    isDraggedOver
+    audioDragHandler
 }) {
     const {isLoading: isUploading, progress, errors} = audioUploader;
     const fileInputRef = React.useRef(null);
@@ -50,9 +48,8 @@ function EmptyAudioCard({
         return (
             <>
                 <MediaPlaceholder
-                    handleDrag={handleDrag}
-                    handleDrop={handleDrop}
-                    isDraggedOver={isDraggedOver}
+                    placeholderRef={audioDragHandler.setRef}
+                    isDraggedOver={audioDragHandler.isDraggedOver}
                     filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
                     desc='Click to upload an audio file'
                     icon='audio'
@@ -100,7 +97,7 @@ function AudioThumbnail({
                 className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple"
                 data-testid="audio-thumbnail-dragover"
             >
-                <p class="font-sans text-sm font-semibold text-white">
+                <p className="font-sans text-sm font-semibold text-white">
                     Drop it 🔥
                 </p>
             </div>
@@ -115,9 +112,11 @@ function AudioThumbnail({
         return (
             <div className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
                 <img data-testid="audio-thumbnail" src={src} alt="Audio thumbnail" className="h-full w-full rounded-sm object-cover transition ease-in" />
-                <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
-                    <IconButton onClick={removeThumbnail} Icon={DeleteIcon} dataTestID='remove-thumbnail' />
-                </div>
+                {isEditing && (
+                    <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
+                        <IconButton onClick={removeThumbnail} Icon={DeleteIcon} dataTestID='remove-thumbnail' />
+                    </div>
+                )}
             </div>
         );
     } else if (isUploading) {
@@ -142,6 +141,7 @@ function AudioThumbnail({
                     onFileChange={onFileChange}
                     fileInputRef={onFileInputRef}
                     mimeTypes={mimeTypes}
+                    disabled={!isEditing}
                 />
             </div>
         );
@@ -160,9 +160,7 @@ function PopulatedAudioCard({
     setFileInputRef,
     onFileChange,
     removeThumbnail,
-    handleDrag,
-    handleDrop,
-    isDraggedOver
+    thumbnailDragHandler
 }) {
     const {isLoading: isUploading, progress, errors} = thumbnailUploader;
     const formatDuration = (rawDuration) => {
@@ -181,10 +179,7 @@ function PopulatedAudioCard({
         <div
             className="flex rounded border border-grey/30 p-2"
             data-testid="audio-card-populated"
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
+            ref={thumbnailDragHandler.setRef}
         >
             <AudioThumbnail
                 mimeTypes={thumbnailMimeTypes}
@@ -195,11 +190,21 @@ function PopulatedAudioCard({
                 onFileChange={onFileChange}
                 setFileInputRef={setFileInputRef}
                 removeThumbnail={removeThumbnail}
-                isDraggedOver={isDraggedOver}
+                isDraggedOver={thumbnailDragHandler.isDraggedOver}
                 errors={errors}
             />
             <div className="flex h-20 w-full flex-col justify-between px-4">
-                {(isEditing || title) && <input value={title} onChange={handleChange} placeholder={placeholder} name="title" className="font-sans text-lg font-bold text-black" />}
+                {(isEditing || title) && (
+                    <input
+                        value={title}
+                        readOnly={!isEditing}
+                        onChange={handleChange}
+                        placeholder={placeholder}
+                        name="title"
+                        className="font-sans text-lg font-bold text-black"
+                        data-testid="audio-caption"
+                    />
+                )}
                 <MediaPlayer duration={formatDuration(duration)} theme='dark' />
             </div>
         </div>
@@ -221,12 +226,9 @@ export function AudioCard({
     thumbnailFileInputRef,
     onAudioFileChange,
     onThumbnailFileChange,
-    handleAudioDrag,
-    handleAudioDrop,
-    handleThumbnailDrag,
-    handleThumbnailDrop,
-    isDraggedOver,
-    removeThumbnail
+    audioDragHandler,
+    removeThumbnail,
+    thumbnailDragHandler
 }) {
     const setAudioFileInputRef = (ref) => {
         if (audioFileInputRef) {
@@ -256,9 +258,7 @@ export function AudioCard({
                     setFileInputRef={setThumbnailFileInputRef}
                     onFileChange={onThumbnailFileChange}
                     removeThumbnail={removeThumbnail}
-                    isDraggedOver={isDraggedOver}
-                    handleDrag={handleThumbnailDrag}
-                    handleDrop={handleThumbnailDrop}
+                    thumbnailDragHandler={thumbnailDragHandler}
                 />
             </div>
         );
@@ -268,9 +268,7 @@ export function AudioCard({
                 <EmptyAudioCard
                     setFileInputRef={setAudioFileInputRef}
                     onFileChange={onAudioFileChange}
-                    handleDrag={handleAudioDrag}
-                    handleDrop={handleAudioDrop}
-                    isDraggedOver={isDraggedOver}
+                    audioDragHandler={audioDragHandler}
                     audioUploader={audioUploader}
                     audioMimeTypes={audioMimeTypes}
                 />

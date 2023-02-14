@@ -320,10 +320,28 @@ describe('Video card', async () => {
                 <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video"></div>
             </div>
             <figcaption>
-                <input placeholder="Type caption for video (optional)" value="" />
+                <input placeholder="Type caption for video (optional)" data-testid="video-card-caption" value="" />
             </figcaption>
             <p><br /></p>
         `, {ignoreCardContents: true});
+    });
+
+    test('should not be available for editing in preview mode', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        // Check that audio file was uploaded
+        await expect(await page.getByTestId('media-duration')).toContainText('0:04');
+
+        // Add title
+        await expect(await page.getByTestId('video-card-caption')).toBeVisible();
+        await page.getByTestId('video-card-caption').click();
+        await page.keyboard.type('Video caption');
+
+        await page.keyboard.press('Escape');
+
+        // Caption input should be read only
+        await expect(await page.getByTestId('video-card-caption')).toHaveAttribute('readOnly', '');
     });
 });
 

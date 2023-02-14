@@ -1,4 +1,4 @@
-export function ImageUploadForm({onFileChange, fileInputRef, mimeTypes = ['image/*'], multiple = false}) {
+export function ImageUploadForm({onFileChange, fileInputRef, mimeTypes = ['image/*'], multiple = false, disabled}) {
     const accept = mimeTypes.join(',');
 
     return (
@@ -10,6 +10,7 @@ export function ImageUploadForm({onFileChange, fileInputRef, mimeTypes = ['image
                 hidden={true}
                 accept={accept}
                 multiple={multiple}
+                disabled={disabled}
             />
         </form>
     );

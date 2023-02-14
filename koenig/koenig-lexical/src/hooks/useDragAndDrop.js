@@ -1,12 +1,12 @@
 import {useEffect, useState} from 'react';
 
-export default function useDragAndDrop(handleDrop) {
+export default function useDragAndDrop({handleDrop, disabled = false}) {
     const [ref, setRef] = useState(null);
     const [isDraggedOver, setDraggedOver] = useState(false);
 
     useEffect(() => {
         const node = ref;
-        if (!node) {
+        if (!node || disabled) {
             return;
         }
 
@@ -52,7 +52,7 @@ export default function useDragAndDrop(handleDrop) {
             node.removeEventListener('dragleave', onDragLeave);
             node.removeEventListener('drop', onDrop);
         };
-    }, [handleDrop, ref]);
+    }, [handleDrop, ref, disabled]);
 
     return {setRef, isDraggedOver};
 }

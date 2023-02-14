@@ -12,6 +12,7 @@ import {thumbnailUploadHandler} from '../utils/thumbnailUploadHandler';
 import CardContext from '../context/CardContext';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import useDragAndDrop from '../hooks/useDragAndDrop';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_AUDIO_COMMAND} from '@tryghost/kg-default-nodes';
@@ -19,7 +20,6 @@ export {INSERT_AUDIO_COMMAND} from '@tryghost/kg-default-nodes';
 function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, duration, triggerFileDialog}) {
     const [editor] = useLexicalComposerContext();
     const {fileUploader} = React.useContext(KoenigComposerContext);
-    const [dragOver, setDragOver] = React.useState(false);
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const audioFileInputRef = React.useRef();
     const thumbnailFileInputRef = React.useRef();
@@ -27,6 +27,8 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
 
     const audioUploader = fileUploader.useFileUpload('audio');
     const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
+    const audioDragHandler = useDragAndDrop({handleDrop: handleAudioDrop});
+    const thumbnailDragHandler = useDragAndDrop({handleDrop: handleThumbnailDrop, disabled: !isEditing});
 
     React.useEffect(() => {
         const uploadInitialFiles = async (file) => {
@@ -35,7 +37,7 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
             }
         };
         uploadInitialFiles(initialFile);
-        
+
         // We only do this for init
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -64,51 +66,13 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
         });
     };
 
-    const handleAudioDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setDragOver(true);
-        } else if (e.type === 'dragleave') {
-            setDragOver(false);
-        }
-        return;
-    };
+    async function handleAudioDrop(files) {
+        await audioUploadHandler(files, nodeKey, editor, audioUploader.upload);
+    }
 
-    const handleAudioDrop = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const fls = e.dataTransfer.files;
-            if (fls) {
-                setDragOver(false);
-                await audioUploadHandler(fls, nodeKey, editor, audioUploader.upload);
-            }
-        }
-    };
-
-    const handleThumbnailDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setDragOver(true);
-        } else if (e.type === 'dragleave') {
-            setDragOver(false);
-        }
-        return;
-    };
-
-    const handleThumbnailDrop = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const fls = e.dataTransfer.files;
-            if (fls) {
-                setDragOver(false);
-                await thumbnailUploadHandler(fls, nodeKey, editor, thumbnailUploader.upload);
-            }
-        }
-    };
+    async function handleThumbnailDrop(files) {
+        await thumbnailUploadHandler(files, nodeKey, editor, thumbnailUploader.upload);
+    }
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -159,11 +123,8 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
                 onAudioFileChange={onAudioFileChange}
                 onThumbnailFileChange={onThumbnailFileChange}
                 removeThumbnail={removeThumbnail}
-                isDraggedOver={dragOver}
-                handleAudioDrag={handleAudioDrag}
-                handleAudioDrop={handleAudioDrop}
-                handleThumbnailDrag={handleThumbnailDrag}
-                handleThumbnailDrop={handleThumbnailDrop}
+                audioDragHandler={audioDragHandler}
+                thumbnailDragHandler={thumbnailDragHandler}
             />
             <ActionToolbar
                 isVisible={src && isSelected && !isEditing}

@@ -171,17 +171,20 @@ export function VideoCard({
     caption,
     onCaptionChange,
     isSelected,
+    isEditing,
     ...props
 }) {
     return (
         <>
             <figure>
-                <VideoHolder {...props} />
+                <VideoHolder {...props} isEditing={isEditing} />
                 <CardCaptionEditor
                     caption={caption || ''}
                     setCaption={onCaptionChange}
                     captionPlaceholder="Type caption for video (optional)"
                     isSelected={isSelected}
+                    readOnly={!isEditing}
+                    dataTestId="video-card-caption"
                 />
             </figure>
         </>

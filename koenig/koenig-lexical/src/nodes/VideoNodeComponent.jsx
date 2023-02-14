@@ -30,8 +30,8 @@ export function VideoNodeComponent({
     const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
     const customThumbnailUploader = fileUploader.useFileUpload('image');
 
-    const videoDragHandler = useDragAndDrop(handleVideoDrop);
-    const thumbnailDragHandler = useDragAndDrop(handleThumbnailDrop);
+    const videoDragHandler = useDragAndDrop({handleDrop: handleVideoDrop});
+    const thumbnailDragHandler = useDragAndDrop({handleDrop: handleThumbnailDrop});
     const [metadataExtractionErrors, setMetadataExtractionErrors] = useState([]);
 
     const videoMimeTypes = fileUploader.fileTypes.video?.mimeTypes || ['video/*'];

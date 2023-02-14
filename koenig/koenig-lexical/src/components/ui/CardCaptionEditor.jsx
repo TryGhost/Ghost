@@ -1,6 +1,6 @@
 import React from 'react';
 
-function CaptionInput({value, placeholder, onChange}) {
+function CaptionInput({value, placeholder, onChange, readOnly, dataTestId}) {
     const handleOnChange = (e) => {
         onChange(e.target.value);
     };
@@ -11,11 +11,13 @@ function CaptionInput({value, placeholder, onChange}) {
             className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
             placeholder={placeholder}
             value={value}
+            readOnly={readOnly}
+            data-testid={dataTestId}
         />
     );
 }
 
-function AltTextInput({value, placeholder, onChange}) {
+function AltTextInput({value, placeholder, onChange, readOnly, dataTestId}) {
     const handleOnChange = (e) => {
         onChange(e.target.value);
     };
@@ -26,6 +28,8 @@ function AltTextInput({value, placeholder, onChange}) {
             className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
             placeholder={placeholder}
             value={value}
+            readOnly={readOnly}
+            data-testid={dataTestId}
         />
     );
 }
@@ -49,7 +53,9 @@ export function CardCaptionEditor({
     caption,
     captionPlaceholder,
     setCaption,
-    isSelected
+    isSelected,
+    readOnly,
+    dataTestId
 }) {
     const [isEditingAlt, setIsEditingAlt] = React.useState(false);
 
@@ -69,8 +75,8 @@ export function CardCaptionEditor({
         return (
             <figcaption className="flex w-full p-2">
                 {isEditingAlt
-                    ? <AltTextInput value={altText} placeholder={altTextPlaceholder} onChange={setAltText} />
-                    : <CaptionInput value={caption} placeholder={captionPlaceholder} onChange={setCaption} /> }
+                    ? <AltTextInput value={altText} placeholder={altTextPlaceholder} onChange={setAltText} readOnly={readOnly} dataTestId={dataTestId} />
+                    : <CaptionInput value={caption} placeholder={captionPlaceholder} onChange={setCaption} readOnly={readOnly} dataTestId={dataTestId}/> }
                 {setAltText && <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />}
             </figcaption>
         );
