@@ -4860,7 +4860,7 @@
     moment-timezone "^0.5.23"
     validator "7.2.0"
 
-"@tryghost/validator@^0.2.0":
+"@tryghost/validator@0.2.0", "@tryghost/validator@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.2.0.tgz#cfb0b9447cfb50901b2a2fbf8519de4d5b992f12"
   integrity sha512-sKAcyZwOCdCe7jG6B1UxzOijHjvwqwj9G9l+hQhRScT1gMT4C8zhyq7BrEQmFUvsLUXVBlpph5wn95E34oqCDw==
