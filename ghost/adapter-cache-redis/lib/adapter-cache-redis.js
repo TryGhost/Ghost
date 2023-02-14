@@ -22,6 +22,17 @@ class Redis extends BaseCacheAdapter {
         this.cache = config.cache;
 
         if (!this.cache) {
+            // @NOTE: this condition can be avoided if we add merging of nested options
+            //        to adapter configuration. Than adding adapter-specific {clusterConfig: {options: {ttl: XXX}}}
+            //        will be enough to set ttl for redis cluster.
+            if (config.ttl && config.clusterConfig) {
+                if (!config.clusterConfig.options) {
+                    config.clusterConfig.options = {};
+                }
+
+                config.clusterConfig.options.ttl = config.ttl;
+            }
+
             this.cache = cacheManager.caching({
                 store: redisStore,
                 ttl: config.ttl,
