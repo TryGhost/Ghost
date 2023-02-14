@@ -1041,7 +1041,7 @@ a[data-flickr-embed] img {
     }
 
     table.body .kg-bookmark-card {
-        width: 90vw !important;
+        width: 90vw;
     }
 
     table.body .kg-bookmark-thumbnail {
