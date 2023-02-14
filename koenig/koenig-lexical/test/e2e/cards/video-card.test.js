@@ -320,7 +320,7 @@ describe('Video card', async () => {
                 <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video"></div>
             </div>
             <figcaption>
-                <input placeholder="Type caption for video (optional)" data-testid="video-card-caption" value="" />
+                <input placeholder="Type caption for video (optional)" value="" />
             </figcaption>
             <p><br /></p>
         `, {ignoreCardContents: true});

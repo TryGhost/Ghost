@@ -15,7 +15,12 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
 
     return (
         <div>
-            <img className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`} src={previewSrc ? previewSrc : src} alt={alt ? alt : progressAlt} />
+            <img
+                className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
+                src={previewSrc ? previewSrc : src}
+                alt={alt ? alt : progressAlt}
+                data-testid="image-card-populated"
+            />
             {imageUploader.isLoading ?
                 <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="upload-progress">
                     <ProgressBar style={progressStyle} />
@@ -26,7 +31,7 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
     );
 }
 
-function EmptyImageCard({onFileChange, setFileInputRef, handleDrag, handleDrop, isDraggedOver, errors}) {
+function EmptyImageCard({onFileChange, setFileInputRef, imageDragHandler, errors}) {
     const fileInputRef = React.useRef(null);
 
     const onFileInputRef = (element) => {
@@ -37,12 +42,11 @@ function EmptyImageCard({onFileChange, setFileInputRef, handleDrag, handleDrop, 
     return (
         <>
             <MediaPlaceholder
-                handleDrag={handleDrag}
-                handleDrop={handleDrop}
+                placeholderRef={imageDragHandler.setRef}
+                isDraggedOver={imageDragHandler.isDraggedOver}
                 filePicker={() => openFileSelection({fileInputRef})}
                 desc="Click to select an image"
                 icon='image'
-                isDraggedOver={isDraggedOver}
                 errors={errors}
             />
             <ImageUploadForm
@@ -61,10 +65,7 @@ const ImageHolder = ({
     imageUploader,
     onFileChange,
     setFileInputRef,
-    handleDrag,
-    handleDrop,
-    isDraggedOver,
-    imageUploadErrors
+    imageDragHandler
 }) => {
     if (previewSrc || src) {
         return (
@@ -78,12 +79,10 @@ const ImageHolder = ({
     } else {
         return (
             <EmptyImageCard
-                handleDrag={handleDrag}
                 onFileChange={onFileChange}
                 setFileInputRef={setFileInputRef}
-                handleDrop={handleDrop}
-                isDraggedOver={isDraggedOver}
-                errors={imageUploadErrors}
+                imageDragHandler={imageDragHandler}
+                errors={imageUploader.errors}
             />
         );
     }
@@ -99,13 +98,10 @@ export function ImageCard({
     setAltText,
     setFigureRef,
     fileInputRef,
-    handleDrag,
-    handleDrop,
-    isDraggedOver,
     cardWidth,
     previewSrc,
     imageUploader,
-    imageUploadErrors
+    imageDragHandler
 }) {
     const figureRef = React.useRef(null);
 
@@ -128,12 +124,9 @@ export function ImageCard({
                     altText={altText}
                     previewSrc={previewSrc}
                     imageUploader={imageUploader}
+                    imageDragHandler={imageDragHandler}
                     onFileChange={onFileChange}
                     setFileInputRef={setFileInputRef}
-                    handleDrag={handleDrag}
-                    handleDrop={handleDrop}
-                    isDraggedOver={isDraggedOver}
-                    imageUploadErrors={imageUploadErrors}
                 />
                 <CardCaptionEditor
                     altText={altText || ''}

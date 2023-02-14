@@ -28,8 +28,6 @@ export function MediaPlaceholder({
     filePicker,
     size,
     borderStyle,
-    handleDrag,
-    handleDrop,
     isDraggedOver,
     errors = [],
     placeholderRef,
@@ -42,10 +40,6 @@ export function MediaPlaceholder({
     return (
         <div
             ref={placeholderRef}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
             className="h-full border border-transparent" {...props}
             data-testid={dataTestId}
         >

@@ -2,7 +2,7 @@ import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {expect} from '@playwright/test';
 import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
 import path from 'path';
-import {readFileSync} from 'fs';
+import createDataTransfer from '../../utils/createDataTransfer';
 
 describe('Image card', async () => {
     let app;
@@ -456,12 +456,9 @@ describe('Image card', async () => {
         const imageCard = await page.$('[data-kg-card="image"]');
         expect(imageCard).not.toBeNull();
 
-        const dataTransfer = await page.evaluateHandle(() => {
-            const dt = new DataTransfer();
-            const file = new File([''], 'image.png', {type: 'image/png'});
-            dt.items.add(file);
-            return dt;
-        });
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+
         await page.dispatchEvent(
             '[data-kg-card="image"] [data-testid="media-placeholder"]',
             'dragenter',
@@ -484,20 +481,17 @@ describe('Image card', async () => {
         await page.keyboard.type('image! ');
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
-        const buffer = readFileSync(filePath);
-
-        const dataTransfer = await page.evaluateHandle((data) => {
-            const dt = new DataTransfer();
-            const file = new File([data.toString('hex')], 'large-image.png', {type: 'image/png'});
-            dt.items.add(file);
-            return dt;
-        }, buffer);
+        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
 
         await page.dispatchEvent(
             '[data-kg-card="image"] [data-testid="media-placeholder"]',
             'dragenter',
             {dataTransfer}
         );
+
+        // Dragover text should be visible
+        await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+
         await page.dispatchEvent(
             '[data-kg-card="image"] [data-testid="media-placeholder"]',
             'drop',
@@ -505,7 +499,8 @@ describe('Image card', async () => {
         );
 
         // wait for upload to complete
-        await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
+        await expect(await page.getByTestId('progress-bar')).toBeVisible();
+        await expect(await page.getByTestId('progress-bar')).toBeHidden();
 
         // placeholder is replaced with uploading image
         await assertHTML(page, html`

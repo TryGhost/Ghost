@@ -53,7 +53,13 @@ Empty.args = {
     setAltText: true,
     caption: '',
     altText: '',
-    isDraggedOver: false
+    imageUploader: {
+        isLoading: false,
+        progress: 100
+    },
+    imageDragHandler: {
+        isDraggedOver: false
+    }
 };
 
 export const Uploading = Template.bind({});
@@ -65,7 +71,13 @@ Uploading.args = {
     altText: '',
     isDraggedOver: false,
     previewSrc: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
-    uploadProgress: 50
+    imageUploader: {
+        progress: 50,
+        isLoading: true
+    },
+    imageDragHandler: {
+        isDraggedOver: false
+    }
 };
 
 export const Populated = Template.bind({});
@@ -76,7 +88,13 @@ Populated.args = {
     setAltText: true,
     caption: 'Welcome to your new Ghost publication',
     altText: 'Feature image',
-    isDraggedOver: false
+    imageUploader: {
+        isLoading: false,
+        progress: 100
+    },
+    imageDragHandler: {
+        isDraggedOver: false
+    }
 };
 
 export const Errors = Template.bind({});
@@ -86,5 +104,25 @@ Errors.args = {
     setAltText: true,
     caption: '',
     altText: '',
-    imageUploadErrors: [{message: 'The file type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP'}]
+    imageUploader: {
+        errors: [{message: 'The file type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP'}]
+    },
+    imageDragHandler: {
+        isDraggedOver: false
+    }
+};
+
+export const DraggedOver = Template.bind({});
+DraggedOver.args = {
+    display: 'Selected',
+    cardWidth: 'regular',
+    setAltText: true,
+    caption: '',
+    altText: '',
+    imageUploader: {
+        errors: [{message: 'The file type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP'}]
+    },
+    imageDragHandler: {
+        isDraggedOver: true
+    }
 };

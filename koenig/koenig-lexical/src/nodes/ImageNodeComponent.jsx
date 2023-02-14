@@ -10,10 +10,10 @@ import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {openFileSelection} from '../utils/openFileSelection';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {LinkInput} from '../components/ui/LinkInput';
+import useDragAndDrop from '../hooks/useDragAndDrop';
 
 export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();
-    const [dragOver, setDragOver] = React.useState(false);
     const [showLink, setShowLink] = React.useState(false);
     const {fileUploader} = React.useContext(KoenigComposerContext);
     const {isSelected, cardWidth, setCardWidth} = React.useContext(CardContext);
@@ -21,6 +21,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
     const toolbarFileInputRef = React.useRef();
 
     const imageUploader = fileUploader.useFileUpload('image');
+    const imageDragHandler = useDragAndDrop({handleDrop: handleImageDrop});
 
     React.useEffect(() => {
         const uploadInitialFile = async (file) => {
@@ -112,28 +113,9 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
         });
     };
 
-    const handleDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setDragOver(true);
-        } else if (e.type === 'dragleave') {
-            setDragOver(false);
-        }
-        return;
-    };
-
-    const handleDrop = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const fls = e.dataTransfer.files;
-            if (fls) {
-                setDragOver(false);
-                await imageUploadHandler(fls, nodeKey, editor, imageUploader.upload);
-            }
-        }
-    };
+    async function handleImageDrop(files) {
+        await imageUploadHandler(files, nodeKey, editor, imageUploader.upload);
+    }
 
     return (
         <>
@@ -146,12 +128,10 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
                 setAltText={setAltText}
                 caption={caption}
                 setCaption={setCaption}
-                handleDrag={handleDrag}
-                handleDrop={handleDrop}
-                isDraggedOver={dragOver}
                 cardWidth={cardWidth}
                 previewSrc={previewSrc}
                 imageUploader={imageUploader}
+                imageDragHandler={imageDragHandler}
             />
 
             <ActionToolbar

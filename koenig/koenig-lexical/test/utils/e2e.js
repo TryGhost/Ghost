@@ -56,7 +56,8 @@ export async function assertHTML(
         getBase64FileFormat = true,
         ignoreCardContents = false,
         ignoreCardToolbarContents = false,
-        ignoreDragDropAttrs = true
+        ignoreDragDropAttrs = true,
+        ignoreDataTestId = true
     } = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
@@ -67,7 +68,8 @@ export async function assertHTML(
         getBase64FileFormat,
         ignoreCardContents,
         ignoreCardToolbarContents,
-        ignoreDragDropAttrs
+        ignoreDragDropAttrs,
+        ignoreDataTestId
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
@@ -76,7 +78,8 @@ export async function assertHTML(
         getBase64FileFormat,
         ignoreCardContents,
         ignoreCardToolbarContents,
-        ignoreDragDropAttrs
+        ignoreDragDropAttrs,
+        ignoreDataTestId
     });
     expect(actual).toEqual(expected);
 }
@@ -86,6 +89,10 @@ export function prettifyHTML(string, options = {}) {
 
     if (options.ignoreClasses) {
         output = output.replace(/\sclass="([^"]*)"/g, '');
+    }
+
+    if (options.ignoreDataTestId) {
+        output = output.replace(/\sdata-testid="([^"]*)"/g, '');
     }
 
     if (options.ignoreInlineStyles) {
