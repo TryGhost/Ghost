@@ -31,10 +31,11 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     }
 
     getDataset() {
+        const self = this.getLatest();
         return {
-            code: this.__code,
-            language: this.__language,
-            caption: this.__caption
+            code: self.__code,
+            language: self.__language,
+            caption: self.__caption
         };
     }
 

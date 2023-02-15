@@ -23,8 +23,9 @@ export class MarkdownNode extends KoenigDecoratorNode {
     }
 
     getDataset() {
+        const self = this.getLatest();
         return {
-            markdown: this.__markdown
+            markdown: self.__markdown
         };
     }
 

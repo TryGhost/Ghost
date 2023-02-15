@@ -40,16 +40,17 @@ export class VideoNode extends KoenigDecoratorNode {
     }
 
     getDataset() {
+        const self = this.getLatest();
         return {
-            src: this.__src,
-            caption: this.__caption,
-            width: this.__width,
-            height: this.__height,
-            duration: this.__duration,
-            thumbnailSrc: this.__thumbnailSrc,
-            customThumbnailSrc: this.__customThumbnailSrc,
-            cardWidth: this.__cardWidth,
-            loop: this.__loop
+            src: self.__src,
+            caption: self.__caption,
+            width: self.__width,
+            height: self.__height,
+            duration: self.__duration,
+            thumbnailSrc: self.__thumbnailSrc,
+            customThumbnailSrc: self.__customThumbnailSrc,
+            cardWidth: self.__cardWidth,
+            loop: self.__loop
         };
     }
 

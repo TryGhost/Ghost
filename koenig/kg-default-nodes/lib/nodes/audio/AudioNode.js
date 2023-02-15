@@ -33,12 +33,13 @@ export class AudioNode extends KoenigDecoratorNode {
     }
 
     getDataset() {
+        const self = this.getLatest();
         return {
-            src: this.__src,
-            title: this.__title,
-            duration: this.__duration,
-            mimeType: this.__mimeType,
-            thumbnailSrc: this.__thumbnailSrc
+            src: self.__src,
+            title: self.__title,
+            duration: self.__duration,
+            mimeType: self.__mimeType,
+            thumbnailSrc: self.__thumbnailSrc
         };
     }
 

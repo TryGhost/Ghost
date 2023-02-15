@@ -38,15 +38,16 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     getDataset() {
+        const self = this.getLatest();
         return {
-            src: this.__src,
-            caption: this.__caption,
-            title: this.__title,
-            altText: this.__altText,
-            width: this.__width,
-            height: this.__height,
-            cardWidth: this.__cardWidth,
-            href: this.__href
+            src: self.__src,
+            caption: self.__caption,
+            title: self.__title,
+            altText: self.__altText,
+            width: self.__width,
+            height: self.__height,
+            cardWidth: self.__cardWidth,
+            href: self.__href
         };
     }
 
