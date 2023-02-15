@@ -206,7 +206,7 @@ export default function NewsletterManagement({
                             className="gh-portal-btn-text gh-email-faq-page-button"
                             onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ'})}
                         >
-                            Learn more &rarr;
+                            Get help &rarr;
                         </button>
                     </div>
                 }
