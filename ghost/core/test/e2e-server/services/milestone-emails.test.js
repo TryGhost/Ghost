@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const models = require('../../../core/server/models');
 const moment = require('moment');
 
-const milestoneEmailsService = require('../../../core/server/services/milestone-emails/service');
+const milestoneEmailsService = require('../../../core/server/services/milestone-emails');
 
 let agent;
 let counter = 0;
@@ -138,11 +138,9 @@ async function createFreeMembers(amount, amountImported = 0) {
 }
 
 describe('Milestone Emails Service', function () {
-    // let stripeModeStub;
-
     const milestonesConfig = {
-        arr: [{currency: 'usd', values: [100]}],
-        members: [10, 100]
+        arr: [{currency: 'usd', values: [100, 150]}],
+        members: [10, 20, 30]
     };
 
     before(async function () {
@@ -166,46 +164,57 @@ describe('Milestone Emails Service', function () {
         sinon.restore();
     });
 
+    it('Inits milestone service', async function () {
+        await milestoneEmailsService.init();
+
+        assert.ok(milestoneEmailsService.api);
+    });
+
     it('Runs ARR and Members milestone jobs', async function () {
+        mockManager.mockSetting('stripe_connect_publishable_key', 'pk_live_89843uihsidfh98832uo8ri');
+
         // No ARR and no members
         const firstRun = await milestoneEmailsService.initAndRun();
         assert(firstRun.members === undefined);
-        // assert(firstRun.arr === undefined);
+        assert(firstRun.arr === undefined);
 
         await createFreeMembers(7);
         await createMemberWithSubscription('year', 5000, 'usd', '2000-01-10');
         await createMemberWithSubscription('month', 100, 'usd', '2000-01-10');
         const secondRun = await milestoneEmailsService.initAndRun();
         assert(secondRun.members === undefined);
-        // assert(secondRun.arr === undefined);
+        assert(secondRun.arr === undefined);
 
         // Reached the first milestone for members
         await createFreeMembers(1);
         const thirdRun = await milestoneEmailsService.initAndRun();
         assert(thirdRun.members.value === 10);
         assert(thirdRun.members.emailSentAt !== undefined);
-        // assert(thirdRun.arr === undefined);
+        assert(thirdRun.arr === undefined);
 
         // Reached the first milestone for ARR
+        // but has already reached members milestone, so no new one
+        // will be created
         await createMemberWithSubscription('month', 500, 'usd', '2000-01-10');
         await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
         const fourthRun = await milestoneEmailsService.initAndRun();
-        // This will be false once we hook up to the DB
-        assert(fourthRun.members.value === 10);
-        assert(fourthRun.members.emailSentAt !== undefined);
-        // assert(fourthRun.arr.value === 100);
-        // assert(fourthRun.arr.emailSentAt !== undefined);
+        assert(fourthRun.members === undefined);
+        assert(fourthRun.arr.value === 100);
+        assert(fourthRun.arr.emailSentAt !== undefined);
     });
 
     it('Does not send emails for milestones when imported members present', async function () {
+        mockManager.mockSetting('stripe_publishable_key', 'pk_live_89843uihsidfh98832uo8ri');
+        mockManager.mockSetting('stripe_connect_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
+
         await createFreeMembers(10, 1);
         await createMemberWithSubscription('month', 1000, 'usd', '2023-01-10');
         const result = await milestoneEmailsService.initAndRun();
 
-        assert(result.members.value === 10);
+        assert(result.members.value === 20);
         assert(result.members.emailSentAt === null);
-        // assert(result.arr.value === 100);
-        // assert(result.arr.emailSentAt === null);
+        assert(result.arr.value === 150);
+        assert(result.arr.emailSentAt === null);
     });
 
     it('Does not run when milestoneEmails labs flag is not set', async function () {
@@ -215,14 +224,14 @@ describe('Milestone Emails Service', function () {
         assert(result === undefined);
     });
 
-    // it('Does not run ARR milestones when Stripe is not live enabled', async function () {
-    //     stripeModeStub = sinon.stub().returns(false);
-    //     milestoneEmailsService.__set__('getStripeLiveEnabled', stripeModeStub);
-    //     await createFreeMembers(10);
+    it('Does not run ARR milestones when Stripe is not live enabled', async function () {
+        mockManager.mockSetting('stripe_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
+        mockManager.mockSetting('stripe_connect_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
+        await createFreeMembers(10);
 
-    //     const result = await milestoneEmailsService.initAndRun();
-    //     assert(result.members.value === 10);
-    //     assert(result.members.emailSentAt !== undefined);
-    //     assert(result.arr === undefined);
-    // });
+        const result = await milestoneEmailsService.initAndRun();
+        assert(result.members.value === 30);
+        assert(result.members.emailSentAt !== undefined);
+        assert(result.arr === undefined);
+    });
 });

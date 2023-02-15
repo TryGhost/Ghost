@@ -1,22 +1,28 @@
-// Stubbing stripe in test was causing issues. Moved it
-// into this function to be able to rewire and stub the
-// expected return value.
 const getStripeLiveEnabled = () => {
-    const stripeService = require('../stripe');
-    // This seems to be the only true way to check if Stripe is configured in live mode
-    // settingsCache only cares if Stripe is enabled
-    return stripeService.api.configured && stripeService.api.mode === 'live';
+    const settingsCache = require('../../../shared/settings-cache');
+    const stripeConnect = settingsCache.get('stripe_connect_publishable_key');
+    const stripeKey = settingsCache.get('stripe_publishable_key');
+
+    const stripeLiveRegex = /pk_live_/;
+
+    if (stripeConnect && stripeConnect.match(stripeLiveRegex)) {
+        return true;
+    } else if (stripeKey && stripeKey.match(stripeLiveRegex)) {
+        return true;
+    }
+
+    return false;
 };
 
-/**
- *
- * @returns {Promise<any>}
- */
 module.exports = {
-    async initAndRun() {
-        const labs = require('../../../shared/labs');
+    /** @type {import('@tryghost/milestone-emails/lib/MilestonesEmailService')} */
+    api: null,
 
-        if (labs.isSet('milestoneEmails')) {
+    /**
+     * @returns {Promise<void>}
+     */
+    async init() {
+        if (!this.api) {
             const db = require('../../data/db');
             const MilestoneQueries = require('./MilestoneQueries');
 
@@ -32,27 +38,42 @@ module.exports = {
             const repository = new InMemoryMilestoneRepository();
             const queries = new MilestoneQueries({db});
 
-            const milestonesEmailService = new MilestonesEmailService({
+            this.api = new MilestonesEmailService({
                 mailer,
                 repository,
                 milestonesConfig, // avoid using getters and pass as JSON
                 queries
             });
+        }
+    },
 
-            let arrResult;
+    /**
+     * @returns {Promise<object>}
+     */
+    async run() {
+        const labs = require('../../../shared/labs');
 
-            // @TODO: schedule recurring jobs instead
-            const membersResult = await milestonesEmailService.checkMilestones('members');
+        if (labs.isSet('milestoneEmails')) {
+            const members = await this.api.checkMilestones('members');
+            let arr;
             const stripeLiveEnabled = getStripeLiveEnabled();
 
             if (stripeLiveEnabled) {
-                arrResult = await milestonesEmailService.checkMilestones('arr');
+                arr = await this.api.checkMilestones('arr');
             }
 
             return {
-                members: membersResult,
-                arr: arrResult
+                members,
+                arr
             };
         }
+    },
+
+    /**
+     * @returns {Promise<object>}
+     */
+    async initAndRun() {
+        await this.init();
+        return await this.run();
     }
 };
