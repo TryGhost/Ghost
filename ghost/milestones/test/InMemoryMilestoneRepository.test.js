@@ -2,13 +2,17 @@ const assert = require('assert');
 const ObjectID = require('bson-objectid');
 const InMemoryMilestoneRepository = require('../lib/InMemoryMilestoneRepository');
 const Milestone = require('../lib/Milestone');
+const DomainEvents = require('@tryghost/domain-events');
+const sinon = require('sinon');
 
 describe('InMemoryMilestoneRepository', function () {
     let repository;
+    let domainEventsSpy;
 
     before(async function () {
         const resourceId = new ObjectID();
-        repository = new InMemoryMilestoneRepository();
+        domainEventsSpy = sinon.spy(DomainEvents, 'dispatch');
+        repository = new InMemoryMilestoneRepository({DomainEvents});
         const milestoneCreatePromises = [];
 
         const validInputs = [
@@ -16,7 +20,7 @@ describe('InMemoryMilestoneRepository', function () {
                 type: 'arr',
                 value: 20000,
                 createdAt: '2023-01-01T00:00:00Z',
-                id: resourceId
+                id: resourceId // duplicate id
             },
             {
                 type: 'arr',
@@ -49,7 +53,7 @@ describe('InMemoryMilestoneRepository', function () {
                 value: 100,
                 createdAt: '2023-01-01T00:00:00Z',
                 emailSentAt: '2023-01-01T00:00:00Z',
-                id: resourceId
+                id: resourceId // duplicate id
             },
             {
                 type: 'members',
@@ -72,6 +76,14 @@ describe('InMemoryMilestoneRepository', function () {
         for (const milestone of milestones) {
             await repository.save(milestone);
         }
+    });
+
+    after(function () {
+        sinon.restore();
+    });
+
+    it('Can dispatch events when saving a new Milestone', async function () {
+        assert(domainEventsSpy.callCount === 6);
     });
 
     it('Can return the latest milestone for members', async function () {
