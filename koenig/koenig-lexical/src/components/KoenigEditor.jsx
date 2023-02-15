@@ -4,22 +4,13 @@ import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
-import {ListPlugin} from '@lexical/react/LexicalListPlugin';
-import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
-import PlusCardMenuPlugin from '../plugins/PlusCardMenuPlugin';
-import SlashCardMenuPlugin from '../plugins/SlashCardMenuPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
-import ImagePlugin from '../plugins/ImagePlugin';
-import MarkdownPlugin from '../plugins/MarkdownPlugin';
 import DragDropPastePlugin from '../plugins/DragDropPastePlugin';
-import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
-import {AudioPlugin} from '../plugins/AudioPlugin';
-import {VideoPlugin} from '../plugins/VideoPlugin';
 import DragDropReorderPlugin from '../plugins/DragDropReorderPlugin';
 import '../styles/index.css';
 
@@ -27,7 +18,8 @@ const KoenigEditor = ({
     onChange,
     markdownTransformers,
     registerAPI,
-    cursorDidExitAtTop
+    cursorDidExitAtTop,
+    children
 }) => {
     const _onChange = React.useCallback((editorState) => {
         const json = editorState.toJSON();
@@ -57,21 +49,13 @@ const KoenigEditor = ({
             />
             <OnChangePlugin onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}
-            <ListPlugin /> {/* adds indent/outdent/remove etc support */}
-            <TabIndentationPlugin /> {/* tab/shift+tab triggers indent/outdent */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
-            <PlusCardMenuPlugin />
-            <SlashCardMenuPlugin />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
-            <ImagePlugin />
-            <AudioPlugin />
-            <VideoPlugin />
-            <MarkdownPlugin />
             <DragDropPastePlugin />
-            <HorizontalRulePlugin />
             <ExternalControlPlugin registerAPI={registerAPI} />
             <DragDropReorderPlugin containerElem={editorContainerRef} />
+            {children}
         </div>
     );
 };

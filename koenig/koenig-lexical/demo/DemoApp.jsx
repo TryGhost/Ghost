@@ -1,5 +1,5 @@
 import React from 'react';
-import {KoenigComposer, KoenigEditor} from '../src';
+import {KoenigComposer, KoenigFullEditor} from '../src';
 import FloatingButton from './components/FloatingButton';
 import {useState} from 'react';
 import Watermark from './components/Watermark';
@@ -96,7 +96,7 @@ function DemoApp() {
                     <div className="h-full overflow-auto" ref={containerRef} onClick={focusEditor}>
                         <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
                             <TitleTextBox title={title} setTitle={setTitle} editorAPI={editorAPI} ref={titleRef} />
-                            <KoenigEditor
+                            <KoenigFullEditor
                                 registerAPI={setEditorAPI}
                                 cursorDidExitAtTop={focusTitle}
                             />
