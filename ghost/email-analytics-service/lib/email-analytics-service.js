@@ -1,5 +1,6 @@
 const EventProcessingResult = require('./event-processing-result');
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 
 /**
  * @typedef {import('@tryghost/email-service').EmailEventProcessor} EmailEventProcessor
@@ -11,6 +12,10 @@ const logging = require('@tryghost/logging');
  * @property {Date} [lastStarted] Date the last fetch started on
  * @property {Date} [lastBegin] The begin time used during the last fetch
  * @property {Date} [lastEventTimestamp]
+ */
+
+/**
+ * @typedef {FetchData & {schedule: {begin: Date, end: Date}}} FetchDataScheduled
  */
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
@@ -33,6 +38,11 @@ module.exports = class EmailAnalytics {
     #fetchMissingData = null;
 
     /**
+     * @type {FetchDataScheduled}
+     */
+    #fetchScheduledData = null;
+
+    /**
      * @param {object} dependencies
      * @param {EmailEventProcessor} dependencies.eventProcessor
      */
@@ -42,6 +52,14 @@ module.exports = class EmailAnalytics {
         this.queries = queries;
         this.eventProcessor = eventProcessor;
         this.providers = providers;
+    }
+
+    getStatus() {
+        return {
+            latest: this.#fetchLatestData,
+            missing: this.#fetchMissingData,
+            scheduled: this.#fetchScheduledData
+        };
     }
 
     /**
@@ -100,6 +118,52 @@ module.exports = class EmailAnalytics {
     }
 
     /**
+     * Schedule a new fetch that should happen
+     */
+    schedule({begin, end}) {
+        if (this.#fetchScheduledData && this.#fetchScheduledData.running) {
+            throw new errors.ValidationError({
+                message: 'Already fetching scheduled events. Wait for it to finish before scheduling a new one.',
+            });
+        }
+        logging.info('[EmailAnalytics] Scheduling fetch from ' + begin.toISOString() + ' until ' + end.toISOString());
+        this.#fetchScheduledData = {
+            running: false,
+            schedule: {
+                begin,
+                end
+            }
+        };
+    }
+
+    /**
+     * Continues fetching the scheduled events (does not start one). Resets the scheduled event when received 0 events.
+     */
+    async fetchScheduled({maxEvents = Infinity} = {}) {
+        if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
+            // Nothing scheduled
+            return;
+        }
+
+        const begin = this.#fetchScheduledData.schedule.begin;
+        const end = this.#fetchScheduledData.schedule.end;
+
+        if (end <= begin) {
+            // Skip for now
+            logging.info('[EmailAnalytics] Skipping fetchScheduled because end is before begin');
+            this.#fetchScheduledData = null;
+            return 0;
+        }
+
+        const count = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
+        if (count === 0) {
+            // Reset the scheduled fetch
+            this.#fetchScheduledData = null;
+        }
+        return count;
+    }
+
+    /**
      * Start fetching analytics and store the data of the progress inside fetchData
      * @param {FetchData} fetchData
      * @param {object} options
@@ -121,7 +185,7 @@ module.exports = class EmailAnalytics {
 
         // We keep the processing result here, so we also have a result in case of failures
         let processingResult = new EventProcessingResult();
-        let failed = false;
+        let error = null;
 
         const processBatch = async (events) => {
             // Even if the fetching is interrupted because of an error, we still store the last event timestamp
@@ -129,7 +193,7 @@ module.exports = class EmailAnalytics {
             eventCount += events.length;
 
             // Every 5 minutes we do an aggregation and clear the processingResult
-            if (Date.now() - lastAggregation > 5 * 60 * 1000) {
+            if (Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) {
                 // Aggregate and clear the processingResult
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
                 try {
@@ -152,7 +216,7 @@ module.exports = class EmailAnalytics {
         } catch (err) {
             logging.error('[EmailAnalytics] Error while fetching');
             logging.error(err);
-            failed = true;
+            error = err;
         }
 
         // Aggregate
@@ -161,17 +225,25 @@ module.exports = class EmailAnalytics {
         } catch (err) {
             logging.error('[EmailAnalytics] Error while aggregating stats');
             logging.error(err);
+
+            if (!error) {
+                error = err;
+            }
         }
 
         // Small trick: if reached the end of new events, we are going to keep
         // fetching the same events because 'begin' won't change
         // So if we didn't have errors while fetching, and total events < maxEvents, increase lastEventTimestamp with one second
-        if (!failed && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 1000) {
+        if (!error && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
             logging.info('[EmailAnalytics] Reached end of new events, increasing lastEventTimestamp with one second');
             fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
         }
 
         fetchData.running = false;
+
+        if (error) {
+            throw error;
+        }
         return eventCount;
     }
 
@@ -293,12 +365,12 @@ module.exports = class EmailAnalytics {
     }
 
     async aggregateStats({emailIds = [], memberIds = []}) {
-        logging.info(`Aggregating email analytics for ${emailIds.length} emails`);
+        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId);
         }
 
-        logging.info(`Aggregating email analytics for ${memberIds.length} members`);
+        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
         for (const memberId of memberIds) {
             await this.aggregateMemberStats(memberId);
         }

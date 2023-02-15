@@ -77,6 +77,17 @@ class EmailAnalyticsServiceWrapper {
         return totalEvents;
     }
 
+    async fetchScheduled() {
+        logging.info('[EmailAnalytics] Fetch scheduled started');
+
+        const fetchStartDate = new Date();
+        const totalEvents = await this.service.fetchScheduled({maxEvents: 5100}); // Maximum so we don't delay fetchLatest too much
+        const fetchEndDate = new Date();
+
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
+        return totalEvents;
+    }
+
     async startFetch() {
         if (this.fetching) {
             logging.info('Email analytics fetch already running, skipping');
@@ -87,6 +98,7 @@ class EmailAnalyticsServiceWrapper {
         try {
             await this.fetchLatest();
             await this.fetchMissing();
+            await this.fetchScheduled();
 
             this.fetching = false;
         } catch (e) {

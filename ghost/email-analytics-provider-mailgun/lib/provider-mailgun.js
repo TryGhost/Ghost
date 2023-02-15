@@ -32,8 +32,8 @@ class EmailAnalyticsProviderMailgun {
             limit: PAGE_LIMIT,
             event: EVENT_FILTER,
             tags: this.tags.join(' AND '),
-            begin: options.begin?.toUTCString(),
-            end: options.end?.toUTCString(),
+            begin: options.begin ? options.begin.getTime() / 1000 : undefined,
+            end: options.end ? options.end.getTime() / 1000 : undefined,
             ascending: 'yes'
         };
 
