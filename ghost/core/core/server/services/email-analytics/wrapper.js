@@ -56,52 +56,25 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async fetchLatest() {
-        // Instead of processing all events directy, we do a little loop
-        // Because otherwise we could be fetching for 30 minutes without updating the aggrage stats
-        // Instead, we fetch ±1000 at a time and stop if we reached a time limit or 0 new events
+        logging.info('[EmailAnalytics] Fetch latest started');
 
-        const loopStartDate = new Date();
-        let fetchCount = 0;
+        const fetchStartDate = new Date();
+        const totalEvents = await this.service.fetchLatest({}); // No maximum, as these events are the most important
+        const fetchEndDate = new Date();
 
-        for (let index = 0; index < 100; index++) {
-            const fetchStartDate = new Date();
-            debug('Starting email analytics fetch of latest events');
-            const eventStats = await this.service.fetchLatest({maxEvents: 5100});
-            fetchCount += eventStats.totalEvents;
-
-            const fetchEndDate = new Date();
-            debug(`Finished fetching ${eventStats.totalEvents} analytics events in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
-
-            const aggregateStartDate = new Date();
-            debug(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
-            await this.service.aggregateStats(eventStats);
-            const aggregateEndDate = new Date();
-            debug(`Finished aggregating email analytics in ${aggregateEndDate.getTime() - aggregateStartDate.getTime()}ms`);
-            logging.info(`[EmailAnalytics] Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate.getTime() - fetchStartDate.getTime()}ms (iteration ${index + 1})`);
-
-            // Stop if more than 5 minutes working
-            if (eventStats.totalEvents < 5100 || aggregateEndDate.getTime() - loopStartDate.getTime() > 5 * 60 * 1000) {
-                break;
-            }
-        }
-
-        const loopEndTime = new Date();
-        logging.info(`[EmailAnalytics] Total: ${fetchCount} events in ${loopEndTime.getTime() - loopStartDate.getTime()}ms`);
-
-        return fetchCount;
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
+        return totalEvents;
     }
 
     async fetchMissing() {
+        logging.info('[EmailAnalytics] Fetch missing started');
+
         const fetchStartDate = new Date();
+        const totalEvents = await this.service.fetchMissing({maxEvents: 5100}); // Maximum so we don't delay fetchLatest too much
+        const fetchEndDate = new Date();
 
-        const eventStats = await this.service.fetchMissing({maxEvents: 1000});
-        await this.service.aggregateStats(eventStats);
-
-        const aggregateEndDate = new Date();
-
-        logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate.getTime() - fetchStartDate.getTime()}ms`);
-
-        return eventStats;
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
+        return totalEvents;
     }
 
     async startFetch() {
@@ -112,10 +85,7 @@ class EmailAnalyticsServiceWrapper {
         this.fetching = true;
 
         try {
-            logging.info('[EmailAnalytics] Fetch latest started');
             await this.fetchLatest();
-
-            logging.info('[EmailAnalytics] Fetch missing started');
             await this.fetchMissing();
 
             this.fetching = false;

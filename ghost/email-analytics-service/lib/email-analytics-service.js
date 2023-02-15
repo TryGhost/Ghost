@@ -73,7 +73,7 @@ module.exports = class EmailAnalytics {
      */
     async fetchMissing({maxEvents = Infinity} = {}) {
         // We start where we left of, or 30 minutes before the last event we received
-        const begin = this.#fetchMissingData?.lastEventTimestamp ?? new Date((await this.getLastEventTimestamp()).getTime() - TRUST_THRESHOLD_MS);
+        const begin = this.#fetchMissingData?.lastEventTimestamp ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 2);
 
         // Always stop at the time the fetchLatest started fetching on, or maximum 30 minutes ago
         const end = new Date(
@@ -86,7 +86,7 @@ module.exports = class EmailAnalytics {
         if (end <= begin) {
             // Skip for now
             logging.info('[EmailAnalytics] Skipping fetchMissing because end is before begin');
-            return new EventProcessingResult();
+            return 0;
         }
 
         // Create the fetch data object if it doesn't exist yet
@@ -116,12 +116,31 @@ module.exports = class EmailAnalytics {
         fetchData.lastStarted = new Date();
         fetchData.lastBegin = begin;
 
+        let lastAggregation = Date.now();
+        let eventCount = 0;
+
         // We keep the processing result here, so we also have a result in case of failures
-        const processingResult = new EventProcessingResult();
+        let processingResult = new EventProcessingResult();
+        let failed = false;
 
         const processBatch = async (events) => {
             // Even if the fetching is interrupted because of an error, we still store the last event timestamp
-            return this.processEventBatch(events, processingResult, fetchData);
+            await this.processEventBatch(events, processingResult, fetchData);
+            eventCount += events.length;
+
+            // Every 5 minutes we do an aggregation and clear the processingResult
+            if (Date.now() - lastAggregation > 5 * 60 * 1000) {
+                // Aggregate and clear the processingResult
+                // We do this here because otherwise it could take a long time before the new events are visible in the stats
+                try {
+                    await this.aggregateStats(processingResult);
+                    lastAggregation = Date.now();
+                    processingResult = new EventProcessingResult();
+                } catch (err) {
+                    logging.error('[EmailAnalytics] Error while aggregating stats');
+                    logging.error(err);
+                }
+            }
         };
 
         try {
@@ -133,10 +152,27 @@ module.exports = class EmailAnalytics {
         } catch (err) {
             logging.error('[EmailAnalytics] Error while fetching');
             logging.error(err);
+            failed = true;
+        }
+
+        // Aggregate
+        try {
+            await this.aggregateStats(processingResult);
+        } catch (err) {
+            logging.error('[EmailAnalytics] Error while aggregating stats');
+            logging.error(err);
+        }
+
+        // Small trick: if reached the end of new events, we are going to keep
+        // fetching the same events because 'begin' won't change
+        // So if we didn't have errors while fetching, and total events < maxEvents, increase lastEventTimestamp with one second
+        if (!failed && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 1000) {
+            logging.info('[EmailAnalytics] Reached end of new events, increasing lastEventTimestamp with one second');
+            fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
         }
 
         fetchData.running = false;
-        return processingResult;
+        return eventCount;
     }
 
     /**
@@ -149,7 +185,7 @@ module.exports = class EmailAnalytics {
             const batchResult = await this.processEvent(event);
 
             // Save last event timestamp
-            if (event.timestamp && event.timestamp > fetchData.lastEventTimestamp) {
+            if (!fetchData.lastEventTimestamp || (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)) {
                 fetchData.lastEventTimestamp = event.timestamp;
             }
 
@@ -165,12 +201,12 @@ module.exports = class EmailAnalytics {
 
     /**
      *
-     * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId: any; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
+     * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; batchId?: string, timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
      * @returns {Promise<EventProcessingResult>}
      */
     async processEvent(event) {
         if (event.type === 'delivered') {
-            const recipient = await this.eventProcessor.handleDelivered({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleDelivered({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail, batchId: event.batchId}, event.timestamp);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -184,7 +220,7 @@ module.exports = class EmailAnalytics {
         }
 
         if (event.type === 'opened') {
-            const recipient = await this.eventProcessor.handleOpened({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleOpened({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail, batchId: event.batchId}, event.timestamp);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -199,7 +235,7 @@ module.exports = class EmailAnalytics {
 
         if (event.type === 'failed') {
             if (event.severity === 'permanent') {
-                const recipient = await this.eventProcessor.handlePermanentFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error});
+                const recipient = await this.eventProcessor.handlePermanentFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail, batchId: event.batchId}, {id: event.id, timestamp: event.timestamp, error: event.error});
 
                 if (recipient) {
                     return new EventProcessingResult({
@@ -211,7 +247,7 @@ module.exports = class EmailAnalytics {
 
                 return new EventProcessingResult({unprocessable: 1});
             } else {
-                const recipient = await this.eventProcessor.handleTemporaryFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error});
+                const recipient = await this.eventProcessor.handleTemporaryFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail, batchId: event.batchId}, {id: event.id, timestamp: event.timestamp, error: event.error});
 
                 if (recipient) {
                     return new EventProcessingResult({
@@ -226,7 +262,7 @@ module.exports = class EmailAnalytics {
         }
 
         if (event.type === 'unsubscribed') {
-            const recipient = await this.eventProcessor.handleUnsubscribed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleUnsubscribed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail, batchId: event.batchId}, event.timestamp);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -240,7 +276,7 @@ module.exports = class EmailAnalytics {
         }
 
         if (event.type === 'complained') {
-            const recipient = await this.eventProcessor.handleComplained({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleComplained({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail, batchId: event.batchId}, event.timestamp);
 
             if (recipient) {
                 return new EventProcessingResult({
