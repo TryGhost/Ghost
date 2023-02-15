@@ -139,11 +139,7 @@ module.exports = class MilestonesService {
             milestone.emailSentAt = new Date();
         }
 
-        const newMilestone = await this.#createMilestone(milestone);
-
-        this.#events.emit(`milestone.${milestone.type}.achieved`, newMilestone.toJSON());
-
-        return newMilestone;
+        return await this.#createMilestone(milestone);
     }
 
     /**
