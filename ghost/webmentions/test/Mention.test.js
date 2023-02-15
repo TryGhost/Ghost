@@ -26,7 +26,8 @@ describe('Mention', function () {
                 'sourceAuthor',
                 'sourceExcerpt',
                 'sourceFavicon',
-                'sourceFeaturedImage'
+                'sourceFeaturedImage',
+                'verified'
             ];
             assert.deepEqual(actual, expected);
         });
@@ -89,7 +90,8 @@ describe('Mention', function () {
                 {sourceFavicon: 'https://source.com/favicon.ico'},
                 {sourceFavicon: new URL('https://source.com/favicon.ico')},
                 {sourceFeaturedImage: 'https://source.com/assets/image.jpg'},
-                {sourceFeaturedImage: new URL('https://source.com/assets/image.jpg')}
+                {sourceFeaturedImage: new URL('https://source.com/assets/image.jpg')},
+                {verified: true}
             ];
 
             for (const localValidInput of validInputs) {

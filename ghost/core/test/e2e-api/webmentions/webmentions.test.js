@@ -352,4 +352,35 @@ describe('Webmentions (receiving)', function () {
             })
             .expectStatus(429);
     });
+
+    //@TODO The feature is still WIP
+    // it('can verify a webmention', async function () {
+    //     const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+    //     const targetUrl = new URL(urlUtils.getSiteUrl());
+    //     const sourceUrl = new URL('http://testpage.com/external-article-2/');
+    //     const html = `
+    //             <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body><a href="${urlUtils.getSiteUrl()}">your cool website mentioned</a></body></html>
+    //         `;
+    //     nock(targetUrl.origin)
+    //         .head(targetUrl.pathname)
+    //         .reply(200);
+
+    //     nock(sourceUrl.origin)
+    //         .get(sourceUrl.pathname)
+    //         .reply(200, html, {'Content-Type': 'text/html'});
+
+    //     await agent.post('/receive')
+    //         .body({
+    //             source: sourceUrl.href,
+    //             target: targetUrl.href
+    //         })
+    //         .expectStatus(202);
+
+    //     await processWebmentionJob;
+
+    //     const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article-2/'});
+        
+    //     assert(mention);
+    //     assert.equal(mention.get('verified'), true);
+    // });
 });
