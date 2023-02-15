@@ -153,7 +153,8 @@ module.exports = class Mention {
             sourceAuthor: this.sourceAuthor,
             sourceExcerpt: this.sourceExcerpt,
             sourceFavicon: this.sourceFavicon,
-            sourceFeaturedImage: this.sourceFeaturedImage
+            sourceFeaturedImage: this.sourceFeaturedImage,
+            verified: this.verified
         };
     }
 
@@ -165,6 +166,7 @@ module.exports = class Mention {
         this.#timestamp = data.timestamp;
         this.#payload = data.payload;
         this.#resourceId = data.resourceId;
+        this.#verified = data.verified;
     }
 
     /**
@@ -222,7 +224,10 @@ module.exports = class Mention {
         let payload;
         payload = data.payload ? JSON.parse(JSON.stringify(data.payload)) : null;
 
-        /** @type {ObjectID | null} */
+        /** @type Boolean */
+        let verified;
+        verified = data.verified ? data.verified : false;
+
         let resourceId = null;
         if (data.resourceId) {
             if (data.resourceId instanceof ObjectID) {
@@ -232,13 +237,16 @@ module.exports = class Mention {
             }
         }
 
+        /** @type {Mention} */
+
         const mention = new Mention({
             id,
             source,
             target,
             timestamp,
             payload,
-            resourceId
+            resourceId,
+            verified
         });
 
         mention.setSourceMetadata(data);
