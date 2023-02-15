@@ -38,10 +38,10 @@ module.exports = class InMemoryMilestoneRepository {
         } else {
             this.#store.push(milestone);
             this.#ids[milestone.id.toHexString()] = true;
+        }
 
-            for (const event of milestone.events) {
-                this.#DomainEvents.dispatch(event);
-            }
+        for (const event of milestone.events) {
+            this.#DomainEvents.dispatch(event);
         }
     }
 
