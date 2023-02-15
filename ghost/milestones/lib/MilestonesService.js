@@ -30,7 +30,7 @@ const Milestone = require('./Milestone');
  * @prop {number[]} milestonesConfig.members
  */
 
-module.exports = class MilestonesEmailService {
+module.exports = class MilestonesService {
     /** @type {IMilestoneRepository} */
     #repository;
 
