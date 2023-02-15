@@ -7,6 +7,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 /**
  * @typedef {object} ISlackNotifications
  * @prop {(milestone: Milestone) => Promise<void>} notifyMilestoneReceived
+ * @prop {(slackData: object, url: URL) => Promise<void>} send
  */
 
 /**
@@ -16,7 +17,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 /**
  * @typedef {object} urlUtils
- * @prop {() => string} getSiteUrl
+ * @prop {() => any} getSiteUrl
  */
 
 /**
@@ -68,14 +69,23 @@ module.exports = class SlackNotificationsService {
         });
     }
 
+    /**
+     *
+     * @param {MilestoneCreatedEvent} type
+     * @param {object} event
+     * @param {object} event.data
+     *
+     * @returns {Promise<void>}
+     */
     async handleEvent(type, event) {
         if (
             type === MilestoneCreatedEvent
             && event.data.milestone
             && this.#labs.isSet('milestoneEmails')
             && this.#config.get('hostSettings')?.milestones?.enabled
+            && this.#config.get('hostSettings')?.milestones?.url
         ) {
-            await this.#notifications.notifyMilestoneReceived(event.data);
+            await this.#notifications.notifyMilestoneReceived(event.data.milestone);
         }
     }
 

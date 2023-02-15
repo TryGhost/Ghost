@@ -14,6 +14,13 @@ const moment = require('moment');
  * @property {() => string} getSiteUrl
  */
 
+/**
+ * @typedef {import('./SlackNotificationsService').ISlackNotifications} ISlackNotifications
+ */
+
+/**
+ * @implements {ISlackNotifications}
+ */
 class SlackNotifications {
     /** @type {config} */
     #config;
@@ -42,17 +49,22 @@ class SlackNotifications {
      * @returns {Promise<void>}
      */
     async notifyMilestoneReceived(milestone) {
-        const hostSettings = this.#config.get('hostSettings');
-        const slackWebhookUrl = hostSettings?.milestones?.url;
-
-        const milestoneType = milestone.type === 'arr' ? 'ARR' : 'Members';
-        const valueFormatted = this.#getFormattedAmount({amount: milestone.value, currency: milestone?.currency});
-        const hasImportedMembers = false;
-        const lastEmailTooSoon = false;
+        // TODO: read those values from somewhere maybe?
+        const hasImportedMembers = 'has imported members';
+        const lastEmailTooSoon = 'last email too recent';
         const reason = hasImportedMembers || lastEmailTooSoon;
-        const emailSent = milestone.emailSentAt ? this.#getFormattedDate(milestone.emailSentAt) : `no / ${reason}`;
+        const currentArr = this.#getFormattedAmount({amount: 598.76, currency: milestone?.currency});
+        const currentMembers = this.#getFormattedAmount({amount: 9857});
+
+        // TODO: clean this up!
+        const slackWebhookUrl = this.#config.get('hostSettings')?.milestones?.url;
+        const milestoneTypePretty = milestone.type === 'arr' ? 'ARR' : 'Members';
+        const valueFormatted = this.#getFormattedAmount({amount: milestone.value, currency: milestone?.currency});
+
+        const emailSent = milestone.emailSentAt ? this.#getFormattedDate(milestone?.emailSentAt) : `no / ${reason}`;
         const siteUrl = this.#getSiteUrl();
-        const title = `${milestoneType} Milestone ${milestone.value} reached!`;
+        const title = `${milestoneTypePretty} Milestone ${valueFormatted} reached!`;
+
         const arrSection = {
             type: 'section',
             fields: [
@@ -62,7 +74,7 @@ class SlackNotifications {
                 },
                 {
                     type: 'mrkdwn',
-                    text: '*Current ARR:*\n$598.76'
+                    text: `*Current ARR:*\n${currentArr}`
                 }
             ]
         };
@@ -72,11 +84,11 @@ class SlackNotifications {
             fields: [
                 {
                     type: 'mrkdwn',
-                    text: '*Members:*\n'
+                    text: `*Milestone:*\n${valueFormatted}`
                 },
                 {
                     type: 'mrkdwn',
-                    text: '*Current Members:*\n9,857'
+                    text: `*Current Members:*\n${currentMembers}`
                 }
             ]
         };
@@ -88,7 +100,7 @@ class SlackNotifications {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `New *ARR Milestone* achieved for <${siteUrl}|${siteUrl}>`
+                    text: `New *${milestoneTypePretty} Milestone* achieved for <https://${siteUrl}|https://${siteUrl}>`
                 }
             },
             valueSection,
@@ -96,7 +108,7 @@ class SlackNotifications {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `*Email sent:*\n${emailSent} / has imported members`
+                    text: `*Email sent:*\n${emailSent}`
                 }
             }
         ];
@@ -108,11 +120,18 @@ class SlackNotifications {
             blocks
         };
 
-        await this.#send(slackData, slackWebhookUrl);
+        await this.send(slackData, slackWebhookUrl);
     }
 
-    async #send(slackData, url) {
-        if (!url || !validator.isURL(url)) {
+    /**
+     *
+     * @param {object} slackData
+     * @param {URL} url
+     *
+     * @returns {Promise<any>}
+     */
+    async send(slackData, url) {
+        if (!url || typeof url !== 'string' || !validator.isURL(url)) {
             const err = new errors.InternalServerError({
                 message: 'URL empty or invalid.',
                 code: 'URL_MISSING_INVALID',
@@ -132,6 +151,9 @@ class SlackNotifications {
         return await got(url, requestOptions);
     }
 
+    /**
+     * @returns {string}
+     */
     #getSiteUrl() {
         const [, siteDomain] = this.#urlUtils.getSiteUrl()
             .match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -139,9 +161,16 @@ class SlackNotifications {
         return siteDomain;
     }
 
+    /**
+     * @param {object} options
+     * @param {number} options.amount
+     * @param {string} [options.currency]
+     *
+     * @returns {string}
+     */
     #getFormattedAmount({amount = 0, currency}) {
         if (!currency) {
-            return '';
+            return Intl.NumberFormat().format(amount);
         }
 
         return Intl.NumberFormat('en', {
@@ -151,6 +180,11 @@ class SlackNotifications {
         }).format(amount);
     }
 
+    /**
+     * @param {string|Date} date
+     *
+     * @returns {string}
+     */
     #getFormattedDate(date) {
         if (!date) {
             return '';
