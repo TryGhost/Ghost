@@ -48,10 +48,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -108,10 +104,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -141,10 +133,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                // TODO: make this a stub
-                mailer: {
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -179,10 +167,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -207,10 +191,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -251,10 +231,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -284,10 +260,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -341,10 +313,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -382,10 +350,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -419,10 +383,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -462,10 +422,6 @@ describe('MilestonesService', function () {
 
             const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {

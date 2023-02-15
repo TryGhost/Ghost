@@ -34,14 +34,11 @@ module.exports = {
             } = require('@tryghost/milestones');
             const config = require('../../../shared/config');
             const milestonesConfig = config.get('milestones');
-            const {GhostMailer} = require('../mail');
 
-            const mailer = new GhostMailer();
             const repository = new InMemoryMilestoneRepository({DomainEvents});
             const queries = new MilestoneQueries({db});
 
             this.api = new MilestonesService({
-                mailer,
                 repository,
                 milestonesConfig, // avoid using getters and pass as JSON
                 queries
