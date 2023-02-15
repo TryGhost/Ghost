@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const debug = require('@tryghost/debug')('jobs:email-analytics:fetch-latest');
 
 class EmailAnalyticsServiceWrapper {
     init() {
@@ -62,29 +61,35 @@ class EmailAnalyticsServiceWrapper {
         const totalEvents = await this.service.fetchLatest({}); // No maximum, as these events are the most important
         const fetchEndDate = new Date();
 
-        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest)`);
         return totalEvents;
     }
 
-    async fetchMissing() {
+    async fetchMissing({maxEvents}) {
+        if (maxEvents < 300) {
+            return 0;
+        }
         logging.info('[EmailAnalytics] Fetch missing started');
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchMissing({maxEvents: 5100}); // Maximum so we don't delay fetchLatest too much
+        const totalEvents = await this.service.fetchMissing({maxEvents}); // Maximum so we don't delay fetchLatest too much
         const fetchEndDate = new Date();
 
-        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (missing)`);
         return totalEvents;
     }
 
-    async fetchScheduled() {
+    async fetchScheduled({maxEvents}) {
+        if (maxEvents < 300) {
+            return 0;
+        }
         logging.info('[EmailAnalytics] Fetch scheduled started');
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchScheduled({maxEvents: 5100}); // Maximum so we don't delay fetchLatest too much
+        const totalEvents = await this.service.fetchScheduled({maxEvents}); // Maximum so we don't delay fetchLatest too much
         const fetchEndDate = new Date();
 
-        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (scheduled)`);
         return totalEvents;
     }
 
@@ -96,9 +101,9 @@ class EmailAnalyticsServiceWrapper {
         this.fetching = true;
 
         try {
-            await this.fetchLatest();
-            await this.fetchMissing();
-            await this.fetchScheduled();
+            const c1 = await this.fetchLatest();
+            const c2 = await this.fetchMissing({maxEvents: 20000 - c1});
+            await this.fetchScheduled({maxEvents: 20000 - c1 - c2});
 
             this.fetching = false;
         } catch (e) {

@@ -145,8 +145,13 @@ module.exports = class EmailAnalytics {
             return;
         }
 
-        const begin = this.#fetchScheduledData.schedule.begin;
+        let begin = this.#fetchScheduledData.schedule.begin;
         const end = this.#fetchScheduledData.schedule.end;
+
+        if (this.#fetchScheduledData.lastEventTimestamp && this.#fetchScheduledData.lastEventTimestamp > begin) {
+            // Continue where we left of
+            begin = this.#fetchScheduledData.lastEventTimestamp;
+        }
 
         if (end <= begin) {
             // Skip for now

@@ -18,7 +18,6 @@ export default class Debug extends Component {
     @tracked emailBatches = null;
     @tracked recipientFailures = null;
     @tracked loading = true;
-    @tracked startedschedule = false;
     @tracked analyticsStatus = null;
     @tracked latestEmail = null;
 
@@ -31,7 +30,11 @@ export default class Debug extends Component {
     }
 
     async updateEmail() {
-        this.latestEmail = await this.store.findRecord('email', this.post.email.id, {reload: true});
+        try {
+            this.latestEmail = await this.store.findRecord('email', this.post.email.id, {reload: true});
+        } catch (e) {
+            // Skip
+        }
     }
 
     get emailError() {
@@ -242,10 +245,7 @@ export default class Debug extends Component {
             }
             return this._fetchAnalyticsStatus.perform();
         } catch (e) {
-            if (!didCancel(e)) {
-                // re-throw the non-cancelation error
-                throw e;
-            }
+            // Skip
         }
     }
 
@@ -312,6 +312,5 @@ export default class Debug extends Component {
         let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`);
         yield this.ajax.put(statsUrl, {});
         yield this.fetchAnalyticsStatus();
-        this.startedschedule = true;
     }
 }
