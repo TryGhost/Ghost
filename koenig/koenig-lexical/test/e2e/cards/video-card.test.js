@@ -2,7 +2,7 @@ import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {expect} from '@playwright/test';
 import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
 import path from 'path';
-import createDataTransfer from '../../utils/createDataTransfer.js';
+import createDataTransfer from '../../utils/createDataTransfer';
 
 describe('Video card', async () => {
     let app;
@@ -203,7 +203,7 @@ describe('Video card', async () => {
         await fileChooser.setFiles([]);
 
         // Create and dispatch data transfer
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'video.mp4', fileType: 'video/mp4'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'video.mp4', fileType: 'video/mp4'}]);
         await page.getByTestId('media-placeholder').dispatchEvent('dragover', {dataTransfer});
 
         // Dragover text should be visible
@@ -233,7 +233,7 @@ describe('Video card', async () => {
         await fileChooser.setFiles([]);
 
         //  Drop file
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
         await page.getByTestId('media-placeholder').dispatchEvent('dragover', {dataTransfer});
         await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
 
@@ -251,7 +251,7 @@ describe('Video card', async () => {
         await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
 
         // Create and dispatch data transfer
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
         await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('dragover', {dataTransfer});
 
         // Dragover text should be visible
@@ -277,7 +277,7 @@ describe('Video card', async () => {
         await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
 
         // Create and dispatch data transfer
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'video.mp4', fileType: 'video/mp4'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'video.mp4', fileType: 'video/mp4'}]);
         await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Errors should be visible

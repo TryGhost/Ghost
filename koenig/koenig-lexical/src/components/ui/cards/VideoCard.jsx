@@ -51,7 +51,7 @@ function PopulatedVideoCard({
 
     return (
         <>
-            <div className="not-kg-prose relative">
+            <div className="not-kg-prose relative" data-testid="video-card-populated">
                 <div>
                     <img className="mx-auto" src={thumbnail} alt="Video thumbnail" />
                     {customThumbnail && <img className="absolute inset-0 h-full w-full object-cover" src={customThumbnail} alt="Video custom thumbnail" />}

@@ -109,7 +109,7 @@ describe('Audio card', async () => {
         await fileChooser.setFiles([]);
 
         // Create and dispatch data transfer
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'audio-sample.mp3', fileType: 'audio/mp3'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'audio-sample.mp3', fileType: 'audio/mp3'}]);
         await page.getByTestId('media-placeholder').dispatchEvent('dragover', {dataTransfer});
 
         // Dragover text should be visible
@@ -152,7 +152,7 @@ describe('Audio card', async () => {
         await fileChooser.setFiles([]);
 
         // Create and dispatch data transfer
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
         await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Errors should be visible
@@ -223,7 +223,7 @@ describe('Audio card', async () => {
         await expect(await page.getByTestId('media-duration')).toContainText('0:19');
 
         // Create and dispatch data transfer
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
         await page.getByTestId('audio-card-populated').dispatchEvent('dragover', {dataTransfer});
 
         // Dragover text should be visible
@@ -248,7 +248,7 @@ describe('Audio card', async () => {
         await expect(await page.getByTestId('media-duration')).toContainText('0:19');
 
         // Create and dispatch data transfer
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'video.mp4', fileType: 'video/mp4'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'video.mp4', fileType: 'video/mp4'}]);
         await page.getByTestId('audio-card-populated').dispatchEvent('drop', {dataTransfer});
 
         // Errors should be visible
@@ -319,7 +319,7 @@ describe('Audio card', async () => {
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         // Create and dispatch data transfer
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
         await page.getByTestId('audio-card-populated').dispatchEvent('dragover', {dataTransfer});
 
         // Dragover text shouldn't be visible

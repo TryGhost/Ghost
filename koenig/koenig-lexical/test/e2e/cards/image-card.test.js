@@ -457,23 +457,15 @@ describe('Image card', async () => {
         expect(imageCard).not.toBeNull();
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
 
-        await page.dispatchEvent(
-            '[data-kg-card="image"] [data-testid="media-placeholder"]',
-            'dragenter',
-            {dataTransfer}
-        );
+        await page.locator('[data-kg-card="image"] [data-testid="media-placeholder"]').dispatchEvent('dragenter', {dataTransfer});
 
-        expect(await page.$('[data-kg-card-drag-text="true"]')).not.toBeNull();
+        expect(await page.locator('[data-kg-card-drag-text="true"]')).not.toBeNull();
 
-        await page.dispatchEvent(
-            '[data-kg-card="image"] [data-testid="media-placeholder"]',
-            'dragleave',
-            {dataTransfer}
-        );
+        await page.locator('[data-kg-card="image"] [data-testid="media-placeholder"]').dispatchEvent('dragleave', {dataTransfer});
 
-        expect(await page.$('[data-kg-card-drag-text="true"]')).toBeNull();
+        await expect(await page.locator('[data-kg-card-drag-text="true"]')).toHaveCount(0);
     });
 
     test('can handle image drop', async function () {
@@ -481,22 +473,14 @@ describe('Image card', async () => {
         await page.keyboard.type('image! ');
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
-        const dataTransfer = await createDataTransfer(page, {filePath, fileName: 'large-image.png', fileType: 'image/png'});
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
 
-        await page.dispatchEvent(
-            '[data-kg-card="image"] [data-testid="media-placeholder"]',
-            'dragenter',
-            {dataTransfer}
-        );
+        await page.locator('[data-kg-card="image"] [data-testid="media-placeholder"]').dispatchEvent('dragenter', {dataTransfer});
 
         // Dragover text should be visible
         await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
 
-        await page.dispatchEvent(
-            '[data-kg-card="image"] [data-testid="media-placeholder"]',
-            'drop',
-            {dataTransfer}
-        );
+        await page.locator('[data-kg-card="image"] [data-testid="media-placeholder"]').dispatchEvent('drop', {dataTransfer});
 
         // wait for upload to complete
         await expect(await page.getByTestId('progress-bar')).toBeVisible();

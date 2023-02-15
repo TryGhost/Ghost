@@ -1,22 +1,26 @@
 import fs from 'fs';
 
-export default async function createDataTransfer(page, data) {
-    const buffer = fs.readFileSync(data.filePath).toString('base64');
+export default async function createDataTransfer(page, data = []) {
+    const filesData = [];
 
-    return await page.evaluateHandle(
-        async ({bufferData, fileName, fileType}) => {
-            const dataTransfer = new DataTransfer();
+    data.forEach((file) => {
+        const buffer = fs.readFileSync(file.filePath);
 
-            const blobData = await fetch(bufferData).then(res => res.blob());
+        filesData.push({
+            buffer: buffer.toJSON().data,
+            name: file.fileName,
+            type: file.fileType
+        });
+    });
 
-            const file = new File([blobData], fileName, {type: fileType});
-            dataTransfer.items.add(file);
-            return dataTransfer;
-        },
-        {
-            bufferData: `data:application/octet-stream;base64,${buffer}`,
-            fileName: data.fileName,
-            fileType: data.fileType
-        }
-    );
+    return await page.evaluateHandle((dataset = []) => {
+        const dt = new DataTransfer();
+
+        dataset.forEach((fileData) => {
+            const file = new File([new Uint8Array(fileData.buffer)], fileData.name, {type: fileData.type});
+            dt.items.add(file);
+        });
+
+        return dt;
+    }, filesData);
 }
