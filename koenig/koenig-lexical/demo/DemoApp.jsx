@@ -10,7 +10,7 @@ import ToggleButton from './components/ToggleButton';
 import {useLocation} from 'react-router-dom';
 import TitleTextBox from './components/TitleTextBox';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
-import {KoenigDecoratorNode} from '@tryghost/kg-default-nodes';
+import {$getRoot, $isDecoratorNode} from 'lexical';
 
 const loadContent = () => {
     const cnt = JSON.stringify(content);
@@ -50,8 +50,9 @@ function DemoApp() {
     }
 
     function focusEditor(event) {
-        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lixical-decorator');
+        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
         const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
+
         if (editorAPI && !clickedOnDecorator && !clickedOnSlashMenu) {
             let editor = editorAPI.editorInstance;
             let {bottom} = editor._rootElement.getBoundingClientRect();
@@ -64,8 +65,17 @@ function DemoApp() {
                 // we should always have a visible cursor when focusing
                 // at the bottom so create an empty paragraph if last
                 // section is a card
-                const lastNode = Array.from(editor._editorState._nodeMap).pop()[1];
-                if (lastNode instanceof KoenigDecoratorNode) {
+                let addLastParagraph = false;
+
+                editor.getEditorState().read(() => {
+                    const lastNode = $getRoot().getChildren().at(-1);
+
+                    if ($isDecoratorNode(lastNode)) {
+                        addLastParagraph = true;
+                    }
+                });
+
+                if (addLastParagraph) {
                     editorAPI.insertParagraphAtBottom();
                 }
 
