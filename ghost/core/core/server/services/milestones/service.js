@@ -1,3 +1,5 @@
+const DomainEvents = require('@tryghost/domain-events');
+
 const getStripeLiveEnabled = () => {
     const settingsCache = require('../../../shared/settings-cache');
     const stripeConnect = settingsCache.get('stripe_connect_publishable_key');
@@ -35,7 +37,7 @@ module.exports = {
             const {GhostMailer} = require('../mail');
 
             const mailer = new GhostMailer();
-            const repository = new InMemoryMilestoneRepository();
+            const repository = new InMemoryMilestoneRepository({DomainEvents});
             const queries = new MilestoneQueries({db});
 
             this.api = new MilestonesService({
