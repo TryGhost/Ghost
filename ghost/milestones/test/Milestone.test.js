@@ -113,14 +113,25 @@ describe('Milestone', function () {
             assert(milestone.name === 'members-100');
         });
 
-        it('Will create event for new milestone', async function () {
-            const milestone = await Milestone.create({
+        it('Will create event for new milestone but not for existing one', async function () {
+            const milestoneOne = await Milestone.create({
                 ...validInputMembers,
                 value: 500,
                 type: 'members'
             });
 
-            assert.ok(milestone.events);
+            assert(milestoneOne.events.length >= 1);
+
+            // simulate creating an existing milestone
+            const id = new ObjectID();
+            const milestoneTwo = await Milestone.create({
+                ...validInputMembers,
+                id,
+                value: 500,
+                type: 'members'
+            });
+
+            assert(milestoneTwo.events.length === 0);
         });
     });
 });
