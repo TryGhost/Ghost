@@ -1,2 +1,2 @@
 module.exports.InMemoryMilestoneRepository = require('./InMemoryMilestoneRepository');
-module.exports.MilestonesEmailService = require('./MilestonesEmailService');
+module.exports.MilestonesService = require('./MilestonesService');

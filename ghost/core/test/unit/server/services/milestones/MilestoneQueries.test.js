@@ -23,15 +23,13 @@ describe('MilestoneQueries', function () {
         });
     });
 
-    describe('Milestone Emails Service', function () {
-        it('Provides expected public API', async function () {
-            const MilestoneQueries = require('../../../../../core/server/services/milestone-emails/MilestoneQueries');
-            milestoneQueries = new MilestoneQueries({db: knexMock});
+    it('Provides expected public API', async function () {
+        const MilestoneQueries = require('../../../../../core/server/services/milestones/MilestoneQueries');
+        milestoneQueries = new MilestoneQueries({db: knexMock});
 
-            assert.ok(milestoneQueries.getMembersCount);
-            assert.ok(milestoneQueries.getARR);
-            assert.ok(milestoneQueries.hasImportedMembersInPeriod);
-            assert.ok(milestoneQueries.getDefaultCurrency);
-        });
+        assert.ok(milestoneQueries.getMembersCount);
+        assert.ok(milestoneQueries.getARR);
+        assert.ok(milestoneQueries.hasImportedMembersInPeriod);
+        assert.ok(milestoneQueries.getDefaultCurrency);
     });
 });

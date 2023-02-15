@@ -1,6 +1,6 @@
 /**
  * @typedef {import('./Milestone')} Milestone
- * @typedef {import('./MilestonesEmailService').IMilestoneRepository} IMilestoneRepository
+ * @typedef {import('./MilestonesService').IMilestoneRepository} IMilestoneRepository
  */
 
 /**
