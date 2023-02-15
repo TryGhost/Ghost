@@ -1,11 +1,11 @@
 const assert = require('assert');
 const {
-    MilestonesEmailService,
+    MilestonesService,
     InMemoryMilestoneRepository
 } = require('../index');
 const Milestone = require('../lib/Milestone');
 
-describe('MilestonesEmailService', function () {
+describe('MilestonesService', function () {
     let repository;
 
     const milestonesConfig = {
@@ -35,7 +35,7 @@ describe('MilestonesEmailService', function () {
         it('Adds first ARR milestone and sends email', async function () {
             repository = new InMemoryMilestoneRepository();
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -92,7 +92,7 @@ describe('MilestonesEmailService', function () {
             await repository.save(milestoneTwo);
             await repository.save(milestoneThree);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -124,7 +124,7 @@ describe('MilestonesEmailService', function () {
         it('Does not add ARR milestone for out of scope currency', async function () {
             repository = new InMemoryMilestoneRepository();
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 // TODO: make this a stub
                 mailer: {
@@ -159,7 +159,7 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -186,7 +186,7 @@ describe('MilestonesEmailService', function () {
         it('Adds ARR milestone but does not send email if imported members are detected', async function () {
             repository = new InMemoryMilestoneRepository();
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -228,7 +228,7 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -260,7 +260,7 @@ describe('MilestonesEmailService', function () {
         it('Adds first Members milestone and sends email', async function () {
             repository = new InMemoryMilestoneRepository();
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -314,7 +314,7 @@ describe('MilestonesEmailService', function () {
             await repository.save(milestoneTwo);
             await repository.save(milestoneThree);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -352,7 +352,7 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -386,7 +386,7 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
@@ -426,7 +426,7 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
                 mailer: {
                     // TODO: make this a stub
