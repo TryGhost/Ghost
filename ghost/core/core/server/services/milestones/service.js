@@ -15,7 +15,7 @@ const getStripeLiveEnabled = () => {
 };
 
 module.exports = {
-    /** @type {import('@tryghost/milestone-emails/lib/MilestonesEmailService')} */
+    /** @type {import('@tryghost/milestones/lib/MilestonesService')} */
     api: null,
 
     /**
@@ -27,9 +27,9 @@ module.exports = {
             const MilestoneQueries = require('./MilestoneQueries');
 
             const {
-                MilestonesEmailService,
+                MilestonesService,
                 InMemoryMilestoneRepository
-            } = require('@tryghost/milestone-emails');
+            } = require('@tryghost/milestones');
             const config = require('../../../shared/config');
             const milestonesConfig = config.get('milestones');
             const {GhostMailer} = require('../mail');
@@ -38,7 +38,7 @@ module.exports = {
             const repository = new InMemoryMilestoneRepository();
             const queries = new MilestoneQueries({db});
 
-            this.api = new MilestonesEmailService({
+            this.api = new MilestonesService({
                 mailer,
                 repository,
                 milestonesConfig, // avoid using getters and pass as JSON
