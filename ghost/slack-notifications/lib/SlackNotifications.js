@@ -6,7 +6,6 @@ const moment = require('moment');
 
 /**
  * @typedef {object} config
- * @property {boolean} enabled
  * @property {URL} webhookUrl
  */
 
