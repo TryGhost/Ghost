@@ -209,7 +209,7 @@
     "@tryghost/express-test": "0.13.0",
     "@tryghost/webhook-mock-receiver": "0.2.3",
     "@types/common-tags": "1.8.1",
-    "c8": "7.12.0",
+    "c8": "7.13.0",
     "cli-progress": "3.11.2",
     "cssnano": "5.1.15",
     "eslint": "8.34.0",
