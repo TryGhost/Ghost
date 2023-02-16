@@ -209,7 +209,7 @@ class JobManager {
             this.bree.add(breeJob);
             return this.bree.start(name);
         } else {
-            logging.info('Adding one off inline job to the queue');
+            logging.info(`Adding one-off job to queue with current length = ${this.queue.length()} called '${name || 'anonymous'}'`);
 
             this.queue.push(async () => {
                 try {
