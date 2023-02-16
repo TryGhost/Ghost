@@ -37,13 +37,20 @@ module.exports = {
                     ...frame.file,
                     path: out
                 });
-                const processedImagePath = store.urlToPath(processedImageUrl);
 
-                // Get the path and name of the processed image
-                // We want to store the original image on the same name + _o
-                // So we need to wait for the first store to finish before generating the name of the original image
-                const processedImageName = path.basename(processedImagePath);
-                const processedImageDir = path.dirname(processedImagePath);
+                let processedImageName = path.basename(processedImageUrl);
+                let processedImageDir = undefined;
+
+                if (store.urlToPath) {
+                    // Currently urlToPath is not part of StorageBase, so not all storage provider have implemented it
+                    const processedImagePath = store.urlToPath(processedImageUrl);
+
+                    // Get the path and name of the processed image
+                    // We want to store the original image on the same name + _o
+                    // So we need to wait for the first store to finish before generating the name of the original image
+                    processedImageName = path.basename(processedImagePath);
+                    processedImageDir = path.dirname(processedImagePath);
+                }
 
                 // Store the original image
                 await store.save({
