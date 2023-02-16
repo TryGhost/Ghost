@@ -302,6 +302,7 @@ module.exports = function apiRoutes() {
     router.get('/emails/:id/recipient-failures', mw.authAdminApi, http(api.emails.browseFailures));
     router.get('/emails/:id/analytics', mw.authAdminApi, http(api.emails.analyticsStatus));
     router.put('/emails/:id/analytics', mw.authAdminApi, http(api.emails.scheduleAnalytics));
+    router.delete('/emails/analytics', mw.authAdminApi, http(api.emails.cancelScheduledAnalytics));
 
     // ## Snippets
     router.get('/snippets', mw.authAdminApi, http(api.snippets.browse));

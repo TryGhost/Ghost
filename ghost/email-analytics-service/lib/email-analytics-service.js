@@ -12,6 +12,7 @@ const errors = require('@tryghost/errors');
  * @property {Date} [lastStarted] Date the last fetch started on
  * @property {Date} [lastBegin] The begin time used during the last fetch
  * @property {Date} [lastEventTimestamp]
+ * @property {boolean} [canceled] Set to quit the job early
  */
 
 /**
@@ -19,6 +20,7 @@ const errors = require('@tryghost/errors');
  */
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+const FETCH_LATEST_END_MARGIN_MS = 5 * 60 * 1000; // Do not fetch events newer than 5 minutes (yet)
 
 module.exports = class EmailAnalytics {
     config;
@@ -72,7 +74,13 @@ module.exports = class EmailAnalytics {
     async fetchLatest({maxEvents = Infinity} = {}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         const begin = await this.getLastEventTimestamp();
-        const end = new Date();
+        const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // ALways stop at 5 minutes ago to give Mailgun a bit more time to stabilize storage
+
+        if (end < begin) {
+            // Skip for now
+            logging.info('[EmailAnalytics] Skipping fetchLatest because end (' + end + ') is before begin (' + begin + ')');
+            return 0;
+        }
 
         // Create the fetch data object if it doesn't exist yet
         if (!this.#fetchLatestData) {
@@ -101,9 +109,9 @@ module.exports = class EmailAnalytics {
             )
         );
 
-        if (end <= begin) {
+        if (end < begin) {
             // Skip for now
-            logging.info('[EmailAnalytics] Skipping fetchMissing because end is before begin');
+            logging.info('[EmailAnalytics] Skipping fetchMissing because end (' + end + ') is before begin (' + begin + ')');
             return 0;
         }
 
@@ -136,13 +144,30 @@ module.exports = class EmailAnalytics {
         };
     }
 
+    cancelScheduled() {
+        if (this.#fetchScheduledData) {
+            if (this.#fetchScheduledData.running) {
+                // Cancel the running fetch
+                this.#fetchScheduledData.canceled = true;
+            } else {
+                this.#fetchScheduledData = null;
+            }
+        }
+    }
+
     /**
      * Continues fetching the scheduled events (does not start one). Resets the scheduled event when received 0 events.
      */
     async fetchScheduled({maxEvents = Infinity} = {}) {
         if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
             // Nothing scheduled
-            return;
+            return 0;
+        }
+
+        if (this.#fetchScheduledData.canceled) {
+            // Skip for now
+            this.#fetchScheduledData = null;
+            return 0;
         }
 
         let begin = this.#fetchScheduledData.schedule.begin;
@@ -153,7 +178,7 @@ module.exports = class EmailAnalytics {
             begin = this.#fetchScheduledData.lastEventTimestamp;
         }
 
-        if (end <= begin) {
+        if (end < begin) {
             // Skip for now
             logging.info('[EmailAnalytics] Skipping fetchScheduled because end is before begin');
             this.#fetchScheduledData = null;
@@ -161,7 +186,7 @@ module.exports = class EmailAnalytics {
         }
 
         const count = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
-        if (count === 0) {
+        if (count === 0 || this.#fetchScheduledData.canceled) {
             // Reset the scheduled fetch
             this.#fetchScheduledData = null;
         }
@@ -210,6 +235,12 @@ module.exports = class EmailAnalytics {
                     logging.error(err);
                 }
             }
+
+            if (fetchData.canceled) {
+                throw new errors.InternalServerError({
+                    message: 'Fetching canceled'
+                });
+            }
         };
 
         try {
@@ -219,9 +250,13 @@ module.exports = class EmailAnalytics {
 
             logging.info('[EmailAnalytics] Fetching finshed');
         } catch (err) {
-            logging.error('[EmailAnalytics] Error while fetching');
-            logging.error(err);
-            error = err;
+            if (err.message !== 'Fetching canceled') {
+                logging.error('[EmailAnalytics] Error while fetching');
+                logging.error(err);
+                error = err;
+            } else {
+                logging.error('[EmailAnalytics] Canceled fetching');
+            }
         }
 
         // Aggregate

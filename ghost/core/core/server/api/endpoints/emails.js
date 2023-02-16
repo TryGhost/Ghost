@@ -166,5 +166,14 @@ module.exports = {
                 end: new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7))
             });
         }
+    },
+
+    cancelScheduledAnalytics: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            return emailAnalytics.service.cancelScheduled();
+        }
     }
 };

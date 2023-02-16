@@ -293,7 +293,8 @@ export default class Debug extends Component {
         }
     }
 
-    @action scheduleAnalytics() {
+    @action
+    scheduleAnalytics() {
         try {
             if (this._scheduleAnalytics.isRunning) {
                 return this._scheduleAnalytics.last;
@@ -311,6 +312,28 @@ export default class Debug extends Component {
     *_scheduleAnalytics() {
         let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`);
         yield this.ajax.put(statsUrl, {});
+        yield this.fetchAnalyticsStatus();
+    }
+
+    @action
+    cancelScheduleAnalytics() {
+        try {
+            if (this._cancelScheduleAnalytics.isRunning) {
+                return this._cancelScheduleAnalytics.last;
+            }
+            return this._cancelScheduleAnalytics.perform();
+        } catch (e) {
+            if (!didCancel(e)) {
+                // re-throw the non-cancelation error
+                throw e;
+            }
+        }
+    }
+
+    @task
+    *_cancelScheduleAnalytics() {
+        let statsUrl = this.ghostPaths.url.api(`/emails/analytics`);
+        yield this.ajax.delete(statsUrl, {});
         yield this.fetchAnalyticsStatus();
     }
 }
