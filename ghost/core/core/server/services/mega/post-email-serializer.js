@@ -400,13 +400,13 @@ const PostEmailSerializer = {
 
                 if (isSite) {
                     // Add newsletter name as ref to the URL
-                    url = memberAttribution.service.addOutboundLinkTagging(url, newsletter);
+                    url = memberAttribution.outboundLinkTagger.addToUrl(url, newsletter);
 
                     // Only add post attribution to our own site (because external sites could/should not process this information)
                     url = memberAttribution.service.addPostAttributionTracking(url, post);
                 } else {
                     // Add email source attribution without the newsletter name
-                    url = memberAttribution.service.addOutboundLinkTagging(url);
+                    url = memberAttribution.outboundLinkTagger.addToUrl(url);
                 }
 
                 // Add link click tracking

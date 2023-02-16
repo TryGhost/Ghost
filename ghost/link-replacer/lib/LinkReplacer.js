@@ -7,26 +7,31 @@ class LinkReplacer {
     */
     async replace(html, replaceLink) {
         const cheerio = require('cheerio');
-        const $ = cheerio.load(html);
+        try {
+            const $ = cheerio.load(html);
 
-        for (const el of $('a').toArray()) {
-            const href = $(el).attr('href');
-            if (href) {
-                let url;
-                try {
-                    url = new URL(href);
-                } catch (e) {
-                    // Ignore invalid URLs
-                }
-                if (url) {
-                    url = await replaceLink(url);
-                    const str = url.toString();
-                    $(el).attr('href', str);
+            for (const el of $('a').toArray()) {
+                const href = $(el).attr('href');
+                if (href) {
+                    let url;
+                    try {
+                        url = new URL(href);
+                    } catch (e) {
+                        // Ignore invalid URLs
+                    }
+                    if (url) {
+                        url = await replaceLink(url);
+                        const str = url.toString();
+                        $(el).attr('href', str);
+                    }
                 }
             }
-        }
 
-        return $.html();
+            return $.html();
+        } catch (e) {
+            // Catch errors from cheerio
+            return html;
+        }
     }
 }
 
