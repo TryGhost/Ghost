@@ -13,7 +13,7 @@ function guidFor() {
 /**
  * useMovable
  * @param {Object} options
- * @param {Boolean} options.adjustOnResize - whether to adjust the position of the movable element when the window is resized
+ * @param {Function} options.adjustOnResize - function called when panel size was changed
  * @returns {Object} ref - a ref that should be attached to the element that should be movable
  *
  * @description
@@ -252,7 +252,7 @@ export default function useMovable({adjustOnResize} = {}) {
             _resizeObserver?.disconnect();
             enableSelection();
         };
-    }, [adjustOnResize, enableSelection, ref, setTranslate, addStartEventListeners, removeEventListeners]);
+    }, []);
 
     return {ref};
 }

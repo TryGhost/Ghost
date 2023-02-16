@@ -319,10 +319,10 @@ describe('Video card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video"></div>
+                <figcaption>
+                    <input placeholder="Type caption for video (optional)" value="" />
+                </figcaption>
             </div>
-            <figcaption>
-                <input placeholder="Type caption for video (optional)" value="" />
-            </figcaption>
             <p><br /></p>
         `, {ignoreCardContents: true});
     });
