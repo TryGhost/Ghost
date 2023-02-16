@@ -4,6 +4,7 @@ const SlackNotificationsService = require('../index');
 const nock = require('nock');
 const ObjectId = require('bson-objectid').default;
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
+const DomainEvents = require('@tryghost/domain-events');
 
 describe('SlackNotificationsService', function () {
     describe('Constructor', function () {
@@ -53,8 +54,39 @@ describe('SlackNotificationsService', function () {
                 assert(subscribeStub.callCount === 1);
                 assert(subscribeStub.calledWith(MilestoneCreatedEvent) === true);
             });
-        });
 
+            it('logs error when event handling fails', async function () {
+                const loggingSpy = sinon.spy();
+                service = new SlackNotificationsService({
+                    logging: {
+                        warn: () => {},
+                        error: loggingSpy
+                    },
+                    DomainEvents,
+                    siteUrl: 'https://ghost.example',
+                    config
+                });
+
+                const handleEventStub = sinon.stub(service, 'handleEvent').rejects(new Error('test error'));
+
+                await service.subscribeEvents();
+
+                DomainEvents.dispatch(MilestoneCreatedEvent.create({
+                    milestone: {
+                        type: 'members',
+                        name: 'members-100',
+                        value: 100,
+                        createdAt: new Date()
+                    }
+                }));
+
+                await DomainEvents.allSettled();
+                assert(handleEventStub.calledOnce);
+                const loggingSpyCall = loggingSpy.getCall(0).args[0];
+                assert(loggingSpy.calledOnce);
+                assert(loggingSpyCall instanceof Error);
+            });
+        });
         describe('handleEvents', function () {
             it('handles milestone created event', async function () {
                 service = new SlackNotificationsService({
