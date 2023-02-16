@@ -28,15 +28,15 @@ const GA_FEATURES = [
 const BETA_FEATURES = [
     'activitypub',
     'webmentions',
-    'emailErrors'
+    'emailErrors',
+    'milestoneEmails'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'lexicalEditor',
-    'outboundLinkTagging',
-    'milestoneEmails'
+    'outboundLinkTagging'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
