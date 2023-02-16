@@ -4,8 +4,10 @@ const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 
 class NewslettersImporter extends TableImporter {
+    static table = 'newsletters';
+
     constructor(knex) {
-        super('newsletters', knex);
+        super(NewslettersImporter.table, knex);
         this.sortOrder = 0;
         this.names = ['Regular premium', 'Occasional freebie'];
     }

@@ -3,8 +3,9 @@ const TableImporter = require('./base');
 const {luck} = require('../utils/random');
 
 class MembersProductsImporter extends TableImporter {
+    static table = 'members_products';
     constructor(knex, {products}) {
-        super('members_products', knex);
+        super(MembersProductsImporter.table, knex);
         this.products = products;
     }
 

@@ -9,6 +9,7 @@ module.exports = class DataGeneratorCommand extends Command {
         this.argument('--scale', {type: 'string', defaultValue: 'small', desc: 'Scale of the data to generate. `small` for a quick run, `large` for more content'});
         this.argument('--single-table', {type: 'string', desc: 'Import a single table'});
         this.argument('--quantity', {type: 'number', desc: 'When importing a single table, the quantity to import'});
+        this.argument('--clear-database', {type: 'boolean', defaultValue: false, desc: 'Clear all entries in the database before importing'});
     }
 
     initializeContext(context) {
@@ -55,7 +56,8 @@ module.exports = class DataGeneratorCommand extends Command {
                 debug: this.debug
             },
             modelQuantities,
-            baseUrl: config.getSiteUrl()
+            baseUrl: config.getSiteUrl(),
+            clearDatabase: argv['clear-database']
         });
         try {
             if (argv['single-table']) {
