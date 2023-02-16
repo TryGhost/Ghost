@@ -5,8 +5,10 @@ const {luck} = require('../utils/random');
 const dateToDatabaseString = require('../utils/database-date');
 
 class EmailsImporter extends TableImporter {
+    static table = 'emails';
+
     constructor(knex, {newsletters, members, membersSubscribeEvents}) {
-        super('emails', knex);
+        super(EmailsImporter.table, knex);
         this.newsletters = newsletters;
         this.members = members;
         this.membersSubscribeEvents = membersSubscribeEvents;

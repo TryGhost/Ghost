@@ -5,8 +5,10 @@ const security = require('@tryghost/security');
 const dateToDatabaseString = require('../utils/database-date');
 
 class UsersImporter extends TableImporter {
+    static table = 'users';
+
     constructor(knex) {
-        super('users', knex);
+        super(UsersImporter.table, knex);
     }
 
     async generate() {

@@ -5,8 +5,10 @@ const generateEvents = require('../utils/event-generator');
 const dateToDatabaseString = require('../utils/database-date');
 
 class MembersLoginEventsImporter extends TableImporter {
+    static table = 'members_login_events';
+
     constructor(knex) {
-        super('members_login_events', knex);
+        super(MembersLoginEventsImporter.table, knex);
     }
 
     setImportOptions({model}) {

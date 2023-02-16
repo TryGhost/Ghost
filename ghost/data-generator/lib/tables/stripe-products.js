@@ -3,8 +3,9 @@ const TableImporter = require('./base');
 const {blogStartDate} = require('../utils/blog-info');
 
 class StripeProductsImporter extends TableImporter {
+    static table = 'stripe_products';
     constructor(knex) {
-        super('stripe_products', knex);
+        super(StripeProductsImporter.table, knex);
     }
 
     setImportOptions({model}) {

@@ -5,8 +5,10 @@ const {luck} = require('../utils/random');
 const dateToDatabaseString = require('../utils/database-date');
 
 class WebMentionsImporter extends TableImporter {
+    static table = 'mentions';
+
     constructor(knex, {baseUrl}) {
-        super('mentions', knex);
+        super(WebMentionsImporter.table, knex);
 
         this.baseUrl = baseUrl;
     }

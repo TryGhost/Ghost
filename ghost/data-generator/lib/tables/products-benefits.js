@@ -2,8 +2,10 @@ const {faker} = require('@faker-js/faker');
 const TableImporter = require('./base');
 
 class ProductsBenefitsImporter extends TableImporter {
+    static table = 'products_benefits';
+
     constructor(knex, {benefits}) {
-        super('products_benefits', knex);
+        super(ProductsBenefitsImporter.table, knex);
         this.benefits = benefits;
         this.sortOrder = 0;
     }
