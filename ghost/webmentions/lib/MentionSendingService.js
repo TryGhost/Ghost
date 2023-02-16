@@ -59,13 +59,18 @@ module.exports = class MentionSendingService {
                 // Post should be or should have been published
                 return;
             }
-            await this.#jobService.addJob('sendWebmentions', async () => {
-                await this.sendAll({
-                    url: new URL(this.#getPostUrl(post)),
-                    html: post.get('html'),
-                    previousHtml: post.previous('status') === 'published' ? post.previous('html') : null
+            // make sure we have something to parse before we create a job
+            let html = post.get('html');
+            let previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
+            if (html || previousHtml) {
+                await this.#jobService.addJob('sendWebmentions', async () => {
+                    await this.sendAll({
+                        url: new URL(this.#getPostUrl(post)),
+                        html: html,
+                        previousHtml: previousHtml
+                    });
                 });
-            });
+            }
         } catch (e) {
             logging.error('Error in webmention sending service post update event handler:');
             logging.error(e);
@@ -104,7 +109,7 @@ module.exports = class MentionSendingService {
      * @param {string|null} [resource.previousHtml]
      */
     async sendAll(resource) {
-        const links = this.getLinks(resource.html);
+        const links = resource.html ? this.getLinks(resource.html) : [];
         if (resource.previousHtml) {
             // We also need to send webmentions for removed links
             const oldLinks = this.getLinks(resource.previousHtml);
