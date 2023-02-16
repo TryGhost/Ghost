@@ -116,7 +116,7 @@ function PopulatedVideoCard({
     );
 }
 
-function EmptyVideoCard({onFileChange, fileInputRef, errors, videoMimeTypes, videoDragHandler = {}}) {
+function EmptyVideoCard({onFileChange, fileInputRef, errors, videoMimeTypes = [], videoDragHandler = {}}) {
     return (
         <>
             <MediaPlaceholder

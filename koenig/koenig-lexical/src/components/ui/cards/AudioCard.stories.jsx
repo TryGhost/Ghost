@@ -73,9 +73,11 @@ DraggedOver.args = {
     src: '',
     duration: '',
     title: '',
-    isDraggedOver: true,
     audioUploader: {},
-    thumbnailUploader: {}
+    thumbnailUploader: {},
+    audioDragHandler: {
+        isDraggedOver: true
+    }
 };
 
 export const Populated = Template.bind({});

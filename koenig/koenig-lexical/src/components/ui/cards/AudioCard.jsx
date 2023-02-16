@@ -32,7 +32,7 @@ function EmptyAudioCard({
     audioMimeTypes,
     onFileChange,
     setFileInputRef,
-    audioDragHandler
+    audioDragHandler = {}
 }) {
     const {isLoading: isUploading, progress, errors} = audioUploader;
     const fileInputRef = React.useRef(null);
@@ -160,7 +160,7 @@ function PopulatedAudioCard({
     setFileInputRef,
     onFileChange,
     removeThumbnail,
-    thumbnailDragHandler
+    thumbnailDragHandler = {}
 }) {
     const {isLoading: isUploading, progress, errors} = thumbnailUploader;
     const formatDuration = (rawDuration) => {
