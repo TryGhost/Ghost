@@ -2,7 +2,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 
 class SlackNotificationsServiceWrapper {
-    /** @type {import('@tryghost/slack-notifications/lib/slack-notifications')} */
+    /** @type {import('@tryghost/slack-notifications/lib/SlackNotificationsService')} */
     #api;
 
     init() {
@@ -12,14 +12,16 @@ class SlackNotificationsServiceWrapper {
         }
 
         const SlackNotificationsService = require('@tryghost/slack-notifications');
-        const settingsCache = require('../../../shared/settings-cache');
         const config = require('../../../shared/config');
+        const urlUtils = require('../../../shared/url-utils');
+        const logging = require('@tryghost/logging');
 
         this.#api = new SlackNotificationsService({
             DomainEvents,
+            logging,
             labs,
-            settingsCache,
-            config
+            config,
+            urlUtils
         });
 
         this.#api.subscribeEvents();
