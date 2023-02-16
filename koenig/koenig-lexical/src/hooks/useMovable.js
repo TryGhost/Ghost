@@ -87,6 +87,7 @@ export default function useMovable({adjustOnResize} = {}) {
 
     const drag = useCallback((e) => {
         e.preventDefault();
+        e.stopPropagation();
 
         let eventX, eventY;
 
@@ -159,6 +160,9 @@ export default function useMovable({adjustOnResize} = {}) {
     }, [dragEnd, drag]);
 
     const dragStart = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         if (e.type === 'touchstart' || e.button === 0) {
             if (e.type === 'touchstart') {
                 initialX.current = e.touches[0].clientX - (xOffset.current || 0);
