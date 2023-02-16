@@ -92,6 +92,7 @@ describe('Video card', async () => {
         await fileChooser.setFiles([filePath]);
 
         // Check progress bar
+        await page.waitForSelector('[data-testid="video-progress"]');
         await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded

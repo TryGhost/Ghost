@@ -33,6 +33,7 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
         await page.locator('.kg-prose').dispatchEvent('drop', {dataTransfer});
 
         // Check progress bar
+        await page.waitForSelector('[data-testid="video-progress"]');
         await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
