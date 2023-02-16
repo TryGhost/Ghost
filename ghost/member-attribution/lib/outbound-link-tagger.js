@@ -1,7 +1,7 @@
 const {slugify} = require('@tryghost/string');
 const LinkReplacer = require('@tryghost/link-replacer');
 
-const blacklistedReferrerDomains = [
+const blockedReferrerDomains = [
     // Facebook has some restrictions on the 'ref' attribute (max 15 chars + restricted character set) that breaks links if we add ?ref=longer-string
     'facebook.com',
     'www.facebook.com'
@@ -52,9 +52,9 @@ class OutboundLinkTagger {
             return url;
         }
 
-        // Check blacklist domains
+        // Check blocked domains
         const referrerDomain = url.hostname;
-        if (blacklistedReferrerDomains.includes(referrerDomain)) {
+        if (blockedReferrerDomains.includes(referrerDomain)) {
             return url;
         }
 

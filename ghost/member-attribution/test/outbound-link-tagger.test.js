@@ -73,7 +73,7 @@ describe('OutboundLinkTagger', function () {
             should(updatedUrl.toString()).equal('https://example.com/?ref=weekly-newsletter');
         });
 
-        it('does not add ref to blacklisted domains', async function () {
+        it('does not add ref to blocked domains', async function () {
             const service = new OutboundLinkTagger({
                 getSiteTitle: () => 'Hello world',
                 isEnabled: () => true
