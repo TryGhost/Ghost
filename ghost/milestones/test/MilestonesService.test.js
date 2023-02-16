@@ -9,10 +9,10 @@ const sinon = require('sinon');
 
 describe('MilestonesService', function () {
     let repository;
-    let domainEventsSpy;
+    let domainEventSpy;
 
     beforeEach(async function () {
-        domainEventsSpy = sinon.spy(DomainEvents, 'dispatch');
+        domainEventSpy = sinon.spy(DomainEvents, 'dispatch');
     });
 
     afterEach(function () {
@@ -68,7 +68,11 @@ describe('MilestonesService', function () {
             assert(arrResult.value === 1000);
             assert(arrResult.emailSentAt !== null);
             assert(arrResult.name === 'arr-1000-usd');
-            assert(domainEventsSpy.calledOnce === true);
+
+            const domainEventSpyResult = domainEventSpy.getCall(0).args[0];
+            assert(domainEventSpy.calledOnce === true);
+            assert(domainEventSpyResult.data.milestone);
+            assert(domainEventSpyResult.data.meta.currentARR === 1298);
         });
 
         it('Adds next ARR milestone and sends email', async function () {
@@ -100,7 +104,7 @@ describe('MilestonesService', function () {
             await repository.save(milestoneTwo);
             await repository.save(milestoneThree);
 
-            assert(domainEventsSpy.callCount === 3);
+            assert(domainEventSpy.callCount === 3);
 
             const milestoneEmailService = new MilestonesService({
                 repository,
@@ -125,7 +129,10 @@ describe('MilestonesService', function () {
             assert(arrResult.value === 10000);
             assert(arrResult.emailSentAt !== null);
             assert(arrResult.name === 'arr-10000-usd');
-            assert(domainEventsSpy.callCount === 4); // we have just created a new milestone
+            assert(domainEventSpy.callCount === 4); // we have just created a new milestone
+            const domainEventSpyResult = domainEventSpy.getCall(3).args[0];
+            assert(domainEventSpyResult.data.milestone);
+            assert(domainEventSpyResult.data.meta.currentARR === 10001);
         });
 
         it('Does not add ARR milestone for out of scope currency', async function () {
@@ -149,7 +156,7 @@ describe('MilestonesService', function () {
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
             assert(arrResult === undefined);
-            assert(domainEventsSpy.callCount === 0);
+            assert(domainEventSpy.callCount === 0);
         });
 
         it('Does not add new ARR milestone if already achieved', async function () {
@@ -163,7 +170,7 @@ describe('MilestonesService', function () {
 
             await repository.save(milestone);
 
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
 
             const milestoneEmailService = new MilestonesService({
                 repository,
@@ -183,7 +190,7 @@ describe('MilestonesService', function () {
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
             assert(arrResult === undefined);
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
         });
 
         it('Adds ARR milestone but does not send email if imported members are detected', async function () {
@@ -210,7 +217,7 @@ describe('MilestonesService', function () {
             assert(arrResult.currency === 'usd');
             assert(arrResult.value === 100000);
             assert(arrResult.emailSentAt === null);
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
         });
 
         it('Adds ARR milestone but does not send email if last email was too recent', async function () {
@@ -227,7 +234,7 @@ describe('MilestonesService', function () {
             });
 
             await repository.save(milestone);
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
 
             const milestoneEmailService = new MilestonesService({
                 repository,
@@ -250,7 +257,7 @@ describe('MilestonesService', function () {
             assert(arrResult.currency === 'idr');
             assert(arrResult.value === 10000);
             assert(arrResult.emailSentAt === null);
-            assert(domainEventsSpy.callCount === 2); // new milestone created
+            assert(domainEventSpy.callCount === 2); // new milestone created
         });
     });
 
@@ -278,7 +285,7 @@ describe('MilestonesService', function () {
             assert(membersResult.type === 'members');
             assert(membersResult.value === 100);
             assert(membersResult.emailSentAt !== null);
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
         });
 
         it('Adds next Members milestone and sends email', async function () {
@@ -309,7 +316,7 @@ describe('MilestonesService', function () {
             await repository.save(milestoneTwo);
             await repository.save(milestoneThree);
 
-            assert(domainEventsSpy.callCount === 3);
+            assert(domainEventSpy.callCount === 3);
 
             const milestoneEmailService = new MilestonesService({
                 repository,
@@ -333,7 +340,7 @@ describe('MilestonesService', function () {
             assert(membersResult.value === 50000);
             assert(membersResult.emailSentAt !== null);
             assert(membersResult.name === 'members-50000');
-            assert(domainEventsSpy.callCount === 4);
+            assert(domainEventSpy.callCount === 4);
         });
 
         it('Does not add new Members milestone if already achieved', async function () {
@@ -346,7 +353,7 @@ describe('MilestonesService', function () {
 
             await repository.save(milestone);
 
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
 
             const milestoneEmailService = new MilestonesService({
                 repository,
@@ -366,7 +373,7 @@ describe('MilestonesService', function () {
 
             const membersResult = await milestoneEmailService.checkMilestones('members');
             assert(membersResult === undefined);
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
         });
 
         it('Adds Members milestone but does not send email if imported members are detected', async function () {
@@ -379,7 +386,7 @@ describe('MilestonesService', function () {
 
             await repository.save(milestone);
 
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
 
             const milestoneEmailService = new MilestonesService({
                 repository,
@@ -401,7 +408,7 @@ describe('MilestonesService', function () {
             assert(membersResult.type === 'members');
             assert(membersResult.value === 1000);
             assert(membersResult.emailSentAt === null);
-            assert(domainEventsSpy.callCount === 2);
+            assert(domainEventSpy.callCount === 2);
         });
 
         it('Adds Members milestone but does not send email if last email was too recent', async function () {
@@ -418,7 +425,7 @@ describe('MilestonesService', function () {
 
             await repository.save(milestone);
 
-            assert(domainEventsSpy.callCount === 1);
+            assert(domainEventSpy.callCount === 1);
 
             const milestoneEmailService = new MilestonesService({
                 repository,
@@ -440,7 +447,7 @@ describe('MilestonesService', function () {
             assert(membersResult.type === 'members');
             assert(membersResult.value === 50000);
             assert(membersResult.emailSentAt === null);
-            assert(domainEventsSpy.callCount === 2);
+            assert(domainEventSpy.callCount === 2);
         });
     });
 });

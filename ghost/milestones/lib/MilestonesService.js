@@ -127,16 +127,21 @@ module.exports = class MilestonesService {
      * @param {object} milestone
      * @param {number} milestone.value
      * @param {'arr'|'members'} milestone.type
+     * @param {object} milestone.meta
      * @param {string|null} [milestone.currency]
      * @param {Date|null} [milestone.emailSentAt]
      *
      * @returns {Promise<Milestone>}
      */
     async #saveMileStoneAndSendEmail(milestone) {
-        const shouldSendEmail = await this.#shouldSendEmail();
+        const {shouldSendEmail, reason} = await this.#shouldSendEmail();
 
         if (shouldSendEmail) {
             milestone.emailSentAt = new Date();
+        }
+
+        if (reason) {
+            milestone.meta.reason = reason;
         }
 
         return await this.#createMilestone(milestone);
@@ -144,27 +149,33 @@ module.exports = class MilestonesService {
 
     /**
      *
-     * @returns {Promise<boolean>}
+     * @returns {Promise<object>}
      */
     async #shouldSendEmail() {
-        let shouldSendEmail;
+        let canHaveEmail;
+        let reason = null;
         // Two cases in which we don't want to send an email
         // 1. There has been an import of members within the last week
         // 2. The last email has been sent less than two weeks ago
         const lastMilestoneSent = await this.#repository.getLastEmailSent();
 
         if (!lastMilestoneSent) {
-            shouldSendEmail = true;
+            canHaveEmail = true;
         } else {
             const differenceInTime = new Date().getTime() - new Date(lastMilestoneSent.emailSentAt).getTime();
             const differenceInDays = differenceInTime / (1000 * 3600 * 24);
 
-            shouldSendEmail = differenceInDays >= 14;
+            canHaveEmail = differenceInDays >= 14;
         }
 
         const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
+        const shouldSendEmail = canHaveEmail && !hasMembersImported;
 
-        return shouldSendEmail && !hasMembersImported;
+        if (!shouldSendEmail) {
+            reason = hasMembersImported ? 'members_imported' : 'email_sent_recently';
+        }
+
+        return {shouldSendEmail, reason};
     }
 
     /**
@@ -198,7 +209,10 @@ module.exports = class MilestonesService {
 
                 if (milestone && milestone > 0) {
                     if (!milestoneExists && (!latestMilestone || milestone > latestMilestone.value)) {
-                        return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr', currency: defaultCurrency});
+                        const meta = {
+                            currentARR: currentARRForCurrency.arr
+                        };
+                        return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr', currency: defaultCurrency, meta});
                     }
                 }
             }
@@ -226,7 +240,10 @@ module.exports = class MilestonesService {
 
         if (milestone && milestone > 0) {
             if (!milestoneExists && (!latestMembersMilestone || milestone > latestMembersMilestone.value)) {
-                return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members'});
+                const meta = {
+                    currentMembers: membersCount
+                };
+                return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members', meta});
             }
         }
     }
