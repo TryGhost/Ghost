@@ -25,7 +25,7 @@ class SlackNotificationsServiceWrapper {
             logging,
             config: {
                 isEnabled,
-                webhookUrl: hostSettings.milestones.url
+                webhookUrl: hostSettings?.milestones?.url
             },
             siteUrl
         });
