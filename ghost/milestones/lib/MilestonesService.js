@@ -172,7 +172,7 @@ module.exports = class MilestonesService {
         const shouldSendEmail = canHaveEmail && !hasMembersImported;
 
         if (!shouldSendEmail) {
-            reason = hasMembersImported ? 'members_imported' : 'email_sent_recently';
+            reason = hasMembersImported ? 'import' : 'email';
         }
 
         return {shouldSendEmail, reason};

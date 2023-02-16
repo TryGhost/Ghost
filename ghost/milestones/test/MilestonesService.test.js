@@ -218,6 +218,8 @@ describe('MilestonesService', function () {
             assert(arrResult.value === 100000);
             assert(arrResult.emailSentAt === null);
             assert(domainEventSpy.callCount === 1);
+            const domainEventSpyResult = domainEventSpy.getCall(0).args[0];
+            assert(domainEventSpyResult.data.meta.reason === 'import');
         });
 
         it('Adds ARR milestone but does not send email if last email was too recent', async function () {
@@ -244,7 +246,7 @@ describe('MilestonesService', function () {
                         return [{currency: 'idr', arr: 10000}];
                     },
                     async hasImportedMembersInPeriod() {
-                        return true;
+                        return false;
                     },
                     async getDefaultCurrency() {
                         return 'idr';
@@ -258,6 +260,8 @@ describe('MilestonesService', function () {
             assert(arrResult.value === 10000);
             assert(arrResult.emailSentAt === null);
             assert(domainEventSpy.callCount === 2); // new milestone created
+            const domainEventSpyResult = domainEventSpy.getCall(1).args[0];
+            assert(domainEventSpyResult.data.meta.reason === 'email');
         });
     });
 
