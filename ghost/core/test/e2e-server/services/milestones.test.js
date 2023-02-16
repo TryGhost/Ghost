@@ -151,9 +151,6 @@ describe('Milestones Service', function () {
 
     beforeEach(async function () {
         sinon.createSandbox();
-        // TODO: stub out stripe mode
-        // stripeModeStub = sinon.stub().returns(true);
-        // milestonesService.__set__('getStripeLiveEnabled', stripeModeStub);
         configUtils.set('milestones', milestonesConfig);
         mockManager.mockLabsEnabled('milestoneEmails');
     });
