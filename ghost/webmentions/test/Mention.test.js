@@ -26,7 +26,8 @@ describe('Mention', function () {
                 'sourceAuthor',
                 'sourceExcerpt',
                 'sourceFavicon',
-                'sourceFeaturedImage'
+                'sourceFeaturedImage',
+                'verified'
             ];
             assert.deepEqual(actual, expected);
         });
