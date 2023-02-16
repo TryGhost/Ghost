@@ -401,13 +401,13 @@
                             <td>Last event time:</td>
                             <td>{{ this.analyticsStatus.scheduled.lastEventTimestamp }}</td>
                         </tr>
-                        {{#if (not this.analyticsStatus.scheduled.canceled)}}
+                        {{#unless this.analyticsStatus.scheduled.canceled}}
                             <tr>
                                 <td colspan="2">
                                     <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.cancelScheduleAnalytics }}>{{svg-jar "trash"}}Cancel scheduled refetch</button>
                                 </td>
                             </tr>
-                        {{/if}}
+                        {{/unless}}
                     {{else}}
                         <tr>
                             <td colspan="2">
