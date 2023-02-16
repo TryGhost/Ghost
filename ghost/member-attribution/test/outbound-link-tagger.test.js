@@ -2,6 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const {OutboundLinkTagger} = require('../');
+const assert = require('assert');
 
 describe('OutboundLinkTagger', function () {
     describe('Constructor', function () {
@@ -111,6 +112,94 @@ describe('OutboundLinkTagger', function () {
             const url = new URL('https://example.com/?source=hello');
             const updatedUrl = await service.addToUrl(url);
             should(updatedUrl.toString()).equal('https://example.com/?source=hello');
+        });
+    });
+
+    describe('addToHtml', function () {
+        it('adds refs to external links', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteTitle: () => 'Hello world',
+                isEnabled: () => true,
+                urlUtils: {
+                    isSiteUrl: () => false
+                }
+            });
+            const html = await service.addToHtml('<a href="https://example.com/test-site">Hello world</a><a href="https://other.com/test/">Hello world</a>');
+            assert.equal(html, '<a href="https://example.com/test-site?ref=hello-world">Hello world</a><a href="https://other.com/test/?ref=hello-world">Hello world</a>');
+        });
+
+        it('does not add refs to internal links', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteTitle: () => 'Hello world',
+                isEnabled: () => true,
+                urlUtils: {
+                    isSiteUrl: () => true
+                }
+            });
+            const html = await service.addToHtml('<a href="https://example.com/test-site">Hello world</a><a href="https://other.com/test/">Hello world</a>');
+            assert.equal(html, '<a href="https://example.com/test-site">Hello world</a><a href="https://other.com/test/">Hello world</a>');
+        });
+
+        it('does not add refs if disabled', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteTitle: () => 'Hello world',
+                isEnabled: () => false,
+                urlUtils: {
+                    isSiteUrl: () => false
+                }
+            });
+            const html = await service.addToHtml('<a href="https://example.com/test-site">Hello world</a><a href="https://other.com/test/">Hello world</a>');
+            assert.equal(html, '<a href="https://example.com/test-site">Hello world</a><a href="https://other.com/test/">Hello world</a>');
+        });
+
+        it('does not add refs to anchors', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteTitle: () => 'Hello world',
+                isEnabled: () => true,
+                urlUtils: {
+                    isSiteUrl: () => false
+                }
+            });
+            const html = await service.addToHtml('<a href="#test">Hello world</a><a href="#">Hello world</a>');
+            assert.equal(html, '<a href="#test">Hello world</a><a href="#">Hello world</a>');
+        });
+
+        it('does not add refs to relative links', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteTitle: () => 'Hello world',
+                isEnabled: () => true,
+                urlUtils: {
+                    isSiteUrl: () => false
+                }
+            });
+            const html = await service.addToHtml('<a href="test">Hello world</a><a href="">Hello world</a>');
+            assert.equal(html, '<a href="test">Hello world</a><a href>Hello world</a>');
+        });
+
+        it('keeps HTML if throws', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteTitle: () => 'Hello world',
+                isEnabled: () => true,
+                urlUtils: {
+                    isSiteUrl: () => {
+                        throw new Error('Oops!');
+                    }
+                }
+            });
+            const html = await service.addToHtml('<a href="https://example.com/test-site">Hello world</a><a href="https://other.com/test/">Hello world</a>');
+            assert.equal(html, '<a href="https://example.com/test-site">Hello world</a><a href="https://other.com/test/">Hello world</a>');
+        });
+
+        it('keeps HTML comments', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteTitle: () => 'Hello world',
+                isEnabled: () => true,
+                urlUtils: {
+                    isSiteUrl: () => false
+                }
+            });
+            const html = await service.addToHtml('<!-- comment -->');
+            assert.equal(html, '<!-- comment -->');
         });
     });
 });
