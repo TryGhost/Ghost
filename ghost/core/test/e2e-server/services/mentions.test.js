@@ -77,6 +77,17 @@ describe('Mentions Service', function () {
                 assert.equal(mentionMock.isDone(), false);
                 assert.equal(endpointMock.isDone(), false);
             });
+
+            it('Post without content', async function () {
+                let publishedPost = {status: 'published', mobiledoc: markdownToMobiledoc(''), title: 'empty post'};
+                await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
+
+                assert.equal(mentionMock.isDone(), false);
+                assert.equal(endpointMock.isDone(), false);
+            });
         });
 
         describe(`does send when we expect it to send`, function () {
