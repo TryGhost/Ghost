@@ -73,7 +73,7 @@
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "13.4.0",
     "@types/react": "18.0.28",
-    "@types/react-dom": "18.0.10",
+    "@types/react-dom": "18.0.11",
     "@vitejs/plugin-react": "2.2.0",
     "@vitest/coverage-c8": "0.28.5",
     "@vitest/ui": "0.28.5",
