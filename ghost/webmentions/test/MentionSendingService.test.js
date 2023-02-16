@@ -188,6 +188,24 @@ describe('MentionSendingService', function () {
             }));
             assert(errorLogStub.calledTwice);
         });
+
+        it('Sends no mentions for posts without html and previous html', async function () {
+            const service = new MentionSendingService({
+                isEnabled: () => true,
+                getPostUrl: () => 'https://site.com/post/',
+                jobService: jobService
+            });
+            const stub = sinon.stub(service, 'sendAll');
+            await service.sendForPost(createModel({
+                status: 'published',
+                html: '',
+                previous: {
+                    status: 'draft',
+                    html: ''
+                }
+            }));
+            assert(stub.notCalled);
+        });
     });
 
     describe('sendAll', function () {
@@ -282,6 +300,16 @@ describe('MentionSendingService', function () {
                 previousHtml: `<a href="https://typo.com">Example</a>`});
             assert.strictEqual(scope.isDone(), true);
             assert.equal(counter, 2);
+        });
+
+        // cheerio must be served a string
+        it('Does not evaluate links for an empty post', async function () {
+            const service = new MentionSendingService({
+                isEnabled: () => true
+            });
+            const linksStub = sinon.stub(service, 'getLinks');
+            await service.sendAll({html: ``,previousHtml: ``});
+            sinon.assert.notCalled(linksStub);
         });
     });
 
