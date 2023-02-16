@@ -2,8 +2,10 @@ const TableImporter = require('./base');
 const {faker} = require('@faker-js/faker');
 
 class MembersSubscriptionCreatedEventsImporter extends TableImporter {
+    static table = 'members_subscription_created_events';
+
     constructor(knex, {subscriptions}) {
-        super('members_subscription_created_events', knex);
+        super(MembersSubscriptionCreatedEventsImporter.table, knex);
         this.subscriptions = subscriptions;
     }
 
