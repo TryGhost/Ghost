@@ -46,22 +46,31 @@ describe('SlackNotifications', function () {
             sinon.restore();
         });
 
-        it('Sends a notification to Slack for achieved ARR Milestone', async function () {
+        it('Sends a notification to Slack for achieved ARR Milestone - no meta', async function () {
             await slackNotifications.notifyMilestoneReceived({
-                id: ObjectId().toHexString(),
-                name: 'arr-1000-usd',
-                type: 'arr',
-                createdAt: '2023-02-15T00:00:00.000Z',
-                emailSentAt: '2023-02-15T00:00:00.000Z',
-                value: 1000,
-                currency: 'gbp'
+                milestone: {
+                    id: ObjectId().toHexString(),
+                    name: 'arr-1000-usd',
+                    type: 'arr',
+                    createdAt: '2023-02-15T00:00:00.000Z',
+                    emailSentAt: '2023-02-15T00:00:00.000Z',
+                    value: 1000,
+                    currency: 'gbp'
+                }
             });
 
             const expectedResult = {
-                text: 'ARR Milestone £1,000.00 reached!',
                 unfurl_links: false,
                 username: 'Ghost Milestone Service',
                 blocks: [
+                    {
+                        type: 'header',
+                        text: {
+                            type: 'plain_text',
+                            text: ':tada: ARR Milestone £1,000.00 reached!',
+                            emoji: true
+                        }
+                    },
                     {
                         type: 'section',
                         text: {
@@ -70,15 +79,14 @@ describe('SlackNotifications', function () {
                         }
                     },
                     {
+                        type: 'divider'
+                    },
+                    {
                         type: 'section',
                         fields: [
                             {
                                 type: 'mrkdwn',
                                 text: '*Milestone:*\n£1,000.00'
-                            },
-                            {
-                                type: 'mrkdwn',
-                                text: '*Current ARR:*\n£598.76'
                             }
                         ]
                     },
@@ -96,27 +104,43 @@ describe('SlackNotifications', function () {
             assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
         });
 
-        it('Sends a notification to Slack for achieved Members Milestone', async function () {
+        it('Sends a notification to Slack for achieved Members Milestone and shows reason when imported members', async function () {
             await slackNotifications.notifyMilestoneReceived({
-                id: ObjectId().toHexString(),
-                name: 'members-50000',
-                type: 'members',
-                createdAt: '2023-02-15T00:00:00.000Z',
-                emailSentAt: null,
-                value: 50000
+                milestone: {
+                    id: ObjectId().toHexString(),
+                    name: 'members-50000',
+                    type: 'members',
+                    createdAt: null,
+                    emailSentAt: null,
+                    value: 50000
+                },
+                meta: {
+                    currentMembers: 59857,
+                    reason: 'import'
+                }
             });
 
             const expectedResult = {
-                text: 'Members Milestone 50,000 reached!',
                 unfurl_links: false,
                 username: 'Ghost Milestone Service',
                 blocks: [
+                    {
+                        type: 'header',
+                        text: {
+                            type: 'plain_text',
+                            text: ':tada: Members Milestone 50,000 reached!',
+                            emoji: true
+                        }
+                    },
                     {
                         type: 'section',
                         text: {
                             type: 'mrkdwn',
                             text: 'New *Members Milestone* achieved for <https://ghost.example|https://ghost.example>'
                         }
+                    },
+                    {
+                        type: 'divider'
                     },
                     {
                         type: 'section',
@@ -127,7 +151,7 @@ describe('SlackNotifications', function () {
                             },
                             {
                                 type: 'mrkdwn',
-                                text: '*Current Members:*\n9,857'
+                                text: '*Current Members:*\n59,857'
                             }
                         ]
                     },
@@ -145,8 +169,71 @@ describe('SlackNotifications', function () {
             assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
         });
 
-        it('Shows the correct reason for email not send when members have been imported recently');
-        it('Shows the correct reason for email not send when last email was too recent');
+        it('Shows the correct reason for email not send when last email was too recent', async function () {
+            await slackNotifications.notifyMilestoneReceived({
+                milestone: {
+                    id: ObjectId().toHexString(),
+                    name: 'arr-1000-eur',
+                    type: 'arr',
+                    currency: 'eur',
+                    createdAt: '2023-02-15T00:00:00.000Z',
+                    emailSentAt: null,
+                    value: 1000
+                },
+                meta: {
+                    currentARR: 1005,
+                    reason: 'email'
+                }
+            });
+
+            const expectedResult = {
+                unfurl_links: false,
+                username: 'Ghost Milestone Service',
+                blocks: [
+                    {
+                        type: 'header',
+                        text: {
+                            type: 'plain_text',
+                            text: ':tada: ARR Milestone €1,000.00 reached!',
+                            emoji: true
+                        }
+                    },
+                    {
+                        type: 'section',
+                        text: {
+                            type: 'mrkdwn',
+                            text: 'New *ARR Milestone* achieved for <https://ghost.example|https://ghost.example>'
+                        }
+                    },
+                    {
+                        type: 'divider'
+                    },
+                    {
+                        type: 'section',
+                        fields: [
+                            {
+                                type: 'mrkdwn',
+                                text: '*Milestone:*\n€1,000.00'
+                            },
+                            {
+                                type: 'mrkdwn',
+                                text: '*Current ARR:*\n€1,005.00'
+                            }
+                        ]
+                    },
+                    {
+                        type: 'section',
+                        text: {
+                            type: 'mrkdwn',
+                            text: '*Email sent:*\nno / last email too recent'
+                        }
+                    }
+                ]
+            };
+
+            assert(sendStub.calledOnce === true);
+            assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
+        });
     });
 
     describe('send', function () {

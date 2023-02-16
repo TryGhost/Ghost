@@ -5,8 +5,15 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
  */
 
 /**
+ * @typedef {object} meta
+ * @prop {'import'|'email'} [reason]
+ * @prop {number} [currentARR]
+ * @prop {number} [currentMembers]
+ */
+
+/**
  * @typedef {object} ISlackNotifications
- * @prop {(milestone: Milestone) => Promise<void>} notifyMilestoneReceived
+ * @prop {Object.<Milestone, meta>} notifyMilestoneReceived
  * @prop {(slackData: object, url: URL) => Promise<void>} send
  */
 
@@ -74,7 +81,7 @@ module.exports = class SlackNotificationsService {
             && this.#config.isEnabled
             && this.#config.webhookUrl
         ) {
-            await this.#notifications.notifyMilestoneReceived(event.data.milestone);
+            await this.#notifications.notifyMilestoneReceived(event.data);
         }
     }
 

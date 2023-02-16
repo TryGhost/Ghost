@@ -18,7 +18,7 @@ describe('SlackNotificationsService', function () {
         let slackWebhookStub;
 
         const config = {
-            enabled: true,
+            isEnabled: true,
             webhookUrl: 'https://slack-webhook.example'
         };
 
@@ -78,6 +78,9 @@ describe('SlackNotificationsService', function () {
                             currency: 'usd',
                             createdAt: new Date(),
                             emailSentAt: new Date()
+                        },
+                        meta: {
+                            currentARR: 1398
                         }
                     }
                 });

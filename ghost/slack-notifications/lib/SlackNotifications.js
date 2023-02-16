@@ -43,56 +43,71 @@ class SlackNotifications {
     }
 
     /**
-     * @param {import('@tryghost/milestones/lib/InMemoryMilestoneRepository').Milestone} milestone
+     * @param {object} eventData
+     * @param {import('@tryghost/milestones/lib/InMemoryMilestoneRepository').Milestone} eventData.milestone
+     * @param {object} [eventData.meta]
+     * @param {'import'|'email'} [eventData.meta.reason]
+     * @param {number} [eventData.meta.currentARR]
+     * @param {number} [eventData.meta.currentMembers]
      *
      * @returns {Promise<void>}
      */
-    async notifyMilestoneReceived(milestone) {
-        // TODO: read those values from somewhere maybe?
-        const hasImportedMembers = 'has imported members';
-        const lastEmailTooSoon = 'last email too recent';
-        const reason = hasImportedMembers || lastEmailTooSoon;
-        const currentArr = this.#getFormattedAmount({amount: 598.76, currency: milestone?.currency});
-        const currentMembers = this.#getFormattedAmount({amount: 9857});
-
-        // TODO: clean this up!
+    async notifyMilestoneReceived({milestone, meta}) {
+        const hasImportedMembers = meta?.reason === 'import' ? 'has imported members' : null;
+        const lastEmailTooSoon = meta?.reason === 'email' ? 'last email too recent' : null;
+        const emailNotSentReason = hasImportedMembers || lastEmailTooSoon;
         const milestoneTypePretty = milestone.type === 'arr' ? 'ARR' : 'Members';
         const valueFormatted = this.#getFormattedAmount({amount: milestone.value, currency: milestone?.currency});
+        const emailSentText = milestone?.emailSentAt ? this.#getFormattedDate(milestone?.emailSentAt) : `no / ${emailNotSentReason}`;
+        const title = `:tada: ${milestoneTypePretty} Milestone ${valueFormatted} reached!`;
 
-        const emailSent = milestone.emailSentAt ? this.#getFormattedDate(milestone?.emailSentAt) : `no / ${reason}`;
-        const title = `${milestoneTypePretty} Milestone ${valueFormatted} reached!`;
+        let valueSection;
 
-        const arrSection = {
-            type: 'section',
-            fields: [
-                {
-                    type: 'mrkdwn',
-                    text: `*Milestone:*\n${valueFormatted}`
-                },
-                {
-                    type: 'mrkdwn',
-                    text: `*Current ARR:*\n${currentArr}`
-                }
-            ]
-        };
+        if (milestone.type === 'arr') {
+            valueSection = {
+                type: 'section',
+                fields: [
+                    {
+                        type: 'mrkdwn',
+                        text: `*Milestone:*\n${valueFormatted}`
+                    }
 
-        const membersSection = {
-            type: 'section',
-            fields: [
-                {
-                    type: 'mrkdwn',
-                    text: `*Milestone:*\n${valueFormatted}`
-                },
-                {
-                    type: 'mrkdwn',
-                    text: `*Current Members:*\n${currentMembers}`
-                }
-            ]
-        };
+                ]
+            };
 
-        const valueSection = milestone.type === 'arr' ? arrSection : membersSection;
+            if (meta?.currentARR) {
+                valueSection.fields.push({
+                    type: 'mrkdwn',
+                    text: `*Current ARR:*\n${this.#getFormattedAmount({amount: meta.currentARR, currency: milestone?.currency})}`
+                });
+            }
+        } else {
+            valueSection = {
+                type: 'section',
+                fields: [
+                    {
+                        type: 'mrkdwn',
+                        text: `*Milestone:*\n${valueFormatted}`
+                    }
+                ]
+            };
+            if (meta?.currentMembers) {
+                valueSection.fields.push({
+                    type: 'mrkdwn',
+                    text: `*Current Members:*\n${this.#getFormattedAmount({amount: meta.currentMembers})}`
+                });
+            }
+        }
 
         const blocks = [
+            {
+                type: 'header',
+                text: {
+                    type: 'plain_text',
+                    text: title,
+                    emoji: true
+                }
+            },
             {
                 type: 'section',
                 text: {
@@ -100,18 +115,20 @@ class SlackNotifications {
                     text: `New *${milestoneTypePretty} Milestone* achieved for <${this.#siteUrl}|${this.#siteUrl}>`
                 }
             },
+            {
+                type: 'divider'
+            },
             valueSection,
             {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `*Email sent:*\n${emailSent}`
+                    text: `*Email sent:*\n${emailSentText}`
                 }
             }
         ];
 
         const slackData = {
-            text: title,
             unfurl_links: false,
             username: 'Ghost Milestone Service',
             blocks
@@ -173,10 +190,6 @@ class SlackNotifications {
      * @returns {string}
      */
     #getFormattedDate(date) {
-        if (!date) {
-            return '';
-        }
-
         return moment(date).format('D MMM YYYY');
     }
 }
