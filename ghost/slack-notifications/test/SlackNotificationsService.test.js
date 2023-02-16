@@ -17,24 +17,9 @@ describe('SlackNotificationsService', function () {
         let service;
         let slackWebhookStub;
 
-        const urlUtils = {
-            getSiteUrl: () => {
-                return 'https://ghost.example';
-            }
-        };
-
         const config = {
-            get: (setting) => {
-                if (setting === 'hostSettings') {
-                    return {
-                        milestones: {
-                            enabled: true,
-                            url: 'https://slack-webhook.example'
-                        }
-                    };
-                }
-                return '';
-            }
+            enabled: true,
+            webhookUrl: 'https://slack-webhook.example'
         };
 
         beforeEach(function () {
@@ -48,11 +33,8 @@ describe('SlackNotificationsService', function () {
                 DomainEvents: {
                     subscribe: subscribeStub
                 },
-                urlUtils,
-                config,
-                labs: {
-                    isSet: () => 'milestoneEmails'
-                }
+                siteUrl: 'https://ghost.example',
+                config
             });
 
             slackWebhookStub = nock('https://slack-webhook.example')
@@ -83,11 +65,8 @@ describe('SlackNotificationsService', function () {
                     DomainEvents: {
                         subscribe: subscribeStub
                     },
-                    urlUtils,
-                    config,
-                    labs: {
-                        isSet: () => 'milestoneEmails'
-                    }
+                    siteUrl: 'https://ghost.example',
+                    config
                 });
 
                 await service.handleEvent(MilestoneCreatedEvent, {
@@ -106,34 +85,11 @@ describe('SlackNotificationsService', function () {
                 assert.strictEqual(slackWebhookStub.isDone(), true);
             });
 
-            it('does not send notification when milestoneEmails labs flag is not set', async function () {
-                service = new SlackNotificationsService({
-                    labs: {
-                        isSet: () => false
-                    }
-                });
-
-                await service.handleEvent(MilestoneCreatedEvent, {data: {milestone: {}}});
-                assert.strictEqual(slackWebhookStub.isDone(), false);
-            });
-
             it('does not send notification when milestones is disabled in hostSettings', async function () {
                 service = new SlackNotificationsService({
                     config: {
-                        get: (setting) => {
-                            if (setting === 'hostSettings') {
-                                return {
-                                    milestones: {
-                                        enabled: false,
-                                        url: 'https://slack-webhook.example'
-                                    }
-                                };
-                            }
-                            return '';
-                        }
-                    },
-                    labs: {
-                        isSet: () => 'milestoneEmails'
+                        enabled: false,
+                        webhookUrl: 'https://slack-webhook.example'
                     }
                 });
 
@@ -144,19 +100,8 @@ describe('SlackNotificationsService', function () {
             it('does not send notification when no url in hostSettings provided', async function () {
                 service = new SlackNotificationsService({
                     config: {
-                        get: (setting) => {
-                            if (setting === 'hostSettings') {
-                                return {
-                                    milestones: {
-                                        enabled: true
-                                    }
-                                };
-                            }
-                            return '';
-                        }
-                    },
-                    labs: {
-                        isSet: () => 'milestoneEmails'
+                        enabled: true,
+                        webhookUrl: null
                     }
                 });
 

@@ -12,17 +12,12 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 /**
  * @typedef {object} config
- * @prop {(string) => any} get
+ * @property {boolean} enabled
+ * @property {URL} webhookUrl
  */
 
 /**
- * @typedef {object} urlUtils
- * @prop {() => any} getSiteUrl
- */
-
-/**
- * @typedef {object} labs
- * @prop {(string) => boolean} isSet
+ * @typedef {string} siteUrl
  */
 
 module.exports = class SlackNotificationsService {
@@ -32,39 +27,34 @@ module.exports = class SlackNotificationsService {
     /** @type {import('@tryghost/logging')} */
     #logging;
 
-    /** @type {labs} */
-    #labs;
-
     /** @type {config} */
     #config;
 
     /** @type {ISlackNotifications} */
     #notifications;
 
-    /** @type {urlUtils} */
-    #urlUtils;
+    /** @type {siteUrl} */
+    #siteUrl;
 
     /**
      *
      * @param {object} deps
      * @param {import('@tryghost/domain-events')} deps.DomainEvents
-     * @param {labs} deps.labs
      * @param {config} deps.config
-     * @param {urlUtils} deps.urlUtils
+     * @param {siteUrl} deps.siteUrl
      * @param {import('@tryghost/logging')} deps.logging
      */
     constructor(deps) {
         this.#DomainEvents = deps.DomainEvents;
         this.#logging = deps.logging;
-        this.#labs = deps.labs;
         this.#config = deps.config;
-        this.#urlUtils = deps.urlUtils;
+        this.#siteUrl = deps.siteUrl;
 
         const SlackNotifications = require('./SlackNotifications');
 
         this.#notifications = new SlackNotifications({
             config: this.#config,
-            urlUtils: this.#urlUtils,
+            siteUrl: this.#siteUrl,
             logging: this.#logging
         });
     }
@@ -81,9 +71,8 @@ module.exports = class SlackNotificationsService {
         if (
             type === MilestoneCreatedEvent
             && event.data.milestone
-            && this.#labs.isSet('milestoneEmails')
-            && this.#config.get('hostSettings')?.milestones?.enabled
-            && this.#config.get('hostSettings')?.milestones?.url
+            && this.#config.enabled
+            && this.#config.webhookUrl
         ) {
             await this.#notifications.notifyMilestoneReceived(event.data.milestone);
         }

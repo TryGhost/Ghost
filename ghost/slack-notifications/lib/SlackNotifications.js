@@ -6,12 +6,12 @@ const moment = require('moment');
 
 /**
  * @typedef {object} config
- * @property {(string) => any} get
+ * @property {boolean} enabled
+ * @property {URL} webhookUrl
  */
 
 /**
- * @typedef {object} urlUtils
- * @property {() => string} getSiteUrl
+ * @typedef {string} siteUrl
  */
 
 /**
@@ -25,8 +25,8 @@ class SlackNotifications {
     /** @type {config} */
     #config;
 
-    /** @type {urlUtils} */
-    #urlUtils;
+    /** @type {siteUrl} */
+    #siteUrl;
 
     /** @type {import('@tryghost/logging')} */
     #logging;
@@ -34,11 +34,11 @@ class SlackNotifications {
     /**
      * @param {object} deps
      * @param {config} deps.config
-     * @param {urlUtils} deps.urlUtils
+     * @param {siteUrl} deps.siteUrl
      * @param {import('@tryghost/logging')} deps.logging
      */
     constructor(deps) {
-        this.#urlUtils = deps.urlUtils;
+        this.#siteUrl = deps.siteUrl;
         this.#config = deps.config;
         this.#logging = deps.logging;
     }
@@ -57,12 +57,10 @@ class SlackNotifications {
         const currentMembers = this.#getFormattedAmount({amount: 9857});
 
         // TODO: clean this up!
-        const slackWebhookUrl = this.#config.get('hostSettings')?.milestones?.url;
         const milestoneTypePretty = milestone.type === 'arr' ? 'ARR' : 'Members';
         const valueFormatted = this.#getFormattedAmount({amount: milestone.value, currency: milestone?.currency});
 
         const emailSent = milestone.emailSentAt ? this.#getFormattedDate(milestone?.emailSentAt) : `no / ${reason}`;
-        const siteUrl = this.#getSiteUrl();
         const title = `${milestoneTypePretty} Milestone ${valueFormatted} reached!`;
 
         const arrSection = {
@@ -100,7 +98,7 @@ class SlackNotifications {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `New *${milestoneTypePretty} Milestone* achieved for <https://${siteUrl}|https://${siteUrl}>`
+                    text: `New *${milestoneTypePretty} Milestone* achieved for <${this.#siteUrl}|${this.#siteUrl}>`
                 }
             },
             valueSection,
@@ -120,7 +118,7 @@ class SlackNotifications {
             blocks
         };
 
-        await this.send(slackData, slackWebhookUrl);
+        await this.send(slackData, this.#config.webhookUrl);
     }
 
     /**
@@ -149,16 +147,6 @@ class SlackNotifications {
         };
 
         return await got(url, requestOptions);
-    }
-
-    /**
-     * @returns {string}
-     */
-    #getSiteUrl() {
-        const [, siteDomain] = this.#urlUtils.getSiteUrl()
-            .match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-
-        return siteDomain;
     }
 
     /**

@@ -5,33 +5,15 @@ const nock = require('nock');
 const ObjectId = require('bson-objectid').default;
 
 describe('SlackNotifications', function () {
-    let subscribeStub;
     let slackNotifications;
-    let slackWebhookStub;
     let loggingErrorStub;
 
-    const urlUtils = {
-        getSiteUrl: () => {
-            return 'https://ghost.example';
-        }
-    };
-
     const config = {
-        get: (setting) => {
-            if (setting === 'hostSettings') {
-                return {
-                    milestones: {
-                        enabled: true,
-                        url: 'https://slack-webhook.example'
-                    }
-                };
-            }
-            return '';
-        }
+        enabled: true,
+        webhookUrl: 'https://slack-webhook.example'
     };
 
     beforeEach(function () {
-        subscribeStub = sinon.stub().resolves();
         loggingErrorStub = sinon.stub();
 
         slackNotifications = new SlackNotifications({
@@ -39,11 +21,11 @@ describe('SlackNotifications', function () {
                 warn: () => {},
                 error: loggingErrorStub
             },
-            urlUtils,
+            siteUrl: 'https://ghost.example',
             config
         });
 
-        slackWebhookStub = nock('https://slack-webhook.example')
+        nock('https://slack-webhook.example')
             .post('/')
             .reply(200, {message: 'success'});
     });
