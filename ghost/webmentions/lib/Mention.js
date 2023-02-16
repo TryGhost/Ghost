@@ -153,7 +153,8 @@ module.exports = class Mention {
             sourceAuthor: this.sourceAuthor,
             sourceExcerpt: this.sourceExcerpt,
             sourceFavicon: this.sourceFavicon,
-            sourceFeaturedImage: this.sourceFeaturedImage
+            sourceFeaturedImage: this.sourceFeaturedImage,
+            verified: this.verified
         };
     }
 

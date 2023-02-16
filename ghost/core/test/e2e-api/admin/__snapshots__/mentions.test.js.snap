@@ -16,6 +16,7 @@ Object {
       "source_title": Any<String>,
       "target": Any<String>,
       "timestamp": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "verified": false,
     },
     Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -30,6 +31,7 @@ Object {
       "source_title": Any<String>,
       "target": Any<String>,
       "timestamp": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "verified": false,
     },
   ],
   "meta": Object {

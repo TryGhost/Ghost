@@ -13,6 +13,7 @@ module.exports = (model) => {
         source_excerpt: json.sourceExcerpt,
         source_author: json.sourceAuthor,
         source_favicon: json.sourceFavicon,
-        source_featured_image: json.sourceFeaturedImage
+        source_featured_image: json.sourceFeaturedImage,
+        verified: json.verified
     };
 };
