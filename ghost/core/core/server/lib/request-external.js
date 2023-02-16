@@ -42,6 +42,7 @@ const externalRequest = got.extend({
     headers: {
         'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
     },
+    timeout: 10000, // default is no timeout
     hooks: {
         init: [(options) => {
             if (!options.hostname || !validator.isURL(options.hostname)) {
