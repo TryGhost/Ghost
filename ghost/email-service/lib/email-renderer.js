@@ -57,6 +57,7 @@ class EmailRenderer {
     #linkReplacer;
     #linkTracking;
     #memberAttributionService;
+    #outboundLinkTagger;
     #audienceFeedbackService;
 
     /**
@@ -74,6 +75,7 @@ class EmailRenderer {
      * @param {object} dependencies.linkTracking
      * @param {object} dependencies.memberAttributionService
      * @param {object} dependencies.audienceFeedbackService
+     * @param {object} dependencies.outboundLinkTagger
      */
     constructor({
         settingsCache,
@@ -86,7 +88,8 @@ class EmailRenderer {
         linkReplacer,
         linkTracking,
         memberAttributionService,
-        audienceFeedbackService
+        audienceFeedbackService,
+        outboundLinkTagger
     }) {
         this.#settingsCache = settingsCache;
         this.#settingsHelpers = settingsHelpers;
@@ -99,6 +102,7 @@ class EmailRenderer {
         this.#linkTracking = linkTracking;
         this.#memberAttributionService = memberAttributionService;
         this.#audienceFeedbackService = audienceFeedbackService;
+        this.#outboundLinkTagger = outboundLinkTagger;
     }
 
     getSubject(post) {
@@ -243,13 +247,13 @@ class EmailRenderer {
 
                 if (isSite) {
                     // Add newsletter name as ref to the URL
-                    url = this.#memberAttributionService.addOutboundLinkTagging(url, newsletter);
+                    url = this.#outboundLinkTagger.addToUrl(url, newsletter);
 
                     // Only add post attribution to our own site (because external sites could/should not process this information)
                     url = this.#memberAttributionService.addPostAttributionTracking(url, post);
                 } else {
                     // Add email source attribution without the newsletter name
-                    url = this.#memberAttributionService.addOutboundLinkTagging(url);
+                    url = this.#outboundLinkTagger.addToUrl(url);
                 }
 
                 // Add link click tracking
