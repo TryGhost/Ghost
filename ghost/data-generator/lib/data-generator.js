@@ -50,7 +50,8 @@ const defaultQuantities = {
         min: 7000,
         max: 8000
     }),
-    membersLoginEvents: 100,
+    // This will generate n * <members> events, is not worth being very high
+    membersLoginEvents: 5,
     posts: () => faker.datatype.number({
         min: 80,
         max: 120
@@ -96,7 +97,7 @@ class DataGenerator {
                     await transaction(table).del().whereNot('id', '1');
                     continue;
                 }
-                await transaction.raw(`delete from ${table}`);
+                await transaction(table).del();
             }
             this.logger.info('Finished clearing database');
         }
