@@ -79,7 +79,7 @@ module.exports = class EmailAnalytics {
         if (end < begin) {
             // Skip for now
             logging.info('[EmailAnalytics] Skipping fetchLatest because end (' + end + ') is before begin (' + begin + ')');
-            return 0;
+            //return 0;
         }
 
         // Create the fetch data object if it doesn't exist yet
