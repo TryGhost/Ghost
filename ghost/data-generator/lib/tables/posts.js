@@ -12,11 +12,15 @@ class PostsImporter extends TableImporter {
         this.newsletters = newsletters;
     }
 
+    setImportOptions({type = 'post'}) {
+        this.type = type;
+    }
+
     async addNewsletters({posts}) {
-        for (const {id} of posts) {
+        for (const {id, visibility} of posts) {
             await this.knex('posts').update({
-                newsletter_id: luck(90) ? this.newsletters[0].id : this.newsletters[1].id
-            }).where({id});
+                newsletter_id: luck(90) ? (visibility === 'paid' ? this.newsletters[1].id : this.newsletters[0].id) : null
+            }).where({id, type: 'post', status: 'published'});
         }
     }
 
@@ -40,17 +44,21 @@ class PostsImporter extends TableImporter {
         if (luck(5)) {
             status = 'draft';
         }
+        if (this.type === 'page') {
+            status = 'published';
+        }
 
         const visibility = luck(90) ? 'paid' : luck(10) ? 'members' : 'public';
 
         return {
             id: faker.database.mongodbObjectId(),
             created_at: dateToDatabaseString(timestamp),
-            created_by: 'unused',
+            created_by: '1',
             updated_at: dateToDatabaseString(timestamp),
             published_at: status === 'published' ? dateToDatabaseString(faker.date.soon(5, timestamp)) : null,
             uuid: faker.datatype.uuid(),
             title: title,
+            type: this.type,
             slug: `${slugify(title)}-${faker.random.numeric(3)}`,
             status,
             visibility,
@@ -74,7 +82,7 @@ class PostsImporter extends TableImporter {
             }),
             html: content.map(paragraph => `<p>${paragraph}</p>`).join(''),
             email_recipient_filter: 'all',
-            newsletter_id: status === 'published' && luck(90) ? visibility === 'paid' ? this.newsletters[1].id : this.newsletters[0].id : null
+            newsletter_id: this.type === 'post' && status === 'published' && luck(90) ? (visibility === 'paid' ? this.newsletters[1].id : this.newsletters[0].id) : null
         };
     }
 }
