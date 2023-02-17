@@ -33,7 +33,8 @@ const {
     MembersClickEventsImporter,
     OffersImporter,
     LabelsImporter,
-    MembersLabelsImporter
+    MembersLabelsImporter,
+    RolesUsersImporter
 } = tables;
 const path = require('path');
 const fs = require('fs/promises');
@@ -99,6 +100,10 @@ class DataGenerator {
             const tableNames = Object.values(tables).map(importer => importer.table).reverse();
             for (const table of tableNames) {
                 this.logger.debug(`Clearing table ${table}`);
+                if (table === 'roles_users') {
+                    await transaction(table).del().whereNot('user_id', '1');
+                    continue;
+                }
                 if (table === 'users') {
                     // Avoid deleting the admin user
                     await transaction(table).del().whereNot('id', '1');
@@ -391,6 +396,10 @@ class DataGenerator {
         await membersLabelsImporter.importForEach(members, {
             amount: 1
         });
+
+        const roles = await transaction.select('id', 'name').from('roles');
+        const rolesUsersImporter = new RolesUsersImporter(transaction, {roles});
+        await rolesUsersImporter.importForEach(users, {amount: 1});
 
         // TODO: Members labels
 
