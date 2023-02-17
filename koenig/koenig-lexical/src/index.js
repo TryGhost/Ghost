@@ -5,6 +5,7 @@ import KoenigFullEditor from './components/KoenigFullEditor';
 import DEFAULT_NODES from './nodes/DefaultNodes';
 import KoenigBehaviourPlugin from './plugins/KoenigBehaviourPlugin';
 import FloatingFormatToolbarPlugin from './plugins/FloatingFormatToolbarPlugin';
+import RestrictContentPlugin from './plugins/RestrictContentPlugin';
 import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
 import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
 import CardMenuPlugin from './plugins/CardMenuPlugin';
@@ -44,6 +45,7 @@ export {
     DragDropPastePlugin,
     ExternalControlPlugin,
     DragDropReorderPlugin,
+    RestrictContentPlugin,
     DEFAULT_NODES,
     DEFAULT_TRANSFORMERS,
     ELEMENT_TRANSFORMERS,
