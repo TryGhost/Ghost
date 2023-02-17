@@ -1,7 +1,6 @@
 const assert = require('assert');
 const sinon = require('sinon');
-const SlackNotificationsService = require('../index');
-const nock = require('nock');
+const {SlackNotificationsService} = require('../index');
 const ObjectId = require('bson-objectid').default;
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 const DomainEvents = require('@tryghost/domain-events');
@@ -14,9 +13,9 @@ describe('SlackNotificationsService', function () {
     });
 
     describe('Slack notifications service', function () {
-        let subscribeStub;
         let service;
-        let slackWebhookStub;
+        let slackNotificationStub;
+        let loggingSpy;
 
         const config = {
             isEnabled: true,
@@ -24,39 +23,39 @@ describe('SlackNotificationsService', function () {
         };
 
         beforeEach(function () {
-            subscribeStub = sinon.stub().resolves();
-
-            service = new SlackNotificationsService({
-                logging: {
-                    warn: () => {},
-                    error: () => {}
-                },
-                DomainEvents: {
-                    subscribe: subscribeStub
-                },
-                siteUrl: 'https://ghost.example',
-                config
-            });
-
-            slackWebhookStub = nock('https://slack-webhook.example')
-                .post('/')
-                .reply(200, {message: 'success'});
+            slackNotificationStub = sinon.stub().resolves();
+            loggingSpy = sinon.spy();
         });
 
         afterEach(function () {
             sinon.restore();
-            nock.cleanAll();
         });
 
         describe('subscribeEvents', function () {
             it('subscribes to events', async function () {
+                const subscribeStub = sinon.stub().resolves();
+
+                service = new SlackNotificationsService({
+                    logging: {
+                        warn: () => {},
+                        error: loggingSpy
+                    },
+                    DomainEvents: {
+                        subscribe: subscribeStub
+                    },
+                    siteUrl: 'https://ghost.example',
+                    config,
+                    slackNotifications: {
+                        notifyMilestoneReceived: slackNotificationStub
+                    }
+                });
+
                 service.subscribeEvents();
                 assert(subscribeStub.callCount === 1);
                 assert(subscribeStub.calledWith(MilestoneCreatedEvent) === true);
             });
 
-            it('logs error when event handling fails', async function () {
-                const loggingSpy = sinon.spy();
+            it('handles milestone created event', async function () {
                 service = new SlackNotificationsService({
                     logging: {
                         warn: () => {},
@@ -65,14 +64,104 @@ describe('SlackNotificationsService', function () {
                     DomainEvents,
                     siteUrl: 'https://ghost.example',
                     config,
-                    notifications: {
+                    slackNotifications: {
+                        notifyMilestoneReceived: slackNotificationStub
+                    }
+                });
+
+                service.subscribeEvents();
+
+                DomainEvents.dispatch(MilestoneCreatedEvent.create({
+                    milestone: {
+                        id: new ObjectId().toHexString(),
+                        type: 'arr',
+                        value: 1000,
+                        currency: 'usd',
+                        createdAt: new Date(),
+                        emailSentAt: new Date()
+                    },
+                    meta: {
+                        currentARR: 1398
+                    }
+                }));
+
+                await DomainEvents.allSettled();
+
+                assert(loggingSpy.callCount === 0);
+                assert(slackNotificationStub.calledOnce);
+            });
+
+            it('does not send notification when milestones is disabled in hostSettings', async function () {
+                service = new SlackNotificationsService({
+                    logging: {
+                        warn: () => {},
+                        error: loggingSpy
+                    },
+                    DomainEvents,
+                    siteUrl: 'https://ghost.example',
+                    config: {
+                        isEnabled: false,
+                        webhookUrl: 'https://slack-webhook.example'
+                    },
+                    slackNotifications: {
+                        notifyMilestoneReceived: slackNotificationStub
+                    }
+                });
+
+                service.subscribeEvents();
+
+                DomainEvents.dispatch(MilestoneCreatedEvent.create({milestone: {}}));
+
+                await DomainEvents.allSettled();
+
+                assert(loggingSpy.callCount === 0);
+                assert(slackNotificationStub.callCount === 0);
+            });
+
+            it('does not send notification when no url in hostSettings provided', async function () {
+                service = new SlackNotificationsService({
+                    logging: {
+                        warn: () => {},
+                        error: loggingSpy
+                    },
+                    DomainEvents,
+                    siteUrl: 'https://ghost.example',
+                    config: {
+                        isEnabled: true,
+                        webhookUrl: null
+                    },
+                    slackNotifications: {
+                        notifyMilestoneReceived: slackNotificationStub
+                    }
+                });
+
+                service.subscribeEvents();
+
+                DomainEvents.dispatch(MilestoneCreatedEvent.create({milestone: {}}));
+
+                await DomainEvents.allSettled();
+
+                assert(loggingSpy.callCount === 0);
+                assert(slackNotificationStub.callCount === 0);
+            });
+
+            it('logs error when event handling fails', async function () {
+                service = new SlackNotificationsService({
+                    logging: {
+                        warn: () => {},
+                        error: loggingSpy
+                    },
+                    DomainEvents,
+                    siteUrl: 'https://ghost.example',
+                    config,
+                    slackNotifications: {
                         async notifyMilestoneReceived() {
-                            throw new Error('test error');
+                            throw new Error('test');
                         }
                     }
                 });
 
-                await service.subscribeEvents();
+                service.subscribeEvents();
 
                 DomainEvents.dispatch(MilestoneCreatedEvent.create({
                     milestone: {
@@ -87,63 +176,6 @@ describe('SlackNotificationsService', function () {
                 const loggingSpyCall = loggingSpy.getCall(0).args[0];
                 assert(loggingSpy.calledOnce);
                 assert(loggingSpyCall instanceof Error);
-            });
-        });
-        describe('handleEvents', function () {
-            it('handles milestone created event', async function () {
-                service = new SlackNotificationsService({
-                    logging: {
-                        warn: () => {},
-                        error: () => {}
-                    },
-                    DomainEvents: {
-                        subscribe: subscribeStub
-                    },
-                    siteUrl: 'https://ghost.example',
-                    config
-                });
-
-                await service.handleEvent(MilestoneCreatedEvent, {
-                    data: {
-                        milestone: {
-                            id: new ObjectId().toHexString(),
-                            type: 'arr',
-                            value: 1000,
-                            currency: 'usd',
-                            createdAt: new Date(),
-                            emailSentAt: new Date()
-                        },
-                        meta: {
-                            currentARR: 1398
-                        }
-                    }
-                });
-
-                assert.strictEqual(slackWebhookStub.isDone(), true);
-            });
-
-            it('does not send notification when milestones is disabled in hostSettings', async function () {
-                service = new SlackNotificationsService({
-                    config: {
-                        enabled: false,
-                        webhookUrl: 'https://slack-webhook.example'
-                    }
-                });
-
-                await service.handleEvent(MilestoneCreatedEvent, {data: {milestone: {}}});
-                assert.strictEqual(slackWebhookStub.isDone(), false);
-            });
-
-            it('does not send notification when no url in hostSettings provided', async function () {
-                service = new SlackNotificationsService({
-                    config: {
-                        enabled: true,
-                        webhookUrl: null
-                    }
-                });
-
-                await service.handleEvent(MilestoneCreatedEvent, {data: {milestone: {}}});
-                assert.strictEqual(slackWebhookStub.isDone(), false);
             });
         });
     });

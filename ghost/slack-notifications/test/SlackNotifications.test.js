@@ -3,15 +3,12 @@ const sinon = require('sinon');
 const SlackNotifications = require('../lib/SlackNotifications');
 const nock = require('nock');
 const ObjectId = require('bson-objectid').default;
+const got = require('got');
+const ghostVersion = require('@tryghost/version');
 
 describe('SlackNotifications', function () {
     let slackNotifications;
     let loggingErrorStub;
-
-    const config = {
-        enabled: true,
-        webhookUrl: 'https://slack-webhook.example'
-    };
 
     beforeEach(function () {
         loggingErrorStub = sinon.stub();
@@ -22,7 +19,7 @@ describe('SlackNotifications', function () {
                 error: loggingErrorStub
             },
             siteUrl: 'https://ghost.example',
-            config
+            webhookUrl: 'https://slack-webhook.example'
         });
 
         nock('https://slack-webhook.example')
@@ -62,42 +59,45 @@ describe('SlackNotifications', function () {
             const expectedResult = {
                 unfurl_links: false,
                 username: 'Ghost Milestone Service',
-                blocks: [
-                    {
-                        type: 'header',
-                        text: {
-                            type: 'plain_text',
-                            text: ':tada: ARR Milestone £1,000.00 reached!',
-                            emoji: true
-                        }
-                    },
-                    {
-                        type: 'section',
-                        text: {
-                            type: 'mrkdwn',
-                            text: 'New *ARR Milestone* achieved for <https://ghost.example|https://ghost.example>'
-                        }
-                    },
-                    {
-                        type: 'divider'
-                    },
-                    {
-                        type: 'section',
-                        fields: [
-                            {
-                                type: 'mrkdwn',
-                                text: '*Milestone:*\n£1,000.00'
+                attachments: [{
+                    color: '#36a64f',
+                    blocks: [
+                        {
+                            type: 'header',
+                            text: {
+                                type: 'plain_text',
+                                text: ':tada: ARR Milestone £1,000.00 reached!',
+                                emoji: true
                             }
-                        ]
-                    },
-                    {
-                        type: 'section',
-                        text: {
-                            type: 'mrkdwn',
-                            text: '*Email sent:*\n15 Feb 2023'
+                        },
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: 'New *ARR Milestone* achieved for <https://ghost.example|https://ghost.example>'
+                            }
+                        },
+                        {
+                            type: 'divider'
+                        },
+                        {
+                            type: 'section',
+                            fields: [
+                                {
+                                    type: 'mrkdwn',
+                                    text: '*Milestone:*\n£1,000.00'
+                                }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: '*Email sent:*\n15 Feb 2023'
+                            }
                         }
-                    }
-                ]
+                    ]
+                }]
             };
 
             assert(sendStub.calledOnce === true);
@@ -123,46 +123,49 @@ describe('SlackNotifications', function () {
             const expectedResult = {
                 unfurl_links: false,
                 username: 'Ghost Milestone Service',
-                blocks: [
-                    {
-                        type: 'header',
-                        text: {
-                            type: 'plain_text',
-                            text: ':tada: Members Milestone 50,000 reached!',
-                            emoji: true
-                        }
-                    },
-                    {
-                        type: 'section',
-                        text: {
-                            type: 'mrkdwn',
-                            text: 'New *Members Milestone* achieved for <https://ghost.example|https://ghost.example>'
-                        }
-                    },
-                    {
-                        type: 'divider'
-                    },
-                    {
-                        type: 'section',
-                        fields: [
-                            {
-                                type: 'mrkdwn',
-                                text: '*Milestone:*\n50,000'
-                            },
-                            {
-                                type: 'mrkdwn',
-                                text: '*Current Members:*\n59,857'
+                attachments: [{
+                    color: '#36a64f',
+                    blocks: [
+                        {
+                            type: 'header',
+                            text: {
+                                type: 'plain_text',
+                                text: ':tada: Members Milestone 50,000 reached!',
+                                emoji: true
                             }
-                        ]
-                    },
-                    {
-                        type: 'section',
-                        text: {
-                            type: 'mrkdwn',
-                            text: '*Email sent:*\nno / has imported members'
+                        },
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: 'New *Members Milestone* achieved for <https://ghost.example|https://ghost.example>'
+                            }
+                        },
+                        {
+                            type: 'divider'
+                        },
+                        {
+                            type: 'section',
+                            fields: [
+                                {
+                                    type: 'mrkdwn',
+                                    text: '*Milestone:*\n50,000'
+                                },
+                                {
+                                    type: 'mrkdwn',
+                                    text: '*Current Members:*\n59,857'
+                                }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: '*Email sent:*\nno / has imported members'
+                            }
                         }
-                    }
-                ]
+                    ]
+                }]
             };
 
             assert(sendStub.calledOnce === true);
@@ -189,46 +192,49 @@ describe('SlackNotifications', function () {
             const expectedResult = {
                 unfurl_links: false,
                 username: 'Ghost Milestone Service',
-                blocks: [
-                    {
-                        type: 'header',
-                        text: {
-                            type: 'plain_text',
-                            text: ':tada: ARR Milestone €1,000.00 reached!',
-                            emoji: true
-                        }
-                    },
-                    {
-                        type: 'section',
-                        text: {
-                            type: 'mrkdwn',
-                            text: 'New *ARR Milestone* achieved for <https://ghost.example|https://ghost.example>'
-                        }
-                    },
-                    {
-                        type: 'divider'
-                    },
-                    {
-                        type: 'section',
-                        fields: [
-                            {
-                                type: 'mrkdwn',
-                                text: '*Milestone:*\n€1,000.00'
-                            },
-                            {
-                                type: 'mrkdwn',
-                                text: '*Current ARR:*\n€1,005.00'
+                attachments: [{
+                    color: '#36a64f',
+                    blocks: [
+                        {
+                            type: 'header',
+                            text: {
+                                type: 'plain_text',
+                                text: ':tada: ARR Milestone €1,000.00 reached!',
+                                emoji: true
                             }
-                        ]
-                    },
-                    {
-                        type: 'section',
-                        text: {
-                            type: 'mrkdwn',
-                            text: '*Email sent:*\nno / last email too recent'
+                        },
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: 'New *ARR Milestone* achieved for <https://ghost.example|https://ghost.example>'
+                            }
+                        },
+                        {
+                            type: 'divider'
+                        },
+                        {
+                            type: 'section',
+                            fields: [
+                                {
+                                    type: 'mrkdwn',
+                                    text: '*Milestone:*\n€1,000.00'
+                                },
+                                {
+                                    type: 'mrkdwn',
+                                    text: '*Current ARR:*\n€1,005.00'
+                                }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            text: {
+                                type: 'mrkdwn',
+                                text: '*Email sent:*\nno / last email too recent'
+                            }
                         }
-                    }
-                ]
+                    ]
+                }]
             };
 
             assert(sendStub.calledOnce === true);
@@ -237,13 +243,32 @@ describe('SlackNotifications', function () {
     });
 
     describe('send', function () {
+        it('Sends with correct requestOptions', async function () {
+            const gotStub = sinon.stub(got, 'post').resolves();
+            sinon.stub(ghostVersion, 'original').value('5.0.0');
+
+            const expectedRequestOptions = [
+                'https://slack-webhook.com',
+                {
+                    body: '{"data":"test"}',
+                    headers: {'user-agent': 'Ghost/5.0.0 (https://github.com/TryGhost/Ghost)'}
+                }
+            ];
+
+            await slackNotifications.send({data: 'test'}, 'https://slack-webhook.com');
+            assert(loggingErrorStub.callCount === 0);
+            assert(gotStub.calledOnce === true);
+            const gotStubArgs = gotStub.getCall(0).args;
+            assert.deepEqual(gotStubArgs, expectedRequestOptions);
+        });
+
         it('Throws when invalid URL is passed', async function () {
-            await slackNotifications.send('https://invalid-url', {});
+            await slackNotifications.send({}, 'https://invalid-url');
             assert(loggingErrorStub.callCount === 1);
         });
 
         it('Throws when no URL is passed', async function () {
-            await slackNotifications.send(null, {});
+            await slackNotifications.send({}, null);
             assert(loggingErrorStub.callCount === 1);
         });
     });

@@ -1,10 +1,35 @@
 const DomainEvents = require('@tryghost/domain-events');
 const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
+const logging = require('@tryghost/logging');
 
 class SlackNotificationsServiceWrapper {
     /** @type {import('@tryghost/slack-notifications/lib/SlackNotificationsService')} */
     #api;
+
+    static create({siteUrl, isEnabled, webhookUrl}) {
+        const {
+            SlackNotificationsService,
+            SlackNotifications
+        } = require('@tryghost/slack-notifications');
+
+        const slackNotifications = new SlackNotifications({
+            webhookUrl,
+            siteUrl,
+            logging
+        });
+
+        return new SlackNotificationsService({
+            DomainEvents,
+            logging,
+            config: {
+                isEnabled,
+                webhookUrl
+            },
+            siteUrl,
+            slackNotifications
+        });
+    }
 
     init() {
         if (this.#api) {
@@ -12,23 +37,13 @@ class SlackNotificationsServiceWrapper {
             return;
         }
 
-        const SlackNotificationsService = require('@tryghost/slack-notifications');
         const hostSettings = config.get('hostSettings');
         const urlUtils = require('../../../shared/url-utils');
-        const logging = require('@tryghost/logging');
-
         const siteUrl = urlUtils.getSiteUrl();
         const isEnabled = labs.isSet('milestoneEmails') && hostSettings?.milestones?.enabled && hostSettings?.milestones?.url;
+        const webhookUrl = hostSettings?.milestones?.url;
 
-        this.#api = new SlackNotificationsService({
-            DomainEvents,
-            logging,
-            config: {
-                isEnabled,
-                webhookUrl: hostSettings?.milestones?.url
-            },
-            siteUrl
-        });
+        this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl});
 
         this.#api.subscribeEvents();
     }

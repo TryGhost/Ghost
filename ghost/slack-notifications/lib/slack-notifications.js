@@ -1,1 +1,2 @@
-module.exports = require('./SlackNotificationsService');
+module.exports.SlackNotificationsService = require('./SlackNotificationsService');
+module.exports.SlackNotifications = require('./SlackNotifications');

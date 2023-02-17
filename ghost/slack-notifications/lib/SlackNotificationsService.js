@@ -13,7 +13,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 /**
  * @typedef {object} ISlackNotifications
- * @prop {Object.<Milestone, meta>} notifyMilestoneReceived
+ * @prop {Object.<Milestone, ?meta>} notifyMilestoneReceived
  * @prop {(slackData: object, url: URL) => Promise<void>} send
  */
 
@@ -38,10 +38,7 @@ module.exports = class SlackNotificationsService {
     #config;
 
     /** @type {ISlackNotifications} */
-    #notifications;
-
-    /** @type {siteUrl} */
-    #siteUrl;
+    #slackNotifications;
 
     /**
      *
@@ -50,20 +47,13 @@ module.exports = class SlackNotificationsService {
      * @param {config} deps.config
      * @param {siteUrl} deps.siteUrl
      * @param {import('@tryghost/logging')} deps.logging
+     * @param {ISlackNotifications} deps.slackNotifications
      */
     constructor(deps) {
         this.#DomainEvents = deps.DomainEvents;
         this.#logging = deps.logging;
         this.#config = deps.config;
-        this.#siteUrl = deps.siteUrl;
-
-        const SlackNotifications = require('./SlackNotifications');
-
-        this.#notifications = deps.notifications || new SlackNotifications({
-            config: this.#config,
-            siteUrl: this.#siteUrl,
-            logging: this.#logging
-        });
+        this.#slackNotifications = deps.slackNotifications;
     }
 
     /**
@@ -74,7 +64,7 @@ module.exports = class SlackNotificationsService {
      *
      * @returns {Promise<void>}
      */
-    async handleEvent(type, event) {
+    async #handleEvent(type, event) {
         if (
             type === MilestoneCreatedEvent
             && event.data.milestone
@@ -82,7 +72,7 @@ module.exports = class SlackNotificationsService {
             && this.#config.webhookUrl
         ) {
             try {
-                await this.#notifications.notifyMilestoneReceived(event.data);
+                await this.#slackNotifications.notifyMilestoneReceived(event.data);
             } catch (error) {
                 this.#logging.error(error);
             }
@@ -91,7 +81,7 @@ module.exports = class SlackNotificationsService {
 
     subscribeEvents() {
         this.#DomainEvents.subscribe(MilestoneCreatedEvent, async (event) => {
-            await this.handleEvent(MilestoneCreatedEvent, event);
+            await this.#handleEvent(MilestoneCreatedEvent, event);
         });
     }
 };

@@ -5,8 +5,7 @@ const ghostVersion = require('@tryghost/version');
 const moment = require('moment');
 
 /**
- * @typedef {object} config
- * @property {URL} webhookUrl
+ * @typedef {URL} webhookUrl
  */
 
 /**
@@ -21,8 +20,8 @@ const moment = require('moment');
  * @implements {ISlackNotifications}
  */
 class SlackNotifications {
-    /** @type {config} */
-    #config;
+    /** @type {URL} */
+    #webhookUrl;
 
     /** @type {siteUrl} */
     #siteUrl;
@@ -32,13 +31,13 @@ class SlackNotifications {
 
     /**
      * @param {object} deps
-     * @param {config} deps.config
+     * @param {URL} deps.webhookUrl
      * @param {siteUrl} deps.siteUrl
      * @param {import('@tryghost/logging')} deps.logging
      */
     constructor(deps) {
         this.#siteUrl = deps.siteUrl;
-        this.#config = deps.config;
+        this.#webhookUrl = deps.webhookUrl;
         this.#logging = deps.logging;
     }
 
@@ -131,10 +130,15 @@ class SlackNotifications {
         const slackData = {
             unfurl_links: false,
             username: 'Ghost Milestone Service',
-            blocks
+            attachments: [
+                {
+                    color: '#36a64f',
+                    blocks
+                }
+            ]
         };
 
-        await this.send(slackData, this.#config.webhookUrl);
+        await this.send(slackData, this.#webhookUrl);
     }
 
     /**
@@ -145,7 +149,7 @@ class SlackNotifications {
      * @returns {Promise<any>}
      */
     async send(slackData, url) {
-        if (!url || typeof url !== 'string' || !validator.isURL(url)) {
+        if ((!url || typeof url !== 'string') || !validator.isURL(url)) {
             const err = new errors.InternalServerError({
                 message: 'URL empty or invalid.',
                 code: 'URL_MISSING_INVALID',
@@ -162,7 +166,7 @@ class SlackNotifications {
             }
         };
 
-        return await got(url, requestOptions);
+        return await got.post(url, requestOptions);
     }
 
     /**
