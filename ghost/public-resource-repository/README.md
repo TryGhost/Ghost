@@ -1,6 +1,6 @@
 # Tags Public
 
-services and repositories serving public tags endpoints
+services and repositories serving public resource endpoints e.g. Tags/Posts/Authors Content API endpoints
 
 
 ## Usage
