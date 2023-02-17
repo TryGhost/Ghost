@@ -20103,10 +20103,10 @@ node-int64@^0.4.0:
   resolved "https://registry.yarnpkg.com/node-int64/-/node-int64-0.4.0.tgz#87a9065cdb355d3182d8f94ce11188b825c68a3b"
   integrity sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==
 
-node-jose@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/node-jose/-/node-jose-2.1.1.tgz#7d82e8d9cef8d0a722d7fa385524babfa9e30614"
-  integrity sha512-19nyuUGShNmFmVTeqDfP6ZJCiikbcjI0Pw2kykBCH7rl8AZgSiDZK2Ww8EDaMrOSbRg6IlfIMhI5ZvCklmOhzg==
+node-jose@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/node-jose/-/node-jose-2.2.0.tgz#b64f3225ad6bec328509a420800de597ba2bf3ed"
+  integrity sha512-XPCvJRr94SjLrSIm4pbYHKLEaOsDvJCpyFw/6V/KK/IXmyZ6SFBzAUDO9HQf4DB/nTEFcRGH87mNciOP23kFjw==
   dependencies:
     base64url "^3.0.1"
     buffer "^6.0.3"
@@ -20116,7 +20116,7 @@ node-jose@2.1.1:
     node-forge "^1.2.1"
     pako "^2.0.4"
     process "^0.11.10"
-    uuid "^8.3.2"
+    uuid "^9.0.0"
 
 node-libs-browser@^2.2.1:
   version "2.2.1"
