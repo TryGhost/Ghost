@@ -4,7 +4,7 @@ const nock = require('nock');
 const assert = require('assert');
 const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
 const dnsPromises = require('dns').promises;
-const jobsService = require('../../../core/server/services/jobs');
+const jobsService = require('../../../core/server/services/mentions-jobs');
 
 let agent;
 let mentionUrl = new URL('https://www.otherghostsite.com/');
