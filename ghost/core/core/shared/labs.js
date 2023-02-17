@@ -36,7 +36,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'lexicalEditor',
-    'outboundLinkTagging'
+    'outboundLinkTagging',
+    'websockets'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

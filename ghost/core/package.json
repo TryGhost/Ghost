@@ -196,6 +196,7 @@
     "rss": "1.2.2",
     "sanitize-html": "2.9.0",
     "semver": "7.3.8",
+    "socket.io": "4.6.0",
     "stoppable": "1.1.0",
     "uuid": "9.0.0",
     "xml": "1.0.1"
