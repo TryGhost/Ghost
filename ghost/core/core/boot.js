@@ -473,6 +473,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             await initDynamicRouting();
         }
 
+        // TODO: move this to the correct place once we figure out where that is
+        if (ghostServer) {
+            //  NOTE: changes in this labs setting requires server reboot since we don't re-init services after changes a labs flag
+            const websockets = require('./server/services/websockets');
+            await websockets.init(ghostServer);
+        }
+
         await initServices({config});
         debug('End: Load Ghost Services & Apps');
 
