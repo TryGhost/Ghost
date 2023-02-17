@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const models = require('../../../core/server/models');
 const moment = require('moment');
 
-const milestoneEmailsService = require('../../../core/server/services/milestone-emails/service');
+const milestonesService = require('../../../core/server/services/milestones');
 
 let agent;
 let counter = 0;
@@ -137,12 +137,10 @@ async function createFreeMembers(amount, amountImported = 0) {
     await Promise.all(members);
 }
 
-describe('Milestone Emails Service', function () {
-    // let stripeModeStub;
-
+describe('Milestones Service', function () {
     const milestonesConfig = {
-        arr: [{currency: 'usd', values: [100]}],
-        members: [10, 100]
+        arr: [{currency: 'usd', values: [100, 150]}],
+        members: [10, 20, 30]
     };
 
     before(async function () {
@@ -155,7 +153,7 @@ describe('Milestone Emails Service', function () {
         sinon.createSandbox();
         // TODO: stub out stripe mode
         // stripeModeStub = sinon.stub().returns(true);
-        // milestoneEmailsService.__set__('getStripeLiveEnabled', stripeModeStub);
+        // milestonesService.__set__('getStripeLiveEnabled', stripeModeStub);
         configUtils.set('milestones', milestonesConfig);
         mockManager.mockLabsEnabled('milestoneEmails');
     });
@@ -166,63 +164,74 @@ describe('Milestone Emails Service', function () {
         sinon.restore();
     });
 
+    it('Inits milestone service', async function () {
+        await milestonesService.init();
+
+        assert.ok(milestonesService.api);
+    });
+
     it('Runs ARR and Members milestone jobs', async function () {
+        mockManager.mockSetting('stripe_connect_publishable_key', 'pk_live_89843uihsidfh98832uo8ri');
+
         // No ARR and no members
-        const firstRun = await milestoneEmailsService.initAndRun();
+        const firstRun = await milestonesService.initAndRun();
         assert(firstRun.members === undefined);
-        // assert(firstRun.arr === undefined);
+        assert(firstRun.arr === undefined);
 
         await createFreeMembers(7);
         await createMemberWithSubscription('year', 5000, 'usd', '2000-01-10');
         await createMemberWithSubscription('month', 100, 'usd', '2000-01-10');
-        const secondRun = await milestoneEmailsService.initAndRun();
+        const secondRun = await milestonesService.initAndRun();
         assert(secondRun.members === undefined);
-        // assert(secondRun.arr === undefined);
+        assert(secondRun.arr === undefined);
 
         // Reached the first milestone for members
         await createFreeMembers(1);
-        const thirdRun = await milestoneEmailsService.initAndRun();
+        const thirdRun = await milestonesService.initAndRun();
         assert(thirdRun.members.value === 10);
         assert(thirdRun.members.emailSentAt !== undefined);
-        // assert(thirdRun.arr === undefined);
+        assert(thirdRun.arr === undefined);
 
         // Reached the first milestone for ARR
+        // but has already reached members milestone, so no new one
+        // will be created
         await createMemberWithSubscription('month', 500, 'usd', '2000-01-10');
         await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
-        const fourthRun = await milestoneEmailsService.initAndRun();
-        // This will be false once we hook up to the DB
-        assert(fourthRun.members.value === 10);
-        assert(fourthRun.members.emailSentAt !== undefined);
-        // assert(fourthRun.arr.value === 100);
-        // assert(fourthRun.arr.emailSentAt !== undefined);
+        const fourthRun = await milestonesService.initAndRun();
+        assert(fourthRun.members === undefined);
+        assert(fourthRun.arr.value === 100);
+        assert(fourthRun.arr.emailSentAt !== undefined);
     });
 
     it('Does not send emails for milestones when imported members present', async function () {
+        mockManager.mockSetting('stripe_publishable_key', 'pk_live_89843uihsidfh98832uo8ri');
+        mockManager.mockSetting('stripe_connect_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
+
         await createFreeMembers(10, 1);
         await createMemberWithSubscription('month', 1000, 'usd', '2023-01-10');
-        const result = await milestoneEmailsService.initAndRun();
+        const result = await milestonesService.initAndRun();
 
-        assert(result.members.value === 10);
+        assert(result.members.value === 20);
         assert(result.members.emailSentAt === null);
-        // assert(result.arr.value === 100);
-        // assert(result.arr.emailSentAt === null);
+        assert(result.arr.value === 150);
+        assert(result.arr.emailSentAt === null);
     });
 
     it('Does not run when milestoneEmails labs flag is not set', async function () {
         mockManager.mockLabsDisabled('milestoneEmails');
 
-        const result = await milestoneEmailsService.initAndRun();
+        const result = await milestonesService.initAndRun();
         assert(result === undefined);
     });
 
-    // it('Does not run ARR milestones when Stripe is not live enabled', async function () {
-    //     stripeModeStub = sinon.stub().returns(false);
-    //     milestoneEmailsService.__set__('getStripeLiveEnabled', stripeModeStub);
-    //     await createFreeMembers(10);
+    it('Does not run ARR milestones when Stripe is not live enabled', async function () {
+        mockManager.mockSetting('stripe_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
+        mockManager.mockSetting('stripe_connect_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
+        await createFreeMembers(10);
 
-    //     const result = await milestoneEmailsService.initAndRun();
-    //     assert(result.members.value === 10);
-    //     assert(result.members.emailSentAt !== undefined);
-    //     assert(result.arr === undefined);
-    // });
+        const result = await milestonesService.initAndRun();
+        assert(result.members.value === 30);
+        assert(result.members.emailSentAt !== undefined);
+        assert(result.arr === undefined);
+    });
 });

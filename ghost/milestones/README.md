@@ -1,6 +1,6 @@
-# Milestone Emails
+# Milestones
 
-Checking milestone goals and sending emails
+Checking milestone defined milestone goals and sending events when achieved
 
 
 ## Usage

@@ -1,31 +1,32 @@
 const tables = require('./tables');
+// Order here does not matter
 const {
-    PostsImporter,
     NewslettersImporter,
+    PostsImporter,
     UsersImporter,
-    PostsAuthorsImporter,
     TagsImporter,
-    PostsTagsImporter,
     ProductsImporter,
     MembersImporter,
     BenefitsImporter,
+    MentionsImporter,
+    PostsAuthorsImporter,
+    PostsTagsImporter,
     ProductsBenefitsImporter,
     MembersProductsImporter,
     PostsProductsImporter,
     MembersNewslettersImporter,
-    MembersCreatedEventsImporter,
-    MembersLoginEventsImporter,
-    MembersStatusEventsImporter,
     StripeProductsImporter,
     StripePricesImporter,
     SubscriptionsImporter,
+    EmailsImporter,
+    MembersCreatedEventsImporter,
+    MembersLoginEventsImporter,
+    MembersStatusEventsImporter,
+    MembersSubscribeEventsImporter,
+    MembersSubscriptionCreatedEventsImporter,
     MembersStripeCustomersImporter,
     MembersStripeCustomersSubscriptionsImporter,
-    MembersPaidSubscriptionEventsImporter,
-    MembersSubscriptionCreatedEventsImporter,
-    MembersSubscribeEventsImporter,
-    MentionsImporter,
-    EmailsImporter
+    MembersPaidSubscriptionEventsImporter
 } = tables;
 const path = require('path');
 const fs = require('fs/promises');
@@ -41,6 +42,7 @@ const {getProcessRoot} = require('@tryghost/root-utils');
  * @property {Object} logger
  * @property {Object} modelQuantities
  * @property {string} baseUrl
+ * @property {boolean} clearDatabase
  */
 
 const defaultQuantities = {
@@ -48,7 +50,8 @@ const defaultQuantities = {
         min: 7000,
         max: 8000
     }),
-    membersLoginEvents: 100,
+    // This will generate n * <members> events, is not worth being very high
+    membersLoginEvents: 5,
     posts: () => faker.datatype.number({
         min: 80,
         max: 120
@@ -66,7 +69,8 @@ class DataGenerator {
         schema,
         logger,
         modelQuantities = {},
-        baseUrl
+        baseUrl,
+        clearDatabase
     }) {
         this.useBaseData = baseDataPack !== '';
         this.baseDataPack = baseDataPack;
@@ -75,10 +79,29 @@ class DataGenerator {
         this.logger = logger;
         this.modelQuantities = Object.assign({}, defaultQuantities, modelQuantities);
         this.baseUrl = baseUrl;
+        this.clearDatabase = clearDatabase;
     }
 
     async importData() {
         const transaction = await this.knex.transaction();
+
+        if (this.clearDatabase) {
+            this.logger.info('Clearing existing database');
+
+            // List of tables ordered to avoid dependencies when deleting
+            const tableNames = Object.values(tables).map(importer => importer.table).reverse();
+            for (const table of tableNames) {
+                this.logger.debug(`Clearing table ${table}`);
+                if (table === 'users') {
+                    // Avoid deleting the admin user
+                    await transaction(table).del().whereNot('id', '1');
+                    continue;
+                }
+                await transaction(table).del();
+            }
+            this.logger.info('Finished clearing database');
+        }
+
         this.logger.info('Starting import process, this has two parts: base data and member data. It can take a while...');
 
         const usersImporter = new UsersImporter(transaction);
@@ -111,7 +134,6 @@ class DataGenerator {
             const jsonImporter = new JsonImporter(transaction);
 
             // Must have at least 2 in base data set
-            await transaction('newsletters').delete();
             newsletters = await jsonImporter.import({
                 name: 'newsletters',
                 data: baseData.newsletters,
@@ -119,11 +141,6 @@ class DataGenerator {
             });
             newsletters.sort((a, b) => a.sort_order - b.sort_order);
 
-            await transaction('posts_authors').delete();
-            await transaction('posts_tags').delete();
-            await transaction('posts_meta').delete();
-
-            await transaction('posts').delete();
             const postsImporter = new PostsImporter(transaction, {
                 newsletters
             });
@@ -134,13 +151,11 @@ class DataGenerator {
             await postsImporter.addNewsletters({posts});
             posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug').from('posts');
 
-            await transaction('tags').delete();
             tags = await jsonImporter.import({
                 name: 'tags',
                 data: baseData.tags
             });
 
-            await transaction('products').delete();
             products = await jsonImporter.import({
                 name: 'products',
                 data: baseData.products,

@@ -33,7 +33,8 @@ describe('Milestone', function () {
     describe('create', function () {
         it('Will error with invalid inputs', async function () {
             const invalidInputs = [
-                {id: 'Not valid ID'},
+                {id: 'Invalid ID provided for Milestone'},
+                {id: 124},
                 {value: 'Invalid Value'},
                 {createdAt: 'Invalid Date'},
                 {emailSentAt: 'Invalid Date'}
@@ -63,7 +64,8 @@ describe('Milestone', function () {
         it('Will not error with valid inputs', async function () {
             const validInputs = [
                 {id: new ObjectID()},
-                {id: 123},
+                {id: new ObjectID().toString()},
+                {id: null},
                 {type: 'something'},
                 {name: 'testing'},
                 {name: 'members-10000000'},
@@ -109,6 +111,27 @@ describe('Milestone', function () {
             });
 
             assert(milestone.name === 'members-100');
+        });
+
+        it('Will create event for new milestone but not for existing one', async function () {
+            const milestoneOne = await Milestone.create({
+                ...validInputMembers,
+                value: 500,
+                type: 'members'
+            });
+
+            assert(milestoneOne.events.length >= 1);
+
+            // simulate creating an existing milestone
+            const id = new ObjectID();
+            const milestoneTwo = await Milestone.create({
+                ...validInputMembers,
+                id,
+                value: 500,
+                type: 'members'
+            });
+
+            assert(milestoneTwo.events.length === 0);
         });
     });
 });

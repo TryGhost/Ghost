@@ -1,7 +1,11 @@
 const ObjectID = require('bson-objectid').default;
 const {ValidationError} = require('@tryghost/errors');
+const MilestoneCreatedEvent = require('./MilestoneCreatedEvent');
 
 module.exports = class Milestone {
+    /** @type {Array} */
+    events = [];
+
     /**
      * @type {ObjectID}
      */
@@ -79,8 +83,22 @@ module.exports = class Milestone {
      * @returns {Promise<Milestone>}
      */
     static async create(data) {
-        // order of validation matters!
-        const id = validateId(data.id);
+        /** @type ObjectID */
+        let id;
+        let isNew = false;
+        if (!data.id) {
+            isNew = true;
+            id = new ObjectID();
+        } else if (typeof data.id === 'string') {
+            id = ObjectID.createFromHexString(data.id);
+        } else if (data.id instanceof ObjectID) {
+            id = data.id;
+        } else {
+            throw new ValidationError({
+                message: 'Invalid ID provided for Milestone'
+            });
+        }
+
         const type = validateType(data.type);
         const currency = validateCurrency(type, data?.currency);
         const value = validateValue(data.value);
@@ -102,7 +120,7 @@ module.exports = class Milestone {
             createdAt = new Date();
         }
 
-        return new Milestone({
+        const milestone = new Milestone({
             id,
             name,
             type,
@@ -111,27 +129,14 @@ module.exports = class Milestone {
             createdAt,
             emailSentAt
         });
+
+        if (isNew) {
+            milestone.events.push(MilestoneCreatedEvent.create({milestone}));
+        }
+
+        return milestone;
     }
 };
-
-/**
- *
- * @param {ObjectID|string|null} id
- *
- * @returns {ObjectID}
- */
-function validateId(id) {
-    if (!id) {
-        return new ObjectID();
-    }
-    if (typeof id === 'string') {
-        return ObjectID.createFromHexString(id);
-    }
-    if (id instanceof ObjectID) {
-        return id;
-    }
-    return new ObjectID();
-}
 
 /**
  *

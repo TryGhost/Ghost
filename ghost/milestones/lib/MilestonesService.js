@@ -18,11 +18,6 @@ const Milestone = require('./Milestone');
  */
 
 /**
- * @typedef {object} ghostMailer
- * @property {Function} send
- */
-
-/**
  * @typedef {object} milestonesConfig
  * @prop {Array<object>} milestonesConfig.arr
  * @prop {string} milestonesConfig.arr.currency
@@ -30,13 +25,9 @@ const Milestone = require('./Milestone');
  * @prop {number[]} milestonesConfig.members
  */
 
-module.exports = class MilestonesEmailService {
+module.exports = class MilestonesService {
     /** @type {IMilestoneRepository} */
     #repository;
-
-    /**
-     * @type {ghostMailer} */
-    #mailer;
 
     /**
      * @type {milestonesConfig} */
@@ -47,13 +38,11 @@ module.exports = class MilestonesEmailService {
 
     /**
      * @param {object} deps
-     * @param {ghostMailer} deps.mailer
      * @param {IMilestoneRepository} deps.repository
      * @param {milestonesConfig} deps.milestonesConfig
      * @param {IQueries} deps.queries
      */
     constructor(deps) {
-        this.#mailer = deps.mailer;
         this.#milestonesConfig = deps.milestonesConfig;
         this.#queries = deps.queries;
         this.#repository = deps.repository;
@@ -147,13 +136,6 @@ module.exports = class MilestonesEmailService {
         const shouldSendEmail = await this.#shouldSendEmail();
 
         if (shouldSendEmail) {
-            // TODO: hook up Ghostmailer or use StaffService and trigger event to send email
-            // await this.#mailer.send({
-            //     subject: 'Test',
-            //     html: '<div>Milestone achieved</div>',
-            //     to: 'test@example.com'
-            // });
-
             milestone.emailSentAt = new Date();
         }
 

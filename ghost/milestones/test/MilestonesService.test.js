@@ -1,12 +1,23 @@
 const assert = require('assert');
 const {
-    MilestonesEmailService,
+    MilestonesService,
     InMemoryMilestoneRepository
 } = require('../index');
 const Milestone = require('../lib/Milestone');
+const DomainEvents = require('@tryghost/domain-events');
+const sinon = require('sinon');
 
-describe('MilestonesEmailService', function () {
+describe('MilestonesService', function () {
     let repository;
+    let domainEventsSpy;
+
+    beforeEach(async function () {
+        domainEventsSpy = sinon.spy(DomainEvents, 'dispatch');
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
 
     const milestonesConfig = {
         arr: [
@@ -33,14 +44,10 @@ describe('MilestonesEmailService', function () {
 
     describe('ARR Milestones', function () {
         it('Adds first ARR milestone and sends email', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -61,10 +68,11 @@ describe('MilestonesEmailService', function () {
             assert(arrResult.value === 1000);
             assert(arrResult.emailSentAt !== null);
             assert(arrResult.name === 'arr-1000-usd');
+            assert(domainEventsSpy.calledOnce === true);
         });
 
         it('Adds next ARR milestone and sends email', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
             const milestoneOne = await Milestone.create({
                 type: 'arr',
@@ -92,12 +100,10 @@ describe('MilestonesEmailService', function () {
             await repository.save(milestoneTwo);
             await repository.save(milestoneThree);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            assert(domainEventsSpy.callCount === 3);
+
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -119,17 +125,14 @@ describe('MilestonesEmailService', function () {
             assert(arrResult.value === 10000);
             assert(arrResult.emailSentAt !== null);
             assert(arrResult.name === 'arr-10000-usd');
+            assert(domainEventsSpy.callCount === 4); // we have just created a new milestone
         });
 
         it('Does not add ARR milestone for out of scope currency', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                // TODO: make this a stub
-                mailer: {
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -146,10 +149,11 @@ describe('MilestonesEmailService', function () {
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
             assert(arrResult === undefined);
+            assert(domainEventsSpy.callCount === 0);
         });
 
         it('Does not add new ARR milestone if already achieved', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
             const milestone = await Milestone.create({
                 type: 'arr',
@@ -159,12 +163,10 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            assert(domainEventsSpy.callCount === 1);
+
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -181,17 +183,14 @@ describe('MilestonesEmailService', function () {
 
             const arrResult = await milestoneEmailService.checkMilestones('arr');
             assert(arrResult === undefined);
+            assert(domainEventsSpy.callCount === 1);
         });
 
         it('Adds ARR milestone but does not send email if imported members are detected', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -211,10 +210,11 @@ describe('MilestonesEmailService', function () {
             assert(arrResult.currency === 'usd');
             assert(arrResult.value === 100000);
             assert(arrResult.emailSentAt === null);
+            assert(domainEventsSpy.callCount === 1);
         });
 
         it('Adds ARR milestone but does not send email if last email was too recent', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
             const lessThanTwoWeeksAgo = new Date();
             lessThanTwoWeeksAgo.setDate(lessThanTwoWeeksAgo.getDate() - 12);
@@ -227,13 +227,10 @@ describe('MilestonesEmailService', function () {
             });
 
             await repository.save(milestone);
+            assert(domainEventsSpy.callCount === 1);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getARR() {
@@ -253,19 +250,16 @@ describe('MilestonesEmailService', function () {
             assert(arrResult.currency === 'idr');
             assert(arrResult.value === 10000);
             assert(arrResult.emailSentAt === null);
+            assert(domainEventsSpy.callCount === 2); // new milestone created
         });
     });
 
     describe('Members Milestones', function () {
         it('Adds first Members milestone and sends email', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
-            const milestoneEmailService = new MilestonesEmailService({
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -284,10 +278,11 @@ describe('MilestonesEmailService', function () {
             assert(membersResult.type === 'members');
             assert(membersResult.value === 100);
             assert(membersResult.emailSentAt !== null);
+            assert(domainEventsSpy.callCount === 1);
         });
 
         it('Adds next Members milestone and sends email', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
             const milestoneOne = await Milestone.create({
                 type: 'members',
@@ -314,12 +309,10 @@ describe('MilestonesEmailService', function () {
             await repository.save(milestoneTwo);
             await repository.save(milestoneThree);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            assert(domainEventsSpy.callCount === 3);
+
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -340,10 +333,11 @@ describe('MilestonesEmailService', function () {
             assert(membersResult.value === 50000);
             assert(membersResult.emailSentAt !== null);
             assert(membersResult.name === 'members-50000');
+            assert(domainEventsSpy.callCount === 4);
         });
 
         it('Does not add new Members milestone if already achieved', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
             const milestone = await Milestone.create({
                 type: 'members',
@@ -352,12 +346,10 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            assert(domainEventsSpy.callCount === 1);
+
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -374,10 +366,11 @@ describe('MilestonesEmailService', function () {
 
             const membersResult = await milestoneEmailService.checkMilestones('members');
             assert(membersResult === undefined);
+            assert(domainEventsSpy.callCount === 1);
         });
 
         it('Adds Members milestone but does not send email if imported members are detected', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
             const milestone = await Milestone.create({
                 type: 'members',
@@ -386,12 +379,10 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            assert(domainEventsSpy.callCount === 1);
+
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -410,10 +401,11 @@ describe('MilestonesEmailService', function () {
             assert(membersResult.type === 'members');
             assert(membersResult.value === 1000);
             assert(membersResult.emailSentAt === null);
+            assert(domainEventsSpy.callCount === 2);
         });
 
         it('Adds Members milestone but does not send email if last email was too recent', async function () {
-            repository = new InMemoryMilestoneRepository();
+            repository = new InMemoryMilestoneRepository({DomainEvents});
 
             const lessThanTwoWeeksAgo = new Date();
             lessThanTwoWeeksAgo.setDate(lessThanTwoWeeksAgo.getDate() - 8);
@@ -426,12 +418,10 @@ describe('MilestonesEmailService', function () {
 
             await repository.save(milestone);
 
-            const milestoneEmailService = new MilestonesEmailService({
+            assert(domainEventsSpy.callCount === 1);
+
+            const milestoneEmailService = new MilestonesService({
                 repository,
-                mailer: {
-                    // TODO: make this a stub
-                    send: async () => {}
-                },
                 milestonesConfig,
                 queries: {
                     async getMembersCount() {
@@ -450,6 +440,7 @@ describe('MilestonesEmailService', function () {
             assert(membersResult.type === 'members');
             assert(membersResult.value === 50000);
             assert(membersResult.emailSentAt === null);
+            assert(domainEventsSpy.callCount === 2);
         });
     });
 });
