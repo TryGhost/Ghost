@@ -222,7 +222,8 @@ module.exports = class EmailAnalytics {
             await this.processEventBatch(events, processingResult, fetchData);
             eventCount += events.length;
 
-            // Every 5 minutes we do an aggregation and clear the processingResult
+            // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
+            // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
             if (Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) {
                 // Aggregate and clear the processingResult
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
