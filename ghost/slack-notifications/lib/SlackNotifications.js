@@ -13,6 +13,10 @@ const moment = require('moment');
  */
 
 /**
+ * @typedef {import('@tryghost/logging')} logging
+ */
+
+/**
  * @typedef {import('./SlackNotificationsService').ISlackNotifications} ISlackNotifications
  */
 
@@ -26,14 +30,14 @@ class SlackNotifications {
     /** @type {siteUrl} */
     #siteUrl;
 
-    /** @type {import('@tryghost/logging')} */
+    /** @type {logging} */
     #logging;
 
     /**
      * @param {object} deps
      * @param {URL} deps.webhookUrl
      * @param {siteUrl} deps.siteUrl
-     * @param {import('@tryghost/logging')} deps.logging
+     * @param {logging} deps.logging
      */
     constructor(deps) {
         this.#siteUrl = deps.siteUrl;

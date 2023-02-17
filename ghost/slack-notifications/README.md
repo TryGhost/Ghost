@@ -1,6 +1,6 @@
 # Slack Notifications
 
-Service to handle sending notifications to a Slack webhook URl
+Service to handle sending notifications to a Slack webhook URL
 
 
 ## Usage

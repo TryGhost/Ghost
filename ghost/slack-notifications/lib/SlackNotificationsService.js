@@ -12,19 +12,22 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
  */
 
 /**
+ * @typedef {import('@tryghost/logging')} logging
+ */
+
+/**
  * @typedef {object} ISlackNotifications
+ * @param {logging} logging
+ * @param {URL} siteUrl
+ * @param {URL} webhookUrl
  * @prop {Object.<Milestone, ?meta>} notifyMilestoneReceived
  * @prop {(slackData: object, url: URL) => Promise<void>} send
  */
 
 /**
  * @typedef {object} config
- * @property {boolean} isEnabled
- * @property {URL} webhookUrl
- */
-
-/**
- * @typedef {string} siteUrl
+ * @prop {boolean} isEnabled
+ * @prop {URL} webhookUrl
  */
 
 module.exports = class SlackNotificationsService {
@@ -45,7 +48,6 @@ module.exports = class SlackNotificationsService {
      * @param {object} deps
      * @param {import('@tryghost/domain-events')} deps.DomainEvents
      * @param {config} deps.config
-     * @param {siteUrl} deps.siteUrl
      * @param {import('@tryghost/logging')} deps.logging
      * @param {ISlackNotifications} deps.slackNotifications
      */
