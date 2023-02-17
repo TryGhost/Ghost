@@ -35,7 +35,6 @@ class SlackNotificationsServiceWrapper {
                 isEnabled,
                 webhookUrl
             },
-            siteUrl,
             slackNotifications
         });
     }
