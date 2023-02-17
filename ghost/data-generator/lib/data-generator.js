@@ -213,6 +213,11 @@ class DataGenerator {
                 rows: ['newsletter_id', 'published_at', 'slug', 'status', 'visibility']
             });
 
+            await postsImporter.import({
+                amount: 3,
+                type: 'page'
+            });
+
             const tagsImporter = new TagsImporter(transaction, {
                 users
             });
@@ -347,7 +352,7 @@ class DataGenerator {
         await mentionsImporter.importForEach(posts, {amount: 4});
 
         const emailsImporter = new EmailsImporter(transaction, {newsletters, members, membersSubscribeEvents});
-        const emails = await emailsImporter.importForEach(posts.filter(post => post.status === 'published'), {
+        const emails = await emailsImporter.importForEach(posts.filter(post => post.newsletter_id), {
             amount: 1,
             rows: ['created_at', 'email_count', 'delivered_count', 'opened_count', 'failed_count', 'newsletter_id', 'post_id']
         });
@@ -365,7 +370,7 @@ class DataGenerator {
         });
 
         const redirectsImporter = new RedirectsImporter(transaction);
-        const redirects = await redirectsImporter.importForEach(posts.filter(post => post.status === 'published'), {
+        const redirects = await redirectsImporter.importForEach(posts.filter(post => post.newsletter_id), {
             amount: 10,
             rows: ['post_id']
         });
