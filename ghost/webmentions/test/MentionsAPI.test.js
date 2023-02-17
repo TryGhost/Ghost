@@ -31,6 +31,14 @@ const mockWebmentionMetadata = {
     }
 };
 
+const mockWebmentionRequest = {
+    async fetch() {
+        return {
+            html: `<p>Some HTML and a <a href='http://target.com/'>mentioned url</a></p>`
+        };
+    }
+};
+
 function addMinutes(date, minutes) {
     date.setMinutes(date.getMinutes() + minutes);
   
@@ -48,7 +56,8 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         const mention = await api.processWebmention({
@@ -73,7 +82,8 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         const mention = await api.processWebmention({
@@ -97,7 +107,8 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         const mentionOne = await api.processWebmention({
@@ -129,7 +140,8 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         const mentionOne = await api.processWebmention({
@@ -165,7 +177,8 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         const mentionOne = await api.processWebmention({
@@ -201,7 +214,8 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         const mentionOne = await api.processWebmention({
@@ -238,7 +252,8 @@ describe('MentionsAPI', function () {
                 }
             },
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         let errored = false;
@@ -268,7 +283,8 @@ describe('MentionsAPI', function () {
                     };
                 }
             },
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         const mention = await api.processWebmention({
@@ -301,7 +317,8 @@ describe('MentionsAPI', function () {
                     };
                 }
             },
-            webmentionMetadata: mockWebmentionMetadata
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
         });
 
         checkFirstMention: {
@@ -352,7 +369,8 @@ describe('MentionsAPI', function () {
                 fetch: sinon.stub()
                     .onFirstCall().resolves(mockWebmentionMetadata.fetch())
                     .onSecondCall().rejects()
-            }
+            },
+            webmentionRequest: mockWebmentionRequest
         });
 
         checkFirstMention: {
