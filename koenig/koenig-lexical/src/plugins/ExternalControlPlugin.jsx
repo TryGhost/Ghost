@@ -3,6 +3,7 @@ import {$createParagraphNode, $getRoot, $isDecoratorNode} from 'lexical';
 import {$canShowPlaceholder} from '@lexical/text';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
+import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 
 // used to register a minimal API for controlling the editor from the consuming app
 // designed to allow typical behaviours without the consuming app needing to bundle the lexical library
@@ -88,6 +89,9 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                         paragraphNode.selectStart();
                     }
                 });
+            },
+            insertFiles(files) {
+                editor.dispatchCommand(DRAG_DROP_PASTE, files);
             }
         };
 

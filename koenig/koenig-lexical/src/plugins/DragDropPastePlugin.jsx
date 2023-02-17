@@ -80,6 +80,7 @@ function DragDropPastePlugin() {
 
                 if (files.length > 0) {
                     event.preventDefault();
+                    event.stopPropagation();
                     editor.dispatchCommand(DRAG_DROP_PASTE, files);
                     return true;
                 }

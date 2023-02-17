@@ -88,6 +88,27 @@ function DemoApp() {
         }
     }
 
+    React.useEffect(() => {
+        const handleFileDrag = (event) => {
+            event.preventDefault();
+        };
+
+        const handleFileDrop = (event) => {
+            if (event.dataTransfer.files.length > 0) {
+                event.preventDefault();
+                editorAPI?.insertFiles(Array.from(event.dataTransfer.files));
+            }
+        };
+
+        window.addEventListener('dragover', handleFileDrag);
+        window.addEventListener('drop', handleFileDrop);
+
+        return () => {
+            window.removeEventListener('dragover', handleFileDrag);
+            window.removeEventListener('drop', handleFileDrop);
+        };
+    }, [editorAPI]);
+
     return (
         <div
             className="koenig-lexical top"
