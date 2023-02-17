@@ -29,5 +29,6 @@ module.exports = {
     EmailBatchesImporter: require('./email-batches'),
     EmailRecipientsImporter: require('./email-recipients'),
     RedirectsImporter: require('./redirects'),
-    MembersClickEventsImporter: require('./members-click-events')
+    MembersClickEventsImporter: require('./members-click-events'),
+    OffersImporter: require('./offers')
 };
