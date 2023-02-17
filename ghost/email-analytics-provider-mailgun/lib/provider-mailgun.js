@@ -37,7 +37,9 @@ class EmailAnalyticsProviderMailgun {
             ascending: 'yes'
         };
 
-        return this.#fetchAnalytics(mailgunOptions, batchHandler, options);
+        return this.#fetchAnalytics(mailgunOptions, batchHandler, {
+            maxEvents: options.maxEvents
+        });
     }
 
     /**
@@ -49,6 +51,7 @@ class EmailAnalyticsProviderMailgun {
      * @param {String} [mailgunOptions.ascending]
      * @param {Function} batchHandler
      * @param {Object} [options]
+     * @param {Number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      */
     async #fetchAnalytics(mailgunOptions, batchHandler, options) {
         return await this.mailgunClient.fetchEvents(mailgunOptions, batchHandler, options);
