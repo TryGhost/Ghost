@@ -1,7 +1,7 @@
 import React from 'react';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {COMMAND_PRIORITY_LOW} from 'lexical';
+import {COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW, DROP_COMMAND} from 'lexical';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import {createCommand} from 'lexical';
@@ -45,7 +45,7 @@ function mediaFileReader(files, acceptableMimeTypes) {
     });
 }
 
-async function getListofAcceptableMimeTypes(editor, uploadFileTypes) {
+async function getListOfAcceptableMimeTypes(editor, uploadFileTypes) {
     const nodes = getEditorCardNodes(editor);
     let acceptableMimeTypes = {};
     for (const [nodeType, node] of nodes) {
@@ -63,12 +63,57 @@ function DragDropPastePlugin() {
     const {fileUploader} = React.useContext(KoenigComposerContext);
 
     const handleFileUpload = React.useCallback(async (files) => {
-        const {acceptableMimeTypes} = await getListofAcceptableMimeTypes(editor, fileUploader.fileTypes);
+        const {acceptableMimeTypes} = await getListOfAcceptableMimeTypes(editor, fileUploader.fileTypes);
         const {processed} = await mediaFileReader(files, acceptableMimeTypes);
         processed.forEach((item) => {
             editor.dispatchCommand(INSERT_MEDIA_COMMAND, item);
         });
     }, [editor, fileUploader.fileTypes]);
+
+    // override the default Lexical drop handler because we always want to insert
+    // where the selection was left rather than where the drop happened (matches mobiledoc editor)
+    React.useEffect(() => {
+        return editor.registerCommand(
+            DROP_COMMAND,
+            (event) => {
+                const files = Array.from(event.dataTransfer.files);
+
+                if (files.length > 0) {
+                    event.preventDefault();
+                    editor.dispatchCommand(DRAG_DROP_PASTE, files);
+                    return true;
+                }
+
+                return false;
+            },
+            COMMAND_PRIORITY_HIGH
+        );
+    }, [editor]);
+
+    // prevent drag over moving the cursor - our drops use the original selection
+    // rather than the drop location
+    React.useEffect(() => {
+        const handleDragOver = (event) => {
+            if (!event.dataTransfer || event.target.closest('[data-kg-card]')) {
+                return;
+            }
+
+            event.stopPropagation();
+            event.preventDefault();
+        };
+
+        const handleDragLeave = (event) => {
+            event.preventDefault();
+        };
+
+        editor.getRootElement().addEventListener('dragover', handleDragOver);
+        editor.getRootElement().addEventListener('dragleave', handleDragLeave);
+
+        return () => {
+            editor.getRootElement().removeEventListener('dragover', handleDragOver);
+            editor.getRootElement().removeEventListener('dragleave', handleDragLeave);
+        };
+    }, [editor]);
 
     React.useEffect(() => {
         return editor.registerCommand(
@@ -84,6 +129,7 @@ function DragDropPastePlugin() {
             COMMAND_PRIORITY_LOW
         );
     }, [editor, handleFileUpload]);
+
     return null;
 }
 
