@@ -501,6 +501,45 @@ describe('Image card', async () => {
         `);
     });
 
+    test('adds extra paragraph when image is inserted at end of document', async function () {
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+
+        await Promise.all([
+            page.waitForEvent('filechooser'),
+            page.click('[data-kg-card-menu-item="Image"]')
+        ]);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+    });
+
+    test('does not add extra paragraph when image is inserted mid-document', async function () {
+        await focusEditor(page);
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('Testing');
+        await page.keyboard.press('ArrowUp');
+        await page.click('[data-kg-plus-button]');
+
+        await Promise.all([
+            page.waitForEvent('filechooser'),
+            page.click('[data-kg-card-menu-item="Image"]')
+        ]);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                </div>
+            </div>
+            <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+        `, {ignoreCardContents: true});
+    });
+
     // TODO: Switch to mocked API. Currently uses real Unsplash API so the asserted test data isn't stable
     test.skip('can insert unsplash image', async () => {
         await focusEditor(page);

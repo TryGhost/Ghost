@@ -50,6 +50,7 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
                         value=""/>
                 </figcaption>
             </div>
+            <p><br /></p>
         `, {ignoreCardContents: true});
     });
 
@@ -81,6 +82,7 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="video">
                 </div>
             </div>
+            <p><br /></p>
         `, {ignoreCardContents: true, ignoreInnerSVG: false});
     });
 
@@ -116,6 +118,7 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="video">
                 </div>
             </div>
+            <p><br /></p>
         `, {ignoreCardContents: true, ignoreInnerSVG: false});
     });
 });

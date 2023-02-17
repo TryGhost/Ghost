@@ -344,6 +344,45 @@ describe('Video card', async () => {
         // Caption input should be read only
         await expect(await page.getByTestId('video-card-caption')).toHaveAttribute('readOnly', '');
     });
+
+    test('adds extra paragraph when video is inserted at end of document', async function () {
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+
+        await Promise.all([
+            page.waitForEvent('filechooser'),
+            page.click('[data-kg-card-menu-item="Video"]')
+        ]);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video">
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+    });
+
+    test('does not add extra paragraph when video is inserted mid-document', async function () {
+        await focusEditor(page);
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('Testing');
+        await page.keyboard.press('ArrowUp');
+        await page.click('[data-kg-plus-button]');
+
+        await Promise.all([
+            page.waitForEvent('filechooser'),
+            page.click('[data-kg-card-menu-item="Video"]')
+        ]);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video">
+                </div>
+            </div>
+            <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+        `, {ignoreCardContents: true});
+    });
 });
 
 async function uploadVideo(page, fileName = 'video.mp4') {

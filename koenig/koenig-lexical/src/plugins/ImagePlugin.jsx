@@ -3,9 +3,6 @@ import {
     $getSelection,
     COMMAND_PRIORITY_HIGH,
     $isRangeSelection,
-    $createNodeSelection,
-    $setSelection,
-    $isParagraphNode,
     $isNodeSelection
 } from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -15,6 +12,7 @@ import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND} from '../nodes/ImageN
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import UnsplashPlugin from '../components/ui/UnsplashPlugin';
 import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
+import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
 
 export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -31,30 +29,6 @@ export const ImagePlugin = () => {
         }
     }, [imageUploader.upload, editor]);
 
-    const setNodeSelection = ({selection, selectedNode, imageNode, dataset}) => {
-        const selectedIsParagraph = $isParagraphNode(selectedNode);
-        const selectedIsEmpty = selectedNode.getTextContent() === '';
-        if (dataset.initialFile) {
-            // Audio file was dragged/dropped directly into the editor
-            // so we insert the AudioNode after the selected node
-            selectedNode
-                .getTopLevelElementOrThrow()
-                .insertAfter(imageNode);
-            if (selectedIsParagraph && selectedIsEmpty) {
-                selectedNode.remove();
-            }
-        } else {
-            // Audio node was added without an initial file (via Slash or Plus menu)
-            // so we insert the AudioNode before the selected node
-            selectedNode
-                .getTopLevelElementOrThrow()
-                .insertBefore(imageNode);
-        }
-        const nodeSelection = $createNodeSelection();
-        nodeSelection.add(imageNode.getKey());
-        $setSelection(nodeSelection);
-    };
-
     React.useEffect(() => {
         if (!editor.hasNodes([ImageNode])){
             console.error('ImagePlugin: ImageNode not registered'); // eslint-disable-line no-console
@@ -65,7 +39,7 @@ export const ImagePlugin = () => {
                 INSERT_IMAGE_COMMAND,
                 async (dataset) => {
                     const selection = $getSelection();
-                    
+
                     let focusNode;
                     if ($isRangeSelection(selection)) {
                         focusNode = selection.focus.getNode();
@@ -78,14 +52,14 @@ export const ImagePlugin = () => {
                     if (focusNode !== null) {
                         const imageNode = $createImageNode(dataset);
 
-                        // fires the unsplash selector
+                        // opens the unsplash selector
                         if (dataset?.triggerFileSelector === 'unsplash') {
                             setSelectedKey(imageNode.getKey());
                             setShowModal(true);
                             setSelector('unsplash');
                         }
 
-                        setNodeSelection({selection, selectedNode: focusNode, imageNode, dataset});
+                        $insertAndSelectNode({selectedNode: focusNode, newNode: imageNode});
                     }
 
                     return true;

@@ -3,42 +3,16 @@ import {
     $getSelection,
     COMMAND_PRIORITY_HIGH,
     $isRangeSelection,
-    $createNodeSelection,
-    $setSelection,
-    $isParagraphNode,
     $isNodeSelection
 } from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {mergeRegister} from '@lexical/utils';
 import {$createAudioNode, AudioNode, INSERT_AUDIO_COMMAND} from '../nodes/AudioNode';
 import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
+import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
 
 export const AudioPlugin = () => {
     const [editor] = useLexicalComposerContext();
-
-    const setNodeSelection = ({selection, selectedNode, newNode, dataset}) => {
-        const selectedIsParagraph = $isParagraphNode(selectedNode);
-        const selectedIsEmpty = selectedNode.getTextContent() === '';
-        if (dataset.initialFile) {
-            // Audio file was dragged/dropped directly into the editor
-            // so we insert the AudioNode after the selected node
-            selectedNode
-                .getTopLevelElementOrThrow()
-                .insertAfter(newNode);
-            if (selectedIsParagraph && selectedIsEmpty) {
-                selectedNode.remove();
-            }
-        } else {
-            // Audio node was added without an initial file (via Slash or Plus menu)
-            // so we insert the AudioNode before the selected node
-            selectedNode
-                .getTopLevelElementOrThrow()
-                .insertBefore(newNode);
-        }
-        const nodeSelection = $createNodeSelection();
-        nodeSelection.add(newNode.getKey());
-        $setSelection(nodeSelection);
-    };
 
     React.useEffect(() => {
         if (!editor.hasNodes([AudioNode])){
@@ -62,7 +36,7 @@ export const AudioPlugin = () => {
 
                     if (focusNode !== null) {
                         const audioNode = $createAudioNode(dataset);
-                        setNodeSelection({selection, selectedNode: focusNode, newNode: audioNode, dataset});
+                        $insertAndSelectNode({selectedNode: focusNode, newNode: audioNode});
                     }
 
                     return true;

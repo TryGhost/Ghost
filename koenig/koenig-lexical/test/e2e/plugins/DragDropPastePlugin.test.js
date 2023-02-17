@@ -51,6 +51,7 @@ describe('Drag Drop Paste Plugin', async function () {
                     </figure>
                 </div>
             </div>
+            <p><br /></p>
         `, {ignoreCardToolbarContents: true, ignoreCardContents: true});
     });
 
@@ -100,6 +101,7 @@ describe('Drag Drop Paste Plugin', async function () {
                     </figure>
                 </div>
             </div>
+            <p><br /></p>
         `, {ignoreCardToolbarContents: true, ignoreCardContents: true});
     });
 
@@ -118,6 +120,7 @@ describe('Drag Drop Paste Plugin', async function () {
 
                 </div>
             </div>
+            <p><br /></p>
         `, {ignoreCardContents: true});
     });
 
@@ -147,6 +150,7 @@ describe('Drag Drop Paste Plugin', async function () {
 
                 </div>
             </div>
+            <p><br /></p>
         `, {ignoreCardContents: true, ignoreInnerSVG: false});
     });
 });
