@@ -132,6 +132,19 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
         });
         debug('End: Job Service');
 
+        // Mentions Job Service allows mentions to be processed in the background
+        debug('Begin: Mentions Job Service');
+        const mentionsJobService = require('./server/services/mentions-jobs');
+
+        if (config.get('server:testmode')) {
+            mentionsJobService.initTestMode();
+        }
+
+        ghostServer.registerCleanupTask(async () => {
+            await mentionsJobService.shutdown();
+        });
+        debug('End: Mentions Job Service');
+
         ghostServer.registerCleanupTask(async () => {
             await urlService.shutdown();
         });

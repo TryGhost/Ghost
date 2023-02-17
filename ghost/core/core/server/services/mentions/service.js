@@ -16,7 +16,7 @@ const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/ser
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
-const jobsService = require('../jobs');
+const jobsService = require('../mentions-jobs');
 
 function getPostUrl(post) {
     const jsonModel = {};
