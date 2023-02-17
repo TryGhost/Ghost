@@ -149,7 +149,7 @@ module.exports = class MilestonesService {
 
     /**
      *
-     * @returns {Promise<object>}
+     * @returns {Promise<{shouldSendEmail: boolean, reason: string}>}
      */
     async #shouldSendEmail() {
         let canHaveEmail;
