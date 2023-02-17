@@ -14,7 +14,7 @@ const postMatcher = {
     uuid: anyUuid
 };
 
-const postMatcheShallowIncludes = Object.assign(
+const postMatcherShallowIncludes = Object.assign(
     {},
     postMatcher, {
         tags: anyArray,
@@ -169,7 +169,7 @@ describe('Posts Content API', function () {
             })
             .matchBodySnapshot({
                 posts: new Array(11)
-                    .fill(postMatcheShallowIncludes)
+                    .fill(postMatcherShallowIncludes)
             });
     });
 
