@@ -25,5 +25,9 @@ module.exports = {
     MembersStripeCustomersSubscriptionsImporter: require('./members-stripe-customers-subscriptions'),
     MembersPaidSubscriptionEventsImporter: require('./members-paid-subscription-events'),
     MembersSubscriptionCreatedEventsImporter: require('./members-subscription-created-events'),
-    MembersSubscribeEventsImporter: require('./members-subscribe-events')
+    MembersSubscribeEventsImporter: require('./members-subscribe-events'),
+    EmailBatchesImporter: require('./email-batches'),
+    EmailRecipientsImporter: require('./email-recipients'),
+    RedirectsImporter: require('./redirects'),
+    MembersClickEventsImporter: require('./members-click-events')
 };

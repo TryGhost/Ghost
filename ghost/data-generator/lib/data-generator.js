@@ -26,7 +26,11 @@ const {
     MembersSubscriptionCreatedEventsImporter,
     MembersStripeCustomersImporter,
     MembersStripeCustomersSubscriptionsImporter,
-    MembersPaidSubscriptionEventsImporter
+    MembersPaidSubscriptionEventsImporter,
+    EmailBatchesImporter,
+    EmailRecipientsImporter,
+    RedirectsImporter,
+    MembersClickEventsImporter
 } = tables;
 const path = require('path');
 const fs = require('fs/promises');
@@ -261,7 +265,7 @@ class DataGenerator {
         });
 
         const membersImporter = new MembersImporter(transaction);
-        const members = await membersImporter.import({amount: this.modelQuantities.members, rows: ['status', 'created_at', 'name', 'email']});
+        const members = await membersImporter.import({amount: this.modelQuantities.members, rows: ['status', 'created_at', 'name', 'email', 'uuid']});
 
         const postsAuthorsImporter = new PostsAuthorsImporter(transaction, {
             users
@@ -343,7 +347,31 @@ class DataGenerator {
         await mentionsImporter.importForEach(posts, {amount: 4});
 
         const emailsImporter = new EmailsImporter(transaction, {newsletters, members, membersSubscribeEvents});
-        await emailsImporter.importForEach(posts, {amount: 1});
+        const emails = await emailsImporter.importForEach(posts, {
+            amount: 1,
+            rows: ['created_at', 'email_count', 'delivered_count', 'opened_count', 'failed_count', 'newsletter_id', 'post_id']
+        });
+
+        const emailBatchesImporter = new EmailBatchesImporter(transaction);
+        const emailBatches = await emailBatchesImporter.importForEach(emails, {
+            amount: 1,
+            rows: ['email_id', 'updated_at']
+        });
+
+        const emailRecipientsImporter = new EmailRecipientsImporter(transaction, {emailBatches, members, membersSubscribeEvents});
+        const emailRecipients = await emailRecipientsImporter.importForEach(emails, {
+            amount: this.modelQuantities.members,
+            rows: ['opened_at', 'email_id', 'member_id']
+        });
+
+        const redirectsImporter = new RedirectsImporter(transaction);
+        const redirects = await redirectsImporter.importForEach(posts, {
+            amount: 10,
+            rows: ['post_id']
+        });
+
+        const membersClickEventsImporter = new MembersClickEventsImporter(transaction, {redirects, emails});
+        await membersClickEventsImporter.importForEach(emailRecipients, {amount: 2});
 
         // TODO: Email clicks - redirect, members_click_events (relies on emails)
 
