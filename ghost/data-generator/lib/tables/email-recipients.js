@@ -32,13 +32,13 @@ class EmailRecipientsImporter extends TableImporter {
             .filter(entry => entry.newsletter_id === this.model.newsletter_id)
             .filter(entry => new Date(entry.created_at) < earliestOpenTime)
             .map(memberSubscribeEvent => memberSubscribeEvent.member_id);
-        this.events = generateEvents({
+        this.events = this.membersList.length > 0 ? generateEvents({
             shape: 'ease-out',
             trend: 'negative',
             total: this.membersList.length,
             startTime: earliestOpenTime,
             endTime: currentTime < latestOpenTime ? currentTime : latestOpenTime
-        });
+        }) : [];
         this.emailMeta = {
             emailCount: this.model.email_count,
             deliveredCount: this.model.delivered_count,
