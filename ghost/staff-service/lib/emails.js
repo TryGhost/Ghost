@@ -187,13 +187,50 @@ class StaffServiceEmails {
      * @returns {Promise<void>}
      */
     async notifyMilestoneReceived({milestone}) {
-        const users = await this.models.User.getEmailAlertUsers('milestone-received');
+        if (!milestone?.emailSentAt || (milestone?.meta && milestone?.meta?.reason)) {
+            // Do not send an email when no email was set to be sent or a reason
+            // not to send provided
+            return;
+        }
 
-        // TODO: send email with correct templates
+        const emailPromises = [];
+        const users = await this.models.User.getEmailAlertUsers('milestone-received');
+        const formattedValue = this.getFormattedAmount({currency: milestone?.currency, amount: milestone.value, maximumFractionDigits: 0});
+        const milestoneEmailConfig = require('./milestone-email-config')(this.settingsCache.get('title'), formattedValue);
+
+        const emailData = milestone.type === 'arr' ? milestoneEmailConfig.arr : milestoneEmailConfig.members?.[milestone.value];
+
         for (const user of users) {
             const to = user.email;
 
-            this.logging.info(`Will send email to ${to} for ${milestone.type} / ${milestone.value} milestone.`);
+            const templateData = {
+                siteTitle: this.settingsCache.get('title'),
+                siteUrl: this.urlUtils.getSiteUrl(),
+                siteDomain: this.siteDomain,
+                fromEmail: this.fromEmailAddress,
+                ...emailData,
+                partial: `milestones/${milestone.value}`,
+                toEmail: to,
+                adminUrl: this.urlUtils.urlFor('admin', true),
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
+            };
+
+            const {html, text} = await this.renderEmailTemplate('new-milestone-received', templateData);
+
+            emailPromises.push(await this.sendMail({
+                to,
+                subject: emailData.subject,
+                html,
+                text
+            }));
+        }
+
+        const results = await Promise.allSettled(emailPromises);
+
+        for (const result of results) {
+            if (result.status === 'rejected') {
+                this.logging.warn(result?.reason);
+            }
         }
     }
 
@@ -228,15 +265,18 @@ class StaffServiceEmails {
     }
 
     /** @private */
-    getFormattedAmount({amount = 0, currency}) {
+    getFormattedAmount({amount = 0, currency, maximumFractionDigits = 2}) {
         if (!currency) {
-            return amount > 0 ? Intl.NumberFormat().format(amount) : '';
+            return amount > 0 ? Intl.NumberFormat('en', {maximumFractionDigits}).format(amount) : '';
         }
 
         return Intl.NumberFormat('en', {
             style: 'currency',
             currency,
-            currencyDisplay: 'symbol'
+            currencyDisplay: 'symbol',
+            maximumFractionDigits,
+            // see https://github.com/andyearnshaw/Intl.js/issues/123
+            minimumFractionDigits: maximumFractionDigits
         }).format(amount);
     }
 

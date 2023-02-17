@@ -1,5 +1,4 @@
 const sinon = require('sinon');
-const assert = require('assert');
 const staffService = require('../../../../../core/server/services/staff');
 
 const DomainEvents = require('@tryghost/domain-events');
@@ -10,8 +9,6 @@ const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEven
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 describe('Staff Service:', function () {
-    let userModelStub;
-
     before(function () {
         models.init();
     });
@@ -19,7 +16,10 @@ describe('Staff Service:', function () {
     beforeEach(function () {
         mockManager.mockMail();
         mockManager.mockSlack();
-        userModelStub = sinon.stub(models.User, 'getEmailAlertUsers').resolves([{
+        mockManager.mockSetting('title', 'The Weekly Roundup');
+        mockManager.mockLabsEnabled('milestoneEmails');
+
+        sinon.stub(models.User, 'getEmailAlertUsers').resolves([{
             email: 'owner@ghost.org',
             slug: 'ghost'
         }]);
@@ -232,22 +232,13 @@ describe('Staff Service:', function () {
     });
 
     describe('milestone created event:', function () {
-        beforeEach(function () {
-            mockManager.mockLabsEnabled('milestoneEmails');
-        });
-
-        afterEach(async function () {
-            sinon.restore();
-            mockManager.restore();
-        });
-
-        it('logs when milestone event is handled', async function () {
+        it('sends email for achieved milestone', async function () {
             await staffService.init();
             DomainEvents.dispatch(MilestoneCreatedEvent.create({
                 milestone: {
                     type: 'arr',
                     currency: 'usd',
-                    value: 100,
+                    value: 1000,
                     createdAt: new Date(),
                     emailSentAt: new Date()
                 },
@@ -258,8 +249,50 @@ describe('Staff Service:', function () {
 
             // Wait for the dispatched events (because this happens async)
             await DomainEvents.allSettled();
-            const [userCalls] = userModelStub.args[0];
-            assert.equal(userCalls, ['milestone-received']);
+
+            mockManager.assert.sentEmailCount(1);
+
+            mockManager.assert.sentEmail({
+                to: 'owner@ghost.org',
+                subject: /The Weekly Roundup hit \$1,000 ARR/
+            });
+        });
+
+        it('does not send email when no email created at provided or a reason is set', async function () {
+            DomainEvents.dispatch(MilestoneCreatedEvent.create({
+                milestone: {
+                    type: 'arr',
+                    currency: 'usd',
+                    value: 1000,
+                    createdAt: new Date(),
+                    emailSentAt: null
+                },
+                meta: {
+                    currentValue: 105
+                }
+            }));
+
+            // Wait for the dispatched events (because this happens async)
+            await DomainEvents.allSettled();
+
+            DomainEvents.dispatch(MilestoneCreatedEvent.create({
+                milestone: {
+                    type: 'arr',
+                    currency: 'usd',
+                    value: 1000,
+                    createdAt: new Date(),
+                    emailSentAt: new Date(),
+                    meta: {
+                        currentValue: 105,
+                        reason: 'import'
+                    }
+                }
+            }));
+
+            // Wait for the dispatched events (because this happens async)
+            await DomainEvents.allSettled();
+
+            mockManager.assert.sentEmailCount(0);
         });
     });
 });
