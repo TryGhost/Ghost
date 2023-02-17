@@ -64,10 +64,13 @@ describe('SlackNotificationsService', function () {
                     },
                     DomainEvents,
                     siteUrl: 'https://ghost.example',
-                    config
+                    config,
+                    notifications: {
+                        async notifyMilestoneReceived() {
+                            throw new Error('test error');
+                        }
+                    }
                 });
-
-                const handleEventStub = sinon.stub(service, 'handleEvent').rejects(new Error('test error'));
 
                 await service.subscribeEvents();
 
@@ -81,7 +84,6 @@ describe('SlackNotificationsService', function () {
                 }));
 
                 await DomainEvents.allSettled();
-                assert(handleEventStub.calledOnce);
                 const loggingSpyCall = loggingSpy.getCall(0).args[0];
                 assert(loggingSpy.calledOnce);
                 assert(loggingSpyCall instanceof Error);

@@ -59,7 +59,7 @@ module.exports = class SlackNotificationsService {
 
         const SlackNotifications = require('./SlackNotifications');
 
-        this.#notifications = new SlackNotifications({
+        this.#notifications = deps.notifications || new SlackNotifications({
             config: this.#config,
             siteUrl: this.#siteUrl,
             logging: this.#logging
@@ -81,17 +81,17 @@ module.exports = class SlackNotificationsService {
             && this.#config.isEnabled
             && this.#config.webhookUrl
         ) {
-            await this.#notifications.notifyMilestoneReceived(event.data);
+            try {
+                await this.#notifications.notifyMilestoneReceived(event.data);
+            } catch (error) {
+                this.#logging.error(error);
+            }
         }
     }
 
     subscribeEvents() {
         this.#DomainEvents.subscribe(MilestoneCreatedEvent, async (event) => {
-            try {
-                await this.handleEvent(MilestoneCreatedEvent, event);
-            } catch (e) {
-                this.#logging.error(e, `Failed to notify Milestone created event - ${event?.data?.milestone?.id}`);
-            }
+            await this.handleEvent(MilestoneCreatedEvent, event);
         });
     }
 };
