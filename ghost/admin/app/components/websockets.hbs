@@ -1,0 +1,8 @@
+<div class="gh-expandable-header">
+    <div>
+        <h4 class="gh-expandable-title">Counter</h4>
+        <p class="gh-expandable-description">Current counter value: <strong>{{this.counter}}</strong></p>
+        <p class="gh-expandable-description">This counter will reset when Ghost reboots.</p>
+    </div>
+    <button type="button" class="gh-btn" {{on "click" this.handleClick}} data-test-button="delete-all"><span>Add One</span></button>
+</div>

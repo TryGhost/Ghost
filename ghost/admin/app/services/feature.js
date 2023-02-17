@@ -71,6 +71,7 @@ export default class FeatureService extends Service {
     @feature('outboundLinkTagging') outboundLinkTagging;
     @feature('emailErrors') emailErrors;
     @feature('milestoneEmails') milestoneEmails;
+    @feature('websockets') websockets;
 
     _user = null;
 
