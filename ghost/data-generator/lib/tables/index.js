@@ -32,5 +32,6 @@ module.exports = {
     MembersClickEventsImporter: require('./members-click-events'),
     OffersImporter: require('./offers'),
     LabelsImporter: require('./labels'),
-    MembersLabelsImporter: require('./members-labels')
+    MembersLabelsImporter: require('./members-labels'),
+    RolesUsersImporter: require('./roles-users')
 };
