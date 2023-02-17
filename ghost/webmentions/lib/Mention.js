@@ -166,6 +166,7 @@ module.exports = class Mention {
         this.#timestamp = data.timestamp;
         this.#payload = data.payload;
         this.#resourceId = data.resourceId;
+        this.#verified = data.verified;
     }
 
     /**
@@ -223,6 +224,10 @@ module.exports = class Mention {
         let payload;
         payload = data.payload ? JSON.parse(JSON.stringify(data.payload)) : null;
 
+        /** @type boolean */
+        let verified;
+        verified = isNew ? false : !!data.verified;
+
         /** @type {ObjectID | null} */
         let resourceId = null;
         if (data.resourceId) {
@@ -239,7 +244,8 @@ module.exports = class Mention {
             target,
             timestamp,
             payload,
-            resourceId
+            resourceId,
+            verified
         });
 
         mention.setSourceMetadata(data);
