@@ -131,7 +131,7 @@ module.exports = class Milestone {
         });
 
         if (isNew) {
-            milestone.events.push(MilestoneCreatedEvent.create({milestone}));
+            milestone.events.push(MilestoneCreatedEvent.create({milestone, meta: data?.meta}));
         }
 
         return milestone;

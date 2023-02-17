@@ -296,6 +296,7 @@ async function initServices({config}) {
     const mentionsService = require('./server/services/mentions');
     const tagsPublic = require('./server/services/tags-public');
     const postsPublic = require('./server/services/posts-public');
+    const slackNotifications = require('./server/services/slack-notifications');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -331,7 +332,8 @@ async function initServices({config}) {
         }),
         comments.init(),
         linkTracking.init(),
-        emailSuppressionList.init()
+        emailSuppressionList.init(),
+        slackNotifications.init()
     ]);
     debug('End: Services');
 
