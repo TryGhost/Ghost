@@ -55,6 +55,9 @@ Router.map(function () {
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.history', {path: '/settings/history'});
     this.route('settings.analytics', {path: '/settings/analytics'});
+    
+    // testing websockets
+    this.route('websockets');
 
     // redirect from old /settings/members-email to /settings/newsletters
     this.route('settings.members-email', {path: '/settings/members-email'});
