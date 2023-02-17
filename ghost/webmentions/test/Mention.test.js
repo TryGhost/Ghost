@@ -44,6 +44,32 @@ describe('Mention', function () {
             mention.verify('<a href="https://not-da-target.com">');
             assert(!mention.verified);
         });
+        it('Does check for Image targets', async function () {
+            const mention = await Mention.create({
+                ...validInput,
+                target: 'https://target.com/image.jpg'
+            });
+            assert(!mention.verified);
+
+            mention.verify('<img src="https://target.com/image.jpg">');
+            assert(mention.verified);
+
+            mention.verify('<img src="https://not-da-target.com/image.jpg">');
+            assert(!mention.verified);
+        });
+        it('Does check for Video targets', async function () {
+            const mention = await Mention.create({
+                ...validInput,
+                target: 'https://target.com/video.mp4'
+            });
+            assert(!mention.verified);
+
+            mention.verify('<video src="https://target.com/video.mp4">');
+            assert(mention.verified);
+
+            mention.verify('<video src="https://not-da-target.com/video.mp4">');
+            assert(!mention.verified);
+        });
     });
 
     describe('create', function () {

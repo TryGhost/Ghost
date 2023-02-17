@@ -153,8 +153,7 @@ describe('Webmentions (receiving)', function () {
         `;
         nock(sourceUrl.origin)
             .get(sourceUrl.pathname)
-            .reply(200, html, {'Content-Type': 'text/html'})
-            .persist();
+            .reply(200, html, {'Content-Type': 'text/html'});
 
         testCreatingTheMention: {
             const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
@@ -351,5 +350,98 @@ describe('Webmentions (receiving)', function () {
                 payload: {}
             })
             .expectStatus(429);
+    });
+
+    it('can verify a webmention <a> link', async function () {
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL(urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-2/');
+        const html = `
+                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body><a href="${urlUtils.getSiteUrl()}">your cool website mentioned</a></body></html>
+            `;
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .persist()
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
+
+        await agent.post('/receive')
+            .body({
+                source: sourceUrl.href,
+                target: targetUrl.href
+            })
+            .expectStatus(202);
+
+        await processWebmentionJob;
+
+        const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article-2/'});
+
+        assert(mention);
+        assert.equal(mention.get('verified'), true);
+    });
+
+    it('can verifiy a webmention <img> link', async function () {
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL(urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-2/');
+        const html = `
+                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body><img src="${urlUtils.getSiteUrl()}"></body></html>
+            `;
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .persist()
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
+
+        await agent.post('/receive')
+            .body({
+                source: sourceUrl.href,
+                target: targetUrl.href
+            })
+            .expectStatus(202);
+
+        await processWebmentionJob;
+
+        const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article-2/'});
+
+        assert(mention);
+        assert.equal(mention.get('verified'), true);
+    });
+
+    it('can verify a webmention <video> link', async function () {
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL(urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-2/');
+        const html = `
+                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body><video src="${urlUtils.getSiteUrl()}"></body></html>
+            `;
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .persist()
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
+
+        await agent.post('/receive')
+            .body({
+                source: sourceUrl.href,
+                target: targetUrl.href
+            })
+            .expectStatus(202);
+
+        await processWebmentionJob;
+
+        const mention = await models.Mention.findOne({source: 'http://testpage.com/external-article-2/'});
+
+        assert(mention);
+        assert.equal(mention.get('verified'), true);
     });
 });
