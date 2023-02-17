@@ -30,5 +30,7 @@ module.exports = {
     EmailRecipientsImporter: require('./email-recipients'),
     RedirectsImporter: require('./redirects'),
     MembersClickEventsImporter: require('./members-click-events'),
-    OffersImporter: require('./offers')
+    OffersImporter: require('./offers'),
+    LabelsImporter: require('./labels'),
+    MembersLabelsImporter: require('./members-labels')
 };
