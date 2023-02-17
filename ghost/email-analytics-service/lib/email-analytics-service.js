@@ -74,7 +74,7 @@ module.exports = class EmailAnalytics {
     async fetchLatest({maxEvents = Infinity} = {}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         const begin = await this.getLastEventTimestamp();
-        const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // ALways stop at 5 minutes ago to give Mailgun a bit more time to stabilize storage
+        const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // ALways stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
         if (end < begin) {
             // Skip for now
