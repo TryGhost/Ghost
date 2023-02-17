@@ -153,7 +153,7 @@ class DataGenerator {
                 data: baseData.posts
             });
             await postsImporter.addNewsletters({posts});
-            posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug').from('posts');
+            posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug', 'status', 'visibility').from('posts');
 
             tags = await jsonImporter.import({
                 name: 'tags',
@@ -210,7 +210,7 @@ class DataGenerator {
             });
             posts = await postsImporter.import({
                 amount: this.modelQuantities.posts,
-                rows: ['newsletter_id', 'published_at', 'slug']
+                rows: ['newsletter_id', 'published_at', 'slug', 'status', 'visibility']
             });
 
             const tagsImporter = new TagsImporter(transaction, {
@@ -347,7 +347,7 @@ class DataGenerator {
         await mentionsImporter.importForEach(posts, {amount: 4});
 
         const emailsImporter = new EmailsImporter(transaction, {newsletters, members, membersSubscribeEvents});
-        const emails = await emailsImporter.importForEach(posts, {
+        const emails = await emailsImporter.importForEach(posts.filter(post => post.status === 'published'), {
             amount: 1,
             rows: ['created_at', 'email_count', 'delivered_count', 'opened_count', 'failed_count', 'newsletter_id', 'post_id']
         });
@@ -365,7 +365,7 @@ class DataGenerator {
         });
 
         const redirectsImporter = new RedirectsImporter(transaction);
-        const redirects = await redirectsImporter.importForEach(posts, {
+        const redirects = await redirectsImporter.importForEach(posts.filter(post => post.status === 'published'), {
             amount: 10,
             rows: ['post_id']
         });
@@ -394,7 +394,7 @@ class DataGenerator {
         };
 
         const importMentions = async () => {
-            const posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug').from('posts');
+            const posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug', 'status', 'visibility').from('posts');
             this.logger.info(`Importing up to ${posts.length * 4} mentions`);
 
             const mentionsImporter = new MentionsImporter(transaction, {baseUrl: this.baseUrl});
