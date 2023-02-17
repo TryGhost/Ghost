@@ -30,6 +30,7 @@
     "!core/server/web/shared/middleware/**",
     "core/server/api/endpoints/**",
     "!core/server/api/endpoints/utils",
+    "core/server/services/email-analytics/jobs/**",
     "core/server/services/members/jobs/**"
   ]
 }
