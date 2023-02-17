@@ -1,24 +1,24 @@
 const assert = require('assert');
 const sinon = require('sinon');
 
-const {TagsPublicRepository} = require('../index');
+const {PublicResourcesRepository} = require('../index');
 // @NOTE: This is a dirty import from the Ghost "core"!
 //        extract it to it's own package and import here as require('@tryghost/adapter-base-cache-memory');
 const MemoryCache = require('../../core/core/server/adapters/cache/Memory');
 
-describe('TagsPublicRepository', function () {
+describe('PublicResourcesRepository', function () {
     afterEach(function () {
         sinon.restore();
     });
 
     describe('getAll', function () {
         it('calls findPage on the model multiple times when cache NOT present', async function () {
-            const tagStub = {
+            const tagModelStub = {
                 findPage: sinon.stub().resolves(),
                 permittedOptions: sinon.stub()
             };
-            const repo = new TagsPublicRepository({
-                Tag: tagStub
+            const repo = new PublicResourcesRepository({
+                Model: tagModelStub
             });
 
             // first call
@@ -30,12 +30,12 @@ describe('TagsPublicRepository', function () {
                 limit: 'all'
             });
 
-            assert.equal(tagStub.findPage.callCount, 2, 'should be called same amount of times as getAll');
-            assert.ok(tagStub.findPage.calledWith({limit: 'all'}));
+            assert.equal(tagModelStub.findPage.callCount, 2, 'should be called same amount of times as getAll');
+            assert.ok(tagModelStub.findPage.calledWith({limit: 'all'}));
         });
 
         it('calls findPage once and uses the cached value on subsequent calls', async function () {
-            const tagStub = {
+            const tagModelStub = {
                 findPage: sinon.stub().resolves({
                     data: [{
                         get(key) {
@@ -46,8 +46,8 @@ describe('TagsPublicRepository', function () {
                 }),
                 permittedOptions: sinon.stub().returns(['limit'])
             };
-            const repo = new TagsPublicRepository({
-                Tag: tagStub,
+            const repo = new PublicResourcesRepository({
+                Model: tagModelStub,
                 cache: new MemoryCache()
             });
 
@@ -60,14 +60,14 @@ describe('TagsPublicRepository', function () {
                 limit: 'all'
             });
 
-            assert.equal(tagStub.findPage.callCount, 1, 'should be called once when cache is present');
-            assert.ok(tagStub.findPage.calledWith({limit: 'all'}));
+            assert.equal(tagModelStub.findPage.callCount, 1, 'should be called once when cache is present');
+            assert.ok(tagModelStub.findPage.calledWith({limit: 'all'}));
 
             assert.equal(dbTags, cacheTags, 'should return the same value from the cache');
         });
 
         it('calls findPage multiple times if the record is not present in the cache', async function () {
-            const tagStub = {
+            const tagModelStub = {
                 findPage: sinon.stub().resolves({
                     data: [{
                         get(key) {
@@ -79,8 +79,8 @@ describe('TagsPublicRepository', function () {
                 permittedOptions: sinon.stub().returns(['limit'])
             };
             const cache = new MemoryCache();
-            const repo = new TagsPublicRepository({
-                Tag: tagStub,
+            const repo = new PublicResourcesRepository({
+                Model: tagModelStub,
                 cache: cache
             });
 
@@ -97,12 +97,12 @@ describe('TagsPublicRepository', function () {
                 limit: 'all'
             });
 
-            assert.equal(tagStub.findPage.callCount, 2, 'should be called every time the item is not in the cache');
-            assert.ok(tagStub.findPage.calledWith({limit: 'all'}));
+            assert.equal(tagModelStub.findPage.callCount, 2, 'should be called every time the item is not in the cache');
+            assert.ok(tagModelStub.findPage.calledWith({limit: 'all'}));
         });
 
         it('works with a cache that has an asynchronous interface', async function () {
-            const tagStub = {
+            const tagModelStub = {
                 findPage: sinon.stub().resolves({
                     data: [{
                         get(key) {
@@ -119,8 +119,8 @@ describe('TagsPublicRepository', function () {
                 set: sinon.stub().resolves()
             };
 
-            const repo = new TagsPublicRepository({
-                Tag: tagStub,
+            const repo = new PublicResourcesRepository({
+                Model: tagModelStub,
                 cache: asyncMemoryCache
             });
 
