@@ -14,7 +14,7 @@ class SlackNotificationsServiceWrapper {
      * @param {boolean} deps.isEnabled
      * @param {URL} deps.webhookUrl
      *
-     * @returns {object} SlackNotificationsService
+     * @returns {import('@tryghost/slack-notifications/lib/SlackNotificationsService')}
      */
     static create({siteUrl, isEnabled, webhookUrl}) {
         const {
