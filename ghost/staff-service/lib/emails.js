@@ -194,6 +194,36 @@ class StaffServiceEmails {
         }
     }
 
+    async notifyMilestoneReceived({milestone}) {
+        const users = await this.models.User.getEmailAlertUsers('milestone-received');
+        for (const user of users) {
+            const to = user.email;
+            const milestoneTypePretty = milestone.type === 'arr' ? 'ARR' : 'Members';
+            const subject = `🏆 New ${milestoneTypePretty} Milestone achieved!`;
+
+            const templateData = {
+                siteTitle: this.settingsCache.get('title'),
+                siteUrl: this.urlUtils.getSiteUrl(),
+                siteDomain: this.siteDomain,
+                accentColor: this.settingsCache.get('accent_color'),
+                fromEmail: this.fromEmailAddress,
+                toEmail: to,
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
+            };
+
+            const emailTemplate = milestone.type === 'arr' ? 'new-arr-milestone-received' : 'new-members-milestone-received';
+
+            const {html, text} = await this.renderEmailTemplate(emailTemplate, templateData);
+
+            await this.sendMail({
+                to,
+                subject,
+                html,
+                text
+            });
+        }
+    }
+
     // Utils
 
     /** @private */
