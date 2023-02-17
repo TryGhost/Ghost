@@ -31,7 +31,9 @@ const {
     EmailRecipientsImporter,
     RedirectsImporter,
     MembersClickEventsImporter,
-    OffersImporter
+    OffersImporter,
+    LabelsImporter,
+    MembersLabelsImporter
 } = tables;
 const path = require('path');
 const fs = require('fs/promises');
@@ -381,6 +383,16 @@ class DataGenerator {
 
         const offersImporter = new OffersImporter(transaction, {products: products.filter(product => product.name !== 'Free')});
         await offersImporter.import({amount: 2});
+
+        const labelsImporter = new LabelsImporter(transaction);
+        const labels = await labelsImporter.import({amount: 10});
+
+        const membersLabelsImporter = new MembersLabelsImporter(transaction, {labels});
+        await membersLabelsImporter.importForEach(members, {
+            amount: 1
+        });
+
+        // TODO: Members labels
 
         // TODO: Email clicks - redirect, members_click_events (relies on emails)
 
