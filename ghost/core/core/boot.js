@@ -295,6 +295,7 @@ async function initServices({config}) {
     const emailAnalytics = require('./server/services/email-analytics');
     const mentionsService = require('./server/services/mentions');
     const tagsPublic = require('./server/services/tags-public');
+    const postsPublic = require('./server/services/posts-public');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -313,6 +314,7 @@ async function initServices({config}) {
         members.init(),
         tiers.init(),
         tagsPublic.init(),
+        postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
         xmlrpc.listen(),
