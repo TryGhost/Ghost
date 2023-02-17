@@ -1,5 +1,5 @@
 {
-  "name": "@tryghost/tags-public",
+  "name": "@tryghost/public-resource-repository",
   "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/tags-public",
   "author": "Ghost Foundation",

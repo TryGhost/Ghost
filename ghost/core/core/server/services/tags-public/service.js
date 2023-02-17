@@ -6,7 +6,7 @@ class TagsPublicServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const models = require('../../models');
+        const {TagPublic} = require('../../models');
         const adapterManager = require('../adapter-manager');
         const config = require('../../../shared/config');
 
@@ -15,15 +15,15 @@ class TagsPublicServiceWrapper {
             tagsCache = adapterManager.getAdapter('cache:tagsPublic');
         }
 
-        const {TagsPublicRepository} = require('@tryghost/tags-public');
+        const {PublicResourcesRepository} = require('@tryghost/public-resource-repository');
 
-        this.linkRedirectRepository = new TagsPublicRepository({
-            Tag: models.TagPublic,
+        this.tagsPublicRepository = new PublicResourcesRepository({
+            Model: TagPublic,
             cache: tagsCache
         });
 
         this.api = {
-            browse: this.linkRedirectRepository.getAll.bind(this.linkRedirectRepository)
+            browse: this.tagsPublicRepository.getAll.bind(this.tagsPublicRepository)
         };
     }
 }

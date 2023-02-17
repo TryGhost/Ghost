@@ -133,7 +133,7 @@
     "@tryghost/staff-service": "0.0.0",
     "@tryghost/stats-service": "0.0.0",
     "@tryghost/string": "0.2.2",
-    "@tryghost/tags-public": "0.0.0",
+    "@tryghost/public-resource-repository": "0.0.0",
     "@tryghost/tiers": "0.0.0",
     "@tryghost/tpl": "0.1.21",
     "@tryghost/update-check-service": "0.0.0",
