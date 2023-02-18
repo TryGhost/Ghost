@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "lodash": "4.17.21",
-    "moment": "2.29.1",
+    "moment": "2.29.4",
     "handlebars": "4.7.7"
   }
 }
