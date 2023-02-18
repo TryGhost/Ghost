@@ -28,6 +28,6 @@
     "@tryghost/logging": "2.4.0",
     "@tryghost/tpl": "0.1.21",
     "lodash": "4.17.21",
-    "moment": "2.24.0"
+    "moment": "2.29.4"
   }
 }
