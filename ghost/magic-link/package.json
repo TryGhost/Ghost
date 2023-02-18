@@ -27,6 +27,6 @@
     "@tryghost/errors": "1.2.20",
     "@tryghost/tpl": "0.1.21",
     "@tryghost/validator": "0.1.31",
-    "jsonwebtoken": "8.5.1"
+    "jsonwebtoken": "9.0.0"
   }
 }
