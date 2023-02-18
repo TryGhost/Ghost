@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "fs-extra": "11.1.0",
-    "html-to-text": "5.1.1",
+    "html-to-text": "6.0.0",
     "lodash": "4.17.21"
   }
 }
