@@ -44,7 +44,7 @@
     "url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
   },
   "dependencies": {
-    "codemirror": "5.65.11",
+    "codemirror": "5.65.12",
     "codemirror-spell-checker": "1.1.2",
     "marked": "0.3.19"
   }
