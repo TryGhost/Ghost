@@ -997,6 +997,6 @@ module.exports = {
         payload: {type: 'text', maxlength: 65535, nullable: true},
         deleted: {type: 'boolean', nullable: false, defaultTo: false},
         verified: {type: 'boolean', nullable: false, defaultTo: false},
-        page_resource: {type: 'string', maxlength: 2000, nullable: true}
+        page_resource: {type: 'string', maxlength: 191, nullable: true}
     }
 };
