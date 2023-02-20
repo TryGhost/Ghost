@@ -284,8 +284,6 @@ describe('External Request', function () {
             });
         });
 
-        // with got v11, for some reason this went from a GotError HTTPError with rich details to a shitty HTTPError with no data or even code
-        // TODO: maybe try a higher version? or see if this happened with v10
         it('[failure] can handle an error with statuscode not 200', function () {
             const url = 'http://nofilehere.com/files/test.txt';
             const options = {
