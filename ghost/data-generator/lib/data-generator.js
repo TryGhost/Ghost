@@ -126,6 +126,7 @@ class DataGenerator {
         let stripeProducts;
         let stripePrices;
         let benefits;
+        let labels;
 
         // Use an existant set of data for a more realisitic looking site
         if (this.useBaseData) {
@@ -194,8 +195,13 @@ class DataGenerator {
                 rows: ['stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname']
             });
 
+            labels = await jsonImporter.import({
+                name: 'labels',
+                data: baseData.labels
+            });
+
             // Import settings
-            await transaction('settings').delete();
+            await transaction('settings').del();
             await jsonImporter.import({
                 name: 'settings',
                 data: baseData.settings
@@ -390,7 +396,7 @@ class DataGenerator {
         await offersImporter.import({amount: 2});
 
         const labelsImporter = new LabelsImporter(transaction);
-        const labels = await labelsImporter.import({amount: 10});
+        labels = await labelsImporter.import({amount: 10});
 
         const membersLabelsImporter = new MembersLabelsImporter(transaction, {labels});
         await membersLabelsImporter.importForEach(members, {
