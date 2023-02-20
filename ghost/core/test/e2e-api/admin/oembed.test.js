@@ -128,6 +128,12 @@ describe('Oembed API', function () {
         });
 
         it('errors when fetched url is an IP address', async function () {
+            // in order to follow the 302, we need to stub differently; externalRequest will block the internal IP
+            dnsPromises.lookup.restore();
+            let dnsStub = sinon.stub(dnsPromises, 'lookup');
+            dnsStub.onCall(0).returns(Promise.resolve({address: '123.123.123.123'}));
+            dnsStub.onCall(1).returns(Promise.resolve({address: '0.0.0.0'}));
+
             const redirectMock = nock('http://test.com/')
                 .get('/')
                 .reply(302, undefined, {Location: 'http://0.0.0.0:8080'});
@@ -147,7 +153,7 @@ describe('Oembed API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(422);
 
-            pageMock.isDone().should.be.true();
+            pageMock.isDone().should.be.false(); // we shouldn't hit this; blocked by externalRequest
             should.exist(res.body.errors);
         });
 
@@ -376,6 +382,15 @@ describe('Oembed API', function () {
         });
 
         it('skips fetching IPv4 addresses', async function () {
+            dnsPromises.lookup.restore();
+            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+                if (hostname === '192.168.0.1') {
+                    return Promise.resolve({address: '192.168.0.1'});
+                } else {
+                    return Promise.resolve({address: '123.123.123.123'});
+                }
+            });
+
             const pageMock = nock('http://test.com')
                 .get('/')
                 .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://192.168.0.1/oembed"></head></html>');
@@ -399,6 +414,15 @@ describe('Oembed API', function () {
         });
 
         it('skips fetching IPv6 addresses', async function () {
+            dnsPromises.lookup.restore();
+            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+                if (hostname === '[2607:f0d0:1002:51::4]') {
+                    return Promise.resolve({address: '192.168.0.1'});
+                } else {
+                    return Promise.resolve({address: '123.123.123.123'});
+                }
+            });
+            
             const pageMock = nock('http://test.com')
                 .get('/')
                 .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://[2607:f0d0:1002:51::4]:9999/oembed"></head></html>');
@@ -422,6 +446,14 @@ describe('Oembed API', function () {
         });
 
         it('skips fetching localhost', async function () {
+            dnsPromises.lookup.restore();
+            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+                if (hostname === 'localhost') {
+                    return Promise.resolve({address: '127.0.0.1'});
+                } else {
+                    return Promise.resolve({address: '123.123.123.123'});
+                }
+            });
             const pageMock = nock('http://test.com')
                 .get('/')
                 .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://localhost:9999/oembed"></head></html>');

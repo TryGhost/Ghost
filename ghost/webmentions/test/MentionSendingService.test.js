@@ -380,6 +380,9 @@ describe('MentionSendingService', function () {
 
     describe('send', function () {
         it('Can handle 202 accepted responses', async function () {
+            const source = new URL('https://example.com/source');
+            const target = new URL('https://target.com/target');
+            const endpoint = new URL('https://example.org/webmentions-test');
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}&source_is_ghost=true`)
@@ -387,14 +390,17 @@ describe('MentionSendingService', function () {
 
             const service = new MentionSendingService({externalRequest});
             await service.send({
-                source: new URL('https://example.com/source'),
-                target: new URL('https://target.com/target'),
-                endpoint: new URL('https://example.org/webmentions-test')
+                source: source,
+                target: target,
+                endpoint: endpoint
             });
             assert(scope.isDone());
         });
 
         it('Can handle 201 created responses', async function () {
+            const source = new URL('https://example.com/source');
+            const target = new URL('https://target.com/target');
+            const endpoint = new URL('https://example.org/webmentions-test');
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test', `source=${encodeURIComponent('https://example.com/source')}&target=${encodeURIComponent('https://target.com/target')}&source_is_ghost=true`)
@@ -402,9 +408,9 @@ describe('MentionSendingService', function () {
 
             const service = new MentionSendingService({externalRequest});
             await service.send({
-                source: new URL('https://example.com/source'),
-                target: new URL('https://target.com/target'),
-                endpoint: new URL('https://example.org/webmentions-test')
+                source: source,
+                target: target,
+                endpoint: endpoint
             });
             assert(scope.isDone());
         });
@@ -439,6 +445,28 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
+        it('Can handle redirect responses', async function () {
+            const scope = nock('https://example.org')
+                .persist()
+                .post('/webmentions-test')
+                .reply(302, '', {
+                    Location: 'https://example.org/webmentions-test-2'
+                });
+            const scope2 = nock('https://example.org')
+                .persist()
+                .post('/webmentions-test-2')
+                .reply(201);
+        
+            const service = new MentionSendingService({externalRequest});
+            await service.send({
+                source: new URL('https://example.com'),
+                target: new URL('https://example.com'),
+                endpoint: new URL('https://example.org/webmentions-test')
+            });
+            assert(scope.isDone());
+            assert(scope2.isDone());
+        });
+
         it('Can handle network errors', async function () {
             const scope = nock('https://example.org')
                 .persist()
@@ -452,41 +480,6 @@ describe('MentionSendingService', function () {
                 endpoint: new URL('https://example.org/webmentions-test')
             }), /network error/);
             assert(scope.isDone());
-        });
-
-        // Redirects are currently not supported by got for POST requests!
-        //it('Can handle redirect responses', async function () {
-        //    const scope = nock('https://example.org')
-        //        .persist()
-        //        .post('/webmentions-test')
-        //        .reply(302, '', {
-        //            headers: {
-        //                Location: 'https://example.org/webmentions-test-2'
-        //            }
-        //        });
-        //    const scope2 = nock('https://example.org')
-        //        .persist()
-        //        .post('/webmentions-test-2')
-        //        .reply(201);
-        //
-        //    const service = new MentionSendingService({externalRequest});
-        //    await service.send({
-        //        source: new URL('https://example.com'),
-        //        target: new URL('https://example.com'),
-        //        endpoint: new URL('https://example.org/webmentions-test')
-        //    });
-        //    assert(scope.isDone());
-        //    assert(scope2.isDone());
-        //});
-        // TODO: also check if we don't follow private IPs after redirects
-
-        it('Does not send to private IP', async function () {
-            const service = new MentionSendingService({externalRequest});
-            await assert.rejects(service.send({
-                source: new URL('https://example.com/source'),
-                target: new URL('https://target.com/target'),
-                endpoint: new URL('http://localhost/webmentions')
-            }), /non-permitted private IP/);
         });
 
         it('Does not send to private IP behind DNS', async function () {

@@ -37,22 +37,20 @@ describe('MentionDiscoveryService', function () {
         assert.equal(endpoint, null);
     });
 
-    // TODO: need to support redirects
-    // it('Follows redirects', async function () {
+    it('Follows redirects', async function () {
+        let url = new URL('http://redirector.io/');
+        let nextUrl = new URL('http://testpage.com/');
 
-    //     let url = new URL('http://redirector.io/');
-    //     let nextUrl = new URL('http://testpage.com/');
+        nock(url.href)
+            .intercept('/', 'HEAD')
+            .reply(301, undefined, {location: nextUrl.href})
+            .get('/')
+            .reply(200, '<link rel="webmention" href="http://valid.site.org" />Very cool site', {'content-type': 'text/html'});
 
-    //     let mockRedirect = nock(url.href)
-    //         .intercept("/", "HEAD")
-    //         .reply(301, undefined, { location: nextUrl.href })
-    //         .get('/')
-    //         .reply(200, '<link rel="webmention" href="http://valid.site.org" />Very cool site', { 'content-type': 'text/html' });
+        let endpoint = await service.getEndpoint(url);
 
-    //     let endpoint = await service.getEndpoint(url);
-
-    //     assert(endpoint instanceof URL);
-    // });
+        assert(endpoint instanceof URL);
+    });
 
     describe('Can parse headers', function () {
         it('Returns null for a valid non-html site', async function () {

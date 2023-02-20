@@ -170,7 +170,7 @@
     "fs-extra": "11.1.0",
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
-    "got": "9.6.0",
+    "got": "11.8.6",
     "gscan": "4.36.0",
     "human-number": "2.0.1",
     "image-size": "1.0.2",
