@@ -1,7 +1,7 @@
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 
-const JOB_TIMEOUT = 1000 * 60 * 60 * 24 * (Math.floor(Math.random() * 3)); // 0 - 4 days;
+const JOB_TIMEOUT = 1000 * 60 * 60 * 24 * (Math.floor(Math.random() * 4)); // 0 - 4 days;
 
 const getStripeLiveEnabled = () => {
     const settingsCache = require('../../../shared/settings-cache');
@@ -72,21 +72,12 @@ module.exports = {
     },
 
     /**
+     *
      * @param {number} [customTimeout]
      *
-     * @returns {Promise<object>}
+     *  @returns {Promise<object>}
      */
-    async initAndRun(customTimeout) {
-        /**
-        * @param {number} ms
-        * @returns {Promise<void>}
-        */
-        async function sleep(ms) {
-            return new Promise((resolve) => {
-                setTimeout(resolve, ms);
-            });
-        }
-
+    async scheduleRun(customTimeout) {
         const timeOut = customTimeout || JOB_TIMEOUT;
 
         const today = new Date();
@@ -94,11 +85,26 @@ module.exports = {
         const newMs = msNow + timeOut;
         const jobDate = today.setMilliseconds(newMs);
 
-        await this.init();
-
         logging.info(`Running milestone emails job on ${new Date(jobDate).toString()}`);
 
-        await sleep(timeOut);
-        return await this.run();
+        return new Promise((resolve) => {
+            setTimeout(async () => {
+                const result = await this.run();
+                return resolve(result);
+            }, timeOut);
+        });
+    },
+
+    /**
+     * @param {number} [customTimeout]
+     * Only used temporary for testing purposes.
+     * Will be removed, after job scheduling implementation.
+     *
+     * @returns {Promise<object>}
+     */
+    async initAndRun(customTimeout) {
+        await this.init();
+
+        return this.scheduleRun(customTimeout);
     }
 };
