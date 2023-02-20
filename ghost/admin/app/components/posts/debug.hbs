@@ -278,15 +278,19 @@
                     </tr>
                     <tr>
                         <td>Emails sent:</td>
-                        <td>{{this.emailSettings.emailsSent}}</td>
+                        <td class="gh-type-number">{{ format-number this.emailSettings.emailsSent}}</td>
                     </tr>
                     <tr>
                         <td>Delivered:</td>
-                        <td>{{this.emailSettings.emailsDelivered}}</td>
+                        <td class="gh-type-number">{{ format-number this.emailSettings.emailsDelivered}}</td>
+                    </tr>
+                    <tr>
+                        <td>Opened:</td>
+                        <td class="gh-type-number">{{ format-number this.emailSettings.emailsOpened}}</td>
                     </tr>
                     <tr>
                         <td>Failed:</td>
-                        <td>{{this.emailSettings.emailsFailed}}</td>
+                        <td class="gh-type-number">{{ format-number this.emailSettings.emailsFailed}}</td>
                     </tr>
                     <tr>
                         <td colspan="2"><hr></td>
@@ -321,8 +325,99 @@
                             {{/if}}
                         </td>
                     </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <td>Analytics Latest running:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if (and this.analyticsStatus this.analyticsStatus.latest this.analyticsStatus.latest.running) }}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Last started:</td>
+                        <td>{{ this.analyticsStatus.latest.lastStarted }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetching from:</td>
+                        <td>{{ this.analyticsStatus.latest.lastBegin }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last event time:</td>
+                        <td>{{ this.analyticsStatus.latest.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <td>Analytics Missing running:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if (and this.analyticsStatus this.analyticsStatus.missing this.analyticsStatus.missing.running) }}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Last started:</td>
+                        <td>{{ this.analyticsStatus.missing.lastStarted }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetching from:</td>
+                        <td>{{ this.analyticsStatus.missing.lastBegin }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last event time:</td>
+                        <td>{{ this.analyticsStatus.missing.lastEventTimestamp }}</td>
+                    </tr>
+                    {{#if (and this.analyticsStatus this.analyticsStatus.scheduled this.analyticsStatus.scheduled.schedule) }}
+                        <tr>
+                            <td colspan="2"><hr></td>
+                        </tr>
+                        <tr>
+                            <td>Analytics Scheduled running:</td>
+                            <td class="gh-email-debug-settings-icon">
+                                {{#if this.analyticsStatus.scheduled.running }}
+                                    <span class="check">{{svg-jar "check-2"}}</span>
+                                {{else}}
+                                    <span class="x">{{svg-jar "close"}}</span>
+                                {{/if}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Schedule:</td>
+                            <td>{{ this.analyticsStatus.scheduled.schedule.begin }} - {{ this.analyticsStatus.scheduled.schedule.end }}</td>
+                        </tr>
+                        <tr>
+                            <td>Last started:</td>
+                            <td>{{ this.analyticsStatus.scheduled.lastStarted }}</td>
+                        </tr>
+                        <tr>
+                            <td>Last event time:</td>
+                            <td>{{ this.analyticsStatus.scheduled.lastEventTimestamp }}</td>
+                        </tr>
+                        {{#unless this.analyticsStatus.scheduled.canceled}}
+                            <tr>
+                                <td colspan="2">
+                                    <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.cancelScheduleAnalytics }}>{{svg-jar "trash"}}Cancel scheduled refetch</button>
+                                </td>
+                            </tr>
+                        {{/unless}}
+                    {{else}}
+                        <tr>
+                            <td colspan="2">
+                                <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.scheduleAnalytics }}>{{svg-jar "reload"}}Refetch Analytics</button>
+                            </td>
+                        </tr>
+                    {{/if}}
                 </tbody>
             </table>
+
         </tabs.tabPanel>
 
     </Tabs::Tabs>

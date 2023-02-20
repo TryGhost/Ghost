@@ -1,10 +1,7 @@
 const MailgunClient = require('@tryghost/mailgun-client');
-const moment = require('moment');
-const {EventProcessingResult} = require('@tryghost/email-analytics-service');
 
 const EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
-const TRUST_THRESHOLD_S = 30 * 60; // 30 minutes
 const DEFAULT_TAGS = ['bulk-email'];
 
 class EmailAnalyticsProviderMailgun {
@@ -20,43 +17,29 @@ class EmailAnalyticsProviderMailgun {
     }
 
     /**
-     * Do not start from a particular time, grab latest then work back through
-     * pages until we get a blank response
-     *
-     * @param {Function} batchHandler
-     * @param {Object} [options]
-     */
-    fetchAll(batchHandler, options) {
-        const mailgunOptions = {
-            event: EVENT_FILTER,
-            limit: PAGE_LIMIT,
-            tags: this.tags.join(' AND ')
-        };
-
-        return this.#fetchAnalytics(mailgunOptions, batchHandler, options);
-    }
-
-    /**
      * Fetch from the last known timestamp-TRUST_THRESHOLD then work forwards
      * through pages until we get a blank response. This lets us get events
      * quicker than the TRUST_THRESHOLD
      *
-     * @param {Date} latestTimestamp
      * @param {Function} batchHandler
      * @param {Object} [options]
+     * @param {Number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @param {Date} [options.begin]
+     * @param {Date} [options.end]
      */
-    fetchLatest(latestTimestamp, batchHandler, options) {
-        const beginDate = moment(latestTimestamp).subtract(TRUST_THRESHOLD_S, 's').toDate();
-
+    fetchLatest(batchHandler, options) {
         const mailgunOptions = {
             limit: PAGE_LIMIT,
             event: EVENT_FILTER,
             tags: this.tags.join(' AND '),
-            begin: beginDate.toUTCString(),
+            begin: options.begin ? options.begin.getTime() / 1000 : undefined,
+            end: options.end ? options.end.getTime() / 1000 : undefined,
             ascending: 'yes'
         };
 
-        return this.#fetchAnalytics(mailgunOptions, batchHandler, options);
+        return this.#fetchAnalytics(mailgunOptions, batchHandler, {
+            maxEvents: options.maxEvents
+        });
     }
 
     /**
@@ -68,17 +51,10 @@ class EmailAnalyticsProviderMailgun {
      * @param {String} [mailgunOptions.ascending]
      * @param {Function} batchHandler
      * @param {Object} [options]
+     * @param {Number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      */
     async #fetchAnalytics(mailgunOptions, batchHandler, options) {
-        const events = await this.mailgunClient.fetchEvents(mailgunOptions, batchHandler, options);
-
-        const processingResult = new EventProcessingResult();
-
-        for (const event of events) {
-            processingResult.merge(event);
-        }
-
-        return processingResult;
+        return await this.mailgunClient.fetchEvents(mailgunOptions, batchHandler, options);
     }
 }
 

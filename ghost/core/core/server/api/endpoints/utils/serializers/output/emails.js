@@ -28,5 +28,9 @@ module.exports = {
         if (response.meta) {
             frame.response.meta = response.meta;
         }
+    },
+
+    analyticsStatus(response, apiConfig, frame) {
+        frame.response = response;
     }
 };

@@ -3585,6 +3585,10 @@ p.theme-validation-details {
     margin: 12px 0 20px;
 }
 
+.gh-email-debug-settings .gh-type-number {
+    font-variant-numeric: tabular-nums;
+}
+
 .gh-email-debug-settings hr {
     margin: 8px 0;
     border-top-color: var(--whitegrey);
@@ -3596,7 +3600,7 @@ p.theme-validation-details {
 }
 
 .gh-email-debug-settings tr td:first-of-type {
-    width: 20%;
+    width: 30%;
     white-space: nowrap;
     color: var(--midgrey);
 }
@@ -3618,6 +3622,25 @@ p.theme-validation-details {
 
 .gh-email-debug-settings-icon .x path {
     stroke: var(--midgrey);
+}
+
+.gh-email-debug-schedule-analytics {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    margin: .8rem 0 0;
+    color: var(--green-d1);
+}
+
+.gh-email-debug-schedule-analytics svg {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 6px;
+}
+
+.gh-email-debug-schedule-analytics svg g {
+    stroke: var(--green-d1);
+    stroke-width: 3px;
 }
 
 .gh-email-debug-empty-list {

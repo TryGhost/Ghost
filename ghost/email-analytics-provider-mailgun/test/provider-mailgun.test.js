@@ -38,64 +38,15 @@ describe('EmailAnalyticsProviderMailgun', function () {
         sinon.restore();
     });
 
-    describe('fetchAll()', function () {
-        const MAILGUN_OPTIONS = {
-            event: 'delivered OR opened OR failed OR unsubscribed OR complained',
-            limit: 300,
-            tags: 'bulk-email'
-        };
-
-        it('passes the correct parameters to mailgun-client', async function () {
-            const configStub = sinon.stub(config, 'get');
-            configStub.withArgs('bulkEmail').returns({
-                mailgun: {
-                    apiKey: 'apiKey',
-                    domain: 'domain.com',
-                    baseUrl: 'https://api.mailgun.net/v3'
-                }
-            });
-
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
-
-            const batchHandler = sinon.spy();
-            const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
-
-            await mailgunProvider.fetchAll(batchHandler);
-            sinon.assert.calledWithExactly(mailgunFetchEventsStub, MAILGUN_OPTIONS, batchHandler, undefined);
-        });
-
-        it('uses custom tags when supplied', async function () {
-            const configStub = sinon.stub(config, 'get');
-            configStub.withArgs('bulkEmail').returns({
-                mailgun: {
-                    apiKey: 'apiKey',
-                    domain: 'domain.com',
-                    baseUrl: 'https://api.mailgun.net/v3'
-                }
-            });
-            configStub.withArgs('bulkEmail:mailgun:tag').returns('custom-tag');
-
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
-
-            const batchHandler = sinon.spy();
-            const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
-
-            await mailgunProvider.fetchAll(batchHandler);
-
-            sinon.assert.calledWithExactly(mailgunFetchEventsStub, {
-                ...MAILGUN_OPTIONS,
-                tags: 'bulk-email AND custom-tag'
-            }, batchHandler, undefined);
-        });
-    });
-
     describe('fetchLatest()', function () {
         const LATEST_TIMESTAMP = new Date('Thu Feb 25 2021 12:00:00 GMT+0000');
+        const END_EXAMPLE = new Date('Thu Feb 25 2021 14:00:00 GMT+0000');
         const MAILGUN_OPTIONS = {
             event: 'delivered OR opened OR failed OR unsubscribed OR complained',
             limit: 300,
             tags: 'bulk-email',
-            begin: 'Thu, 25 Feb 2021 11:30:00 GMT',
+            begin: 1614254400,
+            end: undefined,
             ascending: 'yes'
         };
 
@@ -114,8 +65,71 @@ describe('EmailAnalyticsProviderMailgun', function () {
             const batchHandler = sinon.spy();
             const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
 
-            await mailgunProvider.fetchLatest(LATEST_TIMESTAMP, batchHandler);
-            sinon.assert.calledWithExactly(mailgunFetchEventsStub, MAILGUN_OPTIONS, batchHandler, undefined);
+            await mailgunProvider.fetchLatest(batchHandler, {begin: LATEST_TIMESTAMP});
+            sinon.assert.calledWithExactly(mailgunFetchEventsStub, MAILGUN_OPTIONS, batchHandler, {maxEvents: undefined});
+        });
+
+        it('can use end timestamp', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                }
+            });
+
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+
+            const batchHandler = sinon.spy();
+            const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
+
+            await mailgunProvider.fetchLatest(batchHandler, {begin: LATEST_TIMESTAMP, end: END_EXAMPLE});
+
+            const END_EXAMPLE_UNIX = END_EXAMPLE.getTime() / 1000;
+            sinon.assert.calledWithExactly(mailgunFetchEventsStub, {...MAILGUN_OPTIONS, end: END_EXAMPLE_UNIX}, batchHandler, {maxEvents: undefined});
+        });
+
+        it('can use end without begin', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                }
+            });
+
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+
+            const batchHandler = sinon.spy();
+            const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
+
+            await mailgunProvider.fetchLatest(batchHandler, {end: END_EXAMPLE});
+
+            const END_EXAMPLE_UNIX = END_EXAMPLE.getTime() / 1000;
+            sinon.assert.calledWithExactly(mailgunFetchEventsStub, {...MAILGUN_OPTIONS, begin: undefined, end: END_EXAMPLE_UNIX}, batchHandler, {maxEvents: undefined});
+        });
+
+        it('can use max events', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                }
+            });
+
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+
+            const batchHandler = sinon.spy();
+            const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
+
+            await mailgunProvider.fetchLatest(batchHandler, {begin: LATEST_TIMESTAMP, end: END_EXAMPLE, maxEvents: 1000});
+
+            const END_EXAMPLE_UNIX = END_EXAMPLE.getTime() / 1000;
+            sinon.assert.calledWithExactly(mailgunFetchEventsStub, {...MAILGUN_OPTIONS, end: END_EXAMPLE_UNIX}, batchHandler, {maxEvents: 1000});
         });
 
         it('uses custom tags when supplied', async function () {
@@ -134,12 +148,12 @@ describe('EmailAnalyticsProviderMailgun', function () {
             const batchHandler = sinon.spy();
             const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
 
-            await mailgunProvider.fetchLatest(LATEST_TIMESTAMP, batchHandler);
+            await mailgunProvider.fetchLatest(batchHandler, {begin: LATEST_TIMESTAMP});
 
             sinon.assert.calledWithExactly(mailgunFetchEventsStub, {
                 ...MAILGUN_OPTIONS,
                 tags: 'bulk-email AND custom-tag'
-            }, batchHandler, undefined);
+            }, batchHandler, {maxEvents: undefined});
         });
     });
 });
