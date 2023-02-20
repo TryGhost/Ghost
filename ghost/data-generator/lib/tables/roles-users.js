@@ -20,9 +20,14 @@ class RolesUsersImporter extends TableImporter {
             min: 0,
             max: userRoles.length - 1
         })];
+        const actualRole = this.roles.find(role => role.name === userRole);
+        if (!actualRole) {
+            // No roles defined in database, don't bother creating user role
+            return;
+        }
         return {
             id: faker.database.mongodbObjectId(),
-            role_id: this.roles.find(role => role.name === userRole).id,
+            role_id: actualRole.id,
             user_id: this.model.id
         };
     }
