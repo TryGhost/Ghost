@@ -20,7 +20,9 @@ import {
     KEY_DELETE_COMMAND,
     KEY_TAB_COMMAND,
     PASTE_COMMAND,
-    INSERT_PARAGRAPH_COMMAND
+    INSERT_PARAGRAPH_COMMAND,
+    KEY_MODIFIER_COMMAND,
+    $getRoot
 } from 'lexical';
 import {
     $isAtStartOfDocument,
@@ -318,6 +320,55 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         event.preventDefault();
                         $selectDecoratorNode(nextSibling);
                         return true;
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_MODIFIER_COMMAND,
+                (event) => {
+                    const isArrowUp = event.key === 'ArrowUp' || event.keyCode === 38;
+                    const isArrowDown = event.key === 'ArrowDown' || event.keyCode === 40;
+
+                    if (event.metaKey && (isArrowUp || isArrowDown)) {
+                        const selection = $getSelection();
+                        const isNodeSelected = $isNodeSelection(selection);
+                        const hasCardAtStart = $isDecoratorNode($getRoot().getFirstChild());
+                        const hasCardAtEnd = $isDecoratorNode($getRoot().getLastChild());
+
+                        if (isNodeSelected || hasCardAtStart || hasCardAtEnd) {
+                            // meta+down on macos moves cursor to end of document
+                            if (isArrowDown) {
+                                event.preventDefault();
+
+                                const lastNode = $getRoot().getLastChild();
+
+                                if ($isDecoratorNode(lastNode)) {
+                                    $selectDecoratorNode(lastNode);
+                                    return true;
+                                } else {
+                                    lastNode.selectEnd();
+                                    return true;
+                                }
+                            }
+
+                            // meta+up on macos moves cursor to start of document
+                            if (isArrowUp) {
+                                event.preventDefault();
+
+                                const firstNode = $getRoot().getFirstChild();
+
+                                if ($isDecoratorNode(firstNode)) {
+                                    $selectDecoratorNode(firstNode);
+                                    return true;
+                                } else {
+                                    firstNode.selectStart();
+                                    return true;
+                                }
+                            }
+                        }
                     }
 
                     return false;

@@ -1392,4 +1392,159 @@ describe('Card behaviour', async () => {
             await expect(page.locator('[data-kg-card-selected="true"]')).not.toBeVisible();
         });
     });
+
+    describe('CMD+UP', function () {
+        test('with selected card and plain text at top', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('Second');
+            await page.keyboard.press('ArrowUp');
+
+            await page.keyboard.press('Meta+ArrowUp');
+
+            await assertSelection(page, {
+                anchorPath: [0, 0, 0],
+                anchorOffset: 0,
+                focusPath: [0, 0, 0],
+                focusOffset: 0
+            });
+        });
+
+        test('with selected card and card at top', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('ArrowUp');
+
+            await page.keyboard.press('Meta+ArrowUp');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div
+                        data-kg-card-selected="true"
+                        data-kg-card-editing="false"
+                        data-kg-card="horizontalrule"
+                    >
+                        <hr />
+                    </div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div
+                        data-kg-card-selected="false"
+                        data-kg-card-editing="false"
+                        data-kg-card="horizontalrule"
+                    >
+                        <hr />
+                    </div>
+                </div>
+                <p><br /></p>
+            `);
+        });
+
+        test('with caret in text and card at top', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('First');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('Second');
+
+            await page.keyboard.press('Meta+ArrowUp');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div
+                        data-kg-card-selected="true"
+                        data-kg-card-editing="false"
+                        data-kg-card="horizontalrule"
+                    >
+                        <hr />
+                    </div>
+                </div>
+                <p dir="ltr"><span data-lexical-text="true">First</span></p>
+                <p dir="ltr"><span data-lexical-text="true">Second</span></p>
+            `);
+        });
+    });
+
+    describe('CMD+DOWN', function () {
+        test('with selected card and plain text at bottom', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('Second');
+            await page.keyboard.press('ArrowUp');
+
+            await page.keyboard.press('Meta+ArrowDown');
+
+            await assertSelection(page, {
+                anchorPath: [2, 0, 0],
+                anchorOffset: 6,
+                focusPath: [2, 0, 0],
+                focusOffset: 6
+            });
+        });
+
+        test('with selected card and card at bottom', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.press('ArrowUp');
+
+            await page.keyboard.press('Meta+ArrowDown');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div
+                        data-kg-card-selected="false"
+                        data-kg-card-editing="false"
+                        data-kg-card="horizontalrule"
+                    >
+                        <hr />
+                    </div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div
+                        data-kg-card-selected="true"
+                        data-kg-card-editing="false"
+                        data-kg-card="horizontalrule"
+                    >
+                        <hr />
+                    </div>
+                </div>
+            `);
+        });
+
+        test('with caret in text and card at bottom', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('Second');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+
+            await page.keyboard.press('Meta+ArrowDown');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">First</span></p>
+                <p dir="ltr"><span data-lexical-text="true">Second</span></p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div
+                        data-kg-card-selected="true"
+                        data-kg-card-editing="false"
+                        data-kg-card="horizontalrule"
+                    >
+                        <hr />
+                    </div>
+                </div>
+            `);
+        });
+    });
 });
