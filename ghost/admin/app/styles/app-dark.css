@@ -1492,3 +1492,15 @@ kbd {
 .gh-mention-your-post-link {
     color: var(--black);
 }
+
+.gh-mention-card {
+    border-color: var(--hairline-color-1);
+}
+
+.gh-mention-publisher {
+    color: var(--middarkgrey);
+}
+
+.gh-mentions-explainer {
+    background: var(--whitegrey);
+}
