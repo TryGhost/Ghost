@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const debug = require('@tryghost/debug')('jobs:email-analytics:fetch-latest');
 
 class EmailAnalyticsServiceWrapper {
     init() {
@@ -55,22 +54,40 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
-    async fetchLatest() {
+    async fetchLatest({maxEvents} = {maxEvents: Infinity}) {
+        logging.info('[EmailAnalytics] Fetch latest started');
+
         const fetchStartDate = new Date();
-        debug('Starting email analytics fetch of latest events');
-        const eventStats = await this.service.fetchLatest();
+        const totalEvents = await this.service.fetchLatest({maxEvents});
         const fetchEndDate = new Date();
-        debug(`Finished fetching ${eventStats.totalEvents} analytics events in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms`);
 
-        const aggregateStartDate = new Date();
-        debug(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
-        await this.service.aggregateStats(eventStats);
-        const aggregateEndDate = new Date();
-        debug(`Finished aggregating email analytics in ${aggregateEndDate.getTime() - aggregateStartDate.getTime()}ms`);
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest)`);
+        return totalEvents;
+    }
 
-        logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate.getTime() - fetchStartDate.getTime()}ms`);
+    async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
+        logging.info('[EmailAnalytics] Fetch missing started');
 
-        return eventStats;
+        const fetchStartDate = new Date();
+        const totalEvents = await this.service.fetchMissing({maxEvents});
+        const fetchEndDate = new Date();
+
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (missing)`);
+        return totalEvents;
+    }
+
+    async fetchScheduled({maxEvents}) {
+        if (maxEvents < 300) {
+            return 0;
+        }
+        logging.info('[EmailAnalytics] Fetch scheduled started');
+
+        const fetchStartDate = new Date();
+        const totalEvents = await this.service.fetchScheduled({maxEvents});
+        const fetchEndDate = new Date();
+
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (scheduled)`);
+        return totalEvents;
     }
 
     async startFetch() {
@@ -80,12 +97,14 @@ class EmailAnalyticsServiceWrapper {
         }
         this.fetching = true;
 
-        logging.info('Email analytics fetch started');
         try {
-            const eventStats = await this.fetchLatest();
+            const c1 = await this.fetchLatest({maxEvents: Infinity});
+            const c2 = await this.fetchMissing({maxEvents: Infinity});
+
+            // Only fetch scheduled if we didn't fetch a lot of normal events
+            await this.fetchScheduled({maxEvents: 20000 - c1 - c2});
 
             this.fetching = false;
-            return eventStats;
         } catch (e) {
             logging.error(e, 'Error while fetching email analytics');
 

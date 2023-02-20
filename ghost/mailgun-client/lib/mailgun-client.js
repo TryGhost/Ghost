@@ -2,6 +2,7 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
+const errors = require('@tryghost/errors');
 
 module.exports = class MailgunClient {
     #config;
@@ -38,7 +39,9 @@ module.exports = class MailgunClient {
         }
 
         if (Object.keys(recipientData).length > MailgunClient.BATCH_SIZE) {
-            // TODO: what to do here?
+            throw new errors.IncorrectUsageError({
+                message: `Mailgun only supports sending to ${MailgunClient.BATCH_SIZE} recipients at a time`
+            });
         }
 
         let messageData = {};
@@ -107,13 +110,19 @@ module.exports = class MailgunClient {
         }
     }
 
+    /**
+     * Fetches events from Mailgun
+     * @param {Object} mailgunOptions
+     * @param {Function} batchHandler
+     * @param {Object} options
+     * @param {Number} options.maxEvents Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @returns {Promise<void>}
+     */
     async fetchEvents(mailgunOptions, batchHandler, {maxEvents = Infinity} = {}) {
-        let result = [];
-
         const mailgunInstance = this.getInstance();
         if (!mailgunInstance) {
             logging.warn(`Mailgun is not configured`);
-            return result;
+            return;
         }
 
         debug(`fetchEvents: starting fetching first events page`);
@@ -132,16 +141,14 @@ module.exports = class MailgunClient {
             debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
+            const beginTimestamp = mailgunOptions.begin ? Math.ceil(mailgunOptions.begin * 1000) : undefined; // ceil here if we have rounding errors
 
-            pagesLoop:
             while (events.length !== 0) {
-                const batchResult = await batchHandler(events);
-
-                result = result.concat(batchResult);
+                await batchHandler(events);
                 eventCount += events.length;
 
-                if (eventCount >= maxEvents) {
-                    break pagesLoop;
+                if (eventCount >= maxEvents && (!beginTimestamp || !events[events.length - 1].timestamp || (events[events.length - 1].timestamp.getTime() > beginTimestamp))) {
+                    break;
                 }
 
                 const nextPageId = page.pages.next.page;
@@ -159,8 +166,6 @@ module.exports = class MailgunClient {
                 events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
                 debug(`fetchEvents: finished fetching next page with ${events.length} events`);
             }
-
-            return result;
         } catch (error) {
             // Log and re-throw Mailgun errors
             logging.error(error);
