@@ -4,15 +4,16 @@ import {ReactComponent as EyeOpenIcon} from './icons/eye-open.svg';
 import {ReactComponent as EyeClosedIcon} from './icons/eye-closed.svg';
 import {$createParagraphNode, $getRoot} from 'lexical';
 
-const ToggleButton = ({content, setTitle}) => {
+const InitialContentToggle = ({defaultContent, setTitle, searchParams, setSearchParams}) => {
     const [editor] = useLexicalComposerContext();
-    const [isOn, setIsOn] = React.useState(true);
+    const [isOn, setIsOn] = React.useState(searchParams.get('content') !== 'false');
 
     const toggle = () => {
         if (!isOn) {
-            const editorState = editor.parseEditorState(content);
+            const editorState = editor.parseEditorState(defaultContent);
             editor.setEditorState(editorState);
             setTitle('Meet the Koenig editor.');
+            setSearchParams({});
         }
         if (isOn) {
             editor.update(() => {
@@ -23,6 +24,7 @@ const ToggleButton = ({content, setTitle}) => {
                 paragraph.select();
             });
             setTitle('');
+            setSearchParams({content: 'false'});
         }
         setIsOn(!isOn);
     };
@@ -38,4 +40,4 @@ const ToggleButton = ({content, setTitle}) => {
     );
 };
 
-export default ToggleButton;
+export default InitialContentToggle;

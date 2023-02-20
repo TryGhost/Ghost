@@ -1,4 +1,5 @@
 import React from 'react';
+import {useSearchParams} from 'react-router-dom';
 import {KoenigComposer, KoenigFullEditor} from '../src';
 import FloatingButton from './components/FloatingButton';
 import {useState} from 'react';
@@ -6,33 +7,23 @@ import Watermark from './components/Watermark';
 import {useFileUpload, fileTypes} from './utils/useFileUpload';
 import Sidebar from './components/Sidebar';
 import content from './content/content.json';
-import ToggleButton from './components/ToggleButton';
-import {useLocation} from 'react-router-dom';
+import InitialContentToggle from './components/InitialContentToggle';
 import TitleTextBox from './components/TitleTextBox';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {$getRoot, $isDecoratorNode} from 'lexical';
 
-const loadContent = () => {
-    const cnt = JSON.stringify(content);
-    return cnt;
-};
-
-function useQuery() {
-    const {search} = useLocation();
-
-    return React.useMemo(() => new URLSearchParams(search), [search]);
-}
+const defaultContent = JSON.stringify(content);
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders}
 };
 
 function DemoApp() {
-    let query = useQuery();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
-    const [defaultContent] = useState(query.get('content') !== 'false' ? loadContent() : undefined);
-    const [title, setTitle] = useState(defaultContent ? 'Meet the Koenig editor.' : '');
+    const [initialContent] = useState(searchParams.get('content') === 'false' ? undefined : defaultContent);
+    const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
     const [editorAPI, setEditorAPI] = useState(null);
     const titleRef = React.useRef(null);
     const containerRef = React.useRef(null);
@@ -114,14 +105,14 @@ function DemoApp() {
             className="koenig-lexical top"
         >
             <KoenigComposer
-                initialEditorState={defaultContent}
+                initialEditorState={initialContent}
                 fileUploader={{useFileUpload, fileTypes}}
                 cardConfig={cardConfig}
             >
                 <div className="relative h-full grow">
                     {
-                        query.get('content') !== 'false'
-                            ? <ToggleButton setTitle={setTitle} content={defaultContent}/>
+                        searchParams !== 'false'
+                            ? <InitialContentToggle setTitle={setTitle} searchParams={searchParams} setSearchParams={setSearchParams} defaultContent={defaultContent} />
                             : null
                     }
                     <div className="h-full overflow-auto" ref={containerRef} onClick={focusEditor}>
