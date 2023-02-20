@@ -23,11 +23,8 @@ const labs = require('../../../../../../../shared/labs');
 
 module.exports = async (model, frame, options = {}) => {
     const {tiers: tiersData} = options || {};
-    const extendedOptions = Object.assign(_.cloneDeep(frame.options), {
-        extraProperties: ['canonical_url']
-    });
 
-    const jsonModel = model.toJSON(extendedOptions);
+    const jsonModel = model.toJSON(frame.options);
 
     // Map email_recipient_filter to email_segment
     jsonModel.email_segment = jsonModel.email_recipient_filter;
