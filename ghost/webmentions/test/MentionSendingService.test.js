@@ -417,27 +417,27 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        // it('Can handle redirect responses', async function () {
-        //     const scope = nock('https://example.org')
-        //         .persist()
-        //         .post('/webmentions-test')
-        //         .reply(302, '', {
-        //             Location: 'https://example.org/webmentions-test-2'
-        //         });
-        //     const scope2 = nock('https://example.org')
-        //         .persist()
-        //         .post('/webmentions-test-2')
-        //         .reply(201);
+        it('Can handle redirect responses', async function () {
+            const scope = nock('https://example.org')
+                .persist()
+                .post('/webmentions-test')
+                .reply(302, '', {
+                    Location: 'https://example.org/webmentions-test-2'
+                });
+            const scope2 = nock('https://example.org')
+                .persist()
+                .post('/webmentions-test-2')
+                .reply(201);
         
-        //     const service = new MentionSendingService({externalRequest});
-        //     await service.send({
-        //         source: new URL('https://example.com'),
-        //         target: new URL('https://example.com'),
-        //         endpoint: new URL('https://example.org/webmentions-test')
-        //     });
-        //     assert(scope.isDone());
-        //     assert(scope2.isDone());
-        // });
+            const service = new MentionSendingService({externalRequest});
+            await service.send({
+                source: new URL('https://example.com'),
+                target: new URL('https://example.com'),
+                endpoint: new URL('https://example.org/webmentions-test')
+            });
+            assert(scope.isDone());
+            assert(scope2.isDone());
+        });
 
         it('Can handle network errors', async function () {
             const scope = nock('https://example.org')
