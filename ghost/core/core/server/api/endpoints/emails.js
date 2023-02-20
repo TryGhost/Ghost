@@ -4,6 +4,7 @@ const errors = require('@tryghost/errors');
 const megaService = require('../../services/mega');
 const emailService = require('../../services/email-service');
 const labs = require('../../../shared/labs');
+const emailAnalytics = require('../../services/email-analytics');
 
 const messages = {
     emailNotFound: 'Email not found.',
@@ -139,6 +140,40 @@ module.exports = {
         async query(frame) {
             const filter = `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
             return await models.EmailRecipientFailure.findPage({...frame.options, filter});
+        }
+    },
+
+    analyticsStatus: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            return emailAnalytics.service.getStatus();
+        }
+    },
+
+    scheduleAnalytics: {
+        permissions: {
+            method: 'browse'
+        },
+        data: [
+            'id'
+        ],
+        async query(frame) {
+            const model = await models.Email.findOne(frame.data, frame.options);
+            return emailAnalytics.service.schedule({
+                begin: model.get('created_at'),
+                end: new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7))
+            });
+        }
+    },
+
+    cancelScheduledAnalytics: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            return emailAnalytics.service.cancelScheduled();
         }
     }
 };
