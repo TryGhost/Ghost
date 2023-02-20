@@ -97,6 +97,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                             $selectDecoratorNode(previousSibling);
                             return true;
                         }
+
+                        // move cursor to end of previous node
+                        event.preventDefault();
+                        previousSibling.selectEnd();
+                        return true;
                     }
 
                     if ($isRangeSelection(selection)) {
@@ -187,6 +192,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                             $selectDecoratorNode(nextSibling);
                             return true;
                         }
+
+                        // move cursor to end of previous node
+                        event.preventDefault();
+                        nextSibling.selectStart();
+                        return true;
                     }
 
                     if ($isRangeSelection(selection)) {

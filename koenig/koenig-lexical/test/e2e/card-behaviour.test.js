@@ -438,9 +438,7 @@ describe('Card behaviour', async () => {
 
     describe('UP', function () {
         // moves caret to end of paragraph
-        // TODO: there's an upstream bug that skips last line of paragraph,
-        // see https://github.com/facebook/lexical/issues/3270
-        test.skip('with selected card after paragraph', async function () {
+        test('with selected card after paragraph', async function () {
             await focusEditor(page);
             await page.keyboard.type('First line');
             await page.keyboard.down('Shift');
@@ -472,9 +470,9 @@ describe('Card behaviour', async () => {
             // caret is at end of second line of paragraph
             await assertSelection(page, {
                 anchorOffset: 11,
-                anchorPath: [0, 0, 0],
+                anchorPath: [0, 2, 0],
                 focusOffset: 11,
-                focusPath: [0, 0, 0]
+                focusPath: [0, 2, 0]
             });
 
             // card is no longer selected
@@ -637,9 +635,7 @@ describe('Card behaviour', async () => {
 
     describe('DOWN', function () {
         // moves caret to beginning of paragraph
-        // TODO: there's an upstream bug that skips last line of paragraph,
-        // see https://github.com/facebook/lexical/issues/3270
-        test.skip('with selected card before paragraph', async function () {
+        test('with selected card before paragraph', async function () {
             await focusEditor(page);
             await page.keyboard.type('--- ');
             await page.keyboard.type('First line');
@@ -667,9 +663,9 @@ describe('Card behaviour', async () => {
             // caret is at beginning of paragraph
             await assertSelection(page, {
                 anchorOffset: 0,
-                anchorPath: [0, 0, 0],
+                anchorPath: [1, 0, 0],
                 focusOffset: 0,
-                focusPath: [0, 0, 0]
+                focusPath: [1, 0, 0]
             });
 
             // card is no longer selected
@@ -1339,6 +1335,7 @@ describe('Card behaviour', async () => {
             await page.keyboard.press('Enter');
             await page.keyboard.type('--- ');
             await page.keyboard.type('Second');
+            await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
 
