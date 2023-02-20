@@ -1,15 +1,17 @@
 import React from 'react';
-import {Toggle} from './Toggle';
-import {Input} from './Input';
-import {ButtonGroup} from './ButtonGroup';
-import {IconButton} from './IconButton';
-import {MediaPlaceholder} from './MediaPlaceholder';
-import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
-import {ProgressBar} from './ProgressBar';
-import {openFileSelection} from '../../utils/openFileSelection';
 import ImageUploadForm from './ImageUploadForm';
-import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
 import Portal from './Portal';
+import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
+import {ButtonGroup} from './ButtonGroup';
+import {Dropdown} from './Dropdown';
+import {ColorPicker} from './ColorPicker';
+import {IconButton} from './IconButton';
+import {Input} from './Input';
+import {MediaPlaceholder} from './MediaPlaceholder';
+import {openFileSelection} from '../../utils/openFileSelection';
+import {ProgressBar} from './ProgressBar';
+import {Toggle} from './Toggle';
+import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
 
 export function SettingsPanel({children}) {
     const {ref} = useSettingsPanelReposition();
@@ -30,11 +32,11 @@ export function SettingsPanel({children}) {
 
 export function ToggleSetting({label, description, isChecked, onChange, dataTestID}) {
     return (
-        <div className="flex w-full items-center justify-between text-[1.3rem]">
+        <div className="mt-2 flex min-h-[3rem] w-full items-center justify-between text-[1.3rem] first:mt-0">
             <div>
                 <div className="font-bold text-grey-900">{label}</div>
                 {description &&
-                    <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
+                    <p className="w-11/12 text-[1.25rem] font-normal leading-snug text-grey-700   ">{description}</p>
                 }
             </div>
             <div className="flex shrink-0 pl-2">
@@ -46,7 +48,7 @@ export function ToggleSetting({label, description, isChecked, onChange, dataTest
 
 export function InputSetting({label, description, value, placeholder}) {
     return (
-        <div className="flex w-full flex-col justify-between gap-2 text-[1.3rem]">
+        <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900">{label}</div>
             <Input value={value} placeholder={placeholder} />
             {description &&
@@ -56,13 +58,37 @@ export function InputSetting({label, description, value, placeholder}) {
     );
 }
 
+export function DropdownSetting({label, description}) {
+    return (
+        <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
+            <div className="font-bold text-grey-900">{label}</div>
+            <Dropdown />
+            {description &&
+                    <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
+            }
+        </div>
+    );
+}
+
 export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
     return (
-        <div className="flex w-full items-center justify-between text-[1.3rem]">
+        <div className="mt-2 flex w-full items-center justify-between text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900">{label}</div>
 
             <div className="shrink-0 pl-2">
                 <ButtonGroup onClick={onClick} selectedName={selectedName} buttons={buttons} />
+            </div>
+        </div>
+    );
+}
+
+export function ColorPickerSetting({label, onClick, selectedColor, buttons, layout}) {
+    return (
+        <div className={`mt-2 flex w-full text-[1.3rem] first:mt-0 ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`}>
+            <div className="font-bold text-grey-900">{label}</div>
+
+            <div className={`shrink-0 ${layout === 'stacked' ? '-mx-1 pt-1' : 'pl-2'}`}>
+                <ColorPicker onClick={onClick} selectedColor={selectedColor} buttons={buttons} />
             </div>
         </div>
     );
@@ -87,7 +113,7 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
     const isEmpty = !isLoading && !src;
 
     return (
-        <div className="text-[1.3rem]" data-testid="custom-thumbnail">
+        <div className="mt-2 text-[1.3rem] first:mt-0" data-testid="custom-thumbnail">
             <div className="font-bold text-grey-900">{label}</div>
 
             {isEmpty &&
@@ -144,6 +170,6 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
 
 export function SettingsDivider() {
     return (
-        <hr className="-mx-6 my-2 border-grey-200" />
+        <hr className="-mx-6 mt-2 border-grey-200" />
     );
 }

@@ -1,13 +1,13 @@
 import React from 'react';
 
-import {Input} from './Input';
+import {Dropdown} from './Dropdown';
 
 const story = {
-    title: 'Generic/Input',
-    component: Input,
+    title: 'Generic/Dropdown',
+    component: Dropdown,
     parameters: {
         status: {
-            type: 'uiReady'
+            type: 'inProgress'
         }
     }
 };
@@ -15,7 +15,7 @@ export default story;
 
 const Template = args => (
     <div className="w-[240px]">
-        <Input {...args} />
+        <Dropdown {...args} />
     </div>
 );
 

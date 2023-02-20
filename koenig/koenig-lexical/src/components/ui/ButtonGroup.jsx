@@ -27,11 +27,11 @@ export function IconButton({onClick, label, name, selectedName, Icon}) {
         <li>
             <button
                 type="button"
-                className={`m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded bg-white shadow-sm' : '' }`}
+                className={`m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded bg-white text-black shadow-sm' : 'text-grey-700' } ${Icon || 'text-[1.3rem] font-bold'}`}
                 onClick={() => onClick(name)}
                 aria-label={label}
             >
-                <Icon />
+                {Icon ? <Icon className="fill-black" /> : label}
             </button>
         </li>
     );
