@@ -6,8 +6,8 @@
     </GhCanvasHeader>
     <section>
         {{!-- TODO: Invert logic --}}
-        {{#if this.mentionsList}}
-            {{#each this.mentionsList as |mention|}}
+        {{#if this.mentionsInfinityModel}}
+            {{#each this.mentionsInfinityModel as |mention|}}
                 <div class="gh-mention-card">
                     {{!-- TODO: link to the post analytics page of your post --}}
                     <p class="gh-mention-your-post">Your {{if (eq mention.resource.type "post") "post" "page"}} <a href={{mention.target}} class="gh-mention-your-post-link">{{if mention.resource mention.resource.name mention.target}}</a> was mentioned in:</p>
@@ -45,5 +45,10 @@
                 <p>When other sites mention your posts, they'll appear here.</p>
             </div>
         {{/if}}
+
+        <GhInfinityLoader
+            @infinityModel={{this.mentionsInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
     </section>
 </section>
