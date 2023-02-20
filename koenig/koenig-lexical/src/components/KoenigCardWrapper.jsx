@@ -208,6 +208,11 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
                             } else {
                                 cardNode.selectNext();
                             }
+                        } else {
+                            // ensure we still have a paragraph if the deleted card was the only node
+                            const paragraph = $createParagraphNode();
+                            $getRoot().append(paragraph);
+                            paragraph.select();
                         }
 
                         cardNode.remove();
@@ -229,6 +234,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
                     const latestSelection = $getSelection();
                     if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
                         event.preventDefault();
+
                         const cardNode = $getNodeByKey(nodeKey);
                         const nextSibling = cardNode.getNextSibling();
 

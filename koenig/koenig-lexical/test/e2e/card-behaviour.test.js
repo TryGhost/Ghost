@@ -946,6 +946,17 @@ describe('Card behaviour', async () => {
             `);
         });
 
+        test('with selected card as only node', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <p><br></p>
+            `);
+        });
+
         // deletes empty paragraph, selects card
         test('on empty paragraph after card', async function () {
             await focusEditor(page);
@@ -1064,6 +1075,17 @@ describe('Card behaviour', async () => {
                         <hr>
                     </div>
                 </div>
+                <p><br></p>
+            `);
+        });
+
+        test('with selected card as only node', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.press('Delete');
+
+            await assertHTML(page, html`
                 <p><br></p>
             `);
         });
