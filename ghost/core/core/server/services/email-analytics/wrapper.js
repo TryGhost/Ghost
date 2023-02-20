@@ -54,7 +54,7 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
-    async fetchLatest({maxEvents}) {
+    async fetchLatest({maxEvents} = {maxEvents: Infinity}) {
         logging.info('[EmailAnalytics] Fetch latest started');
 
         const fetchStartDate = new Date();
@@ -65,7 +65,7 @@ class EmailAnalyticsServiceWrapper {
         return totalEvents;
     }
 
-    async fetchMissing({maxEvents}) {
+    async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
         logging.info('[EmailAnalytics] Fetch missing started');
 
         const fetchStartDate = new Date();
