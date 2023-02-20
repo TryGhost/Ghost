@@ -32,6 +32,7 @@ class MembersClickEventsImporter extends TableImporter {
         const openedAt = new Date(this.model.opened_at);
         const laterOn = new Date(this.model.opened_at);
         laterOn.setMinutes(laterOn.getMinutes() + 15);
+        const clickTime = new Date(openedAt.valueOf() + (Math.random() * (laterOn.valueOf() - openedAt.valueOf())));
 
         return {
             id: faker.database.mongodbObjectId(),
@@ -40,7 +41,7 @@ class MembersClickEventsImporter extends TableImporter {
                 min: 0,
                 max: this.redirectList.length - 1
             })].id,
-            created_at: dateToDatabaseString(faker.date.between(openedAt, laterOn))
+            created_at: dateToDatabaseString(clickTime)
         };
     }
 }
