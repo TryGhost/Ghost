@@ -33,15 +33,26 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
     const [cardWidth, setCardWidth] = React.useState(width || 'regular');
     const containerRef = React.useRef(null);
 
-    function $removeOrReplaceNodeWithParagraph(node) {
+    const $removeOrReplaceNodeWithParagraph = React.useCallback((node) => {
         if ($getRoot().getLastChild().is(node)) {
             const paragraph = $createParagraphNode();
             $getRoot().append(paragraph);
             paragraph.select();
+        } else {
+            const nextNode = node.getNextSibling();
+            if ($isDecoratorNode(nextNode)) {
+                $selectDecoratorNode(nextNode);
+                // selecting a decorator node does not change the
+                // window selection (there's no caret) so we need
+                // to manually move focus to the editor element
+                editor.getRootElement().focus();
+            } else {
+                nextNode.selectStart();
+            }
         }
 
         node.remove();
-    }
+    }, [editor]);
 
     React.useLayoutEffect(() => {
         editor.getEditorState().read(() => {
@@ -249,7 +260,9 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
                 KEY_ESCAPE_COMMAND,
                 (event) => {
                     event.preventDefault();
+
                     const cardNode = $getNodeByKey(nodeKey);
+
                     if (cardNode.hasEditMode?.() && isEditing) {
                         if (cardNode.isEmpty?.()) {
                             $removeOrReplaceNodeWithParagraph(cardNode);
@@ -266,7 +279,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
                 COMMAND_PRIORITY_EDITOR
             )
         );
-    }, [editor, isSelected, isEditing, setSelected, clearSelected, setEditing, nodeKey]);
+    }, [editor, isSelected, isEditing, setSelected, clearSelected, setEditing, nodeKey, $removeOrReplaceNodeWithParagraph]);
 
     React.useEffect(() => {
         if (openInEditMode) {

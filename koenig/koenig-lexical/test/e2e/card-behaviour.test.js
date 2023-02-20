@@ -112,7 +112,7 @@ describe('Card behaviour', async () => {
             await page.click('div[data-kg-card="codeblock"]');
             await page.click('div[data-kg-card="codeblock"]');
 
-            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
         });
 
         test('single clicking on a selected card puts it into edit mode', async function () {
@@ -124,7 +124,7 @@ describe('Card behaviour', async () => {
             // Click to edit
             await page.click('div[data-kg-card="codeblock"]');
 
-            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
         });
 
         test('clicking outside the edit mode card switches back to display mode', async function () {
@@ -138,17 +138,17 @@ describe('Card behaviour', async () => {
             await page.click('div[data-kg-card="codeblock"]');
             await page.click('div[data-kg-card="codeblock"]');
 
-            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
 
             await page.click('p');
-            expect (await page.$('[data-kg-card-editing="false"]'));
+            expect(await page.$('[data-kg-card-editing="false"]'));
         });
 
         test('clicking outside the empty edit mode card removes the card', async function () {
             await focusEditor(page);
             await page.keyboard.type('```javascript ');
 
-            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
 
             await page.click('.koenig-lexical');
             await assertHTML(page, html`
@@ -188,13 +188,13 @@ describe('Card behaviour', async () => {
             await page.click('div[data-kg-card-selected="true"]');
 
             // Now the first card should be editing and the second card should not be
-            expect (await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
-            expect (await page.$('[data-kg-card-editing="false"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="false"]')).not.toBeNull();
 
             // Click the card that's not currently editing (second card)
             await page.click('div[data-kg-card-editing="false"]');
             // Now neither card should be editing
-            expect (await page.$('[data-kg-card-editing="true"]')).toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).toBeNull();
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
@@ -750,9 +750,9 @@ describe('Card behaviour', async () => {
             // caret on second line after break
             await assertSelection(page, {
                 anchorOffset: 0,
-                anchorPath: [0, 3 ,0],
+                anchorPath: [0, 3, 0],
                 focusOffset: 0,
-                focusPath: [0, 3 ,0]
+                focusPath: [0, 3, 0]
             });
 
             await page.keyboard.press('ArrowDown');
@@ -1194,10 +1194,84 @@ describe('Card behaviour', async () => {
 
             await page.keyboard.press('Escape');
 
-            // card is replaced with an empty paragraph
+            // card is removed leaving the empty paragraph
             await assertHTML(page, html`
                 <p><br></p>
             `);
+
+            // paragraph is selected
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0],
+                focusOffset: 0,
+                focusPath: [0]
+            });
+        });
+
+        test('with an edit mode card that is empty before existing content', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.type('``` ');
+            await page.waitForSelector('[data-kg-card="codeblock"]');
+
+            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+
+            await page.keyboard.press('Escape');
+
+            // card is removed leaving the existing paragraph
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+            `);
+
+            // cursor is at beginning of trailing paragraph
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0, 0, 0],
+                focusOffset: 0,
+                focusPath: [0, 0, 0]
+            });
+        });
+
+        test('with an edit mode card that is empty before another card', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.type('``` ');
+            await page.waitForSelector('[data-kg-card="codeblock"]');
+
+            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+            expect(await page.$('[data-kg-card-editing="true"]')).not.toBeNull();
+
+            await page.keyboard.press('Escape');
+
+            // card is removed leaving the existing card
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div
+                        data-kg-card-selected="true"
+                        data-kg-card-editing="false"
+                        data-kg-card="horizontalrule"
+                    >
+                        <hr />
+                    </div>
+                </div>
+                <p><br /></p>
+            `);
+
+            // test editor does actually have focus by trying to move the caret
+            await page.keyboard.press('ArrowDown');
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
         });
     });
 });
