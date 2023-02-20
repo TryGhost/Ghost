@@ -4,51 +4,63 @@
             Mentions
         </h2>
     </GhCanvasHeader>
-    <section>
-        {{!-- TODO: Invert logic --}}
-        {{#if this.mentionsInfinityModel}}
-            {{#each this.mentionsInfinityModel as |mention|}}
-                <div class="gh-mention-card">
-                    {{!-- TODO: link to the post analytics page of your post --}}
-                    <p class="gh-mention-your-post">Your {{if (eq mention.resource.type "post") "post" "page"}} <a href={{mention.target}} class="gh-mention-your-post-link">{{if mention.resource mention.resource.name mention.target}}</a> was mentioned in:</p>
-                    <a href="{{mention.source}}" class="gh-mention-container" rel="noreferrer noopener" target="_blank">
-                        <div class="gh-mention-content">
-                            <h3 class="gh-mention-title">{{if mention.sourceTitle mention.sourceTitle mention.target}}</h3>
-                            {{#if mention.sourceExcerpt}}
-                                <p class="gh-mention-description">{{mention.sourceExcerpt}}</p>
-                            {{/if}}
-                            <div class="gh-mention-metadata">
+    <section class="gh-mentions-main-section">
+        <div class="gh-mentions-list">
+            {{#if this.mentionsInfinityModel}}
+                <div>
+                    {{#each this.mentionsInfinityModel as |mention|}}
+                        <a href="{{mention.source}}" class="gh-mention-card" rel="noreferrer noopener" target="_blank">
+                            {{!-- TODO: link to the post analytics page of your post --}}
+                            <div class="gh-mention-header">
                                 {{#if mention.sourceFavicon}}
                                     <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="gh-mention-icon">
                                 {{/if}}
-                                {{#if mention.sourceSiteTitle}}
-                                    <span class="gh-mention-publisher">{{mention.sourceSiteTitle}}</span>
-                                {{/if}}
-                                {{#if mention.sourceAuthor}}
-                                    <span class="gh-mention-author">{{mention.sourceAuthor}}</span>
-                                {{/if}}
+                                <div class="gh-mention-publisher">{{mention.sourceSiteTitle}}</div>
+                                <div class="gh-mention-link-icon">
+                                    {{svg-jar "twitter-link"}}
+                                </div>
+                                <span class="gh-mention-your-link">{{if mention.resource mention.resource.name mention.target}}</span>
                                 <span class="gh-mention-timestamp" title={{gh-format-post-time mention.timestamp}}>{{moment-from-now mention.timestamp}}</span>
                             </div>
-                        </div>
-                        {{#if mention.sourceFeaturedImage}}
-                            <div class="gh-mention-thumbnail">
-                                <img src="{{mention.sourceFeaturedImage}}" alt="{{mention.sourceTitle}}">
+                            <div class="gh-mention-content">
+                                <div class="gh-mention-source">
+                                    <h3 class="gh-mention-title">{{if mention.sourceTitle mention.sourceTitle mention.target}}</h3>
+                                    {{#if mention.sourceExcerpt}}
+                                        <p class="gh-mention-description">{{mention.sourceExcerpt}}</p>
+                                    {{/if}}
+                                    <div class="gh-mention-metadata">
+                                        {{#if mention.sourceAuthor}}
+                                            <span class="gh-mention-author">{{mention.sourceAuthor}}</span>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                {{#if mention.sourceFeaturedImage}}
+                                    <div class="gh-mention-thumbnail">
+                                        <img src="{{mention.sourceFeaturedImage}}" alt="" role="presentation">
+                                    </div>
+                                {{/if}}
                             </div>
-                        {{/if}}
-                    </a>
+                        </a>
+                    {{/each}}
                 </div>
-            {{/each}}
-        {{else}}
-            <div class="gh-mentions-list-cta">
-                {{svg-jar "email-love-letter" class="love-letter"}}
-                <h4>No mentions yet</h4>
-                <p>When other sites mention your posts, they'll appear here.</p>
-            </div>
-        {{/if}}
-
-        <GhInfinityLoader
+            {{else}}
+                <div class="gh-mentions-list-cta">
+                    {{svg-jar "email-love-letter" class="love-letter"}}
+                    <h4>No mentions yet</h4>
+                    <p>When other sites mention your posts, they'll appear here.</p>
+                </div>
+            {{/if}}
+            <GhInfinityLoader
             @infinityModel={{this.mentionsInfinityModel}}
             @scrollable=".gh-main"
             @triggerOffset={{1000}} />
+        </div>
+        <div class="gh-mentions-sidebar">
+            <div class="gh-mentions-explainer">
+                <img src="assets/img/mentions-background.png" alt="" role="presentation"/>
+                <h2>Introducing Mentions</h2>
+                <p>Whenever another person or site links to you, you’ll receive a notification in your dashboard to show you who’s talking about your content — and, when you link to someone else’s work, they’ll be notified, too.</p>
+            </div>
+        </div>
     </section>
 </section>
