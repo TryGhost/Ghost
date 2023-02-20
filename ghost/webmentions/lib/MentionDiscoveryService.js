@@ -17,7 +17,7 @@ module.exports = class MentionDiscoveryService {
         try {
             const response = await this.#externalRequest(url.href, {
                 throwHttpErrors: false,
-                followRedirects: true,
+                followRedirect: true,
                 maxRedirects: 10
             });
             if (response.statusCode === 404) {
