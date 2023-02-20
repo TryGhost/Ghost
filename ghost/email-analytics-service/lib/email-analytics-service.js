@@ -22,7 +22,7 @@ const errors = require('@tryghost/errors');
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer than 1 minute (yet). Reduces the chance of having missed events in fetchLatest.
 
-module.exports = class EmailAnalytics {
+module.exports = class EmailAnalyticsService {
     config;
     settings;
     queries;
@@ -98,8 +98,8 @@ module.exports = class EmailAnalytics {
      * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      */
     async fetchMissing({maxEvents = Infinity} = {}) {
-        // We start where we left of, or 30 minutes before the last event we received
-        const begin = this.#fetchMissingData?.lastEventTimestamp ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 2);
+        // We start where we left of, or 1,5h ago after a server restart
+        const begin = this.#fetchMissingData?.lastEventTimestamp ?? this.#fetchMissingData?.lastBegin ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 3);
 
         // Always stop at the time the fetchLatest started fetching on, or maximum 30 minutes ago
         const end = new Date(

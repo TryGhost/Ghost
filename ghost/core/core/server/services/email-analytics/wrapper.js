@@ -54,11 +54,11 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
-    async fetchLatest() {
+    async fetchLatest({maxEvents}) {
         logging.info('[EmailAnalytics] Fetch latest started');
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchLatest({}); // No maximum, as these events are the most important
+        const totalEvents = await this.service.fetchLatest({maxEvents});
         const fetchEndDate = new Date();
 
         logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest)`);
@@ -66,13 +66,10 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async fetchMissing({maxEvents}) {
-        if (maxEvents < 300) {
-            return 0;
-        }
         logging.info('[EmailAnalytics] Fetch missing started');
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchMissing({maxEvents}); // Maximum so we don't delay fetchLatest too much
+        const totalEvents = await this.service.fetchMissing({maxEvents});
         const fetchEndDate = new Date();
 
         logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (missing)`);
@@ -86,7 +83,7 @@ class EmailAnalyticsServiceWrapper {
         logging.info('[EmailAnalytics] Fetch scheduled started');
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchScheduled({maxEvents}); // Maximum so we don't delay fetchLatest too much
+        const totalEvents = await this.service.fetchScheduled({maxEvents});
         const fetchEndDate = new Date();
 
         logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (scheduled)`);
@@ -101,8 +98,10 @@ class EmailAnalyticsServiceWrapper {
         this.fetching = true;
 
         try {
-            const c1 = await this.fetchLatest();
-            const c2 = await this.fetchMissing({maxEvents: 20000 - c1});
+            const c1 = await this.fetchLatest({maxEvents: Infinity});
+            const c2 = await this.fetchMissing({maxEvents: Infinity});
+
+            // Only fetch scheduled if we didn't fetch a lot of normal events
             await this.fetchScheduled({maxEvents: 20000 - c1 - c2});
 
             this.fetching = false;
