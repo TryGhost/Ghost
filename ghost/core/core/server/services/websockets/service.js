@@ -15,7 +15,8 @@ module.exports = {
             let count = 0;
 
             io.on(`connection`, (socket) => {
-                debug(`[Websockets] Client connected`);
+                logging.info(`Websockets client connected (id: ${socket.id})`);
+
                 // on connect, send current value
                 socket.emit('addCount', count);
                 // listen to to changes in value from client
