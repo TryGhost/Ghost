@@ -1,4 +1,5 @@
 import {beforeAll, afterAll, beforeEach, describe, test} from 'vitest';
+import {expect} from '@playwright/test';
 import {startApp, initialize, focusEditor, assertHTML, html, assertSelection, pasteText} from '../utils/e2e';
 
 describe('Card behaviour', async () => {
@@ -1272,6 +1273,70 @@ describe('Card behaviour', async () => {
                 focusOffset: 0,
                 focusPath: [1]
             });
+        });
+    });
+
+    describe('SELECTION', function () {
+        test('shift+down does not put card in selected state', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('Second');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+
+            // sanity check
+            await assertSelection(page, {
+                anchorPath: [0, 0, 0],
+                anchorOffset: 0,
+                focusPath: [0, 0, 0],
+                focusOffset: 0
+            });
+
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('ArrowDown');
+            await page.keyboard.press('ArrowDown');
+            await page.keyboard.up('Shift');
+
+            await assertSelection(page, {
+                anchorPath: [0, 0, 0],
+                anchorOffset: 0,
+                focusPath: [2, 0, 0],
+                focusOffset: 6
+            });
+
+            await expect(page.locator('[data-kg-card-selected="true"]')).not.toBeVisible();
+        });
+
+        test('shift+up does not put card in selected state', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('Second');
+
+            // sanity check
+            await assertSelection(page, {
+                anchorPath: [2, 0, 0],
+                anchorOffset: 6,
+                focusPath: [2, 0, 0],
+                focusOffset: 6
+            });
+
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.up('Shift');
+
+            await assertSelection(page, {
+                anchorPath: [2, 0, 0],
+                anchorOffset: 6,
+                focusPath: [0, 0, 0],
+                focusOffset: 0
+            });
+
+            await expect(page.locator('[data-kg-card-selected="true"]')).not.toBeVisible();
         });
     });
 });

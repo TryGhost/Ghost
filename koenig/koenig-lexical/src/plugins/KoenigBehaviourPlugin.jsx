@@ -71,6 +71,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerCommand(
                 KEY_ARROW_UP_COMMAND,
                 (event) => {
+                    // stick to default behaviour if a selection is being made
+                    if (event.shiftKey) {
+                        return false;
+                    }
+
                     // avoid processing card behaviours when an inner element has focus
                     if (document.activeElement !== editor.getRootElement()) {
                         return true;
@@ -152,7 +157,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             ),
             editor.registerCommand(
                 KEY_ARROW_DOWN_COMMAND,
-                () => {
+                (event) => {
+                    // stick to default behaviour if shift key is pressed
+                    if (event.shiftKey) {
+                        return false;
+                    }
+
                     // avoid processing card behaviours when an inner element has focus
                     if (document.activeElement !== editor.getRootElement()) {
                         return true;
