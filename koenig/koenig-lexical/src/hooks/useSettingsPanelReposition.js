@@ -24,6 +24,8 @@ export default function useSettingsPanelPosition({positionToRef} = {}) {
         return () => {
             window.removeEventListener('resize', panelRepositionDebounced);
         };
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     function positionPanel(panelElem) {

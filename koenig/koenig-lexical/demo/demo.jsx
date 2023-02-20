@@ -8,6 +8,7 @@ import {
 import {DesignSandbox} from '../src';
 import DemoApp from './DemoApp';
 import RestrictedContentDemo from './RestrictedContentDemo';
+import HtmlOutputDemo from './HtmlOutputDemo';
 import './styles/demo.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -16,6 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Routes>
                 <Route path="/designsandbox" element={<DesignSandbox />} />
                 <Route path="/contentrestricted" element={<RestrictedContentDemo paragraphs={1} />} />
+                <Route path="/html-output" element={<HtmlOutputDemo />} />
                 <Route path="/" element={<DemoApp introContent={true} />} />
             </Routes>
         </Router>

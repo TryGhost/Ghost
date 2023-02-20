@@ -23,6 +23,7 @@ import {VideoPlugin} from './plugins/VideoPlugin';
 import HorizontalRulePlugin from './plugins/HorizontalRulePlugin';
 import ImagePlugin from './plugins/ImagePlugin';
 import MarkdownPlugin from './plugins/MarkdownPlugin';
+import HtmlOutputPlugin from './plugins/HtmlOutputPlugin';
 
 export * from './utils';
 
@@ -46,6 +47,7 @@ export {
     ExternalControlPlugin,
     DragDropReorderPlugin,
     RestrictContentPlugin,
+    HtmlOutputPlugin,
     DEFAULT_NODES,
     DEFAULT_TRANSFORMERS,
     ELEMENT_TRANSFORMERS,

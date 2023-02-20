@@ -218,11 +218,11 @@ export async function assertPosition(page, selector, expectedBox, {threshold = 0
     });
 }
 
-export async function pasteText(page, text) {
+export async function pasteText(page, text, mimeType = 'text/plain') {
     const pasteCommand = `
         const text = ${JSON.stringify(text)};
         const dataTransfer = new DataTransfer();
-        dataTransfer.setData('text/plain', text);
+        dataTransfer.setData('${mimeType}', text);
 
         document.activeElement.dispatchEvent(new ClipboardEvent('paste', {
             clipboardData: dataTransfer,
@@ -271,4 +271,9 @@ export async function dragMouse(
     if (mouseUp) {
         await page.mouse.up();
     }
+}
+
+export function isMac() {
+    // issue https://github.com/microsoft/playwright/issues/12168
+    return process.platform === 'darwin';
 }

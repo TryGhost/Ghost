@@ -1,13 +1,12 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {expect} from '@playwright/test';
-import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
+import {startApp, initialize, focusEditor, assertHTML, html, isMac} from '../../utils/e2e';
 
 describe('Markdown card', async () => {
     let app;
     let page;
 
-    // issue https://github.com/microsoft/playwright/issues/12168
-    const ctrlOrCmd = process.platform === 'darwin' ? 'Meta' : 'Control';
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
 
     beforeAll(async () => {
         ({app, page} = await startApp());
