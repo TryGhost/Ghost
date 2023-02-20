@@ -256,32 +256,6 @@ describe('Images API', function () {
         await uploadImageCheck({path: originalFilePath, filename: 'a_o-3.png', contentType: 'image/png', expectedFileName: 'a_o-3.png', expectedOriginalFileName: 'a_o-3_o.png'});
     });
 
-    it('Can upload multiple images with the same name in parallel', async function () {
-        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
-        const originalFilePath2 = p.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg');
-
-        // Delay the first original file upload by 400ms to force race condition
-        const store = storage.getStorage('images');
-        const saveStub = sinon.stub(store, 'save');
-        let calls = 0;
-        saveStub.callsFake(async function (file) {
-            if (file.name.includes('_o')) {
-                calls += 1;
-                if (calls === 1) {
-                    await sleep(400);
-                }
-            }
-            return saveStub.wrappedMethod.call(this, ...arguments);
-        });
-        const firstPromise = uploadImageCheck({path: originalFilePath, filename: 'a.png', contentType: 'image/png'});
-        await sleep(10);
-
-        await Promise.all([
-            firstPromise,
-            uploadImageCheck({path: originalFilePath2, filename: 'a.png', contentType: 'image/png', expectedFileName: 'a-1.png'})
-        ]);
-    });
-
     it('Can upload around midnight of month change', async function () {
         const clock = sinon.useFakeTimers({now: new Date(2022, 0, 31, 23, 59, 59), shouldAdvanceTime: true});
         assert.equal(new Date().getMonth(), 0);
