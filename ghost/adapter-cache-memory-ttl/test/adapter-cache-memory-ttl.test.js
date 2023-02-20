@@ -25,16 +25,16 @@ describe('Cache Adapter In Memory with Time To Live', function () {
         });
 
         it('Can get a value from the cache before TTL kicks in', async function () {
-            const cache = new MemoryTTLCache({ttl: 150});
+            const cache = new MemoryTTLCache({ttl: 50});
             cache.set('a', 'b');
             assert.equal(cache.get('a'), 'b', 'should get the value from the cache');
 
-            await sleep(100);
+            await sleep(20);
 
             assert.equal(cache.get('a'), 'b', 'should get the value from the cache before TTL time');
 
-            // NOTE: 100 + 100 = 200, which is more than 150 TTL
-            await sleep(100);
+            // NOTE: 20 + 200 = 220, which is more than 50 TTL
+            await sleep(200);
 
             assert.equal(cache.get('a'), undefined, 'should NOT get the value from the cache after TTL time');
         });
@@ -42,29 +42,31 @@ describe('Cache Adapter In Memory with Time To Live', function () {
 
     describe('set', function () {
         it('Can set a value in the cache', async function () {
-            const cache = new MemoryTTLCache({ttl: 150});
+            const cache = new MemoryTTLCache({ttl: 50});
 
             cache.set('a', 'b');
 
             assert.equal(cache.get('a'), 'b', 'should get the value from the cache');
 
-            await sleep(100);
+            await sleep(20);
 
             assert.equal(cache.get('a'), 'b', 'should get the value from the cache after time < TTL');
 
-            await sleep(100);
+            await sleep(200);
 
             assert.equal(cache.get('a'), undefined, 'should NOT get the value from the cache after TTL time');
         });
 
         it('Can override TTL time', async function () {
-            const cache = new MemoryTTLCache({ttl: 150});
+            const cache = new MemoryTTLCache({ttl: 20});
 
-            cache.set('a', 'b', {ttl: 99});
+            cache.set('a', 'b', {ttl: 50});
+
+            await sleep(21);
 
             assert.equal(cache.get('a'), 'b', 'should get the value from the cache');
 
-            await sleep(100);
+            await sleep(200);
 
             assert.equal(cache.get('a'), undefined, 'should NOT get the value from the cache after TTL time');
         });
