@@ -42,9 +42,8 @@ class NFTOEmbedProvider {
             headers['X-API-KEY'] = this.dependencies.config.apiKey;
         }
         const result = await externalRequest(`https://api.opensea.io/api/v1/asset/${transaction}/${asset}/?format=json`, {
-            json: true,
             headers
-        });
+        }).json();
         return {
             version: '1.0',
             type: 'nft',
