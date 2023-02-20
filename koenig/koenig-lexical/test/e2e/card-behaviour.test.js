@@ -772,6 +772,40 @@ describe('Card behaviour', async () => {
                 <p><br /></p>
             `);
         });
+
+        test('with selected card at end of document', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('Backspace');
+
+            // sanity check
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+            `);
+
+            await page.keyboard.press('ArrowDown');
+
+            // should create a new paragraph and move cursor to it
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p><br /></p>
+            `);
+
+            await assertSelection(page, {
+                anchorPath: [1],
+                anchorOffset: 0,
+                focusPath: [1],
+                focusOffset: 0
+            });
+        });
     });
 
     describe('ENTER', function () {

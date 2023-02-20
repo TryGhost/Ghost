@@ -174,6 +174,15 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         const currentNode = selection.getNodes()[0];
                         const nextSibling = currentNode.getNextSibling();
 
+                        // create a new paragraph and select it if selected card is at end of document
+                        if (!nextSibling) {
+                            const paragraph = $createParagraphNode();
+                            currentNode.insertAfter(paragraph);
+                            paragraph.select();
+                            return true;
+                        }
+
+                        // if next sibling is a card, select it (default Lexical behaviour skips over cards)
                         if ($isDecoratorNode(nextSibling)) {
                             $selectDecoratorNode(nextSibling);
                             return true;
