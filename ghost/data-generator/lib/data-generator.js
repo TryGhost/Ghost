@@ -383,6 +383,8 @@ class DataGenerator {
             rows: ['opened_at', 'email_id', 'member_id']
         });
 
+        await membersImporter.addOpenRate({emailRecipients});
+
         const redirectsImporter = new RedirectsImporter(transaction);
         const redirects = await redirectsImporter.importForEach(posts.filter(post => post.newsletter_id), {
             amount: 10,
