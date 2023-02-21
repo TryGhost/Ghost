@@ -59,7 +59,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@babel/core": "7.20.12",
+    "@babel/core": "7.21.0",
     "@etchteam/storybook-addon-status": "^4.2.2",
     "@playwright/test": "^1.30.0",
     "@storybook/addon-actions": "6.5.16",
