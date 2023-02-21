@@ -76,11 +76,11 @@ module.exports = {
                     if (!post) {
                         return null;
                     }
-
+                    
                     return {
                         id: id,
                         name: post.get('title'),
-                        type: 'post'
+                        type: post.get('type')
                     };
                 }
             }

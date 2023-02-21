@@ -31,9 +31,16 @@ module.exports = class ResourceService {
     async getByURL(url) {
         const path = this.#urlUtils.absoluteToRelative(url.href, {withoutSubdirectory: true});
         const resource = this.#urlService.getResource(path);
+        console.log(resource.config);
         if (resource?.config?.type === 'posts') {
             return {
                 type: 'post',
+                id: ObjectID.createFromHexString(resource.data.id)
+            };
+        }
+        if (resource?.config?.type === 'pages') {
+            return {
+                type: 'page',
                 id: ObjectID.createFromHexString(resource.data.id)
             };
         }

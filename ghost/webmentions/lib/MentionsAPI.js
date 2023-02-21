@@ -160,7 +160,7 @@ module.exports = class MentionsAPI {
         }
 
         const resourceInfo = await this.#resourceService.getByURL(webmention.target);
-
+        console.log('resource info', resourceInfo.type);
         let metadata;
         try {
             metadata = await this.#webmentionMetadata.fetch(webmention.source);
@@ -187,7 +187,8 @@ module.exports = class MentionsAPI {
                 target: webmention.target,
                 timestamp: new Date(),
                 payload: webmention.payload,
-                resourceId: resourceInfo.type === 'post' ? resourceInfo.id : null,
+                resourceId: resourceInfo.id ? resourceInfo.id.toHexString() : null,
+                resourceType: resourceInfo.type,
                 sourceTitle: metadata.title,
                 sourceSiteTitle: metadata.siteTitle,
                 sourceAuthor: metadata.author,
