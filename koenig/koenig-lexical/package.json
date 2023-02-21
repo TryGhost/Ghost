@@ -84,7 +84,7 @@
     "eslint-plugin-jest": "27.2.1",
     "eslint-plugin-tailwindcss": "3.9.0",
     "jsdom": "21.1.0",
-    "playwright": "1.30.0",
+    "playwright": "1.31.0",
     "postcss": "8.4.21",
     "postcss-import": "15.1.0",
     "prettier": "2.8.4",
