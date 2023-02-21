@@ -11,12 +11,6 @@
                         @label="Member activity" />
                 </button>
             {{/if}}
-            {{#if (feature 'webmentions')}}
-                <button type="button" class="gh-dashboard-tab {{if this.mentionsTabSelected 'is-selected'}}" {{on "click" this.changeTabToMentions}}>
-                    <Dashboard::Parts::Metric
-                        @label="Mentions" />
-                </button>
-            {{/if}}
         </div>
         {{#if this.postsTabSelected}}
             <div class="gh-dashboard-recents-posts gh-dashboard-list {{unless this.areNewslettersEnabled 'is-single'}}">
@@ -138,48 +132,6 @@
                     <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>View all member activity &rarr;</LinkTo>
                 </div>
             </div>
-        {{else}}
-            {{#if (feature 'webmentions')}}
-                {{!-- Recent mentions --}}
-                <div class="gh-dashboard-recents-mentions gh-dashboard-list">
-                    <div class="gh-dashboard-list-header">
-                        <div class="gh-dashboard-list-title">Publication</div>
-                        <div class="gh-dashboard-list-title">Mentioned</div>
-                        <div class="gh-dashboard-list-title">Time</div>
-                    </div>
-                    <div class="gh-dashboard-list-body">
-                        {{#if this.mentions}}
-                            {{#each this.mentions as |mention|}}
-                                <a href="#" class="gh-dashboard-list-item permalink">
-                                    <div class="gh-dashboard-list-item-sub">
-                                        <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0" />
-                                        <span class="gh-dashboard-list-text">{{if mention.sourceSiteTitle mention.sourceSiteTitle mention.source}}</span>
-                                    </div>
-                                    <div class="gh-dashboard-list-item-sub">
-                                        <span class="gh-dashboard-list-subtext gh-dashboard-recent-mentioned">
-                                            {{#if mention.resource}}
-                                                {{mention.resource.name}}
-                                            {{else}}
-                                                {{mention.target}}
-                                            {{/if}}
-                                        </span>
-                                    </div>
-                                    <div class="gh-dashboard-list-item-sub gh-dashboard-list gh-dashboard-list-item-date">
-                                        <span class="gh-dashboard-list-subtext" title={{gh-format-post-time mention.timestamp}}>{{moment-from-now mention.timestamp}}</span>
-                                    </div>
-                                </a>
-                            {{/each}}
-                        {{else}}
-                            <div class="gh-dashboard-list-empty">
-                                <p>No mentions yet.</p>
-                            </div>
-                        {{/if}}
-                    </div>
-                    <div class="gh-dashboard-list-footer">
-                        <LinkTo @route="mentions">View all mentions &rarr;</LinkTo>
-                    </div>
-                </div>
-            {{/if}}
         {{/if}}
     </article>
 </section>
