@@ -23,6 +23,32 @@ class MembersImporter extends TableImporter {
         }).sort();
     }
 
+    async addOpenRate({emailRecipients}) {
+        const memberData = {};
+        for (const emailRecipient of emailRecipients) {
+            if (!(emailRecipient.member_id in memberData)) {
+                memberData[emailRecipient.member_id] = {
+                    emailCount: 1,
+                    openedCount: emailRecipient.opened_at ? 1 : 0
+                };
+            } else {
+                memberData[emailRecipient.member_id].emailCount += 1;
+                if (memberData[emailRecipient.member_id].opened_at) {
+                    memberData[emailRecipient.member_id].openedCount += 1;
+                }
+            }
+        }
+
+        for (const [memberId, emailInfo] of Object.entries(memberData)) {
+            const openRate = Math.round(100 * (emailInfo.openedCount / emailInfo.emailCount));
+            await this.knex('members').update({
+                email_count: emailInfo.emailCount,
+                email_opened_count: emailInfo.openedCount,
+                email_open_rate: emailInfo.emailCount >= 5 ? openRate : null
+            }).where({id: memberId});
+        }
+    }
+
     generate() {
         const id = faker.database.mongodbObjectId();
         // Use name from American locale to reflect an English-speaking audience
