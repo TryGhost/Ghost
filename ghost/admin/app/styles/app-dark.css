@@ -1424,7 +1424,9 @@ kbd {
 /* Post Analytics */
 
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
-.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution {
+.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution,
+.gh-post-analytics-box.gh-post-analytics-mentions
+ {
     background: #101114;
     border-color: #26282b;
 }
