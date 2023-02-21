@@ -1,8 +1,30 @@
 <section class="gh-canvas" {{scroll-top}}>
     <GhCanvasHeader class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>
+        <div class="flex flex-column flex-grow-1">
+            {{!-- TODO: Only show breadcrumbs if the page is visited from Post analytics --}}
+            {{!-- <div class="gh-canvas-breadcrumb">
+                <LinkTo @route="posts">
+                    Posts
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}}
+                <LinkTo @route="posts">
+                    Analytics
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}}Mentions
+            </div> --}}
+
+            <h2 class="gh-canvas-title gh-post-title" data-test-screen-title>
+            {{!-- TODO: Show the post name instead of "Mentions" if the page is visited from Post analytics --}}
             Mentions
-        </h2>
+            </h2>
+
+            {{!-- TODO: Only show the div below if the page is visited from Post analytics --}}
+            {{!-- <div class="gh-post-analytics-meta">
+                <div class="gh-post-analytics-meta-text">
+                    This post was mentioned in:
+                </div>
+            </div> --}}
+        </div>
     </GhCanvasHeader>
     <section class="gh-mentions-main-section">
         <div class="gh-mentions-list">
