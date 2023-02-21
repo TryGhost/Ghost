@@ -21,6 +21,7 @@ describe('Mention', function () {
                 'timestamp',
                 'payload',
                 'resourceId',
+                'resourceType',
                 'sourceTitle',
                 'sourceSiteTitle',
                 'sourceAuthor',

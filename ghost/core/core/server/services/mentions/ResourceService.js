@@ -37,6 +37,12 @@ module.exports = class ResourceService {
                 id: ObjectID.createFromHexString(resource.data.id)
             };
         }
+        if (resource?.config?.type === 'pages') {
+            return {
+                type: 'page',
+                id: ObjectID.createFromHexString(resource.data.id)
+            };
+        }
         return {
             type: null,
             id: null

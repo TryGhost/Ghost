@@ -49,6 +49,7 @@ module.exports = class BookshelfMentionRepository {
             timestamp: model.get('created_at'),
             payload,
             resourceId: model.get('resource_id'),
+            resourceType: model.get('resource_type'),
             sourceTitle: model.get('source_title'),
             sourceSiteTitle: model.get('source_site_title'),
             sourceAuthor: model.get('source_author'),
@@ -106,7 +107,7 @@ module.exports = class BookshelfMentionRepository {
             source_favicon: mention.sourceFavicon?.href,
             target: mention.target.href,
             resource_id: mention.resourceId?.toHexString(),
-            resource_type: mention.resourceId ? 'post' : null,
+            resource_type: mention.resourceType,
             payload: mention.payload ? JSON.stringify(mention.payload) : null,
             deleted: Mention.isDeleted(mention),
             verified: mention.verified
