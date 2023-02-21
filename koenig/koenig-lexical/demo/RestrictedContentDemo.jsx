@@ -1,5 +1,5 @@
 import React from 'react';
-import {KoenigComposer, KoenigEditor, RestrictContentPlugin} from '../src';
+import {KoenigComposer, KoenigComposableEditor, RestrictContentPlugin} from '../src';
 import FloatingButton from './components/FloatingButton';
 import {useState} from 'react';
 import Watermark from './components/Watermark';
@@ -83,12 +83,12 @@ function RestrictedContentDemo() {
                 <div className="relative h-full grow">
                     <div className="h-full overflow-auto" ref={containerRef} onClick={focusEditor}>
                         <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
-                            <KoenigEditor
+                            <KoenigComposableEditor
                                 registerAPI={setEditorAPI}
                                 cursorDidExitAtTop={focusTitle}
                             >
                                 <RestrictContentPlugin paragraphs={1} />
-                            </KoenigEditor>
+                            </KoenigComposableEditor>
                         </div>
                     </div>
                 </div>

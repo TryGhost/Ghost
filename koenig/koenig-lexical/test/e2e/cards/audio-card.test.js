@@ -283,7 +283,7 @@ describe('Audio card', async () => {
         expect(await page.locator('[data-kg-card-toolbar="audio"]')).not.toBeNull();
     });
 
-    test('audio card toolbar as Edit button', async function () {
+    test('audio card toolbar has Edit button', async function () {
         await focusEditor(page);
         await uploadAudio(page);
 

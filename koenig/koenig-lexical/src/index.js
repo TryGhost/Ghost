@@ -1,8 +1,9 @@
 import DesignSandbox from './components/DesignSandbox';
 import KoenigComposer from './components/KoenigComposer';
+import KoenigComposableEditor from './components/KoenigComposableEditor';
 import KoenigEditor from './components/KoenigEditor';
-import KoenigFullEditor from './components/KoenigFullEditor';
 import DEFAULT_NODES from './nodes/DefaultNodes';
+import AllDefaultPlugins from './plugins/AllDefaultPlugins';
 import KoenigBehaviourPlugin from './plugins/KoenigBehaviourPlugin';
 import FloatingFormatToolbarPlugin from './plugins/FloatingFormatToolbarPlugin';
 import RestrictContentPlugin from './plugins/RestrictContentPlugin';
@@ -30,11 +31,12 @@ export * from './utils';
 export {
     DesignSandbox,
     KoenigComposer,
+    KoenigComposableEditor,
     KoenigEditor,
-    KoenigFullEditor,
     KoenigBehaviourPlugin,
     FloatingFormatToolbarPlugin,
     PlusCardMenuPlugin,
+    AllDefaultPlugins,
     SlashCardMenuPlugin,
     MarkdownShortcutPlugin,
     CardMenuPlugin,

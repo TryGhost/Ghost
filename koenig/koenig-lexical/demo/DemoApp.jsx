@@ -1,6 +1,6 @@
 import React from 'react';
 import {useSearchParams} from 'react-router-dom';
-import {KoenigComposer, KoenigFullEditor} from '../src';
+import {KoenigComposer, KoenigEditor} from '../src';
 import FloatingButton from './components/FloatingButton';
 import {useState} from 'react';
 import Watermark from './components/Watermark';
@@ -118,7 +118,7 @@ function DemoApp() {
                     <div className="h-full overflow-auto" ref={containerRef} onClick={focusEditor}>
                         <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
                             <TitleTextBox title={title} setTitle={setTitle} editorAPI={editorAPI} ref={titleRef} />
-                            <KoenigFullEditor
+                            <KoenigEditor
                                 registerAPI={setEditorAPI}
                                 cursorDidExitAtTop={focusTitle}
                             />

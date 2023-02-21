@@ -299,7 +299,7 @@ describe('Video card', async () => {
         await expect(await page.locator('[data-kg-card-toolbar="video"]')).toBeVisible();
     });
 
-    test('video card toolbar as Edit button', async function () {
+    test('video card toolbar has Edit button', async function () {
         await focusEditor(page);
 
         // Upload video
