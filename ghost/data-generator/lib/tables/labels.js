@@ -9,11 +9,21 @@ class LabelsImporter extends TableImporter {
 
     constructor(knex) {
         super(LabelsImporter.table, knex);
+        this.generatedNames = new Set();
+    }
+
+    generateName() {
+        let name;
+        do {
+            name = `${faker.color.human()} ${faker.name.jobType()}`;
+            name = `${name[0].toUpperCase()}${name.slice(1)}`;
+        } while (this.generatedNames.has(name));
+        this.generatedNames.add(name);
+        return name;
     }
 
     generate() {
-        let name = `${faker.color.human()} ${faker.name.jobType()}`;
-        name = `${name[0].toUpperCase()}${name.slice(1)}`;
+        const name = this.generateName();
         return {
             id: faker.database.mongodbObjectId(),
             name: name,
