@@ -41,7 +41,8 @@ class EmailRecipientsImporter extends TableImporter {
         }) : [];
         this.emailMeta = {
             emailCount: this.model.email_count,
-            deliveredCount: this.model.delivered_count,
+            // delievered and not opened
+            deliveredCount: this.model.delivered_count - this.model.opened_count,
             openedCount: this.model.opened_count,
             failedCount: this.model.failed_count
         };
@@ -71,10 +72,17 @@ class EmailRecipientsImporter extends TableImporter {
             this.emailMeta.failedCount -= 1;
         } else if (this.emailMeta.openedCount > 0) {
             status = emailStatus.opened;
-            this.emailMeta.deliveredCount -= 1;
+            this.emailMeta.openedCount -= 1;
         } else if (this.emailMeta.deliveredCount > 0) {
             status = emailStatus.delivered;
             this.emailMeta.deliveredCount -= 1;
+        }
+
+        let deliveredTime;
+        if (status === emailStatus.opened) {
+            const startDate = new Date(this.batch.updated_at).valueOf();
+            const endDate = timestamp.valueOf();
+            deliveredTime = new Date(startDate + (Math.random() * (endDate - startDate)));
         }
 
         return {
@@ -83,7 +91,7 @@ class EmailRecipientsImporter extends TableImporter {
             batch_id: this.batch.id,
             member_id: member.id,
             processed_at: this.batch.updated_at,
-            delivered_at: status === emailStatus.opened ? dateToDatabaseString(faker.date.between(new Date(this.batch.updated_at), timestamp)) : status === emailStatus.delivered ? dateToDatabaseString(timestamp) : null,
+            delivered_at: status === emailStatus.opened ? dateToDatabaseString(deliveredTime) : status === emailStatus.delivered ? dateToDatabaseString(timestamp) : null,
             opened_at: status === emailStatus.opened ? dateToDatabaseString(timestamp) : null,
             failed_at: status === emailStatus.failed ? dateToDatabaseString(timestamp) : null,
             member_uuid: member.uuid,

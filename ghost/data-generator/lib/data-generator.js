@@ -162,7 +162,7 @@ class DataGenerator {
                 data: baseData.posts
             });
             await postsImporter.addNewsletters({posts});
-            posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug', 'status', 'visibility').from('posts');
+            posts = await transaction.select('id', 'newsletter_id', 'published_at', 'slug', 'status', 'visibility', 'title').from('posts');
 
             tags = await jsonImporter.import({
                 name: 'tags',
@@ -224,7 +224,7 @@ class DataGenerator {
             });
             posts = await postsImporter.import({
                 amount: this.modelQuantities.posts,
-                rows: ['newsletter_id', 'published_at', 'slug', 'status', 'visibility']
+                rows: ['newsletter_id', 'published_at', 'slug', 'status', 'visibility', 'title']
             });
 
             await postsImporter.import({
