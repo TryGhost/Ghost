@@ -2565,6 +2565,15 @@ Dashboard No Data */
 /* ---------------------------------
 Dashboard Mentions */
 
+.gh-dashboard-recents-mentions {
+    margin-bottom: 24px;
+}
+
+.gh-dashboard-section.gh-dashboard-mentions,
+.gh-dashboard-section.gh-dashboard-recents {
+    margin-bottom: 0;
+}
+
 .gh-dashboard-mentions {
     flex: 1;
     display: flex;
