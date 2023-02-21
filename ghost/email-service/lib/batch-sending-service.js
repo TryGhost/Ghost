@@ -35,6 +35,7 @@ class BatchSendingService {
     // Retry database queries happening before sending the email
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
     #AFTER_RETRY_CONFIG = {maxRetries: 20, maxTime: 30 * 60 * 1000, sleep: 2000};
+    #MAILGUN_API_RETRY_CONFIG = {sleep: 10 * 1000, maxRetries: 6};
 
     /**
      * @param {Object} dependencies
@@ -61,7 +62,8 @@ class BatchSendingService {
         db,
         sentry,
         BEFORE_RETRY_CONFIG,
-        AFTER_RETRY_CONFIG
+        AFTER_RETRY_CONFIG,
+        MAILGUN_API_RETRY_CONFIG
     }) {
         this.#emailRenderer = emailRenderer;
         this.#sendingService = sendingService;
@@ -76,6 +78,13 @@ class BatchSendingService {
         }
         if (AFTER_RETRY_CONFIG) {
             this.#AFTER_RETRY_CONFIG = AFTER_RETRY_CONFIG;
+        }
+        if (MAILGUN_API_RETRY_CONFIG) {
+            this.#MAILGUN_API_RETRY_CONFIG = MAILGUN_API_RETRY_CONFIG;
+        } else {
+            if (process.env.NODE_ENV.startsWith('test')) {
+                this.#MAILGUN_API_RETRY_CONFIG = {maxRetries: 0};
+            }
         }
     }
 
@@ -393,17 +402,19 @@ class BatchSendingService {
                 {...this.#getBeforeRetryConfig(email), description: `getBatchMembers batch ${originalBatch.id}`}
             );
 
-            const response = await this.#sendingService.send({
-                emailId: email.id,
-                post,
-                newsletter,
-                segment: batch.get('member_segment'),
-                members
-            }, {
-                openTrackingEnabled: !!email.get('track_opens'),
-                clickTrackingEnabled: !!email.get('track_clicks'),
-                emailBodyCache
-            });
+            const response = await this.retryDb(async () => {
+                return await this.#sendingService.send({
+                    emailId: email.id,
+                    post,
+                    newsletter,
+                    segment: batch.get('member_segment'),
+                    members
+                }, {
+                    openTrackingEnabled: !!email.get('track_opens'),
+                    clickTrackingEnabled: !!email.get('track_clicks'),
+                    emailBodyCache
+                });
+            }, {...this.#MAILGUN_API_RETRY_CONFIG, description: `Sending email batch ${originalBatch.id}`});
             succeeded = true;
 
             await this.retryDb(
@@ -420,8 +431,13 @@ class BatchSendingService {
                 {...this.#AFTER_RETRY_CONFIG, description: `save batch ${originalBatch.id} -> submitted`}
             );
         } catch (err) {
-            if (!err.code || err.code !== 'BULK_EMAIL_SEND_FAILED') {
-                // BULK_EMAIL_SEND_FAILED are already logged in mailgun-email-provider
+            if (err.code && err.code === 'BULK_EMAIL_SEND_FAILED') {
+                logging.error(err);
+                if (this.#sentry) {
+                    // Log the original error to Sentry
+                    this.#sentry.captureException(err);
+                }
+            } else {
                 const ghostError = new errors.EmailError({
                     err,
                     code: 'BULK_EMAIL_SEND_FAILED',
@@ -533,17 +549,18 @@ class BatchSendingService {
             return await func();
         } catch (e) {
             const retryCount = (options.retryCount ?? 0);
-            const sleep = (options.sleep ?? 0) * (retryCount + 1);
+            const sleep = (options.sleep ?? 0);
             if (retryCount >= options.maxRetries || (options.stopAfterDate && (new Date(Date.now() + sleep)) > options.stopAfterDate)) {
-                const ghostError = new errors.EmailError({
-                    err: e,
-                    code: 'BULK_EMAIL_DB_RETRY',
-                    message: `[BULK_EMAIL_DB_RETRY] ${options.description} - Stopped retrying`,
-                    context: e.message
-                });
+                if (retryCount > 0) {
+                    const ghostError = new errors.EmailError({
+                        err: e,
+                        code: 'BULK_EMAIL_DB_RETRY',
+                        message: `[BULK_EMAIL_DB_RETRY] ${options.description} - Stopped retrying`,
+                        context: e.message
+                    });
 
-                logging.error(ghostError);
-
+                    logging.error(ghostError);
+                }
                 throw e;
             }
 
@@ -561,7 +578,7 @@ class BatchSendingService {
                     setTimeout(resolve, sleep);
                 });
             }
-            return await this.retryDb(func, {...options, retryCount: retryCount + 1});
+            return await this.retryDb(func, {...options, retryCount: retryCount + 1, sleep: sleep * 2});
         }
     }
 }
