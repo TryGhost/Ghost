@@ -71,7 +71,10 @@
                     </div>
                 {{/if}}
 
-                <Dashboard::Charts::Recents />
+                <div class="{{if (feature 'webmentions') "gh-dashboard-split"}}">
+                    <Dashboard::Charts::Recents />
+                    <Dashboard::Charts::Mentions />
+                </div>
 
                 <div class="gh-dashboard-split gh-dashboard-box is-secondary">
                     <Dashboard::Resources::Resources />
