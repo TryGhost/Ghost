@@ -70,7 +70,6 @@ module.exports = {
                     if (!id) {
                         return null;
                     }
-                    
                     const post = await models.Post.findOne({id: id.toHexString()});
 
                     if (!post) {
