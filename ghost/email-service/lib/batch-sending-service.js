@@ -35,7 +35,7 @@ class BatchSendingService {
     // Retry database queries happening before sending the email
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
     #AFTER_RETRY_CONFIG = {maxRetries: 20, maxTime: 30 * 60 * 1000, sleep: 2000};
-    #MAILGUN_API_RETRY_CONFIG = {sleep: 10 * 1000, maxRetries: 5};
+    #MAILGUN_API_RETRY_CONFIG = {sleep: 10 * 1000, maxRetries: 6};
 
     /**
      * @param {Object} dependencies
