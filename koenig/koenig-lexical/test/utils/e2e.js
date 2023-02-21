@@ -236,6 +236,14 @@ export async function pasteText(page, text, mimeType = 'text/plain') {
     await page.evaluate(pasteCommand);
 }
 
+export async function pasteHtml(page, content) {
+    await pasteText(page, content, 'text/html');
+}
+
+export async function pasteLexical(page, content) {
+    await pasteText(page, content, 'application/x-lexical-editor');
+}
+
 export async function dragMouse(
     page,
     fromBoundingBox,

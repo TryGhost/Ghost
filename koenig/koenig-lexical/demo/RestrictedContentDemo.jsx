@@ -7,18 +7,27 @@ import {useFileUpload, fileTypes} from './utils/useFileUpload';
 import Sidebar from './components/Sidebar';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {$getRoot, $isDecoratorNode} from 'lexical';
+import {useLocation} from 'react-router-dom';
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders}
 };
 
+function useQuery() {
+    const {search} = useLocation();
+
+    return React.useMemo(() => new URLSearchParams(search), [search]);
+}
+
 function RestrictedContentDemo() {
+    let query = useQuery();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
     const [defaultContent] = useState(undefined);
     const [editorAPI, setEditorAPI] = useState(null);
     const titleRef = React.useRef(null);
     const containerRef = React.useRef(null);
+    const paragraphs = query.get('paragraphs') || 1;
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -87,7 +96,7 @@ function RestrictedContentDemo() {
                                 registerAPI={setEditorAPI}
                                 cursorDidExitAtTop={focusTitle}
                             >
-                                <RestrictContentPlugin paragraphs={1} />
+                                <RestrictContentPlugin paragraphs={paragraphs} />
                             </KoenigComposableEditor>
                         </div>
                     </div>
