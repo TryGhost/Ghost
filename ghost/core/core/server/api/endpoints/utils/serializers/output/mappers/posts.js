@@ -32,7 +32,7 @@ module.exports = async (model, frame, options = {}) => {
 
     url.forPost(model.id, jsonModel, frame);
 
-    extraAttrs.forPost(frame, model, jsonModel);
+    extraAttrs.forPost(frame.options, model, jsonModel);
 
     // Attach tiers to custom nql visibility filter
     if (jsonModel.visibility) {
