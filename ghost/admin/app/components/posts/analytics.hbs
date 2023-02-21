@@ -127,18 +127,26 @@
             {{/if}}
         {{/if}}
 
-        {{#if (feature 'webmentions')}}
+        {{#if this.showMentions }}
             <div class="pa4">
                 <h3>Mentions</h3>
                 <div>
                     <div>
-                        <div class="flex">
-                            <img src="assets/img/orb-squircle.png" alt="Ghost" class="w5 h5 mr2 flex-shrink-0" />
-                            <div class="flex flex-column">
-                                <span class="gh-dashboard-list-text">How to do stuff</span>
-                                <span>2 days ago</span>
+                        {{#if this.mentions}}
+                            {{#each this.mentions as |mention|}}
+                                <div class="flex">
+                                    <img src="assets/img/orb-squircle.png" alt="Ghost" class="w5 h5 mr2 flex-shrink-0" />
+                                    <div class="flex flex-column">
+                                        <span class="gh-dashboard-list-text">{{if mention.sourceSiteTitle mention.sourceSiteTitle mention.source}}</span>
+                                        <span>{{moment-from-now mention.timestamp}}</span>
+                                    </div>
+                                </div>
+                            {{/each}}
+                        {{else}}
+                            <div>
+                                <p>No mentions yet.</p>
                             </div>
-                        </div>
+                        {{/if}}
                     </div>
                 </div>
                 <a href="#">See all mentions</a>
