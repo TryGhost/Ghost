@@ -1897,12 +1897,14 @@
 
 .gh-post-analytics-split {
     display: grid;
-    grid-gap: 24px;
+    grid-column-gap: 24px;
     grid-template-columns: 1fr;
 }
 
-.gh-post-analytics-split.gh-post-analytics-with-mentions {
-    grid-template-columns: 1fr 1fr;
+@media (min-width: 1360px) {
+    .gh-post-analytics-split.gh-post-analytics-with-mentions {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 .gh-post-analytics-mentions {
