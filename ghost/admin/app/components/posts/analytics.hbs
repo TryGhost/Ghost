@@ -127,6 +127,24 @@
             {{/if}}
         {{/if}}
 
+        {{#if (feature 'webmentions')}}
+            <div class="pa4">
+                <h3>Mentions</h3>
+                <div>
+                    <div>
+                        <div class="flex">
+                            <img src="assets/img/orb-squircle.png" alt="Ghost" class="w5 h5 mr2 flex-shrink-0" />
+                            <div class="flex flex-column">
+                                <span class="gh-dashboard-list-text">How to do stuff</span>
+                                <span>2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#">See all mentions</a>
+            </div>
+        {{/if}}
+
         <div class="gh-post-analytics-box resources">
             <a href="https://ghost.org/help/post-analytics/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
                 <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-1.jpg);"></div>
