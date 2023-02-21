@@ -33,7 +33,7 @@ class MembersImporter extends TableImporter {
                 };
             } else {
                 memberData[emailRecipient.member_id].emailCount += 1;
-                if (memberData[emailRecipient.member_id].opened_at) {
+                if (emailRecipient.opened_at) {
                     memberData[emailRecipient.member_id].openedCount += 1;
                 }
             }
