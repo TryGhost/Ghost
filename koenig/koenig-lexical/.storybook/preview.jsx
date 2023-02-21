@@ -42,7 +42,7 @@ export const parameters = {
 export const decorators = [
     (Story) => {
         return (
-            <div className="koenig-lexical" id="koenig-lexical">
+            <div className="koenig-lexical">
               <div>
                 <Story />
               </div>

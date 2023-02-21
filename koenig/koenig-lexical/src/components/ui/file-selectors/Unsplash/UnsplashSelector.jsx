@@ -24,7 +24,7 @@ function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
                         </h1>
                         <div className="relative w-full max-w-sm">
                             <SearchIcon className="absolute top-1/2 left-4 h-4 w-4 -translate-y-2 text-grey-700" />
-                            <input data-kg-unsplash-search onChange={handleSearch} className="h-10 w-full rounded-full border border-grey-300 pr-8 pl-10 font-sans text-md font-normal text-black focus:border-grey-400 focus-visible:outline-none" placeholder="Search free high-resolution photos" />
+                            <input data-kg-unsplash-search autoFocus onChange={handleSearch} className="h-10 w-full rounded-full border border-grey-300 pr-8 pl-10 font-sans text-md font-normal text-black focus:border-grey-400 focus-visible:outline-none" placeholder="Search free high-resolution photos" />
                         </div>
                     </header>
                     {children}

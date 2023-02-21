@@ -1,11 +1,20 @@
 import {createPortal} from 'react-dom';
 
-function Portal({children, to = 'koenig-lexical'}) {
-    const parent = document.getElementById(to);
-    if (!parent) {
+function Portal({children, to}) {
+    const container = to || document.body;
+    if (!container) {
         return children;
     }
-    return createPortal(children, document.getElementById(to));
+
+    function cancelEvents(event) {
+        // prevent card from losing selection when interacting with element in portal
+        event.stopPropagation();
+    }
+
+    return createPortal(
+        <div className="koenig-lexical" onMouseDown={cancelEvents}>{children}</div>,
+        container
+    );
 }
 
 export default Portal;
