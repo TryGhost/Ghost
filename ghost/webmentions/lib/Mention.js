@@ -58,6 +58,12 @@ module.exports = class Mention {
         return this.#resourceId;
     }
 
+    /** @type {string | null} */
+    #resourceType;
+    get resourceType() {
+        return this.#resourceType;
+    }
+
     /** @type {string} */
     #sourceTitle;
     get sourceTitle() {
@@ -147,6 +153,7 @@ module.exports = class Mention {
             timestamp: this.timestamp,
             payload: this.payload,
             resourceId: this.resourceId,
+            resourceType: this.resourceType,
             sourceTitle: this.sourceTitle,
             sourceSiteTitle: this.sourceSiteTitle,
             sourceAuthor: this.sourceAuthor,
@@ -165,6 +172,7 @@ module.exports = class Mention {
         this.#timestamp = data.timestamp;
         this.#payload = data.payload;
         this.#resourceId = data.resourceId;
+        this.#resourceType = data.resourceType;
         this.#verified = data.verified;
     }
 
@@ -237,6 +245,12 @@ module.exports = class Mention {
             }
         }
 
+        /** @type {string | null} */
+        let resourceType = null;
+        if (data.resourceType) {
+            resourceType = data.resourceType;
+        }
+
         const mention = new Mention({
             id,
             source,
@@ -244,6 +258,7 @@ module.exports = class Mention {
             timestamp,
             payload,
             resourceId,
+            resourceType,
             verified
         });
 

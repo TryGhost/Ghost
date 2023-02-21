@@ -160,7 +160,6 @@ module.exports = class MentionsAPI {
         }
 
         const resourceInfo = await this.#resourceService.getByURL(webmention.target);
-        console.log('resource info', resourceInfo.type);
         let metadata;
         try {
             metadata = await this.#webmentionMetadata.fetch(webmention.source);
