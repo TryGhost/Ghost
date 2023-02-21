@@ -25,6 +25,10 @@ const story = {
                 },
                 defaultValue: displayOptions.Default
             }
+        },
+        alignment: {
+            options: ['left', 'center'],
+            control: {type: 'radio'}
         }
     },
     parameters: {
@@ -38,7 +42,7 @@ export default story;
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper {...display} {...args}>
+            <CardWrapper wrapperStyle='wide' {...display} {...args}>
                 <ButtonCard {...display} {...args} />
             </CardWrapper>
         </div>
@@ -48,6 +52,7 @@ const Template = ({display, ...args}) => (
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
+    alignment: 'center',
     buttonText: '',
     buttonPlaceholder: 'Add button text',
     buttonUrl: ''
@@ -56,6 +61,7 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
+    alignment: 'center',
     buttonText: 'Subscribe',
     buttonPlaceholder: 'Add button text',
     buttonUrl: 'https://ghost.org/'
