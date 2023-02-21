@@ -661,7 +661,10 @@ describe('Batch Sending Service', function () {
             const findOne = sinon.spy(EmailBatch, 'findOne');
             const service = new BatchSendingService({
                 models: {EmailBatch, EmailRecipient},
-                sendingService
+                sendingService,
+                MAILGUN_API_RETRY_CONFIG: {
+                    sleep: 10, maxRetries: 5
+                }
             });
 
             const result = await service.sendBatch({
@@ -672,8 +675,8 @@ describe('Batch Sending Service', function () {
             });
 
             assert.equal(result, false);
-            sinon.assert.calledOnce(errorLog);
-            sinon.assert.calledOnce(sendingService.send);
+            sinon.assert.callCount(errorLog, 7);
+            sinon.assert.callCount(sendingService.send, 6);
 
             sinon.assert.calledOnce(findOne);
             const batch = await findOne.firstCall.returnValue;
@@ -701,6 +704,9 @@ describe('Batch Sending Service', function () {
                 sendingService,
                 sentry: {
                     captureException
+                },
+                MAILGUN_API_RETRY_CONFIG: {
+                    maxRetries: 0
                 }
             });
 
@@ -748,11 +754,17 @@ describe('Batch Sending Service', function () {
                     code: 'BULK_EMAIL_SEND_FAILED'
                 }))
             };
-
+            const captureException = sinon.stub();
             const findOne = sinon.spy(EmailBatch, 'findOne');
             const service = new BatchSendingService({
                 models: {EmailBatch, EmailRecipient},
-                sendingService
+                sendingService,
+                sentry: {
+                    captureException
+                },
+                MAILGUN_API_RETRY_CONFIG: {
+                    maxRetries: 0
+                }
             });
 
             const result = await service.sendBatch({
@@ -763,8 +775,11 @@ describe('Batch Sending Service', function () {
             });
 
             assert.equal(result, false);
-            sinon.assert.notCalled(errorLog);
+            sinon.assert.calledOnce(errorLog);
             sinon.assert.calledOnce(sendingService.send);
+            sinon.assert.calledOnce(captureException);
+            const sentryExeption = captureException.firstCall.args[0];
+            assert.equal(sentryExeption.message, 'Test error');
 
             sinon.assert.calledOnce(findOne);
             const batch = await findOne.firstCall.returnValue;
