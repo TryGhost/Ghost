@@ -18,14 +18,14 @@
     "lib"
   ],
   "devDependencies": {
+    "bson-objectid": "2.0.4",
     "c8": "7.13.0",
     "mocha": "10.2.0",
     "nock": "13.3.0",
-    "bson-objectid": "2.0.4",
     "sinon": "15.0.1"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.20",
+    "@tryghost/errors": "1.2.21",
     "@tryghost/logging": "2.3.6",
     "cheerio": "0.22.0"
   }

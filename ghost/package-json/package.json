@@ -23,7 +23,7 @@
     "tmp": "0.2.1"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.20",
+    "@tryghost/errors": "1.2.21",
     "@tryghost/tpl": "0.1.21",
     "fs-extra": "11.1.0",
     "lodash": "4.17.21"

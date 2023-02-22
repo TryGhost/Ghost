@@ -23,7 +23,7 @@
     "sinon": "15.0.1"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.20",
+    "@tryghost/errors": "1.2.21",
     "bson-objectid": "2.0.4"
   }
 }
