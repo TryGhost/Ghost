@@ -48,7 +48,7 @@ const Template = ({display, ...args}) => (
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    size: 'small',
+    size: 'S',
     backgroundColor: 'dark',
     heading: '',
     headingPlaceholder: 'Enter heading text',
@@ -56,13 +56,14 @@ Empty.args = {
     subHeadingPlaceholder: 'Enter subheading text',
     button: false,
     buttonText: '',
-    buttonPlaceholder: 'Add button text'
+    buttonPlaceholder: 'Add button text',
+    buttonUrl: ''
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
-    size: 'small',
+    size: 'S',
     backgroundColor: 'dark',
     heading: 'This is a heading',
     headingPlaceholder: 'Enter heading text',
@@ -70,6 +71,7 @@ Populated.args = {
     subHeadingPlaceholder: 'Enter subheading text',
     button: false,
     buttonText: 'Subscribe',
-    buttonPlaceholder: 'Add button text'
+    buttonPlaceholder: 'Add button text',
+    buttonUrl: 'https://ghost.org/'
 };
 

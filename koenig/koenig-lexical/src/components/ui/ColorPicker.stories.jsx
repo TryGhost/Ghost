@@ -11,7 +11,7 @@ const story = {
         }
     },
     argTypes: {
-        selectedColor: {control: 'select', options: ['grey', 'blue', 'green', 'yellow', 'red', 'pink', 'purple']}
+        selectedName: {control: 'select', options: ['grey', 'blue', 'green', 'yellow', 'red', 'pink', 'purple']}
     }
 };
 export default story;
@@ -26,7 +26,7 @@ const Template = (args) => {
 
 export const Default = Template.bind({});
 Default.args = {
-    selectedColor: 'grey',
+    selectedName: 'grey',
     buttons: [
         {
             label: 'Grey',

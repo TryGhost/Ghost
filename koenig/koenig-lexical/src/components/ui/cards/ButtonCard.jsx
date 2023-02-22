@@ -27,8 +27,10 @@ export function ButtonCard({
 
     return (
         <>
-            <div className={`my-3 flex h-10 items-center ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} ${alignment === 'left' ? 'justify-start' : 'justify-center'} `}>
-                <Button value={buttonText} placeholder={buttonPlaceholder} />
+            <div className="inline-block w-full">
+                <div className={`my-3 flex h-10 items-center ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} ${alignment === 'left' ? 'justify-start' : 'justify-center'} `}>
+                    <Button value={buttonText} placeholder={buttonPlaceholder} />
+                </div>
             </div>
             {isEditing && (
                 <SettingsPanel>

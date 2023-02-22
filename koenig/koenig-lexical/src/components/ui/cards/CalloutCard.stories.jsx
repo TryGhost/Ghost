@@ -50,7 +50,8 @@ Empty.args = {
     display: 'Editing',
     value: '',
     placeholder: 'Callout text...',
-    backgroundColor: 'grey'
+    emoji: true,
+    color: 'grey'
 };
 
 export const Populated = Template.bind({});
@@ -58,6 +59,7 @@ Populated.args = {
     display: 'Editing',
     value: 'Something to pay attention to.',
     placeholder: 'Callout text...',
-    backgroundColor: 'grey'
+    emoji: true,
+    color: 'grey'
 };
 

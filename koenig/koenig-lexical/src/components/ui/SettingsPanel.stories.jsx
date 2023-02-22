@@ -139,7 +139,7 @@ const calloutColorPicker = [
 export const CalloutCard = Template.bind({});
 CalloutCard.args = {
     children: [
-        <ColorPickerSetting label='Style' buttons={calloutColorPicker} layout='stacked' />,
+        <ColorPickerSetting label='Background color' buttons={calloutColorPicker} layout='stacked' />,
         <ToggleSetting label='Emoji' />
     ]
 };

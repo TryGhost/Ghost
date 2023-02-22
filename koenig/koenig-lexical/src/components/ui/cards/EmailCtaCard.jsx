@@ -1,23 +1,79 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {Button} from '../Button';
+import {SettingsPanel, ToggleSetting, InputSetting, ButtonGroupSetting, SettingsDivider, DropdownSetting} from '../SettingsPanel';
+import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
+import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 
 export function EmailCtaCard({isEditing, visibility, alignment, separators, value, placeholder, button, buttonText, buttonUrl}) {
+    const buttonGroupChildren = [
+        {
+            label: 'Left',
+            name: 'left',
+            Icon: LeftAlignIcon
+        },
+        {
+            label: 'Center',
+            name: 'center',
+            Icon: CenterAlignIcon
+        }
+    ];
+
     return (
-        <div className="pb-6">
-            <div className="pt-1 pb-7 font-sans text-xs font-semibold uppercase leading-8 tracking-tight text-grey">
-                {visibility}
-            </div>
-            {separators && <hr className="-mt-4 mb-12 block border-t-grey-300" />}
-            <input className={`w-full font-serif text-xl text-grey-900 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } value={value} placeholder={placeholder} />
-            { (button && (isEditing || (buttonText && buttonUrl))) && 
+        <>
+            <div className="pb-6">
+                <div className="pt-1 pb-7 font-sans text-xs font-semibold uppercase leading-8 tracking-tight text-grey">
+                    {visibility}
+                </div>
+                {separators && <hr className="-mt-4 mb-12 block border-t-grey-300" />}
+                <input className={`w-full font-serif text-xl text-grey-900 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } value={value} placeholder={placeholder} />
+                { (button && (isEditing || (buttonText && buttonUrl))) && 
                 <div className={`mt-6 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }>
                     <Button placeholder="Add button text" value={buttonText} />
                 </div>    
-            }
-            {separators && <hr className="mt-12 mb-0 block border-t-grey-300" />}
+                }
+                {separators && <hr className="mt-12 mb-0 block border-t-grey-300" />}
 
-        </div>
+            </div>
+
+            {isEditing && (
+                <SettingsPanel>
+                    <DropdownSetting
+                        label='Visibility'
+                        description='Visible for this audience when delivered by email. This card is not published on your site.'
+                    />
+                    <SettingsDivider />
+                    <ButtonGroupSetting
+                        label='Content alignment'
+                        selectedName={alignment}
+                        buttons={buttonGroupChildren}
+                    />
+                    <ToggleSetting
+                        label='Separators'
+                        isChecked={separators}
+                    />
+                    <SettingsDivider />
+                    <ToggleSetting
+                        label='Button'
+                        isChecked={button}
+                    />
+                    {button && (
+                        <>
+                            <InputSetting
+                                label='Button text'
+                                placeholder='Add button text'
+                                value={buttonText}
+                            />
+                            <InputSetting
+                                label='Button URL'
+                                placeholder='https://yoursite.com/#/portal/signup/'
+                                value={buttonUrl}
+                            />
+                        </>
+                    )}
+                </SettingsPanel>    
+            )}
+        </>
     );
 }
 
