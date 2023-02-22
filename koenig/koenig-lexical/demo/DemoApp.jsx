@@ -186,7 +186,9 @@ function DemoApp({editorType}) {
                         </div>
                     </div>
                 </div>
-                <Watermark />
+                <Watermark
+                    editorType={editorType || 'full'}
+                />
                 <div className="absolute z-20 flex h-full flex-col items-end sm:relative">
                     <Sidebar isOpen={isSidebarOpen} view={sidebarView} />
                     <FloatingButton isOpen={isSidebarOpen} onClick={openSidebar} />
