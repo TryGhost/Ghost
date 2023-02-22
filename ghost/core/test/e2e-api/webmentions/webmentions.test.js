@@ -39,49 +39,6 @@ describe('Webmentions (receiving)', function () {
         await dbUtils.truncate('brute');
     });
 
-    it('is rate limited against spamming mention requests', async function () {
-        await dbUtils.truncate('brute');
-        const webmentionBlock = configUtils.config.get('spam').webmentions_block;
-        const targetUrl = new URL(urlUtils.getSiteUrl());
-        const sourceUrl = new URL('http://testpage.com/external-article-brute-test/');
-        const html = `
-                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-            `;
-        nock(targetUrl.origin)
-            .persist()
-            .head(targetUrl.pathname)
-            .reply(200);
-
-        nock(sourceUrl.origin)
-            .persist()
-            .get(sourceUrl.pathname)
-            .reply(200, html, {'Content-Type': 'text/html'});
-
-        const requests = [];
-        for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
-            const req = await agent.post('/receive/')
-                .body({
-                    source: sourceUrl.href,
-                    target: targetUrl.href,
-                    payload: {}
-                })
-                .expectStatus(202);
-
-            requests.push(req);
-        }
-        await Promise.all(requests);
-
-        await agent
-            .post('/receive/')
-            .body({
-                source: sourceUrl.href,
-                target: targetUrl.href,
-                payload: {}
-            })
-            .expectStatus(429);
-        await allSettled();
-    });
-
     it('can receive a webmention', async function () {
         const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
         const sourceUrl = new URL('http://testpage.com/external-article/');
@@ -533,7 +490,7 @@ describe('Webmentions (receiving)', function () {
         assert.equal(mention.get('verified'), false);
     });
 
-    it('can verifiy a webmention <img> link', async function () {
+    it('can verify a webmention <img> link', async function () {
         const targetUrl = new URL(urlUtils.getSiteUrl());
         const sourceUrl = new URL('http://testpage.com/external-article-2/');
         const html = `
@@ -592,4 +549,50 @@ describe('Webmentions (receiving)', function () {
         assert(mention);
         assert.equal(mention.get('verified'), true);
     });
+
+    // NOTE: this test needs to be last; it will disrupt other tests based on the fact we can't
+    //  await the jobService completion for multiple concurrent requests
+    it('is rate limited against spamming mention requests', async function () {
+        await dbUtils.truncate('brute');
+        const webmentionBlock = configUtils.config.get('spam').webmentions_block;
+        const targetUrl = new URL(urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-brute-test/');
+        const html = `
+                <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+            `;
+        nock(targetUrl.origin)
+            .persist()
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .persist()
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
+
+        const requests = [];
+        for (let i = 0; i < webmentionBlock.freeRetries + 1; i++) {
+            const req = await agent.post('/receive/')
+                .body({
+                    source: sourceUrl.href,
+                    target: targetUrl.href,
+                    payload: {}
+                })
+                .expectStatus(202);
+
+            requests.push(req);
+        }
+        await Promise.all(requests);
+
+        await agent
+            .post('/receive/')
+            .body({
+                source: sourceUrl.href,
+                target: targetUrl.href,
+                payload: {}
+            })
+            .expectStatus(429);
+        await allSettled();
+    });
+    // NOTE: do not list other tests after the spam prevention test
 });
