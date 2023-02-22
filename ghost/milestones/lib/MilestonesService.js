@@ -105,7 +105,6 @@ module.exports = class MilestonesService {
         const newMilestone = await Milestone.create(milestone);
 
         await this.#repository.save(newMilestone);
-
         return newMilestone;
     }
 
@@ -201,13 +200,13 @@ module.exports = class MilestonesService {
                 // get the closest milestone we're over now
                 milestone = this.#getMatchedMilestone(milestonesForCurrency.values, currentARRForCurrency.arr);
 
-                // Fetch the latest milestone for this currency
-                const latestMilestone = await this.#getLatestArrMilestone(defaultCurrency);
-
-                // Ensure the milestone doesn't already exist
-                const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'arr', currency: defaultCurrency});
-
                 if (milestone && milestone > 0) {
+                    // Fetch the latest milestone for this currency
+                    const latestMilestone = await this.#getLatestArrMilestone(defaultCurrency);
+
+                    // Ensure the milestone doesn't already exist
+                    const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'arr', currency: defaultCurrency});
+
                     if (!milestoneExists && (!latestMilestone || milestone > latestMilestone.value)) {
                         const meta = {
                             currentARR: currentARRForCurrency.arr
@@ -232,13 +231,13 @@ module.exports = class MilestonesService {
         // get the closest milestone we're over now
         let milestone = this.#getMatchedMilestone(membersMilestones, membersCount);
 
-        // Fetch the latest achieved Members milestones
-        const latestMembersMilestone = await this.#getLatestMembersCountMilestone();
-
-        // Ensure the milestone doesn't already exist
-        const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'members', currency: null});
-
         if (milestone && milestone > 0) {
+            // Fetch the latest achieved Members milestones
+            const latestMembersMilestone = await this.#getLatestMembersCountMilestone();
+
+            // Ensure the milestone doesn't already exist
+            const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'members', currency: null});
+
             if (!milestoneExists && (!latestMembersMilestone || milestone > latestMembersMilestone.value)) {
                 const meta = {
                     currentMembers: membersCount
