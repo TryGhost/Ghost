@@ -147,7 +147,7 @@
                         {{/if}}
                     </div>
                     <div class="gh-dashboard-list-footer">
-                        <LinkTo @route="mentions">View all mentions &rarr;</LinkTo>
+                        <LinkTo @route="posts.mentions" @model={{this.post.id}}>View all mentions &rarr;</LinkTo>
                     </div>
                 </div>
             {{/if}}
