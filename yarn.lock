@@ -9375,6 +9375,11 @@ cliui@^8.0.1:
     strip-ansi "^6.0.1"
     wrap-ansi "^7.0.0"
 
+clock-mock@1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/clock-mock/-/clock-mock-1.0.6.tgz#7c0753f786e169c97a883f84756fa6234c42c659"
+  integrity sha512-mPXwJHSN8pWm5H8l42taxldL+LA5dTHd/S7TldqvJy7RkMM3+HwsvLt3g1mQTFcu1oK9nV+9+laKf1hSM9EiVQ==
+
 clone-buffer@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/clone-buffer/-/clone-buffer-1.0.0.tgz#e3e25b207ac4e701af721e2cb5a16792cac3dc58"

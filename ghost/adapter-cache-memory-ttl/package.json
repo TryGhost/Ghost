@@ -19,8 +19,8 @@
     ],
     "devDependencies": {
         "c8": "7.13.0",
-        "mocha": "10.2.0",
-        "sinon": "15.0.1"
+        "clock-mock": "1.0.6",
+        "mocha": "10.2.0"
     },
     "dependencies": {
         "@isaacs/ttlcache": "1.2.1"
