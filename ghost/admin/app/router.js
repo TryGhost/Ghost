@@ -30,6 +30,7 @@ Router.map(function () {
 
     this.route('posts');
     this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
+    this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
 
     this.route('pages');
@@ -55,7 +56,7 @@ Router.map(function () {
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.history', {path: '/settings/history'});
     this.route('settings.analytics', {path: '/settings/analytics'});
-    
+
     // testing websockets
     this.route('websockets');
 
