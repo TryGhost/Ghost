@@ -652,6 +652,7 @@
                     "paid_subscription_started_notificaton": true,
                     "paid_subscription_canceled_notification": false,
                     "mention_notifications": true,
+                    "milestone_notifications": true,
                     "status": "inactive",
                     "roles": []
                 },
@@ -667,6 +668,7 @@
                     "paid_subscription_started_notification": true,
                     "paid_subscription_canceled_notification": false,
                     "mention_notifications": true,
+                    "milestone_notifications": true,
                     "location": "The Internet",
                     "website": "https://ghost.org",
                     "bio": "You can delete this user to remove all the welcome posts",
