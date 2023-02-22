@@ -280,6 +280,64 @@ describe('Webmentions (receiving)', function () {
         emailMockReceiver.sentEmailCount(users.length);
     });
 
+    it('can display post title in notification email', async function () {
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-1234-email-test/');
+        const html = `
+            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+        `;
+
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
+
+        await agent.post('/receive/')
+            .body({
+                source: sourceUrl.href,
+                target: targetUrl.href
+            })
+            .expectStatus(202);
+
+        await processWebmentionJob;
+        await DomainEvents.allSettled();
+
+        emailMockReceiver.matchHTMLSnapshot();
+    });
+
+    it('can display page title in notification email', async function () {
+        const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+        const targetUrl = new URL('about/', urlUtils.getSiteUrl());
+        const sourceUrl = new URL('http://testpage.com/external-article-12345-email-test/');
+        const html = `
+            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
+        `;
+
+        nock(targetUrl.origin)
+            .head(targetUrl.pathname)
+            .reply(200);
+
+        nock(sourceUrl.origin)
+            .get(sourceUrl.pathname)
+            .reply(200, html, {'Content-Type': 'text/html'});
+
+        await agent.post('/receive/')
+            .body({
+                source: sourceUrl.href,
+                target: targetUrl.href
+            })
+            .expectStatus(202);
+
+        await processWebmentionJob;
+        await DomainEvents.allSettled();
+
+        emailMockReceiver.matchHTMLSnapshot();
+    });
+
     it('does not send notification with flag disabled', async function () {
         mockManager.mockLabsDisabled('webmentions');
         const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
