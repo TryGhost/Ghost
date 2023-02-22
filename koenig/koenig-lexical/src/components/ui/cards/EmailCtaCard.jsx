@@ -19,6 +19,8 @@ export function EmailCtaCard({isEditing, visibility, alignment, separators, valu
         }
     ];
 
+    const dropdownOptions = ['Free members', 'Paid members'];
+
     return (
         <>
             <div className="pb-6">
@@ -41,6 +43,8 @@ export function EmailCtaCard({isEditing, visibility, alignment, separators, valu
                     <DropdownSetting
                         label='Visibility'
                         description='Visible for this audience when delivered by email. This card is not published on your site.'
+                        trigger={visibility}
+                        menu={dropdownOptions}
                     />
                     <SettingsDivider />
                     <ButtonGroupSetting

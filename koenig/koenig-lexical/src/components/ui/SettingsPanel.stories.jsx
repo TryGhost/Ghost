@@ -76,7 +76,12 @@ const sizeButtonGroup = [
 export const EmailCtaCard = Template.bind({});
 EmailCtaCard.args = {
     children: [
-        <DropdownSetting label='Visibility' description='Visible for this audience when delivered by email. This card is not published on your site.' />,
+        <DropdownSetting
+            label='Visibility'
+            description='Visible for this audience when delivered by email. This card is not published on your site.'
+            trigger='Free members'
+            menu={['Free members', 'Paid members']}
+        />,
         <SettingsDivider />,
         <ButtonGroupSetting label='Content alignment' buttons={alignmentButtonGroup} />,
         <ToggleSetting label='Separators' />,

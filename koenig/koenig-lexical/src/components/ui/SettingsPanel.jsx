@@ -58,11 +58,14 @@ export function InputSetting({label, description, value, placeholder}) {
     );
 }
 
-export function DropdownSetting({label, description}) {
+export function DropdownSetting({label, description, trigger, menu}) {
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900">{label}</div>
-            <Dropdown />
+            <Dropdown
+                trigger={trigger}
+                menu={menu}
+            />
             {description &&
                     <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }
