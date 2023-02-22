@@ -6,7 +6,7 @@ const {MentionCreatedEvent} = require('@tryghost/webmentions');
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 require('./utils');
-const StaffService = require('../lib/staff-service');
+const StaffService = require('../index');
 
 function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
     getEmailAlertUsersStub.calledWith(

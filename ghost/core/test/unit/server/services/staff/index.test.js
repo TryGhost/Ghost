@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-
+const assert = require('assert');
 const staffService = require('../../../../../core/server/services/staff');
 
 const DomainEvents = require('@tryghost/domain-events');
@@ -7,15 +7,18 @@ const {mockManager} = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models');
 
 const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
+const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 describe('Staff Service:', function () {
+    let userModelStub;
+
     before(function () {
         models.init();
     });
 
     beforeEach(function () {
         mockManager.mockMail();
-        sinon.stub(models.User, 'getEmailAlertUsers').resolves([{
+        userModelStub = sinon.stub(models.User, 'getEmailAlertUsers').resolves([{
             email: 'owner@ghost.org',
             slug: 'ghost'
         }]);
@@ -224,6 +227,39 @@ describe('Staff Service:', function () {
             // Wait for the dispatched events (because this happens async)
             await DomainEvents.allSettled();
             mockManager.assert.sentEmailCount(0);
+        });
+    });
+
+    describe('milestone created event:', function () {
+        beforeEach(function () {
+            mockManager.mockLabsEnabled('milestoneEmails');
+        });
+
+        afterEach(async function () {
+            sinon.restore();
+            mockManager.restore();
+        });
+
+        it('logs when milestone event is handled', async function () {
+            await staffService.init();
+            DomainEvents.dispatch(MilestoneCreatedEvent.create({
+                milestone: {
+                    type: 'arr',
+                    currency: 'usd',
+                    name: 'arr-100-usd',
+                    value: 100,
+                    createdAt: new Date(),
+                    emailSentAt: new Date()
+                },
+                meta: {
+                    currentARR: 105
+                }
+            }));
+
+            // Wait for the dispatched events (because this happens async)
+            await DomainEvents.allSettled();
+            const [userCalls] = userModelStub.args[0];
+            assert.equal(userCalls, ['milestone-received']);
         });
     });
 });
