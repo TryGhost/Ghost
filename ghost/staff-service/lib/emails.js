@@ -148,11 +148,12 @@ class StaffServiceEmails {
         if (mention.resourceId) {
             try {
                 const postModel = await this.models.Post.findOne({id: mention.resourceId.toString()});
+                // console.log(postModel.toJSON());
                 if (postModel) {
                     resource = {
                         id: postModel.id,
                         name: postModel.get('title'),
-                        type: 'post'
+                        type: postModel.get('type') || 'post'
                     };
                 }
             } catch (err) {
@@ -181,6 +182,7 @@ class StaffServiceEmails {
                 toEmail: to,
                 staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
             };
+
             const {html, text} = await this.renderEmailTemplate('new-mention-received', templateData);
 
             await this.sendMail({
