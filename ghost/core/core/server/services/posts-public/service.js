@@ -12,17 +12,29 @@ class PostsPublicServiceWrapper {
 
         let postsCache;
         if (config.get('hostSettings:postsPublicCache:enabled')) {
-            postsCache = adapterManager.getAdapter('cache:postsPublic');
+            const cache = adapterManager.getAdapter('cache:postsPublic');
+            postsCache = new EventAwareCacheWrapper({
+                cache: cache,
+                resetEvents: ['site.changed'],
+                eventRegistry: EventRegistry
+            });
         }
 
-        const {PublicResourcesRepository} = require('@tryghost/public-resource-repository');
-
-        this.postsRepository = new PublicResourcesRepository({
-            Model: Post,
-            cache: postsCache
-        });
+        let cache;
+        if (postsCache) {
+            // @NOTE: exposing cache through getter and setter to not loose the context of "this"
+            cache = {
+                get() {
+                    return postsCache.get(...arguments);
+                },
+                set() {
+                    return postsCache.set(...arguments);
+                }
+            };
+        }
 
         this.api = {
+            cache: cache,
             browse: this.postsRepository.getAll.bind(this.postsRepository)
         };
     }
