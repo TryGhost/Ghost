@@ -209,6 +209,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "mailgun_batch_size",
+      "value": null,
+    },
+    Object {
       "key": "email_track_opens",
       "value": true,
     },
@@ -567,6 +571,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "mailgun_batch_size",
+      "value": null,
+    },
+    Object {
       "key": "email_track_opens",
       "value": true,
     },
@@ -873,6 +881,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "mailgun_batch_size",
+      "value": null,
+    },
+    Object {
       "key": "email_track_opens",
       "value": true,
     },
@@ -1175,6 +1187,10 @@ Object {
     },
     Object {
       "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_batch_size",
       "value": null,
     },
     Object {
@@ -1488,6 +1504,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "mailgun_batch_size",
+      "value": null,
+    },
+    Object {
       "key": "email_track_opens",
       "value": true,
     },
@@ -1790,6 +1810,10 @@ Object {
     },
     Object {
       "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_batch_size",
       "value": null,
     },
     Object {
@@ -2160,6 +2184,10 @@ Object {
     },
     Object {
       "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_batch_size",
       "value": null,
     },
     Object {

@@ -337,5 +337,20 @@ describe('Acceptance: Settings - Labs', function () {
 
             expect(params.settings.findBy('key', 'mailgun_base_url').value).not.to.equal(null);
         });
+
+        it.skip('sets the mailgunBatchSize to the default', async function () {
+            await visit('/settings/members');
+
+            await fillIn('[data-test-mailgun-api-key-input]', 'i_am_an_api_key');
+            await fillIn('[data-test-mailgun-domain-input]', 'https://domain.tld');
+
+            await click('[data-test-button="save-members-settings"]');
+
+            const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            const params = JSON.parse(lastRequest.requestBody);
+
+            expect(params.settings.findBy('key', 'mailgun_batch_size').value).not.to.equal(null);
+            expect(typeof params.settings.findBy('key', 'mailgun_batch_size').value).to.equal('number');
+        });
     });
 });

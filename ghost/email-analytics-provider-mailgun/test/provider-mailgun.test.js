@@ -56,7 +56,8 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 mailgun: {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
-                    baseUrl: 'https://api.mailgun.net/v3'
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    batchSize: 1000
                 }
             });
 
@@ -75,7 +76,8 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 mailgun: {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
-                    baseUrl: 'https://api.mailgun.net/v3'
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    batchSize: 1000
                 }
             });
 
@@ -96,7 +98,8 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 mailgun: {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
-                    baseUrl: 'https://api.mailgun.net/v3'
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    batchSize: 1000
                 }
             });
 
@@ -117,7 +120,8 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 mailgun: {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
-                    baseUrl: 'https://api.mailgun.net/v3'
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    batchSize: 1000
                 }
             });
 
@@ -138,7 +142,8 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 mailgun: {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
-                    baseUrl: 'https://api.mailgun.net/v3'
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    batchSize: 1000
                 }
             });
             configStub.withArgs('bulkEmail:mailgun:tag').returns('custom-tag');

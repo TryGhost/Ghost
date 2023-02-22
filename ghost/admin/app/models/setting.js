@@ -40,6 +40,7 @@ export default Model.extend(ValidationEngine, {
     mailgunApiKey: attr('string'),
     mailgunDomain: attr('string'),
     mailgunBaseUrl: attr('string'),
+    mailgunBatchSize: attr('number'),
     portalButton: attr('boolean'),
     portalName: attr('boolean'),
     portalPlans: attr('json-string'),

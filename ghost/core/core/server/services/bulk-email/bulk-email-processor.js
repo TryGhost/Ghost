@@ -71,7 +71,7 @@ class FailedBatch extends BatchResultBase {
  */
 
 module.exports = {
-    BATCH_SIZE: MailgunClient.BATCH_SIZE,
+    BATCH_SIZE: mailgunClient.getBatchSize(),
     SuccessfulBatch,
     FailedBatch,
 

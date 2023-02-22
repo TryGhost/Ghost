@@ -115,6 +115,16 @@
                                                 data-test-mailgun-domain-input
                                             />
                                         </GhFormGroup>
+                                        <GhFormGroup class="no-margin">
+                                            <label class="fw6 f8" for="mailgun-batch-size">Mailgun batch size</label>
+                                            <input
+                                                id="mailgun-batch-size"
+                                                type="text"
+                                                class="gh-input mt1"
+                                                value={{this.mailgunSettings.batchSize}}
+                                                {{on "input" this.setMailgunBatchSize}}
+                                            />
+                                        </GhFormGroup>
                                     </div>
                                     <p>Find your Mailgun region and domain
                                         <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="fw5" rel="noopener noreferrer">here</a>

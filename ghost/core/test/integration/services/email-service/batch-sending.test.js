@@ -177,7 +177,7 @@ describe('Batch sending tests', function () {
     let ghostServer;
 
     beforeEach(function () {
-        MailgunEmailProvider.BATCH_SIZE = 100;
+        mockManager.mockSetting('mailgun_batch_size', 100);
         stubbedSend = sinon.fake.resolves({
             id: 'stubbed-email-id'
         });
@@ -195,6 +195,7 @@ describe('Batch sending tests', function () {
         mockManager.mockSetting('mailgun_api_key', 'test');
         mockManager.mockSetting('mailgun_domain', 'example.com');
         mockManager.mockSetting('mailgun_base_url', 'test');
+        mockManager.mockSetting('mailgun_batch_size', 1000);
         mockManager.mockMail();
 
         // We need to stub the Mailgun client before starting Ghost
@@ -447,7 +448,7 @@ describe('Batch sending tests', function () {
     });
 
     it('Splits up in batches according to email provider batch size', async function () {
-        MailgunEmailProvider.BATCH_SIZE = 1;
+        mockManager.mockSetting('mailgun_batch_size', 1);
         await testEmailBatches({
             mobiledoc: mobileDocExample
         }, null, [
@@ -460,7 +461,7 @@ describe('Batch sending tests', function () {
     });
 
     it('Splits up in batches according to email provider batch size with paid and free segments', async function () {
-        MailgunEmailProvider.BATCH_SIZE = 1;
+        mockManager.mockSetting('mailgun_batch_size', 1);
         await testEmailBatches({
             mobiledoc: mobileDocWithPaidMemberOnly
         }, null, [
@@ -476,7 +477,7 @@ describe('Batch sending tests', function () {
     });
 
     it('One failed batch marks the email as failed and allows for a retry', async function () {
-        MailgunEmailProvider.BATCH_SIZE = 1;
+        mockManager.mockSetting('mailgun_batch_size', 1);
         let counter = 0;
         stubbedSend = async function () {
             counter += 1;
