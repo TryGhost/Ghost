@@ -44,11 +44,19 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="video">
                 </div>
                 <figcaption>
-                    <input
-                        placeholder="Type caption for video (optional)"
-                        readonly=""
-                        value=""/>
+                    <div data-testid="image-caption-editor">
+                        <div>
+                            <div data-kg="editor">
+                                <div spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox" contenteditable="true">
+                                    <p><br /></p>
+                                </div>
+                            </div>
+                            <div>Type caption for video (optional)</div>
+                            <div id="koenig-drag-drop-ghost-container"></div>
+                        </div>
+                    </div>
                 </figcaption>
+                </figure>
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});

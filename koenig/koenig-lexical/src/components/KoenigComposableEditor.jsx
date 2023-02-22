@@ -19,7 +19,10 @@ const KoenigComposableEditor = ({
     markdownTransformers,
     registerAPI,
     cursorDidExitAtTop,
-    children
+    children,
+    placeholder,
+    className = '',
+    readOnly = false
 }) => {
     const _onChange = React.useCallback((editorState) => {
         const json = editorState.toJSON();
@@ -37,14 +40,14 @@ const KoenigComposableEditor = ({
     };
 
     return (
-        <div className="koenig-lexical" ref={editorContainerRef}>
+        <div className={`koenig-lexical ${className}`} ref={editorContainerRef}>
             <RichTextPlugin
                 contentEditable={
                     <div ref={onRef} data-kg="editor">
-                        <ContentEditable className="kg-prose" />
+                        <ContentEditable className="kg-prose" readOnly={readOnly} />
                     </div>
                 }
-                placeholder={<EditorPlaceholder />}
+                placeholder={placeholder || <EditorPlaceholder />}
                 ErrorBoundary={LexicalErrorBoundary}
             />
             <OnChangePlugin onChange={_onChange} />

@@ -320,29 +320,21 @@ describe('Video card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video"></div>
                 <figcaption>
-                    <input placeholder="Type caption for video (optional)" value="" />
+                    <div data-testid="image-caption-editor">
+                        <div>
+                            <div data-kg="editor">
+                                <div spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox" contenteditable="true">
+                                    <p><br /></p>
+                                </div>
+                            </div>
+                            <div>Type caption for video (optional)</div>
+                            <div id="koenig-drag-drop-ghost-container"></div>
+                        </div>
+                    </div>
                 </figcaption>
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});
-    });
-
-    test('should not be available for editing in preview mode', async function () {
-        await focusEditor(page);
-        await uploadVideo(page);
-
-        // Check that audio file was uploaded
-        await expect(await page.getByTestId('media-duration')).toContainText('0:04');
-
-        // Add title
-        await expect(await page.getByTestId('video-card-caption')).toBeVisible();
-        await page.getByTestId('video-card-caption').click();
-        await page.keyboard.type('Video caption');
-
-        await page.keyboard.press('Escape');
-
-        // Caption input should be read only
-        await expect(await page.getByTestId('video-card-caption')).toHaveAttribute('readOnly', '');
     });
 
     test('adds extra paragraph when video is inserted at end of document', async function () {

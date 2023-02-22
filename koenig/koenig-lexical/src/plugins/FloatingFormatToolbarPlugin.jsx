@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-import {createPortal} from 'react-dom';
 import {
     $createParagraphNode,
     $getSelection,
@@ -37,6 +36,8 @@ import {
     ToolbarMenuItem,
     ToolbarMenuSeparator
 } from '../components/ui/ToolbarMenu';
+
+import Portal from '../components/ui/Portal';
 
 const blockTypeToBlockName = {
     bullet: 'Bulleted List',
@@ -211,7 +212,7 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
     }, [editor, updateFloatingToolbar]);
 
     return (
-        <div className={`absolute`} ref={toolbarRef} data-kg-floating-toolbar style={{opacity: 0}}>
+        <div className="not-kg-prose fixed" ref={toolbarRef} data-kg-floating-toolbar style={{opacity: 0}}>
             <ToolbarMenu>
                 <ToolbarMenuItem label="Format text as bold" isActive={isBold} icon="bold" onClick={() => {
                     setStickyToolbar(true);
@@ -325,16 +326,17 @@ function useFloatingFormatToolbar(editor, anchorElem) {
         return;
     }
 
-    return createPortal(
-        <FloatingFormatToolbar
-            isText={isText}
-            editor={editor}
-            anchorElem={anchorElem}
-            blockType={blockType}
-            isBold={isBold}
-            isItalic={isItalic}
-        />,
-        anchorElem
+    return (
+        <Portal>
+            <FloatingFormatToolbar
+                isText={isText}
+                editor={editor}
+                anchorElem={anchorElem}
+                blockType={blockType}
+                isBold={isBold}
+                isItalic={isItalic}
+            />
+        </Portal>
     );
 }
 

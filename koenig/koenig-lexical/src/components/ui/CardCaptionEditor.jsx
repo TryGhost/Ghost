@@ -1,20 +1,24 @@
 import React from 'react';
 import {TextInput} from './TextInput';
+import KoenigCaptionEditor from '../KoenigCaptionEditor';
 
 function CaptionInput({value, placeholder, onChange, readOnly, dataTestId}) {
     return (
-        <TextInput
-            initialValue={value}
-            onChange={onChange}
-            className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
-            placeholder={placeholder}
-            readOnly={readOnly}
+        <div
+            className={`m-0 w-full px-9 text-center ${readOnly ? 'pointer-events-none' : ''}`}
             data-testid={dataTestId}
-        />
+        >
+            <KoenigCaptionEditor
+                readOnly={readOnly}
+                html={value}
+                setHtml={onChange}
+                placeholderText={placeholder}
+            />
+        </div>
     );
 }
 
-function AltTextInput({value, placeholder, onChange, readOnly, dataTestId}) {
+function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoFocus = true}) {
     return (
         <TextInput
             onChange={onChange}
@@ -23,6 +27,7 @@ function AltTextInput({value, placeholder, onChange, readOnly, dataTestId}) {
             placeholder={placeholder}
             readOnly={readOnly}
             data-testid={dataTestId}
+            autoFocus={autoFocus}
         />
     );
 }
@@ -66,7 +71,7 @@ export function CardCaptionEditor({
 
     if (isSelected || caption) {
         return (
-            <figcaption className="flex w-full p-2">
+            <figcaption className="flex min-h-[40px] w-full p-2">
                 {isEditingAlt
                     ? <AltTextInput value={altText} placeholder={altTextPlaceholder} onChange={setAltText} readOnly={readOnly} dataTestId={dataTestId} />
                     : <CaptionInput value={caption} placeholder={captionPlaceholder} onChange={setCaption} readOnly={readOnly} dataTestId={dataTestId}/> }

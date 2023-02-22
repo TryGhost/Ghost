@@ -15,13 +15,34 @@ export const HtmlOutputPlugin = ({html = '', setHtml}) => {
 
         isFirstRender.current = false;
 
+        if (!html) {
+            return;
+        }
+
         editor.update(() => {
             const parser = new DOMParser();
             const dom = parser.parseFromString(html, 'text/html');
 
             const nodes = $generateNodesFromDOM(editor, dom);
+
+            let isEmpty = true;
+            nodes.forEach((node) => {
+                // There are few recent issues related to $generateNodesFromDOM
+                // https://github.com/facebook/lexical/issues/2807
+                // https://github.com/facebook/lexical/issues/3677
+                // As a temporary fix, checking node content to remove additional spaces and br
+                if (node.getTextContent().trim()) {
+                    isEmpty = false;
+                }
+            });
+
             // Select the root
             $getRoot().select();
+
+            if (isEmpty) {
+                $getRoot().clear();
+                return;
+            }
 
             // Insert them at a selection.
             $insertNodes(nodes);

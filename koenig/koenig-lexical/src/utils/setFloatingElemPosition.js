@@ -24,7 +24,6 @@ export function setFloatingElemPosition(
     }
 
     const floatingElemRect = floatingElem.getBoundingClientRect();
-    const anchorElementRect = anchorElem.getBoundingClientRect();
     const editorScrollerRect = scrollerElem.getBoundingClientRect();
 
     let top = targetRect.top - floatingElemRect.height - options.verticalGap;
@@ -37,9 +36,6 @@ export function setFloatingElemPosition(
     if (left + floatingElemRect.width > editorScrollerRect.right) {
         left = editorScrollerRect.right - floatingElemRect.width;
     }
-
-    top -= anchorElementRect.top;
-    left -= anchorElementRect.left;
 
     if (options.controlOpacity) {
         floatingElem.style.opacity = '1';

@@ -136,6 +136,8 @@ export function ImageCard({
                     setCaption={setCaption}
                     captionPlaceholder="Type caption for image (optional)"
                     isSelected={isSelected}
+                    readOnly={!isSelected}
+                    dataTestId="image-caption-editor"
                 />
             </figure>
         </>

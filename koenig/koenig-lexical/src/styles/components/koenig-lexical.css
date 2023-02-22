@@ -24,3 +24,11 @@
         background: var(--grey-300);
     }
 }
+
+.koenig-lexical.koenig-lexical-caption {
+    font-size: 0;
+
+    > * {
+        font-size: 1.4rem;
+    }
+}

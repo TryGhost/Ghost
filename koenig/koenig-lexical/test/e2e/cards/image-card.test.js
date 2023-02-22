@@ -1,6 +1,6 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {expect} from '@playwright/test';
-import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
+import {startApp, initialize, focusEditor, assertHTML, html, pasteText} from '../../utils/e2e';
 import path from 'path';
 import createDataTransfer from '../../utils/createDataTransfer';
 
@@ -49,24 +49,9 @@ describe('Image card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
-                    <figure data-kg-card-width="wide">
-                        <div>
-                            <img
-                                src="/content/images/2022/11/koenig-lexical.jpg"
-                                alt="This is some alt text"
-                            />
-                        </div>
-                        <figcaption>
-                            <input
-                                placeholder="Type caption for image (optional)"
-                                value="This is a <b>caption</b>"
-                            />
-                            <button name="alt-toggle-button">Alt</button>
-                        </figcaption>
-                    </figure>
                 </div>
             </div>
-        `);
+        `, {ignoreCardContents: true});
     });
 
     test('renders image card node', async function () {
@@ -111,20 +96,7 @@ describe('Image card', async () => {
         // wait for upload to complete
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
-                    <figure data-kg-card-width="regular">
-                        <div><img src="blob:..." alt="" /></div>
-                        <figcaption>
-                            <input placeholder="Type caption for image (optional)" value="" />
-                            <button name="alt-toggle-button">Alt</button>
-                        </figcaption>
-                    </figure>
-                    <div data-kg-card-toolbar="image"></div>
-                </div>
-            </div>
-        `, {ignoreCardToolbarContents: true});
+        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
     });
 
     test.todo('can get image width and height');
@@ -179,16 +151,53 @@ describe('Image card', async () => {
         await page.waitForSelector('[data-testid="upload-progress"]');
         await expect(await page.getByTestId('upload-progress')).not.toBeVisible();
 
-        await page.click('input[placeholder="Type caption for image (optional)"]');
+        await page.click('[data-testid="image-caption-editor"]');
         await page.keyboard.type('This is a caption');
+        await expect(await page.locator('text="This is a caption"')).toBeVisible();
+    });
+
+    test('can past html to caption', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.setFiles([filePath]);
+
+        // wait for upload to complete
+        await page.waitForSelector('[data-testid="upload-progress"]');
+        await expect(await page.getByTestId('upload-progress')).toBeHidden();
+
+        await page.click('[data-testid="image-caption-editor"]');
+        await pasteText(page, 'This is link <a href="https://ghost.org/changelog/markdown/">ghost.org/changelog/markdown/</a>', 'text/html');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img src="blob:..." alt="" /></div>
+                        <div>
+                            <img src="blob:..." alt="">
+                        </div>
                         <figcaption>
-                            <input placeholder="Type caption for image (optional)" value="This is a caption" />
+                            <div data-testid="image-caption-editor">
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                            <p dir="ltr" data-koenig-dnd-droppable="true">
+                                                <span data-lexical-text="true">This is link </span>
+                                                <a href="https://ghost.org/changelog/markdown/" dir="ltr">
+                                                    <span data-lexical-text="true">ghost.org/changelog/markdown/</span>
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div id="koenig-drag-drop-ghost-container"></div>
+                                </div>
+                            </div>
                             <button name="alt-toggle-button">Alt</button>
                         </figcaption>
                     </figure>
@@ -373,9 +382,21 @@ describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img src="blob:..." alt="" /></div>
+                        <div>
+                            <img src="blob:..." alt="">
+                        </div>
                         <figcaption>
-                            <input placeholder="Type caption for image (optional)" value="" />
+                            <div data-testid="image-caption-editor">
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                            <p><br /></p>
+                                        </div>
+                                    </div>
+                                    <div>Type caption for image (optional)</div>
+                                    <div id="koenig-drag-drop-ghost-container"></div>
+                                </div>
+                            </div>
                             <button name="alt-toggle-button">Alt</button>
                         </figcaption>
                     </figure>

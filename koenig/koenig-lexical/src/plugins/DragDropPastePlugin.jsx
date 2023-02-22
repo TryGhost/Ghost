@@ -94,6 +94,7 @@ function DragDropPastePlugin() {
     // prevent drag over moving the cursor - our drops use the original selection
     // rather than the drop location
     React.useEffect(() => {
+        const rootElement = editor.getRootElement();
         const handleDragOver = (event) => {
             if (!event.dataTransfer || event.target.closest('[data-kg-card]')) {
                 return;
@@ -107,12 +108,12 @@ function DragDropPastePlugin() {
             event.preventDefault();
         };
 
-        editor.getRootElement().addEventListener('dragover', handleDragOver);
-        editor.getRootElement().addEventListener('dragleave', handleDragLeave);
+        rootElement.addEventListener('dragover', handleDragOver);
+        rootElement.addEventListener('dragleave', handleDragLeave);
 
         return () => {
-            editor.getRootElement().removeEventListener('dragover', handleDragOver);
-            editor.getRootElement().removeEventListener('dragleave', handleDragLeave);
+            rootElement.removeEventListener('dragover', handleDragOver);
+            rootElement.removeEventListener('dragleave', handleDragLeave);
         };
     }, [editor]);
 
