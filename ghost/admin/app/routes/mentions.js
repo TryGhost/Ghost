@@ -30,9 +30,6 @@ export default class MentionsRoute extends AuthenticatedRoute {
             paginationSettings.filter = `resource_id:${params.post_id}+resource_type:post`;
         }
 
-        // Filter bridgy mentions
-        // paginationSettings.filter = `${paginationSettings.filter ? (paginationSettings.filter + '+') : ''}source:-~^'https://brid.gy/'`;
-
         return RSVP.hash({
             mentions: this.infinity.model('mention', paginationSettings),
             post: params.post_id ? this.store.findRecord('post', params.post_id) : null
