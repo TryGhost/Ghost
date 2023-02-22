@@ -1,16 +1,13 @@
 import React from 'react';
+import {TextInput} from './TextInput';
 
 function CaptionInput({value, placeholder, onChange, readOnly, dataTestId}) {
-    const handleOnChange = (e) => {
-        onChange(e.target.value);
-    };
-
     return (
-        <input
-            onChange={handleOnChange}
+        <TextInput
+            initialValue={value}
+            onChange={onChange}
             className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
             placeholder={placeholder}
-            value={value}
             readOnly={readOnly}
             data-testid={dataTestId}
         />
@@ -18,16 +15,12 @@ function CaptionInput({value, placeholder, onChange, readOnly, dataTestId}) {
 }
 
 function AltTextInput({value, placeholder, onChange, readOnly, dataTestId}) {
-    const handleOnChange = (e) => {
-        onChange(e.target.value);
-    };
-
     return (
-        <input
-            onChange={handleOnChange}
+        <TextInput
+            onChange={onChange}
+            initialValue={value}
             className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
             placeholder={placeholder}
-            value={value}
             readOnly={readOnly}
             data-testid={dataTestId}
         />
