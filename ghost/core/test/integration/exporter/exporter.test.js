@@ -88,7 +88,8 @@ describe('Exporter', function () {
                 'tags',
                 'tokens',
                 'users',
-                'webhooks'
+                'webhooks',
+                'milestones'
             ];
 
             should.exist(exportData);
