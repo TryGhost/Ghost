@@ -1,5 +1,7 @@
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
+const models = require('../../models');
+const BookshelfMilestoneRepository = require('./BookshelfMilestoneRepository');
 
 const JOB_TIMEOUT = 1000 * 60 * 60 * 24 * (Math.floor(Math.random() * 4)); // 0 - 4 days;
 
@@ -31,14 +33,15 @@ module.exports = {
             const db = require('../../data/db');
             const MilestoneQueries = require('./MilestoneQueries');
 
-            const {
-                MilestonesService,
-                InMemoryMilestoneRepository
-            } = require('@tryghost/milestones');
+            const {MilestonesService} = require('@tryghost/milestones');
             const config = require('../../../shared/config');
             const milestonesConfig = config.get('milestones');
 
-            const repository = new InMemoryMilestoneRepository({DomainEvents});
+            const repository = new BookshelfMilestoneRepository({
+                DomainEvents,
+                MilestoneModel: models.Milestone
+            });
+
             const queries = new MilestoneQueries({db});
 
             this.api = new MilestonesService({
