@@ -187,7 +187,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
     return keys.reduce((obj, method) => {
         const apiImpl = _.cloneDeep(apiController)[method];
 
-        obj[method] = function wrapper() {
+        obj[method] = async function wrapper() {
             const apiConfig = {docName, method};
             let options;
             let data;
@@ -229,6 +229,15 @@ const pipeline = (apiController, apiUtils, apiType) => {
             frame.docName = docName;
             frame.method = method;
 
+            let cacheKey = JSON.stringify(frame.options);
+            if (apiImpl.cache) {
+                const response = await apiImpl.cache.get(cacheKey);
+
+                if (response) {
+                    return Promise.resolve(response);
+                }
+            }
+
             return Promise.resolve()
                 .then(() => {
                     return STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
@@ -245,7 +254,10 @@ const pipeline = (apiController, apiUtils, apiType) => {
                 .then((response) => {
                     return STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
                 })
-                .then(() => {
+                .then(async () => {
+                    if (apiImpl.cache) {
+                        await apiImpl.cache.set(cacheKey, frame.response);
+                    }
                     return frame.response;
                 });
         };
