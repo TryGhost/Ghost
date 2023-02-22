@@ -147,7 +147,7 @@
     "amperize": "0.6.1",
     "analytics-node": "6.2.0",
     "bluebird": "3.7.2",
-    "body-parser": "1.20.1",
+    "body-parser": "1.20.2",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.5.1",
     "brute-knex": "4.0.1",
