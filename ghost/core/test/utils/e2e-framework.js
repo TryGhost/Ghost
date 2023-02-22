@@ -26,6 +26,8 @@ const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
 const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
+const mentionsJobsService = require('../../core/server/services/mentions-jobs');
+const jobsService = require('../../core/server/services/jobs');
 
 const boot = require('../../core/boot');
 const {AdminAPITestAgent, ContentAPITestAgent, GhostAPITestAgent, MembersAPITestAgent} = require('./agents');
@@ -36,6 +38,7 @@ const settingsService = require('../../core/server/services/settings/settings-se
 const supertest = require('supertest');
 const {stopGhost} = require('./e2e-utils');
 const adapterManager = require('../../core/server/services/adapter-manager');
+const DomainEvents = require('@tryghost/domain-events');
 
 /**
  * @param {Object} [options={}]
@@ -45,6 +48,10 @@ const adapterManager = require('../../core/server/services/adapter-manager');
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
+    await mentionsJobsService.allSettled();
+    await jobsService.allSettled();
+    await DomainEvents.allSettled();
+
     /**
      * We never use the root content folder for testing!
      * We use a tmp folder.
