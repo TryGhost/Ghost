@@ -12,6 +12,5 @@ export default Model.extend({
     sourceFavicon: attr('string'),
     sourceFeaturedImage: attr('string'),
     payload: attr(),
-    resourceType: attr('string'),
     mentions: attr() // @todo this is a temporary field until we have the api / db model structure figured out
 });
