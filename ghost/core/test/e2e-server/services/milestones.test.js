@@ -11,6 +11,7 @@ const milestonesService = require('../../../core/server/services/milestones');
 let agent;
 let counter = 0;
 let membersCounter = 0;
+const fifteenDays = 1000 * 60 * 60 * 24 * 15;
 
 async function createMemberWithSubscription(interval, amount, currency, date) {
     counter += 1;
@@ -35,7 +36,7 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
         status: 'active',
         cancel_at_period_end: false,
         metadata: {},
-        current_period_end: Date.now() / 1000 + 1000,
+        current_period_end: Math.floor(Date.now() / 1000 + 1000),
         start_date: moment(date).unix(),
         plan: fakePrice,
         items: {
@@ -155,8 +156,9 @@ describe('Milestones Service', function () {
 
     beforeEach(async function () {
         loggingStub = sinon.stub(logging, 'info');
-        const now = new Date();
-        clock = sinon.useFakeTimers(now.getTime());
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        clock = sinon.useFakeTimers(threeMonthsAgo.getTime());
         sinon.createSandbox();
         configUtils.set('milestones', milestonesConfig);
         mockManager.mockLabsEnabled('milestoneEmails');
@@ -180,8 +182,8 @@ describe('Milestones Service', function () {
         mockManager.mockSetting('stripe_connect_publishable_key', 'pk_live_89843uihsidfh98832uo8ri');
 
         // No ARR and no members
-        const firstResultPromise = milestonesService.initAndRun(10);
-        await clock.tickAsync(10);
+        const firstResultPromise = milestonesService.initAndRun(fifteenDays);
+        await clock.tickAsync(fifteenDays);
         const firstRun = await firstResultPromise;
         assert(firstRun.members === undefined);
         assert(firstRun.arr === undefined);
@@ -189,32 +191,72 @@ describe('Milestones Service', function () {
         await createFreeMembers(7);
         await createMemberWithSubscription('year', 5000, 'usd', '2000-01-10');
         await createMemberWithSubscription('month', 100, 'usd', '2000-01-10');
-        const secondResultPromise = milestonesService.initAndRun(10);
-        await clock.tickAsync(10);
+        const secondResultPromise = milestonesService.initAndRun(fifteenDays);
+        await clock.tickAsync(fifteenDays);
         const secondRun = await secondResultPromise;
         assert(secondRun.members === undefined);
         assert(secondRun.arr === undefined);
 
         // Reached the first milestone for members
         await createFreeMembers(1);
-        const thirdResultPromise = milestonesService.initAndRun(10);
-        await clock.tickAsync(10);
+        const thirdResultPromise = milestonesService.initAndRun(fifteenDays);
+        await clock.tickAsync(fifteenDays);
         const thirdRun = await thirdResultPromise;
         assert(thirdRun.members.value === 10);
         assert(thirdRun.members.emailSentAt !== undefined);
         assert(thirdRun.arr === undefined);
+
+        const memberMilestoneModel = await models.Milestone.findOne({value: 10, type: 'members'});
+
+        assert.ok(memberMilestoneModel.get('id'));
+        assert.equal(memberMilestoneModel.get('type'), 'members');
+        assert.equal(memberMilestoneModel.get('value'), 10);
+        assert.ok(memberMilestoneModel.get('created_at'));
+        assert.ok(memberMilestoneModel.get('email_sent_at'));
 
         // Reached the first milestone for ARR
         // but has already reached members milestone, so no new one
         // will be created
         await createMemberWithSubscription('month', 500, 'usd', '2000-01-10');
         await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
-        const fourthResultPromise = milestonesService.initAndRun(10);
-        await clock.tickAsync(10);
+        await createMemberWithSubscription('year', 1000, 'usd', '2000-01-10');
+        const fourthResultPromise = milestonesService.initAndRun(fifteenDays);
+        await clock.tickAsync(fifteenDays);
         const fourthRun = await fourthResultPromise;
         assert(fourthRun.members === undefined);
         assert(fourthRun.arr.value === 100);
         assert(fourthRun.arr.emailSentAt !== undefined);
+
+        const arrMilestoneModel = await models.Milestone.findOne({value: 100, type: 'arr'});
+
+        assert.ok(arrMilestoneModel.get('id'));
+        assert.equal(arrMilestoneModel.get('type'), 'arr');
+        assert.equal(arrMilestoneModel.get('value'), 100);
+        assert.ok(arrMilestoneModel.get('created_at'));
+        assert.ok(memberMilestoneModel.get('email_sent_at'));
+
+        assert(loggingStub.called);
+    });
+
+    it('Does not run ARR milestones when Stripe is not live enabled', async function () {
+        mockManager.mockSetting('stripe_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
+        mockManager.mockSetting('stripe_connect_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
+        await createFreeMembers(12);
+
+        const resultPromise = milestonesService.initAndRun(100);
+        await clock.tickAsync(100);
+        const result = await resultPromise;
+        assert(result.members.value === 20);
+        assert(result.members.emailSentAt !== undefined);
+        assert(result.arr === undefined);
+
+        const memberMilestoneModel = await models.Milestone.findOne({value: 20, type: 'members'});
+
+        assert.ok(memberMilestoneModel.get('id'));
+        assert.equal(memberMilestoneModel.get('type'), 'members');
+        assert.equal(memberMilestoneModel.get('value'), 20);
+        assert.ok(memberMilestoneModel.get('created_at'));
+        assert.equal(memberMilestoneModel.get('email_sent_at'), null);
 
         assert(loggingStub.called);
     });
@@ -224,16 +266,26 @@ describe('Milestones Service', function () {
         mockManager.mockSetting('stripe_connect_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
 
         await createFreeMembers(10, 1);
-        await createMemberWithSubscription('month', 1000, 'usd', '2023-01-10');
-        const resultPromise = milestonesService.initAndRun(10);
+        const resultPromise = milestonesService.initAndRun(fifteenDays);
 
-        await clock.tickAsync(10);
+        await clock.tickAsync(fifteenDays);
         const result = await resultPromise;
 
-        assert(result.members.value === 20);
+        assert(result.members.value === 30);
         assert(result.members.emailSentAt === null);
-        assert(result.arr.value === 150);
-        assert(result.arr.emailSentAt === null);
+        assert(result.arr === undefined);
+
+        const memberMilestoneModel = await models.Milestone.findOne({value: 30, type: 'members'});
+
+        assert.ok(memberMilestoneModel.get('id'));
+        assert.equal(memberMilestoneModel.get('type'), 'members');
+        assert.equal(memberMilestoneModel.get('value'), 30);
+        assert.ok(memberMilestoneModel.get('created_at'));
+        assert.equal(memberMilestoneModel.get('email_sent_at'), null);
+
+        const arrMilestoneModel = await models.Milestone.findOne({value: 150, type: 'arr'});
+
+        assert.equal(arrMilestoneModel, null);
 
         assert(loggingStub.called);
     });
@@ -241,25 +293,10 @@ describe('Milestones Service', function () {
     it('Does not run when milestoneEmails labs flag is not set', async function () {
         mockManager.mockLabsDisabled('milestoneEmails');
 
-        const resultPromise = milestonesService.initAndRun(10);
-        await clock.tickAsync(10);
+        const resultPromise = milestonesService.initAndRun(fifteenDays);
+        await clock.tickAsync(fifteenDays);
         const result = await resultPromise;
         assert(result === undefined);
-
-        assert(loggingStub.called);
-    });
-
-    it('Does not run ARR milestones when Stripe is not live enabled', async function () {
-        mockManager.mockSetting('stripe_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
-        mockManager.mockSetting('stripe_connect_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
-        await createFreeMembers(10);
-
-        const resultPromise = milestonesService.initAndRun(10);
-        await clock.tickAsync(10);
-        const result = await resultPromise;
-        assert(result.members.value === 30);
-        assert(result.members.emailSentAt !== undefined);
-        assert(result.arr === undefined);
 
         assert(loggingStub.called);
     });
