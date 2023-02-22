@@ -2,6 +2,9 @@
 
 const config = {
     timeout: 60 * 1000,
+    expect: {
+        timeout: 10000
+    },
     workers: 1,
     reporter: [['list', {printSteps: true}]],
     use: {
