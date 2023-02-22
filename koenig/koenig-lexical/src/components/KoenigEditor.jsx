@@ -4,14 +4,10 @@ import KoenigComposableEditor from './KoenigComposableEditor';
 import '../styles/index.css';
 
 const KoenigEditor = ({
-    registerAPI,
-    cursorDidExitAtTop
+    ...props
 }) => {
     return (
-        <KoenigComposableEditor
-            registerAPI={registerAPI}
-            cursorDidExitAtTop={cursorDidExitAtTop}
-        >
+        <KoenigComposableEditor {...props}>
             <AllDefaultPlugins />
         </KoenigComposableEditor>
     );
