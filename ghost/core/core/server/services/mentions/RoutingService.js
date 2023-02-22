@@ -56,7 +56,8 @@ module.exports = class RoutingService {
 
         try {
             const response = await this.#externalRequest.head(url, {
-                followRedirect: false
+                followRedirect: false,
+                throwHttpErrors: false
             });
             if (response.statusCode < 400 && response.statusCode > 199) {
                 return true;

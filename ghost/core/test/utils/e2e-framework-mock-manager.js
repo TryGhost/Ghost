@@ -18,6 +18,7 @@ const originalMailServiceSend = mailService.GhostMailer.prototype.send;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
+const dnsPromises = require('dns').promises;
 
 let fakedLabsFlags = {};
 const originalLabsIsSet = labs.isSet;
@@ -36,6 +37,15 @@ const disableStripe = async () => {
 
 const mockStripe = () => {
     nock.disableNetConnect();
+};
+
+const disableNetwork = () => {
+    nock.disableNetConnect();
+
+    // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
+    sinon.stub(dnsPromises, 'lookup').callsFake(() => {
+        return Promise.resolve({address: '123.123.123.123', family: 4});
+    });
 };
 
 /**
@@ -211,6 +221,7 @@ module.exports = {
     mockLabsDisabled,
     mockWebhookRequests,
     mockSetting,
+    disableNetwork,
     restore,
     assert: {
         sentEmailCount,
