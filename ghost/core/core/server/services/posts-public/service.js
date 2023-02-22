@@ -9,6 +9,8 @@ class PostsPublicServiceWrapper {
         const {Post} = require('../../models');
         const adapterManager = require('../adapter-manager');
         const config = require('../../../shared/config');
+        const EventAwareCacheWrapper = require('@tryghost/event-aware-cache-wrapper');
+        const EventRegistry = require('../../lib/common/events');
 
         let postsCache;
         if (config.get('hostSettings:postsPublicCache:enabled')) {
