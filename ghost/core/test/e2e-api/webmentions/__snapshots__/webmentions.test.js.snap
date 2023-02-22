@@ -55,6 +55,9 @@ exports[`Webmentions (receiving) can display page title in notification email 1:
         table[class=body] a[class=small] {
           font-size: 11px !important;
         }
+        .new-mention-thumbnail {
+          display: none !important;
+        }
       }
       /* -------------------------------------
           PRESERVE THESE STYLES IN THE HEAD
@@ -131,12 +134,12 @@ exports[`Webmentions (receiving) can display page title in notification email 1:
                         <figure style=\\"margin:0 0 1.5em;padding:0;width:100%;\\">
                           <a style=\\"display:flex;min-height:148px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none\\" href=\\"http://testpage.com/external-article-12345-email-test/\\">
                             <div style=\\"display:inline-block; width:100%; padding:20px\\">
-                              <div style=\\"color:#15212a;font-size:15px;line-height:1.5em;font-weight:600\\">Test Page</div>
+                              <div style=\\"color:#15212a;font-size:16px;line-height:1.3em;font-weight:600\\">Test Page</div>
                               <div style=\\"display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400\\">Test description</div>
                               <div style=\\"display:flex;margin-top:14px;color:#15212a;font-size:13px;font-weight:400\\">
                                 
                                 
-                                <span style=\\"line-height:1.5em\\">&nbsp;&#x2022;&nbsp;John Doe</span>
+                                <span style=\\"font-size:13px;line-height:1.5em\\">&nbsp;&#x2022;&nbsp;John Doe</span>
                               </div>
                             </div>
                           </a>
@@ -283,6 +286,9 @@ exports[`Webmentions (receiving) can display post title in notification email 1:
         table[class=body] a[class=small] {
           font-size: 11px !important;
         }
+        .new-mention-thumbnail {
+          display: none !important;
+        }
       }
       /* -------------------------------------
           PRESERVE THESE STYLES IN THE HEAD
@@ -359,12 +365,12 @@ exports[`Webmentions (receiving) can display post title in notification email 1:
                         <figure style=\\"margin:0 0 1.5em;padding:0;width:100%;\\">
                           <a style=\\"display:flex;min-height:148px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none\\" href=\\"http://testpage.com/external-article-1234-email-test/\\">
                             <div style=\\"display:inline-block; width:100%; padding:20px\\">
-                              <div style=\\"color:#15212a;font-size:15px;line-height:1.5em;font-weight:600\\">Test Page</div>
+                              <div style=\\"color:#15212a;font-size:16px;line-height:1.3em;font-weight:600\\">Test Page</div>
                               <div style=\\"display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400\\">Test description</div>
                               <div style=\\"display:flex;margin-top:14px;color:#15212a;font-size:13px;font-weight:400\\">
                                 
                                 
-                                <span style=\\"line-height:1.5em\\">&nbsp;&#x2022;&nbsp;John Doe</span>
+                                <span style=\\"font-size:13px;line-height:1.5em\\">&nbsp;&#x2022;&nbsp;John Doe</span>
                               </div>
                             </div>
                           </a>
