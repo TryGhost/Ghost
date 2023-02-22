@@ -10,7 +10,7 @@ module.exports = class PublicResourcesRepository {
     /**
      * @param {object} deps
      * @param {object} deps.Model Bookshelf Model instance of TagPublic/Post/Author etc.
-     * @param {object} deps.cache cache instance
+     * @param {object} [deps.cache] cache instance
      */
     constructor(deps) {
         this.#Model = deps.Model;
