@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const Mention = require('./Mention');
 
 /**
@@ -199,7 +200,11 @@ module.exports = class MentionsAPI {
 
         const responseBody = await this.#webmentionRequest.fetch(webmention.source);
         if (responseBody?.html) {
-            mention.verify(responseBody.html);
+            try {
+                mention.verify(responseBody.html);
+            } catch (e) {
+                logging.error(e);
+            }
         }
 
         await this.#repository.save(mention);

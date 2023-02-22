@@ -127,6 +127,16 @@ class JobManager {
                     // Clear the listeners
                     this.#completionPromises.delete(name);
                 }
+
+                if (this.queue.length() <= 1) {
+                    if (this.#completionPromises.has('all')) {
+                        for (const listeners of this.#completionPromises.get('all')) {
+                            listeners.resolve();
+                        }
+                        // Clear the listeners
+                        this.#completionPromises.delete('all');
+                    }
+                }
             } else {
                 if (typeof message === 'object' && this.#domainEvents) {
                     // Is this an event?
@@ -156,6 +166,16 @@ class JobManager {
             }
             // Clear the listeners
             this.#completionPromises.delete(jobMeta.name);
+        }
+
+        if (this.queue.length() <= 1) {
+            if (this.#completionPromises.has('all')) {
+                for (const listeners of this.#completionPromises.get('all')) {
+                    listeners.reject(error);
+                }
+                // Clear the listeners
+                this.#completionPromises.delete('all');
+            }
         }
     }
 
@@ -337,6 +357,25 @@ class JobManager {
         });
 
         return promise;
+    }
+
+    /**
+     * Wait for all inline jobs to be completed.
+     */
+    async allSettled() {
+        const name = 'all';
+
+        return new Promise((resolve, reject) => {
+            if (this.queue.idle()) {
+                resolve();
+                return;
+            }
+
+            this.#completionPromises.set(name, [
+                ...(this.#completionPromises.get(name) ?? []),
+                {resolve, reject}
+            ]);
+        });
     }
 
     /**
