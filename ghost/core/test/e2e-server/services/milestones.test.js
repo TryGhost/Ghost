@@ -158,7 +158,10 @@ describe('Milestones Service', function () {
         loggingStub = sinon.stub(logging, 'info');
         const threeMonthsAgo = new Date();
         threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-        clock = sinon.useFakeTimers(threeMonthsAgo.getTime());
+        clock = sinon.useFakeTimers({
+            now: threeMonthsAgo.getTime(),
+            toFake: ['setTimeout']
+        });
         sinon.createSandbox();
         configUtils.set('milestones', milestonesConfig);
         mockManager.mockLabsEnabled('milestoneEmails');
