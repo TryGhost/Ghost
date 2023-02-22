@@ -1930,6 +1930,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    margin-top: 6px;
 }
 
 .gh-post-analytics-mention {
@@ -1939,7 +1940,7 @@
     grid-column-gap: 8px;
     padding: 4px 0;
     flex-direction: column;
-    padding: 10px 0;
+    padding: 6px 0;
 }
 
 .gh-post-analytics-mention-title {
@@ -1962,4 +1963,9 @@
 
 .gh-post-analytics-mentions .gh-dashboard-list-footer {
     margin-top: auto;
+    padding: 17px 0 0;
+}
+
+.gh-post-analytics-mentions .gh-dashboard-list-footer a {
+    font-size: 1.3rem;
 }
