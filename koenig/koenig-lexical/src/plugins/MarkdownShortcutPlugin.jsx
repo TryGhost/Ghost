@@ -101,6 +101,18 @@ export const DEFAULT_TRANSFORMERS = [
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
+export const MINIMAL_TRANSFORMERS = [
+    ...TEXT_FORMAT_TRANSFORMERS,
+    ...TEXT_MATCH_TRANSFORMERS
+];
+
+export const BASIC_TRANSFORMERS = [
+    UNORDERED_LIST,
+    ORDERED_LIST,
+    ...TEXT_FORMAT_TRANSFORMERS,
+    ...TEXT_MATCH_TRANSFORMERS
+];
+
 export default function MarkdownShortcutPlugin({transformers = DEFAULT_TRANSFORMERS} = {}) {
     return LexicalMarkdownShortcutPlugin({transformers});
 }

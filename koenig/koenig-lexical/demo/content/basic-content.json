@@ -1,0 +1,365 @@
+{
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "There's a whole lot to discover in this editor. Let us help you settle in.",
+            "type": "text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      },
+      {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "First things first. Select any text to format it. Simple as that.",
+            "type": "text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      },
+      {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "For those of you who love markdown, we've got you covered. Any markdown typed directly is automatically parsed—*italic* results in ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 2,
+            "mode": "normal",
+            "style": "",
+            "text": "italic ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "(and so does ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "ctrl/⌘",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": " + ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "I",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "), **bold** results in ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 1,
+            "mode": "normal",
+            "style": "",
+            "text": "bold",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": ". You get the gist. For the full list of markdown references, check ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "ghost.org/changelog/markdown/",
+                "type": "text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "link",
+            "version": 1,
+            "rel": null,
+            "target": null,
+            "url": "https://ghost.org/changelog/markdown/"
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": ".",
+            "type": "text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      },
+      {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "One more nifty little trick: inserting a link doesn't need to be the hassle it once was. Copy any url, select your text, and paste it.",
+            "type": "text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      },
+      {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Any content other than text are what we call ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 2,
+            "mode": "normal",
+            "style": "",
+            "text": "cards",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": ". Cards can be accessed by clicking the ➕ button or typing ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "/",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": " at the beginning of a paragraph.",
+            "type": "text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      },
+      {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Even better, continue typing to find the card you're looking for, hit ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "enter",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": ", and avoid dragging your mouse altogether.",
+            "type": "text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      },
+      {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Some cards have a handy little shortcut, to keep you on track and in flow. Use ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "---",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": " to divide your paragraphs with a line, or ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "```",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": " to add a code block. You can also drag and drop images directly into the editor to bypass the menu. ",
+            "type": "text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      },
+      {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "You now know every secret there is to distraction-free, click-free editing with Koenig. Get started by clicking ",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "Koenig editor",
+            "type": "text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": " in your bottom left corner!",
+            "type": "text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    ],
+    "direction": "ltr",
+    "format": "",
+    "indent": 0,
+    "type": "root",
+    "version": 1
+  }
+}

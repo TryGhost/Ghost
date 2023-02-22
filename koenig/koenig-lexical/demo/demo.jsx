@@ -19,6 +19,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <Route path="/contentrestricted" element={<RestrictedContentDemo paragraphs={1} />} />
                 <Route path="/html-output" element={<HtmlOutputDemo />} />
                 <Route path="/" element={<DemoApp introContent={true} />} />
+                <Route path="/basic" element={<DemoApp introContent={true} editorType='basic' />} />
+                <Route path="/minimal" element={<DemoApp introContent={true} editorType='minimal' />} />
             </Routes>
         </Router>
     </React.StrictMode>

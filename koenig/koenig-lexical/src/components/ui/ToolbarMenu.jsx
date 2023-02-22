@@ -40,7 +40,11 @@ export function ToolbarMenu({children, ...props}) {
     );
 }
 
-export function ToolbarMenuItem({label, isActive, onClick, icon, dataTestId, ...props}) {
+export function ToolbarMenuItem({label, isActive, onClick, icon, dataTestId, hide, ...props}) {
+    if (hide) {
+        return null;
+    }
+
     const Icon = TOOLBAR_ICONS[icon];
 
     return (
@@ -59,7 +63,11 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, dataTestId, ...
     );
 }
 
-export function ToolbarMenuSeparator() {
+export function ToolbarMenuSeparator({hide}) {
+    if (hide) {
+        return null;
+    }
+
     return (
         <li className="m-0 mx-1 h-5 w-px bg-grey-900"></li>
     );

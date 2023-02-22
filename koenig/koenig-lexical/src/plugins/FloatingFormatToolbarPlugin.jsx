@@ -27,6 +27,7 @@ import {
 } from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$createAsideNode} from '../nodes/AsideNode';
+import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {setFloatingElemPosition} from '../utils/setFloatingElemPosition';
 import {getDOMRangeRect} from '../utils/getDOMRangeRect';
@@ -57,6 +58,16 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
     const [stickyToolbar, setStickyToolbar] = React.useState(false);
     const toolbarRef = React.useRef(null);
     // const [isVisible, setIsVisible] = React.useState(false);
+
+    let hideHeading = false;
+    if (!editor.hasNodes([HeadingNode])){
+        hideHeading = true;
+    }
+
+    let hideQuotes = false;
+    if (!editor.hasNodes([QuoteNode])){
+        hideQuotes = true;
+    }
 
     const formatParagraph = () => {
         if (blockType !== 'paragraph') {
@@ -213,16 +224,16 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
                 <ToolbarMenuItem label="Toggle heading 1" isActive={blockType === 'h2'} icon="headingOne" onClick={() => {
                     (blockType === 'h2' ? formatParagraph() : formatHeading('h2'));
                     setStickyToolbar(true);
-                }} data-kg-toolbar-button="h2" />
+                }} data-kg-toolbar-button="h2" hide={hideHeading} />
                 <ToolbarMenuItem label="Toggle heading 2" isActive={blockType === 'h3'} icon="headingTwo" onClick={() => {
                     (blockType === 'h3' ? formatParagraph() : formatHeading('h3'));
                     setStickyToolbar(true);
-                }} data-kg-toolbar-button="h3" />
-                <ToolbarMenuSeparator />
+                }} data-kg-toolbar-button="h3" hide={hideHeading} />
+                <ToolbarMenuSeparator hide={hideQuotes} />
                 <ToolbarMenuItem label="Toggle blockquote" isActive={blockType === 'quote' || blockType === 'aside'} icon={blockType === 'aside' ? 'quoteOne' : 'quoteTwo'} onClick={() => {
                     (formatQuote());
                     setStickyToolbar(true);
-                }} data-kg-toolbar-button="quote" />
+                }} data-kg-toolbar-button="quote" hide={hideQuotes} />
             </ToolbarMenu>
         </div>
     );

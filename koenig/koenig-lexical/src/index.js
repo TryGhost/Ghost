@@ -4,6 +4,8 @@ import KoenigComposableEditor from './components/KoenigComposableEditor';
 import KoenigEditor from './components/KoenigEditor';
 import DEFAULT_NODES from './nodes/DefaultNodes';
 import AllDefaultPlugins from './plugins/AllDefaultPlugins';
+import BASIC_NODES from './nodes/BasicNodes';
+import MINIMAL_NODES from './nodes/MinimalNodes';
 import KoenigBehaviourPlugin from './plugins/KoenigBehaviourPlugin';
 import FloatingFormatToolbarPlugin from './plugins/FloatingFormatToolbarPlugin';
 import RestrictContentPlugin from './plugins/RestrictContentPlugin';
@@ -16,6 +18,8 @@ import {ExternalControlPlugin} from './plugins/ExternalControlPlugin';
 import MarkdownShortcutPlugin, {
     DEFAULT_TRANSFORMERS,
     ELEMENT_TRANSFORMERS,
+    BASIC_TRANSFORMERS,
+    MINIMAL_TRANSFORMERS,
     HR as HR_TRANSFORMER,
     CODE_BLOCK as CODE_BLOCK_TRANSFORMER
 } from './plugins/MarkdownShortcutPlugin';
@@ -51,7 +55,11 @@ export {
     RestrictContentPlugin,
     HtmlOutputPlugin,
     DEFAULT_NODES,
+    BASIC_NODES,
+    MINIMAL_NODES,
     DEFAULT_TRANSFORMERS,
+    BASIC_TRANSFORMERS,
+    MINIMAL_TRANSFORMERS,
     ELEMENT_TRANSFORMERS,
     HR_TRANSFORMER,
     CODE_BLOCK_TRANSFORMER
