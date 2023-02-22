@@ -4492,6 +4492,15 @@
     lodash "^4.17.21"
     uuid "^9.0.0"
 
+"@tryghost/errors@^1.2.21":
+  version "1.2.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.21.tgz#27c57ccd27324dfc4ab1dc34f8618939fc494324"
+  integrity sha512-TzV8wxDDFw2ZTI+zsFi0xggpKpc2ABqSzDp+t6dngcLuDs9erBdK5JJTV3wYBOBrJbbK6LzQlAsmH66vgO5HLQ==
+  dependencies:
+    "@stdlib/utils" "^0.0.12"
+    lodash "^4.17.21"
+    uuid "^9.0.0"
+
 "@tryghost/express-test@0.13.0":
   version "0.13.0"
   resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.13.0.tgz#7fc20dc6f0488c09a79117a0233e46cf3fff25fd"
@@ -4722,13 +4731,13 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/nodemailer@0.3.31":
-  version "0.3.31"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.31.tgz#0486ec28202fff691daeffbc44d5a74aea7a7e77"
-  integrity sha512-qRqH/f+/54ZyNJ1NzhOtbvwYRy2NIC1xarvPJBZEQEzqUq9vN6cJSWiaV2MxChayiI+xL5hpsV/hASDF0aX5vA==
+"@tryghost/nodemailer@0.3.32":
+  version "0.3.32"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.32.tgz#c1843a145320c19d4de6084fe3c1df71fa96fc69"
+  integrity sha512-DSOAvssJDSSeFXo8F96LTfOGcvvBBfVA6WFVZUYJzgyF3aWbfZIUBWD8oV2r86mWx2WvVggJLNRxNhOKRjbCYw==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
-    "@tryghost/errors" "^1.2.20"
+    "@tryghost/errors" "^1.2.21"
     nodemailer "^6.6.3"
     nodemailer-direct-transport "^3.3.2"
     nodemailer-mailgun-transport "^2.1.5"
