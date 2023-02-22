@@ -4,7 +4,7 @@ import {ReactComponent as GhostFavicon} from './icons/ghost-favicon.svg';
 function EditorLink({editorType}) {
     return (
         <a href={editorType?.url} rel="nofollow ugc noopener noreferrer">
-            <span className="invisible ml-[.7rem] font-normal hover:font-bold group-hover:visible">/ {editorType?.name}</span>
+            <span className="ml-[.7rem] hidden font-normal hover:font-bold group-hover:inline">/ {editorType?.name}</span>
         </a>
     );
 }
@@ -25,12 +25,12 @@ const Watermark = ({editorType}) => {
             url: '/'
         },
         {
-            name: 'minimal',
-            url: '/minimal'
-        },
-        {
             name: 'basic',
             url: '/basic'
+        },
+        {
+            name: 'minimal',
+            url: '/minimal'
         }
     ];
 
