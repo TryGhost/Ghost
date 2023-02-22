@@ -81,12 +81,13 @@ class StaffService {
         if (type === MentionCreatedEvent && event.data.mention && this.labs.isSet('webmentions')) {
             await this.emails.notifyMentionReceived(event.data);
         }
-        if (!['api', 'member'].includes(event.data.source)) {
-            return;
-        }
 
         if (type === MilestoneCreatedEvent && event.data.milestone && this.labs.isSet('milestoneEmails')) {
             await this.emails.notifyMilestoneReceived(event.data);
+        }
+
+        if (!['api', 'member'].includes(event.data.source)) {
+            return;
         }
 
         const {member, tier, subscription, offer} = await this.getDataFromIds({
