@@ -1,6 +1,5 @@
 import Model, {attr} from '@ember-data/model';
 
-// @todo this is a temporary model until we have the api / db model structure figured out
 export default Model.extend({
     source: attr('string'),
     target: attr('string'),
@@ -13,5 +12,6 @@ export default Model.extend({
     sourceFavicon: attr('string'),
     sourceFeaturedImage: attr('string'),
     payload: attr(),
+    resourceType: attr('string'),
     mentions: attr() // @todo this is a temporary field until we have the api / db model structure figured out
 });
