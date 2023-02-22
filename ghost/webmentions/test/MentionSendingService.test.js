@@ -6,7 +6,6 @@ const externalRequest = require('../../core/core/server/lib/request-external.js'
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {createModel} = require('./utils/index.js');
-const dnsPromises = require('dns').promises;
 
 // mock up job service
 let jobService = {
@@ -22,11 +21,6 @@ describe('MentionSendingService', function () {
         nock.disableNetConnect();
         sinon.stub(logging, 'info');
         errorLogStub = sinon.stub(logging, 'error');
-
-        // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
-        sinon.stub(dnsPromises, 'lookup').callsFake(function () {
-            return Promise.resolve({address: '123.123.123.123', family: 4});
-        });
     });
 
     afterEach(function () {

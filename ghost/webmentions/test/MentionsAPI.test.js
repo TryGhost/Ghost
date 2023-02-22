@@ -4,6 +4,7 @@ const Mention = require('../lib/Mention');
 const MentionsAPI = require('../lib/MentionsAPI');
 const InMemoryMentionRepository = require('../lib/InMemoryMentionRepository');
 const sinon = require('sinon');
+const cheerio = require('cheerio');
 
 const mockRoutingService = {
     async pageExists() {
@@ -41,7 +42,7 @@ const mockWebmentionRequest = {
 
 function addMinutes(date, minutes) {
     date.setMinutes(date.getMinutes() + minutes);
-  
+
     return date;
 }
 
@@ -268,6 +269,29 @@ describe('MentionsAPI', function () {
         } finally {
             assert(errored);
         }
+    });
+
+    it('Handles verify errors', async function () {
+        const repository = new InMemoryMentionRepository();
+        sinon.stub(cheerio, 'load').throws(new Error('Test error'));
+
+        const api = new MentionsAPI({
+            repository,
+            routingService: {
+                async pageExists() {
+                    return true;
+                }
+            },
+            resourceService: mockResourceService,
+            webmentionMetadata: mockWebmentionMetadata,
+            webmentionRequest: mockWebmentionRequest
+        });
+
+        await api.processWebmention({
+            source: new URL('https://source.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
     });
 
     it('Will only store resource if if the resource type is post', async function () {
