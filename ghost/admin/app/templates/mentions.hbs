@@ -42,10 +42,12 @@
                                     <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="gh-mention-icon">
                                 {{/if}}
                                 <div class="gh-mention-publisher">{{mention.sourceSiteTitle}}</div>
-                                <div class="gh-mention-link-icon">
-                                    {{svg-jar "twitter-link"}}
-                                </div>
-                                <span class="gh-mention-your-link">{{if mention.resource mention.resource.name mention.target}}</span>
+                                {{#unless this.post }}
+                                    <div class="gh-mention-link-icon">
+                                        {{svg-jar "twitter-link"}}
+                                    </div>
+                                    <span class="gh-mention-your-link">{{if mention.resource mention.resource.name mention.target}}</span>
+                                {{/unless}}
                                 <span class="gh-mention-timestamp" title={{gh-format-post-time mention.timestamp}}>{{moment-from-now mention.timestamp}}</span>
                             </div>
                             <div class="gh-mention-content">
