@@ -13,6 +13,7 @@ module.exports = {
     docName: 'posts',
 
     browse: {
+        cache: postsPublicService.api?.cache,
         options: [
             'include',
             'filter',
