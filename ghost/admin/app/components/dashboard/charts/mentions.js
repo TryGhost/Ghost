@@ -11,6 +11,6 @@ export default class Recents extends Component {
 
     @action 
     async loadData() {
-        this.mentions = await this.store.query('mention', {limit: 4, order: 'created_at desc'});
+        this.mentions = await this.store.query('mention', {limit: 5, order: 'created_at desc'});
     }
 }
