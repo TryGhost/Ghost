@@ -21,7 +21,8 @@ const GA_FEATURES = [
     'audienceFeedback',
     'themeErrorsNotification',
     'emailStability',
-    'emailErrors'
+    'emailErrors',
+    'outboundLinkTagging'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -36,7 +37,6 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'lexicalEditor',
-    'outboundLinkTagging',
     'websockets',
     'webmentionEmails'
 ];
