@@ -37,7 +37,8 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'lexicalEditor',
     'outboundLinkTagging',
-    'websockets'
+    'websockets',
+    'webmentionEmails'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

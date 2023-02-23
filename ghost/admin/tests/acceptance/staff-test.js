@@ -81,6 +81,7 @@ describe('Acceptance: Staff', function () {
             enableMembers(this.server);
             enableStripe(this.server);
             enableLabsFlag(this.server, 'webmentions');
+            enableLabsFlag(this.server, 'webmentionEmails');
 
             admin = this.server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 
@@ -880,7 +881,7 @@ describe('Acceptance: Staff', function () {
                 await click('[data-test-save-button]');
 
                 await visit(`/settings/staff/${admin.slug}`);
-                
+
                 expect(find('[data-test-checkbox="free-signup-notifications"]')).to.be.checked;
                 expect(find('[data-test-checkbox="paid-started-notifications"]')).to.be.checked;
                 expect(find('[data-test-checkbox="paid-canceled-notifications"]')).to.be.checked;
