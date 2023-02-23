@@ -2,7 +2,7 @@ import {useRef} from 'react';
 
 export default function useMarkdownImageUploader(editor, imageUploader) {
     const imageInputRef = useRef(null);
-    const {progress, upload, errors, isLoading, filesNumber} = imageUploader();
+    const {progress, upload, errors, isLoading, filesNumber} = imageUploader('image');
 
     const uploadImages = async (event) => {
         const files = event.target.files;
@@ -41,9 +41,9 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
 
                 return `![${alt}](${url})`;
 
-                // full url object, use attrs we're given
+            // full url object, use attrs we're given
             } else {
-                let image = `![${url.alt}](${url.url})`;
+                let image = `![${url.fileName}](${url.url})`;
 
                 if (url.credit) {
                     image += `\n${url.credit}`;

@@ -141,6 +141,16 @@ export function prettifyHTML(string, options = {}) {
         .trim();
 }
 
+export function prettifyJSON(string) {
+    let output = string;
+
+    output = output.replace(/\(blob:http[^"]*\)/g, '(blob:...)');
+
+    return prettier.format(output, {
+        parser: 'json'
+    });
+}
+
 // This function does not suppose to do anything, it's only used as a trigger
 // for prettier auto-formatting (https://prettier.io/blog/2020/08/24/2.1.0.html#api)
 export function html(partials, ...params) {
@@ -216,6 +226,19 @@ export async function assertPosition(page, selector, expectedBox, {threshold = 0
             expect(assertedBox[boxProperty], boxProperty).toBeLessThanOrEqual(expectedBox[boxProperty] + threshold);
         }
     });
+}
+
+export async function assertRootChildren(page, expectedState) {
+    let actualState = await page.evaluate(() => {
+        const rootElement = document.querySelector('div[contenteditable="true"]');
+        const editor = rootElement.__lexicalEditor;
+        return JSON.stringify(editor.getEditorState().toJSON().root.children);
+    });
+
+    const actual = prettifyJSON(actualState);
+    const expected = prettifyJSON(expectedState);
+    
+    expect(actual).toEqual(expected);
 }
 
 export async function pasteText(page, text, mimeType = 'text/plain') {

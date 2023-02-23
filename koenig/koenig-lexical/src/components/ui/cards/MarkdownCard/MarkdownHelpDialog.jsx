@@ -17,7 +17,7 @@ export function Td({value}) {
 export default function MarkdownHelpDialog(props) {
     return (
         <Modal {...props}>
-            <div className="p-8 text-left font-sans">
+            <div className="p-8 text-left font-sans" data-testid="markdown-help-dialog">
                 <header>
                     <h1 className="mr-6 text-2xl font-semibold leading-snug">
                         Markdown Help
