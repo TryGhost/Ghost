@@ -42,11 +42,14 @@ module.exports = {
                 MilestoneModel: models.Milestone
             });
 
-            const queries = new MilestoneQueries({db});
+            const queries = new MilestoneQueries({
+                db,
+                minDaysSinceImported: milestonesConfig?.minDaysSinceImported || 7
+            });
 
             this.api = new MilestonesService({
                 repository,
-                milestonesConfig, // avoid using getters and pass as JSON
+                milestonesConfig,
                 queries
             });
         }
