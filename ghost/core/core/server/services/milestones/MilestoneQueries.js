@@ -31,10 +31,13 @@ module.exports = class MilestoneQueries {
      * @returns {Promise<boolean>}
      */
     async hasImportedMembersInPeriod() {
+        const importedThreshold = new Date();
+        importedThreshold.setDate(importedThreshold.getDate() - MIN_DAYS_SINCE_IMPORTED);
+
         const [hasImportedMembers] = await this.#db.knex('members_subscribe_events')
             .count('id as count')
             .where('source', '=', 'import')
-            .where('created_at', '>=', MIN_DAYS_SINCE_IMPORTED);
+            .where('created_at', '>=', importedThreshold);
 
         return hasImportedMembers?.count > 0;
     }
