@@ -1,5 +1,6 @@
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
 const {MentionCreatedEvent} = require('@tryghost/webmentions');
+const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
@@ -80,6 +81,11 @@ class StaffService {
         if (type === MentionCreatedEvent && event.data.mention && this.labs.isSet('webmentions')) {
             await this.emails.notifyMentionReceived(event.data);
         }
+
+        if (type === MilestoneCreatedEvent && event.data.milestone && this.labs.isSet('milestoneEmails')) {
+            await this.emails.notifyMilestoneReceived(event.data);
+        }
+
         if (!['api', 'member'].includes(event.data.source)) {
             return;
         }
@@ -144,6 +150,15 @@ class StaffService {
                 await this.handleEvent(MentionCreatedEvent, event);
             } catch (e) {
                 this.logging.error(e, `Failed to notify webmention`);
+            }
+        });
+
+        // Trigger email when a new milestone is reached
+        this.DomainEvents.subscribe(MilestoneCreatedEvent, async (event) => {
+            try {
+                await this.handleEvent(MilestoneCreatedEvent, event);
+            } catch (e) {
+                this.logging.error(e, `Failed to notify milestone`);
             }
         });
     }

@@ -194,6 +194,24 @@ class StaffServiceEmails {
         }
     }
 
+    /**
+     *
+     * @param {object} eventData
+     * @param {object} eventData.milestone
+     *
+     * @returns {Promise<void>}
+     */
+    async notifyMilestoneReceived({milestone}) {
+        const users = await this.models.User.getEmailAlertUsers('milestone-received');
+
+        // TODO: send email with correct templates
+        for (const user of users) {
+            const to = user.email;
+
+            this.logging.info(`Will send email to ${to} for ${milestone.type} / ${milestone.value} milestone.`);
+        }
+    }
+
     // Utils
 
     /** @private */
@@ -227,7 +245,7 @@ class StaffServiceEmails {
     /** @private */
     getFormattedAmount({amount = 0, currency}) {
         if (!currency) {
-            return '';
+            return amount > 0 ? Intl.NumberFormat().format(amount) : '';
         }
 
         return Intl.NumberFormat('en', {
