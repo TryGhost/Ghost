@@ -41,7 +41,7 @@ describe('MilestonesService', function () {
         members: [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000],
         minDaysSinceImported: 7,
         minDaysSinceLastEmail: 14,
-        maxPercentageFromMilestone: 0.1
+        maxPercentageFromMilestone: 0.35
     };
 
     describe('ARR Milestones', function () {

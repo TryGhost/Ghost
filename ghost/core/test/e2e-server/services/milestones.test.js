@@ -148,7 +148,7 @@ describe('Milestones Service', function () {
         members: [10, 20, 30],
         minDaysSinceImported: 7,
         minDaysSinceLastEmail: 14,
-        maxPercentageFromMilestone: 0.1
+        maxPercentageFromMilestone: 0.35
     };
 
     before(async function () {
