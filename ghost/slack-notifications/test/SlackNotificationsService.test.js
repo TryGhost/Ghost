@@ -81,7 +81,7 @@ describe('SlackNotificationsService', function () {
                         emailSentAt: new Date()
                     },
                     meta: {
-                        currentARR: 1398
+                        currentValue: 1398
                     }
                 }));
 
