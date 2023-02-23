@@ -79,7 +79,7 @@ class StaffService {
     /** @private */
     async handleEvent(type, event) {
         if (type === MentionCreatedEvent && event.data.mention && this.labs.isSet('webmentions') && this.labs.isSet('webmentionEmails')) {
-            await this.emails.notifyMentionReceived(event.data);
+            return await this.emails.notifyMentionReceived(event.data);
         }
 
         if (type === MilestoneCreatedEvent && event.data.milestone && this.labs.isSet('milestoneEmails')) {
