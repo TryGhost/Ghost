@@ -1914,6 +1914,10 @@
     justify-content: space-between;
 }
 
+.gh-post-analytics-mentions.is-full-width {
+    display: none;
+}
+
 .gh-post-analytics-mentions-header {
     font-size: 1.55rem;
     font-weight: 700;
