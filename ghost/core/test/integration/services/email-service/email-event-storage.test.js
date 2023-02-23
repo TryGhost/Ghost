@@ -25,6 +25,13 @@ describe('EmailEventStorage', function () {
     let membersService;
 
     before(async function () {
+        // Stub queries before boot
+        const queries = require('../../../../core/server/services/email-analytics/lib/queries');
+        sinon.stub(queries, 'getLastSeenEventTimestamp').callsFake(async function () {
+            // This is required because otherwise the last event timestamp will be now, and that is too close to NOW to start fetching new events
+            return new Date(2000, 0, 1);
+        });
+
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails');
         await agent.loginAsOwner();

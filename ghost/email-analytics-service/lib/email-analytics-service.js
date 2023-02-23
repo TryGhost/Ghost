@@ -76,10 +76,10 @@ module.exports = class EmailAnalyticsService {
         const begin = await this.getLastEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // ALways stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
-        if (end < begin) {
+        if (end <= begin) {
             // Skip for now
             logging.info('[EmailAnalytics] Skipping fetchLatest because end (' + end + ') is before begin (' + begin + ')');
-            //return 0;
+            return 0;
         }
 
         // Create the fetch data object if it doesn't exist yet
@@ -109,7 +109,7 @@ module.exports = class EmailAnalyticsService {
             )
         );
 
-        if (end < begin) {
+        if (end <= begin) {
             // Skip for now
             logging.info('[EmailAnalytics] Skipping fetchMissing because end (' + end + ') is before begin (' + begin + ')');
             return 0;
@@ -178,9 +178,9 @@ module.exports = class EmailAnalyticsService {
             begin = this.#fetchScheduledData.lastEventTimestamp;
         }
 
-        if (end < begin) {
+        if (end <= begin) {
             // Skip for now
-            logging.info('[EmailAnalytics] Skipping fetchScheduled because end is before begin');
+            logging.info('[EmailAnalytics] Ending fetchScheduled because end is before begin');
             this.#fetchScheduledData = null;
             return 0;
         }
