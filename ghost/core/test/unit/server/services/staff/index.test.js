@@ -246,13 +246,12 @@ describe('Staff Service:', function () {
                 milestone: {
                     type: 'arr',
                     currency: 'usd',
-                    name: 'arr-100-usd',
                     value: 100,
                     createdAt: new Date(),
                     emailSentAt: new Date()
                 },
                 meta: {
-                    currentARR: 105
+                    currentValue: 105
                 }
             }));
 

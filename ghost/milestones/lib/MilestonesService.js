@@ -178,7 +178,7 @@ module.exports = class MilestonesService {
 
         if (milestone?.meta) {
             // Check how much the value currently differs from the milestone
-            const difference = (milestone?.meta?.currentMembers || milestone?.meta?.currentARR) - milestone.value;
+            const difference = milestone?.meta?.currentValue - milestone.value;
             const differenceInPercentage = difference / milestone.value;
 
             emailTooClose = differenceInPercentage >= this.#milestonesConfig.maxPercentageFromMilestone;
@@ -227,7 +227,7 @@ module.exports = class MilestonesService {
 
                     if (!milestoneExists && (!latestMilestone || milestone > latestMilestone.value)) {
                         const meta = {
-                            currentARR: currentARRForCurrency.arr
+                            currentValue: currentARRForCurrency.arr
                         };
                         return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr', currency: defaultCurrency, meta});
                     }
@@ -258,7 +258,7 @@ module.exports = class MilestonesService {
 
             if (!milestoneExists && (!latestMembersMilestone || milestone > latestMembersMilestone.value)) {
                 const meta = {
-                    currentMembers: membersCount
+                    currentValue: membersCount
                 };
                 return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members', meta});
             }

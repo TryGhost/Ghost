@@ -115,7 +115,7 @@ describe('SlackNotifications', function () {
                     value: 50000
                 },
                 meta: {
-                    currentMembers: 59857,
+                    currentValue: 59857,
                     reason: 'import'
                 }
             });
@@ -184,7 +184,7 @@ describe('SlackNotifications', function () {
                     value: 1000
                 },
                 meta: {
-                    currentARR: 1005,
+                    currentValue: 1005,
                     reason: 'email'
                 }
             });
