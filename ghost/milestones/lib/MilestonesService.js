@@ -23,6 +23,8 @@ const Milestone = require('./Milestone');
  * @prop {string} milestonesConfig.arr.currency
  * @prop {number[]} milestonesConfig.arr.values
  * @prop {number[]} milestonesConfig.members
+ * @prop {number} milestonesConfig.maxPercentageFromMilestone
+ * @prop {number} milestonesConfig.minDaysSinceLastEmail
  */
 
 module.exports = class MilestonesService {
@@ -133,7 +135,7 @@ module.exports = class MilestonesService {
      * @returns {Promise<Milestone>}
      */
     async #saveMileStoneAndSendEmail(milestone) {
-        const {shouldSendEmail, reason} = await this.#shouldSendEmail();
+        const {shouldSendEmail, reason} = await this.#shouldSendEmail(milestone);
 
         if (shouldSendEmail) {
             milestone.emailSentAt = new Date();
@@ -147,31 +149,47 @@ module.exports = class MilestonesService {
     }
 
     /**
+     * @param {object} milestone
+     * @param {number} milestone.value
+     * @param {'arr'|'members'} milestone.type
+     * @param {object} milestone.meta
+     * @param {string|null} [milestone.currency]
+     * @param {Date|null} [milestone.emailSentAt]
      *
      * @returns {Promise<{shouldSendEmail: boolean, reason: string}>}
      */
-    async #shouldSendEmail() {
-        let canHaveEmail;
+    async #shouldSendEmail(milestone) {
+        let emailTooSoon = false;
+        let emailTooClose = false;
         let reason = null;
-        // Two cases in which we don't want to send an email
+        // Three cases in which we don't want to send an email
         // 1. There has been an import of members within the last week
         // 2. The last email has been sent less than two weeks ago
+        // 3. The current members or ARR value is x% above the achieved milestone
+        //    as defined in default shared config for `maxPercentageFromMilestone`
         const lastMilestoneSent = await this.#repository.getLastEmailSent();
 
-        if (!lastMilestoneSent) {
-            canHaveEmail = true;
-        } else {
+        if (lastMilestoneSent) {
             const differenceInTime = new Date().getTime() - new Date(lastMilestoneSent.emailSentAt).getTime();
             const differenceInDays = differenceInTime / (1000 * 3600 * 24);
 
-            canHaveEmail = differenceInDays >= 14;
+            emailTooSoon = differenceInDays <= this.#milestonesConfig.minDaysSinceLastEmail;
+        }
+
+        if (milestone?.meta) {
+            // Check how much the value currently differs from the milestone
+            const difference = (milestone?.meta?.currentMembers || milestone?.meta?.currentARR) - milestone.value;
+            const differenceInPercentage = difference / milestone.value;
+
+            emailTooClose = differenceInPercentage >= this.#milestonesConfig.maxPercentageFromMilestone;
         }
 
         const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
-        const shouldSendEmail = canHaveEmail && !hasMembersImported;
+        const shouldSendEmail = !emailTooSoon && !hasMembersImported && !emailTooClose;
 
         if (!shouldSendEmail) {
-            reason = hasMembersImported ? 'import' : 'email';
+            reason = hasMembersImported ? 'import' :
+                emailTooSoon ? 'email' : 'tooFar';
         }
 
         return {shouldSendEmail, reason};

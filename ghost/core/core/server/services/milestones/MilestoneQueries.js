@@ -1,10 +1,12 @@
-const MIN_DAYS_SINCE_IMPORTED = 7;
-
 module.exports = class MilestoneQueries {
     #db;
 
+    /** @type {number} */
+    #minDaysSinceImported;
+
     constructor(deps) {
         this.#db = deps.db;
+        this.#minDaysSinceImported = deps.minDaysSinceImported;
     }
 
     /**
@@ -32,7 +34,7 @@ module.exports = class MilestoneQueries {
      */
     async hasImportedMembersInPeriod() {
         const importedThreshold = new Date();
-        importedThreshold.setDate(importedThreshold.getDate() - MIN_DAYS_SINCE_IMPORTED);
+        importedThreshold.setDate(importedThreshold.getDate() - this.#minDaysSinceImported);
 
         const [hasImportedMembers] = await this.#db.knex('members_subscribe_events')
             .count('id as count')

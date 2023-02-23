@@ -38,8 +38,10 @@ describe('MilestonesService', function () {
                 values: [1000, 10000, 50000, 100000, 250000, 500000, 1000000]
             }
         ],
-        members: [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
-
+        members: [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000],
+        minDaysSinceImported: 7,
+        minDaysSinceLastEmail: 14,
+        maxPercentageFromMilestone: 0.35
     };
 
     describe('ARR Milestones', function () {
@@ -262,6 +264,34 @@ describe('MilestonesService', function () {
             assert(domainEventSpy.callCount === 2); // new milestone created
             const domainEventSpyResult = domainEventSpy.getCall(1).args[0];
             assert(domainEventSpyResult.data.meta.reason === 'email');
+        });
+
+        it('Adds members milestone but does not send email when difference to milestone is above threshold', async function () {
+            repository = new InMemoryMilestoneRepository({DomainEvents});
+
+            const milestoneEmailService = new MilestonesService({
+                repository,
+                milestonesConfig,
+                queries: {
+                    async getMembersCount() {
+                        return 784;
+                    },
+                    async hasImportedMembersInPeriod() {
+                        return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'nzd';
+                    }
+                }
+            });
+
+            const membersResult = await milestoneEmailService.checkMilestones('members');
+            assert(membersResult.type === 'members');
+            assert(membersResult.value === 100);
+            assert(membersResult.emailSentAt === null);
+            assert(domainEventSpy.callCount === 1);
+            const domainEventSpyResult = domainEventSpy.getCall(0).args[0];
+            assert(domainEventSpyResult.data.meta.reason === 'tooFar');
         });
     });
 
