@@ -18,9 +18,11 @@
                         </div>
                     {{/if}}
                 </div>
-                <div class="gh-dashboard-list-footer">
-                    <LinkTo @route="mentions">View all mentions &rarr;</LinkTo>
-                </div>
+                {{#if this.mentions}}
+                    <div class="gh-dashboard-list-footer">
+                        <LinkTo @route="mentions">View all mentions &rarr;</LinkTo>
+                    </div>
+                {{/if}}
             {{/if}}
     </article>
 </section>
