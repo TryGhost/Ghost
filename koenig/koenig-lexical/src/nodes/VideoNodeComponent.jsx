@@ -43,11 +43,11 @@ export function VideoNodeComponent({
             }
         };
         uploadInitialFiles(initialFile);
-        
+
         // We only do this for init
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    
+
     const handleVideoUpload = async (files) => {
         const file = files[0];
         if (!file) {
@@ -83,7 +83,8 @@ export function VideoNodeComponent({
             });
         }
 
-        const imageUploadResult = await thumbnailUploader.upload([new File([thumbnailBlob], `${file.name}.jpg`)], {formData: {url: videoUrl}});
+        const thumbnailFile = new File([thumbnailBlob], `${file.name}.jpg`, {type: 'image/jpeg'});
+        const imageUploadResult = await thumbnailUploader.upload([thumbnailFile], {formData: {url: videoUrl}});
         const imageUrl = imageUploadResult?.[0]?.url;
 
         if (imageUrl) {
