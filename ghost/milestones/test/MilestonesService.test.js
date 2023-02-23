@@ -74,7 +74,7 @@ describe('MilestonesService', function () {
             const domainEventSpyResult = domainEventSpy.getCall(0).args[0];
             assert(domainEventSpy.calledOnce === true);
             assert(domainEventSpyResult.data.milestone);
-            assert(domainEventSpyResult.data.meta.currentARR === 1298);
+            assert(domainEventSpyResult.data.meta.currentValue === 1298);
         });
 
         it('Adds next ARR milestone and sends email', async function () {
@@ -134,7 +134,7 @@ describe('MilestonesService', function () {
             assert(domainEventSpy.callCount === 4); // we have just created a new milestone
             const domainEventSpyResult = domainEventSpy.getCall(3).args[0];
             assert(domainEventSpyResult.data.milestone);
-            assert(domainEventSpyResult.data.meta.currentARR === 10001);
+            assert(domainEventSpyResult.data.meta.currentValue === 10001);
         });
 
         it('Does not add ARR milestone for out of scope currency', async function () {

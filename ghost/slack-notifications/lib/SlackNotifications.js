@@ -50,8 +50,7 @@ class SlackNotifications {
      * @param {import('@tryghost/milestones/lib/InMemoryMilestoneRepository').Milestone} eventData.milestone
      * @param {object} [eventData.meta]
      * @param {'import'|'email'|'tooFar'} [eventData.meta.reason]
-     * @param {number} [eventData.meta.currentARR]
-     * @param {number} [eventData.meta.currentMembers]
+     * @param {number} [eventData.meta.currentValue]
      *
      * @returns {Promise<void>}
      */
@@ -79,10 +78,10 @@ class SlackNotifications {
                 ]
             };
 
-            if (meta?.currentARR) {
+            if (meta?.currentValue) {
                 valueSection.fields.push({
                     type: 'mrkdwn',
-                    text: `*Current ARR:*\n${this.#getFormattedAmount({amount: meta.currentARR, currency: milestone?.currency})}`
+                    text: `*Current ARR:*\n${this.#getFormattedAmount({amount: meta.currentValue, currency: milestone?.currency})}`
                 });
             }
         } else {
@@ -95,10 +94,10 @@ class SlackNotifications {
                     }
                 ]
             };
-            if (meta?.currentMembers) {
+            if (meta?.currentValue) {
                 valueSection.fields.push({
                     type: 'mrkdwn',
-                    text: `*Current Members:*\n${this.#getFormattedAmount({amount: meta.currentMembers})}`
+                    text: `*Current Members:*\n${this.#getFormattedAmount({amount: meta.currentValue})}`
                 });
             }
         }
