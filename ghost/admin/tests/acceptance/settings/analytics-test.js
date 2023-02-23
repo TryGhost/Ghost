@@ -65,7 +65,6 @@ describe('Acceptance: Settings - Analytics', function () {
     });
 
     it('can manage outbound link tagging', async function () {
-        enableLabsFlag(this.server, 'outboundLinkTagging');
         this.server.db.settings.update({key: 'outbound_link_tagging'}, {value: 'true'});
 
         await visit('/settings/analytics');
