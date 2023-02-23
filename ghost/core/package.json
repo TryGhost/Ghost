@@ -126,7 +126,6 @@
     "@tryghost/package-json": "0.0.0",
     "@tryghost/pretty-cli": "1.2.33",
     "@tryghost/promise": "0.2.1",
-    "@tryghost/public-resource-repository": "0.0.0",
     "@tryghost/request": "0.1.34",
     "@tryghost/security": "0.0.0",
     "@tryghost/session-service": "0.0.0",
