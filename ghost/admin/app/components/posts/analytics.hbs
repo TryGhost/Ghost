@@ -129,7 +129,7 @@
             {{/if}}
 
             {{#if this.showMentions }}
-                <div class="gh-post-analytics-box gh-post-analytics-mentions">
+                <div class="gh-post-analytics-box gh-post-analytics-mentions {{unless this.showLinks "is-full-width"}}">
                     <h3 class="gh-post-analytics-mentions-header">Mentions</h3>
                     <div class="gh-post-analytics-mentions-list">
                         {{#if this.mentions}}
@@ -146,9 +146,11 @@
                             </div>
                         {{/if}}
                     </div>
-                    <div class="gh-dashboard-list-footer">
-                        <LinkTo @route="posts.mentions" @model={{this.post.id}}>View all mentions &rarr;</LinkTo>
-                    </div>
+                    {{#if this.mentions}}
+                        <div class="gh-dashboard-list-footer">
+                            <LinkTo @route="posts.mentions" @model={{this.post.id}}>View all mentions &rarr;</LinkTo>
+                        </div>
+                    {{/if}}
                 </div>
             {{/if}}
         </div>

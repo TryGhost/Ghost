@@ -28,7 +28,7 @@
                 {{/if}}
             </h2>
 
-            {{#if this.post }}
+            {{#if (and this.post this.mentionsInfinityModel)}}
                 <div class="gh-post-analytics-meta">
                     <div class="gh-post-analytics-meta-text">
                         This post was mentioned in:
