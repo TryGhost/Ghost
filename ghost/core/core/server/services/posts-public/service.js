@@ -6,7 +6,6 @@ class PostsPublicServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const {Post} = require('../../models');
         const adapterManager = require('../adapter-manager');
         const config = require('../../../shared/config');
         const EventAwareCacheWrapper = require('@tryghost/event-aware-cache-wrapper');
@@ -36,8 +35,7 @@ class PostsPublicServiceWrapper {
         }
 
         this.api = {
-            cache: cache,
-            browse: this.postsRepository.getAll.bind(this.postsRepository)
+            cache: cache
         };
     }
 }

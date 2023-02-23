@@ -1,7 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const postsPublicService = require('../../services/posts-public');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers'];
 
@@ -36,7 +35,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return postsPublicService.api.browse(frame.options);
+            return models.Post.findPage(frame.options);
         }
     },
 
