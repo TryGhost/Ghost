@@ -218,13 +218,13 @@ describe('Milestones Service', function () {
         assert.ok(memberMilestoneModel.get('email_sent_at'));
 
         // Reached the first milestone for ARR
-        // but has already reached members milestone, so no new one
-        // will be created
+        // - Members already reached, no new one will be created
+        // - Less than two weeks since last milestone email, no email will be sent
         await createMemberWithSubscription('month', 500, 'usd', '2000-01-10');
         await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
         await createMemberWithSubscription('year', 1000, 'usd', '2000-01-10');
-        const fourthResultPromise = milestonesService.initAndRun(fifteenDays);
-        await clock.tickAsync(fifteenDays);
+        const fourthResultPromise = milestonesService.initAndRun(100);
+        await clock.tickAsync(100);
         const fourthRun = await fourthResultPromise;
         assert(fourthRun.members === undefined);
         assert(fourthRun.arr.value === 100);
@@ -236,7 +236,7 @@ describe('Milestones Service', function () {
         assert.equal(arrMilestoneModel.get('type'), 'arr');
         assert.equal(arrMilestoneModel.get('value'), 100);
         assert.ok(arrMilestoneModel.get('created_at'));
-        assert.ok(memberMilestoneModel.get('email_sent_at'));
+        assert.equal(arrMilestoneModel.get('email_sent_at'), null);
 
         assert(loggingStub.called);
     });
@@ -246,8 +246,8 @@ describe('Milestones Service', function () {
         mockManager.mockSetting('stripe_connect_publishable_key', 'pk_test_89843uihsidfh98832uo8ri');
         await createFreeMembers(12);
 
-        const resultPromise = milestonesService.initAndRun(100);
-        await clock.tickAsync(100);
+        const resultPromise = milestonesService.initAndRun(fifteenDays);
+        await clock.tickAsync(fifteenDays);
         const result = await resultPromise;
         assert(result.members.value === 20);
         assert(result.members.emailSentAt !== undefined);
