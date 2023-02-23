@@ -7,8 +7,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 /**
  * @typedef {object} meta
  * @prop {'import'|'email'} [reason]
- * @prop {number} [currentARR]
- * @prop {number} [currentMembers]
+ * @prop {number} [currentValue]
  */
 
 /**
