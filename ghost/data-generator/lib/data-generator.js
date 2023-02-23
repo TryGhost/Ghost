@@ -268,6 +268,9 @@ class DataGenerator {
             // Up to 5 benefits for each product
             await productsBenefitsImporter.importForEach(products, {amount: 5});
 
+            const labelsImporter = new LabelsImporter(transaction);
+            labels = await labelsImporter.import({amount: 10});
+
             this.logger.info('Completed random base data generation');
         }
 
@@ -396,9 +399,6 @@ class DataGenerator {
 
         const offersImporter = new OffersImporter(transaction, {products: products.filter(product => product.name !== 'Free')});
         await offersImporter.import({amount: 2});
-
-        const labelsImporter = new LabelsImporter(transaction);
-        labels = await labelsImporter.import({amount: 10});
 
         const membersLabelsImporter = new MembersLabelsImporter(transaction, {labels});
         await membersLabelsImporter.importForEach(members, {
