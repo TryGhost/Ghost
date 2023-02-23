@@ -12,6 +12,13 @@
                     </LinkTo>
                     {{svg-jar "arrow-right-small"}}Mentions
                 </div>
+            {{else}}
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="dashboard">
+                        Dashboard
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}}Mentions
+                </div>
             {{/if}}
             <h2 class="gh-canvas-title gh-post-title" data-test-screen-title>
                 {{#if this.post }}
@@ -31,7 +38,7 @@
         </div>
     </GhCanvasHeader>
     <section class="gh-mentions-main-section">
-        <div class="gh-mentions-list">
+        <div class="gh-mentions-list {{unless this.mentionsInfinityModel "is-empty"}}">
             {{#if this.mentionsInfinityModel}}
                 <div>
                     {{#each this.mentionsInfinityModel as |mention|}}
@@ -83,12 +90,14 @@
             @scrollable=".gh-main"
             @triggerOffset={{1000}} />
         </div>
-        <div class="gh-mentions-sidebar">
-            <div class="gh-mentions-explainer">
-                <img src="assets/img/mentions-background.png" alt="" role="presentation"/>
-                <h2>Introducing Mentions</h2>
-                <p>Whenever another person or site links to you, you’ll receive a notification in your dashboard to show you who’s talking about your content — and, when you link to someone else’s work, they’ll be notified, too.</p>
+        {{#if this.mentionsInfinityModel}}
+            <div class="gh-mentions-sidebar">
+                <div class="gh-mentions-explainer">
+                    <img src="assets/img/mentions-background.png" alt="" role="presentation"/>
+                    <h2>Introducing Mentions</h2>
+                    <p>Whenever another person or site links to you, you’ll receive a notification in your dashboard to show you who’s talking about your content — and, when you link to someone else’s work, they’ll be notified, too.</p>
+                </div>
             </div>
-        </div>
+        {{/if}}
     </section>
 </section>

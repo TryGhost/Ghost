@@ -11,6 +11,10 @@
     grid-column: span 2;
 }
 
+.gh-mentions-list.is-empty {
+    grid-column: span 3;
+}
+
 .gh-mention-card {
     display: block;
     position: relative;
@@ -22,6 +26,11 @@
     text-decoration: none;
     overflow: hidden;
     color: var(--midgrey);
+}
+
+.gh-mention-card:hover {
+    transition: box-shadow 0.1s ease-in;
+    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 10%);
 }
 
 .gh-mention-header {
@@ -175,7 +184,7 @@
 }
 
 .gh-mentions-explainer {
-    background-color: var(--whitegrey);
+    background: var(--main-color-content-greybg);
     border-radius: 5px;
     padding: 24px;
 }
