@@ -14,6 +14,7 @@ module.exports = {
     docName: 'tags',
 
     browse: {
+        cache: tagsPublicService.api?.cache,
         options: [
             'include',
             'filter',
@@ -32,7 +33,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return tagsPublicService.api.browse(frame.options);
+            return models.TagPublic.findPage(frame.options);
         }
     },
 
