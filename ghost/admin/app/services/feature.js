@@ -68,6 +68,7 @@ export default class FeatureService extends Service {
     @feature('suppressionList') suppressionList;
     @feature('emailStability') emailStability;
     @feature('webmentions') webmentions;
+    @feature('webmentionEmails') webmentionEmails;
     @feature('outboundLinkTagging') outboundLinkTagging;
     @feature('emailErrors') emailErrors;
     @feature('milestoneEmails') milestoneEmails;

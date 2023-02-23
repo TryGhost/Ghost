@@ -281,6 +281,9 @@ describe('StaffService', function () {
                             if (flag === 'webmentions') {
                                 return true;
                             }
+                            if (flag === 'webmentionEmails') {
+                                return true;
+                            }
                             if (flag === 'milestoneEmails') {
                                 return true;
                             }
