@@ -1,5 +1,5 @@
 import React from 'react';
-import {HtmlOutputPlugin, KoenigComposableEditor, KoenigComposer, RestrictContentPlugin} from '../index.js';
+import {HtmlOutputPlugin, KoenigComposableEditor, KoenigComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 
 const Placeholder = ({text = 'Type here'}) => {
     return (
@@ -11,11 +11,14 @@ const Placeholder = ({text = 'Type here'}) => {
 
 const KoenigCaptionEditor = ({paragraphs = 1, html, setHtml, placeholderText, readOnly}) => {
     return (
-        <KoenigComposer>
+        <KoenigComposer
+            nodes={MINIMAL_NODES}
+        >
             <KoenigComposableEditor
                 className="koenig-lexical-caption"
                 placeholder={<Placeholder text={placeholderText} />}
                 readOnly={readOnly}
+                markdownTransformers={MINIMAL_TRANSFORMERS}
             >
                 <RestrictContentPlugin paragraphs={paragraphs} />
                 <HtmlOutputPlugin html={html} setHtml={setHtml} />
