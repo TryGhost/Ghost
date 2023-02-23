@@ -1,6 +1,5 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, find} from '@ember/test-helpers';
-import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
