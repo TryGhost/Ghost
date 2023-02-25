@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const config = require('../../shared/config');
 const {blogIcon} = require('../../server/lib/image');
 const urlUtils = require('../../shared/url-utils');
+const {SafeString} = require('../services/handlebars');
 
 /**
  * Serve either uploaded favicon or default
@@ -11,7 +12,15 @@ function getFaviconUrl() {
     return blogIcon.getIconUrl();
 }
 
+/**
+ * Prepare URL for an asset
+ * @param {string|SafeString} path — the asset’s path
+ * @param {boolean} hasMinFile — flag for the existence of a minified version for the asset
+ * @returns {string}
+ */
 function getAssetUrl(path, hasMinFile) {
+    path = path instanceof SafeString ? path.string : path;
+
     // CASE: favicon - this is special path with its own functionality
     if (path.match(/\/?favicon\.(ico|png)$/)) {
         // @TODO, resolve this - we should only be resolving subdirectory and extension.
