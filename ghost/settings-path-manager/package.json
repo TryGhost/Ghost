@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@tryghost/errors": "1.2.21",
-    "@tryghost/tpl": "0.1.21",
+    "@tryghost/tpl": "0.1.22",
     "date-fns": "2.29.3"
   }
 }
