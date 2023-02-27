@@ -86,7 +86,7 @@ class EmailEventStorage {
                 enhanced_code: event.error.enhancedCode,
                 failed_at: event.timestamp,
                 event_id: event.id
-            }, options);
+            }, {...options, autoRefresh: false});
         } else {
             if (existing.get('severity') === 'permanent') {
                 // Already marked as failed, no need to change anything here
