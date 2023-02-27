@@ -35,7 +35,6 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'urlCache',
-    'beforeAfterCard',
     'lexicalEditor',
     'websockets',
     'webmentionEmails'
