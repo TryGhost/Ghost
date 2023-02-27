@@ -6,11 +6,13 @@ const list = require('../../../../../core/server/services/themes/list');
 const gscan = require('gscan');
 const assert = require('assert');
 const adapterManager = require('../../../../../core/server/services/adapter-manager');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/Memory');
 
 describe('Themes', function () {
     let checkZipStub;
     let checkStub;
     let formatStub;
+    let adapterStub;
 
     beforeEach(function () {
         checkZipStub = sinon.stub(gscan, 'checkZip');
@@ -28,6 +30,15 @@ describe('Themes', function () {
             version: '1.0.0',
             path: '/path/to/theme'
         };
+
+        beforeEach(function () {
+            adapterStub = sinon.stub(adapterManager, 'getAdapter').returns(new InMemoryCache());
+            validate.init();
+        });
+
+        afterEach(function () {
+            adapterStub.restore();
+        });
 
         it('[success] validates a valid zipped theme', function () {
             checkZipStub.resolves({});
@@ -150,7 +161,7 @@ describe('Themes', function () {
             validate.init();
         });
 
-        it('Does an innitial check if not cached yet', async function () {
+        it('Does an initial check if not cached yet', async function () {
             checkStub.resolves({});
             formatStub.returns({results: {error: [{hello: 'world'}]}});
 
