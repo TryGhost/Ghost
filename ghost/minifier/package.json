@@ -22,9 +22,9 @@
     "sinon": "14.0.2"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.21",
+    "@tryghost/debug": "0.1.22",
     "@tryghost/errors": "1.2.21",
-    "@tryghost/tpl": "0.1.21",
+    "@tryghost/tpl": "0.1.22",
     "csso": "5.0.5",
     "terser": "5.16.5",
     "tiny-glob": "0.2.9"

@@ -24,7 +24,7 @@
     "sinon": "14.0.2"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.21",
+    "@tryghost/debug": "0.1.22",
     "@tryghost/errors": "1.2.21",
     "cookies": "0.8.0",
     "jsonwebtoken": "8.5.1"

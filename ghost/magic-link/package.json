@@ -25,8 +25,8 @@
   },
   "dependencies": {
     "@tryghost/errors": "1.2.21",
-    "@tryghost/tpl": "0.1.21",
-    "@tryghost/validator": "0.1.31",
+    "@tryghost/tpl": "0.1.22",
+    "@tryghost/validator": "0.2.1",
     "jsonwebtoken": "8.5.1"
   }
 }
