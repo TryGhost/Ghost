@@ -29,7 +29,8 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
         return {
             id: faker.database.mongodbObjectId(),
             customer_id: customer.customer_id,
-            subscription_id: this.model.id,
+            ghost_subscription_id: this.model.id,
+            subscription_id: `sub_${faker.random.alphaNumeric(14)}`,
             stripe_price_id: stripePrice.stripe_price_id,
             status: 'active',
             cancel_at_period_end: false,
