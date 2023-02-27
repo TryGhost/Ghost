@@ -21,6 +21,9 @@ module.exports = (lng = 'en') => {
         nsSeparator: false,
         keySeparator: false,
 
+        // if the value is an empty string, return the key
+        returnEmptyString: false,
+
         // do not load a fallback
         fallbackLng: false,
 
