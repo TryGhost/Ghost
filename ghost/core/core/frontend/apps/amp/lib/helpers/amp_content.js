@@ -6,7 +6,7 @@
 //
 // Converts normal HTML into AMP HTML with Amperize module and uses a cache to return it from
 // there if available. The cacheId is a combination of `updated_at` and the `slug`.
-const {DateTime, Interval} = require('luxon');
+const {DateTime} = require('luxon');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
@@ -120,8 +120,6 @@ function getAmperizeHTML(html, post) {
 
     amperize = amperize || new Amperize();
 
-    const startedAtMoment = DateTime.now();
-
     let cacheDateTime;
     let postDateTime;
 
@@ -136,8 +134,6 @@ function getAmperizeHTML(html, post) {
     if (!amperizeCache[post.id] || cacheDateTime.diff(postDateTime).valueOf() < 0) {
         return new Promise((resolve) => {
             amperize.parse(html, (err, res) => {
-                logging.info('amp.parse', post.url, Interval.fromDateTimes(startedAtMoment, DateTime.now()).length('milliseconds') + 'ms');
-
                 if (err) {
                     if (err.src) {
                         // This is a valid 500 GhostError because it means the amperize parser is unable to handle some Ghost HTML.
