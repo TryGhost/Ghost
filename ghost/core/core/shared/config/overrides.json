@@ -41,6 +41,7 @@
                 "audio/wav",
                 "audio/x-wav",
                 "audio/ogg",
+                "audio/mp4",
                 "audio/x-m4a"
             ]
         },
