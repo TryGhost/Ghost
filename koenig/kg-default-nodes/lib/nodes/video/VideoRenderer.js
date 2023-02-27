@@ -28,10 +28,7 @@ export function renderVideoNodeToDOM(node, options = {}) {
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    const videoNode = element.firstElementChild;
-    document.body.replaceChildren(videoNode);
-
-    return videoNode;
+    return element.firstElementChild;
 }
 
 export function cardTemplate({node, cardClasses}) {
