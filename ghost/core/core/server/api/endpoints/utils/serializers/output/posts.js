@@ -12,10 +12,10 @@ module.exports = {
         }
         let posts = [];
 
-        const tiersModels = await membersService.api.productRepository.list({
+        const tiersModels = await membersService.api?.productRepository.list({
             limit: 'all'
         });
-        const tiers = tiersModels.data ? tiersModels.data.map(tierModel => tierModel.toJSON()) : [];
+        const tiers = tiersModels?.data ? tiersModels.data.map(tierModel => tierModel.toJSON()) : [];
         if (models.meta) {
             for (let model of models.data) {
                 let post = await mappers.posts(model, frame, {tiers});
