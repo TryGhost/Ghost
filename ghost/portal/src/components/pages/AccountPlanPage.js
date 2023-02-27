@@ -64,7 +64,7 @@ const Header = ({onBack, showConfirmation, confirmationType}) => {
 };
 
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
-    const {site} = useContext(AppContext);
+    const {site, t} = useContext(AppContext);
     if (!member.paid) {
         return null;
     }
@@ -77,7 +77,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
     if (subscription.cancel_at_period_end) {
         return null;
     }
-    const label = 'Cancel subscription';
+    const label = t('Cancel subscription');
     const isRunning = ['cancelSubscription:running'].includes(action);
     const disabled = (isRunning) ? true : false;
     const isPrimary = !!subscription.cancel_at_period_end;
@@ -110,11 +110,11 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
 
 // For confirmation flows
 const PlanConfirmationSection = ({plan, type, onConfirm}) => {
-    const {site, action, member, brandColor} = useContext(AppContext);
+    const {site, action, member, brandColor, t} = useContext(AppContext);
     const [reason, setReason] = useState('');
     const subscription = getMemberSubscription({member});
     const isRunning = ['updateSubscription:running', 'checkoutPlan:running', 'cancelSubscription:running'].includes(action);
-    const label = 'Confirm';
+    const label = t('Confirm');
     let planStartDate = getDateString(subscription.current_period_end);
     const currentActivePlan = getMemberActivePrice({member});
     if (currentActivePlan.id !== plan.id) {
@@ -123,14 +123,14 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     const priceString = formatNumber(plan.price);
     const planStartMessage = `${plan.currency_symbol}${priceString}/${plan.interval} – Starting ${planStartDate}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
-    const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : 'Price';
+    const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : t('Price');
     if (type === 'changePlan') {
         return (
             <div className='gh-portal-logged-out-form-container'>
                 <div className='gh-portal-list mb6'>
                     <section>
                         <div className='gh-portal-list-detail'>
-                            <h3>Account</h3>
+                            <h3>{t('Account')}</h3>
                             <p>{member.email}</p>
                         </div>
                     </section>
@@ -161,7 +161,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
                 <p>If you cancel your subscription now, you will continue to have access until <strong>{getDateString(subscription.current_period_end)}</strong>.</p>
                 <section className='gh-portal-input-section'>
                     <div className='gh-portal-input-labelcontainer'>
-                        <label className='gh-portal-input-label'>Cancellation reason</label>
+                        <label className='gh-portal-input-label'>{t('Cancellation reason')}</label>
                     </div>
                     <textarea
                         data-test-input='cancellation-reason'

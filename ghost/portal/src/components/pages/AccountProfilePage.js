@@ -55,10 +55,12 @@ export default class AccountProfilePage extends React.Component {
     }
 
     renderSaveButton() {
+        const {t} = this.context;
+
         const isRunning = (this.context.action === 'updateProfile:running');
-        let label = 'Save';
+        let label = t('Save');
         if (this.context.action === 'updateProfile:failed') {
-            label = 'Retry';
+            label = t('Retry');
         }
         const disabled = isRunning ? true : false;
         return (
@@ -75,8 +77,10 @@ export default class AccountProfilePage extends React.Component {
     }
 
     renderDeleteAccountButton() {
+        const {t} = this.context;
+
         return (
-            <div style={{cursor: 'pointer', color: 'red'}} role='button'>Delete account</div>
+            <div style={{cursor: 'pointer', color: 'red'}} role='button'>{t('Delete account')}</div>
         );
     }
 
@@ -89,10 +93,12 @@ export default class AccountProfilePage extends React.Component {
     }
 
     renderHeader() {
+        const {t} = this.context;
+
         return (
             <header className='gh-portal-detail-header'>
                 <BackButton brandColor={this.context.brandColor} hidden={!this.context.lastPage} onClick={e => this.onBack(e)} />
-                <h3 className='gh-portal-main-title'>Account settings</h3>
+                <h3 className='gh-portal-main-title'>{t('Account settings')}</h3>
             </header>
         );
     }
@@ -129,13 +135,15 @@ export default class AccountProfilePage extends React.Component {
     }
 
     getInputFields({state, fieldNames}) {
+        const {t} = this.context;
+
         const errors = state.errors || {};
         const fields = [
             {
                 type: 'text',
                 value: state.name,
                 placeholder: 'Jamie Larson',
-                label: 'Name',
+                label: t('Name'),
                 name: 'name',
                 required: true,
                 errorMessage: errors.name || ''
@@ -144,7 +152,7 @@ export default class AccountProfilePage extends React.Component {
                 type: 'email',
                 value: state.email,
                 placeholder: 'jamie@example.com',
-                label: 'Email',
+                label: t('Email'),
                 name: 'email',
                 required: true,
                 errorMessage: errors.email || ''
