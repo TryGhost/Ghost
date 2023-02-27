@@ -152,14 +152,14 @@ export default class OfferPage extends React.Component {
 
     getInputFields({state, fieldNames}) {
         const {portal_name: portalName} = this.context.site;
-        const {member} = this.context;
+        const {member, t} = this.context;
         const errors = state.errors || {};
         const fields = [
             {
                 type: 'email',
                 value: member?.email || state.email,
                 placeholder: 'jamie@example.com',
-                label: 'Email',
+                label: t('Email'),
                 name: 'email',
                 disabled: !!member,
                 required: true,
@@ -181,7 +181,7 @@ export default class OfferPage extends React.Component {
                 type: 'text',
                 value: member?.name || state.name,
                 placeholder: 'Jamie Larson',
-                label: 'Name',
+                label: t('Name'),
                 name: 'name',
                 disabled: !!member,
                 required: true,
@@ -307,22 +307,22 @@ export default class OfferPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, brandColor} = this.context;
+        const {action, brandColor, t} = this.context;
         const {pageData: offer} = this.context;
-        let label = 'Continue';
+        let label = t('Continue');
 
         if (offer.type === 'trial') {
-            label = 'Start ' + offer.amount + '-day free trial';
+            label = t('Start {{amount}}-day free trial', {amount: offer.amount});
         }
 
         let isRunning = false;
         if (action === 'signup:running') {
-            label = 'Sending...';
+            label = t('Sending...');
             isRunning = true;
         }
         let retry = false;
         if (action === 'signup:failed') {
-            label = 'Retry';
+            label = t('Retry');
             retry = true;
         }
 
@@ -347,16 +347,16 @@ export default class OfferPage extends React.Component {
         if (member) {
             return null;
         }
-        const {brandColor, onAction} = this.context;
+        const {brandColor, onAction, t} = this.context;
         return (
             <div className='gh-portal-signup-message'>
-                <div>Already a member?</div>
+                <div>{t('Already a member?')}</div>
                 <button
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
                     onClick={() => onAction('switchPage', {page: 'signin'})}
                 >
-                    <span>Sign in</span>
+                    <span>{t('Sign in')}</span>
                 </button>
             </div>
         );
@@ -477,15 +477,15 @@ export default class OfferPage extends React.Component {
     }
 
     renderProductLabel({product, offer}) {
-        const {site} = this.context;
+        const {site, t} = this.context;
 
         if (hasMultipleProductsFeature({site})) {
             return (
-                <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
+                <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
             );
         }
         return (
-            <h4 className="gh-portal-plan-name">{(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
+            <h4 className="gh-portal-plan-name">{(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
         );
     }
 
@@ -520,6 +520,8 @@ export default class OfferPage extends React.Component {
     }
 
     renderProductCard({product, offer, currencyClass, updatedPrice, price, benefits}) {
+        const {t} = this.context;
+
         if (this.state.showNewsletterSelection) {
             return null;
         }
@@ -527,7 +529,7 @@ export default class OfferPage extends React.Component {
             <>
                 <div className='gh-portal-product-card top'>
                     <div className='gh-portal-product-card-header'>
-                        <h4 className="gh-portal-product-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
+                        <h4 className="gh-portal-product-name">{product.name} - {(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
                         {this.renderOldTierPrice({offer, price})}
                         {this.renderUpdatedTierPrice({offer, currencyClass, updatedPrice, price})}
                         {this.renderOfferMessage({offer, product, price})}
