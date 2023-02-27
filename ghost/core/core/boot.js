@@ -352,7 +352,7 @@ async function initServices({config}) {
 
     // Initialize analytics events
     if (config.get('segment:key')) {
-        require('./server/analytics-events').init();
+        require('./server/services/segment').init();
     }
 
     debug('End: initServices');
