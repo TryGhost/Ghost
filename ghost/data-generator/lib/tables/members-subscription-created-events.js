@@ -14,7 +14,7 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
     }
 
     generate() {
-        const subscription = this.subscriptions.find(s => s.id === this.model.subscription_id);
+        const subscription = this.subscriptions.find(s => s.id === this.model.ghost_subscription_id);
         return {
             id: faker.database.mongodbObjectId(),
             created_at: subscription.created_at,

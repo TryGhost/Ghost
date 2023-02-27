@@ -20,7 +20,7 @@ class MembersPaidSubscriptionEventsImporter extends TableImporter {
         }
         // TODO: Implement upgrades
         const membersStripeCustomersSubscription = this.membersStripeCustomersSubscriptions.find((m) => {
-            return m.subscription_id === this.model.id;
+            return m.ghost_subscription_id === this.model.id;
         });
         return {
             id: faker.database.mongodbObjectId(),
