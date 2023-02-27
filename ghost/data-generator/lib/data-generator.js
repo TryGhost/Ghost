@@ -344,7 +344,7 @@ class DataGenerator {
         });
         const membersStripeCustomersSubscriptions = await membersStripeCustomersSubscriptionsImporter.importForEach(subscriptions, {
             amount: 1,
-            rows: ['mrr', 'plan_id', 'subscription_id']
+            rows: ['mrr', 'plan_id', 'ghost_subscription_id']
         });
 
         const membersSubscribeEventsImporter = new MembersSubscribeEventsImporter(transaction, {newsletters, subscriptions});
