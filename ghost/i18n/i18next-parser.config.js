@@ -1,5 +1,8 @@
 const {SUPPORTED_LOCALES} = require('./');
 
+/**
+ * @type {import('i18next-parser').UserConfig}
+ */
 module.exports = {
     locales: SUPPORTED_LOCALES,
 
