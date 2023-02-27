@@ -31,7 +31,7 @@ const readBackup = async (filename) => {
     const exists = await fs.pathExists(backupPath);
 
     if (exists) {
-        const backupFile = await fs.readFile(backupPath);
+        const backupFile = await fs.readFile(backupPath, 'utf8');
         return JSON.parse(backupFile);
     } else {
         return null;
