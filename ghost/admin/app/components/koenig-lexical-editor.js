@@ -283,14 +283,14 @@ export default class KoenigLexicalEditor extends Component {
                         message = error.message;
                     }
 
+                    // TODO: check for or expose known error types?
                     const errorResult = {
                         message,
                         context,
                         fileName: file.name
                     };
 
-                    // TODO: check for or expose known error types?
-                    setErrors([...errors, errorResult]);
+                    throw errorResult;
                 }
             };
 
@@ -328,7 +328,7 @@ export default class KoenigLexicalEditor extends Component {
                 } catch (error) {
                     console.error(error); // eslint-disable-line no-console
 
-                    setErrors([...errors, {message: error.message}]);
+                    setErrors([...errors, error]);
                     setLoading(false);
                     setProgress(100);
                     progressTracker.current.clear();
