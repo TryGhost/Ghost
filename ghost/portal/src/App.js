@@ -156,6 +156,7 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
+            const i18n = require('@tryghost/i18n')(/*site.locale || */ 'en'); // TODO: uncomment when you want to enable i18n translations
             const state = {
                 site,
                 member,
@@ -165,6 +166,7 @@ export default class App extends React.Component {
                 showPopup,
                 pageData,
                 popupNotification,
+                t: i18n.t,
                 action: 'init:success',
                 initStatus: 'success'
             };
@@ -412,7 +414,7 @@ export default class App extends React.Component {
         const offersRegex = /^offers\/(\w+?)\/?$/;
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
-        
+
         if (path && feedbackRegex.test(path) && hashQuery.get('uuid')) {
             const [, postId, scoreString] = path.match(feedbackRegex);
             const score = parseInt(scoreString);
@@ -800,7 +802,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -815,6 +817,7 @@ export default class App extends React.Component {
             showPopup,
             popupNotification,
             customSiteUrl,
+            t,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
