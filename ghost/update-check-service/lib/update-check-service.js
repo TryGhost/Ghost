@@ -45,6 +45,7 @@ class UpdateCheckService {
      * @param {string} options.config.checkEndpoint - update check service URL
      * @param {boolean} [options.config.isPrivacyDisabled]
      * @param {string[]} [options.config.notificationGroups] - example values ["migration", "something"]
+     * @param {boolean} [options.config.rethrowErrors] - allows to force throwing errors (useful in worker threads)
      * @param {string} options.config.siteUrl - Ghost instance URL
      * @param {boolean} [options.config.forceUpdate]
      * @param {string} options.config.ghostVersion - Ghost instance version
@@ -88,6 +89,10 @@ class UpdateCheckService {
         err.help = tpl(messages.checkingForUpdatesFailedHelp, {url: 'https://ghost.org/docs/'});
 
         this.logging.error(err);
+
+        if (this.config.rethrowErrors) {
+            throw err;
+        }
     }
 
     /**
@@ -330,7 +335,10 @@ class UpdateCheckService {
                             forceTextContent: true
                         });
                     } catch (err) {
-                        this.logging.err(err);
+                        this.logging.error(err);
+                        if (this.config.rethrowErrors) {
+                            throw err;
+                        }
                     }
                 }
             }

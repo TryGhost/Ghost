@@ -12,10 +12,11 @@ const UpdateCheckService = require('@tryghost/update-check-service');
 
 /**
  * Initializes and triggers update check
- *
+ * @param {Object} [options]
+ * @param {Boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
  * @returns {Promise<any>}
  */
-module.exports = async () => {
+module.exports = async ({rethrowErrors = false} = {}) => {
     const allowedCheckEnvironments = ['development', 'production'];
 
     // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
@@ -51,7 +52,8 @@ module.exports = async () => {
             notificationGroups: config.get('notificationGroups'),
             siteUrl: urlUtils.urlFor('home', true),
             forceUpdate: config.get('updateCheck:forceUpdate'),
-            ghostVersion: ghostVersion.original
+            ghostVersion: ghostVersion.original,
+            rethrowErrors
         },
         request,
         sendEmail: ghostMailer.send.bind(ghostMailer)
