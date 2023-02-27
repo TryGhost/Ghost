@@ -17,6 +17,9 @@ const setupProvider = (context) => {
 const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
     const mockOnActionFn = jest.fn().mockResolvedValue(undefined);
 
+    // Hardcode the locale to 'en' for testing
+    const {t} = require('@tryghost/i18n')('en');
+
     const context = {
         site: testSite,
         member: member.free,
@@ -24,6 +27,7 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
         brandColor: testSite.accent_color,
         page: 'signup',
         onAction: mockOnActionFn,
+        t,
         ...overrideContext
     };
     const utils = render(ui, {wrapper: setupProvider(context), ...options});
