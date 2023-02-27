@@ -41,7 +41,7 @@ async function updateMemberNewsletters({api, memberUuid, newsletters, enableComm
 }
 
 export default function UnsubscribePage() {
-    const {site, pageData, onAction} = useContext(AppContext);
+    const {site, pageData, onAction, t} = useContext(AppContext);
     const api = setupGhostApi({siteUrl: site.url});
     const [member, setMember] = useState();
     const siteNewsletters = getSiteNewsletters({site});
@@ -101,9 +101,9 @@ export default function UnsubscribePage() {
                 <div class="gh-feedback-icon gh-feedback-icon-error">
                     <WarningIcon />
                 </div>
-                <h1 className="gh-portal-main-title">That didn't go to plan</h1>
+                <h1 className="gh-portal-main-title">{t('That didn\'t go to plan')}</h1>
                 <div>
-                    <p className="gh-portal-text-center">We couldn't unsubscribe you as the email address was not found. Please contact the site owner.</p>
+                    <p className="gh-portal-text-center">{t('We couldn\'t unsubscribe you as the email address was not found. Please contact the site owner.')}</p>
                 </div>
                 <ActionButton
                     style={{width: '100%'}}
@@ -111,7 +111,7 @@ export default function UnsubscribePage() {
                     onClick = {() => onAction('closePopup')}
                     disabled={false}
                     brandColor='#000000'
-                    label={'Close'}
+                    label={t('Close')}
                     isRunning={false}
                     tabindex='3'
                     classes={'sticky bottom'}
@@ -126,7 +126,7 @@ export default function UnsubscribePage() {
             <div className='gh-portal-content gh-portal-unsubscribe with-footer'>
                 <CloseButton />
                 <AccountHeader />
-                <h1 className="gh-portal-main-title">Successfully unsubscribed</h1>
+                <h1 className="gh-portal-main-title">{t('Successfully unsubscribed')}</h1>
                 <div>
                     <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
                     <p className='gh-portal-text-center'>Didn't mean to do this? Manage your preferences
@@ -182,7 +182,7 @@ export default function UnsubscribePage() {
                 setSubscribedNewsletters([]);
                 onAction('showPopupNotification', {
                     action: 'updated:success',
-                    message: `Email preference updated.`
+                    message: t(`Email preference updated.`)
                 });
                 const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
                 setMember(updatedMember);

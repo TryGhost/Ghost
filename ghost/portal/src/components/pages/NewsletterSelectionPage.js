@@ -65,7 +65,7 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
 }
 
 export default function NewsletterSelectionPage({pageData, onBack}) {
-    const {brandColor, site, onAction, action} = useContext(AppContext);
+    const {brandColor, site, onAction, action, t} = useContext(AppContext);
     const siteNewsletters = getSiteNewsletters({site});
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
@@ -76,10 +76,10 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
     if (action === 'signup:running') {
         isRunning = true;
     }
-    let label = 'Continue';
+    let label = t('Continue');
     let retry = false;
     if (action === 'signup:failed') {
-        label = 'Retry';
+        label = t('Retry');
         retry = true;
     }
 
@@ -88,7 +88,7 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     return (
         <div className='gh-portal-content with-footer gh-portal-newsletter-selection'>
-            <p className="gh-portal-text-center gh-portal-text-large">Choose your newsletters</p>
+            <p className="gh-portal-text-center gh-portal-text-large">{t('Choose your newsletters')}</p>
             <div className='gh-portal-section'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
@@ -124,7 +124,7 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             onClick = {() => {
                                 onBack();
                             }}>
-                            <span>Choose a different plan</span>
+                            <span>{t('Choose a different plan')}</span>
                         </button>
                     </div>
                 </div>

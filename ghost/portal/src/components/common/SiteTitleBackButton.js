@@ -5,7 +5,7 @@ export default class SiteTitleBackButton extends React.Component {
     static contextType = AppContext;
 
     render() {
-        // const {site} = this.context;
+        const {t} = this.context;
         return (
             <>
                 <button
@@ -17,7 +17,7 @@ export default class SiteTitleBackButton extends React.Component {
                             this.context.onAction('closePopup');
                         }
                     }}>
-                    <span>&larr; </span> Back
+                    <span>&larr; </span> {t('Back')}
                 </button>
             </>
         );
