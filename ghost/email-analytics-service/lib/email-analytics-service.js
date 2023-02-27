@@ -249,7 +249,7 @@ module.exports = class EmailAnalyticsService {
                 await provider.fetchLatest(processBatch, {begin, end, maxEvents});
             }
 
-            logging.info('[EmailAnalytics] Fetching finshed');
+            logging.info('[EmailAnalytics] Fetching finished');
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
                 logging.error('[EmailAnalytics] Error while fetching');
