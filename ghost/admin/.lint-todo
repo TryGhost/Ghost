@@ -394,16 +394,6 @@ add|ember-template-lint|require-input-label|115|20|115|20|6667d8ebc469e0d2ed3471
 add|ember-template-lint|require-input-label|118|20|118|20|f3ae4f72a8db3c91f535113a7471dba2b0ba74c9|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-audio.hbs
 add|ember-template-lint|require-valid-alt-text|59|32|59|32|67bd02b65f7f92dc7f0a23f1d0821d694c12822a|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-audio.hbs
 add|ember-template-lint|require-valid-alt-text|71|32|71|32|f7cffe175337549e4def0097056f57a9f4590c33|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-audio.hbs
-add|ember-template-lint|require-input-label|54|16|54|16|98e790dc74c88df1b5eb2b212149a2fb0f9cf83c|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|require-input-label|113|16|113|16|c610307bb78fba0a94b9f3f12f507cc37142f7b8|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|require-valid-alt-text|40|20|40|20|2376a21f7f520ed08dff9d123e45c14329d60537|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|require-valid-alt-text|48|20|48|20|ed3cb6ea286ecb0dcbf85a01fd434a8db45ba22d|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|require-valid-alt-text|69|24|69|24|fa6bca7cf3804e926c62628e15909bc57e409f83|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|require-valid-alt-text|93|24|93|24|3ac85fbe4dc6c41ea8f0ccbc5c52d31412fb6c7f|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|style-concatenation|34|64|34|64|51cf172bdfd49494cf9561032700824034048fa1|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|style-concatenation|38|20|38|20|e814b9aab6e7bf5d99c98e738bf7aa29b72d3bc2|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|style-concatenation|65|65|65|65|beec7c7fb1c31e93a99d5d353d4b1175f5238749|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
-add|ember-template-lint|style-concatenation|121|61|121|61|beec7c7fb1c31e93a99d5d353d4b1175f5238749|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-before-after.hbs
 add|ember-template-lint|no-action|5|16|5|16|822c6a91d06436c87443aba1c5316874b4de7e93|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-bookmark.hbs
 add|ember-template-lint|no-action|6|18|6|18|40a9eaaf8ee3a30448bd8f5c51e4f57ad6f637cb|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-bookmark.hbs
 add|ember-template-lint|no-action|7|16|7|16|b029d6288b77b183c28684a537f2054da87763b7|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-bookmark.hbs
