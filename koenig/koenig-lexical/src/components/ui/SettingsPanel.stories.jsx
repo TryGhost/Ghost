@@ -13,7 +13,7 @@ const story = {
     subcomponents: {ToggleSetting, InputSetting, SettingsDivider, ButtonGroupSetting},
     parameters: {
         status: {
-            type: 'inProgress'
+            type: 'uiReady'
         }
     }
 };

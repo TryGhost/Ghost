@@ -7,7 +7,7 @@ const story = {
     component: Dropdown,
     parameters: {
         status: {
-            type: 'inProgress'
+            type: 'uiReady'
         }
     }
 };

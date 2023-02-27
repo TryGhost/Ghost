@@ -7,7 +7,7 @@ const story = {
     subcomponents: {ColorButton},
     parameters: {
         status: {
-            type: 'functional'
+            type: 'uiReady'
         }
     },
     argTypes: {
