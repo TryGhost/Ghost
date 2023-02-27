@@ -153,14 +153,14 @@ export const FeedbackPageStyles = `
         }
 
         @keyframes mobile-tray-from-bottom {
-            0% { 
+            0% {
                 opacity: 0;
                 transform: translateY(300px);
             }
             20% {
                 opacity: 1.0;
             }
-            100% { 
+            100% {
                 transform: translateY(0);
             }
         }
@@ -196,7 +196,7 @@ function ErrorPage({error}) {
 }
 
 const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
-    const {onAction, brandColor} = useContext(AppContext);
+    const {onAction, brandColor, t} = useContext(AppContext);
     const [score, setScore] = useState(initialScore);
 
     const stopPropagation = (event) => {
@@ -223,7 +223,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
 
     return (
         <div className="gh-portal-confirm-dialog" onMouseDown={stopPropagation}>
-            <h1 className="gh-portal-confirm-title">Give feedback on this post</h1>
+            <h1 className="gh-portal-confirm-title">{t('Give feedback on this post')}</h1>
 
             <div className="gh-feedback-buttons-group">
                 <button
@@ -232,7 +232,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                     onClick={() => setScore(1)}
                 >
                     <ThumbUpIcon />
-                    More like this
+                    {t('More like this')}
                 </button>
 
                 <button
@@ -241,7 +241,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                     onClick={() => setScore(0)}
                 >
                     <ThumbDownIcon />
-                    Less like this
+                    {t('Less like this')}
                 </button>
             </div>
 
@@ -251,7 +251,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                 onClick={submit}
                 disabled={false}
                 brandColor={brandColor}
-                label="Submit feedback"
+                label={t('Submit feedback')}
                 isRunning={loading}
                 tabindex="3"
             />
@@ -274,7 +274,7 @@ const LoadingFeedbackView = ({action, score}) => {
 };
 
 const ConfirmFeedback = ({positive}) => {
-    const {onAction, brandColor} = useContext(AppContext);
+    const {onAction, brandColor, t} = useContext(AppContext);
 
     const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
@@ -285,15 +285,15 @@ const ConfirmFeedback = ({positive}) => {
             <div className="gh-feedback-icon">
                 {icon}
             </div>
-            <h1 className="gh-portal-main-title">Thanks for the feedback!</h1>
-            <p className="gh-portal-text-center">Your input helps shape what gets published.</p>
+            <h1 className="gh-portal-main-title">{t('Thanks for the feedback!')}</h1>
+            <p className="gh-portal-text-center">{t('Your input helps shape what gets published.')}</p>
             <ActionButton
                 style={{width: '100%'}}
                 retry={false}
                 onClick = {() => onAction('closePopup')}
                 disabled={false}
                 brandColor={brandColor}
-                label={'Close'}
+                label={t('Close')}
                 isRunning={false}
                 tabindex='3'
                 classes={'sticky bottom'}

@@ -6,7 +6,7 @@ import NewsletterManagement from '../common/NewsletterManagement';
 const React = require('react');
 
 export default function AccountEmailPage() {
-    const {member, onAction, site} = useContext(AppContext);
+    const {member, onAction, site, t} = useContext(AppContext);
 
     useEffect(() => {
         if (!member) {
@@ -40,7 +40,7 @@ export default function AccountEmailPage() {
                 setSubscribedNewsletters([]);
                 onAction('showPopupNotification', {
                     action: 'updated:success',
-                    message: `Email preference updated.`
+                    message: t(`Email preference updated.`)
                 });
                 const data = {newsletters: []};
                 if (commentsEnabled) {
