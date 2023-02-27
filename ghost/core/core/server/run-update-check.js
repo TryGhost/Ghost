@@ -42,7 +42,9 @@ if (parentPort) {
     await settings.init();
     // Finished INIT
 
-    await updateCheck();
+    await updateCheck({
+        rethrowErrors: true
+    });
 
     postParentPortMessage(`Ran update check`);
 
