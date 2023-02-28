@@ -77,8 +77,11 @@ export function useFileUpload(type = '') {
             return null;
         }
 
-        // TODO: find a way to adjust this when testing to speed up tests
-        const stepDelay = 200;
+        let stepDelay = 200;
+        // adjust when testing to speed up tests
+        if (import.meta.env.VITE_TEST === 'true') {
+            stepDelay = 30;
+        }
 
         setProgress(30);
         await delay(stepDelay);

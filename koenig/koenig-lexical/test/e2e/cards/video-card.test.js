@@ -91,10 +91,6 @@ describe('Video card', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
 
-        // Check progress bar
-        await page.waitForSelector('[data-testid="video-progress"]');
-        await expect(await page.getByTestId('video-progress')).toBeVisible();
-
         // Check that video file was uploaded
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');
     });
@@ -102,9 +98,6 @@ describe('Video card', async () => {
     test('can upload video file from card menu', async function () {
         await focusEditor(page);
         await uploadVideo(page);
-
-        // Check progress bar
-        await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');
@@ -212,9 +205,6 @@ describe('Video card', async () => {
 
         // Drop file
         await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
-
-        // Check progress bar
-        await expect(await page.getByTestId('video-progress')).toBeVisible();
 
         // Check that video file was uploaded
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');

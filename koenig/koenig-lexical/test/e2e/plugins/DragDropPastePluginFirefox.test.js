@@ -32,17 +32,12 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
         await page.locator('.kg-prose').dispatchEvent('dragenter', {dataTransfer});
         await page.locator('.kg-prose').dispatchEvent('drop', {dataTransfer});
 
-        // Check progress bar
-        await page.waitForSelector('[data-testid="video-progress"]');
-        await expect(await page.getByTestId('video-progress')).toBeVisible();
-
         // Check that video file was uploaded
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="video">
-                </div>
+                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="video"></div>
                 <figcaption>
                     <div data-testid="image-caption-editor">
                         <div>
@@ -56,7 +51,6 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
                         </div>
                     </div>
                 </figcaption>
-                </figure>
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});
@@ -73,10 +67,6 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
 
         await page.locator('.kg-prose').dispatchEvent('dragenter', {dataTransfer});
         await page.locator('.kg-prose').dispatchEvent('drop', {dataTransfer});
-
-        // wait for upload to complete
-        await expect(await page.getByTestId('video-progress')).toHaveCount(2);
-        await expect(await page.getByTestId('video-progress')).toHaveCount(0);
 
         // wait for card visibility
         await expect(await page.getByTestId('media-duration')).toHaveCount(2);

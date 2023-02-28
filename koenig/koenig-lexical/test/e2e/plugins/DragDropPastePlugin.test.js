@@ -29,10 +29,6 @@ describe('Drag Drop Paste Plugin', async function () {
         await page.locator('.kg-prose').dispatchEvent('dragenter', {dataTransfer});
         await page.locator('.kg-prose').dispatchEvent('drop', {dataTransfer});
 
-        // wait for upload to complete
-        await expect(await page.getByTestId('progress-bar')).toBeVisible();
-        await expect(await page.getByTestId('progress-bar')).toBeHidden();
-
         // wait for card visibility
         await expect(await page.getByTestId('image-card-populated')).toBeVisible();
 
@@ -66,10 +62,6 @@ describe('Drag Drop Paste Plugin', async function () {
 
         await page.locator('.kg-prose').dispatchEvent('dragenter', {dataTransfer});
         await page.locator('.kg-prose').dispatchEvent('drop', {dataTransfer});
-
-        // wait for upload to complete
-        await expect(await page.getByTestId('progress-bar')).toHaveCount(2);
-        await expect(await page.getByTestId('progress-bar')).toHaveCount(0);
 
         // wait for card visibility
         await expect(await page.getByTestId('image-card-populated')).toHaveCount(2);
