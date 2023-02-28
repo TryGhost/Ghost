@@ -27,15 +27,8 @@ const mockWebmentionMetadata = {
             excerpt: 'How many times have you woken up and almost cancelled your church plans? Well this breakfast is about to change everything, a hearty, faith restoring egg dish that will get your tastebuds in a twist.',
             author: 'Dr Egg Man',
             image: new URL('https://unsplash.com/photos/QAND9huzD04'),
-            favicon: new URL('https://ghost.org/favicon.ico')
-        };
-    }
-};
-
-const mockWebmentionRequest = {
-    async fetch() {
-        return {
-            html: `<p>Some HTML and a <a href='http://target.com/'>mentioned url</a></p>`
+            favicon: new URL('https://ghost.org/favicon.ico'),
+            body: `<html><body><p>Some HTML and a <a href='http://target.com/'>mentioned url</a></p></body></html>`
         };
     }
 };
@@ -57,8 +50,7 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         const mention = await api.processWebmention({
@@ -83,8 +75,7 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         const mention = await api.processWebmention({
@@ -108,8 +99,7 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         const mentionOne = await api.processWebmention({
@@ -141,8 +131,7 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         const mentionOne = await api.processWebmention({
@@ -178,8 +167,7 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         const mentionOne = await api.processWebmention({
@@ -215,8 +203,7 @@ describe('MentionsAPI', function () {
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         const mentionOne = await api.processWebmention({
@@ -253,8 +240,7 @@ describe('MentionsAPI', function () {
                 }
             },
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         let errored = false;
@@ -283,8 +269,7 @@ describe('MentionsAPI', function () {
                 }
             },
             resourceService: mockResourceService,
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         await api.processWebmention({
@@ -307,8 +292,7 @@ describe('MentionsAPI', function () {
                     };
                 }
             },
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         const mention = await api.processWebmention({
@@ -341,8 +325,7 @@ describe('MentionsAPI', function () {
                     };
                 }
             },
-            webmentionMetadata: mockWebmentionMetadata,
-            webmentionRequest: mockWebmentionRequest
+            webmentionMetadata: mockWebmentionMetadata
         });
 
         checkFirstMention: {
@@ -393,8 +376,7 @@ describe('MentionsAPI', function () {
                 fetch: sinon.stub()
                     .onFirstCall().resolves(mockWebmentionMetadata.fetch())
                     .onSecondCall().rejects()
-            },
-            webmentionRequest: mockWebmentionRequest
+            }
         });
 
         checkFirstMention: {

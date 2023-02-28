@@ -1,6 +1,5 @@
 const MentionController = require('./MentionController');
 const WebmentionMetadata = require('./WebmentionMetadata');
-const WebmentionRequest = require('./WebmentionRequest');
 const {
     MentionsAPI,
     MentionSendingService,
@@ -33,7 +32,6 @@ module.exports = {
             DomainEvents
         });
         const webmentionMetadata = new WebmentionMetadata();
-        const webmentionRequest = new WebmentionRequest();
         const discoveryService = new MentionDiscoveryService({externalRequest});
         const resourceService = new ResourceService({
             urlUtils,
@@ -49,7 +47,6 @@ module.exports = {
         const api = new MentionsAPI({
             repository,
             webmentionMetadata,
-            webmentionRequest,
             resourceService,
             routingService
         });
@@ -100,6 +97,6 @@ module.exports = {
                 }
             }
         });
-        sendingService.listen(events);
+        sendingService.listen(events); 
     }
 };
