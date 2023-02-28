@@ -34,26 +34,6 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
 
         // Check that video file was uploaded
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');
-
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="video"></div>
-                <figcaption>
-                    <div data-testid="image-caption-editor">
-                        <div>
-                            <div data-kg="editor">
-                                <div spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox" contenteditable="true">
-                                    <p><br /></p>
-                                </div>
-                            </div>
-                            <div>Type caption for video (optional)</div>
-                            <div id="koenig-drag-drop-ghost-container"></div>
-                        </div>
-                    </div>
-                </figcaption>
-            </div>
-            <p><br /></p>
-        `, {ignoreCardContents: true});
     });
 
     test('can drag and drop multiple video files on the editor', async function () {

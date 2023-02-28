@@ -504,10 +504,11 @@ describe('Image card', async () => {
         await page.locator('[data-kg-card="image"] [data-testid="media-placeholder"]').dispatchEvent('drop', {dataTransfer});
 
         // wait for upload to complete
-        await expect(await page.getByTestId('progress-bar')).toBeVisible();
         await expect(await page.getByTestId('progress-bar')).toBeHidden();
 
         // placeholder is replaced with uploading image
+        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
