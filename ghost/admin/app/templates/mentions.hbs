@@ -53,7 +53,18 @@
                                     <div class="gh-mention-link-icon">
                                         {{svg-jar "twitter-link"}}
                                     </div>
-                                    <span class="gh-mention-your-link">{{if mention.resource mention.resource.name mention.target}}</span>
+                                    <div>
+                                        {{!-- TODO: Add logic so when there are multiple links, this span gets a .has-multiple-links class --}}
+                                        <span class="gh-mention-your-link">{{if mention.resource mention.resource.name mention.target}}</span>
+                                        <EmberPopover @tooltipClass="popover" @spacing={{30}} @arrowClass="popover-arrow" @side="down">
+                                            <ul class="gh-mention-multiple-links">
+                                                <li>Weekly Links - Week #13</li>
+                                                <li>Welcome to my blog!</li>
+                                                <li>Introducing: New Tool I Just Built</li>
+                                                <li>Introducing: Even Newer Tool I Just Built For You Guys</li>
+                                            </ul>
+                                        </EmberPopover>
+                                    </div>
                                 {{/unless}}
                                 <span class="gh-mention-timestamp" title={{gh-format-post-time mention.timestamp}}>{{moment-from-now mention.timestamp}}</span>
                             </div>

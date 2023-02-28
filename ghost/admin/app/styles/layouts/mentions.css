@@ -24,7 +24,6 @@
     border: 1px solid #e6e9eb;
     border-radius: 5px;
     text-decoration: none;
-    overflow: hidden;
     color: var(--midgrey);
 }
 
@@ -39,7 +38,8 @@
     justify-content: space-between;
     align-items: center;
     font-size: 1.35rem;
-    margin-bottom: 12px;
+    line-height: 1.2;
+    margin-bottom: 14px;
     white-space: nowrap;
 }
 
@@ -70,6 +70,32 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+}
+
+.gh-mention-your-link.has-multiple-links {
+    border-bottom: 1px dashed var(--lightgrey);
+    margin-bottom: -2px;
+    padding-bottom: 1px;
+}
+
+.gh-mention-multiple-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 13.5px;
+}
+
+.gh-mention-multiple-links li:last-of-type {
+    margin-bottom: 0;
+}
+
+.gh-mention-header .popover {
+    border: none;
+    /* border: 1px solid var(--whitegrey-l1); */
+    color: var(--darkgrey);
+    /* box-shadow: var(--shadow-1); */
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
+    padding: 12px 14px;
 }
 
 .gh-mention-timestamp {
