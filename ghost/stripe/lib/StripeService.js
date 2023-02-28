@@ -73,6 +73,9 @@ module.exports = class StripeService {
             secretKey: config.secretKey,
             publicKey: config.publicKey,
             enablePromoCodes: config.enablePromoCodes,
+            get enableAutomaticTax() {
+                return config.enableAutomaticTax;
+            },
             checkoutSessionSuccessUrl: config.checkoutSessionSuccessUrl,
             checkoutSessionCancelUrl: config.checkoutSessionCancelUrl,
             checkoutSetupSessionSuccessUrl: config.checkoutSetupSessionSuccessUrl,

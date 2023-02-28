@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
+const labs = require('../../../shared/labs');
 
 const messages = {
     remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.'
@@ -64,6 +65,9 @@ module.exports = {
             ...keys,
             ...urls,
             enablePromoCodes: config.get('enableStripePromoCodes'),
+            get enableAutomaticTax() {
+                return labs.isSet('stripeAutomaticTax');
+            },
             webhookSecret: webhookSecret,
             webhookHandlerUrl: webhookHandlerUrl.href
         };
