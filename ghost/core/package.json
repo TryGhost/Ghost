@@ -213,7 +213,7 @@
     "@tryghost/webhook-mock-receiver": "0.2.3",
     "@types/common-tags": "1.8.1",
     "c8": "7.13.0",
-    "cli-progress": "3.11.2",
+    "cli-progress": "3.12.0",
     "cssnano": "5.1.15",
     "eslint": "8.35.0",
     "expect": "^29.0.0",
