@@ -31,12 +31,12 @@ export default class Footer extends Component {
             canActivate: false,
             // Warnings will only be set for developers, otherwise it will always be empty
             warnings: this.themeManagement.activeTheme.warnings,
-            errors: this.themeManagement.activeTheme.errors
+            errors: this.themeManagement.activeTheme.gscanErrors
         });
     }
 
     get hasThemeErrors() {
-        return this.themeManagement.activeTheme && this.themeManagement.activeTheme.errors.length;
+        return this.themeManagement.activeTheme && this.themeManagement.activeTheme.gscanErrors.length;
     }
 
     // equivalent to "left: auto; right: -20px"

@@ -129,8 +129,8 @@ export default class UploadThemeModal extends Component {
 
         // Ghost differentiates between errors and fatal errors
         // You can't activate a theme with fatal errors, but with errors.
-        if (theme.errors?.length > 0) {
-            this.validationErrors = theme.errors;
+        if (theme.gscanErrors?.length > 0) {
+            this.validationErrors = theme.gscanErrors;
         }
     }
 
