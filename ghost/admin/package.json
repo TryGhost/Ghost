@@ -76,7 +76,7 @@
     "ember-cli-app-version": "5.0.0",
     "ember-cli-babel": "7.26.11",
     "ember-cli-chart": "3.7.2",
-    "ember-cli-code-coverage": "1.0.3",
+    "ember-cli-code-coverage": "2.0.0",
     "ember-cli-dependency-checker": "3.3.1",
     "ember-cli-deprecation-workflow": "2.1.0",
     "ember-cli-htmlbars": "6.1.1",
