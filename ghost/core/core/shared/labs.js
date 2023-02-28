@@ -37,7 +37,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'lexicalEditor',
     'websockets',
-    'webmentionEmails'
+    'webmentionEmails',
+    'stripeAutomaticTax'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
