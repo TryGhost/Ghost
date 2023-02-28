@@ -252,6 +252,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Stripe Automatic Tax</h4>
+                            <p class="gh-expandable-description">
+                               Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="stripeAutomaticTax" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
