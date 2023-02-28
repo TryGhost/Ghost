@@ -22,7 +22,7 @@ function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoF
     return (
         <TextInput
             onChange={onChange}
-            initialValue={value}
+            value={value}
             className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
             placeholder={placeholder}
             readOnly={readOnly}
