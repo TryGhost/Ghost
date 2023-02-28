@@ -19,7 +19,7 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
                 className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
                 src={previewSrc ? previewSrc : src}
                 alt={alt ? alt : progressAlt}
-                data-testid="image-card-populated"
+                data-testid={imageUploader.isLoading ? 'image-card-loading' : 'image-card-populated'}
             />
             {imageUploader.isLoading ?
                 <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="upload-progress">

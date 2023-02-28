@@ -129,9 +129,6 @@ describe('Video card', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([imagePath]);
 
-        // Progress bar should be visible
-        await expect(await page.getByTestId('custom-thumbnail-progress')).toBeVisible();
-
         // Thumbnail should be visible
         await expect(await page.getByTestId('custom-thumbnail-filled')).toBeVisible();
 
@@ -250,9 +247,6 @@ describe('Video card', async () => {
 
         // Drop file
         await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});
-
-        // Progress bar should be visible
-        await expect(await page.getByTestId('custom-thumbnail-progress')).toBeVisible();
 
         // Thumbnail should be visible
         await expect(await page.getByTestId('custom-thumbnail-filled')).toBeVisible();

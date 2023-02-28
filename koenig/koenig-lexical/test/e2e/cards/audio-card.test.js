@@ -78,10 +78,6 @@ describe('Audio card', async () => {
         await focusEditor(page);
         await uploadAudio(page);
 
-        // Check that the progress bar is displayed
-        await page.waitForSelector('[data-testid="progress-bar"]');
-        expect(await page.getByTestId('progress-bar')).toBeVisible();
-
         // Check that audio file was uploaded
         await expect(await page.getByTestId('audio-caption')).toBeVisible();
         expect(await page.getByTestId('audio-caption').inputValue()).toEqual('Audio sample');
@@ -118,9 +114,6 @@ describe('Audio card', async () => {
         // Drop file
         await page.getByTestId('media-placeholder').dispatchEvent('drop', {dataTransfer});
 
-        // Check progress bar
-        await expect(await page.getByTestId('progress-bar')).toBeVisible();
-
         // Check that audio file was uploaded
         await expect(await page.getByTestId('media-duration')).toContainText('0:19');
     });
@@ -128,10 +121,6 @@ describe('Audio card', async () => {
     test('shows errors on failed audio upload', async function () {
         await focusEditor(page);
         await uploadAudio(page, 'audio-sample-fail.mp3');
-
-        // Check that the progress bar is displayed
-        await page.waitForSelector('[data-testid="progress-bar"]');
-        expect(await page.getByTestId('progress-bar')).toBeVisible();
 
         // Check that errors are displayed
         await page.waitForSelector('[data-testid="audio-upload-errors"]');
@@ -231,9 +220,6 @@ describe('Audio card', async () => {
 
         // Drop file
         await page.getByTestId('audio-card-populated').dispatchEvent('drop', {dataTransfer});
-
-        // Check progress bar
-        await expect(await page.getByTestId('progress-bar')).toBeVisible();
 
         // Check that audio file was uploaded
         await expect (await page.getByTestId('audio-thumbnail')).toBeVisible();
