@@ -319,7 +319,7 @@ class OEmbed {
                 }
             }
 
-            if (type !== 'bookmark') {
+            if (type !== 'bookmark' && type !== 'mention') {
                 // if not a bookmark request, first
                 // check against known oembed list
                 const {url: providerUrl, provider} = findUrlWithProvider(url);
@@ -334,6 +334,12 @@ class OEmbed {
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
                 return this.fetchBookmarkData(url, body);
+            }
+
+            // mentions need to return bookmark data (metadata) and body (html) for link verification
+            if (type === 'mention') {
+                const bookmark = await this.fetchBookmarkData(url, body);
+                return {...bookmark, body};
             }
 
             // attempt to fetch oembed
