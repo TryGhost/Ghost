@@ -4,6 +4,7 @@ const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const cancel_link = require('../../../../core/frontend/helpers/cancel_link');
 const labs = require('../../../../core/shared/labs');
 const configUtils = require('../../../utils/configUtils');
+const logging = require('@tryghost/logging');
 
 describe('{{cancel_link}} helper', function () {
     let labsStub;
@@ -126,6 +127,7 @@ describe('{{cancel_link}} helper', function () {
 
     it('is disabled if labs flag is not set', function () {
         labsStub.returns(false);
+        const loggingStub = sinon.stub(logging, 'error');
 
         const rendered = cancel_link.call({
             id: 'sub_continue',
@@ -136,5 +138,7 @@ describe('{{cancel_link}} helper', function () {
 
         rendered.string.should.match(/^<script/);
         rendered.string.should.match(/helper is not available/);
+
+        sinon.assert.calledOnce(loggingStub);
     });
 });

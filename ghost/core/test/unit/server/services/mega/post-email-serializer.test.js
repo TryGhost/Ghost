@@ -8,6 +8,7 @@ const labs = require('../../../../../core/shared/labs');
 const {parseReplacements, renderEmailForSegment, serialize, _getTemplateSettings, createUnsubscribeUrl, createPostSignupUrl, _PostEmailSerializer} = require('../../../../../core/server/services/mega/post-email-serializer');
 const {HtmlValidate} = require('html-validate');
 const audienceFeedback = require('../../../../../core/server/services/audience-feedback');
+const logging = require('@tryghost/logging');
 
 function assertKeys(object, keys) {
     assert.deepStrictEqual(Object.keys(object).sort(), keys.sort());
@@ -104,6 +105,7 @@ describe('Post Email Serializer', function () {
         });
 
         it('should output valid HTML and escape HTML characters in mobiledoc', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
                 return {
                     // This is not realistic, but just to test escaping
@@ -158,6 +160,9 @@ describe('Post Email Serializer', function () {
             };
 
             const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
+
+            loggingStub.calledOnce.should.be.true();
+            loggingStub.firstCall.firstArg.should.have.property('code').eql('IMAGE_SIZE_URL');
 
             const htmlvalidate = new HtmlValidate({
                 extends: [
@@ -928,7 +933,7 @@ describe('Post Email Serializer', function () {
             const newsletterMock = {
                 get: function (key) {
                     return {
-                        header_image: 'image',
+                        header_image: '',
                         show_header_icon: true,
                         show_header_title: true,
                         show_feature_image: true,
@@ -944,7 +949,7 @@ describe('Post Email Serializer', function () {
             };
             const res = await _getTemplateSettings(newsletterMock);
             assert.deepStrictEqual(res, {
-                headerImage: 'image',
+                headerImage: '',
                 showHeaderIcon: 'icon2',
                 showHeaderTitle: true,
                 showFeatureImage: true,

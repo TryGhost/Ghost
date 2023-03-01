@@ -5,6 +5,7 @@ const db = require('../../../../../core/server/data/db');
 const exporter = require('../../../../../core/server/data/exporter');
 const schema = require('../../../../../core/server/data/schema');
 const models = require('../../../../../core/server/models');
+const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema.tables);
 
 describe('Exporter', function () {
@@ -190,10 +191,12 @@ describe('Exporter', function () {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 Promise.reject()
             );
+            const loggingStub = sinon.stub(logging, 'error');
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
+                loggingStub.calledOnce.should.be.true();
                 result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();

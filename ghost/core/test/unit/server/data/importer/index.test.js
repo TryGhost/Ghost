@@ -19,6 +19,7 @@ const DataImporter = require('../../../../../core/server/data/importer/importers
 const ImageImporter = require('../../../../../core/server/data/importer/importers/image');
 const RevueImporter = require('@tryghost/importer-revue');
 const configUtils = require('../../../../utils/configUtils');
+const logging = require('@tryghost/logging');
 
 describe('Importer', function () {
     afterEach(async function () {
@@ -137,12 +138,14 @@ describe('Importer', function () {
         });
 
         it('silently ignores clean up errors', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
             ImportManager.fileToDelete = file;
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.reject(new Error('Unknown file')));
 
             await ImportManager.cleanUp();
             removeStub.calledOnce.should.be.true();
+            loggingStub.calledOnce.should.be.true();
             should(ImportManager.fileToDelete).be.null();
         });
 
