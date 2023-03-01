@@ -65,7 +65,18 @@ module.exports = class BookshelfMentionRepository {
      * @returns {Promise<Page<import('@tryghost/webmentions/lib/Mention')>>}
      */
     async getPage(options) {
-        const page = await this.#MentionModel.findPage(options);
+        /**
+         * @type {GetPageOptions & {whereRaw?: string}}
+         */
+        const _options = {
+            ...options
+        };
+        delete _options.unique;
+        if (options.unique) {
+            _options.whereRaw = 'NOT EXISTS (select id from mentions as m where m.id > mentions.id and m.source = mentions.source)';
+        }
+
+        const page = await this.#MentionModel.findPage(_options);
 
         return {
             data: await Promise.all(page.data.map(model => this.#modelToMention(model))),
