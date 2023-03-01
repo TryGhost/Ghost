@@ -25,10 +25,10 @@ module.exports = (lng = 'en', ns = 'portal') => {
         ns: ns,
         defaultNS: ns,
 
-        resources: SUPPORTED_LOCALES.reduce((acc, lng) => {
-            acc[lng] = {
-                [ns]: require(`../locales/${lng}/${ns}.json`)
-            }
+        resources: SUPPORTED_LOCALES.reduce((acc, locale) => {
+            acc[locale] = {
+                [ns]: require(`../locales/${locale}/${ns}.json`)
+            };
             return acc;
         }, {})
     });
