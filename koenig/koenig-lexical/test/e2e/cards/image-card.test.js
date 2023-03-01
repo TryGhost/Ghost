@@ -531,11 +531,88 @@ describe('Image card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    // TODO: Switch to mocked API. Currently uses real Unsplash API so the asserted test data isn't stable
-    test.skip('can insert unsplash image', async () => {
+    test('can insert unsplash image', async () => {
+        const testData = [
+            {
+                id: 'SgvrLyGKnHw',
+                created_at: '2023-02-27T20:39:45Z',
+                updated_at: '2023-03-01T06:08:01Z',
+                promoted_at: '2023-03-01T06:08:01Z',
+                width: 5504,
+                height: 8256,
+                color: '#8c8c8c',
+                blur_hash: 'LHD]Vg4m%fIA_3D%%2MxIoWCs.s:',
+                description: null,
+                alt_description: 'a group of people walking down a street next to tall buildings',
+                urls: {
+                    raw: 'http://127.0.0.1:5173/Koenig-editor-1.png',
+                    full: 'http://127.0.0.1:5173/Koenig-editor-1.png',
+                    regular: 'http://127.0.0.1:5173/Koenig-editor-1.png',
+                    small: 'http://127.0.0.1:5173/Koenig-editor-1.png',
+                    thumb: 'http://127.0.0.1:5173/Koenig-editor-1.png',
+                    small_s3: 'http://127.0.0.1:5173/Koenig-editor-1.png'
+                },
+                links: {
+                    self: 'https://api.unsplash.com/photos/SgvrLyGKnHw',
+                    html: 'https://unsplash.com/photos/SgvrLyGKnHw',
+                    download: 'https://unsplash.com/photos/SgvrLyGKnHw/download?ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjc3NjUxMzk5',
+                    download_location: 'https://api.unsplash.com/photos/SgvrLyGKnHw/download?ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjc3NjUxMzk5'
+                },
+                likes: 1,
+                liked_by_user: false,
+                current_user_collections: [],
+                sponsorship: null,
+                topic_submissions: {},
+                user: {
+                    id: '9_671Bq5l40',
+                    updated_at: '2023-03-01T06:08:01Z',
+                    username: 'jamillatrach',
+                    name: 'Latrach Med Jamil',
+                    first_name: 'Latrach',
+                    last_name: 'Med Jamil',
+                    twitter_username: null,
+                    portfolio_url: null,
+                    bio: 'Just trying to share what I have --\r\n\r\nInstagram.com/jamillatrach/',
+                    location: 'Düsseldorf',
+                    links: {
+                        self: 'https://api.unsplash.com/users/jamillatrach',
+                        html: 'https://unsplash.com/@jamillatrach',
+                        photos: 'https://api.unsplash.com/users/jamillatrach/photos',
+                        likes: 'https://api.unsplash.com/users/jamillatrach/likes',
+                        portfolio: 'https://api.unsplash.com/users/jamillatrach/portfolio',
+                        following: 'https://api.unsplash.com/users/jamillatrach/following',
+                        followers: 'https://api.unsplash.com/users/jamillatrach/followers'
+                    },
+                    profile_image: {
+                        small: 'https://images.unsplash.com/profile-fb-1570626489-2f1895a616ca.jpg?ixlib=rb-4.0.3\u0026crop=faces\u0026fit=crop\u0026w=32\u0026h=32',
+                        medium: 'https://images.unsplash.com/profile-fb-1570626489-2f1895a616ca.jpg?ixlib=rb-4.0.3\u0026crop=faces\u0026fit=crop\u0026w=64\u0026h=64',
+                        large: 'https://images.unsplash.com/profile-fb-1570626489-2f1895a616ca.jpg?ixlib=rb-4.0.3\u0026crop=faces\u0026fit=crop\u0026w=128\u0026h=128'
+                    },
+                    instagram_username: 'jamillatrach',
+                    total_collections: 0,
+                    total_likes: 4,
+                    total_photos: 451,
+                    accepted_tos: true,
+                    for_hire: false,
+                    social: {
+                        instagram_username: 'jamillatrach',
+                        portfolio_url: null,
+                        twitter_username: null,
+                        paypal_email: null
+                    }
+                }
+            }
+        ];
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
+
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
+
+        // mock unsplash api
+        await page.route('https://api.unsplash.com/photos?per_page=30', route => route.fulfill({
+            status: 200,
+            body: JSON.stringify(testData)
+        }));
         await page.click('[data-kg-unsplash-insert-button]');
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -543,11 +620,21 @@ describe('Image card', async () => {
                     <figure data-kg-card-width="regular">
                         <div>
                             <img
-                                src="https://images.unsplash.com/photo-1574948495680-f67aab1ec3ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8c2VhcmNofDMyMXx8c3VtbWVyfGVufDB8fHx8MTY2OTEwNDUwNw&ixlib=rb-4.0.3&q=80&w=1200"
-                                alt="upload in progress, 0 " />
+                                src="http://127.0.0.1:5173/Koenig-editor-1.png"
+                                alt="a group of people walking down a street next to tall buildings" />
                         </div>
                         <figcaption>
-                            <input placeholder="Type caption for image (optional)" value="Photo by Mailchimp on Unsplash" />
+                            <div data-testid="image-caption-editor">
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                            <p><br /></p>
+                                        </div>
+                                    </div>
+                                    <div>Type caption for image (optional)</div>
+                                    <div id="koenig-drag-drop-ghost-container"></div>
+                                </div>
+                            </div>
                             <button name="alt-toggle-button">Alt</button>
                         </figcaption>
                     </figure>
