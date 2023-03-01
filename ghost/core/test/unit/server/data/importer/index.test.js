@@ -55,7 +55,7 @@ describe('Importer', function () {
         });
 
         it('gets the correct types', function () {
-            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(22);
+            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(23);
             ImportManager.getContentTypes().should.containEql('image/jpeg');
             ImportManager.getContentTypes().should.containEql('image/png');
             ImportManager.getContentTypes().should.containEql('image/gif');
@@ -67,6 +67,7 @@ describe('Importer', function () {
             ImportManager.getContentTypes().should.containEql('video/mp4');
             ImportManager.getContentTypes().should.containEql('video/webm');
             ImportManager.getContentTypes().should.containEql('video/ogg');
+            ImportManager.getContentTypes().should.containEql('audio/mp4');
             ImportManager.getContentTypes().should.containEql('audio/mpeg');
             ImportManager.getContentTypes().should.containEql('audio/vnd.wav');
             ImportManager.getContentTypes().should.containEql('audio/wave');
