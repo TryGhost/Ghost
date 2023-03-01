@@ -18,7 +18,6 @@ const RevueHandler = require('../../../../../core/server/data/importer/handlers/
 const DataImporter = require('../../../../../core/server/data/importer/importers/data');
 const ImageImporter = require('../../../../../core/server/data/importer/importers/image');
 const RevueImporter = require('@tryghost/importer-revue');
-const storage = require('../../../../../core/server/adapters/storage');
 const configUtils = require('../../../../utils/configUtils');
 
 describe('Importer', function () {
