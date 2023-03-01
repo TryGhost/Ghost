@@ -6,7 +6,9 @@ const ImageImporter = require('../../../../../../core/server/data/importer/impor
 
 describe('ImageImporter', function () {
     it('has the correct interface', function () {
-        const imageImporter = new ImageImporter();
+        const imageImporter = new ImageImporter({
+            store: {}
+        });
         imageImporter.type.should.eql('images');
         imageImporter.preProcess.should.be.instanceof(Function);
         imageImporter.doImport.should.be.instanceof(Function);
@@ -14,7 +16,9 @@ describe('ImageImporter', function () {
 
     it('does preprocess posts, users and tags correctly', function () {
         let inputData = require('../../../../../utils/fixtures/import/import-data-1.json');
-        const imageImporter = new ImageImporter();
+        const imageImporter = new ImageImporter({
+            store: {}
+        });
         let outputData = imageImporter.preProcess(_.cloneDeep(inputData));
 
         inputData = inputData.data.data;
@@ -44,18 +48,14 @@ describe('ImageImporter', function () {
 
     it('does import the images correctly', function () {
         const inputData = require('../../../../../utils/fixtures/import/import-data-1.json');
-        const imageImporter = new ImageImporter();
-
         const storageApi = {
             save: sinon.stub().returns(Promise.resolve())
         };
-
-        const storageSpy = sinon.stub(storage, 'getStorage').callsFake(function () {
-            return storageApi;
+        const imageImporter = new ImageImporter({
+            store: storageApi
         });
 
         imageImporter.doImport(inputData.images).then(function () {
-            storageSpy.calledOnce.should.be.true();
             storageApi.save.calledTwice.should.be.true();
         });
     });
