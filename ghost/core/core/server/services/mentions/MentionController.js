@@ -80,11 +80,17 @@ module.exports = class MentionController {
             order = 'created_at asc';
         }
 
+        let unique;
+        if (frame.options.unique && (frame.options.unique === 'true' || frame.options.unique === true)) {
+            unique = true;
+        }
+
         const mentions = await this.#api.listMentions({
             filter: frame.options.filter,
             order,
             limit,
-            page
+            page,
+            unique
         });
 
         const resources = await Promise.all(mentions.data.map((mention) => {

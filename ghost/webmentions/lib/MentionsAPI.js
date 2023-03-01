@@ -22,6 +22,7 @@ const Mention = require('./Mention');
  * @prop {string} [order]
  * @prop {number} page
  * @prop {number} limit
+ * @prop {boolean} [unique] Only return unique mentions by source
  */
 
 /**
@@ -29,6 +30,7 @@ const Mention = require('./Mention');
  * @prop {string} [filter] A valid NQL string
  * @prop {string} [order]
  * @prop {'all'} limit
+ * @prop {boolean} [unique] Only return unique mentions by source
  */
 
 /**
@@ -110,14 +112,16 @@ module.exports = class MentionsAPI {
             pageOptions = {
                 filter: options.filter,
                 limit: options.limit,
-                order: options.order
+                order: options.order,
+                unique: options.unique ?? false
             };
         } else {
             pageOptions = {
                 filter: options.filter,
                 limit: options.limit,
                 page: options.page,
-                order: options.order
+                order: options.order,
+                unique: options.unique ?? false
             };
         }
 
