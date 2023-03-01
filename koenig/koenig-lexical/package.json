@@ -82,7 +82,7 @@
     "cross-fetch": "^3.1.5",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "27.2.1",
-    "eslint-plugin-tailwindcss": "3.10.0",
+    "eslint-plugin-tailwindcss": "3.10.1",
     "jsdom": "21.1.0",
     "playwright": "1.31.1",
     "postcss": "8.4.21",
