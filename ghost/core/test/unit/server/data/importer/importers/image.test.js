@@ -7,6 +7,7 @@ const ImageImporter = require('../../../../../../core/server/data/importer/impor
 describe('ImageImporter', function () {
     it('has the correct interface', function () {
         const imageImporter = new ImageImporter({
+            type: 'images',
             store: {}
         });
         imageImporter.type.should.eql('images');

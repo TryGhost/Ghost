@@ -47,7 +47,8 @@ preProcessUsers = function (data, image) {
 };
 
 class ImageImporter {
-    type = 'images';
+    /** @property {string} */
+    type;
 
     /** @property {import('ghost-storage-base')} */
     #store;
@@ -55,9 +56,11 @@ class ImageImporter {
     /**
      *
      * @param {Object} deps
+     * @param {string} deps.type - importer type
      * @param {import('ghost-storage-base')} deps.store
      */
     constructor(deps) {
+        this.type = deps.type;
         this.#store = deps.store;
     }
 
