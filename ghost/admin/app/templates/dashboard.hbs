@@ -29,22 +29,28 @@
                                         <LinkTo @route="mentions" class="gh-dashboard-mentions-see-all">View all mentions &rarr;</LinkTo>
                                     </div>
                                     <div>
-                                        {{#each this.mentions as |mention|}}
-                                            <a href="{{mention.source}}" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
-                                                <div class="gh-dashboard-mention-content">
-                                                    <img src="{{ or mention.sourceFavicon 'assets/img/orb-squircle.png'}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0">
-
-                                                    <span class="gh-dashboard-mention-title">{{or mention.sourceTitle mention.sourceSiteTitle}}</span>
-                                                    <span>mentioned</span>
-                                                    {{#if (gt mention.mentions.length 1) }}
-                                                        <span class="gh-dashboard-mention-target">{{mention.mentions.length}} links</span>
-                                                    {{else}}
-                                                        <span class="gh-dashboard-mention-target">{{if mention.resource mention.resource.name 'a link'}}</span>
-                                                    {{/if}}
-                                                </div>
-                                                <span class="gh-dashboard-mention-timestamp">{{moment-from-now mention.timestamp}}</span>
-                                            </a>
-                                        {{/each}}
+                                        {{#if this.mentions}}
+                                            {{#each this.mentions as |mention|}}
+                                                <a href="{{mention.source}}" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
+                                                    <div class="gh-dashboard-mention-content">
+                                                        <img src="{{ or mention.sourceFavicon 'assets/img/orb-squircle.png'}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0">
+                                                        <span class="gh-dashboard-mention-title">{{or mention.sourceSiteTitle mention.sourceSiteTitle}}</span>
+                                                        {{!-- <span>mentioned</span> --}}
+                                                        <div class="gh-mention-link-icon">
+                                                            {{svg-jar "twitter-link"}}
+                                                        </div>
+                                                        {{#if (gt mention.mentions.length 1) }}
+                                                            <span class="gh-dashboard-mention-target">{{mention.mentions.length}} links</span>
+                                                        {{else}}
+                                                            <span class="gh-dashboard-mention-target">{{if mention.resource mention.resource.name 'a link'}}</span>
+                                                        {{/if}}
+                                                        <span class="gh-dashboard-mention-timestamp">{{moment-from-now mention.timestamp}}</span>
+                                                    </div>
+                                                </a>
+                                            {{/each}}
+                                        {{else}}
+                                        Empty state
+                                        {{/if}}
                                     </div>
                                 </div>
                             </dropdown.Content>
