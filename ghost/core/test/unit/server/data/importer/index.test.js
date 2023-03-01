@@ -30,7 +30,7 @@ describe('Importer', function () {
 
     describe('ImportManager', function () {
         it('has the correct interface', function () {
-            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(4);
+            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(5);
             ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(3);
             ImportManager.loadFile.should.be.instanceof(Function);
             ImportManager.preProcess.should.be.instanceof(Function);
@@ -39,17 +39,23 @@ describe('Importer', function () {
         });
 
         it('gets the correct extensions', function () {
-            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(13);
+            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(20);
             ImportManager.getExtensions().should.containEql('.csv');
             ImportManager.getExtensions().should.containEql('.json');
             ImportManager.getExtensions().should.containEql('.zip');
             ImportManager.getExtensions().should.containEql('.jpg');
             ImportManager.getExtensions().should.containEql('.md');
             ImportManager.getExtensions().should.containEql('.webp');
+            ImportManager.getExtensions().should.containEql('.mp4');
+            ImportManager.getExtensions().should.containEql('.ogv');
+            ImportManager.getExtensions().should.containEql('.mp3');
+            ImportManager.getExtensions().should.containEql('.wav');
+            ImportManager.getExtensions().should.containEql('.ogg');
+            ImportManager.getExtensions().should.containEql('.m4a');
         });
 
         it('gets the correct types', function () {
-            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(12);
+            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(22);
             ImportManager.getContentTypes().should.containEql('image/jpeg');
             ImportManager.getContentTypes().should.containEql('image/png');
             ImportManager.getContentTypes().should.containEql('image/gif');
@@ -57,6 +63,17 @@ describe('Importer', function () {
             ImportManager.getContentTypes().should.containEql('image/x-icon');
             ImportManager.getContentTypes().should.containEql('image/vnd.microsoft.icon');
             ImportManager.getContentTypes().should.containEql('image/webp');
+
+            ImportManager.getContentTypes().should.containEql('video/mp4');
+            ImportManager.getContentTypes().should.containEql('video/webm');
+            ImportManager.getContentTypes().should.containEql('video/ogg');
+            ImportManager.getContentTypes().should.containEql('audio/mpeg');
+            ImportManager.getContentTypes().should.containEql('audio/vnd.wav');
+            ImportManager.getContentTypes().should.containEql('audio/wave');
+            ImportManager.getContentTypes().should.containEql('audio/wav');
+            ImportManager.getContentTypes().should.containEql('audio/x-wav');
+            ImportManager.getContentTypes().should.containEql('audio/ogg');
+            ImportManager.getContentTypes().should.containEql('audio/x-m4a');
 
             ImportManager.getContentTypes().should.containEql('application/octet-stream');
             ImportManager.getContentTypes().should.containEql('application/json');
@@ -68,36 +85,37 @@ describe('Importer', function () {
         });
 
         it('gets the correct directories', function () {
-            ImportManager.getDirectories().should.be.instanceof(Array).and.have.lengthOf(2);
+            ImportManager.getDirectories().should.be.instanceof(Array).and.have.lengthOf(3);
             ImportManager.getDirectories().should.containEql('images');
             ImportManager.getDirectories().should.containEql('content');
+            ImportManager.getDirectories().should.containEql('media');
         });
 
         it('globs extensions correctly', function () {
             ImportManager.getGlobPattern(ImportManager.getExtensions())
-                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getGlobPattern(ImportManager.getDirectories())
-                .should.equal('+(images|content)');
+                .should.equal('+(images|content|media)');
             ImportManager.getGlobPattern(JSONHandler.extensions)
                 .should.equal('+(.json)');
             ImportManager.getGlobPattern(ImageHandler.extensions)
                 .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions())
-                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories())
-                .should.equal('+(images|content)');
+                .should.equal('+(images|content|media)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 0)
-                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 0)
-                .should.equal('+(images|content)');
+                .should.equal('+(images|content|media)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 1)
-                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 1)
-                .should.equal('{*/,}+(images|content)');
+                .should.equal('{*/,}+(images|content|media)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 2)
-                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.csv|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 2)
-                .should.equal('**/+(images|content)');
+                .should.equal('**/+(images|content|media)');
         });
 
         it('cleans up', async function () {
@@ -178,7 +196,7 @@ describe('Importer', function () {
                     extractSpy.calledOnce.should.be.true();
                     validSpy.calledOnce.should.be.true();
                     baseDirSpy.calledOnce.should.be.true();
-                    getFileSpy.callCount.should.eql(4);
+                    getFileSpy.callCount.should.eql(5);
                     jsonSpy.calledOnce.should.be.true();
                     imageSpy.called.should.be.false();
                     mdSpy.called.should.be.false();
@@ -223,6 +241,12 @@ describe('Importer', function () {
 
                 it('accepts a zip with a content/images directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-images-subdir');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
+                it('accepts a zip with a media directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-media-dir');
 
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
