@@ -22,6 +22,7 @@ const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
 const jobManager = require('../../services/jobs');
 const mediaStorage = require('../../adapters/storage').getStorage('media');
+const imageStorage = require('../../adapters/storage').getStorage('images');
 
 const emailTemplate = require('./email-template');
 const ghostMailer = new GhostMailer();
@@ -59,7 +60,9 @@ class ImportManager {
             storage: mediaStorage
         });
 
-        const imageImporter = new ImageImporter();
+        const imageImporter = new ImageImporter({
+            store: imageStorage
+        });
         /**
          * @type {Importer[]} importers
          */

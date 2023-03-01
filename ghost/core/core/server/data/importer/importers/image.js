@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const storage = require('../../../adapters/storage');
 let replaceImage;
 let preProcessPosts;
 let preProcessTags;
@@ -50,6 +49,18 @@ preProcessUsers = function (data, image) {
 class ImageImporter {
     type = 'images';
 
+    /** @property {import('ghost-storage-base')} */
+    #store;
+
+    /**
+     *
+     * @param {Object} deps
+     * @param {import('ghost-storage-base')} deps.store
+     */
+    constructor(deps) {
+        this.#store = deps.store;
+    }
+
     preProcess(importData) {
         if (importData.images && importData.data) {
             _.each(importData.images, function (image) {
@@ -64,7 +75,7 @@ class ImageImporter {
     }
 
     doImport(imageData) {
-        const store = storage.getStorage('images');
+        const store = this.#store;
 
         return Promise.all(imageData.map(function (image) {
             return store.save(image, image.targetDir).then(function (result) {
