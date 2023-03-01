@@ -61,6 +61,7 @@ class ImportManager {
         });
 
         const imageImporter = new ImageImporter({
+            type: 'images',
             store: imageStorage
         });
         /**
