@@ -62,7 +62,7 @@ export default class GhPostSettingsMenu extends Component {
     @boundOneWay('post.uuid')
         uuidValue;
 
-    @or('metaDescriptionScratch', 'customExcerptScratch', 'post.excerpt')
+    @or('metaDescriptionScratch', 'customExcerptScratch')
         seoDescription;
 
     @or(
@@ -113,13 +113,6 @@ export default class GhPostSettingsMenu extends Component {
         'session.user.isEditor'
     )
         showVisibilityInput;
-
-    @or(
-        'session.user.isOwnerOnly',
-        'session.user.isAdminOnly',
-        'session.user.isEditor'
-    )
-        showEmailNewsletter;
 
     @computed('metaTitleScratch', 'post.titleScratch')
     get seoTitle() {

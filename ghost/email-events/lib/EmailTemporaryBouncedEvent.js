@@ -25,7 +25,7 @@ module.exports = class EmailTemporaryBouncedEvent {
 
     /**
      * @readonly
-     * @type {{message: string, code: number, enhancedCode: string | null}}
+     * @type {{message: string, code: number, enhancedCode: string | null}|null}
      */
     error;
 

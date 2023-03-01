@@ -23,7 +23,7 @@ module.exports = class LinkRedirectRepository {
      */
     async save(linkRedirect) {
         const model = await this.#LinkRedirect.add({
-            // Only store the parthname (no support for variable query strings)
+            // Only store the pathname (no support for variable query strings)
             from: this.stripSubdirectoryFromPath(linkRedirect.from.pathname),
             to: linkRedirect.to.href
         }, {});
@@ -37,7 +37,8 @@ module.exports = class LinkRedirectRepository {
 
     fromModel(model) {
         // Store if link has been edited
-        const edited = model.get('created_at')?.getTime() !== model.get('updated_at')?.getTime();
+        // Note: in some edge cases updated_at is set directly after created_at, sometimes with a second difference, so we need to check for that
+        const edited = model.get('updated_at')?.getTime() > (model.get('created_at')?.getTime() + 1000);
 
         return new LinkRedirect({
             id: model.id,

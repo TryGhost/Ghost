@@ -215,6 +215,11 @@
                     "object_type": "theme"
                 },
                 {
+                    "name": "View active theme details",
+                    "action_type": "readActive",
+                    "object_type": "theme"
+                },
+                {
                     "name": "Upload themes",
                     "action_type": "add",
                     "object_type": "theme"
@@ -628,6 +633,11 @@
                     "name": "Edit links",
                     "action_type": "edit",
                     "object_type": "link"
+                },
+                {
+                    "name": "Browse mentions",
+                    "action_type": "browse",
+                    "object_type": "mention"
                 }
             ]
         },
@@ -758,7 +768,8 @@
                     "newsletter": "all",
                     "explore": "read",
                     "comment": "all",
-                    "link": "all"
+                    "link": "all",
+                    "mention": "browse"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -793,7 +804,8 @@
                     "newsletter": ["browse", "read", "add", "edit"],
                     "explore": "read",
                     "comment": "all",
-                    "link": "all"
+                    "link": "all",
+                    "mention": "browse"
                 },
                 "Editor": {
                     "notification": "all",
@@ -804,7 +816,7 @@
                     "user": "all",
                     "role": "all",
                     "invite": "all",
-                    "theme": ["browse"],
+                    "theme": ["browse", "readActive"],
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",
@@ -819,7 +831,7 @@
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "theme": ["browse"],
+                    "theme": ["browse", "readActive"],
                     "email_preview": "read",
                     "email": "read",
                     "snippet": ["browse", "read"],

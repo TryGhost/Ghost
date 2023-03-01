@@ -5,6 +5,7 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
 const shared = require('../../../shared');
+const labs = require('../../../../../shared/labs');
 
 module.exports = function apiRoutes() {
     const router = express.Router('admin api');
@@ -30,6 +31,8 @@ module.exports = function apiRoutes() {
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
+
+    router.get('/mentions', labs.enabledMiddleware('webmentions'), mw.authAdminApi, http(api.mentions.browse));
 
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
@@ -159,6 +162,11 @@ module.exports = function apiRoutes() {
         http(api.themes.download)
     );
 
+    router.get('/themes/active',
+        mw.authAdminApi,
+        http(api.themes.readActive)
+    );
+
     router.post('/themes/upload',
         mw.authAdminApi,
         apiMw.upload.single('file'),
@@ -232,7 +240,6 @@ module.exports = function apiRoutes() {
         mw.authAdminApi,
         apiMw.upload.single('file'),
         apiMw.upload.validation({type: 'images'}),
-        apiMw.normalizeImage,
         http(api.images.upload)
     );
 
@@ -293,6 +300,9 @@ module.exports = function apiRoutes() {
     router.put('/emails/:id/retry', mw.authAdminApi, http(api.emails.retry));
     router.get('/emails/:id/batches', mw.authAdminApi, http(api.emails.browseBatches));
     router.get('/emails/:id/recipient-failures', mw.authAdminApi, http(api.emails.browseFailures));
+    router.get('/emails/:id/analytics', mw.authAdminApi, http(api.emails.analyticsStatus));
+    router.put('/emails/:id/analytics', mw.authAdminApi, http(api.emails.scheduleAnalytics));
+    router.delete('/emails/analytics', mw.authAdminApi, http(api.emails.cancelScheduledAnalytics));
 
     // ## Snippets
     router.get('/snippets', mw.authAdminApi, http(api.snippets.browse));

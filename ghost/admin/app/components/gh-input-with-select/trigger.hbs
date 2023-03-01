@@ -1,6 +1,7 @@
 {{#if @extra.inputIcon}}
     {{svg-jar @extra.inputIcon class=@extra.inputIconClass}}
 {{/if}}
+{{!-- template-lint-disable no-autofocus-attribute --}}
 <input
     {{did-insert this.registerInput}}
     {{did-update this.closeWhenEmpty @select.results}}
@@ -18,7 +19,7 @@
     value={{@extra.value}}
     name="selectSearchTerm" {{!-- contains "search" to prevent Safari showing autocomplete --}}
     spellcheck="false"
-    role="combobox"
     placeholder={{@placeholder}}
     disabled={{@select.disabled}}
+    aria-label={{@extra.label}}
 >

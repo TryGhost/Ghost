@@ -20,6 +20,7 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {string} secretKey
  * @prop {string} publicKey
  * @prop {boolean} enablePromoCodes
+ * @prop {boolean} enableAutomaticTax
  * @prop {string} checkoutSessionSuccessUrl
  * @prop {string} checkoutSessionCancelUrl
  * @prop {string} checkoutSetupSessionSuccessUrl
@@ -364,7 +365,9 @@ module.exports = class StripeAPI {
      */
     async createCheckoutSession(priceId, customer, options) {
         const metadata = options.metadata || undefined;
+        const customerId = customer ? customer.id : undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
+ 
         await this._rateLimitBucket.throttle();
         let discounts;
         if (options.coupon) {
@@ -386,13 +389,16 @@ module.exports = class StripeAPI {
             delete subscriptionData.trial_from_plan;
             subscriptionData.trial_period_days = options.trialDays;
         }
-        const session = await this._stripe.checkout.sessions.create({
+
+        let stripeSessionOptions = {
             payment_method_types: ['card'],
             success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
-            customer_email: customerEmail,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
             allow_promotion_codes: discounts ? undefined : this._config.enablePromoCodes,
+            automatic_tax: {
+                enabled: this._config.enableAutomaticTax
+            },
             metadata,
             discounts,
             /*
@@ -405,7 +411,17 @@ module.exports = class StripeAPI {
             // however, this would lose the "trial from plan" feature which has also
             // been deprecated by Stripe
             subscription_data: subscriptionData
-        });
+        };
+
+        /* We are only allowed to specify one of these; email will be pulled from
+           customer object on Stripe side if that object already exists. */
+        if (customerId) {
+            stripeSessionOptions.customer = customerId;
+        } else {
+            stripeSessionOptions.customer_email = customerEmail;
+        }
+
+        const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
 
         return session;
     }

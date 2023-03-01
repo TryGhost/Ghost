@@ -97,6 +97,19 @@
                     {{/each}}
                     </ul>
                 {{/if}}
+
+                {{#if this.validationWarnings}}
+                    <div>
+                        <h2 class="mb0 mt4 f5 fw6">Warnings</h2>
+                    </div>
+                    <ul class="pa0">
+                    {{#each this.validationWarnings as |error|}}
+                        <li class="theme-validation-item theme-warning">
+                            <GhThemeErrorLi @error={{error}} />
+                        </li>
+                    {{/each}}
+                    </ul>
+                {{/if}}
             {{else}}
                 <GhFileUploader
                     @url={{this.uploadUrl}}

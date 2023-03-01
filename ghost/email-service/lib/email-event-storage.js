@@ -1,4 +1,3 @@
-const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, EmailTemporaryBouncedEvent, EmailUnsubscribedEvent, SpamComplaintEvent} = require('@tryghost/email-events');
 const moment = require('moment-timezone');
 const logging = require('@tryghost/logging');
 
@@ -13,66 +12,14 @@ class EmailEventStorage {
         this.#membersRepository = membersRepository;
     }
 
-    /**
-     * @param {import('@tryghost/domain-events')} domainEvents
-     */
-    listen(domainEvents) {
-        domainEvents.subscribe(EmailDeliveredEvent, async (event) => {
-            try {
-                await this.handleDelivered(event);
-            } catch (err) {
-                logging.error(err);
-            }
-        });
-
-        domainEvents.subscribe(EmailOpenedEvent, async (event) => {
-            try {
-                await this.handleOpened(event);
-            } catch (err) {
-                logging.error(err);
-            }
-        });
-
-        domainEvents.subscribe(EmailBouncedEvent, async (event) => {
-            try {
-                await this.handlePermanentFailed(event);
-            } catch (e) {
-                logging.error(e);
-            }
-        });
-
-        domainEvents.subscribe(EmailTemporaryBouncedEvent, async (event) => {
-            try {
-                await this.handleTemporaryFailed(event);
-            } catch (e) {
-                logging.error(e);
-            }
-        });
-
-        domainEvents.subscribe(EmailUnsubscribedEvent, async (event) => {
-            try {
-                await this.handleUnsubscribed(event);
-            } catch (e) {
-                logging.error(e);
-            }
-        });
-
-        domainEvents.subscribe(SpamComplaintEvent, async (event) => {
-            try {
-                await this.handleComplained(event);
-            } catch (e) {
-                logging.error(e);
-            }
-        });
-    }
-
     async handleDelivered(event) {
         // To properly handle events that are received out of order (this happens because of polling)
         // only set if delivered_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
+            .whereNull('delivered_at')
             .update({
-                delivered_at: this.#db.knex.raw('COALESCE(delivered_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+                delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
     }
 
@@ -81,8 +28,9 @@ class EmailEventStorage {
         // only set if opened_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
+            .whereNull('opened_at')
             .update({
-                opened_at: this.#db.knex.raw('COALESCE(opened_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+                opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
     }
 
@@ -91,8 +39,9 @@ class EmailEventStorage {
         // only set if failed_at is null
         await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
+            .whereNull('failed_at')
             .update({
-                failed_at: this.#db.knex.raw('COALESCE(failed_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+                failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
         await this.saveFailure('permanent', event);
     }
@@ -122,7 +71,7 @@ class EmailEventStorage {
 
         // Create a forUpdate transaction
         const existing = await this.#models.EmailRecipientFailure.findOne({
-            filter: `email_recipient_id:${event.emailRecipientId}`
+            email_recipient_id: event.emailRecipientId
         }, {...options, require: false, forUpdate: true});
 
         if (!existing) {
@@ -132,12 +81,12 @@ class EmailEventStorage {
                 member_id: event.memberId,
                 email_recipient_id: event.emailRecipientId,
                 severity,
-                message: event.error.message,
+                message: event.error.message || `Error ${event.error.enhancedCode ?? event.error.code}`,
                 code: event.error.code,
                 enhanced_code: event.error.enhancedCode,
                 failed_at: event.timestamp,
                 event_id: event.id
-            }, options);
+            }, {...options, autoRefresh: false});
         } else {
             if (existing.get('severity') === 'permanent') {
                 // Already marked as failed, no need to change anything here
@@ -152,7 +101,7 @@ class EmailEventStorage {
             // Update the existing failure
             await existing.save({
                 severity,
-                message: event.error.message,
+                message: event.error.message || `Error ${event.error.enhancedCode ?? event.error.code}`,
                 code: event.error.code,
                 enhanced_code: event.error.enhancedCode ?? null,
                 failed_at: event.timestamp,

@@ -233,17 +233,14 @@ describe('Job Manager', function () {
                 };
                 const spyHandler = sinon.spy();
                 const jobManager = new JobManager({errorHandler: spyHandler});
+                const completion = jobManager.awaitCompletion('will-fail');
 
                 jobManager.addJob({
                     job,
                     name: 'will-fail'
                 });
 
-                // give time to execute the job
-                // has to be this long because in Node v10 the communication is
-                // done through processes, which takes longer comparing to worker_threads
-                // can be reduced to 100 when Node v10 support is dropped
-                await delay(600);
+                await assert.rejects(completion, /job error/);
 
                 should(spyHandler.called).be.true();
                 should(spyHandler.args[0][0].message).equal('job error');
@@ -253,17 +250,17 @@ describe('Job Manager', function () {
             it('uses worker message handler when job sends a message', async function (){
                 const workerMessageHandlerSpy = sinon.spy();
                 const jobManager = new JobManager({workerMessageHandler: workerMessageHandlerSpy});
+                const completion = jobManager.awaitCompletion('will-send-msg');
 
                 jobManager.addJob({
                     job: path.resolve(__dirname, './jobs/message.js'),
                     name: 'will-send-msg'
                 });
                 jobManager.bree.run('will-send-msg');
-
+                await delay(100);
                 jobManager.bree.workers['will-send-msg'].postMessage('hello from Ghost!');
 
-                // Give time for worker (worker thread) <-> parent process (job manager) communication
-                await delay(100);
+                await completion;
 
                 should(workerMessageHandlerSpy.called).be.true();
                 should(workerMessageHandlerSpy.args[0][0].name).equal('will-send-msg');
@@ -338,6 +335,7 @@ describe('Job Manager', function () {
                 };
 
                 const jobManager = new JobManager({JobModel});
+                const completion = jobManager.awaitCompletion('successful-oneoff');
 
                 jobManager.addOneOffJob({
                     job: async () => {
@@ -347,8 +345,7 @@ describe('Job Manager', function () {
                     offloaded: false
                 });
 
-                // allow job to get picked up and executed
-                await delay(20);
+                await completion;
 
                 // tracks the job queued
                 should(JobModel.add.args[0][0].status).equal('queued');
@@ -380,6 +377,7 @@ describe('Job Manager', function () {
                 };
                 const spyHandler = sinon.spy();
                 const jobManager = new JobManager({errorHandler: spyHandler, JobModel});
+                const completion = jobManager.awaitCompletion('failed-oneoff');
 
                 await jobManager.addOneOffJob({
                     job,
@@ -387,8 +385,7 @@ describe('Job Manager', function () {
                     offloaded: false
                 });
 
-                // give time to execute the job
-                await delay(50);
+                await assert.rejects(completion, /job error/);
 
                 // tracks the job start
                 should(JobModel.edit.args[0][0].status).equal('started');
@@ -424,6 +421,7 @@ describe('Job Manager', function () {
                 };
                 const spyHandler = sinon.spy();
                 const jobManager = new JobManager({errorHandler: spyHandler, JobModel});
+                const completion1 = jobManager.awaitCompletion('failed-oneoff');
 
                 await jobManager.addOneOffJob({
                     job,
@@ -432,11 +430,12 @@ describe('Job Manager', function () {
                 });
 
                 // give time to execute the job and fail
-                await delay(50);
+                await assert.rejects(completion1, /job error/);
                 should(JobModel.edit.args[1][0].status).equal('failed');
 
                 // simulate process restart and "fresh" slate to add the job
                 jobManager.removeJob('failed-oneoff');
+                const completion2 = jobManager.awaitCompletion('failed-oneoff');
 
                 await jobManager.addOneOffJob({
                     job,
@@ -445,7 +444,7 @@ describe('Job Manager', function () {
                 });
 
                 // give time to execute the job and fail AGAIN
-                await delay(50);
+                await assert.rejects(completion2, /job error/);
                 should(JobModel.edit.args[3][0].status).equal('started');
                 should(JobModel.edit.args[4][0].status).equal('failed');
             });
@@ -502,18 +501,20 @@ describe('Job Manager', function () {
 
                 const jobManager = new JobManager({JobModel});
 
+                const jobCompletion = jobManager.awaitCompletion('successful-oneoff');
+
                 await jobManager.addOneOffJob({
                     job: path.resolve(__dirname, './jobs/message.js'),
                     name: 'successful-oneoff'
                 });
 
                 // allow job to get picked up and executed
-                await delay(50);
+                await delay(100);
 
                 jobManager.bree.workers['successful-oneoff'].postMessage('be done!');
 
                 // allow the message to be passed around
-                await delay(50);
+                await jobCompletion;
 
                 // tracks the job start
                 should(JobModel.edit.args[0][0].status).equal('started');
@@ -542,16 +543,14 @@ describe('Job Manager', function () {
                 const spyHandler = sinon.spy();
                 const jobManager = new JobManager({errorHandler: spyHandler, JobModel});
 
+                const completion = jobManager.awaitCompletion('failed-oneoff');
+
                 await jobManager.addOneOffJob({
                     job,
                     name: 'failed-oneoff'
                 });
 
-                // give time to execute the job
-                // has to be this long because in Node v10 the communication is
-                // done through processes, which takes longer comparing to worker_threads
-                // can be reduced to 100 when Node v10 support is dropped
-                await delay(100);
+                await assert.rejects(completion, /job error/);
 
                 // still calls the original error handler
                 should(spyHandler.called).be.true();

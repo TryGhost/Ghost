@@ -159,7 +159,7 @@ describe('Scheduling Default Adapter', function () {
             setTimeout(function () {
                 scope.adapter._execute.callCount.should.be.greaterThan(1);
                 done();
-            }, 30);
+            }, 200);
         });
 
         it('execute', function (done) {

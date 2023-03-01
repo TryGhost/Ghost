@@ -27,7 +27,8 @@
         "cache": {
             "active": "Memory",
             "settings": {},
-            "imageSizes": {}
+            "imageSizes": {},
+            "gscan": {}
         }
     },
     "storage": {
@@ -101,6 +102,12 @@
             "maxWait": 43200000,
             "lifetime": 43200,
             "freeRetries": 8
+        },
+        "webmentions_block": {
+            "minWait": 10,
+            "maxWait": 100,
+            "lifetime": 1000,
+            "freeRetries": 100
         }
     },
     "caching": {
@@ -169,7 +176,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.22"
+        "version": "2.25"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -197,5 +204,18 @@
     },
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
-    }
+    },
+    "milestones":
+        {
+            "arr": [
+                {
+                    "currency": "usd",
+                    "values": [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+                }
+            ],
+            "members": [100, 1000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
+            "minDaysSinceImported": 7,
+            "minDaysSinceLastEmail": 14,
+            "maxPercentageFromMilestone": 0.1
+        }
 }

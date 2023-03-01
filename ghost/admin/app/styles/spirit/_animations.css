@@ -155,25 +155,6 @@
   text-decoration: underline;
 }
 
-/* Can combine this with overflow-hidden to make background images grow on hover
- * even if you are using background-size: cover */
-
-.grow {
-  -moz-osx-font-smoothing: grayscale;
-  backface-visibility: hidden;
-  transform: translateY(0) translateZ(0);
-  transition: transform var(--animation-speed-normal) ease-out;
-}
-
-.grow:hover,
-.grow:focus {
-  transform: translateY(-0.6rem) scale(1.002);
-}
-
-.grow:active {
-  transform: scale(.90);
-}
-
 /* Add pointer on hover */
 
 .pointer:hover {

@@ -23,9 +23,9 @@ describe('Slack', function () {
         eventStub = sinon.stub(events, 'on');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('listen() should initialise event correctly', function () {

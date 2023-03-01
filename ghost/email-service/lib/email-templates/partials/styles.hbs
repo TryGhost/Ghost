@@ -266,11 +266,13 @@ pre {
     color: #ffffff;
 }
 
-p code {
+p code,
+li code {
     background: #F2F7FA;
     word-break: break-all;
     padding: 1px 7px;
     border-radius: 3px;
+    color: {{accentColor}};
 }
 
 figure blockquote p {
@@ -992,7 +994,7 @@ a[data-flickr-embed] img {
     }
 
     table.body .kg-bookmark-card {
-        width: 90vw !important;
+        width: 90vw;
     }
 
     table.body .kg-bookmark-thumbnail {
@@ -1121,26 +1123,6 @@ a[data-flickr-embed] img {
     .gh-powered {
         width: 142px;
         height: 30px;
-    }
-{{/if}}
-
-{{#if feedbackButtons}}
-    .like-icon {
-        mix-blend-mode: darken;
-    }
-
-    .dislike-icon {
-        mix-blend-mode: darken;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .like-icon {
-            mix-blend-mode: initial !important;
-        }
-
-        .dislike-icon {
-            mix-blend-mode: initial !important;
-        }
     }
 {{/if}}
 </style>

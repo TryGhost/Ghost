@@ -2200,8 +2200,10 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-feedback-button {
+    background: #fff;
     font-weight: bold;
     border-radius: 22px;
+    border: 1px solid #e5eff5;
     pointer-events: none;
     cursor: default;
 }
@@ -2215,8 +2217,7 @@ p.gh-members-import-errordetail:first-of-type {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
-    filter: brightness(0.4);
+    padding: 7px 18px;
 }
 
 /* Custom tier member details */
@@ -2563,9 +2564,10 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-cp-membertier-attribution .gh-tier-card-header {
     display: flex;
     align-items: flex-start;
+    position: relative;
 }
 
-.gh-cp-membertier-attribution .gh-tier-card-header:nth-of-type(2) {
+.gh-cp-membertier-attribution .gh-tier-card-header:not(:first-child) {
     margin-top: 16px;
     border-top: 1px solid var(--whitegrey);
     padding-top: 16px;
@@ -2608,8 +2610,12 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-cp-membertier-attribution .action-menu {
     position: absolute;
-    top: 24px;
-    right: 24px;
+    top: 0px;
+    right: 0px;
+}
+
+.gh-cp-membertier-attribution .gh-tier-card-header:not(:first-child) .action-menu {
+    top: 16px;
 }
 
 .gh-cp-membertier-attribution span.archived {

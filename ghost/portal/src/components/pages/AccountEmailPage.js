@@ -6,11 +6,7 @@ import NewsletterManagement from '../common/NewsletterManagement';
 const React = require('react');
 
 export default function AccountEmailPage() {
-    const {member, onAction, site} = useContext(AppContext);
-    const defaultSubscribedNewsletters = [...(member?.newsletters || [])];
-    const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
-    const {comments_enabled: commentsEnabled} = site;
-    const {enable_comment_notifications: enableCommentNotifications} = member;
+    const {member, onAction, site, t} = useContext(AppContext);
 
     useEffect(() => {
         if (!member) {
@@ -19,6 +15,11 @@ export default function AccountEmailPage() {
             });
         }
     }, [member, onAction]);
+
+    const defaultSubscribedNewsletters = [...(member?.newsletters || [])];
+    const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
+    const {comments_enabled: commentsEnabled} = site;
+    const {enable_comment_notifications: enableCommentNotifications} = member || {};
 
     useEffect(() => {
         setSubscribedNewsletters(member?.newsletters || []);
@@ -39,7 +40,7 @@ export default function AccountEmailPage() {
                 setSubscribedNewsletters([]);
                 onAction('showPopupNotification', {
                     action: 'updated:success',
-                    message: `Email preference updated.`
+                    message: t(`Email preference updated.`)
                 });
                 const data = {newsletters: []};
                 if (commentsEnabled) {

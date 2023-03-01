@@ -34,8 +34,8 @@ test.describe('Portal', () => {
             // impersonate the member on frontend
             impersonateMember(page);
 
-            const portalTriggerButton = page.frameLocator('#ghost-portal-root iframe.gh-portal-triggerbtn-iframe').locator('div').nth(1);
-            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
 
             // open portal, go to plans and click continue to select the first plan(yearly)
             await portalTriggerButton.click();
@@ -70,8 +70,8 @@ test.describe('Portal', () => {
             // impersonate the member on frontend
             impersonateMember(page);
 
-            const portalTriggerButton = page.frameLocator('#ghost-portal-root iframe.gh-portal-triggerbtn-iframe').locator('div').nth(1);
-            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
 
             // open portal
             await portalTriggerButton.click();
@@ -130,8 +130,8 @@ test.describe('Portal', () => {
             const link = await page.locator('[data-test-input="member-signin-url"]').inputValue();
             await page.goto(link);
 
-            const portalTriggerButton = page.frameLocator('#ghost-portal-root iframe.gh-portal-triggerbtn-iframe').locator('div').nth(1);
-            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
 
             // open portal, go to plans and click continue to select the first plan(yearly)
             await portalTriggerButton.click();
@@ -143,13 +143,13 @@ test.describe('Portal', () => {
 
             // open portal and check that member has been upgraded to paid tier
             await portalTriggerButton.click();
-            await expect(portalFrame.getByText('$50.00/year')).toBeVisible();
-            await expect(portalFrame.getByRole('heading', {name: 'Billing info'})).toBeVisible();
-            await expect(portalFrame.getByText('**** **** **** 4242')).toBeVisible();
+            await expect(portalFrame.getByText('$50.00/year')).toBeVisible({timeout: 10000});
+            await expect(portalFrame.getByRole('heading', {name: 'Billing info'})).toBeVisible({timeout: 10000});
+            await expect(portalFrame.getByText('**** **** **** 4242')).toBeVisible({timeout: 10000});
 
             // check that member has been upgraded in admin and a tier exists for them
             await page.goto(memberUrl);
-            await expect(page.locator('[data-test-tier]').first()).toBeVisible();
+            await expect(page.locator('[data-test-tier]').first()).toBeVisible({timeout: 10000});
         });
     });
 });

@@ -4,7 +4,6 @@ const logging = require('@tryghost/logging');
 const {extract, hasProvider} = require('oembed-parser');
 const cheerio = require('cheerio');
 const _ = require('lodash');
-const {CookieJar} = require('tough-cookie');
 const charset = require('charset');
 const iconv = require('iconv-lite');
 
@@ -68,16 +67,7 @@ class OEmbed {
         this.config = config;
 
         /** @type {IExternalRequest} */
-        this.externalRequest = async (url, requestConfig) => {
-            if (this.isIpOrLocalhost(url)) {
-                return this.unknownProvider(url);
-            }
-            const response = await externalRequest(url, requestConfig);
-            if (this.isIpOrLocalhost(response.url)) {
-                return this.unknownProvider(url);
-            }
-            return response;
-        };
+        this.externalRequest = externalRequest;
 
         /** @type {ICustomProvider[]} */
         this.customProviders = [];
@@ -116,17 +106,14 @@ class OEmbed {
     /**
      * @param {string} url
      * @param {Object} options
-     * 
-     * @returns {Promise<{url: string, body: any, headers: any}>}
+     *
+     * @returns {GotPromise<any>}
      */
-    async fetchPage(url, options) {
-        const cookieJar = new CookieJar();
+    fetchPage(url, options) {
         return this.externalRequest(
             url,
             {
-                cookieJar,
-                method: 'GET',
-                timeout: 2 * 1000,
+                timeout: 2000,
                 followRedirect: true,
                 ...options
             });
@@ -134,13 +121,13 @@ class OEmbed {
 
     /**
      * @param {string} url
-     * 
+     *
      * @returns {Promise<{url: string, body: string}>}
      */
     async fetchPageHtml(url) {
         // Fetch url and get response as binary buffer to
         // avoid implicit cast
-        const {headers, body, url: responseUrl} = await this.fetchPage(
+        let {headers, body, url: responseUrl} = await this.fetchPage(
             url,
             {
                 encoding: 'binary',
@@ -162,7 +149,7 @@ class OEmbed {
             }
 
             const decodedBody = iconv.decode(
-                Buffer.from(body, 'binary'), encoding);
+                body, encoding);
 
             return {
                 body: decodedBody,
@@ -180,26 +167,23 @@ class OEmbed {
 
     /**
      * @param {string} url
-     * 
+     *
      * @returns {Promise<{url: string, body: Object}>}
      */
     async fetchPageJson(url) {
-        const {body, url: pageUrl} = await this.fetchPage(
-            url,
-            {
-                json: true
-            });
-
+        const res = await this.fetchPage(url, {responseType: 'json'});
+        const body = res.body;
+        const pageUrl = res.url;
         return {
             body,
             url: pageUrl
         };
     }
-    
+
     /**
      * @param {string} url
      * @param {string} html
-     * 
+     *
      * @returns {Promise<Object>}
      */
     async fetchBookmarkData(url, html) {
@@ -215,7 +199,7 @@ class OEmbed {
         ]);
 
         let scraperResponse;
-        
+
         try {
             scraperResponse = await metascraper({html, url});
         } catch (err) {
@@ -249,34 +233,6 @@ class OEmbed {
 
     /**
      * @param {string} url
-     * @returns {boolean}
-     */
-    isIpOrLocalhost(url) {
-        try {
-            const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-            const IPV6_REGEX = /:/; // fqdns will not have colons
-            const HTTP_REGEX = /^https?:/i;
-
-            const siteUrl = new URL(this.config.get('url'));
-            const {protocol, hostname, host} = new URL(url);
-
-            // allow requests to Ghost's own url through
-            if (siteUrl.host === host) {
-                return false;
-            }
-
-            if (!HTTP_REGEX.test(protocol) || hostname === 'localhost' || IPV4_REGEX.test(hostname) || IPV6_REGEX.test(hostname)) {
-                return true;
-            }
-
-            return false;
-        } catch (e) {
-            return true;
-        }
-    }
-
-    /**
-     * @param {string} url
      * @param {string} html
      * @param {string} [cardType]
      *
@@ -300,7 +256,6 @@ class OEmbed {
 
             // fetch oembed response from embedded rel="alternate" url
             const oembedResponse = await this.fetchPageJson(oembedUrl);
-
             // validate the fetched json against the oembed spec to avoid
             // leaking non-oembed responses
             const body = oembedResponse.body;
@@ -364,7 +319,7 @@ class OEmbed {
                 }
             }
 
-            if (type !== 'bookmark') {
+            if (type !== 'bookmark' && type !== 'mention') {
                 // if not a bookmark request, first
                 // check against known oembed list
                 const {url: providerUrl, provider} = findUrlWithProvider(url);
@@ -381,9 +336,15 @@ class OEmbed {
                 return this.fetchBookmarkData(url, body);
             }
 
+            // mentions need to return bookmark data (metadata) and body (html) for link verification
+            if (type === 'mention') {
+                const bookmark = await this.fetchBookmarkData(url, body);
+                return {...bookmark, body};
+            }
+
             // attempt to fetch oembed
 
-            // In case response was a redirect, see if we were 
+            // In case response was a redirect, see if we were
             // redirected to a known oembed
             if (pageUrl !== url) {
                 const {url: providerUrl, provider} = findUrlWithProvider(pageUrl);

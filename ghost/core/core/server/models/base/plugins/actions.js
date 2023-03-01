@@ -93,7 +93,7 @@ module.exports = function (Bookshelf) {
 
             const insert = (action) => {
                 Bookshelf.model('Action')
-                    .add(action)
+                    .add(action, {autoRefresh: false})
                     .catch((err) => {
                         if (_.isArray(err)) {
                             err = err[0];

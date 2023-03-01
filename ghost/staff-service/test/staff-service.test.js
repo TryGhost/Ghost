@@ -1,10 +1,12 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const sinon = require('sinon');
-const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
+const {MentionCreatedEvent} = require('@tryghost/webmentions');
+const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 require('./utils');
-const StaffService = require('../lib/staff-service');
+const StaffService = require('../index');
 
 function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
     getEmailAlertUsersStub.calledWith(
@@ -107,6 +109,7 @@ describe('StaffService', function () {
 
     describe('email notifications:', function () {
         let mailStub;
+        let loggingInfoStub;
         let subscribeStub;
         let getEmailAlertUsersStub;
         let service;
@@ -146,6 +149,7 @@ describe('StaffService', function () {
         };
 
         beforeEach(function () {
+            loggingInfoStub = sinon.stub().resolves();
             mailStub = sinon.stub().resolves();
             subscribeStub = sinon.stub().resolves();
             getEmailAlertUsersStub = sinon.stub().resolves([{
@@ -154,6 +158,7 @@ describe('StaffService', function () {
             }]);
             service = new StaffService({
                 logging: {
+                    info: loggingInfoStub,
                     warn: () => {},
                     error: () => {}
                 },
@@ -181,20 +186,30 @@ describe('StaffService', function () {
         describe('subscribeEvents', function () {
             it('subscribes to events', async function () {
                 service.subscribeEvents();
-                subscribeStub.calledThrice.should.be.true();
-                subscribeStub.calledWith(SubscriptionCreatedEvent).should.be.true();
+                subscribeStub.callCount.should.eql(5);
+                subscribeStub.calledWith(SubscriptionActivatedEvent).should.be.true();
                 subscribeStub.calledWith(SubscriptionCancelledEvent).should.be.true();
                 subscribeStub.calledWith(MemberCreatedEvent).should.be.true();
+                subscribeStub.calledWith(MentionCreatedEvent).should.be.true();
+                subscribeStub.calledWith(MilestoneCreatedEvent).should.be.true();
             });
         });
 
         describe('handleEvent', function () {
             beforeEach(function () {
+                loggingInfoStub = sinon.stub().resolves();
+
                 const models = {
                     User: {
                         getEmailAlertUsers: sinon.stub().resolves([{
                             email: 'owner@ghost.org',
                             slug: 'ghost'
+                        }]),
+                        findAll: sinon.stub().resolves([{
+                            toJSON: sinon.stub().returns({
+                                email: 'owner@ghost.org',
+                                slug: 'ghost'
+                            })
                         }])
                     },
                     Member: {
@@ -247,6 +262,7 @@ describe('StaffService', function () {
 
                 service = new StaffService({
                     logging: {
+                        info: loggingInfoStub,
                         warn: () => {},
                         error: () => {}
                     },
@@ -259,7 +275,21 @@ describe('StaffService', function () {
                     },
                     settingsCache,
                     urlUtils,
-                    settingsHelpers
+                    settingsHelpers,
+                    labs: {
+                        isSet: (flag) => {
+                            if (flag === 'webmentions') {
+                                return true;
+                            }
+                            if (flag === 'webmentionEmails') {
+                                return true;
+                            }
+                            if (flag === 'milestoneEmails') {
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
                 });
             });
             it('handles free member created event', async function () {
@@ -276,7 +306,7 @@ describe('StaffService', function () {
             });
 
             it('handles paid member created event', async function () {
-                await service.handleEvent(SubscriptionCreatedEvent, {
+                await service.handleEvent(SubscriptionActivatedEvent, {
                     data: {
                         source: 'member',
                         memberId: 'member-1',
@@ -304,6 +334,36 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match({subject: '⚠️ Cancellation: Jamie'})
                 ).should.be.true();
+            });
+
+            it('handles new mention notification', async function () {
+                await service.handleEvent(MentionCreatedEvent, {
+                    data: {
+                        mention: {
+                            source: 'https://exmaple.com/some-post',
+                            target: 'https://exmaple.com/some-mentioned-post',
+                            sourceSiteTitle: 'Exmaple'
+                        }
+                    }
+                });
+                mailStub.calledWith(
+                    sinon.match({subject: `💌 New mention from: Exmaple`})
+                ).should.be.true();
+            });
+
+            it('handles milestone created event', async function () {
+                await service.handleEvent(MilestoneCreatedEvent, {
+                    data: {
+                        milestone: {
+                            type: 'arr',
+                            value: '100',
+                            currency: 'usd'
+                        }
+                    }
+                });
+                mailStub.called.should.be.false();
+                loggingInfoStub.calledOnce.should.be.true();
+                loggingInfoStub.calledWith('Will send email to owner@ghost.org for arr / 100 milestone.').should.be.true();
             });
         });
 
@@ -607,6 +667,20 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('A paid member has just canceled their subscription.'))
                 ).should.be.true();
+            });
+        });
+
+        describe('notifyMilestoneReceived', function () {
+            it('prepares to send email when user setting available', async function () {
+                const milestone = {
+                    type: 'members',
+                    value: 25000
+                };
+
+                await service.emails.notifyMilestoneReceived({milestone});
+
+                mailStub.called.should.be.false();
+                getEmailAlertUsersStub.calledWith('milestone-received').should.be.true();
             });
         });
     });

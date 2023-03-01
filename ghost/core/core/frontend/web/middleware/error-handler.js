@@ -47,8 +47,6 @@ const themeErrorRenderer = (err, req, res, next) => {
     // Format Data
     const data = {
         message: err.message,
-        // @deprecated Remove in Ghost 5.0
-        code: err.statusCode,
         statusCode: err.statusCode,
         errorDetails: err.errorDetails || []
     };

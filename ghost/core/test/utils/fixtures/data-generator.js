@@ -762,7 +762,7 @@ DataGenerator.Content = {
             failed_at: null,
             delivered_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
-            member_email: 'member1@test.com',
+            member_email: null, // members[1] relation added later
             member_name: 'Mr Egg'
         },
         {
@@ -774,7 +774,7 @@ DataGenerator.Content = {
             failed_at: null,
             delivered_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
-            member_email: 'member2@test.com',
+            member_email: null, // members[2] relation added later
             member_name: null
         },
         {
@@ -786,7 +786,7 @@ DataGenerator.Content = {
             failed_at: null,
             delivered_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342',
-            member_email: 'member1@test.com',
+            member_email: null, // members[3] relation added later
             member_name: 'Mr Egg'
         },
         {
@@ -798,7 +798,7 @@ DataGenerator.Content = {
             failed_at: null,
             delivered_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
-            member_email: 'member1@test.com',
+            member_email: null, // members[4] relation added later
             member_name: 'Mr Egg'
         },
         {
@@ -811,7 +811,7 @@ DataGenerator.Content = {
             opened_at: moment().toDate(),
             failed_at: null,
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
-            member_email: 'member4@test.com',
+            member_email: null, // members[5] relation added later
             member_name: 'Mr Egg'
         },
         {
@@ -824,7 +824,7 @@ DataGenerator.Content = {
             opened_at: null,
             failed_at: moment().toDate(),
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
-            member_email: 'member5@test.com',
+            member_email: null, // members[6] relation added later
             member_name: 'Mr Egg'
         }
     ],
@@ -890,6 +890,42 @@ DataGenerator.Content = {
             created_at: null,
             updated_at: null
         }
+    ],
+
+    // TODO: build mentions for testing browse endpoint
+    mentions: [
+        // source: webmention.source,
+        // target: webmention.target,
+        // timestamp: new Date(),
+        // payload: webmention.payload,
+        // resourceId: resourceInfo.type === 'post' ? resourceInfo.id : null,
+        // sourceTitle: metadata.title,
+        // sourceSiteTitle: metadata.siteTitle,
+        // sourceAuthor: metadata.author,
+        // sourceExcerpt: metadata.excerpt,
+        // sourceFavicon: metadata.favicon,
+        // sourceFeaturedImage: metadata.image
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://source.com',
+            target: 'https://target.com',
+            sourceTitle: 'Title!',
+            sourceExcerpt: 'Excerpt!'
+        },
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://anothersource.com',
+            target: 'https://anothertarget.com',
+            sourceTitle: 'Another Title!',
+            sourceExcerpt: 'Another Excerpt!'
+        },
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://src.com',
+            target: 'https://target.com',
+            sourceTitle: 'Title goes here',
+            sourceExcerpt: 'Excerpt goes here'
+        }
     ]
 };
 
@@ -906,21 +942,27 @@ DataGenerator.Content.email_batches[0].email_id = DataGenerator.Content.emails[0
 DataGenerator.Content.email_recipients[0].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[0].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[0].member_id = DataGenerator.Content.members[0].id;
+DataGenerator.Content.email_recipients[0].member_email = DataGenerator.Content.members[0].email;
 DataGenerator.Content.email_recipients[1].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[1].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[1].member_id = DataGenerator.Content.members[1].id;
+DataGenerator.Content.email_recipients[1].member_email = DataGenerator.Content.members[1].email;
 DataGenerator.Content.email_recipients[2].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[2].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[2].member_id = DataGenerator.Content.members[2].id;
+DataGenerator.Content.email_recipients[2].member_email = DataGenerator.Content.members[2].email;
 DataGenerator.Content.email_recipients[3].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[3].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[3].member_id = DataGenerator.Content.members[3].id;
+DataGenerator.Content.email_recipients[3].member_email = DataGenerator.Content.members[3].email;
 DataGenerator.Content.email_recipients[4].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[4].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[4].member_id = DataGenerator.Content.members[4].id;
+DataGenerator.Content.email_recipients[4].member_email = DataGenerator.Content.members[4].email;
 DataGenerator.Content.email_recipients[5].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[5].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[5].member_id = DataGenerator.Content.members[5].id;
+DataGenerator.Content.email_recipients[5].member_email = DataGenerator.Content.members[5].email;
 DataGenerator.Content.members_stripe_customers[0].member_id = DataGenerator.Content.members[2].id;
 DataGenerator.Content.members_stripe_customers[1].member_id = DataGenerator.Content.members[3].id;
 DataGenerator.Content.members_stripe_customers[2].member_id = DataGenerator.Content.members[4].id;
@@ -1331,6 +1373,13 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             created_at: new Date(),
             updated_at: new Date()
+        });
+    }
+
+    function createMention(overrides) {
+        const newObj = _.cloneDeep(overrides);
+        return _.defaults(newObj, {
+            created_at: new Date()
         });
     }
 
@@ -1843,6 +1892,12 @@ DataGenerator.forKnex = (function () {
         createLink(DataGenerator.Content.links[2])
     ];
 
+    const mentions = [
+        createMention(DataGenerator.Content.mentions[0]),
+        createMention(DataGenerator.Content.mentions[1]),
+        createMention(DataGenerator.Content.mentions[2])
+    ];
+
     return {
         createPost,
         createGenericPost,
@@ -1874,6 +1929,7 @@ DataGenerator.forKnex = (function () {
         createNewsletter,
         createOffer,
         createComment,
+        createMention,
 
         invites,
         posts,
@@ -1906,6 +1962,7 @@ DataGenerator.forKnex = (function () {
         comments,
         redirects,
         links,
+        mentions,
 
         members_paid_subscription_events,
         members_created_events,

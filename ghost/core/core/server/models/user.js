@@ -68,7 +68,9 @@ User = ghostBookshelf.Model.extend({
             comment_notifications: true,
             free_member_signup_notification: true,
             paid_subscription_started_notification: true,
-            paid_subscription_canceled_notification: false
+            paid_subscription_canceled_notification: false,
+            mention_notifications: true,
+            milestone_notifications: true
         };
     },
 
@@ -504,6 +506,10 @@ User = ghostBookshelf.Model.extend({
             filter += '+paid_subscription_started_notification:true';
         } else if (type === 'paid-canceled') {
             filter += '+paid_subscription_canceled_notification:true';
+        } else if (type === 'mention-received') {
+            filter += '+mention_notifications:true';
+        } else if (type === 'milestone-received') {
+            filter += '+milestone_notifications:true';
         }
         const updatedOptions = _.merge({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {

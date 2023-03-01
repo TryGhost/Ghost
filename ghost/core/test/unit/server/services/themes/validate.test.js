@@ -1,15 +1,18 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-
 const validate = require('../../../../../core/server/services/themes/validate');
-
+const list = require('../../../../../core/server/services/themes/list');
 const gscan = require('gscan');
+const assert = require('assert');
+const adapterManager = require('../../../../../core/server/services/adapter-manager');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/Memory');
 
 describe('Themes', function () {
     let checkZipStub;
     let checkStub;
     let formatStub;
+    let adapterStub;
 
     beforeEach(function () {
         checkZipStub = sinon.stub(gscan, 'checkZip');
@@ -28,11 +31,20 @@ describe('Themes', function () {
             path: '/path/to/theme'
         };
 
+        beforeEach(function () {
+            adapterStub = sinon.stub(adapterManager, 'getAdapter').returns(new InMemoryCache());
+            validate.init();
+        });
+
+        afterEach(function () {
+            adapterStub.restore();
+        });
+
         it('[success] validates a valid zipped theme', function () {
             checkZipStub.resolves({});
             formatStub.returns({results: {error: []}});
 
-            return validate.check(testTheme, true)
+            return validate.check(testTheme.name, testTheme, true)
                 .then((checkedTheme) => {
                     checkZipStub.calledOnce.should.be.true();
                     checkZipStub.calledWith(testTheme).should.be.true();
@@ -48,7 +60,7 @@ describe('Themes', function () {
             checkStub.resolves({});
             formatStub.returns({results: {error: []}});
 
-            return validate.check(testTheme, false)
+            return validate.check(testTheme.name, testTheme, false)
                 .then((checkedTheme) => {
                     checkZipStub.callCount.should.be.equal(0);
                     checkStub.calledOnce.should.be.true();
@@ -73,11 +85,12 @@ describe('Themes', function () {
                             failures: [{}],
                             code: 'GS001-DEPR-CON-AC'
                         }
-                    ]
+                    ],
+                    hasFatalErrors: true
                 }
             });
 
-            return validate.check(testTheme, true)
+            return validate.check(testTheme.name, testTheme, true)
                 .then((checkedTheme) => {
                     checkZipStub.calledOnce.should.be.true();
                     checkZipStub.calledWith(testTheme).should.be.true();
@@ -101,11 +114,12 @@ describe('Themes', function () {
                             failures: [{}],
                             code: 'GS001-DEPR-CON-AC'
                         }
-                    ]
+                    ],
+                    hasFatalErrors: true
                 }
             });
 
-            return validate.check(testTheme, false)
+            return validate.check(testTheme.name, testTheme, false)
                 .then((checkedTheme) => {
                     checkStub.calledOnce.should.be.true();
                     checkStub.calledWith(testTheme.path).should.be.true();
@@ -120,7 +134,7 @@ describe('Themes', function () {
             checkZipStub.rejects(new Error('invalid zip file'));
             formatStub.returns({results: {error: []}});
 
-            return validate.check(testTheme, true)
+            return validate.check(testTheme.name, testTheme, true)
                 .then((checkedTheme) => {
                     checkedTheme.should.not.exist();
                 }).catch((error) => {
@@ -131,6 +145,58 @@ describe('Themes', function () {
                     checkStub.callCount.should.be.equal(0);
                     formatStub.calledOnce.should.be.false();
                 });
+        });
+    });
+
+    describe('getThemeErrors', function () {
+        const testTheme = {
+            name: 'supertheme',
+            version: '1.0.0',
+            path: '/path/to/theme'
+        };
+
+        before(function () {
+            list.init();
+            list.set(testTheme.name, testTheme);
+            validate.init();
+        });
+
+        it('Does an initial check if not cached yet', async function () {
+            checkStub.resolves({});
+            formatStub.returns({results: {error: [{hello: 'world'}]}});
+
+            const checkedTheme = await validate.getThemeErrors(testTheme.name);
+            sinon.assert.calledOnce(checkStub);
+            sinon.assert.calledOnce(formatStub);
+            assert.deepEqual(checkedTheme, {errors: [{hello: 'world'}], warnings: []});
+        });
+
+        it('Reuses same result if called again', async function () {
+            const checkedTheme = await validate.getThemeErrors(testTheme.name);
+            sinon.assert.notCalled(checkStub);
+            sinon.assert.notCalled(formatStub);
+            assert.deepEqual(checkedTheme, {errors: [{hello: 'world'}], warnings: []});
+        });
+
+        it('Throws for invalid theme names', async function () {
+            await assert.rejects(validate.getThemeErrors('invalid-theme-name'), /Theme "invalid-theme-name" is not loaded and cannot be checked/);
+        });
+
+        it('Silently fails when cache adapter throws', async function () {
+            sinon.stub(adapterManager, 'getAdapter').returns({
+                get: () => {
+                    throw new Error('test');
+                }
+            });
+            validate.init();
+
+            checkStub.resolves({});
+            formatStub.returns({results: {error: [{hello: 'world'}]}});
+
+            const checkedTheme = await validate.getThemeErrors(testTheme.name);
+            sinon.assert.calledOnce(checkStub);
+            sinon.assert.calledOnce(formatStub);
+            assert.deepEqual(checkedTheme, {errors: [{hello: 'world'}], warnings: []});
         });
     });
 });

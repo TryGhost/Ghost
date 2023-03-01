@@ -142,6 +142,76 @@ class StaffServiceEmails {
         }
     }
 
+    async notifyMentionReceived({mention}) {
+        const users = await this.models.User.getEmailAlertUsers('mention-received');
+        let resource = null;
+        if (mention.resourceId) {
+            try {
+                const postModel = await this.models.Post.findOne({id: mention.resourceId.toString()});
+                // console.log(postModel.toJSON());
+                if (postModel) {
+                    resource = {
+                        id: postModel.id,
+                        name: postModel.get('title'),
+                        type: postModel.get('type') || 'post'
+                    };
+                }
+            } catch (err) {
+                this.logging.error(err);
+            }
+        }
+        for (const user of users) {
+            const to = user.email;
+            const subject = `💌 New mention from: ${mention.sourceSiteTitle}`;
+
+            const templateData = {
+                targetUrl: mention.target,
+                sourceUrl: mention.source,
+                sourceTitle: mention.sourceTitle,
+                sourceExcerpt: mention.sourceExcerpt,
+                sourceSiteTitle: mention.sourceSiteTitle,
+                sourceFavicon: mention.sourceFavicon,
+                sourceAuthor: mention.sourceAuthor,
+                sourceFeaturedImage: mention.sourceFeaturedImage,
+                resource,
+                siteTitle: this.settingsCache.get('title'),
+                siteUrl: this.urlUtils.getSiteUrl(),
+                siteDomain: this.siteDomain,
+                accentColor: this.settingsCache.get('accent_color'),
+                fromEmail: this.fromEmailAddress,
+                toEmail: to,
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
+            };
+
+            const {html, text} = await this.renderEmailTemplate('new-mention-received', templateData);
+
+            await this.sendMail({
+                to,
+                subject,
+                html,
+                text
+            });
+        }
+    }
+
+    /**
+     *
+     * @param {object} eventData
+     * @param {object} eventData.milestone
+     *
+     * @returns {Promise<void>}
+     */
+    async notifyMilestoneReceived({milestone}) {
+        const users = await this.models.User.getEmailAlertUsers('milestone-received');
+
+        // TODO: send email with correct templates
+        for (const user of users) {
+            const to = user.email;
+
+            this.logging.info(`Will send email to ${to} for ${milestone.type} / ${milestone.value} milestone.`);
+        }
+    }
+
     // Utils
 
     /** @private */
@@ -175,7 +245,7 @@ class StaffServiceEmails {
     /** @private */
     getFormattedAmount({amount = 0, currency}) {
         if (!currency) {
-            return '';
+            return amount > 0 ? Intl.NumberFormat().format(amount) : '';
         }
 
         return Intl.NumberFormat('en', {

@@ -6,6 +6,7 @@ const nock = require('nock');
 // Helper services
 const configUtils = require('./configUtils');
 const WebhookMockReceiver = require('@tryghost/webhook-mock-receiver');
+const EmailMockReceiver = require('@tryghost/email-mock-receiver');
 const {snapshotManager} = require('@tryghost/express-test').snapshot;
 
 let mocks = {};
@@ -13,9 +14,11 @@ let emailCount = 0;
 
 // Mockable services
 const mailService = require('../../core/server/services/mail/index');
+const originalMailServiceSend = mailService.GhostMailer.prototype.send;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
+const dnsPromises = require('dns').promises;
 
 let fakedLabsFlags = {};
 const originalLabsIsSet = labs.isSet;
@@ -36,6 +39,15 @@ const mockStripe = () => {
     nock.disableNetConnect();
 };
 
+const disableNetwork = () => {
+    nock.disableNetConnect();
+
+    // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
+    sinon.stub(dnsPromises, 'lookup').callsFake(() => {
+        return Promise.resolve({address: '123.123.123.123', family: 4});
+    });
+};
+
 /**
  * Email Mocks & Assertions
  */
@@ -44,11 +56,16 @@ const mockStripe = () => {
  * @param {String|Object} response
  */
 const mockMail = (response = 'Mail is disabled') => {
-    mocks.mail = sinon
-        .stub(mailService.GhostMailer.prototype, 'send')
-        .resolves(response);
+    const mockMailReceiver = new EmailMockReceiver({
+        snapshotManager: snapshotManager,
+        sendResponse: response
+    });
 
-    return mocks.mail;
+    mailService.GhostMailer.prototype.send = mockMailReceiver.send.bind(mockMailReceiver);
+    mocks.mail = sinon.spy(mailService.GhostMailer.prototype, 'send');
+    mocks.mockMailReceiver = mockMailReceiver;
+
+    return mockMailReceiver;
 };
 
 const mockWebhookRequests = () => {
@@ -57,6 +74,10 @@ const mockWebhookRequests = () => {
     return mocks.webhookMockReceiver;
 };
 
+/**
+ * @deprecated use emailMockReceiver.sentEmailCount(count) instead
+ * @param {Number} count number of emails sent
+ */
 const sentEmailCount = (count) => {
     if (!mocks.mail) {
         throw new errors.IncorrectUsageError({
@@ -64,7 +85,7 @@ const sentEmailCount = (count) => {
         });
     }
 
-    sinon.assert.callCount(mocks.mail, count);
+    mocks.mockMailReceiver.sentEmailCount(count);
 };
 
 const sentEmail = (matchers) => {
@@ -93,7 +114,7 @@ const sentEmail = (matchers) => {
             assert.match(spyCall.args[0][key], value, `Expected Email ${emailCount} to have ${key} that matches ${value}, got ${spyCall.args[0][key]}`);
             return;
         }
-        
+
         assert.equal(spyCall.args[0][key], value, `Expected Email ${emailCount} to have ${key} of ${value}`);
     });
 
@@ -174,7 +195,8 @@ const mockLabsDisabled = (flag, alpha = true) => {
 };
 
 const restore = () => {
-    configUtils.restore();
+    // eslint-disable-next-line no-console
+    configUtils.restore().catch(console.error);
     sinon.restore();
     mocks = {};
     fakedLabsFlags = {};
@@ -186,6 +208,8 @@ const restore = () => {
     if (mocks.webhookMockReceiver) {
         mocks.webhookMockReceiver.reset();
     }
+
+    mailService.GhostMailer.prototype.send = originalMailServiceSend;
 };
 
 module.exports = {
@@ -197,6 +221,7 @@ module.exports = {
     mockLabsDisabled,
     mockWebhookRequests,
     mockSetting,
+    disableNetwork,
     restore,
     assert: {
         sentEmailCount,

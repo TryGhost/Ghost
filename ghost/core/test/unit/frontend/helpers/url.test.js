@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const testUtils = require('../../../utils');
 
 const configUtils = require('../../../utils/configUtils');
@@ -31,8 +30,8 @@ describe('{{url}} helper', function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('should return the slug with a prefix slash if the context is a post', function () {
@@ -240,8 +239,8 @@ describe('{{url}} helper', function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('external urls should be retained in a nav context with subdir', function () {

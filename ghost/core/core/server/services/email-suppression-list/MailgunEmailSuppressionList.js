@@ -2,6 +2,7 @@ const {AbstractEmailSuppressionList, EmailSuppressionData, EmailSuppressedEvent}
 const {SpamComplaintEvent, EmailBouncedEvent} = require('@tryghost/email-events');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
+const models = require('../../models');
 
 /**
  * @typedef {object} IMailgunAPIClient
@@ -35,7 +36,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
         try {
             await this.Suppression.destroy({
                 destroyBy: {
-                    email_address: email
+                    email: email
                 }
             });
         } catch (err) {
@@ -49,7 +50,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     async getSuppressionData(email) {
         try {
             const model = await this.Suppression.findOne({
-                email_address: email
+                email: email
             });
 
             if (!model) {
@@ -73,11 +74,11 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
 
         try {
             const collection = await this.Suppression.findAll({
-                filter: `email_address:[${emails.join(',')}]`
+                filter: `email:[${emails.map(email => `'${email}'`).join(',')}]`
             });
 
             return emails.map((email) => {
-                const model = collection.models.find(m => m.get('email_address') === email);
+                const model = collection.models.find(m => m.get('email') === email);
 
                 if (!model) {
                     return new EmailSuppressionData(false);
@@ -95,10 +96,19 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     }
 
     async init() {
+        this.Suppression = models.Suppression;
         const handleEvent = reason => async (event) => {
             try {
+                if (reason === 'bounce') {
+                    if (!Number.isInteger(event.error?.code)) {
+                        return;
+                    }
+                    if (event.error.code !== 607 && event.error.code !== 605) {
+                        return;
+                    }
+                }
                 await this.Suppression.add({
-                    email_address: event.email,
+                    email: event.email,
                     email_id: event.emailId,
                     reason: reason,
                     created_at: event.timestamp

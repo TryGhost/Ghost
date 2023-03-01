@@ -2,8 +2,10 @@ const TableImporter = require('./base');
 const {faker} = require('@faker-js/faker');
 
 class MembersSubscriptionCreatedEventsImporter extends TableImporter {
+    static table = 'members_subscription_created_events';
+
     constructor(knex, {subscriptions}) {
-        super('members_subscription_created_events', knex);
+        super(MembersSubscriptionCreatedEventsImporter.table, knex);
         this.subscriptions = subscriptions;
     }
 
@@ -12,7 +14,7 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
     }
 
     generate() {
-        const subscription = this.subscriptions.find(s => s.id === this.model.subscription_id);
+        const subscription = this.subscriptions.find(s => s.id === this.model.ghost_subscription_id);
         return {
             id: faker.database.mongodbObjectId(),
             created_at: subscription.created_at,

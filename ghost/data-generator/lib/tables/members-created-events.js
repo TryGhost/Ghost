@@ -3,8 +3,10 @@ const {faker} = require('@faker-js/faker');
 const {luck} = require('../utils/random');
 
 class MembersCreatedEventsImporter extends TableImporter {
+    static table = 'members_created_events';
+
     constructor(knex) {
-        super('members_created_events', knex);
+        super(MembersCreatedEventsImporter.table, knex);
     }
 
     setImportOptions({model}) {
@@ -17,6 +19,8 @@ class MembersCreatedEventsImporter extends TableImporter {
             source = 'admin';
         } else if (luck(5)) {
             source = 'api';
+        } else if (luck(5)) { // eslint-disable-line no-dupe-else-if
+            source = 'import';
         }
         return source;
     }

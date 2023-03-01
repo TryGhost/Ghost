@@ -2,6 +2,7 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
+const errors = require('@tryghost/errors');
 
 module.exports = class MailgunClient {
     #config;
@@ -38,7 +39,9 @@ module.exports = class MailgunClient {
         }
 
         if (Object.keys(recipientData).length > MailgunClient.BATCH_SIZE) {
-            // TODO: what to do here?
+            throw new errors.IncorrectUsageError({
+                message: `Mailgun only supports sending to ${MailgunClient.BATCH_SIZE} recipients at a time`
+            });
         }
 
         let messageData = {};
@@ -107,38 +110,45 @@ module.exports = class MailgunClient {
         }
     }
 
+    /**
+     * Fetches events from Mailgun
+     * @param {Object} mailgunOptions
+     * @param {Function} batchHandler
+     * @param {Object} options
+     * @param {Number} options.maxEvents Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @returns {Promise<void>}
+     */
     async fetchEvents(mailgunOptions, batchHandler, {maxEvents = Infinity} = {}) {
-        let result = [];
-
         const mailgunInstance = this.getInstance();
         if (!mailgunInstance) {
             logging.warn(`Mailgun is not configured`);
-            return result;
+            return;
         }
 
         debug(`fetchEvents: starting fetching first events page`);
         const mailgunConfig = this.#getConfig();
         let startTime = Date.now();
+        const startDate = new Date();
         try {
             let page = await mailgunInstance.events.get(mailgunConfig.domain, mailgunOptions);
             metrics.metric('mailgun-get-events', {
                 value: Date.now() - startTime,
                 statusCode: 200
             });
-            let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e);
+            // By limiting the processed events to ones created before this job started we cancel early ready for the next job run.
+            // Avoids chance of events being missed in long job runs due to mailgun's eventual-consistency creating events outside of our 30min sliding re-check window
+            let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
             debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
+            const beginTimestamp = mailgunOptions.begin ? Math.ceil(mailgunOptions.begin * 1000) : undefined; // ceil here if we have rounding errors
 
-            pagesLoop:
             while (events.length !== 0) {
-                const batchResult = await batchHandler(events);
-
-                result = result.concat(batchResult);
+                await batchHandler(events);
                 eventCount += events.length;
 
-                if (eventCount >= maxEvents) {
-                    break pagesLoop;
+                if (eventCount >= maxEvents && (!beginTimestamp || !events[events.length - 1].timestamp || (events[events.length - 1].timestamp.getTime() > beginTimestamp))) {
+                    break;
                 }
 
                 const nextPageId = page.pages.next.page;
@@ -152,11 +162,10 @@ module.exports = class MailgunClient {
                     value: Date.now() - startTime,
                     statusCode: 200
                 });
-                events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e);
+                // We need to cap events at the time we started fetching them (see comment above)
+                events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
                 debug(`fetchEvents: finished fetching next page with ${events.length} events`);
             }
-
-            return result;
         } catch (error) {
             // Log and re-throw Mailgun errors
             logging.error(error);
@@ -254,7 +263,7 @@ module.exports = class MailgunClient {
      * Note: if the credentials are not configure, this method returns `null` and it is down to the
      * consumer to act upon this/log this out
      *
-     * @returns {import('mailgun.js')} the Mailgun client instance
+     * @returns {import('mailgun.js')|null} the Mailgun client instance
      */
     getInstance() {
         const mailgunConfig = this.#getConfig();

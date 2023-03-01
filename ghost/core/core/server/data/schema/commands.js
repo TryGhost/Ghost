@@ -6,7 +6,6 @@ const tpl = require('@tryghost/tpl');
 const db = require('../db');
 const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
-const clients = require('./clients');
 
 const messages = {
     hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
@@ -432,11 +431,15 @@ function deleteTable(table, transaction = db.knex) {
 /**
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
-function getTables(transaction = db.knex) {
+async function getTables(transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (_.includes(_.keys(clients), client)) {
-        return clients[client].getTables(transaction);
+    if (client === 'sqlite3') {
+        const response = await transaction.raw('select * from sqlite_master where type = "table"');
+        return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
+    } else if (client === 'mysql2') {
+        const response = await transaction.raw('show tables');
+        return _.flatten(_.map(response[0], entry => _.values(entry)));
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
@@ -446,11 +449,15 @@ function getTables(transaction = db.knex) {
  * @param {string} table
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
-function getIndexes(table, transaction = db.knex) {
+async function getIndexes(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (_.includes(_.keys(clients), client)) {
-        return clients[client].getIndexes(table, transaction);
+    if (client === 'sqlite3') {
+        const response = await transaction.raw(`pragma index_list("${table}")`);
+        return _.flatten(_.map(response, 'name'));
+    } else if (client === 'mysql2') {
+        const response = await transaction.raw(`SHOW INDEXES from ${table}`);
+        return _.flatten(_.map(response[0], 'Key_name'));
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
@@ -460,11 +467,15 @@ function getIndexes(table, transaction = db.knex) {
  * @param {string} table
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
-function getColumns(table, transaction = db.knex) {
+async function getColumns(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (_.includes(_.keys(clients), client)) {
-        return clients[client].getColumns(table);
+    if (client === 'sqlite3') {
+        const response = await transaction.raw(`pragma table_info("${table}")`);
+        return _.flatten(_.map(response, 'name'));
+    } else if (client === 'mysql2') {
+        const response = await transaction.raw(`SHOW COLUMNS from ${table}`);
+        return _.flatten(_.map(response[0], 'Field'));
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));

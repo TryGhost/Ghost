@@ -4,6 +4,8 @@ module.exports = {
     authors: require('./authors'),
     comments: require('./comments'),
     emails: require('./emails'),
+    emailBatches: require('./email-batches'),
+    emailFailures: require('./email-failures'),
     images: require('./images'),
     integrations: require('./integrations'),
     pages: require('./pages'),
@@ -13,5 +15,6 @@ module.exports = {
     tags: require('./tags'),
     offers: require('./offers'),
     newsletters: require('./newsletters'),
-    users: require('./users')
+    users: require('./users'),
+    mentions: require('./mentions')
 };

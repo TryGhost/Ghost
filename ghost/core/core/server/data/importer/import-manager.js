@@ -7,16 +7,21 @@ const uuid = require('uuid');
 const config = require('../../../shared/config');
 const {extract} = require('@tryghost/zip');
 const tpl = require('@tryghost/tpl');
+const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
+const MediaHandler = require('@tryghost/importer-handler-media');
+const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
 const ImageImporter = require('./importers/image');
+const RevueImporter = require('@tryghost/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
 const jobManager = require('../../services/jobs');
+const mediaStorage = require('../../adapters/storage').getStorage('media');
 
 const emailTemplate = require('./email-template');
 const ghostMailer = new GhostMailer();
@@ -29,7 +34,10 @@ const messages = {
     noContentToImport: 'Zip did not include any content to import.',
     invalidZipStructure: 'Invalid zip file structure.',
     invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
-    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.'
+    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.',
+    invalidZipFileNameEncoding: 'The uploaded zip could not be read',
+    invalidZipFileNameEncodingContext: 'The filename was too long or contained invalid characters',
+    invalidZipFileNameEncodingHelp: 'Remove any special characters from the file name, or alternatively try another archiving tool if using MacOS Archive Utility'
 };
 
 // Glob levels
@@ -45,15 +53,21 @@ let defaults = {
 
 class ImportManager {
     constructor() {
+        const mediaHandler = new MediaHandler({
+            config: config,
+            urlUtils: urlUtils,
+            storage: mediaStorage
+        });
+
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [ImageImporter, DataImporter];
+        this.importers = [ImageImporter, RevueImporter, DataImporter];
 
         /**
          * @type {Handler[]}
          */
-        this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
+        this.handlers = [ImageHandler, mediaHandler, RevueHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
         /**
@@ -167,13 +181,26 @@ class ImportManager {
      * @param {string} filePath
      * @returns {Promise<string>} full path to the extracted folder
      */
-    extractZip(filePath) {
+    async extractZip(filePath) {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
         this.fileToDelete = tmpDir;
 
-        return extract(filePath, tmpDir).then(function () {
-            return tmpDir;
-        });
+        try {
+            await extract(filePath, tmpDir);
+        } catch (err) {
+            if (err.message.startsWith('ENAMETOOLONG:')) {
+                // The file was probably zipped with MacOS zip utility. Which doesn't correctly set UTF-8 encoding flag.
+                // This causes ENAMETOOLONG error on Linux, because the resulting filename length is too long when decoded using the default string encoder.
+                throw new errors.UnsupportedMediaTypeError({
+                    message: tpl(messages.invalidZipFileNameEncoding),
+                    context: tpl(messages.invalidZipFileNameEncodingContext),
+                    help: tpl(messages.invalidZipFileNameEncodingHelp),
+                    code: 'INVALID_ZIP_FILE_NAME_ENCODING'
+                });
+            }
+            throw err;
+        }
+        return tmpDir;
     }
 
     /**
@@ -240,6 +267,8 @@ class ImportManager {
         for (const handler of this.handlers) {
             const files = this.getFilesFromZip(handler, zipDirectory);
 
+            debug('handler', handler.type, files);
+
             if (files.length > 0) {
                 if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
                     // This limitation is here to reduce the complexity of the importer for now
@@ -271,17 +300,19 @@ class ImportManager {
      * @param {File} file
      * @returns {Promise<ImportData>}
      */
-    processFile(file, ext) {
-        const fileHandler = _.find(this.handlers, function (handler) {
+    async processFile(file, ext) {
+        const fileHandlers = _.filter(this.handlers, function (handler) {
             return _.includes(handler.extensions, ext);
         });
 
-        return fileHandler.loadFile([_.pick(file, 'name', 'path')]).then(function (loadedData) {
-            // normalize the returned data
-            const importData = {};
-            importData[fileHandler.type] = loadedData;
-            return importData;
-        });
+        const importData = {};
+
+        await Promise.all(fileHandlers.map(async (fileHandler) => {
+            debug('fileHandler', fileHandler.type);
+            importData[fileHandler.type] = await fileHandler.loadFile([_.pick(file, 'name', 'path')]);
+        }));
+
+        return importData;
     }
 
     /**
@@ -305,6 +336,7 @@ class ImportManager {
      * @returns {Promise<ImportData>}
      */
     async preProcess(importData) {
+        debug('preProcess');
         for (const importer of this.importers) {
             importData = importer.preProcess(importData);
         }
@@ -321,10 +353,12 @@ class ImportManager {
      * @returns {Promise<Object.<string, ImportResult>>} importResults
      */
     async doImport(importData, importOptions) {
+        debug('doImport', this.importers);
         importOptions = importOptions || {};
         const importResults = {};
 
         for (const importer of this.importers) {
+            debug('importer looking for', importer.type, 'in', Object.keys(importData));
             if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
                 importResults[importer.type] = await importer.doImport(importData[importer.type], importOptions);
             }
@@ -410,6 +444,8 @@ class ImportManager {
             // Has to be completed outside of job to ensure file is processed before being deleted
             importData = await this.loadFile(file);
         }
+
+        debug('importFromFile completed file load', importData);
 
         const env = config.get('env');
         if (!env?.startsWith('testing') && !importOptions.runningInJob) {

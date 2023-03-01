@@ -39,7 +39,7 @@ class JobManager {
      * @param {Object} [options.domainEvents] - domain events emitter
      */
     constructor({errorHandler, workerMessageHandler, JobModel, domainEvents}) {
-        this.queue = fastq(this, worker, 1);
+        this.queue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
         this.#domainEvents = domainEvents;
@@ -127,6 +127,16 @@ class JobManager {
                     // Clear the listeners
                     this.#completionPromises.delete(name);
                 }
+
+                if (this.queue.length() <= 1) {
+                    if (this.#completionPromises.has('all')) {
+                        for (const listeners of this.#completionPromises.get('all')) {
+                            listeners.resolve();
+                        }
+                        // Clear the listeners
+                        this.#completionPromises.delete('all');
+                    }
+                }
             } else {
                 if (typeof message === 'object' && this.#domainEvents) {
                     // Is this an event?
@@ -156,6 +166,16 @@ class JobManager {
             }
             // Clear the listeners
             this.#completionPromises.delete(jobMeta.name);
+        }
+
+        if (this.queue.length() <= 1) {
+            if (this.#completionPromises.has('all')) {
+                for (const listeners of this.#completionPromises.get('all')) {
+                    listeners.reject(error);
+                }
+                // Clear the listeners
+                this.#completionPromises.delete('all');
+            }
         }
     }
 
@@ -209,7 +229,7 @@ class JobManager {
             this.bree.add(breeJob);
             return this.bree.start(name);
         } else {
-            logging.info('Adding one off inline job to the queue');
+            logging.info(`Adding one-off job to queue with current length = ${this.queue.length()} called '${name || 'anonymous'}'`);
 
             this.queue.push(async () => {
                 try {
@@ -337,6 +357,25 @@ class JobManager {
         });
 
         return promise;
+    }
+
+    /**
+     * Wait for all inline jobs to be completed.
+     */
+    async allSettled() {
+        const name = 'all';
+
+        return new Promise((resolve, reject) => {
+            if (this.queue.idle()) {
+                resolve();
+                return;
+            }
+
+            this.#completionPromises.set(name, [
+                ...(this.#completionPromises.get(name) ?? []),
+                {resolve, reject}
+            ]);
+        });
     }
 
     /**

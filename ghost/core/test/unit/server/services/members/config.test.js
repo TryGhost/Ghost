@@ -59,8 +59,8 @@ describe('Members - config', function () {
         });
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         urlUtils.restore();
         sinon.restore();
     });

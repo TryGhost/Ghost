@@ -57,6 +57,7 @@ describe('Exporter', function () {
                 'members_subscribe_events',
                 'members_created_events',
                 'members_subscription_created_events',
+                'mentions',
                 'migrations',
                 'migrations_lock',
                 'mobiledoc_revisions',
@@ -87,7 +88,8 @@ describe('Exporter', function () {
                 'tags',
                 'tokens',
                 'users',
-                'webhooks'
+                'webhooks',
+                'milestones'
             ];
 
             should.exist(exportData);

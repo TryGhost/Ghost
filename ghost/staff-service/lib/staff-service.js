@@ -1,11 +1,13 @@
-const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
+const {MentionCreatedEvent} = require('@tryghost/webmentions');
+const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
 class StaffService {
-    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, DomainEvents}) {
+    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, DomainEvents, labs}) {
         this.logging = logging;
-
+        this.labs = labs;
         /** @private */
         this.settingsCache = settingsCache;
         this.models = models;
@@ -76,6 +78,14 @@ class StaffService {
 
     /** @private */
     async handleEvent(type, event) {
+        if (type === MentionCreatedEvent && event.data.mention && this.labs.isSet('webmentions') && this.labs.isSet('webmentionEmails')) {
+            return await this.emails.notifyMentionReceived(event.data);
+        }
+
+        if (type === MilestoneCreatedEvent && event.data.milestone && this.labs.isSet('milestoneEmails')) {
+            await this.emails.notifyMilestoneReceived(event.data);
+        }
+
         if (!['api', 'member'].includes(event.data.source)) {
             return;
         }
@@ -89,7 +99,7 @@ class StaffService {
 
         if (type === MemberCreatedEvent && member.status === 'free') {
             await this.emails.notifyFreeMemberSignup(member);
-        } else if (type === SubscriptionCreatedEvent) {
+        } else if (type === SubscriptionActivatedEvent) {
             await this.emails.notifyPaidSubscriptionStarted({
                 member,
                 offer,
@@ -112,16 +122,16 @@ class StaffService {
             try {
                 await this.handleEvent(MemberCreatedEvent, event);
             } catch (e) {
-                this.logging.error(`Failed to notify free member signup - ${event?.data?.memberId}`);
+                this.logging.error(e, `Failed to notify free member signup - ${event?.data?.memberId}`);
             }
         });
 
         // Trigger email on paid subscription start
-        this.DomainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
+        this.DomainEvents.subscribe(SubscriptionActivatedEvent, async (event) => {
             try {
-                await this.handleEvent(SubscriptionCreatedEvent, event);
+                await this.handleEvent(SubscriptionActivatedEvent, event);
             } catch (e) {
-                this.logging.error(`Failed to notify paid member subscription start - ${event?.data?.memberId}`);
+                this.logging.error(e, `Failed to notify paid member subscription start - ${event?.data?.memberId}`);
             }
         });
 
@@ -130,7 +140,25 @@ class StaffService {
             try {
                 await this.handleEvent(SubscriptionCancelledEvent, event);
             } catch (e) {
-                this.logging.error(`Failed to notify paid member subscription cancel - ${event?.data?.memberId}`);
+                this.logging.error(e, `Failed to notify paid member subscription cancel - ${event?.data?.memberId}`);
+            }
+        });
+
+        // Trigger email when a new webmention is received
+        this.DomainEvents.subscribe(MentionCreatedEvent, async (event) => {
+            try {
+                await this.handleEvent(MentionCreatedEvent, event);
+            } catch (e) {
+                this.logging.error(e, `Failed to notify webmention`);
+            }
+        });
+
+        // Trigger email when a new milestone is reached
+        this.DomainEvents.subscribe(MilestoneCreatedEvent, async (event) => {
+            try {
+                await this.handleEvent(MilestoneCreatedEvent, event);
+            } catch (e) {
+                this.logging.error(e, `Failed to notify milestone`);
             }
         });
     }

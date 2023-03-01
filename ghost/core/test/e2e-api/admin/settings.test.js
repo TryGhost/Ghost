@@ -3,11 +3,11 @@ const SingleUseTokenProvider = require('../../../core/server/services/members/Si
 const settingsService = require('../../../core/server/services/settings/settings-service');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {stringMatching, anyEtag, anyUuid, anyContentLength} = matchers;
+const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 69;
+const CURRENT_SETTINGS_COUNT = 71;
 
 const settingsMatcher = {};
 
@@ -67,7 +67,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 });
         });
 
@@ -79,6 +80,7 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(1)
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -89,6 +91,7 @@ describe('Settings API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -178,6 +181,7 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
@@ -203,7 +207,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 });
 
             // Check returned WITH prefix
@@ -230,7 +235,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .expect(({body}) => {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
@@ -251,7 +257,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -286,7 +293,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -301,7 +309,12 @@ describe('Settings API', function () {
 
     describe('verify key update', function () {
         it('can update members_support_address via token', async function () {
-            const token = await (new SingleUseTokenProvider(models.SingleUseToken, 24 * 60 * 60 * 1000)).create({key: 'members_support_address', value: 'support@example.com'});
+            const token = await (new SingleUseTokenProvider({
+                SingleUseTokenModel: models.SingleUseToken,
+                validityPeriod: 24 * 60 * 60 * 1000,
+                validityPeriodAfterUsage: 10 * 60 * 1000,
+                maxUsageCount: 1
+            })).create({key: 'members_support_address', value: 'support@example.com'});
             await agent.put('settings/verifications/')
                 .body({
                     token
@@ -313,7 +326,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -324,7 +338,12 @@ describe('Settings API', function () {
         });
 
         it('cannot update invalid keys via token', async function () {
-            const token = await (new SingleUseTokenProvider(models.SingleUseToken, 24 * 60 * 60 * 1000)).create({key: 'members_support_address_invalid', value: 'support@example.com'});
+            const token = await (new SingleUseTokenProvider({
+                SingleUseTokenModel: models.SingleUseToken,
+                validityPeriod: 24 * 60 * 60 * 1000,
+                validityPeriodAfterUsage: 10 * 60 * 1000,
+                maxUsageCount: 1
+            })).create({key: 'members_support_address_invalid', value: 'support@example.com'});
             await agent.put('settings/verifications/')
                 .body({
                     token
@@ -338,6 +357,7 @@ describe('Settings API', function () {
                     ]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -350,6 +370,7 @@ describe('Settings API', function () {
                 .expectStatus(204)
                 .expectEmptyBody()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
@@ -401,6 +422,7 @@ describe('Settings API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });

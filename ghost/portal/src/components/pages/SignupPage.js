@@ -361,7 +361,7 @@ class SignupPage extends React.Component {
     }
 
     getInputFields({state, fieldNames}) {
-        const {portal_name: portalName} = this.context.site;
+        const {site: {portal_name: portalName}, t} = this.context;
 
         const errors = state.errors || {};
         const fields = [
@@ -369,7 +369,7 @@ class SignupPage extends React.Component {
                 type: 'email',
                 value: state.email,
                 placeholder: 'jamie@example.com',
-                label: 'Email',
+                label: t('Email'),
                 name: 'email',
                 required: true,
                 tabindex: 2,
@@ -383,7 +383,7 @@ class SignupPage extends React.Component {
                 type: 'text',
                 value: state.name,
                 placeholder: 'Jamie Larson',
-                label: 'Name',
+                label: t('Name'),
                 name: 'name',
                 required: true,
                 tabindex: 1,
@@ -400,29 +400,29 @@ class SignupPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, site, brandColor, pageQuery} = this.context;
+        const {action, site, brandColor, pageQuery, t} = this.context;
 
         if (isInviteOnlySite({site, pageQuery})) {
             return null;
         }
 
-        let label = 'Continue';
+        let label = t('Continue');
         const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
 
         if (hasOnlyFreePlan({site}) || showOnlyFree) {
-            label = 'Sign up';
+            label = t('Sign up');
         } else {
             return null;
         }
 
         let isRunning = false;
         if (action === 'signup:running') {
-            label = 'Sending...';
+            label = t('Sending...');
             isRunning = true;
         }
         let retry = false;
         if (action === 'signup:failed') {
-            label = 'Retry';
+            label = t('Retry');
             retry = true;
         }
 
@@ -456,29 +456,31 @@ class SignupPage extends React.Component {
     }
 
     renderFreeTrialMessage() {
-        const {site} = this.context;
-        if (hasFreeTrialTier({site})) {
+        const {site, t} = this.context;
+        if (hasFreeTrialTier({site}) && !isInviteOnlySite({site})) {
             return (
-                <p className='gh-portal-free-trial-notification'>After a free trial ends, you will be charged the regular price for the tier you’ve chosen. You can always cancel before then.</p>
+                <p className='gh-portal-free-trial-notification' data-testid="free-trial-notification-text">
+                    {t('After a free trial ends, you will be charged the regular price for the tier you\'ve chosen. You can always cancel before then.')}
+                </p>
             );
         }
         return null;
     }
 
     renderLoginMessage() {
-        const {brandColor, onAction} = this.context;
+        const {brandColor, onAction, t} = this.context;
         return (
             <div>
                 {this.renderFreeTrialMessage()}
                 <div className='gh-portal-signup-message'>
-                    <div>Already a member?</div>
+                    <div>{t('Already a member?')}</div>
                     <button
                         data-test-button='signin-switch'
                         className='gh-portal-btn gh-portal-btn-link'
                         style={{color: brandColor}}
                         onClick={() => onAction('switchPage', {page: 'signin'})}
                     >
-                        <span>Sign in</span>
+                        <span>{t('Sign in')}</span>
                     </button>
                 </div>
             </div>
@@ -487,7 +489,7 @@ class SignupPage extends React.Component {
 
     renderForm() {
         const fields = this.getInputFields({state: this.state});
-        const {site, pageQuery} = this.context;
+        const {site, pageQuery, t} = this.context;
 
         if (this.state.showNewsletterSelection) {
             return (
@@ -506,7 +508,12 @@ class SignupPage extends React.Component {
             return (
                 <section>
                     <div className='gh-portal-section'>
-                        <p className='gh-portal-invite-only-notification'>This site is invite-only, contact the owner for access.</p>
+                        <p
+                            className='gh-portal-invite-only-notification'
+                            data-testid="invite-only-notification-text"
+                        >
+                            {t('This site is invite-only, contact the owner for access.')}
+                        </p>
                         {this.renderLoginMessage()}
                     </div>
                 </section>
@@ -573,7 +580,7 @@ class SignupPage extends React.Component {
         return (
             <header className='gh-portal-signup-header'>
                 {this.renderSiteLogo()}
-                <h1 className="gh-portal-main-title">{siteTitle}</h1>
+                <h1 className="gh-portal-main-title" data-testid='site-title-text'>{siteTitle}</h1>
             </header>
         );
     }

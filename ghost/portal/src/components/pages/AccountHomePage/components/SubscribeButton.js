@@ -20,6 +20,7 @@ const SubscribeButton = () => {
     };
     return (
         <ActionButton
+            dataTestId={'view-plans'}
             isRunning={isRunning}
             label="View plans"
             onClick={() => openPlanPage()}

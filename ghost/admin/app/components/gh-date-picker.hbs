@@ -10,7 +10,6 @@
     >
         <dp.Trigger @tabindex="-1" data-test-date-picker-trigger>
             <div class="{{if this.error "error"}}">
-                {{!-- template-lint-disable no-down-event-binding --}}
                 <input
                     type="text"
                     placeholder={{this.dateFormat}}

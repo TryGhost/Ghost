@@ -82,11 +82,10 @@ export default class GhMembersSegmentSelect extends Component {
                 groupName: 'Tiers',
                 options: []
             };
-
             tiers.forEach((tier) => {
                 tiersGroup.options.push({
                     name: tier.name,
-                    segment: `tier:${tier.slug}`,
+                    segment: `${tier.id}`,
                     count: tier.count?.members,
                     class: 'segment-tier'
                 });
@@ -118,6 +117,26 @@ export default class GhMembersSegmentSelect extends Component {
             });
 
             options.push(labelsGroup);
+        }
+
+        const offers = yield this.store.query('offer', {limit: 'all'});
+
+        if (offers.length > 0) {
+            const offersGroup = {
+                groupName: 'Offers',
+                options: []
+            };
+
+            offers.forEach((offer) => {
+                offersGroup.options.push({
+                    name: offer.name,
+                    segment: `offer_redemptions:${offer.id}`,
+                    count: offer.count?.members,
+                    class: 'segment-offer'
+                });
+            });
+
+            options.push(offersGroup);
         }
 
         this._options = options;

@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const tagsPublicService = require('../../services/tags-public');
 
 const ALLOWED_INCLUDES = ['count.posts'];
 
@@ -13,6 +14,7 @@ module.exports = {
     docName: 'tags',
 
     browse: {
+        cache: tagsPublicService.api?.cache,
         options: [
             'include',
             'filter',

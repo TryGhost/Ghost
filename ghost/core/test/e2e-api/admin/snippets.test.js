@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId} = matchers;
 
 const matchSnippet = {
     id: anyObjectId,
@@ -30,6 +30,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('snippets')
             });
@@ -43,6 +44,7 @@ describe('Snippets API', function () {
                 snippets: new Array(2).fill(matchSnippet)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -55,6 +57,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -78,6 +81,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('snippets')
             });
@@ -92,6 +96,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -110,6 +115,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('snippets')
             });
@@ -121,6 +127,7 @@ describe('Snippets API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -133,6 +140,7 @@ describe('Snippets API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -147,6 +155,7 @@ describe('Snippets API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

@@ -1,0 +1,28 @@
+<section class="gh-dashboard-section gh-dashboard-mentions" {{did-insert this.loadData}}>
+    <article class="gh-dashboard-box">
+            {{#if (feature 'webmentions')}}
+                {{!-- Recent mentions --}}
+                <h3 class="gh-dashboard-mentions-header">Mentions</h3>
+                <div class="gh-dashboard-mentions-list">
+                    {{#if this.mentions}}
+                        {{#each this.mentions as |mention|}}
+                            <a href="{{mention.source}}" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
+                                <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0" />
+                                <span class="gh-dashboard-mention-title">{{if mention.sourceTitle mention.sourceTitle mention.source}}</span>
+                                <span class="gh-dashboard-mention-timestamp">{{moment-from-now mention.timestamp}}</span>
+                            </a>
+                        {{/each}}
+                    {{else}}
+                        <div>
+                            <p>No mentions yet.</p>
+                        </div>
+                    {{/if}}
+                </div>
+                {{#if this.mentions}}
+                    <div class="gh-dashboard-list-footer">
+                        <LinkTo @route="mentions">View all mentions &rarr;</LinkTo>
+                    </div>
+                {{/if}}
+            {{/if}}
+    </article>
+</section>

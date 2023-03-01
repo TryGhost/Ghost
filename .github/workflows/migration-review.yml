@@ -9,9 +9,19 @@ jobs:
   createComment:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'TryGhost'
-    name: Create checklist comment
+    name: Add migration review requirements
     steps:
-      - uses: peter-evans/create-or-update-comment@69c3c2de5df8d610a0f80b32b36b7cd26adbe201
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ["migration"]
+            })
+
+      - uses: peter-evans/create-or-update-comment@b1fa5d531f73c67e1ab3962d1c16764f188066a6
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |

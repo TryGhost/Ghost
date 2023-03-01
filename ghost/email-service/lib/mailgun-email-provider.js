@@ -50,9 +50,6 @@ class MailgunEmailProvider {
 
         recipientData = replacements.reduce((acc, replacement) => {
             const {id, value} = replacement;
-            if (!acc[id]) {
-                acc[id] = {};
-            }
             acc[id] = value;
             return acc;
         }, {});
@@ -78,7 +75,7 @@ class MailgunEmailProvider {
      * @returns {string}
     */
     #createMailgunErrorMessage(error) {
-        const message = (error?.message || '') + ':' + (error?.details || '');
+        const message = (error?.message || 'Mailgun Error') + (error?.details ? (': ' + error.details) : '');
         return message.slice(0, 2000);
     }
 
@@ -148,7 +145,7 @@ class MailgunEmailProvider {
             let ghostError;
             if (e.error && e.messageData) {
                 const {error, messageData} = e;
-                
+
                 // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
                 ghostError = new errors.EmailError({
                     statusCode: error.status,
@@ -161,18 +158,15 @@ class MailgunEmailProvider {
             } else {
                 ghostError = new errors.EmailError({
                     statusCode: undefined,
-                    message: e.message,
+                    message: this.#createMailgunErrorMessage(e),
                     errorDetails: undefined,
                     context: e.context || 'Mailgun Error',
                     code: 'BULK_EMAIL_SEND_FAILED'
                 });
             }
 
-            logging.warn(ghostError);
             debug(`failed to send message (${Date.now() - startTime}ms)`);
 
-            // log error to custom error handler. ex sentry
-            this.#errorHandler(ghostError);
             throw ghostError;
         }
     }

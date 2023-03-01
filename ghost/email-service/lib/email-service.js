@@ -4,6 +4,7 @@
  * @typedef {object} Post
  * @typedef {object} Email
  * @typedef {object} LimitService
+ * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
  */
 
 const BatchSendingService = require('./batch-sending-service');
@@ -12,10 +13,12 @@ const tpl = require('@tryghost/tpl');
 const EmailRenderer = require('./email-renderer');
 const EmailSegmenter = require('./email-segmenter');
 const SendingService = require('./sending-service');
+const logging = require('@tryghost/logging');
 
 const messages = {
     archivedNewsletterError: 'Cannot send email to archived newsletters',
-    missingNewsletterError: 'The post does not have a newsletter relation'
+    missingNewsletterError: 'The post does not have a newsletter relation',
+    emailSendingDisabled: `Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`
 };
 
 class EmailService {
@@ -27,6 +30,8 @@ class EmailService {
     #emailSegmenter;
     #limitService;
     #membersRepository;
+    #verificationTrigger;
+    #emailAnalyticsJobs;
 
     /**
      *
@@ -40,6 +45,8 @@ class EmailService {
      * @param {EmailSegmenter} dependencies.emailSegmenter
      * @param {LimitService} dependencies.limitService
      * @param {object} dependencies.membersRepository
+     * @param {VerificationTrigger} dependencies.verificationTrigger
+     * @param {object} dependencies.emailAnalyticsJobs
      */
     constructor({
         batchSendingService,
@@ -49,7 +56,9 @@ class EmailService {
         emailRenderer,
         emailSegmenter,
         limitService,
-        membersRepository
+        membersRepository,
+        verificationTrigger,
+        emailAnalyticsJobs
     }) {
         this.#batchSendingService = batchSendingService;
         this.#models = models;
@@ -59,12 +68,14 @@ class EmailService {
         this.#limitService = limitService;
         this.#membersRepository = membersRepository;
         this.#sendingService = sendingService;
+        this.#verificationTrigger = verificationTrigger;
+        this.#emailAnalyticsJobs = emailAnalyticsJobs;
     }
 
     /**
      * @private
      */
-    async checkLimits() {
+    async checkLimits(addedCount = 0) {
         // Check host limit for allowed member count and throw error if over limit
         // - do this even if it's a retry so that there's no way around the limit
         if (this.#limitService.isLimited('members')) {
@@ -73,7 +84,14 @@ class EmailService {
 
         // Check host limit for disabled emails or going over emails limit
         if (this.#limitService.isLimited('emails')) {
-            await this.#limitService.errorIfWouldGoOverLimit('emails');
+            await this.#limitService.errorIfWouldGoOverLimit('emails', {addedCount});
+        }
+
+        // Check if email verification is required
+        if (await this.#verificationTrigger.checkVerificationRequired()) {
+            throw new errors.HostLimitError({
+                message: tpl(messages.emailSendingDisabled)
+            });
         }
     }
 
@@ -99,6 +117,8 @@ class EmailService {
         }
 
         const emailRecipientFilter = post.get('email_recipient_filter');
+        const emailCount = await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter);
+        await this.checkLimits(emailCount);
 
         const email = await this.#models.Email.add({
             post_id: post.id,
@@ -112,19 +132,25 @@ class EmailService {
             subject: this.#emailRenderer.getSubject(post),
             from: this.#emailRenderer.getFromAddress(post, newsletter),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
-            email_count: await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter),
+            email_count: emailCount,
             source: post.get('lexical') || post.get('mobiledoc'),
             source_type: post.get('lexical') ? 'lexical' : 'mobiledoc'
         });
 
         try {
-            await this.checkLimits();
             this.#batchSendingService.scheduleEmail(email);
         } catch (e) {
             await email.save({
                 status: 'failed',
                 error: e.message || 'Something went wrong while scheduling the email'
             }, {patch: true});
+        }
+
+        // make sure recurring background analytics jobs are running once we have emails
+        try {
+            await this.#emailAnalyticsJobs.scheduleRecurringJobs(true);
+        } catch (e) {
+            logging.error(e);
         }
 
         return email;

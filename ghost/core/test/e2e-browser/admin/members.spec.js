@@ -33,6 +33,30 @@ test.describe('Admin', () => {
             await expect(memberEmail).toHaveText(email);
         });
 
+        test('A member cannot be created with invalid email', async ({page}) => {
+            await page.goto('/ghost');
+            await page.locator('.gh-nav a[href="#/members/"]').click();
+            await page.waitForSelector('a[href="#/members/new/"] span');
+            await page.locator('a[href="#/members/new/"] span:has-text("New member")').click();
+            await page.waitForSelector('input[name="name"]');
+            let name = 'Test Member';
+            let email = 'tester+invalid@testmember.com�';
+            let note = 'This is a test member';
+            let label = 'Test Label';
+            await page.fill('input[name="name"]', name);
+            await page.fill('input[name="email"]', email);
+            await page.fill('textarea[name="note"]', note);
+            await page.locator('label:has-text("Labels") + div').click();
+            await page.keyboard.type(label);
+            await page.keyboard.press('Tab');
+            await page.locator('button span:has-text("Save")').click();
+            await page.waitForSelector('button span:has-text("Retry")');
+
+            // check we are unable to save member with invalid email
+            await expect(page.locator('button span:has-text("Retry")')).toBeVisible();
+            await expect(page.locator('text=Invalid Email')).toBeVisible();
+        });
+
         test('A member can be edited', async ({page}) => {
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
@@ -212,6 +236,9 @@ test.describe('Admin', () => {
             expect(csvContents).toMatch(csvRegex);
         });
 
+        // saves time by going directly to the members page with the label filter applied
+        let labelFilterUrl;
+
         test('A filtered list of members can have a label added to them', async ({page}) => {
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
@@ -235,6 +262,19 @@ test.describe('Admin', () => {
             await page.waitForSelector('div[data-test-state="add-complete"]');
             const success = await page.locator('div[data-test-state="add-complete"] > div > p').innerText();
             expect(success).toEqual('Label added to 3 members successfully');
+            labelFilterUrl = await page.url();
+        });
+
+        test('A filtered list of members can have a label removed from them', async ({page}) => {
+            await page.goto(labelFilterUrl);
+            await page.waitForSelector('button[data-test-button="members-actions"]');
+            await page.locator('button[data-test-button="members-actions"]').click();
+            await page.waitForSelector('button[data-test-button="remove-label-selected"]');
+            await page.locator('button[data-test-button="remove-label-selected"]').click();
+            await page.locator('div[data-test-state="remove-label-unconfirmed"] > span > select').selectOption({label: 'old'});
+            await page.locator('button[data-test-button="confirm"]').click();
+            const success = await page.locator('div[data-test-state="remove-complete"] > div > p').innerText();
+            expect(success).toEqual('Label removed from 3 members successfully');
         });
 
         test('A member can be granted a comp in admin', async ({page}) => {
@@ -268,6 +308,37 @@ test.describe('Admin', () => {
 
             // check for content CTA and expect it to be zero
             await expect(page.locator('.gh-post-upgrade-cta')).toHaveCount(0);
+        });
+
+        test('An existing member cannot be saved with invalid email address', async ({page}) => {
+            await page.goto('/ghost');
+            await page.locator('.gh-nav a[href="#/members/"]').click();
+            await page.waitForSelector('a[href="#/members/new/"] span');
+            await page.locator('a[href="#/members/new/"] span:has-text("New member")').click();
+            await page.waitForSelector('input[name="name"]');
+            let name = 'Test Member';
+            let email = 'tester+invalid@example.com';
+            let note = 'This is a test member';
+            let label = 'Test Label';
+            await page.fill('input[name="name"]', name);
+            await page.fill('input[name="email"]', email);
+            await page.fill('textarea[name="note"]', note);
+            await page.locator('label:has-text("Labels") + div').click();
+            await page.keyboard.type(label);
+            await page.keyboard.press('Tab');
+            await page.locator('button span:has-text("Save")').click();
+            await page.waitForSelector('button span:has-text("Saved")');
+
+            // Update email to invalid and try saving
+            let updatedEmail = 'tester+invalid@example.com�';
+            await page.fill('input[name="email"]', updatedEmail);
+            await page.waitForSelector('button span:has-text("Save")');
+            await page.locator('button span:has-text("Save")').click();
+            await page.waitForSelector('button span:has-text("Retry")');
+
+            // check we are unable to save member with invalid email
+            await expect(page.locator('button span:has-text("Retry")')).toBeVisible();
+            await expect(page.locator('text=Invalid Email')).toBeVisible();
         });
     });
 });

@@ -18,14 +18,13 @@ const getPostServiceInstance = require('../../../../../../services/posts/posts-s
 const postsService = getPostServiceInstance();
 
 const commentsService = require('../../../../../../services/comments');
+const memberAttribution = require('../../../../../../services/member-attribution');
+const labs = require('../../../../../../../shared/labs');
 
 module.exports = async (model, frame, options = {}) => {
     const {tiers: tiersData} = options || {};
-    const extendedOptions = Object.assign(_.cloneDeep(frame.options), {
-        extraProperties: ['canonical_url']
-    });
 
-    const jsonModel = model.toJSON(extendedOptions);
+    const jsonModel = model.toJSON(frame.options);
 
     // Map email_recipient_filter to email_segment
     jsonModel.email_segment = jsonModel.email_recipient_filter;
@@ -33,7 +32,7 @@ module.exports = async (model, frame, options = {}) => {
 
     url.forPost(model.id, jsonModel, frame);
 
-    extraAttrs.forPost(frame, model, jsonModel);
+    extraAttrs.forPost(frame.options, model, jsonModel);
 
     // Attach tiers to custom nql visibility filter
     if (jsonModel.visibility) {
@@ -64,6 +63,15 @@ module.exports = async (model, frame, options = {}) => {
             }
         } else {
             jsonModel.comments = false;
+        }
+
+        // Add  outbound link tags
+        if (labs.isSet('outboundLinkTagging')) {
+            // Only add it in the flag! Without the flag we only add it to emails.
+            if (jsonModel.html) {
+                // Only set if HTML was requested
+                jsonModel.html = await memberAttribution.outboundLinkTagger.addToHtml(jsonModel.html);
+            }
         }
     }
 

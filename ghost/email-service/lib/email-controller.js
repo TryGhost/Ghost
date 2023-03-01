@@ -12,8 +12,8 @@ class EmailController {
     models;
 
     /**
-     * 
-     * @param {EmailService} service 
+     *
+     * @param {EmailService} service
      * @param {{models: {Post: any, Newsletter: any, Email: any}}} dependencies
      */
     constructor(service, {models}) {
@@ -38,8 +38,9 @@ class EmailController {
         }
 
         let newsletter;
-        if (frame.options.newsletter) {
-            newsletter = await this.models.Newsletter.findOne({slug: frame.options.newsletter}, {require: true});
+        const slug = frame?.options?.newsletter ?? frame?.data?.newsletter ?? null;
+        if (slug) {
+            newsletter = await this.models.Newsletter.findOne({slug}, {require: true});
         } else {
             newsletter = (await post.getLazyRelation('newsletter')) ?? (await this.models.Newsletter.getDefaultNewsletter());
         }
@@ -66,12 +67,12 @@ class EmailController {
             });
         }
 
-        return await this.service.sendTestEmail(post, newsletter, segment, emails);
+        await this.service.sendTestEmail(post, newsletter, segment, emails);
     }
 
     async retryFailedEmail(frame) {
         const email = await this.models.Email.findOne(frame.data, {require: false});
-        
+
         if (!email) {
             throw new errors.NotFoundError({
                 message: tpl(messages.emailNotFound)

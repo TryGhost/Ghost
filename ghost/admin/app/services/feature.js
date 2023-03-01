@@ -55,15 +55,23 @@ export default class FeatureService extends Service {
     @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
         nightShift;
 
+    // user-specific referral invitation
+    @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
+
     // labs flags
     @feature('urlCache') urlCache;
-    @feature('beforeAfterCard') beforeAfterCard;
     @feature('memberAttribution') memberAttribution;
     @feature('sourceAttribution') sourceAttribution;
     @feature('lexicalEditor') lexicalEditor;
     @feature('audienceFeedback') audienceFeedback;
     @feature('suppressionList') suppressionList;
     @feature('emailStability') emailStability;
+    @feature('webmentions') webmentions;
+    @feature('webmentionEmails') webmentionEmails;
+    @feature('emailErrors') emailErrors;
+    @feature('milestoneEmails') milestoneEmails;
+    @feature('websockets') websockets;
+    @feature('stripeAutomaticTax') stripeAutomaticTax;
 
     _user = null;
 

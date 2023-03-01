@@ -164,26 +164,13 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">URL Cache</h4>
+                            <h4 class="gh-expandable-title">URL cache</h4>
                             <p class="gh-expandable-description">
                                Enable URL Caching
                             </p>
                         </div>
                         <div class="for-switch">
                            <GhFeatureFlag @flag="urlCache" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Cardmageddon - Before/After</h4>
-                            <p class="gh-expandable-description">
-                                Card for comparing two images
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                           <GhFeatureFlag @flag="beforeAfterCard" />
                         </div>
                     </div>
                 </div>
@@ -203,26 +190,78 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Suppression List</h4>
+                            <h4 class="gh-expandable-title">Webmentions</h4>
                             <p class="gh-expandable-description">
-                                Allows checking whether a member's email is blocked and removing emails from the suppression list.
+                                Allows receiving webmentions from external sites and viewing them on the dashboard.
                             </p>
                         </div>
                         <div class="for-switch">
-                            <GhFeatureFlag @flag="suppressionList" />
+                            <GhFeatureFlag @flag="webmentions" />
                         </div>
                     </div>
                 </div>
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Email stability</h4>
+                            <h4 class="gh-expandable-title">Webmention notification emails</h4>
                             <p class="gh-expandable-description">
-                                Use a new email sending flow that improves how email errors are handled.
+                                Send a notification email to staff when a webmention is received.
                             </p>
                         </div>
                         <div class="for-switch">
-                            <GhFeatureFlag @flag="emailStability" />
+                            <GhFeatureFlag @flag="webmentionEmails" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Show email errors</h4>
+                            <p class="gh-expandable-description">
+                                This makes email errors visible in the UI.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="emailErrors" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Milestone emails</h4>
+                            <p class="gh-expandable-description">
+                                Send emails for reaching specific milestones.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="milestoneEmails" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Websockets</h4>
+                            <p class="gh-expandable-description">
+                                Test out Websockets functionality at <code>/ghost/#/websockets</code>.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="websockets" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Stripe Automatic Tax</h4>
+                            <p class="gh-expandable-description">
+                               Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="stripeAutomaticTax" />
                         </div>
                     </div>
                 </div>

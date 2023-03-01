@@ -263,19 +263,34 @@ export default class OffersController extends Controller {
 
     @action
     setProperty(propKey, value) {
-        this._saveOfferProperty(propKey, value);
+        this._updateOfferProperty(propKey, value);
+    }
+
+    @action
+    validateProperty(property) {
+        this.offer.validate({property});
+    }
+
+    @action
+    clearPropertyValidations(property) {
+        this.offer.errors.remove(property);
     }
 
     @action
     setDiscountType(discountType) {
         if (!this.isDiscountSectionDisabled) {
             const amount = this.offer.amount || 0;
-            this._saveOfferProperty('type', discountType);
+
+            this._updateOfferProperty('type', discountType);
+
             if (this.offer.type === 'fixed' && this.offer.amount !== '') {
                 this.offer.amount = amount * 100;
             } else if (this.offer.amount !== '') {
                 this.offer.amount = amount / 100;
             }
+
+            this.validateProperty('amount');
+
             this.updatePortalPreview({forceRefresh: false});
         }
     }
@@ -283,53 +298,52 @@ export default class OffersController extends Controller {
     @action
     setDiscountAmount(e) {
         let amount = e.target.value;
+
         if (this.offer.type === 'fixed' && amount !== '') {
             amount = parseFloat(amount) * 100;
         }
-        this._saveOfferProperty('amount', amount);
+
+        this._updateOfferProperty('amount', amount);
     }
 
     @action
     setTrialDuration(e) {
         let amount = e.target.value;
-        if (amount !== '') {
-            amount = parseInt(amount);
-        }
-        this._saveOfferProperty('amount', amount);
+        this._updateOfferProperty('amount', amount);
     }
 
     @action
     setOfferName(e) {
-        this._saveOfferProperty('name', e.target.value);
+        this._updateOfferProperty('name', e.target.value);
         if (!this.isDisplayTitleEdited && this.offer.isNew) {
-            this._saveOfferProperty('displayTitle', e.target.value);
+            this._updateOfferProperty('displayTitle', e.target.value);
         }
 
         if (!this.isOfferCodeEdited && this.offer.isNew) {
-            this._saveOfferProperty('code', slugify(e.target.value));
+            this._updateOfferProperty('code', slugify(e.target.value));
         }
     }
 
     @action
     setPortalTitle(e) {
         this.isDisplayTitleEdited = true;
-        this._saveOfferProperty('displayTitle', e.target.value);
+        this._updateOfferProperty('displayTitle', e.target.value);
     }
 
     @action
     setPortalDescription(e) {
-        this._saveOfferProperty('displayDescription', e.target.value);
+        this._updateOfferProperty('displayDescription', e.target.value);
     }
 
     @action
     setOfferCode(e) {
         this.isOfferCodeEdited = true;
-        this._saveOfferProperty('code', e.target.value);
+        this._updateOfferProperty('code', e.target.value);
     }
 
     @action
     setDurationInMonths(e) {
-        this._saveOfferProperty('durationInMonths', e.target.value);
+        this._updateOfferProperty('durationInMonths', e.target.value);
     }
 
     @action
@@ -403,7 +417,7 @@ export default class OffersController extends Controller {
                     }
                 ];
                 if (this.offer.duration === 'repeating') {
-                    this._saveOfferProperty('duration', 'once');
+                    this._updateOfferProperty('duration', 'once');
                 }
             }
         }
@@ -412,13 +426,17 @@ export default class OffersController extends Controller {
     @action
     changeType(type) {
         if (type === 'trial') {
-            this._saveOfferProperty('type', 'trial');
-            this._saveOfferProperty('amount', 7);
-            this._saveOfferProperty('duration', 'trial');
+            this._updateOfferProperty('type', 'trial');
+            this._updateOfferProperty('amount', 7);
+            this._updateOfferProperty('duration', 'trial');
+
+            this.validateProperty('amount');
         } else {
-            this._saveOfferProperty('type', 'percent');
-            this._saveOfferProperty('amount', 0);
-            this._saveOfferProperty('duration', 'once');
+            this._updateOfferProperty('type', 'percent');
+            this._updateOfferProperty('amount', 0);
+            this._updateOfferProperty('duration', 'once');
+
+            this.clearPropertyValidations('amount');
         }
     }
 
@@ -449,12 +467,12 @@ export default class OffersController extends Controller {
 
     @action
     updateDuration(duration) {
-        this._saveOfferProperty('duration', duration);
+        this._updateOfferProperty('duration', duration);
     }
 
     // Private -----------------------------------------------------------------
 
-    _saveOfferProperty(propKey, newValue) {
+    _updateOfferProperty(propKey, newValue) {
         let currentValue = this.offer[propKey];
 
         // avoid modifying empty values and triggering inadvertant unsaved changes modals

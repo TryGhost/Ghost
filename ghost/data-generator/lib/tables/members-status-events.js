@@ -3,8 +3,10 @@ const {faker} = require('@faker-js/faker');
 const dateToDatabaseString = require('../utils/database-date');
 
 class MembersStatusEventsImporter extends TableImporter {
+    static table = 'members_status_events';
+
     constructor(knex) {
-        super('members_status_events', knex);
+        super(MembersStatusEventsImporter.table, knex);
     }
 
     setImportOptions({model}) {

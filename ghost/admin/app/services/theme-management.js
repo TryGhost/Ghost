@@ -15,12 +15,18 @@ export default class ThemeManagementService extends Service {
     @service settings;
     @service store;
     @service frontend;
+    @service session;
 
     @inject config;
 
     @tracked isUploading;
     @tracked previewType = 'homepage';
     @tracked previewHtml;
+
+    /**
+     * Contains the active theme object (includes warnings and errors)
+     */
+    @tracked activeTheme;
 
     allPosts = this.store.peekAll('post');
 
@@ -36,6 +42,20 @@ export default class ThemeManagementService extends Service {
         return this.allPosts.toArray().filterBy('status', 'published').sort((a, b) => {
             return b.publishedAtUTC.valueOf() - a.publishedAtUTC.valueOf();
         }).lastObject;
+    }
+
+    async fetch() {
+        // contributors don't have permissions to fetch active theme
+        if (this.session.user && !this.session.user.isContributor) {
+            try {
+                const adapter = this.store.adapterFor('theme');
+                const activeTheme = await adapter.active();
+                this.activeTheme = activeTheme;
+            } catch (e) {
+                // We ignore these errors and log them because we don't want to block loading the app for this
+                console.error('Failed to fetch active theme', e); // eslint-disable-line no-console
+            }
+        }
     }
 
     @action
@@ -90,6 +110,7 @@ export default class ThemeManagementService extends Service {
 
             try {
                 const activatedTheme = yield theme.activate();
+                this.activeTheme = activatedTheme;
 
                 yield this.customThemeSettings.reload();
 

@@ -173,12 +173,12 @@ export default class MembersController extends Controller {
     }
 
     get filterColumns() {
-        return this.availableFilters.flatMap((filter) => {
+        const columns = this.availableFilters.flatMap((filter) => {
             if (filter.properties?.getColumns) {
                 return filter.properties?.getColumns(filter).map((c) => {
                     return {
                         label: filter.properties.columnLabel, // default value if not provided
-                        ...c, 
+                        ...c,
                         name: filter.type
                     };
                 });
@@ -193,7 +193,12 @@ export default class MembersController extends Controller {
                 ];
             }
             return [];
-        }).splice(0, 2); // Maximum 2 columns
+        });
+        // Remove duplicates by label
+        const uniqueColumns = columns.filter((c, i) => {
+            return columns.findIndex(c2 => c2.label === c.label) === i;
+        });
+        return uniqueColumns.splice(0, 2); // Maximum 2 columns
     }
 
     includeTierQuery() {

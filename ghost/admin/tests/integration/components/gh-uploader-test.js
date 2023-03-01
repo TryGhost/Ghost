@@ -44,7 +44,7 @@ describe('Integration: Component: gh-uploader', function () {
         });
 
         it('triggers uploads when `files` is set', async function () {
-            await render(hbs`{{#gh-uploader files=files}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}}></GhUploader>`);
 
             this.set('files', [createFile()]);
             await settled();
@@ -59,7 +59,7 @@ describe('Integration: Component: gh-uploader', function () {
         });
 
         it('triggers multiple uploads', async function () {
-            await render(hbs`{{#gh-uploader files=files}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}}></GhUploader>`);
 
             this.set('files', [createFile(), createFile()]);
             await settled();
@@ -70,7 +70,7 @@ describe('Integration: Component: gh-uploader', function () {
         it('triggers onStart when upload starts', async function () {
             this.set('uploadStarted', sinon.spy());
 
-            await render(hbs`{{#gh-uploader files=files onStart=(action uploadStarted)}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}} @onStart={{this.uploadStarted}}></GhUploader>`);
             this.set('files', [createFile(), createFile()]);
             await settled();
 
@@ -80,7 +80,7 @@ describe('Integration: Component: gh-uploader', function () {
         it('triggers onUploadSuccess when a file uploads', async function () {
             this.set('fileUploaded', sinon.spy());
 
-            await render(hbs`{{#gh-uploader files=files onUploadSuccess=(action fileUploaded)}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}} @onUploadSuccess={{this.fileUploaded}}></GhUploader>`);
             this.set('files', [createFile(['test'], {name: 'file1.png'}), createFile()]);
             await settled();
 
@@ -96,7 +96,7 @@ describe('Integration: Component: gh-uploader', function () {
         it('triggers onComplete when all files uploaded', async function () {
             this.set('uploadsFinished', sinon.spy());
 
-            await render(hbs`{{#gh-uploader files=files onComplete=(action uploadsFinished)}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}} @onComplete={{this.uploadsFinished}}></GhUploader>`);
             this.set('files', [
                 createFile(['test'], {name: 'file1.png'}),
                 createFile(['test'], {name: 'file2.png'})
@@ -117,7 +117,7 @@ describe('Integration: Component: gh-uploader', function () {
         it('onComplete only passes results for last upload', async function () {
             this.set('uploadsFinished', sinon.spy());
 
-            await render(hbs`{{#gh-uploader files=files onComplete=(action uploadsFinished)}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}} @onComplete={{this.uploadsFinished}}></GhUploader>`);
             this.set('files', [
                 createFile(['test'], {name: 'file1.png'})
             ]);
@@ -145,7 +145,7 @@ describe('Integration: Component: gh-uploader', function () {
 
             this.set('uploadsFinished', sinon.spy());
 
-            await render(hbs`{{#gh-uploader files=files onComplete=(action uploadsFinished)}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}} @onComplete={{this.uploadsFinished}}></GhUploader>`);
             this.set('files', [
                 createFile(['test'], {name: 'file1.png'}), // large - finishes last
                 createFile(['test'], {name: 'file2.png'}) // small - finishes first
@@ -161,7 +161,7 @@ describe('Integration: Component: gh-uploader', function () {
             let errorSpy = sinon.spy(console, 'error');
             stubSuccessfulUpload(server, 100);
 
-            await render(hbs`{{#gh-uploader files=files}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}}></GhUploader>`);
             this.set('files', [createFile()]);
 
             // logs error because upload is in progress
@@ -183,11 +183,11 @@ describe('Integration: Component: gh-uploader', function () {
             stubSuccessfulUpload(server, 100);
 
             await render(hbs`
-            {{#gh-uploader files=files as |uploader|}}
+            <GhUploader @files={{files}} as |uploader|>
                 {{#if uploader.isUploading}}
                     <div class="is-uploading-test"></div>
                 {{/if}}
-            {{/gh-uploader}}`);
+            </GhUploader>`);
 
             this.set('files', [createFile(), createFile()]);
 
@@ -201,9 +201,9 @@ describe('Integration: Component: gh-uploader', function () {
             stubSuccessfulUpload(server, 100);
 
             await render(hbs`
-            {{#gh-uploader files=files as |uploader|}}
+            <GhUploader @files={{files}} as |uploader|>
                 {{uploader.progressBar}}
-            {{/gh-uploader}}`);
+            </GhUploader>`);
 
             this.set('files', [createFile(), createFile()]);
 
@@ -221,11 +221,11 @@ describe('Integration: Component: gh-uploader', function () {
 
         it('yields files property', async function () {
             await render(hbs`
-            {{#gh-uploader files=files as |uploader|}}
+            <GhUploader @files={{files}} as |uploader|>
                 {{#each uploader.files as |file|}}
                     <div class="file">{{file.name}}</div>
                 {{/each}}
-            {{/gh-uploader}}`);
+            </GhUploader>`);
 
             this.set('files', [
                 createFile(['test'], {name: 'file1.png'}),
@@ -242,11 +242,11 @@ describe('Integration: Component: gh-uploader', function () {
             this.set('complete', sinon.spy());
 
             await render(hbs`
-            {{#gh-uploader files=files onCancel=(action cancelled) as |uploader|}}
+            <GhUploader @files={{files}} @onCancel={{this.cancelled}} as |uploader|>
                 {{#if uploader.isUploading}}
-                    <button class="cancel-button" {{action uploader.cancel}}>Cancel</button>
+                    <button class="cancel-button" type="button" {{on "click" uploader.cancel}}>Cancel</button>
                 {{/if}}
-            {{/gh-uploader}}`);
+            </GhUploader>`);
 
             this.set('files', [createFile()]);
 
@@ -262,7 +262,7 @@ describe('Integration: Component: gh-uploader', function () {
                 return [200, {'Content-Type': 'application/json'}, '{"images": [{"url": "/content/images/test.png"}]'];
             });
 
-            await render(hbs`{{#gh-uploader files=files uploadUrl="/images/"}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}} @uploadUrl="/images/"></GhUploader>`);
             this.set('files', [createFile()]);
             await settled();
 
@@ -271,7 +271,7 @@ describe('Integration: Component: gh-uploader', function () {
         });
 
         it('passes supplied paramName in request', async function () {
-            await render(hbs`{{#gh-uploader files=files paramName="testupload"}}{{/gh-uploader}}`);
+            await render(hbs`<GhUploader @files={{files}} @paramName="testupload"></GhUploader>`);
             this.set('files', [createFile()]);
             await settled();
 
@@ -288,7 +288,7 @@ describe('Integration: Component: gh-uploader', function () {
             this.set('onFailed', sinon.spy());
 
             await render(hbs`
-                {{#gh-uploader files=files extensions="jpg,jpeg" onFailed=(action onFailed)}}{{/gh-uploader}}
+                <GhUploader @files={{files}} @extensions="jpg,jpeg" @onFailed={{this.onFailed}}></GhUploader>
             `);
             this.set('files', [createFile(['test'], {name: 'test.png'})]);
             await settled();
@@ -306,7 +306,7 @@ describe('Integration: Component: gh-uploader', function () {
             this.set('onFailed', sinon.spy());
 
             await render(hbs`
-                {{#gh-uploader files=files validate=(action validate) onFailed=(action onFailed)}}{{/gh-uploader}}
+                <GhUploader @files={{files}} @validate={{this.validate}} @onFailed={{this.onFailed}}></GhUploader>
             `);
             this.set('files', [createFile(['test'], {name: 'test.png'})]);
             await settled();
@@ -319,12 +319,12 @@ describe('Integration: Component: gh-uploader', function () {
 
         it('yields errors when validation fails', async function () {
             await render(hbs`
-                {{#gh-uploader files=files extensions="jpg,jpeg" as |uploader|}}
+                <GhUploader @files={{files}} @extensions="jpg,jpeg" as |uploader|>
                     {{#each uploader.errors as |error|}}
                         <div class="error-fileName">{{error.fileName}}</div>
                         <div class="error-message">{{error.message}}</div>
                     {{/each}}
-                {{/gh-uploader}}
+                </GhUploader>
             `);
             this.set('files', [createFile(['test'], {name: 'test.png'})]);
             await settled();
@@ -344,11 +344,8 @@ describe('Integration: Component: gh-uploader', function () {
             this.set('uploadComplete', sinon.spy());
 
             await render(hbs`
-                {{#gh-uploader
-                    files=files
-                    onFailed=(action uploadFailed)
-                    onComplete=(action uploadComplete)}}
-                {{/gh-uploader}}
+                <GhUploader @files={{files}} @onFailed={{this.uploadFailed}} @onComplete={{this.uploadComplete}}>
+                </GhUploader>
             `);
             this.set('files', [
                 createFile(['test'], {name: 'file1.png'}),
@@ -369,10 +366,8 @@ describe('Integration: Component: gh-uploader', function () {
             this.set('uploadFail', sinon.spy());
 
             await render(hbs`
-                {{#gh-uploader
-                    files=files
-                    onUploadFailure=(action uploadFail)}}
-                {{/gh-uploader}}
+                <GhUploader @files={{files}} @onUploadFailure={{this.uploadFail}}>
+                </GhUploader>
             `);
             this.set('files', [
                 createFile(['test'], {name: 'file1.png'}),
@@ -393,12 +388,12 @@ describe('Integration: Component: gh-uploader', function () {
 
         it('yields errors when uploads fail', async function () {
             await render(hbs`
-                {{#gh-uploader files=files as |uploader|}}
+                <GhUploader @files={{files}} as |uploader|>
                     {{#each uploader.errors as |error|}}
                         <div class="error-fileName">{{error.fileName}}</div>
                         <div class="error-message">{{error.message}}</div>
                     {{/each}}
-                {{/gh-uploader}}
+                </GhUploader>
             `);
             this.set('files', [createFile(['test'], {name: 'test.png'})]);
             await settled();

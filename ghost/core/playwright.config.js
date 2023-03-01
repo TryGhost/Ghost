@@ -2,7 +2,11 @@
 
 const config = {
     timeout: 60 * 1000,
+    expect: {
+        timeout: 10000
+    },
     workers: 1,
+    reporter: [['list', {printSteps: true}]],
     use: {
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',

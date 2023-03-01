@@ -4,8 +4,10 @@ const {slugify} = require('@tryghost/string');
 const {blogStartDate} = require('../utils/blog-info');
 
 class ProductsImporter extends TableImporter {
+    static table = 'products';
+
     constructor(knex) {
-        super('products', knex);
+        super(ProductsImporter.table, knex);
     }
 
     setImportOptions() {

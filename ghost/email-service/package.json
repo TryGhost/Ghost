@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -18,23 +18,24 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.12.0",
+    "c8": "7.13.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "14.0.2"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.19",
-    "@tryghost/tpl": "0.1.20",
-    "bson-objectid": "2.0.4",
-    "@tryghost/email-events": "0.0.0",
-    "moment-timezone": "0.5.23",
-    "handlebars": "4.7.7",
-    "@tryghost/kg-default-cards": "5.18.7",
     "@tryghost/color-utils": "0.1.22",
+    "@tryghost/email-events": "0.0.0",
+    "@tryghost/errors": "1.2.21",
     "@tryghost/html-to-plaintext": "0.0.0",
-    "juice": "8.1.0",
+    "@tryghost/kg-default-cards": "6.0.0",
+    "@tryghost/logging": "2.4.0",
+    "@tryghost/tpl": "0.1.21",
+    "@tryghost/validator": "^0.2.0",
+    "bson-objectid": "2.0.4",
     "cheerio": "0.22.0",
-    "@tryghost/logging": "2.3.5"
+    "handlebars": "4.7.7",
+    "juice": "8.1.0",
+    "moment-timezone": "0.5.23"
   }
 }

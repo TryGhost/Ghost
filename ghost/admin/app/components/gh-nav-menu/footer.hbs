@@ -1,4 +1,13 @@
 <div class="gh-nav-bottom">
+    {{#if this.hasThemeErrors}}
+    <button type="button" class="gh-footer-toast gh-theme-error-toast" {{on "click" (fn this.openThemeErrors null)}}>
+        <span class="gh-footer-toast-title gh-notification-title">Your theme contains errors</span>
+        <span class="gh-footer-toast-p">Some functionality on your site may be limited &rarr;</span>
+    </button>
+    {{/if}}
+
+    <GhReferralInvite @hasThemeErrors={{this.hasThemeErrors}} />
+
     <div class="flex items-center justify-between">
         <div class="pe-all">
             <GhBasicDropdown @horizontalPosition="left" @verticalPosition="above" @calculatePosition={{this.userDropdownPosition}} as |dropdown|>
@@ -23,7 +32,7 @@
                             </div>
                         </li>
                         <li class="divider" role="separator"></li>
-                        
+
                         {{#if this.session.user.isContributor}}
                             <li>
                                 <LinkTo @route="posts" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="posts">
@@ -50,7 +59,7 @@
                                 Your profile
                             </LinkTo>
                         </li>
-                        
+
                         {{#unless this.session.user.isContributor}}
                             <li class="divider" role="separator"></li>
                             <li>

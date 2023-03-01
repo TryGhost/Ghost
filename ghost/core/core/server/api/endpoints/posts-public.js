@@ -1,6 +1,8 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const postsPublicService = require('../../services/posts-public');
+
 const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];
 
 const messages = {
@@ -11,6 +13,7 @@ module.exports = {
     docName: 'posts',
 
     browse: {
+        cache: postsPublicService.api?.cache,
         options: [
             'include',
             'filter',

@@ -1,11 +1,4 @@
 const UrlHistory = require('./history');
-const {slugify} = require('@tryghost/string');
-
-const blacklistedReferrerDomains = [
-    // Facebook has some restrictions on the 'ref' attribute (max 15 chars + restricted character set) that breaks links if we add ?ref=longer-string
-    'facebook.com',
-    'www.facebook.com'
-];
 
 class MemberAttributionService {
     /**
@@ -16,21 +9,15 @@ class MemberAttributionService {
      * @param {Object} deps.models.MemberCreatedEvent
      * @param {Object} deps.models.SubscriptionCreatedEvent
      * @param {() => boolean} deps.getTrackingEnabled
-     * @param {() => string} deps.getSiteTitle
      */
-    constructor({attributionBuilder, models, getTrackingEnabled, getSiteTitle}) {
+    constructor({attributionBuilder, models, getTrackingEnabled}) {
         this.models = models;
         this.attributionBuilder = attributionBuilder;
         this._getTrackingEnabled = getTrackingEnabled;
-        this._getSiteTitle = getSiteTitle;
     }
 
     get isTrackingEnabled() {
         return this._getTrackingEnabled();
-    }
-
-    get siteTitle() {
-        return this._getSiteTitle();
     }
 
     /**
@@ -92,40 +79,6 @@ class MemberAttributionService {
             history = UrlHistory.create([]);
         }
         return await this.attributionBuilder.getAttribution(history);
-    }
-
-    /**
-     * Add some parameters to a URL so that the frontend script can detect this and add the required records
-     * in the URLHistory.
-     * @param {URL} url instance that will get updated
-     * @param {Object} [useNewsletter] Use the newsletter name instead of the site name as referrer source
-     * @returns {URL}
-     */
-    addEmailSourceAttributionTracking(url, useNewsletter) {
-        // Create a deep copy
-        url = new URL(url);
-
-        if (url.searchParams.has('ref') || url.searchParams.has('utm_source') || url.searchParams.has('source')) {
-            // Don't overwrite + keep existing source attribution
-            return url;
-        }
-
-        // Check blacklist domains
-        const referrerDomain = url.hostname;
-        if (blacklistedReferrerDomains.includes(referrerDomain)) {
-            return url;
-        }
-
-        if (useNewsletter) {
-            const name = slugify(useNewsletter.get('name'));
-            
-            // If newsletter name ends with newsletter, don't add it again
-            const ref = name.endsWith('newsletter') ? name : `${name}-newsletter`;
-            url.searchParams.append('ref', ref);
-        } else {
-            url.searchParams.append('ref', slugify(this.siteTitle));
-        }
-        return url;
     }
 
     /**

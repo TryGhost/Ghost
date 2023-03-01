@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint": "eslint . --ext .js --cache"
   },
@@ -16,14 +16,14 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.12.0",
+    "c8": "7.13.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "14.0.2"
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/errors": "1.2.19",
+    "@tryghost/errors": "1.2.21",
     "@tryghost/member-events": "0.0.0"
   }
 }
