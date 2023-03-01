@@ -333,3 +333,8 @@
     color: #fff;
     font-size: 1.45rem;
 }
+
+.gh-update-banner a {
+    font-weight: 700;
+    color: var(--green-l2);
+}
