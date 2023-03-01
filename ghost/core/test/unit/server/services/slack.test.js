@@ -18,6 +18,7 @@ const slackURL = 'https://hooks.slack.com/services/a-b-c-d';
 
 describe('Slack', function () {
     let eventStub;
+    let loggingStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(events, 'on');
@@ -102,7 +103,6 @@ describe('Slack', function () {
             sinon.stub(urlService, 'getUrlByResourceId');
 
             settingsCacheStub = sinon.stub(settingsCache, 'get');
-            sinon.spy(logging, 'error');
 
             makeRequestStub = sinon.stub();
             slackReset = slack.__set__('request', makeRequestStub);
@@ -173,6 +173,7 @@ describe('Slack', function () {
         });
 
         it('makes a request and errors', function (done) {
+            loggingStub = sinon.stub(logging, 'error');
             makeRequestStub.rejects();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
@@ -180,7 +181,7 @@ describe('Slack', function () {
             ping({});
 
             (function retry() {
-                if (logging.error.calledOnce) {
+                if (loggingStub.calledOnce) {
                     makeRequestStub.calledOnce.should.be.true();
                     return done();
                 }

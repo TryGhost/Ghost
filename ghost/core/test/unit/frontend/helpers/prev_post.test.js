@@ -4,6 +4,7 @@ const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').ma
 const prev_post = require('../../../../core/frontend/helpers/prev_post');
 const api = require('../../../../core/frontend/services/proxy').api;
 const should = require('should');
+const logging = require('@tryghost/logging');
 
 describe('{{prev_post}} helper', function () {
     let browsePostsStub;
@@ -360,6 +361,7 @@ describe('{{prev_post}} helper', function () {
             const fn = sinon.spy();
             const inverse = sinon.spy();
             const optionsData = {name: 'prev_post', data: locals, fn: fn, inverse: inverse};
+            const loggingStub = sinon.stub(logging, 'error');
 
             await prev_post
                 .call({
@@ -374,6 +376,7 @@ describe('{{prev_post}} helper', function () {
 
             fn.called.should.be.false();
             inverse.calledOnce.should.be.true();
+            loggingStub.calledOnce.should.be.true();
 
             inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
             inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
