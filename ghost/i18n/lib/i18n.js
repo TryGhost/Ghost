@@ -1,17 +1,12 @@
 const i18next = require('i18next');
 
-const RESOURCES = {
-    en: {
-        translation: require('../locales/en.json')
-    },
-    nl: {
-        translation: require('../locales/nl.json')
-    }
-};
+const SUPPORTED_LOCALES = ['en', 'nl'];
 
-const SUPPORTED_LOCALES = Object.keys(RESOURCES);
-
-module.exports = (lng = 'en') => {
+/**
+ * @param {string} [lng]
+ * @param {'portal'|'test'} ns
+ */
+module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
     i18nextInstance.init({
         lng,
@@ -27,7 +22,15 @@ module.exports = (lng = 'en') => {
         // do not load a fallback
         fallbackLng: false,
 
-        resources: RESOURCES
+        ns: ns,
+        defaultNS: ns,
+
+        resources: SUPPORTED_LOCALES.reduce((acc, lng) => {
+            acc[lng] = {
+                [ns]: require(`../locales/${lng}/${ns}.json`)
+            }
+            return acc;
+        }, {})
     });
 
     return i18nextInstance;

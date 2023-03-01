@@ -8,12 +8,13 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test:unit": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-    "test": "yarn test:unit && yarn test:translate",
-    "test:translate": "yarn translate:generate",
+    "test": "yarn test:unit && yarn translate",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
-    "translate:generate": "i18next '../portal/src/**/*.{js,jsx}' './test/**/*.js'"
+    "translate": "yarn translate:portal && yarn translate:test",
+    "translate:portal": "NAMESPACE=portal i18next '../portal/src/**/*.{js,jsx}'",
+    "translate:test": "NAMESPACE=test i18next './test/**/*.js'"
   },
   "files": [
     "index.js",
