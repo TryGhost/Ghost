@@ -36,7 +36,6 @@
     "build": "npm run build:combined",
     "build:original": "react-scripts build",
     "build:combined": "node ./scripts/build-combined.js",
-    "build:bundle": "webpack --config webpack.config.js",
     "test": "react-scripts test",
     "test:ci": "yarn test --watchAll=false --coverage",
     "test:unit": "yarn test:ci",
@@ -86,15 +85,13 @@
   "devDependencies": {
     "chalk": "4.1.2",
     "chokidar": "3.5.3",
-    "copy-webpack-plugin": "11.0.0",
     "jest-raw-loader": "1.0.1",
     "minimist": "1.2.8",
     "ora": "5.4.1",
     "raw-loader": "4.0.2",
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
-    "source-map-explorer": "2.5.3",
-    "webpack-cli": "4.10.0"
+    "source-map-explorer": "2.5.3"
   },
   "resolutions": {
     "//": "See https://github.com/facebook/create-react-app/issues/11773",
