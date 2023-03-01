@@ -11,7 +11,7 @@
                         {{#if (feature 'webmentions')}}
                         {{!-- Mentions widget using a GhBasicDropdown component --}}
 
-                        <GhBasicDropdown @horizontalPosition="right" @verticalPosition="below" @onOpen={{action this.markMentionsRead}} as |dropdown|>
+                        <GhBasicDropdown @horizontalPosition="right" @verticalPosition="below" @onOpen={{this.markMentionsRead}} as |dropdown|>
                             <dropdown.Trigger class="outline-0 pointer">
                                 <button type="button" class="gh-dashboard-mentions-icon">
                                     {{#if this.hasNewMentions}}

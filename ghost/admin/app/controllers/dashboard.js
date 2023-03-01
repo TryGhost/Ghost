@@ -21,6 +21,7 @@ export default class DashboardController extends Controller {
     @service membersUtils;
     @service store;
     @service mentionUtils;
+    @service feature;
 
     @tracked mentions = [];
     @tracked hasNewMentions = false;
@@ -29,15 +30,14 @@ export default class DashboardController extends Controller {
 
     @action
     async loadMentions() {
-        try {
-            this.mentions = await this.store.query('mention', {unique: true, limit: 5, order: 'created_at desc'});
-            this.hasNewMentions = this.checkHasNewMentions();
-
-            // Load grouped mentions
-            await this.mentionUtils.loadGroupedMentions(this.mentions);
-        } catch (e) {
-            console.error(e);
+        if (!this.feature.get('webmentions')) {
+            return;
         }
+        this.mentions = await this.store.query('mention', {unique: true, limit: 5, order: 'created_at desc'});
+        this.hasNewMentions = this.checkHasNewMentions();
+
+        // Load grouped mentions
+        await this.mentionUtils.loadGroupedMentions(this.mentions);
     }
 
     checkHasNewMentions() {
@@ -70,7 +70,14 @@ export default class DashboardController extends Controller {
         } catch (e) {
             // localstorage disabled or not supported
         }
-        this.hasNewMentions = false;
+
+        // The opening of the popup breaks if we change hasNewMentions inside the handling (propably due to a rerender, so we need to delay it)
+        if (this.hasNewMentions) {
+            setTimeout(() => {
+                this.hasNewMentions = false;
+            }, 20);
+        }
+        return true;
     }
 
     @task

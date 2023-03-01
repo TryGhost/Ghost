@@ -1,4 +1,4 @@
-const {Mention, MentionGroup} = require('@tryghost/webmentions');
+const {Mention} = require('@tryghost/webmentions');
 const logging = require('@tryghost/logging');
 
 /**
