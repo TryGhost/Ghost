@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const storage = require('../../../adapters/storage');
 let replaceImage;
-let ImageImporter;
 let preProcessPosts;
 let preProcessTags;
 let preProcessUsers;
@@ -48,9 +47,10 @@ preProcessUsers = function (data, image) {
     });
 };
 
-ImageImporter = {
-    type: 'images',
-    preProcess: function (importData) {
+class ImageImporter {
+    type = 'images';
+
+    preProcess(importData) {
         if (importData.images && importData.data) {
             _.each(importData.images, function (image) {
                 preProcessPosts(importData.data.data, image);
@@ -61,8 +61,9 @@ ImageImporter = {
 
         importData.preProcessedByImage = true;
         return importData;
-    },
-    doImport: function (imageData) {
+    }
+
+    doImport(imageData) {
         const store = storage.getStorage('images');
 
         return Promise.all(imageData.map(function (image) {
@@ -71,6 +72,6 @@ ImageImporter = {
             });
         }));
     }
-};
+}
 
 module.exports = ImageImporter;
