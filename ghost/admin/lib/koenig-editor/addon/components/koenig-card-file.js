@@ -143,7 +143,7 @@ export default class KoenigCardFileComponent extends Component {
         this.previewPayload.src = uploadedFile.url;
         this.previewPayload.fileName = uploadedFile.fileName;
         this.previewPayload.fileTitle = prettifyFileName(uploadedFile.fileName);
-        this.previewPayload.fileCaption = '';   
+        this.previewPayload.fileCaption = '';
 
         // save preview payload attrs into actual payload and create undo snapshot
         this.args.editor.run(() => {
