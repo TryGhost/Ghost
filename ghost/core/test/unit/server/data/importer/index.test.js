@@ -215,6 +215,18 @@ describe('Importer', function () {
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
+                it('accepts a zip with a content directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-dir');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
+                it('accepts a zip with a content/images directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-images-subdir');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
                 it('accepts a zip with uppercase image extensions', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
 
