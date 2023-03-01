@@ -57,14 +57,11 @@ class TwitterOEmbedProvider {
             }).join('&');
 
             try {
-                const result = await externalRequest(`https://api.twitter.com/2/tweets/${tweetId}?${queryString}`, {
-                    responseType: 'json',
+                const body = await externalRequest(`https://api.twitter.com/2/tweets/${tweetId}?${queryString}`, {
                     headers: {
                         Authorization: `Bearer ${this.dependencies.config.bearerToken}`
                     }
-                });
-
-                const body = JSON.parse(result.body);
+                }).json();
 
                 oembedData.tweet_data = body.data;
                 oembedData.tweet_data.includes = body.includes;
