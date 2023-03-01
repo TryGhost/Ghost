@@ -7,12 +7,14 @@ const gscan = require('gscan');
 const assert = require('assert');
 const adapterManager = require('../../../../../core/server/services/adapter-manager');
 const InMemoryCache = require('../../../../../core/server/adapters/cache/Memory');
+const logging = require('@tryghost/logging');
 
 describe('Themes', function () {
     let checkZipStub;
     let checkStub;
     let formatStub;
     let adapterStub;
+    let loggingStub;
 
     beforeEach(function () {
         checkZipStub = sinon.stub(gscan, 'checkZip');
@@ -183,10 +185,12 @@ describe('Themes', function () {
         });
 
         it('Silently fails when cache adapter throws', async function () {
+            loggingStub = sinon.stub(logging, 'error');
             sinon.stub(adapterManager, 'getAdapter').returns({
                 get: () => {
                     throw new Error('test');
-                }
+                },
+                set: () => {}
             });
             validate.init();
 
@@ -196,6 +200,8 @@ describe('Themes', function () {
             const checkedTheme = await validate.getThemeErrors(testTheme.name);
             sinon.assert.calledOnce(checkStub);
             sinon.assert.calledOnce(formatStub);
+            // Two calls to logging.error occur in the check function
+            sinon.assert.calledTwice(loggingStub);
             assert.deepEqual(checkedTheme, {errors: [{hello: 'world'}], warnings: []});
         });
     });
