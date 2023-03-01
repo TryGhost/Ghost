@@ -11,6 +11,7 @@ const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
+const MediaHandler = require('@tryghost/importer-handler-media');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
@@ -20,6 +21,7 @@ const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
 const jobManager = require('../../services/jobs');
+const mediaStorage = require('../../adapters/storage').getStorage('media');
 
 const emailTemplate = require('./email-template');
 const ghostMailer = new GhostMailer();
@@ -51,6 +53,12 @@ let defaults = {
 
 class ImportManager {
     constructor() {
+        const mediaHandler = new MediaHandler({
+            config: config,
+            urlUtils: urlUtils,
+            storage: mediaStorage
+        });
+
         /**
          * @type {Importer[]} importers
          */
@@ -59,7 +67,7 @@ class ImportManager {
         /**
          * @type {Handler[]}
          */
-        this.handlers = [ImageHandler, RevueHandler, JSONHandler, MarkdownHandler];
+        this.handlers = [ImageHandler, mediaHandler, RevueHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
         /**
