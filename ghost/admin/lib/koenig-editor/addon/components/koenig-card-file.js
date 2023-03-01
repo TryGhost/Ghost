@@ -137,6 +137,9 @@ export default class KoenigCardFileComponent extends Component {
 
     @action
     async fileUploadCompleted([uploadedFile]) {
+        if (!uploadedFile || !uploadedFile.url && !uploadedFile.fileName) {
+            return; // upload failed
+        }
         this.previewPayload.src = uploadedFile.url;
         this.previewPayload.fileName = uploadedFile.fileName;
         this.previewPayload.fileTitle = prettifyFileName(uploadedFile.fileName);

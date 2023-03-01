@@ -196,6 +196,9 @@ export default class KoenigCardImage extends Component {
 
     @action
     updateSrc(images) {
+        if (!images) {
+            return;
+        }
         let [image] = images;
 
         // create undo snapshot when image finishes uploading
