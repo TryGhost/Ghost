@@ -41,6 +41,7 @@
     line-height: 1.2;
     margin-bottom: 14px;
     white-space: nowrap;
+    position: relative;
 }
 
 .gh-mention-icon {
@@ -53,6 +54,9 @@
 .gh-mention-publisher {
     color: var(--middarkgrey);
     font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .gh-mention-link-icon {
@@ -87,6 +91,16 @@
 
 .gh-mention-multiple-links li:last-of-type {
     margin-bottom: 0;
+}
+
+.gh-mention-multiple-links-link {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.gh-mention-header .popover-arrow  {
+    display: none;
 }
 
 .gh-mention-header .popover {
@@ -151,10 +165,10 @@
 }
 
 .gh-mention-author {
+    white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 240px;
-    white-space: nowrap;
     display: block;
     line-height: 1.65em;
     font-weight: 400;
