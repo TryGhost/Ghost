@@ -7,87 +7,52 @@
             </h2>
             {{#unless this.isTotalMembersZero}}
                 <div class="gh-dashboard-select">
-                    <div>
+                    <div {{did-insert this.loadMentions}}>
                         {{#if (feature 'webmentions')}}
                         {{!-- Mentions widget using a GhBasicDropdown component --}}
 
-                        {{!-- <GhBasicDropdown @horizontalPosition="left" @verticalPosition="above" @calculatePosition={{this.userDropdownPosition}} as |dropdown|>
+                        <GhBasicDropdown @horizontalPosition="right" @verticalPosition="below" @onOpen={{this.markMentionsRead}} as |dropdown|>
                             <dropdown.Trigger class="outline-0 pointer">
-                                <a href="#" class="gh-dashboard-mentions-icon">
-                                    {{svg-jar "notification-bell"}}
-                                </a>
+                                <button type="button" class="gh-dashboard-mentions-icon">
+                                    {{#if this.hasNewMentions}}
+                                        {{svg-jar "notification-bell-indicator"}}
+                                    {{else}}
+                                        {{svg-jar "notification-bell"}}
+                                    {{/if}}
+                                </button>
                             </dropdown.Trigger>
 
                             <dropdown.Content class="">
                                 <div class="gh-dashboard-mentions">
                                     <div class="gh-dashboard-mentions-header">
                                         <h2 class="gh-dashboard-mentions-heading">Mentions</h2>
-                                        <a href="" class="gh-dashboard-mentions-see-all">View all mentions &rarr;</a>
+                                        <LinkTo @route="mentions" class="gh-dashboard-mentions-see-all">View all mentions &rarr;</LinkTo>
                                     </div>
                                     <div>
-                                        <a href="#" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
-                                            <div class="gh-dashboard-mention-content">
-                                                <img src="assets/img/orb-squircle.png" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0" />
-                                                <span class="gh-dashboard-mention-title">Lever News</span>
-                                                <span>mentioned</span>
-                                                <span class="gh-dashboard-mention-target">3 links</span>
-                                            </div>
-                                            <span class="gh-dashboard-mention-timestamp">{{moment-from-now mention.timestamp}}</span>
-                                        </a>
-                                        <a href="#" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
-                                            <div class="gh-dashboard-mention-content">
-                                                <img src="assets/img/orb-squircle.png" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0" />
-                                                <span class="gh-dashboard-mention-title">Lever News</span>
-                                                <span>mentioned</span>
-                                                <span class="gh-dashboard-mention-target">3 links</span>
-                                            </div>
-                                            <span class="gh-dashboard-mention-timestamp">{{moment-from-now mention.timestamp}}</span>
-                                        </a>
+                                        {{#each this.mentions as |mention|}}
+                                            <a href="{{mention.source}}" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
+                                                <div class="gh-dashboard-mention-content">
+                                                    <img src="{{ or mention.sourceFavicon 'assets/img/orb-squircle.png'}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0">
+
+                                                    <span class="gh-dashboard-mention-title">{{or mention.sourceTitle mention.sourceSiteTitle}}</span>
+                                                    <span>mentioned</span>
+                                                    {{#if (gt mention.mentions.length 1) }}
+                                                        <span class="gh-dashboard-mention-target">{{mention.mentions.length}} links</span>
+                                                    {{else}}
+                                                        <span class="gh-dashboard-mention-target">{{if mention.resource mention.resource.name 'a link'}}</span>
+                                                    {{/if}}
+                                                </div>
+                                                <span class="gh-dashboard-mention-timestamp">{{moment-from-now mention.timestamp}}</span>
+                                            </a>
+                                        {{/each}}
                                     </div>
                                 </div>
                             </dropdown.Content>
-                        </GhBasicDropdown> --}}
+                        </GhBasicDropdown>
 
-                        {{!-- Mentions widget using a popover component --}}
-
-                        <a href="#" class="gh-dashboard-mentions-icon">
-                            {{!-- State: No new mentions --}}
-                            {{!-- {{svg-jar "notification-bell"}} --}}
-
-                            {{!-- State: at least one new mention --}}
-                            {{svg-jar "notification-bell-indicator"}}
-                        </a>
-                        <EmberPopover @tooltipClass="popover" @spacing={{30}} @arrowClass="popover-arrow" @side="down">
-                            <div class="gh-dashboard-mentions">
-                                <div class="gh-dashboard-mentions-header">
-                                    <h2 class="gh-dashboard-mentions-heading">Mentions</h2>
-                                    <a href="" class="gh-dashboard-mentions-see-all">View all mentions &rarr;</a>
-                                </div>
-                                <div>
-                                    <a href="#" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
-                                        <div class="gh-dashboard-mention-content">
-                                            <img src="assets/img/orb-squircle.png" alt="" role="none" class="w5 h5 mr2 flex-shrink-0" />
-                                            <span class="gh-dashboard-mention-title">Lever News</span>
-                                            <span>mentioned</span>
-                                            <span class="gh-dashboard-mention-target">3 links</span>
-                                        </div>
-                                        <span class="gh-dashboard-mention-timestamp">2 days ago</span>
-                                    </a>
-                                    <a href="#" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
-                                        <div class="gh-dashboard-mention-content">
-                                            <img src="assets/img/orb-squircle.png" alt="" role="none" class="w5 h5 mr2 flex-shrink-0" />
-                                            <span class="gh-dashboard-mention-title">Lever News</span>
-                                            <span>mentioned</span>
-                                            <span class="gh-dashboard-mention-target">3 links</span>
-                                        </div>
-                                        <span class="gh-dashboard-mention-timestamp">2 days ago</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </EmberPopover>
                         {{/if}}
                     </div>
-                    
+
                     <PowerSelect
                         @selected={{this.selectedDaysOption}}
                         @options={{this.daysOptions}}
