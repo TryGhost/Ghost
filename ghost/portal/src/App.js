@@ -156,7 +156,7 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
-            const i18n = require('@tryghost/i18n')(/*site.locale || */ 'en'); // TODO: uncomment when you want to enable i18n translations
+            const i18n = require('@tryghost/i18n')(/*site.locale || */ 'en', 'portal'); // TODO: uncomment when you want to enable i18n translations
             const state = {
                 site,
                 member,

@@ -9,11 +9,13 @@ module.exports = {
     keySeparator: false,
     namespaceSeparator: false,
 
+    defaultNamespace: process.env.NAMESPACE || 'translation',
+
     createOldCatalogs: false,
     indentation: 4,
     sort: true,
 
     failOnUpdate: process.env.CI,
 
-    output: 'locales/$LOCALE.json'
+    output: 'locales/$LOCALE/$NAMESPACE.json'
 };
