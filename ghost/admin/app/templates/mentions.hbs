@@ -49,28 +49,35 @@
                                     <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="gh-mention-icon">
                                 {{/if}}
                                 <div class="gh-mention-publisher">{{mention.sourceSiteTitle}}</div>
-                                {{#unless this.post }}
+
+                                {{#if (gt mention.mentions.length 1) }}
                                     <div class="gh-mention-link-icon">
                                         {{svg-jar "twitter-link"}}
                                     </div>
                                     <div>
                                         {{!-- TODO: Add logic so when there are multiple links, this span gets a .has-multiple-links class --}}
-                                        <span class="gh-mention-your-link">{{if mention.resource mention.resource.name mention.target}}</span>
-                                        <EmberPopover @tooltipClass="popover" @spacing={{30}} @arrowClass="popover-arrow" @side="down">
+                                        <span class="gh-mention-your-link">{{mention.mentions.length}} links</span>
+                                        <EmberPopover @tooltipClass="popover" @spacing={{15}} @arrowClass="popover-arrow" @side="top-start">
                                             <ul class="gh-mention-multiple-links">
-                                                <li>Weekly Links - Week #13</li>
-                                                <li>Welcome to my blog!</li>
-                                                <li>Introducing: New Tool I Just Built</li>
-                                                <li>Introducing: Even Newer Tool I Just Built For You Guys</li>
+                                                {{#each mention.mentions as |submention|}}
+                                                    <li>{{if submention.resource submention.resource.name submention.target}}</li>
+                                                {{/each}}
                                             </ul>
                                         </EmberPopover>
                                     </div>
-                                {{/unless}}
+                                {{else}}
+                                    {{#unless this.post }}
+                                        <div class="gh-mention-link-icon">
+                                            {{svg-jar "twitter-link"}}
+                                        </div>
+                                        <span class="gh-mention-your-link">{{if mention.resource mention.resource.name mention.target}}</span>
+                                    {{/unless}}
+                                {{/if}}
                                 <span class="gh-mention-timestamp" title={{gh-format-post-time mention.timestamp}}>{{moment-from-now mention.timestamp}}</span>
                             </div>
                             <div class="gh-mention-content">
                                 <div class="gh-mention-source">
-                                    <h3 class="gh-mention-title">{{if mention.sourceTitle mention.sourceTitle mention.target}}</h3>
+                                    <h3 class="gh-mention-title">{{or mention.sourceTitle mention.sourceSiteTitle mention.source}}</h3>
                                     {{#if mention.sourceExcerpt}}
                                         <p class="gh-mention-description">{{mention.sourceExcerpt}}</p>
                                     {{/if}}
