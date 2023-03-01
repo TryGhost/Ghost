@@ -59,10 +59,11 @@ class ImportManager {
             storage: mediaStorage
         });
 
+        const imageImporter = new ImageImporter();
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [ImageImporter, RevueImporter, DataImporter];
+        this.importers = [imageImporter, RevueImporter, DataImporter];
 
         /**
          * @type {Handler[]}

@@ -395,7 +395,7 @@ describe('Importer', function () {
                 const inputCopy = _.cloneDeep(input);
 
                 const dataSpy = sinon.spy(DataImporter, 'preProcess');
-                const imageSpy = sinon.spy(ImageImporter, 'preProcess');
+                const imageSpy = sinon.spy(ImportManager.importers[0], 'preProcess');
                 const revueSpy = sinon.spy(RevueImporter, 'preProcess');
 
                 ImportManager.preProcess(inputCopy).then(function (output) {
@@ -429,7 +429,7 @@ describe('Importer', function () {
                     return Promise.resolve(i);
                 });
 
-                const imageSpy = sinon.stub(ImageImporter, 'doImport').callsFake(function (i) {
+                const imageSpy = sinon.stub(ImportManager.importers[0], 'doImport').callsFake(function (i) {
                     return Promise.resolve(i);
                 });
 
