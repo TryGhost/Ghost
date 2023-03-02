@@ -23,6 +23,7 @@ const {GhostMailer} = require('../../services/mail');
 const jobManager = require('../../services/jobs');
 const mediaStorage = require('../../adapters/storage').getStorage('media');
 const imageStorage = require('../../adapters/storage').getStorage('images');
+const fileStorage = require('../../adapters/storage').getStorage('files');
 
 const emailTemplate = require('./email-template');
 const ghostMailer = new GhostMailer();
@@ -56,7 +57,7 @@ class ImportManager {
     constructor() {
         const mediaHandler = new ImporterContentFileHandler({
             type: 'media',
-            // @NOTE: making the second parameter strict folder "content/media" broke the glob pattern
+            // @NOTE: making the second parameter strict folder "content/media" brakes the glob pattern
             //        in the importer, so we need to keep it as general "content" unless
             //        it becomes a strict requirement
             directories: ['media', 'content'],
@@ -65,6 +66,19 @@ class ImportManager {
             contentPath: config.getContentPath('media'),
             urlUtils: urlUtils,
             storage: mediaStorage
+        });
+
+        const filesHandler = new ImporterContentFileHandler({
+            type: 'contentFiles',
+            // @NOTE: making the second parameter strict folder "content/files" brakes the glob pattern
+            //        in the importer, so we need to keep it as general "content" unless
+            //        it becomes a strict requirement
+            directories: ['files', 'content'],
+            extensions: config.get('uploads').files.extensions,
+            contentTypes: config.get('uploads').files.contentTypes,
+            contentPath: config.getContentPath('files'),
+            urlUtils: urlUtils,
+            storage: fileStorage
         });
 
         const imageImporter = new ContentFileImporter({
@@ -84,7 +98,7 @@ class ImportManager {
         /**
          * @type {Handler[]}
          */
-        this.handlers = [ImageHandler, mediaHandler, RevueHandler, JSONHandler, MarkdownHandler];
+        this.handlers = [ImageHandler, mediaHandler, filesHandler, RevueHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
         /**
@@ -319,7 +333,15 @@ class ImportManager {
      */
     async processFile(file, ext) {
         const fileHandlers = _.filter(this.handlers, function (handler) {
-            return _.includes(handler.extensions, ext);
+            let match = _.includes(handler.extensions, ext);
+
+            // CASE: content file handlers should ignore files in the root directory
+            if (match && handler.directories && handler.directories.length) {
+                const dir = path.dirname(file.path)?.split('/')[1];
+                match = _.includes(handler.directories, dir);
+            }
+
+            return match;
         });
 
         const importData = {};
