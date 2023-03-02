@@ -9,8 +9,6 @@
                 <div class="gh-dashboard-select">
                     <div {{did-insert this.loadMentions}}>
                         {{#if (feature 'webmentions')}}
-                        {{!-- Mentions widget using a GhBasicDropdown component --}}
-
                         <GhBasicDropdown @horizontalPosition="right" @verticalPosition="below" @onOpen={{this.markMentionsRead}} as |dropdown|>
                             <dropdown.Trigger class="outline-0 pointer">
                                 <button type="button" class="gh-dashboard-mentions-icon">
@@ -24,32 +22,37 @@
 
                             <dropdown.Content class="gh-dashboard-mentions-container">
                                 <div class="gh-dashboard-mentions">
-                                    <div class="gh-dashboard-mentions-header">
-                                        <h2 class="gh-dashboard-mentions-heading">Mentions</h2>
-                                        <LinkTo @route="mentions" class="gh-dashboard-mentions-see-all">View all mentions &rarr;</LinkTo>
-                                    </div>
+                                    {{#if this.mentions}}
+                                        <div class="gh-dashboard-mentions-header">
+                                            <h2 class="gh-dashboard-mentions-heading">Mentions</h2>
+                                            <LinkTo @route="mentions" class="gh-dashboard-mentions-see-all">View all mentions &rarr;</LinkTo>
+                                        </div>
+                                    {{/if}}
                                     <div>
                                         {{#if this.mentions}}
                                             {{#each this.mentions as |mention|}}
                                                 <a href="{{mention.source}}" class="gh-dashboard-mention" rel="noreferrer noopener" target="_blank">
                                                     <div class="gh-dashboard-mention-content">
-                                                        <img src="{{ or mention.sourceFavicon 'assets/img/orb-squircle.png'}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0">
-                                                        <span class="gh-dashboard-mention-title">{{or mention.sourceSiteTitle mention.sourceSiteTitle}}</span>
-                                                        {{!-- <span>mentioned</span> --}}
+                                                        <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0">
+                                                        <span class="gh-dashboard-mention-title">{{or mention.sourceSiteTitle mention.sourceTitle}}</span>
                                                         <div class="gh-mention-link-icon">
                                                             {{svg-jar "twitter-link"}}
                                                         </div>
                                                         {{#if (gt mention.mentions.length 1) }}
                                                             <span class="gh-dashboard-mention-target">{{mention.mentions.length}} links</span>
                                                         {{else}}
-                                                            <span class="gh-dashboard-mention-target">{{if mention.resource mention.resource.name 'a link'}}</span>
+                                                            <span class="gh-dashboard-mention-target">{{if mention.resource mention.resource.name mention.target}}</span>
                                                         {{/if}}
                                                         <span class="gh-dashboard-mention-timestamp">{{moment-from-now mention.timestamp}}</span>
                                                     </div>
                                                 </a>
                                             {{/each}}
                                         {{else}}
-                                        Empty state
+                                            <div class="gh-mentions-list-cta">
+                                                {{svg-jar "email-love-letter" class="love-letter"}}
+                                                <h4>No mentions yet</h4>
+                                                <p>When other sites mention your posts or pages, they'll appear here.</p>
+                                            </div>
                                         {{/if}}
                                     </div>
                                 </div>
