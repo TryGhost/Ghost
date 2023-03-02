@@ -22,7 +22,7 @@
     "delay": "5.0.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "14.0.2"
+    "sinon": "15.0.1"
   },
   "dependencies": {
     "@breejs/later": "4.1.0",
