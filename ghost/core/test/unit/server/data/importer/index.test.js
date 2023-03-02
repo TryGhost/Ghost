@@ -30,7 +30,7 @@ describe('Importer', function () {
     describe('ImportManager', function () {
         it('has the correct interface', function () {
             ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(6);
-            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(4);
+            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(5);
             ImportManager.loadFile.should.be.instanceof(Function);
             ImportManager.preProcess.should.be.instanceof(Function);
             ImportManager.doImport.should.be.instanceof(Function);
@@ -430,7 +430,8 @@ describe('Importer', function () {
                 const input = {
                     data: {},
                     images: [],
-                    media: []
+                    media: [],
+                    files: []
                 };
 
                 // pass a copy so that input doesn't get modified
@@ -453,6 +454,7 @@ describe('Importer', function () {
                     output.should.have.property('preProcessedByData', true);
                     output.should.have.property('preProcessedByImage', true);
                     output.should.have.property('preProcessedByMedia', true);
+                    output.should.have.property('preProcessedByFiles', true);
                     done();
                 }).catch(done);
             });
