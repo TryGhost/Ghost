@@ -25,6 +25,9 @@ class ImporterMediaHandler {
         return this.config.get('uploads').media.contentTypes;
     }
 
+    // @NOTE: making the second parameter strict folder "content/media" broke the glob pattern
+    //        in the importer, so we need to keep it as general "content" unless
+    //        it becomes a strict requirement
     directories = ['media', 'content'];
 
     async loadFile(files, baseDir) {
