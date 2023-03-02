@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 
-class ImporterMediaHandler {
+class ImporterContentFileHandler {
     /**
      *
      * @param {Object} deps dependencies
@@ -69,4 +69,4 @@ class ImporterMediaHandler {
     }
 }
 
-module.exports = ImporterMediaHandler;
+module.exports = ImporterContentFileHandler;
