@@ -45,6 +45,39 @@
                 "audio/x-m4a"
             ]
         },
+        "files": {
+            "extensions": [
+                ".pdf",
+                ".json",
+                ".jsonld",
+                ".odp",
+                ".ods",
+                ".odt",
+                ".ppt",
+                ".pptx",
+                ".rtf",
+                ".txt",
+                ".xls",
+                ".xlsx",
+                ".xml"
+            ],
+            "contentTypes": [
+                "application/pdf",
+                "application/json",
+                "application/ld+json",
+                "application/vnd.oasis.opendocument.presentation",
+                "application/vnd.oasis.opendocument.spreadsheet",
+                "application/vnd.oasis.opendocument.text",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "application/rtf",
+                "text/plain",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/xml",
+                "application/atom+xml"
+            ]
+        },
         "thumbnails": {
             "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico", ".webp"],
             "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
