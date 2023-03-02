@@ -63,7 +63,7 @@ class ContentFileImporter {
     /**
      *
      * @param {Object} deps
-     * @param {'images' | 'media'} deps.type - importer type
+     * @param {'images' | 'media' | 'files'} deps.type - importer type
      * @param {import('ghost-storage-base')} deps.store
      */
     constructor(deps) {
@@ -96,15 +96,30 @@ class ContentFileImporter {
             importData.preProcessedByMedia = true;
         }
 
+        if (this.type === 'files') {
+            if (importData.files && importData.data) {
+                _.each(importData.files, function (file) {
+                    preProcessPosts(importData.data.data, file);
+                });
+            }
+
+            importData.preProcessedByFiles = true;
+        }
+
         return importData;
     }
 
-    doImport(imageData) {
+    /**
+     *
+     * @param {Object[]} contentFilesData
+     * @returns
+     */
+    doImport(contentFilesData) {
         const store = this.#store;
 
-        return Promise.all(imageData.map(function (image) {
-            return store.save(image, image.targetDir).then(function (result) {
-                return {originalPath: image.originalPath, newPath: image.newPath, stored: result};
+        return Promise.all(contentFilesData.map(function (contentFile) {
+            return store.save(contentFile, contentFile.targetDir).then(function (result) {
+                return {originalPath: contentFile.originalPath, newPath: contentFile.newPath, stored: result};
             });
         }));
     }
