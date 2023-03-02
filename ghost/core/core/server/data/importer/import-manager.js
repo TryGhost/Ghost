@@ -69,7 +69,7 @@ class ImportManager {
         });
 
         const filesHandler = new ImporterContentFileHandler({
-            type: 'contentFiles',
+            type: 'files',
             // @NOTE: making the second parameter strict folder "content/files" brakes the glob pattern
             //        in the importer, so we need to keep it as general "content" unless
             //        it becomes a strict requirement
@@ -90,10 +90,15 @@ class ImportManager {
             store: mediaStorage
         });
 
+        const contentFilesImporter = new ContentFileImporter({
+            type: 'files',
+            store: fileStorage
+        });
+
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [imageImporter, mediaImporter, RevueImporter, DataImporter];
+        this.importers = [imageImporter, mediaImporter, contentFilesImporter, RevueImporter, DataImporter];
 
         /**
          * @type {Handler[]}
