@@ -9,6 +9,7 @@ export default class ApplicationController extends Controller {
     @service session;
     @service settings;
     @service ui;
+    @service upgradeStatus;
 
     @inject config;
 
