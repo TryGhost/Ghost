@@ -1,7 +1,7 @@
 {
-  "name": "@tryghost/importer-handler-media",
+  "name": "@tryghost/importer-handler-content-files",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/importer-handler-media",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/importer-handler-content-files",
   "author": "Ghost Foundation",
   "private": true,
   "main": "index.js",
