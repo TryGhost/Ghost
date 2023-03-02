@@ -2601,7 +2601,7 @@ Dashboard Mentions */
 }
 
 .gh-dashboard-mentions-icon svg path {
-    color: var(--blackgrey);
+    stroke: currentColor;
 }
 
 .gh-dashboard-mentions-icon svg circle {
@@ -2619,12 +2619,15 @@ Dashboard Mentions */
     border: none;
 }
 
-.gh-dashboard-mentions {
+.gh-dashboard-mentions-container {
+    border-radius: 3px;
     box-shadow: var(--box-shadow-m);
+}
+
+.gh-dashboard-mentions {
     min-width: 300px;
     max-width: 400px;
     padding: 20px;
-    border-radius: 3px;
 }
 
 .gh-dashboard-mentions-header {
@@ -2708,7 +2711,7 @@ Dashboard Mentions */
 .gh-dashboard-mention-timestamp {
     color: var(--midlightgrey);
     font-size: 1.2rem;
-    font-weight: 500;
+    font-weight: 400;
     padding-left: 28px;
     white-space: nowrap;
     margin-top: 2px;
