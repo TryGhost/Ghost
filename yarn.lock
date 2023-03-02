@@ -19917,7 +19917,6 @@ mocha@^2.5.3:
 
 mock-knex@TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192:
   version "0.4.12"
-  uid d8b93b1c20d4820323477f2c60db016ab3e73192
   resolved "https://codeload.github.com/TryGhost/mock-knex/tar.gz/d8b93b1c20d4820323477f2c60db016ab3e73192"
   dependencies:
     bluebird "^3.4.1"
