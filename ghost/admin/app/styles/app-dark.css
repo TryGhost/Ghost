@@ -1506,3 +1506,20 @@ kbd {
 .gh-mentions-explainer {
     background: var(--whitegrey);
 }
+
+.gh-mention-your-link.has-multiple-links {
+    border-bottom: 1px dashed var(--midlightgrey);
+}
+
+.gh-mention-header .popover {
+    background-color: #1c1e21;
+    color: var(--darkgrey);
+}
+
+.gh-dashboard-mentions-container {
+    background: #1c1e21;
+}
+
+.gh-dashboard-mentions-header {
+    border-color: #2b2d31;
+}
