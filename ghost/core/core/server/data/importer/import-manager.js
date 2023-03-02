@@ -11,7 +11,7 @@ const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
-const MediaHandler = require('@tryghost/importer-handler-content-files');
+const ImporterContentFileHandler = require('@tryghost/importer-handler-content-files');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
@@ -54,8 +54,15 @@ let defaults = {
 
 class ImportManager {
     constructor() {
-        const mediaHandler = new MediaHandler({
-            config: config,
+        const mediaHandler = new ImporterContentFileHandler({
+            type: 'media',
+            // @NOTE: making the second parameter strict folder "content/media" broke the glob pattern
+            //        in the importer, so we need to keep it as general "content" unless
+            //        it becomes a strict requirement
+            directories: ['media', 'content'],
+            extensions: config.get('uploads').media.extensions,
+            contentTypes: config.get('uploads').media.contentTypes,
+            contentPath: config.getContentPath('media'),
             urlUtils: urlUtils,
             storage: mediaStorage
         });
