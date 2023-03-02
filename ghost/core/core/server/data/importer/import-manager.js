@@ -64,10 +64,15 @@ class ImportManager {
             type: 'images',
             store: imageStorage
         });
+        const mediaImporter = new ContentFileImporter({
+            type: 'media',
+            store: mediaStorage
+        });
+
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [imageImporter, RevueImporter, DataImporter];
+        this.importers = [imageImporter, mediaImporter, RevueImporter, DataImporter];
 
         /**
          * @type {Handler[]}

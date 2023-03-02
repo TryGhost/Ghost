@@ -15,14 +15,21 @@ replaceImage = function (markdown, image) {
     return markdown.replace(regex, image.newPath);
 };
 
-preProcessPosts = function (data, image) {
+/**
+ * @param {Object} data
+ * @param {Object[]} data.posts
+ * @param {Object} contentFile
+ * @param {String} contentFile.originalPath
+ * @param {String} contentFile.newPath
+ */
+preProcessPosts = function (data, contentFile) {
     _.each(data.posts, function (post) {
-        post.markdown = replaceImage(post.markdown, image);
+        post.markdown = replaceImage(post.markdown, contentFile);
         if (post.html) {
-            post.html = replaceImage(post.html, image);
+            post.html = replaceImage(post.html, contentFile);
         }
         if (post.feature_image) {
-            post.feature_image = replaceImage(post.feature_image, image);
+            post.feature_image = replaceImage(post.feature_image, contentFile);
         }
     });
 };
@@ -56,7 +63,7 @@ class ContentFileImporter {
     /**
      *
      * @param {Object} deps
-     * @param {'images'} deps.type - importer type
+     * @param {'images' | 'media'} deps.type - importer type
      * @param {import('ghost-storage-base')} deps.store
      */
     constructor(deps) {
@@ -65,15 +72,30 @@ class ContentFileImporter {
     }
 
     preProcess(importData) {
-        if (importData.images && importData.data) {
-            _.each(importData.images, function (image) {
-                preProcessPosts(importData.data.data, image);
-                preProcessTags(importData.data.data, image);
-                preProcessUsers(importData.data.data, image);
-            });
+        if (this.type === 'images') {
+            if (importData.images && importData.data){
+                _.each(importData.images, function (image) {
+                    preProcessPosts(importData.data.data, image);
+                    preProcessTags(importData.data.data, image);
+                    preProcessUsers(importData.data.data, image);
+                });
+            }
+
+            importData.preProcessedByImage = true;
         }
 
-        importData.preProcessedByImage = true;
+        // @NOTE: the type === 'media' check does not belong here and should be abstracted away
+        //        to make this importer more generic
+        if (this.type === 'media') {
+            if (importData.media && importData.data) {
+                _.each(importData.media, function (file) {
+                    preProcessPosts(importData.data.data, file);
+                });
+            }
+
+            importData.preProcessedByMedia = true;
+        }
+
         return importData;
     }
 
