@@ -1523,3 +1523,7 @@ kbd {
 .gh-dashboard-mentions-header {
     border-color: #2b2d31;
 }
+
+.gh-dashboard-mention:hover {
+    background: var(--whitegrey-d1);
+}
