@@ -43,23 +43,23 @@ class ImporterContentFileHandler {
     async loadFile(files, baseDir) {
         const baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp('');
 
-        const mediaFolderRegexes = _.map(this.storage.staticFileURLPrefix.split('/'), function (dir) {
+        const contentFilesFolderRegexes = _.map(this.storage.staticFileURLPrefix.split('/'), function (dir) {
             return new RegExp('^' + dir + '/');
         });
 
         // normalize the directory structure
-        const mediaContentPath = this.#contentPath;
+        const filesContentPath = this.#contentPath;
         files = _.map(files, function (file) {
             const noBaseDir = file.name.replace(baseDirRegex, '');
             let noGhostDirs = noBaseDir;
 
-            _.each(mediaFolderRegexes, function (regex) {
+            _.each(contentFilesFolderRegexes, function (regex) {
                 noGhostDirs = noGhostDirs.replace(regex, '');
             });
 
             file.originalPath = noBaseDir;
             file.name = noGhostDirs;
-            file.targetDir = path.join(mediaContentPath, path.dirname(noGhostDirs));
+            file.targetDir = path.join(filesContentPath, path.dirname(noGhostDirs));
             return file;
         });
 
@@ -70,7 +70,7 @@ class ImporterContentFileHandler {
                     '/',
                     self.urlUtils.getSubdir(),
                     self.storage.staticFileURLPrefix,
-                    path.relative(mediaContentPath, targetFilename)
+                    path.relative(filesContentPath, targetFilename)
                 );
 
                 return contentFile;
