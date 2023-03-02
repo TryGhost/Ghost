@@ -1,21 +1,21 @@
 const assert = require('assert');
 const sinon = require('sinon');
-const ImporterMedia = require('../index');
+const ImporterContentFileHandler = require('../index');
 
-describe('ImporterMediaHandler', function () {
+describe('ImporterContentFileHandler', function () {
     it('creates an instance', function () {
-        const mediaImporter = new ImporterMedia({
+        const contentFileImporter = new ImporterContentFileHandler({
             storage: {},
             config: {},
             urlUtils: {}
         });
 
-        assert.ok(mediaImporter);
-        assert.equal(mediaImporter.type, 'media');
+        assert.ok(contentFileImporter);
+        assert.equal(contentFileImporter.type, 'media');
     });
 
     it('returns configured extensions', function () {
-        const mediaImporter = new ImporterMedia({
+        const contentFileImporter = new ImporterContentFileHandler({
             storage: {},
             config: {
                 get: () => ({
@@ -27,11 +27,11 @@ describe('ImporterMediaHandler', function () {
             urlUtils: {}
         });
 
-        assert.deepEqual(mediaImporter.extensions, ['mp4']);
+        assert.deepEqual(contentFileImporter.extensions, ['mp4']);
     });
 
     it('returns configured contentTypes', function () {
-        const mediaImporter = new ImporterMedia({
+        const contentFileImporter = new ImporterContentFileHandler({
             storage: {},
             config: {
                 get: () => ({
@@ -43,7 +43,7 @@ describe('ImporterMediaHandler', function () {
             urlUtils: {}
         });
 
-        assert.deepEqual(mediaImporter.contentTypes, ['video/mp4']);
+        assert.deepEqual(contentFileImporter.contentTypes, ['video/mp4']);
     });
 
     // @NOTE: below tests need more work, they are just covering the basics
@@ -51,7 +51,7 @@ describe('ImporterMediaHandler', function () {
     //        from the image importer and the tests were adapted to the media importer
     describe('loadFile', function () {
         it('loads files and decorates them with newPath with subdirectory', async function () {
-            const mediaImporter = new ImporterMedia({
+            const contentFileImporter = new ImporterContentFileHandler({
                 storage: {
                     staticFileURLPrefix: 'content/media',
                     getUniqueFileName: (file, targetDir) => Promise.resolve(targetDir + '/' + file.name)
@@ -72,7 +72,7 @@ describe('ImporterMediaHandler', function () {
             }];
             const subDir = 'blog';
 
-            await mediaImporter.loadFile(files, subDir);
+            await contentFileImporter.loadFile(files, subDir);
 
             assert.equal(files[0].name, '1.mp4');
             assert.equal(files[0].originalPath, 'content/media/1.mp4');
@@ -81,7 +81,7 @@ describe('ImporterMediaHandler', function () {
         });
 
         it('loads files and decorates them with newPath with NO subdirectory', async function () {
-            const mediaImporter = new ImporterMedia({
+            const contentFileImporter = new ImporterContentFileHandler({
                 storage: {
                     staticFileURLPrefix: 'content/media',
                     getUniqueFileName: (file, targetDir) => Promise.resolve(targetDir + '/' + file.name)
@@ -101,7 +101,7 @@ describe('ImporterMediaHandler', function () {
                 name: 'content/media/1.mp4'
             }];
 
-            await mediaImporter.loadFile(files);
+            await contentFileImporter.loadFile(files);
 
             assert.equal(files[0].name, '1.mp4');
             assert.equal(files[0].originalPath, 'content/media/1.mp4');
