@@ -9,7 +9,12 @@ const {JSDOM} = jsdom;
 const BROWSER_NAME = process.env.browser || 'chromium';
 
 export async function startApp(browserName = BROWSER_NAME) {
-    const browser = await {chromium, webkit, firefox}[browserName].launch();
+    const headless = process.env.PLAYWRIGHT_HEADLESS === 'false' ? false : true;
+    const slowMo = parseInt(process.env.PLAYWRIGHT_SLOWMO) || 0;
+    const browser = await {chromium, webkit, firefox}[browserName].launch({
+        headless: headless,
+        slowMo: slowMo
+    });
     const page = await browser.newPage();
 
     return {

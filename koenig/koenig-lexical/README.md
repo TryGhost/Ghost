@@ -53,6 +53,8 @@ All imported files are processed/optimised via SVGO (see `svgo.config.js` for op
 Tests use [Vitest](https://vitest.dev) as the test runner, with [Puppeteer](https://pptr.dev) used for e2e testing.
 
 - `yarn test run` runs tests and exits
+- `yarn test:headed` runs tests in browser so you can watch the tests execute
+- `yarn test:slowmo` same as `yarn test:headed` but adds 100ms delay between instructions to make it easier to see what's happening (note that some tests may fail or timeout due to the added delays)
 - `yarn test:watch` runs tests and starts a test watcher that re-runs tests on file changes
 - `yarn test:watch --ui` same as `yarn test:watch` but also opens a browser UI for exploring and re-running tests
 

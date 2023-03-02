@@ -25,6 +25,8 @@
     "preview": "vite preview",
     "pretest": "VITE_TEST=true yarn build --config vite.config.demo.js",
     "test": "vitest run",
+    "test:headed": "PLAYWRIGHT_HEADLESS=false vitest run",
+    "test:slowmo": "PLAYWRIGHT_SLOWMO=100 PLAYWRIGHT_HEADLESS=false vitest run",
     "pretest:watch": "yarn pretest",
     "test:watch": "vitest",
     "posttest": "yarn lint",
