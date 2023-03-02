@@ -51,12 +51,16 @@ class ImporterMediaHandler {
         });
 
         const self = this;
-        return Promise.all(files.map(function (image) {
-            return self.storage.getUniqueFileName(image, image.targetDir).then(function (targetFilename) {
-                image.newPath = self.urlUtils.urlJoin('/', self.urlUtils.getSubdir(), self.storage.staticFileURLPrefix,
-                    path.relative(self.config.getContentPath('media'), targetFilename));
+        return Promise.all(files.map(function (contentFile) {
+            return self.storage.getUniqueFileName(contentFile, contentFile.targetDir).then(function (targetFilename) {
+                contentFile.newPath = self.urlUtils.urlJoin(
+                    '/',
+                    self.urlUtils.getSubdir(),
+                    self.storage.staticFileURLPrefix,
+                    path.relative(mediaContentPath, targetFilename)
+                );
 
-                return image;
+                return contentFile;
             });
         }));
     }
