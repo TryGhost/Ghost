@@ -28,7 +28,7 @@
     "luxon": "2.5.2",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "14.0.2",
+    "sinon": "15.0.1",
     "sqlite3": "5.1.4"
   },
   "dependencies": {
