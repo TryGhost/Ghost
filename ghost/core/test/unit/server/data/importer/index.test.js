@@ -30,7 +30,7 @@ describe('Importer', function () {
     describe('ImportManager', function () {
         it('has the correct interface', function () {
             ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(5);
-            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(3);
+            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(4);
             ImportManager.loadFile.should.be.instanceof(Function);
             ImportManager.preProcess.should.be.instanceof(Function);
             ImportManager.doImport.should.be.instanceof(Function);
@@ -391,7 +391,11 @@ describe('Importer', function () {
         describe('preProcess', function () {
             // preProcess can modify the data prior to importing
             it('calls the DataImporter preProcess method', function (done) {
-                const input = {data: {}, images: []};
+                const input = {
+                    data: {},
+                    images: [],
+                    media: []
+                };
 
                 // pass a copy so that input doesn't get modified
                 const inputCopy = _.cloneDeep(input);
@@ -412,6 +416,7 @@ describe('Importer', function () {
                     output.should.not.equal(input);
                     output.should.have.property('preProcessedByData', true);
                     output.should.have.property('preProcessedByImage', true);
+                    output.should.have.property('preProcessedByMedia', true);
                     done();
                 }).catch(done);
             });
