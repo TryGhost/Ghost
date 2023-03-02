@@ -96,6 +96,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    max-width: 240px;
 }
 
 .gh-mention-header .popover-arrow  {
@@ -210,7 +211,6 @@
 }
 
 .gh-mentions-list-cta h4 {
-    color: var(--black);
     text-align: center;
     font-weight: 600;
     margin-bottom: 8px;
