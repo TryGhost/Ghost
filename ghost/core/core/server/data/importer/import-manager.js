@@ -15,7 +15,7 @@ const MediaHandler = require('@tryghost/importer-handler-media');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
-const ImageImporter = require('./importers/image');
+const ContentFileImporter = require('./importers/ContentFileImporter');
 const RevueImporter = require('@tryghost/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
@@ -60,7 +60,7 @@ class ImportManager {
             storage: mediaStorage
         });
 
-        const imageImporter = new ImageImporter({
+        const imageImporter = new ContentFileImporter({
             type: 'images',
             store: imageStorage
         });
