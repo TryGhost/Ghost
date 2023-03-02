@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const ContentFileImporter = require('../../../../../../core/server/data/importer/importers/ContentFileImporter');
 
-describe('ImageImporter', function () {
+describe('ContentFileImporter', function () {
     afterEach(function () {
         sinon.restore();
     });
