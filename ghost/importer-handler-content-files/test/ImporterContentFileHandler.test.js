@@ -1,10 +1,10 @@
 const assert = require('assert');
-const sinon = require('sinon');
 const ImporterContentFileHandler = require('../index');
 
 describe('ImporterContentFileHandler', function () {
     it('creates an instance', function () {
         const contentFileImporter = new ImporterContentFileHandler({
+            type: 'media',
             storage: {},
             config: {},
             urlUtils: {}
@@ -17,13 +17,7 @@ describe('ImporterContentFileHandler', function () {
     it('returns configured extensions', function () {
         const contentFileImporter = new ImporterContentFileHandler({
             storage: {},
-            config: {
-                get: () => ({
-                    media: {
-                        extensions: ['mp4']
-                    }
-                })
-            },
+            extensions: ['mp4'],
             urlUtils: {}
         });
 
@@ -33,13 +27,7 @@ describe('ImporterContentFileHandler', function () {
     it('returns configured contentTypes', function () {
         const contentFileImporter = new ImporterContentFileHandler({
             storage: {},
-            config: {
-                get: () => ({
-                    media: {
-                        contentTypes: ['video/mp4']
-                    }
-                })
-            },
+            contentTypes: ['video/mp4'],
             urlUtils: {}
         });
 
@@ -56,11 +44,7 @@ describe('ImporterContentFileHandler', function () {
                     staticFileURLPrefix: 'content/media',
                     getUniqueFileName: (file, targetDir) => Promise.resolve(targetDir + '/' + file.name)
                 },
-                config: {
-                    getContentPath: sinon.stub()
-                        .withArgs('media')
-                        .returns('/var/www/ghost/content/media')
-                },
+                contentPath: '/var/www/ghost/content/media',
                 urlUtils: {
                     getSubdir: () => 'blog',
                     urlJoin: (...args) => args.join('/')
@@ -86,11 +70,7 @@ describe('ImporterContentFileHandler', function () {
                     staticFileURLPrefix: 'content/media',
                     getUniqueFileName: (file, targetDir) => Promise.resolve(targetDir + '/' + file.name)
                 },
-                config: {
-                    getContentPath: sinon.stub()
-                        .withArgs('media')
-                        .returns('/var/www/ghost/content/media')
-                },
+                contentPath: '/var/www/ghost/content/media',
                 urlUtils: {
                     getSubdir: () => 'blog',
                     urlJoin: (...args) => args.join('/')

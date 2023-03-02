@@ -2,33 +2,43 @@ const _ = require('lodash');
 const path = require('path');
 
 class ImporterContentFileHandler {
+    /** @property {'media' | 'files' | 'images'} */
+    type;
+
+    /** @property {string[]} */
+    directories;
+
+    /** @property {string[]} */
+    extensions;
+
+    /** @property {string[]} */
+    contentTypes;
+
+    /**
+     * Holds path to the destination content directory
+     * @property {string} */
+    #contentPath;
+
     /**
      *
      * @param {Object} deps dependencies
+     * @param {'media' | 'files' | 'images'} deps.type type of content file
+     * @param {string[]} deps.extensions file extensions to search for
+     * @param {string[]} deps.contentTypes content types to search for
+     * @param {string[]} deps.directories directories to search for content files
+     * @param {string} deps.contentPath path to the destination content directory
      * @param {Object} deps.storage storage adapter instance
-     * @param {Object} deps.config config instance
      * @param {object} deps.urlUtils urlUtils instance
      */
     constructor(deps) {
+        this.type = deps.type;
+        this.directories = deps.directories;
+        this.extensions = deps.extensions;
+        this.contentTypes = deps.contentTypes;
         this.storage = deps.storage;
-        this.config = deps.config;
+        this.#contentPath = deps.contentPath;
         this.urlUtils = deps.urlUtils;
     }
-
-    type = 'media';
-
-    get extensions() {
-        return this.config.get('uploads').media.extensions;
-    }
-
-    get contentTypes() {
-        return this.config.get('uploads').media.contentTypes;
-    }
-
-    // @NOTE: making the second parameter strict folder "content/media" broke the glob pattern
-    //        in the importer, so we need to keep it as general "content" unless
-    //        it becomes a strict requirement
-    directories = ['media', 'content'];
 
     async loadFile(files, baseDir) {
         const baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp('');
@@ -38,7 +48,7 @@ class ImporterContentFileHandler {
         });
 
         // normalize the directory structure
-        const mediaContentPath = this.config.getContentPath('media');
+        const mediaContentPath = this.#contentPath;
         files = _.map(files, function (file) {
             const noBaseDir = file.name.replace(baseDirRegex, '');
             let noGhostDirs = noBaseDir;
