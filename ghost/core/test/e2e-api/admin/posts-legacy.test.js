@@ -11,6 +11,8 @@ const models = require('../../../core/server/models');
 const localUtils = require('./utils');
 const configUtils = require('../../utils/configUtils');
 const mockManager = require('../../utils/e2e-framework-mock-manager');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 
 describe('Posts API', function () {
     let request;
@@ -623,6 +625,8 @@ describe('Posts API', function () {
 
         updatedPost.status = 'published';
 
+        const loggingStub = sinon.stub(logging, 'error');
+
         await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
@@ -630,6 +634,8 @@ describe('Posts API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(400);
+
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can publish a post without email', async function () {
@@ -1987,6 +1993,8 @@ describe('Posts API', function () {
             const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
             const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
+            const loggingStub = sinon.stub(logging, 'error');
+
             const response = await request
                 .put(localUtils.API.getApiQuery(`posts/${draftPost.id}/?newsletter=${newsletterSlug}`))
                 .set('Origin', config.get('url'))
@@ -2000,6 +2008,7 @@ describe('Posts API', function () {
 
             response.body.errors[0].type.should.equal('HostLimitError');
             response.body.errors[0].context.should.equal('No email shalt be sent');
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 });

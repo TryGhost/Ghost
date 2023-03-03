@@ -96,6 +96,11 @@ const prepareContentFolder = (options) => {
     } else if (options.copySettings) {
         fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     }
+
+    // Used by newsletter fixtures
+    fs.ensureDirSync(path.join(contentFolderForTests, 'images', '2022', '05'));
+    const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
+    fs.writeFileSync(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
 };
 
 // CASE: Ghost Server is Running
