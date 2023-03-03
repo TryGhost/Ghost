@@ -135,7 +135,7 @@ describe('Tiers API', function () {
     });
 
     it('Can edit tier properties and relations', async function () {
-        let {body: {tiers: [tier]}} = await agent.get('/tiers/?filter=type:paid,active:true&limit=1')
+        let {body: {tiers: [tier]}} = await agent.get('/tiers/?filter=type:paid&limit=1')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
