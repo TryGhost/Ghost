@@ -1,11 +1,13 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyContentVersion} = matchers;
 const assert = require('assert');
+const sinon = require('sinon');
 
 // @TODO: factor out these requires
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
+const logging = require('@tryghost/logging');
 
 describe('Email Preview API', function () {
     let agent;
@@ -16,6 +18,7 @@ describe('Email Preview API', function () {
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     before(async function () {
@@ -238,6 +241,7 @@ describe('Email Preview API', function () {
         });
 
         it('cannot send test email', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             await agent
                 .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
                 .body({
@@ -253,6 +257,7 @@ describe('Email Preview API', function () {
                         id: anyErrorId
                     }]
                 });
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 
@@ -262,6 +267,7 @@ describe('Email Preview API', function () {
         });
 
         it('cannot send test email', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             await agent
                 .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
                 .body({
@@ -277,6 +283,7 @@ describe('Email Preview API', function () {
                         id: anyErrorId
                     }]
                 });
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 });

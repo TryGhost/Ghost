@@ -2,9 +2,11 @@ const path = require('path');
 const fs = require('fs-extra');
 const should = require('should');
 const supertest = require('supertest');
+const sinon = require('sinon');
 const localUtils = require('./utils');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
+const logging = require('@tryghost/logging');
 
 describe('Media API', function () {
     // NOTE: holds paths to media that need to be cleaned up after the tests are run
@@ -21,6 +23,10 @@ describe('Media API', function () {
         media.forEach(function (image) {
             fs.removeSync(config.get('paths').appRoot + image);
         });
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('media/upload', function () {
@@ -114,6 +120,7 @@ describe('Media API', function () {
         });
 
         it('Rejects non-media file type', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
@@ -122,6 +129,7 @@ describe('Media API', function () {
                 .expect(415);
 
             res.body.errors[0].message.should.match(/select a valid media file/gi);
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 

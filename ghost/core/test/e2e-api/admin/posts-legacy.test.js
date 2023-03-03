@@ -38,6 +38,7 @@ describe('Posts API', function () {
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
         nock.cleanAll();
     });
 
@@ -142,11 +143,13 @@ describe('Posts API', function () {
     });
 
     it('Returns a validation error when unknown filter key is used', async function () {
+        const loggingStub = sinon.stub(logging, 'error');
         await request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(400);
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can paginate posts', async function () {
