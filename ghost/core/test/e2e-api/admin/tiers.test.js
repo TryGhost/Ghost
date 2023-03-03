@@ -34,9 +34,16 @@ describe('Tiers API', function () {
     });
 
     it('Can set limits on browse Tiers', async function () {
-        const res = await agent
-            .get('/tiers/?limit=1');
-        assert(res.body.tiers.length === 1, 'The response should only contain 1 Tier');
+        await agent
+            .get('/tiers/?limit=1')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                tiers: Array(1).fill({
+                    id: matchers.anyObjectId,
+                    created_at: matchers.anyISODateTime,
+                    updated_at: matchers.anyISODateTime
+                })
+            });
     });
 
     it('Errors when price is non-integer', async function () {
