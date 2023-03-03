@@ -5,6 +5,7 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const urlUtils = require('../utils/urlUtils');
 const settings = require('../../core/shared/settings-cache');
+const {mockManager} = require('../utils/e2e-framework');
 
 let request;
 
@@ -22,6 +23,7 @@ describe('Advanced URL Configurations', function () {
         before(async function () {
             configUtils.set('url', 'http://localhost/blog/');
             urlUtils.stubUrlUtilsFromConfig();
+            mockManager.mockMail();
 
             await testUtils.startGhost({forceStart: true});
 
@@ -31,6 +33,7 @@ describe('Advanced URL Configurations', function () {
         after(async function () {
             await configUtils.restore();
             urlUtils.restore();
+            mockManager.restore();
         });
 
         afterEach(function () {

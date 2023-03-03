@@ -18,6 +18,7 @@ const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -726,10 +727,13 @@ describe('Members API', function () {
             });
         const newMember = body.members[0];
 
+        // Cannot add same member twice
+        const loggingStub = sinon.stub(logging, 'error');
         await agent
             .post(`/members/`)
             .body({members: [member]})
             .expectStatus(422);
+        sinon.assert.calledOnce(loggingStub);
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -895,6 +899,7 @@ describe('Members API', function () {
 
         const statusEventsBefore = await models.MemberStatusEvent.findAll();
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`members/?send_email=true&email_type=lel`)
             .body({members: [newMember]})
@@ -1543,6 +1548,7 @@ describe('Members API', function () {
             ]
         };
 
+        sinon.stub(logging, 'error');
         await agent
             .put(`/members/${memberWithPaidSubscription.id}/`)
             .body({members: [compedPayload]})
@@ -1561,6 +1567,7 @@ describe('Members API', function () {
             tiers: []
         };
 
+        sinon.stub(logging, 'error');
         await agent
             .put(`/members/${memberWithPaidSubscription.id}/`)
             .body({members: [compedPayload]})
@@ -2299,6 +2306,7 @@ describe('Members API', function () {
     });
 
     it('Errors when fetching stats with unknown days param value', async function () {
+        sinon.stub(logging, 'error');
         await agent
             .get('members/stats/?days=nope')
             .expectStatus(422)
@@ -2398,6 +2406,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`/members/`)
             .body({members: [member]})

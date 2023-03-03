@@ -4,6 +4,8 @@ const models = require('../../../core/server/models');
 
 const assert = require('assert');
 const moment = require('moment');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 
 let agent;
 
@@ -94,6 +96,7 @@ describe('Activity Feed API', function () {
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     describe('Filter splitting', function () {
@@ -119,6 +122,7 @@ describe('Activity Feed API', function () {
 
         it('Cannot combine type filter with OR filter', async function () {
             // This query is not allowed because we need to split the filter in two AND filters
+            const loggingStub = sinon.stub(logging, 'error');
             await agent
                 .get(`/members/events?filter=type:comment_event,data.post_id:123`)
                 .expectStatus(400)
@@ -133,9 +137,11 @@ describe('Activity Feed API', function () {
                         }
                     ]
                 });
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('Can only combine type and other filters at the root level', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             await agent
                 .get(`/members/events?filter=${encodeURIComponent('(type:comment_event+data.post_id:123)+data.post_id:123')}`)
                 .expectStatus(400)
@@ -150,6 +156,7 @@ describe('Activity Feed API', function () {
                         }
                     ]
                 });
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('Can use OR as long as it is not combined with type', async function () {

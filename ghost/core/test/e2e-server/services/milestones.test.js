@@ -168,6 +168,7 @@ describe('Milestones Service', function () {
         sinon.createSandbox();
         configUtils.set('milestones', milestonesConfig);
         mockManager.mockLabsEnabled('milestoneEmails');
+        mockManager.mockMail();
     });
 
     afterEach(async function () {

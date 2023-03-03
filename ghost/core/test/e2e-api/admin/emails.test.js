@@ -1,6 +1,8 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {nullable, anything, anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyErrorId, anyString} = matchers;
 const assert = require('assert');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 
 const matchEmail = {
     id: anyObjectId,
@@ -39,6 +41,7 @@ describe('Emails API', function () {
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     it('Can browse emails', async function () {
@@ -83,6 +86,7 @@ describe('Emails API', function () {
     });
 
     it('Errors when retrying an email that was successful', async function () {
+        const loggingStub = sinon.stub(logging, 'error');
         await agent
             .put(`emails/${fixtureManager.get('emails', 0).id}/retry`)
             .expectStatus(400)
@@ -95,6 +99,7 @@ describe('Emails API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can browse email batches', async function () {
