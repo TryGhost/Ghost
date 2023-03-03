@@ -149,27 +149,27 @@ describe('Tiers API', function () {
                 })
             });
 
-        // await agent.put(`/tiers/${tier.id}/`)
-        //     .body({
-        //         tiers: [{
-        //             description: 'Updated description',
-        //             benefits: ['daily cat pictures', 'delicious avo toast']
-        //         }]
-        //     })
-        //     .expectStatus(200);
+        await agent.put(`/tiers/${tier.id}/`)
+            .body({
+                tiers: [{
+                    description: 'Updated description',
+                    benefits: ['daily cat pictures', 'delicious avo toast']
+                }]
+            })
+            .expectStatus(200);
 
-        // const {body: {tiers: [updatedTier]}} = await agent.get(`/tiers/${tier.id}/`)
-        //     .expectStatus(200)
-        //     .matchHeaderSnapshot({
-        //         'content-version': anyContentVersion,
-        //         etag: anyEtag
-        //     })
-        //     .matchBodySnapshot({
-        //         tiers: Array(1).fill({
-        //             id: matchers.anyObjectId,
-        //             created_at: matchers.anyISODateTime,
-        //             updated_at: matchers.anyISODateTime
-        //         })
-        //     });
+        const {body: {tiers: [updatedTier]}} = await agent.get(`/tiers/${tier.id}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                tiers: Array(1).fill({
+                    id: matchers.anyObjectId,
+                    created_at: matchers.anyISODateTime,
+                    updated_at: matchers.anyISODateTime
+                })
+            });
     });
 });
