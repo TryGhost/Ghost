@@ -5,8 +5,8 @@ module.exports = {
         this.api = {
             // @NOTE: the inlining should become an offloaded job
             // startMediaInliner: mediaInliner.inlineMedia
-            startMediaInliner: () => {
-                debug('[Inliner] Starting media inlining job');
+            startMediaInliner: (domains) => {
+                debug('[Inliner] Starting media inlining job for domains: ', domains);
                 return {
                     status: 'success'
                 };
