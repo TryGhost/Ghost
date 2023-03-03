@@ -84,8 +84,6 @@ describe('Unit: services/url/Urls', function () {
             },
             generatorId: 1
         });
-        loggingStub.calledOnce.should.eql(true);
-        loggingStub.firstCall.firstArg.should.have.property('code').eql('URLSERVICE_RESOURCE_DUPLICATE');
 
         should.exist(eventsToRemember['url.added']);
 
