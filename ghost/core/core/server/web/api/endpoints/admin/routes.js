@@ -205,6 +205,12 @@ module.exports = function apiRoutes() {
         http(api.db.backupContent)
     );
 
+    router.post('/db/media/inline',
+        mw.authAdminApi,
+        labs.enabledMiddleware('mediaInliner'),
+        http(api.db.inlineMedia)
+    );
+
     // ## Slack
     router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
