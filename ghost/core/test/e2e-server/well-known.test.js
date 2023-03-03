@@ -1,11 +1,16 @@
-const {agentProvider, matchers} = require('../utils/e2e-framework');
+const {agentProvider, matchers, mockManager} = require('../utils/e2e-framework');
 const {anyString, anyEtag} = matchers;
 
 describe('.well-known', function () {
     let agentGhostAPI;
 
     before(async function () {
+        mockManager.mockMail();
         agentGhostAPI = await agentProvider.getGhostAPIAgent();
+    });
+
+    after(function () {
+        mockManager.restore();
     });
 
     describe('GET /jwks.json', function () {
