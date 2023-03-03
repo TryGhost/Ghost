@@ -51,14 +51,16 @@ module.exports = class TierRepository {
     /**
      * @param {object} [options]
      * @param {string} [options.filter]
+     * @param {number} [options.limit]
+     * @param {number} [options.offset]
      * @returns {Promise<import('@tryghost/tiers/lib/Tier')[]>}
      */
     async getAll(options = {}) {
-        const collection = await this.#ProductModel.findAll({...options, withRelated: ['benefits']});
+        const collection = await this.#ProductModel.findPage({...options, withRelated: ['benefits']});
 
         const result = [];
 
-        for (const model of collection.models) {
+        for (const model of collection.data) {
             const tier = await Tier.create(this.mapToTier(model));
             result.push(tier);
         }

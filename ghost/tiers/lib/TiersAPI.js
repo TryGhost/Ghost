@@ -43,18 +43,47 @@ module.exports = class TiersAPI {
     /**
      * @param {object} [options]
      * @param {string} [options.filter] - An NQL filter string
+     * @param {(string|number)} [options.limit] - The number of tiers to return
+     * @param {number} [options.page] - The page number to return
+     * @param {string} [options.order] - The order to return tiers in
      *
      * @returns {Promise<Page<Tier>>}
      */
     async browse(options = {}) {
+        let limit;
+        if (!options.limit || options.limit === 'all') {
+            limit = 'all';
+        } else {
+            limit = Number(options.limit);
+        }
+
+        let page;
+        if (options.page) {
+            page = Number(options.page);
+        } else {
+            page = 1;
+        }
+
+        let order;
+        if (options.order && options.order === 'created_at desc') {
+            order = 'created_at desc';
+        } else {
+            order = 'created_at asc';
+        }
+        options = {
+            filter: options.filter,
+            limit,
+            page,
+            order
+        };
+
         const tiers = await this.#repository.getAll(options);
 
         return {
             data: tiers,
             meta: {
                 pagination: {
-                    page: 1,
-                    pages: 1,
+                    page: options.page,
                     limit: tiers.length,
                     total: tiers.length,
                     prev: null,
