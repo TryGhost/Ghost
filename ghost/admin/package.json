@@ -109,7 +109,7 @@
     "ember-moment": "10.0.0",
     "ember-one-way-select": "4.0.1",
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
-    "ember-power-select": "6.0.1",
+    "ember-power-select": "6.0.2",
     "ember-resolver": "8.1.0",
     "ember-simple-auth": "4.2.2",
     "ember-sinon": "5.0.0",
