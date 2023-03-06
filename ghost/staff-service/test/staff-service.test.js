@@ -377,7 +377,7 @@ describe('StaffService', function () {
                     created_at: '2022-08-01T07:30:39.882Z'
                 };
 
-                await service.emails.notifyFreeMemberSignup(member, options);
+                await service.emails.notifyFreeMemberSignup({member}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonMailData(stubs);
@@ -402,7 +402,7 @@ describe('StaffService', function () {
                     created_at: '2022-08-01T07:30:39.882Z'
                 };
 
-                await service.emails.notifyFreeMemberSignup(member, options);
+                await service.emails.notifyFreeMemberSignup({member}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonMailData(stubs);
@@ -416,6 +416,39 @@ describe('StaffService', function () {
                 ).should.be.true();
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
+                ).should.be.true();
+            });
+
+            it('sends free member signup alert with attribution', async function () {
+                const member = {
+                    name: 'Ghost',
+                    email: 'member@example.com',
+                    id: 'abc',
+                    geolocation: '{"country": "France"}',
+                    created_at: '2022-08-01T07:30:39.882Z'
+                };
+
+                const attribution = {
+                    referrerSource: 'Twitter'
+                };
+
+                await service.emails.notifyFreeMemberSignup({member, attribution}, options);
+
+                mailStub.calledOnce.should.be.true();
+                testCommonMailData(stubs);
+                getEmailAlertUsersStub.calledWith('free-signup').should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match({subject: '🥳 Free member signup: Ghost'})
+                ).should.be.true();
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('🥳 Free member signup: Ghost'))
+                ).should.be.true();
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
+                ).should.be.true();
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Source: Twitter'))
                 ).should.be.true();
             });
         });
@@ -449,6 +482,21 @@ describe('StaffService', function () {
                     interval: 'month',
                     startDate: '2022-08-01T07:30:39.882Z'
                 };
+            });
+
+            it('sends paid subscription start alert with attribution', async function () {
+                const attribution = {
+                    referrerSource: 'Twitter'
+                };
+                await service.emails.notifyPaidSubscriptionStarted({member, offer: null, tier, subscription, attribution}, options);
+
+                mailStub.calledOnce.should.be.true();
+                testCommonPaidSubMailData({...stubs, member});
+
+                // check attribution text
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Source: Twitter'))
+                ).should.be.true();
             });
 
             it('sends paid subscription start alert without offer', async function () {
