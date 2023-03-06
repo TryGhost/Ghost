@@ -3,6 +3,7 @@ module.exports = {
         const debug = require('@tryghost/debug')('mediaInliner');
         const MediaInliner = require('@tryghost/external-media-inliner');
         const models = require('../../models');
+        const jobsService = require('../jobs');
 
         const mediaStorage = require('../../adapters/storage').getStorage('media');
         const imageStorage = require('../../adapters/storage').getStorage('images');
@@ -27,7 +28,7 @@ module.exports = {
 
         this.api = {
 
-            startMediaInliner: (domains) => {
+            startMediaInliner: async (domains) => {
                 if (!domains || !domains.length) {
                     // default domains to inline from if none are provided
                     domains = [
@@ -38,9 +39,16 @@ module.exports = {
 
                 debug('[Inliner] Starting media inlining job for domains: ', domains);
 
-                // @NOTE: the inlining should become an offloaded job
-                // startMediaInliner: mediaInliner.inlineMedia
-                mediaInliner.inline(domains);
+                // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
+                //        limited to migrational, so there is no expectations for site's availability etc.
+                await jobsService.addJob({
+                    name: 'external-media-inliner',
+                    job: (data) => {
+                        return mediaInliner.inline(data.domains);
+                    },
+                    data: {domains},
+                    offloaded: false
+                });
 
                 return {
                     status: 'success'
