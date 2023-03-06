@@ -13,6 +13,9 @@ module.exports = {
 
         const mediaInliner = new MediaInliner({
             PostModel: models.Post,
+            TagModel: models.Tag,
+            UserModel: models.User,
+            PostMetaModel: models.PostsMeta,
             getMediaStorage: (extension) => {
                 if (config.get('uploads').images.extensions.includes(extension)) {
                     return imageStorage;
