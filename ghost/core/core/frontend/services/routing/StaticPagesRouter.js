@@ -52,7 +52,7 @@ class StaticPagesRouter extends ParentRouter {
     }
 
     /**
-     * @description Prepare context for futher middleware/controllers.
+     * @description Prepare context for further middleware/controllers.
      * @param {Object} req
      * @param {Object} res
      * @param {Function} next
