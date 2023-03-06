@@ -7,14 +7,29 @@ class ExternalMediaInliner {
     /** @type {object} */
     #PostModel;
 
+    /** @type {object} */
+    #PostMetaModel;
+
+    /** @type {object} */
+    #TagModel;
+
+    /** @type {object} */
+    #UserModel;
+
     /**
      *
      * @param {Object} deps
      * @param {Object} deps.PostModel - Post model
+     * @param {Object} deps.PostMetaModel - PostMeta model
+     * @param {Object} deps.TagModel - Tag model
+     * @param {Object} deps.UserModel - User model
      * @param {(extension) => import('ghost-storage-base')} deps.getMediaStorage - getMediaStorage
      */
     constructor(deps) {
         this.#PostModel = deps.PostModel;
+        this.#PostMetaModel = deps.PostMetaModel;
+        this.#TagModel = deps.TagModel;
+        this.#UserModel = deps.UserModel;
         this.getMediaStorage = deps.getMediaStorage;
     }
 
@@ -64,7 +79,28 @@ class ExternalMediaInliner {
         };
     }
 
-    async #inlinePost(mobiledoc, domains) {
+    /**
+     *
+     * @param {Object} media - media to store locally
+     * @returns {Promise<string>} - path to stored media
+     */
+    async #storeMediaLocally(media) {
+        const storage = this.getMediaStorage(media.extension);
+
+        if (!storage) {
+            logging.warn(`No storage adapter found for file extension: ${media.extension}`);
+            return null;
+        } else {
+            const targetDir = storage.getTargetDir(storage.storagePath);
+            const uniqueFileName = await storage.getUniqueFileName({
+                name: media.filename
+            }, targetDir);
+            const filePath = await storage.saveRaw(media.fileBuffer, uniqueFileName);
+            return filePath;
+        }
+    }
+
+    async #inlineMibiledoc(mobiledoc, domains) {
         for (const domain of domains) {
             const regex = new RegExp(`"src":"(${domain}.*?)"`, 'igm');
             const matches = mobiledoc.matchAll(regex);
@@ -78,28 +114,91 @@ class ExternalMediaInliner {
                 }
 
                 if (media) {
-                    const storage = this.getMediaStorage(media.extension);
+                    const filePath = await this.#storeMediaLocally(media);
 
-                    if (!storage) {
-                        logging.warn(`No storage adapter found for file extension: ${media.extension}`);
-                    } else {
-                        const targetDir = storage.getTargetDir(storage.storagePath);
-                        const uniqueFileName = await storage.getUniqueFileName({
-                            name: media.filename
-                        }, targetDir);
-                        const filePath = await storage.saveRaw(media.fileBuffer, uniqueFileName);
+                    if (filePath) {
                         const inlinedSrc = `__GHOST_URL__${filePath}`;
 
                         // NOTE: does not account for duplicate images in mobiledoc
                         //       in those cases would be processed twice
                         mobiledoc = mobiledoc.replace(src, inlinedSrc);
-                        logging.info('Inlined media: ', src, ' -> ', inlinedSrc);
+                        logging.info(`Inlined media: ${src} -> ${inlinedSrc}`);
                     }
                 }
             }
         }
 
         return mobiledoc;
+    }
+
+    /**
+     *
+     * @param {Object} resourceModel - one of PostModel, TagModel, UserModel instances
+     * @param {String[]} fields - fields to inline
+     * @param {String[]} domains - domains to inline media from
+     * @returns Promise<Object> - updated fields map with local media paths
+     */
+    async #inlineFields(resourceModel, fields, domains) {
+        const updatedFields = {};
+
+        for (const field of fields) {
+            for (const domain of domains) {
+                const src = resourceModel.get(field);
+
+                if (src && src.startsWith(domain)) {
+                    const response = await this.#getRemoteMedia(src);
+
+                    let media;
+                    if (response) {
+                        media = this.#extractFileDataFromResponse(src, response);
+                    }
+
+                    if (media) {
+                        const filePath = await this.#storeMediaLocally(media);
+
+                        if (filePath) {
+                            const inlinedSrc = `__GHOST_URL__${filePath}`;
+
+                            updatedFields[field] = inlinedSrc;
+                            logging.info(`Added media to inline: ${src} -> ${inlinedSrc}`);
+                        }
+                    }
+                }
+            }
+        }
+
+        return updatedFields;
+    }
+
+    /**
+     *
+     * @param {Object[]} resources - array of model instances
+     * @param {Object} model - resource model
+     * @param {string[]} fields - fields to inline
+     * @param {string[]} domains - domains to inline media from
+     */
+    async #inlineSimpleFields(resources, model, fields, domains) {
+        logging.info(`Starting inlining external media for ${resources?.length} ${model.tableName}`);
+
+        for (const resource of resources) {
+            try {
+                const updatedFields = await this.#inlineFields(resource, fields, domains);
+
+                if (Object.keys(updatedFields).length > 0) {
+                    await model.edit(updatedFields, {
+                        id: resource.id,
+                        context: {
+                            internal: true
+                        }
+                    });
+                }
+            } catch (err) {
+                logging.error(`Error inlining media for ${model.tableName}: ${resource.id}`);
+                logging.error(new errors.DataImportError({
+                    err
+                }));
+            }
+        }
     }
 
     /**
@@ -111,17 +210,27 @@ class ExternalMediaInliner {
             limit: 'all',
             status: 'all'
         });
+        const postsInilingFields = [
+            'feature_image'
+        ];
 
-        logging.info('Starting inlining external media for posts: ', posts?.length);
+        logging.info(`Starting inlining external media for posts: ${posts?.length}`);
+
         for (const post of posts) {
             try {
-                const inlinedMobiledoc = await this.#inlinePost(post.get('mobiledoc'), domains);
+                const inlinedMobiledoc = await this.#inlineMibiledoc(post.get('mobiledoc'), domains);
+                const updatedFields = await this.#inlineFields(post, postsInilingFields, domains);
 
                 if (inlinedMobiledoc !== post.get('mobiledoc')) {
-                    await this.#PostModel.edit({
-                        mobiledoc: inlinedMobiledoc
-                    }, {
-                        id: post.id
+                    updatedFields.mobiledoc = inlinedMobiledoc;
+                }
+
+                if (Object.keys(updatedFields).length > 0) {
+                    await this.#PostModel.edit(updatedFields, {
+                        id: post.id,
+                        context: {
+                            internal: true
+                        }
                     });
                 }
             } catch (err) {
@@ -132,7 +241,38 @@ class ExternalMediaInliner {
             }
         }
 
-        logging.info('Finished inlining external media');
+        const {data: postsMetas} = await this.#PostMetaModel.findPage({
+            limit: 'all'
+        });
+        const postsMetaInilingFields = [
+            'og_image',
+            'twitter_image'
+        ];
+
+        await this.#inlineSimpleFields(postsMetas, this.#PostMetaModel, postsMetaInilingFields, domains);
+
+        const {data: tags} = await this.#TagModel.findPage({
+            limit: 'all'
+        });
+        const tagInliningFields = [
+            'feature_image',
+            'og_image',
+            'twitter_image'
+        ];
+
+        await this.#inlineSimpleFields(tags, this.#TagModel, tagInliningFields, domains);
+
+        const {data: users} = await this.#UserModel.findPage({
+            limit: 'all'
+        });
+        const userInliningFields = [
+            'profile_image',
+            'cover_image'
+        ];
+
+        await this.#inlineSimpleFields(users, this.#UserModel, userInliningFields, domains);
+
+        logging.info('Finished inlining external media for posts, tags, and users');
     }
 }
 
