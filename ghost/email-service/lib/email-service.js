@@ -162,6 +162,21 @@ class EmailService {
     }
 
     /**
+     * @return {import('./email-renderer').MemberLike}
+     */
+    getDefaultExampleMember() {
+        /**
+         * @type {import('./email-renderer').MemberLike}
+         */
+        return {
+            id: 'example-id',
+            uuid: 'example-uuid',
+            email: 'jamie@example.com',
+            name: 'Jamie Larson'
+        };
+    }
+
+    /**
      * @private
      * @param {string} [email] (optional) Search for a member with this email address and use it as the example. If not found, defaults to the default but still uses the provided email address.
      * @return {Promise<import('./email-renderer').MemberLike>}
@@ -170,12 +185,7 @@ class EmailService {
         /**
          * @type {import('./email-renderer').MemberLike}
          */
-        const exampleMember = {
-            id: 'example-id',
-            uuid: 'example-uuid',
-            email: 'jamie@example.com',
-            name: 'Jamie Larson'
-        };
+        const exampleMember = this.getDefaultExampleMember();
 
         // fetch any matching members so that replacements use expected values
         if (email) {

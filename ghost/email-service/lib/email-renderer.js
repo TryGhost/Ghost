@@ -316,7 +316,6 @@ class EmailRenderer {
     }
 
     /**
-     * @private
      * createUnsubscribeUrl
      *
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
@@ -402,7 +401,7 @@ class EmailRenderer {
                     replacements.push({
                         id: replacementStr,
                         originalId: recipientProperty,
-                        token: new RegExp(escapeRegExp(replacementMatch), 'g'),
+                        token: new RegExp(escapeRegExp(replacementMatch).replace(/(?:"|&quot;)/g, '(?:"|&quot;)'), 'g'),
                         getValue: fallback ? (member => definition.getValue(member) || fallback) : definition.getValue
                     });
                 }
