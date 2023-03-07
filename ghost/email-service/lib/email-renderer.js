@@ -294,7 +294,7 @@ class EmailRenderer {
         html = $.html(); // () Fix for vscode syntax highlighter
 
         // Replacement strings
-        const replacementDefinitions = this.buildReplacementDefinitions({html, newsletter});
+        const replacementDefinitions = this.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
 
         // TODO: normalizeReplacementStrings (replace unsupported replacement strings)
 
@@ -316,7 +316,6 @@ class EmailRenderer {
     }
 
     /**
-     * @private
      * createUnsubscribeUrl
      *
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
@@ -347,16 +346,15 @@ class EmailRenderer {
     }
 
     /**
-     * @private
      * Note that we only look in HTML because plaintext and HTML are essentially the same content
      * @returns {ReplacementDefinition[]}
      */
-    buildReplacementDefinitions({html, newsletter}) {
+    buildReplacementDefinitions({html, newsletterUuid}) {
         const baseDefinitions = [
             {
                 id: 'unsubscribe_url',
                 getValue: (member) => {
-                    return this.createUnsubscribeUrl(member.uuid, {newsletterUuid: newsletter.get('uuid')});
+                    return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
                 }
             },
             {
@@ -402,7 +400,7 @@ class EmailRenderer {
                     replacements.push({
                         id: replacementStr,
                         originalId: recipientProperty,
-                        token: new RegExp(escapeRegExp(replacementMatch), 'g'),
+                        token: new RegExp(escapeRegExp(replacementMatch).replace(/(?:"|&quot;)/g, '(?:"|&quot;)'), 'g'),
                         getValue: fallback ? (member => definition.getValue(member) || fallback) : definition.getValue
                     });
                 }

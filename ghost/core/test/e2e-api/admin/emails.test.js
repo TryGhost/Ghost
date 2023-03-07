@@ -3,6 +3,8 @@ const {nullable, anything, anyContentVersion, anyEtag, anyObjectId, anyUuid, any
 const assert = require('assert');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
+const jobManager = require('../../../core/server/services/jobs/job-service');
+const models = require('../../../core/server/models');
 
 const matchEmail = {
     id: anyObjectId,
@@ -10,6 +12,11 @@ const matchEmail = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     submitted_at: anyISODateTime
+};
+
+const matchEmailNewsletter = {
+    ...matchEmail,
+    newsletter_id: anyObjectId
 };
 
 const matchBatch = {
@@ -30,13 +37,13 @@ describe('Emails API', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('posts', 'members', 'members:emails:failed');
+        await fixtureManager.init('posts', 'newsletters', 'members', 'members:emails:failed');
         await agent.loginAsOwner();
     });
 
     beforeEach(function () {
         mockManager.mockEvents();
-        mockManager.mockLabsDisabled('emailStability');
+        mockManager.mockMailgun();
     });
 
     afterEach(function () {
@@ -82,24 +89,8 @@ describe('Emails API', function () {
                 etag: anyEtag
             });
 
+        await jobManager.allSettled();
         mockManager.assert.emittedEvent('email.edited');
-    });
-
-    it('Errors when retrying an email that was successful', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
-        await agent
-            .put(`emails/${fixtureManager.get('emails', 0).id}/retry`)
-            .expectStatus(400)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can browse email batches', async function () {
@@ -194,5 +185,46 @@ describe('Emails API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+    });
+
+    // Older Ghost emails still have a html body and plaintext body set.
+    it('Does default replacements on the HTML body of an old email', async function () {
+        const html = '<p style="margin: 0 0 1.5em 0; line-height: 1.6em;">Hey %%{first_name, &quot;there&quot;}%%, Hey %%{first_name}%%,</p><a href="%%{unsubscribe_url}%%">Unsubscribe</a>';
+        const plaintext = 'Hey %%{first_name, "there"}%%, Hey %%{first_name}%%\nUnsubscribe [%%{unsubscribe_url}%%]';
+
+        // Create this email model in the database
+        const email = await models.Email.add({
+            post_id: fixtureManager.get('posts', 2).id,
+            newsletter_id: fixtureManager.get('newsletters', 0).id,
+            status: 'submitted',
+            submitted_at: new Date(),
+            track_opens: false,
+            track_clicks: false,
+            feedback_enabled: false,
+            recipient_filter: 'all',
+            subject: 'Test email',
+            from: 'support@example.com',
+            replyTo: null,
+            email_count: 1,
+            source: '{}',
+            source_type: 'lexical',
+            html,
+            plaintext
+        });
+
+        const {body} = await agent
+            .get(`emails/${email.id}/`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                emails: [matchEmailNewsletter]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // Simple check that there are not %%{ leftover (in case the snapshots gets updated without noticing what this test is checking)
+        assert.equal(body.emails[0].html.includes('%%{'), false);
+        assert.equal(body.emails[0].plaintext.includes('%%{'), false);
     });
 });
