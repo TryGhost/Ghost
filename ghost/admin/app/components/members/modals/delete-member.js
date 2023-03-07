@@ -12,7 +12,7 @@ export default class DeleteMemberModal extends Component {
         return this.args.data.member;
     }
 
-    get hasActiveStripeMigrations() {
+    get hasActiveStripeSubscriptions() {
         const subscriptions = this.member.get('subscriptions');
 
         if (!subscriptions || subscriptions.length === 0) {
