@@ -58,6 +58,37 @@ describe('Oembed API', function () {
         should.exist(res.body.html);
     });
 
+    it('errors with a useful message when embedding is disabled', async function () {
+        const requestMock = nock('https://www.youtube.com')
+            .get('/oembed')
+            .query(true)
+            .reply(401, {
+                errors: [
+                    {
+                        message: 'Authorisation error, cannot read oembed.',
+                        context: 'URL contains a private resource.',
+                        type: 'UnauthorizedError',
+                        details: null,
+                        property: null,
+                        help: null,
+                        code: null,
+                        id: 'c51228a0-921a-11ed-8abe-6babfda4d18a',
+                        ghostErrorCode: null
+                    }
+                ]
+            });
+
+        const res = await request.get(localUtils.API.getApiQuery('oembed/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DE5yFcdPAGv0'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(401);
+
+        requestMock.isDone().should.be.true();
+        should.exist(res.body.errors);
+        res.body.errors[0].context.should.match(/URL contains a private resource/i);
+    });
+
     describe('type: bookmark', function () {
         it('can fetch a bookmark with ?type=bookmark', async function () {
             const pageMock = nock('http://example.com')

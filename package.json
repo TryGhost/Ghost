@@ -56,7 +56,6 @@
       "intl-messageformat",
       "moment",
       "moment-timezone",
-      "oembed-parser",
       "simple-dom",
       "ember-drag-drop",
       "normalize.css",
