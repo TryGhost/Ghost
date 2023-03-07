@@ -1,4 +1,5 @@
 import React from 'react';
+import {useLocation} from 'react-router-dom';
 import {useSearchParams} from 'react-router-dom';
 import {
     KoenigComposer, KoenigComposableEditor, KoenigEditor,
@@ -70,13 +71,20 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop}) {
 }
 
 function DemoApp({editorType}) {
-    const defaultContent = JSON.stringify(getDefaultContent({editorType}));
-
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
 
-    const [initialContent] = useState(searchParams.get('content') === 'false' ? undefined : defaultContent);
+    const hideContent = searchParams.get('content') === 'false';
+
+    const defaultContent = React.useMemo(() => {
+        return JSON.stringify(getDefaultContent({editorType}));
+    }, [editorType]);
+
+    const initialContent = React.useMemo(() => {
+        return hideContent ? undefined : defaultContent;
+    }, [hideContent, defaultContent]);
+
     const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
     const [editorAPI, setEditorAPI] = useState(null);
     const titleRef = React.useRef(null);
@@ -156,8 +164,13 @@ function DemoApp({editorType}) {
 
     const showTitle = !['basic', 'minimal'].includes(editorType);
 
+    // used to force a re-initialization of the editor when URL changes, otherwise
+    // content is memoized and causes issues when switching between editor types
+    const location = useLocation();
+
     return (
         <div
+            key={location.key}
             className="koenig-lexical top"
         >
             <KoenigComposer
