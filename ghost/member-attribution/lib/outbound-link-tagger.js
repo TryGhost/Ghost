@@ -4,7 +4,9 @@ const LinkReplacer = require('@tryghost/link-replacer');
 const blockedReferrerDomains = [
     // Facebook has some restrictions on the 'ref' attribute (max 15 chars + restricted character set) that breaks links if we add ?ref=longer-string
     'facebook.com',
-    'www.facebook.com'
+    'www.facebook.com',
+    'web.archive.org',
+    'archive.org'
 ];
 
 /**

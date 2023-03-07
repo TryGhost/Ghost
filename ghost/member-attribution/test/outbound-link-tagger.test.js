@@ -82,6 +82,11 @@ describe('OutboundLinkTagger', function () {
             const updatedUrl = await service.addToUrl(url);
 
             should(updatedUrl.toString()).equal('https://facebook.com/');
+
+            const urlTwo = new URL('https://web.archive.org/');
+            const updatedUrlTwo = await service.addToUrl(urlTwo);
+
+            should(updatedUrlTwo.toString()).equal('https://web.archive.org/');
         });
 
         it('does not add ref if utm_source is present', async function () {
