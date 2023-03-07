@@ -75,10 +75,19 @@ class BatchSendingService {
 
         if (BEFORE_RETRY_CONFIG) {
             this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
+        } else {
+            if (process.env.NODE_ENV.startsWith('test')) {
+                this.#BEFORE_RETRY_CONFIG = {maxRetries: 0};
+            }
         }
         if (AFTER_RETRY_CONFIG) {
             this.#AFTER_RETRY_CONFIG = AFTER_RETRY_CONFIG;
+        } else {
+            if (process.env.NODE_ENV.startsWith('test')) {
+                this.#AFTER_RETRY_CONFIG = {maxRetries: 0};
+            }
         }
+
         if (MAILGUN_API_RETRY_CONFIG) {
             this.#MAILGUN_API_RETRY_CONFIG = MAILGUN_API_RETRY_CONFIG;
         } else {
