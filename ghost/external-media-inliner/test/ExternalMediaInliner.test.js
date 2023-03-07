@@ -1,6 +1,7 @@
 const assert = require('assert');
 const sinon = require('sinon');
 const nock = require('nock');
+const path = require('path');
 const loggingLib = require('@tryghost/logging');
 const ExternalMediaInliner = require('../index');
 
@@ -80,6 +81,9 @@ describe('ExternalMediaInliner', function () {
                 edit: sinon.stub().resolves()
             };
 
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-image.jpg')
+                .returns('unique-image.jpg');
             const inliner = new ExternalMediaInliner({
                 PostModel: postModelStub,
                 PostMetaModel: postMetaModelStub,
@@ -219,6 +223,10 @@ describe('ExternalMediaInliner', function () {
                 }),
                 edit: sinon.stub().throws(new Error('Error saving the post'))
             };
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-image.jpg')
+                .returns('unique-image.jpg');
+
             const inliner = new ExternalMediaInliner({
                 PostModel: postModelStub,
                 PostMetaModel: postMetaModelStub,
@@ -257,6 +265,9 @@ describe('ExternalMediaInliner', function () {
                 data: [tagModelInstanceStub]
             });
             tagModelStub.edit = sinon.stub().throws(new Error('Error saving the tag'));
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-image.jpg')
+                .returns('unique-image.jpg');
 
             const inliner = new ExternalMediaInliner({
                 PostModel: postModelStub,
@@ -295,6 +306,10 @@ describe('ExternalMediaInliner', function () {
                 }),
                 edit: sinon.stub().resolves()
             };
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-feature-image.jpg')
+                .returns('unique-feature-image.jpg');
+
             const inliner = new ExternalMediaInliner({
                 PostModel: postModelMock,
                 PostMetaModel: postMetaModelStub,
@@ -338,6 +353,9 @@ describe('ExternalMediaInliner', function () {
             postMetaModelStub.findPage = sinon.stub().resolves({
                 data: [postsMetaModelInstanceStub]
             });
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-feature-image.jpg')
+                .returns('unique-feature-image.jpg');
 
             const inliner = new ExternalMediaInliner({
                 PostModel: postModelStub,
@@ -383,6 +401,9 @@ describe('ExternalMediaInliner', function () {
             tagModelStub.findPage = sinon.stub().resolves({
                 data: [tagModelInstanceStub]
             });
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-tag-twitter-image.jpg')
+                .returns('unique-tag-twitter-image.jpg');
 
             const inliner = new ExternalMediaInliner({
                 PostModel: postModelStub,
@@ -428,6 +449,9 @@ describe('ExternalMediaInliner', function () {
             userModelStub.findPage = sinon.stub().resolves({
                 data: [userModelInstanceStub]
             });
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/user-cover-image.jpg')
+                .returns('user-cover-image.jpg');
 
             const inliner = new ExternalMediaInliner({
                 PostModel: postModelStub,
