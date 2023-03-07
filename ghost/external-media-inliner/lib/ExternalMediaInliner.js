@@ -2,6 +2,7 @@ const mime = require('mime-types');
 const request = require('@tryghost/request');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const path = require('path');
 
 class ExternalMediaInliner {
     /** @type {object} */
@@ -91,11 +92,14 @@ class ExternalMediaInliner {
             logging.warn(`No storage adapter found for file extension: ${media.extension}`);
             return null;
         } else {
+            // @NOTE: this is extremely convoluted and should live on a
+            //        storage adapter level
             const targetDir = storage.getTargetDir(storage.storagePath);
             const uniqueFileName = await storage.getUniqueFileName({
                 name: media.filename
             }, targetDir);
-            const filePath = await storage.saveRaw(media.fileBuffer, uniqueFileName);
+            const targetPath = path.relative(storage.storagePath, uniqueFileName);
+            const filePath = await storage.saveRaw(media.fileBuffer, targetPath);
             return filePath;
         }
     }
