@@ -210,7 +210,7 @@
     "sqlite3": "5.1.4"
   },
   "devDependencies": {
-    "@playwright/test": "1.31.2",
+    "@playwright/test": "1.30.0",
     "@tryghost/express-test": "0.13.1",
     "@tryghost/webhook-mock-receiver": "0.2.4",
     "@types/common-tags": "1.8.1",
@@ -218,7 +218,7 @@
     "cli-progress": "3.12.0",
     "cssnano": "5.1.15",
     "eslint": "8.35.0",
-    "expect": "29.5.0",
+    "expect": "29.3.1",
     "form-data": "4.0.0",
     "html-validate": "7.13.2",
     "inquirer": "8.2.5",
