@@ -20,7 +20,6 @@ const GA_FEATURES = [
     'memberAttribution',
     'audienceFeedback',
     'themeErrorsNotification',
-    'emailStability',
     'emailErrors',
     'outboundLinkTagging'
 ];

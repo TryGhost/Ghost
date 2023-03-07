@@ -1,7 +1,9 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyContentVersion} = matchers;
+const {anyEtag, anyErrorId, anyContentVersion, anyString} = matchers;
 const assert = require('assert');
 const sinon = require('sinon');
+const escapeRegExp = require('lodash/escapeRegExp');
+const should = require('should');
 
 // @TODO: factor out these requires
 const ObjectId = require('bson-objectid').default;
@@ -9,16 +11,32 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
 const logging = require('@tryghost/logging');
 
+async function testCleanedSnapshot(html, cleaned) {
+    for (const [key, value] of Object.entries(cleaned)) {
+        html = html.replace(new RegExp(escapeRegExp(key), 'g'), value);
+    }
+    should({html}).matchSnapshot();
+}
+
+const matchEmailPreviewBody = {
+    email_previews: [
+        {
+            html: anyString,
+            plaintext: anyString
+        }
+    ]
+};
+
 describe('Email Preview API', function () {
     let agent;
-
-    beforeEach(function () {
-        mockManager.mockLabsDisabled('emailStability');
-    });
 
     afterEach(function () {
         mockManager.restore();
         sinon.restore();
+    });
+
+    beforeEach(function () {
+        mockManager.mockMailgun();
     });
 
     before(async function () {
@@ -50,7 +68,7 @@ describe('Email Preview API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
-                .matchBodySnapshot();
+                .matchBodySnapshot(matchEmailPreviewBody);
         });
 
         it('can read post email preview with email card and replacements', async function () {
@@ -75,10 +93,11 @@ describe('Email Preview API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
-                .matchBodySnapshot();
+                .matchBodySnapshot(matchEmailPreviewBody);
         });
 
         it('has custom content transformations for email compatibility', async function () {
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             const post = testUtils.DataGenerator.forKnex.createPost({
                 id: ObjectId().toHexString(),
                 title: 'Post with email-only card',
@@ -100,11 +119,15 @@ describe('Email Preview API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
-                .matchBodySnapshot()
+                .matchBodySnapshot(matchEmailPreviewBody)
                 .expect(({body}) => {
                     // Extra assert to ensure apostrophe is transformed
                     assert.doesNotMatch(body.email_previews[0].html, /Testing links in email excerpt and apostrophes &apos;/);
                     assert.match(body.email_previews[0].html, /Testing links in email excerpt and apostrophes &#39;/);
+
+                    testCleanedSnapshot(body.email_previews[0].plaintext, {
+                        [defaultNewsletter.get('uuid')]: 'requested-newsletter-uuid'
+                    });
                 });
         });
 
@@ -135,11 +158,17 @@ describe('Email Preview API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
-                .matchBodySnapshot()
+                .matchBodySnapshot(matchEmailPreviewBody)
                 .expect(({body}) => {
                     // Extra assert to ensure newsletter is correct
                     assert.doesNotMatch(body.email_previews[0].html, new RegExp(defaultNewsletter.get('name')));
                     assert.match(body.email_previews[0].html, new RegExp(selectedNewsletter.name));
+                    testCleanedSnapshot(body.email_previews[0].html, {
+                        [selectedNewsletter.uuid]: 'requested-newsletter-uuid'
+                    });
+                    testCleanedSnapshot(body.email_previews[0].plaintext, {
+                        [selectedNewsletter.uuid]: 'requested-newsletter-uuid'
+                    });
                 });
         });
 
@@ -170,11 +199,17 @@ describe('Email Preview API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
-                .matchBodySnapshot()
+                .matchBodySnapshot(matchEmailPreviewBody)
                 .expect(({body}) => {
                     // Extra assert to ensure newsletter is correct
                     assert.doesNotMatch(body.email_previews[0].html, new RegExp(defaultNewsletter.get('name')));
                     assert.match(body.email_previews[0].html, new RegExp(selectedNewsletter.name));
+                    testCleanedSnapshot(body.email_previews[0].html, {
+                        [selectedNewsletter.uuid]: 'requested-newsletter-uuid'
+                    });
+                    testCleanedSnapshot(body.email_previews[0].plaintext, {
+                        [selectedNewsletter.uuid]: 'requested-newsletter-uuid'
+                    });
                 });
         });
     });

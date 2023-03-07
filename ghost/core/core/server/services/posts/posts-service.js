@@ -8,8 +8,7 @@ const messages = {
 };
 
 class PostsService {
-    constructor({mega, urlUtils, models, isSet, stats, emailService}) {
-        this.mega = mega;
+    constructor({urlUtils, models, isSet, stats, emailService}) {
         this.urlUtils = urlUtils;
         this.models = models;
         this.isSet = isSet;
@@ -45,17 +44,9 @@ class PostsService {
                 let email;
 
                 if (!postEmail) {
-                    if (this.isSet('emailStability')) {
-                        email = await this.emailService.createEmail(model);
-                    } else {
-                        email = await this.mega.addEmail(model, frame.options);
-                    }
+                    email = await this.emailService.createEmail(model);
                 } else if (postEmail && postEmail.get('status') === 'failed') {
-                    if (this.isSet('emailStability')) {
-                        email = await this.emailService.retryEmail(postEmail);
-                    } else {
-                        email = await this.mega.retryFailedEmail(postEmail);
-                    }
+                    email = await this.emailService.retryEmail(postEmail);
                 }
                 if (email) {
                     model.set('email', email);
@@ -130,7 +121,6 @@ class PostsService {
  */
 const getPostServiceInstance = () => {
     const urlUtils = require('../../../shared/url-utils');
-    const {mega} = require('../mega');
     const labs = require('../../../shared/labs');
     const models = require('../../models');
     const PostStats = require('./stats/post-stats');
@@ -139,7 +129,6 @@ const getPostServiceInstance = () => {
     const postStats = new PostStats();
 
     return new PostsService({
-        mega: mega,
         urlUtils: urlUtils,
         models: models,
         isSet: flag => labs.isSet(flag), // don't use bind, that breaks test subbing of labs
