@@ -3,6 +3,7 @@ const TwitterOEmbedProvider = require('../../../../../core/server/services/oembe
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const nock = require('nock');
 const sinon = require('sinon');
+const {mockManager} = require('../../../../utils/e2e-framework');
 const dnsPromises = require('dns').promises;
 
 describe('TwitterOEmbedProvider', function () {
@@ -12,14 +13,11 @@ describe('TwitterOEmbedProvider', function () {
 
     beforeEach(function () {
         // external requests will attempt dns lookup
-        sinon.stub(dnsPromises, 'lookup').callsFake(function () {
-            return Promise.resolve({address: '123.123.123.123'});
-        });
+        mockManager.disableNetwork();
     });
 
     afterEach(async function () {
-        nock.cleanAll();
-        sinon.restore();
+        mockManager.restore();
     });
 
     after(async function () {
@@ -47,8 +45,8 @@ describe('TwitterOEmbedProvider', function () {
         const tweetURL = new URL(
             'https://twitter.com/Ghost/status/1630581157568839683'
         );
-    
-        // not certain why we hit publish.twitter.com 
+
+        // not certain why we hit publish.twitter.com
         nock('https://publish.twitter.com')
             .get('/oembed')
             .query(true)
