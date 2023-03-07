@@ -109,6 +109,16 @@ export default class ExploreService extends Service {
 
         this.previousRoute = currentRoute;
 
+        // Begin loading the iframe and setting the src if it's not already set
+        if (this.getExploreIframe() && !this.getExploreIframe()?.src) {
+            this.getExploreIframe().src = this.getIframeURL();
+        }
+
+        // Begin loading the iframe and setting the src if it's not already set
+        if (this.getExploreIframe() && !this.getExploreIframe()?.src) {
+            this.getExploreIframe().src = this.getIframeURL();
+        }
+
         // Ensures correct "getIframeURL" calculation when syncing iframe location
         // in toggleExploreWindow
         window.location.hash = childRoute || '/explore';
