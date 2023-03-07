@@ -301,7 +301,6 @@ async function initServices({config}) {
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
-    const {mega} = require('./server/services/mega');
     const webhooks = require('./server/services/webhooks');
     const limits = require('./server/services/limits');
     const apiVersionCompatibility = require('./server/services/api-version-compatibility');
@@ -346,7 +345,6 @@ async function initServices({config}) {
         audienceFeedback.init(),
         emailService.init(),
         emailAnalytics.init(),
-        mega.listen(),
         webhooks.listen(),
         apiVersionCompatibility.init(),
         scheduling.init({
