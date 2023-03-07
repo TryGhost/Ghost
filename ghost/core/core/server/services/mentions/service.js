@@ -26,7 +26,12 @@ function getPostUrl(post) {
 
 module.exports = {
     controller: new MentionController(),
+    didInit: false,
     async init() {
+        if (this.didInit) {
+            return;
+        }
+        this.didInit = true;
         const repository = new BookshelfMentionRepository({
             MentionModel: models.Mention,
             DomainEvents
@@ -97,6 +102,6 @@ module.exports = {
                 }
             }
         });
-        sendingService.listen(events); 
+        sendingService.listen(events);
     }
 };
