@@ -95,13 +95,13 @@ describe('Email renderer', function () {
 
         it('returns an empty list of replacements if nothing is used', function () {
             const html = 'Hello world';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 0);
         });
 
         it('returns a replacement if it is used', function () {
             const html = 'Hello world %%{uuid}%%';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{uuid\\}%%/g');
             assert.equal(replacements[0].id, 'uuid');
@@ -110,7 +110,7 @@ describe('Email renderer', function () {
 
         it('returns a replacement only once if used multiple times', function () {
             const html = 'Hello world %%{uuid}%% And %%{uuid}%%';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{uuid\\}%%/g');
             assert.equal(replacements[0].id, 'uuid');
@@ -119,7 +119,7 @@ describe('Email renderer', function () {
 
         it('returns correct first name', function () {
             const html = 'Hello %%{first_name}%%,';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name\\}%%/g');
             assert.equal(replacements[0].id, 'first_name');
@@ -128,7 +128,7 @@ describe('Email renderer', function () {
 
         it('returns correct unsubscribe url', function () {
             const html = 'Hello %%{unsubscribe_url}%%,';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{unsubscribe_url\\}%%/g');
             assert.equal(replacements[0].id, 'unsubscribe_url');
@@ -137,7 +137,7 @@ describe('Email renderer', function () {
 
         it('supports fallback values', function () {
             const html = 'Hey %%{first_name, "there"}%%,';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name, (?:"|&quot;)there(?:"|&quot;)\\}%%/g');
             assert.equal(replacements[0].id, 'first_name_2');
@@ -149,7 +149,7 @@ describe('Email renderer', function () {
 
         it('supports combination of multiple fallback values', function () {
             const html = 'Hey %%{first_name, "there"}%%, %%{first_name, "member"}%% %%{first_name}%% %%{first_name, "there"}%%';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 3);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name, (?:"|&quot;)there(?:"|&quot;)\\}%%/g');
             assert.equal(replacements[0].id, 'first_name_2');

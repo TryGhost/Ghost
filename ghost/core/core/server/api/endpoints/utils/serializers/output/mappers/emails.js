@@ -8,18 +8,13 @@ module.exports = (model, frame) => {
     // Ensure we're not outputting unwanted replacement strings when viewing email contents
     // TODO: extract this to a utility, it's duplicated in the email-preview API controller
     if (jsonModel.html) {
-        const replacements = emailService.renderer.buildReplacementDefinitions({html: jsonModel.html, newsletter: {
-            get: () => ''
-        }});
+        const replacements = emailService.renderer.buildReplacementDefinitions({html: jsonModel.html, newsletterUuid: 'preview'});
         const exampleMember = emailService.service.getDefaultExampleMember();
 
-        // Do manual replacements with an example member
-        for (const replacement of replacements) {
-            jsonModel.html = jsonModel.html.replace(replacement.token, replacement.getValue(exampleMember));
+        jsonModel.html = emailService.service.replaceDefinitions(jsonModel.html, replacements, exampleMember);
 
-            if (jsonModel.plaintext) {
-                jsonModel.plaintext = jsonModel.plaintext.replace(replacement.token, replacement.getValue(exampleMember));
-            }
+        if (jsonModel.plaintext) {
+            jsonModel.plaintext = emailService.service.replaceDefinitions(jsonModel.plaintext, replacements, exampleMember);
         }
     }
 

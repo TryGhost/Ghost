@@ -205,6 +205,22 @@ class EmailService {
     }
 
     /**
+     * Do a manual replacement of tokens with values for a member (normally only used for previews)
+     *
+     * @param {string} htmlOrPlaintext
+     * @param {import('./email-renderer').ReplacementDefinition[]} replacements
+     * @param {import('./email-renderer').MemberLike} member
+     * @return {string}
+     */
+    replaceDefinitions(htmlOrPlaintext, replacements, member) {
+        // Do manual replacements with an example member
+        for (const replacement of replacements) {
+            htmlOrPlaintext = htmlOrPlaintext.replace(replacement.token, replacement.getValue(member));
+        }
+        return htmlOrPlaintext;
+    }
+
+    /**
      *
      * @param {*} post
      * @param {*} newsletter
@@ -217,16 +233,10 @@ class EmailService {
         const subject = this.#emailRenderer.getSubject(post);
         let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, segment, {clickTrackingEnabled: false});
 
-        // Do manual replacements with an example member
-        for (const replacement of replacements) {
-            html = html.replace(replacement.token, replacement.getValue(exampleMember));
-            plaintext = plaintext.replace(replacement.token, replacement.getValue(exampleMember));
-        }
-
         return {
             subject,
-            html,
-            plaintext
+            html: this.replaceDefinitions(html, replacements, exampleMember),
+            plaintext: this.replaceDefinitions(plaintext, replacements, exampleMember)
         };
     }
 
