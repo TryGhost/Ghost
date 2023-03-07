@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const assert = require('assert');
 const nock = require('nock');
+const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
 
 // Helper services
 const configUtils = require('./configUtils');
@@ -35,17 +36,31 @@ const disableStripe = async () => {
     await stripeService.disconnect();
 };
 
-const mockStripe = () => {
-    nock.disableNetConnect();
-};
-
 const disableNetwork = () => {
     nock.disableNetConnect();
 
     // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
-    sinon.stub(dnsPromises, 'lookup').callsFake(() => {
-        return Promise.resolve({address: '123.123.123.123', family: 4});
-    });
+    if (!dnsPromises.lookup.restore) {
+        sinon.stub(dnsPromises, 'lookup').callsFake(() => {
+            return Promise.resolve({address: '123.123.123.123', family: 4});
+        });
+    }
+
+    // Allow localhost
+    nock.enableNetConnect('127.0.0.1');
+};
+
+const mockStripe = () => {
+    disableNetwork();
+};
+
+const mockSlack = () => {
+    disableNetwork();
+
+    nock(/hooks.slack.com/)
+        .persist()
+        .post('/')
+        .reply(200, 'ok');
 };
 
 /**
@@ -66,6 +81,26 @@ const mockMail = (response = 'Mail is disabled') => {
     mocks.mockMailReceiver = mockMailReceiver;
 
     return mockMailReceiver;
+};
+
+const mockMailgun = (customStubbedSend) => {
+    mockSetting('mailgun_api_key', 'test');
+    mockSetting('mailgun_domain', 'example.com');
+    mockSetting('mailgun_base_url', 'test');
+
+    const stubbedSend = customStubbedSend ?? sinon.fake.resolves({
+        id: `<${new Date().getTime()}.${0}.5817@samples.mailgun.org>`
+    });
+
+    // We need to stub the Mailgun client before starting Ghost
+    sinon.stub(MailgunClient.prototype, 'getInstance').returns({
+        // @ts-ignore
+        messages: {
+            create: async function () {
+                return await stubbedSend.call(this, ...arguments);
+            }
+        }
+    });
 };
 
 const mockWebhookRequests = () => {
@@ -210,6 +245,9 @@ const restore = () => {
     }
 
     mailService.GhostMailer.prototype.send = originalMailServiceSend;
+
+    // Disable network again after restoring sinon
+    disableNetwork();
 };
 
 module.exports = {
@@ -217,6 +255,8 @@ module.exports = {
     mockMail,
     disableStripe,
     mockStripe,
+    mockSlack,
+    mockMailgun,
     mockLabsEnabled,
     mockLabsDisabled,
     mockWebhookRequests,

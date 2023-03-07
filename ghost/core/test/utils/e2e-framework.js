@@ -82,6 +82,9 @@ const startGhost = async (options = {}) => {
         await urlServiceUtils.isFinished();
     }
 
+    // Disable network in tests at the start
+    mockManager.disableNetwork();
+
     return ghostServer;
 };
 

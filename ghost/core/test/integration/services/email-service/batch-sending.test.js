@@ -181,9 +181,14 @@ describe('Batch sending tests', function () {
         stubbedSend = sinon.fake.resolves({
             id: 'stubbed-email-id'
         });
+        mockManager.mockMail();
+        mockManager.mockMailgun(function () {
+            return stubbedSend.call(this, ...arguments);
+        });
     });
 
     afterEach(async function () {
+        mockManager.restore();
         await configUtils.restore();
         await models.Settings.edit([{
             key: 'email_verification_required',
@@ -192,21 +197,6 @@ describe('Batch sending tests', function () {
     });
 
     before(async function () {
-        mockManager.mockSetting('mailgun_api_key', 'test');
-        mockManager.mockSetting('mailgun_domain', 'example.com');
-        mockManager.mockSetting('mailgun_base_url', 'test');
-        mockManager.mockMail();
-
-        // We need to stub the Mailgun client before starting Ghost
-        sinon.stub(MailgunClient.prototype, 'getInstance').returns({
-            // @ts-ignore
-            messages: {
-                create: async function () {
-                    return await stubbedSend.call(this, ...arguments);
-                }
-            }
-        });
-
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
         frontendAgent = agents.frontendAgent;
@@ -223,7 +213,6 @@ describe('Batch sending tests', function () {
     });
 
     after(async function () {
-        mockManager.restore();
         await ghostServer.stop();
     });
 
@@ -240,7 +229,7 @@ describe('Batch sending tests', function () {
         await completedPromise;
 
         await emailModel.refresh();
-        assert.equal(emailModel.get('status'), 'submitted');
+        assert.equal(emailModel.get('status'), 'submitted', 'This email should be in submitted state: ' + (emailModel.get('error') ?? 'No error'));
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?

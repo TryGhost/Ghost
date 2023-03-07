@@ -18,6 +18,7 @@ describe('Staff Service:', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+        mockManager.mockSlack();
         userModelStub = sinon.stub(models.User, 'getEmailAlertUsers').resolves([{
             email: 'owner@ghost.org',
             slug: 'ghost'
