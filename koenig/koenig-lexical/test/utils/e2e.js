@@ -28,12 +28,13 @@ export async function startApp(browserName = BROWSER_NAME) {
     };
 }
 
-export async function initialize({page, uri = '/?content=false'}) {
+export async function initialize({page, uri = '/#/?content=false'}) {
     const url = `http://127.0.0.1:${E2E_PORT}${uri}`;
 
     page.setViewportSize({width: 1000, height: 1000});
 
     await page.goto(url);
+    await page.reload(); // required with hash URLs otherwise app doesn't always reset
     await page.waitForSelector('.koenig-lexical');
 
     await exposeLexicalEditor(page);
@@ -242,7 +243,7 @@ export async function assertRootChildren(page, expectedState) {
 
     const actual = prettifyJSON(actualState);
     const expected = prettifyJSON(expectedState);
-    
+
     expect(actual).toEqual(expected);
 }
 

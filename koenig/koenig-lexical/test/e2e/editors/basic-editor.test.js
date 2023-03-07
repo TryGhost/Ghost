@@ -14,7 +14,7 @@ describe('Koening Editor with basic nodes', async function () {
     });
 
     beforeEach(async function () {
-        await initialize({page, uri: '/basic?content=false'});
+        await initialize({page, uri: '/#/basic?content=false'});
     });
 
     test('caret does not appear on empty editor', async function () {

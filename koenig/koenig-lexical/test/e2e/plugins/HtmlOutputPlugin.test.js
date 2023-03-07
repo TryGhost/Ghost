@@ -14,7 +14,7 @@ describe('Html Output Plugin', async function () {
     });
 
     beforeEach(async function () {
-        await initialize({page, uri: '/html-output'});
+        await initialize({page, uri: '/#/html-output'});
     });
 
     test('can render html to editor', async function () {

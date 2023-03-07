@@ -14,7 +14,7 @@ describe('Koening Editor with minimal nodes', async function () {
     });
 
     beforeEach(async function () {
-        await initialize({page, uri: '/minimal?content=false'});
+        await initialize({page, uri: '/#/minimal?content=false'});
     });
 
     test('can add basic text', async function () {
