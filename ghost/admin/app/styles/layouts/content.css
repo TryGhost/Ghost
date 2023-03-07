@@ -1536,12 +1536,23 @@
     border-radius: 5px 5px 0 0;
 }
 
+.gh-tabs-analytics.no-tabs .tab-selected {
+    padding-top: 14px;
+    border: 0;
+    box-shadow: none;
+}
+
 .gh-tabs-analytics .tab-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     padding: 8px 8px 0px;
     background: linear-gradient(360deg, #F7F8F9 -6.38%, rgba(247, 248, 249, 0) 159.57%);
     box-shadow: inset 0 -1px 0 #eceef0;
+}
+
+.gh-tabs-analytics.no-tabs .tab-list {
+    background: none;
+    box-shadow: none;
 }
 
 .gh-tabs-analytics .tab-panel {

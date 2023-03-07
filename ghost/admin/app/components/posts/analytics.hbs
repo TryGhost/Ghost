@@ -41,7 +41,7 @@
         </div>
     </GhCanvasHeader>
 
-    <Tabs::Tabs class="gh-tabs-analytics" @forceRender={{true}} as |tabs|>
+    <Tabs::Tabs class="gh-tabs-analytics {{if (eq this.post.hasBeenEmailed null) "no-tabs"}}" @forceRender={{true}} as |tabs|>
         {{#if this.post.hasBeenEmailed}}
             <tabs.tab>
                 <h3>{{svg-jar "analytics-tab-sent-large"}}{{format-number this.post.email.emailCount}}</h3>
