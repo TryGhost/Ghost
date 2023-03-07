@@ -162,6 +162,21 @@ class EmailService {
     }
 
     /**
+     * @return {import('./email-renderer').MemberLike}
+     */
+    getDefaultExampleMember() {
+        /**
+         * @type {import('./email-renderer').MemberLike}
+         */
+        return {
+            id: 'example-id',
+            uuid: 'example-uuid',
+            email: 'jamie@example.com',
+            name: 'Jamie Larson'
+        };
+    }
+
+    /**
      * @private
      * @param {string} [email] (optional) Search for a member with this email address and use it as the example. If not found, defaults to the default but still uses the provided email address.
      * @return {Promise<import('./email-renderer').MemberLike>}
@@ -170,12 +185,7 @@ class EmailService {
         /**
          * @type {import('./email-renderer').MemberLike}
          */
-        const exampleMember = {
-            id: 'example-id',
-            uuid: 'example-uuid',
-            email: 'jamie@example.com',
-            name: 'Jamie Larson'
-        };
+        const exampleMember = this.getDefaultExampleMember();
 
         // fetch any matching members so that replacements use expected values
         if (email) {
@@ -195,6 +205,22 @@ class EmailService {
     }
 
     /**
+     * Do a manual replacement of tokens with values for a member (normally only used for previews)
+     *
+     * @param {string} htmlOrPlaintext
+     * @param {import('./email-renderer').ReplacementDefinition[]} replacements
+     * @param {import('./email-renderer').MemberLike} member
+     * @return {string}
+     */
+    replaceDefinitions(htmlOrPlaintext, replacements, member) {
+        // Do manual replacements with an example member
+        for (const replacement of replacements) {
+            htmlOrPlaintext = htmlOrPlaintext.replace(replacement.token, replacement.getValue(member));
+        }
+        return htmlOrPlaintext;
+    }
+
+    /**
      *
      * @param {*} post
      * @param {*} newsletter
@@ -207,16 +233,10 @@ class EmailService {
         const subject = this.#emailRenderer.getSubject(post);
         let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, segment, {clickTrackingEnabled: false});
 
-        // Do manual replacements with an example member
-        for (const replacement of replacements) {
-            html = html.replace(replacement.token, replacement.getValue(exampleMember));
-            plaintext = plaintext.replace(replacement.token, replacement.getValue(exampleMember));
-        }
-
         return {
             subject,
-            html,
-            plaintext
+            html: this.replaceDefinitions(html, replacements, exampleMember),
+            plaintext: this.replaceDefinitions(plaintext, replacements, exampleMember)
         };
     }
 

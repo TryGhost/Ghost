@@ -14,10 +14,12 @@ const mobileDocWithFreeMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["em
 const mobileDocWithPaidMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:-free","alignment":"left","html":"<p>This is for paid members only</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[1,"p",[[0,[],0,"Bye."]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaidAndFreeMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:free","alignment":"left","html":"<p>This is for free members only</p>"}],["email-cta",{"showButton":false,"showDividers":true,"segment":"status:-free","alignment":"left","html":"<p>This is for paid members only</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[10,1],[1,"p",[[0,[],0,"Bye."]]]],"ghostVersion":"4.0"}';
 const mobileDocWithFreeMemberOnlyAndPaywall = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:free","alignment":"left","html":"<p>This is for free members only</p>"}],["paywall",{}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[1,"p",[[0,[],0,"Bye."]]],[10,1],[1,"p",[[0,[],0,"This is after the paywall."]]]],"ghostVersion":"4.0"}';
+const mobileDocWithReplacements = '{"version":"0.3.1","atoms":[],"cards":[["email",{"html":"<p>Hey {first_name, \\"there\\"}, Hey {first_name},</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello {first_name},"]]],[10,0]],"ghostVersion":"4.0"}';
 
 const configUtils = require('../../../utils/configUtils');
 const {settingsCache} = require('../../../../core/server/services/settings-helpers');
 const DomainEvents = require('@tryghost/domain-events');
+const emailService = require('../../../../core/server/services/email-service');
 
 let agent;
 let stubbedSend;
@@ -183,17 +185,18 @@ describe('Batch sending tests', function () {
         });
         mockManager.mockMail();
         mockManager.mockMailgun(function () {
+            // Allows for setting stubbedSend during tests
             return stubbedSend.call(this, ...arguments);
         });
     });
 
     afterEach(async function () {
-        mockManager.restore();
         await configUtils.restore();
         await models.Settings.edit([{
             key: 'email_verification_required',
             value: false
         }], {context: {internal: true}});
+        mockManager.restore();
     });
 
     before(async function () {
@@ -213,12 +216,12 @@ describe('Batch sending tests', function () {
     });
 
     after(async function () {
+        mockManager.restore();
         await ghostServer.stop();
     });
 
     it('Can send a scheduled post email', async function () {
         // Prepare a post and email model
-        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
         const emailModel = await createPublishedPostEmail();
 
         assert.equal(emailModel.get('source_type'), 'mobiledoc');
@@ -226,10 +229,10 @@ describe('Batch sending tests', function () {
         assert(emailModel.get('from'));
 
         // Await sending job
-        await completedPromise;
+        await jobManager.allSettled();
 
         await emailModel.refresh();
-        assert.equal(emailModel.get('status'), 'submitted', 'This email should be in submitted state: ' + (emailModel.get('error') ?? 'No error'));
+        assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
@@ -258,6 +261,33 @@ describe('Batch sending tests', function () {
         // Check members are unique
         const memberIds = emailRecipients.models.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
+    });
+
+    it('Protects the email job from being run multiple times at the same time', async function () {
+        // Prepare a post and email model
+        const emailModel = await createPublishedPostEmail();
+
+        assert.equal(emailModel.get('source_type'), 'mobiledoc');
+        assert(emailModel.get('subject'));
+        assert(emailModel.get('from'));
+
+        // Retry sending a couple of times
+        const promises = [];
+        for (let i = 0; i < 100; i++) {
+            promises.push(emailService.service.retryEmail(emailModel));
+        }
+        await Promise.all(promises);
+
+        // Await sending job
+        await jobManager.allSettled();
+
+        await emailModel.refresh();
+        assert.equal(emailModel.get('status'), 'submitted');
+        assert.equal(emailModel.get('email_count'), 4);
+
+        // Did we create batches?
+        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        assert.equal(batches.models.length, 1);
     });
 
     it('Doesn\'t include members created after the email in the batches', async function () {
@@ -482,7 +512,6 @@ describe('Batch sending tests', function () {
         };
 
         // Prepare a post and email model
-        let completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
         const emailModel = await createPublishedPostEmail();
 
         assert.equal(emailModel.get('source_type'), 'mobiledoc');
@@ -490,7 +519,7 @@ describe('Batch sending tests', function () {
         assert(emailModel.get('from'));
 
         // Await sending job
-        await completedPromise;
+        await jobManager.allSettled();
 
         await emailModel.refresh();
         assert.equal(emailModel.get('status'), 'failed');
@@ -545,9 +574,8 @@ describe('Batch sending tests', function () {
         let memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
 
-        completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
         await retryEmail(emailModel.id);
-        await completedPromise;
+        await jobManager.allSettled();
 
         await emailModel.refresh();
         batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
@@ -732,6 +760,67 @@ describe('Batch sending tests', function () {
         });
     });
 
+    describe('Replacements', function () {
+        it('Does replace with and without fallback in both plaintext and html for member without name', async function () {
+            // Create a new member without a first_name
+            await models.Member.add({
+                email: 'replacements-test-1@example.com',
+                labels: [{name: 'replacements-tests'}],
+                newsletters: [{
+                    id: fixtureManager.get('newsletters', 0).id
+                }]
+            });
+
+            const {html, plaintext} = await sendEmail({
+                mobiledoc: mobileDocWithReplacements
+            }, 'label:replacements-tests');
+
+            // Outside the email card, {first_name} is not replaced
+            assert.match(html, /Hello {first_name},/);
+
+            // Inside the email card with and without fallback, it is replaced
+            assert.match(html, /Hey there, Hey ,/);
+
+            // The unsubscribe link is replaced
+            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
+
+            // Same for plaintext:
+            assert.match(plaintext, /Hello {first_name},/);
+            assert.match(plaintext, /Hey there, Hey ,/);
+            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+        });
+
+        it('Does replace with and without fallback in both plaintext and html for member with name', async function () {
+            // Create a new member without a first_name
+            await models.Member.add({
+                name: 'Simon Tester',
+                email: 'replacements-test-2@example.com',
+                labels: [{name: 'replacements-tests-2'}],
+                newsletters: [{
+                    id: fixtureManager.get('newsletters', 0).id
+                }]
+            });
+
+            const {html, plaintext} = await sendEmail({
+                mobiledoc: mobileDocWithReplacements
+            }, 'label:replacements-tests-2');
+
+            // Outside the email card, {first_name} is not replaced
+            assert.match(html, /Hello {first_name},/);
+
+            // Inside the email card with and without fallback, it is replaced
+            assert.match(html, /Hey Simon, Hey Simon,/);
+
+            // The unsubscribe link is replaced
+            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
+
+            // Same for plaintext:
+            assert.match(plaintext, /Hello {first_name},/);
+            assert.match(plaintext, /Hey Simon, Hey Simon,/);
+            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+        });
+    });
+
     describe('HTML-content', function () {
         it('Does not HTML escape feature_image_caption', async function () {
             const {html, plaintext} = await sendEmail({
@@ -745,6 +834,4 @@ describe('Batch sending tests', function () {
             assert.match(plaintext, /Testing feature image caption/);
         });
     });
-
-    // TODO: Replacement fallbacks
 });
