@@ -82,10 +82,10 @@ const prepareContentFolder = (options) => {
     if (options.copyThemes) {
         // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
         fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
-    } else if (options.frontend) {
-        // Just copy Casper
-        fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'casper'), path.join(contentFolderForTests, 'themes', 'casper'));
     }
+
+    // Copy theme even if frontend is disabled, as admin can use casper when viewing themes section
+    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'casper'), path.join(contentFolderForTests, 'themes', 'casper'));
 
     if (options.redirectsFile) {
         redirects.setupFile(contentFolderForTests, options.redirectsFileExt);
@@ -96,6 +96,11 @@ const prepareContentFolder = (options) => {
     } else if (options.copySettings) {
         fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     }
+
+    // Used by newsletter fixtures
+    fs.ensureDirSync(path.join(contentFolderForTests, 'images', '2022', '05'));
+    const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
+    fs.writeFileSync(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
 };
 
 // CASE: Ghost Server is Running

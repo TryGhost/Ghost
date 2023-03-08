@@ -274,6 +274,16 @@ async function initDynamicRouting() {
 }
 
 /**
+ * The app service cannot be loaded unless the frontend is enabled
+ * In future, the logic to determine whether this should be loaded should be in the service loader
+ */
+async function initAppService() {
+    debug('Begin: App Service');
+    const appService = require('./frontend/services/apps');
+    await appService.init();
+}
+
+/**
  * Services are components that make up part of Ghost and need initializing on boot
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
@@ -291,9 +301,7 @@ async function initServices({config}) {
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
-    const {mega} = require('./server/services/mega');
     const webhooks = require('./server/services/webhooks');
-    const appService = require('./frontend/services/apps');
     const limits = require('./server/services/limits');
     const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
@@ -337,9 +345,7 @@ async function initServices({config}) {
         audienceFeedback.init(),
         emailService.init(),
         emailAnalytics.init(),
-        mega.listen(),
         webhooks.listen(),
-        appService.init(),
         apiVersionCompatibility.init(),
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
@@ -488,6 +494,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         if (frontend) {
             await initDynamicRouting();
+            await initAppService();
         }
 
         // TODO: move this to the correct place once we figure out where that is

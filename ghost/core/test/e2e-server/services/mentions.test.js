@@ -1,9 +1,7 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
-const sinon = require('sinon');
 const nock = require('nock');
 const assert = require('assert');
 const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
-const dnsPromises = require('dns').promises;
 const jobsService = require('../../../core/server/services/mentions-jobs');
 
 let agent;
@@ -25,14 +23,11 @@ describe('Mentions Service', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsAdmin();
-        nock.disableNetConnect(); // make sure we don't actually send mentions
     });
 
     beforeEach(async function () {
         // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
-        sinon.stub(dnsPromises, 'lookup').callsFake(function () {
-            return Promise.resolve({address: '123.123.123.123'});
-        });
+        mockManager.disableNetwork();
 
         // mock response from website mentioned by post to provide endpoint
         mentionMock = nock(mentionUrl.href)
@@ -52,12 +47,6 @@ describe('Mentions Service', function () {
 
     afterEach(async function () {
         mockManager.restore();
-        nock.cleanAll();
-    });
-
-    after(function () {
-        nock.enableNetConnect();
-        nock.cleanAll();
     });
 
     describe('Sending Service', function () {

@@ -5,6 +5,7 @@ const supertest = require('supertest');
 const testUtils = require('../../utils/index');
 const config = require('../../../core/shared/config/index');
 const localUtils = require('./utils');
+const {mockManager} = require('../../utils/e2e-framework');
 
 // for sinon stubs
 const dnsPromises = require('dns').promises;
@@ -20,14 +21,11 @@ describe('Oembed API', function () {
 
     beforeEach(function () {
         // ensure sure we're not network dependent
-        sinon.stub(dnsPromises, 'lookup').callsFake(function () {
-            return Promise.resolve({address: '123.123.123.123'});
-        });
+        mockManager.disableNetwork();
     });
 
     afterEach(function () {
-        sinon.restore();
-        nock.cleanAll();
+        mockManager.restore();
     });
 
     it('can fetch an embed', async function () {
@@ -422,7 +420,7 @@ describe('Oembed API', function () {
                     return Promise.resolve({address: '123.123.123.123'});
                 }
             });
-            
+
             const pageMock = nock('http://test.com')
                 .get('/')
                 .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://[2607:f0d0:1002:51::4]:9999/oembed"></head></html>');

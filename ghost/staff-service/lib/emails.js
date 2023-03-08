@@ -16,7 +16,9 @@ class StaffServiceEmails {
         this.registerPartials();
     }
 
-    async notifyFreeMemberSignup(member, options) {
+    async notifyFreeMemberSignup({
+        member, attribution
+    }, options) {
         const users = await this.models.User.getEmailAlertUsers('free-signup', options);
 
         for (const user of users) {
@@ -27,6 +29,7 @@ class StaffServiceEmails {
 
             const templateData = {
                 memberData,
+                referrerSource: attribution?.referrerSource,
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
@@ -47,7 +50,7 @@ class StaffServiceEmails {
         }
     }
 
-    async notifyPaidSubscriptionStarted({member, subscription, offer, tier}, options = {}) {
+    async notifyPaidSubscriptionStarted({member, subscription, offer, tier, attribution}, options = {}) {
         const users = await this.models.User.getEmailAlertUsers('paid-started', options);
 
         for (const user of users) {
@@ -72,6 +75,7 @@ class StaffServiceEmails {
 
             const templateData = {
                 memberData,
+                referrerSource: attribution?.referrerSource,
                 tierData,
                 offerData,
                 subscriptionData,

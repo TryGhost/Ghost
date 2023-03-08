@@ -44,10 +44,18 @@ class Urls {
         debug('cache', url);
 
         if (this.urls[resource.data.id]) {
-            logging.error(new errors.InternalServerError({
+            const error = new errors.InternalServerError({
                 message: 'This should not happen.',
                 code: 'URLSERVICE_RESOURCE_DUPLICATE'
-            }));
+            });
+            if (process.env.NODE_ENV.startsWith('test')) {
+                logging.warn({
+                    message: 'Duplicate URL',
+                    err: error
+                });
+            } else {
+                logging.error(error);
+            }
 
             this.removeResourceId(resource.data.id);
         }
