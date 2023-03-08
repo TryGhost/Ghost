@@ -356,6 +356,8 @@ const completeStripeSubscription = async (page) => {
     await fillInputIfExists(page, '#billingLocality', 'Testville');
 
     await page.getByTestId('hosted-payment-submit-button').click();
+
+    await page.waitForLoadState('networkidle');
 };
 
 /**
