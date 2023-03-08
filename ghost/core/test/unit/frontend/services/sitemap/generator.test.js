@@ -151,6 +151,32 @@ describe('Generators', function () {
 
                 urlNode.should.be.a.ValidUrlNode({withImage: true});
             });
+            it('can check for canonical url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: 'https://myblog.com/test/'
+                }
+                ));
+                isCanonical.should.eql(true);
+            });
+        });
+
+        describe('fn: addUrl', function () {
+            it('does not include posts containing canonical_url', function () {
+                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: null
+                }));
+                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: 'https://external.com/test/'
+                }));
+                const xml = generator.getXml();
+                xml.should.not.match(/https:\/\/external.com\/test\//);
+            });
         });
 
         describe('fn: getXml', function () {
