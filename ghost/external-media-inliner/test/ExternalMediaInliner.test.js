@@ -23,28 +23,24 @@ describe('ExternalMediaInliner', function () {
         };
 
         postModelStub = {
-            tableName: 'posts',
             findPage: sinon.stub().resolves({
                 data: []
             }),
             edit: sinon.stub().resolves()
         };
         postMetaModelStub = {
-            tableName: 'posts_meta',
             findPage: sinon.stub().resolves({
                 data: []
             }),
             edit: sinon.stub().resolves()
         };
         tagModelStub = {
-            tableName: 'tags',
             findPage: sinon.stub().resolves({
                 data: []
             }),
             edit: sinon.stub().resolves()
         };
         userModelStub = {
-            tableName: 'users',
             findPage: sinon.stub().resolves({
                 data: []
             }),
@@ -335,7 +331,7 @@ describe('ExternalMediaInliner', function () {
 
             assert.ok(requestMock.isDone());
             assert.ok(tagModelStub.edit.calledOnce);
-            assert.equal(logging.error.args[0][0], 'Error inlining media for tags: errored-tag-id');
+            assert.equal(logging.error.args[0][0], 'Error inlining media for: errored-tag-id');
         });
 
         it('inlines image in the post\'s feature_image field', async function () {
