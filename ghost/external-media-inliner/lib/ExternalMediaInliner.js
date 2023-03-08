@@ -40,6 +40,8 @@ class ExternalMediaInliner {
      * @returns {Promise<Object>}
      */
     async #getRemoteMedia(requestURL) {
+        // @NOTE: this is the most expensive operation in the whole inlining process
+        //        we should consider caching the results to improve performance
         try {
             return await request(requestURL, {
                 followRedirect: true,
