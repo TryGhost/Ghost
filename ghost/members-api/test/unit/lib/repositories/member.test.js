@@ -1,20 +1,29 @@
 const assert = require('assert');
 const sinon = require('sinon');
+const should = require('should');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../lib/repositories/member');
 const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
+const mockOfferRedemption = {
+    add: sinon.stub()
+};
+
 describe('MemberRepository', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     describe('#isComplimentarySubscription', function () {
         it('Does not error when subscription.plan is null', function () {
-            const repo = new MemberRepository({});
+            const repo = new MemberRepository({OfferRedemption: mockOfferRedemption});
             repo.isComplimentarySubscription({});
         });
     });
 
     describe('#resolveContextSource', function (){
         it('Maps context to source', function (){
-            const repo = new MemberRepository({});
+            const repo = new MemberRepository({OfferRedemption: mockOfferRedemption});
 
             let source = repo._resolveContextSource({
                 import: true
@@ -84,7 +93,8 @@ describe('MemberRepository', function () {
                 stripeAPIService: {
                     configured: true
                 },
-                productRepository
+                productRepository,
+                OfferRedemption: mockOfferRedemption
             });
 
             try {
@@ -114,7 +124,8 @@ describe('MemberRepository', function () {
                 stripeAPIService: {
                     configured: true
                 },
-                productRepository
+                productRepository,
+                OfferRedemption: mockOfferRedemption
             });
 
             try {
@@ -135,7 +146,6 @@ describe('MemberRepository', function () {
 
     describe('linkSubscription', function (){
         let Member;
-        let notifySpy;
         let MemberPaidSubscriptionEvent;
         let StripeCustomerSubscription;
         let MemberProductEvent;
@@ -144,9 +154,15 @@ describe('MemberRepository', function () {
         let offerRepository;
         let labsService;
         let subscriptionData;
+        let notifySpy;
+
+        afterEach(function () {
+            sinon.restore();
+        });
 
         beforeEach(async function () {
             notifySpy = sinon.spy();
+
             subscriptionData = {
                 id: 'sub_123',
                 customer: 'cus_123',
@@ -238,7 +254,8 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 labsService,
-                Member
+                Member,
+                OfferRedemption: mockOfferRedemption
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
@@ -266,7 +283,8 @@ describe('MemberRepository', function () {
                 productRepository,
                 offerRepository,
                 labsService,
-                Member
+                Member,
+                OfferRedemption: mockOfferRedemption
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
@@ -291,10 +309,6 @@ describe('MemberRepository', function () {
                 }
                 return false;
             })).should.be.true();
-        });
-
-        afterEach(function () {
-            sinon.restore();
         });
     });
 });
