@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@tryghost/errors": "^1.2.1",
-    "bluebird": "^3.7.2",
     "fs-extra": "^10.0.0"
   },
   "optionalDependencies": {
