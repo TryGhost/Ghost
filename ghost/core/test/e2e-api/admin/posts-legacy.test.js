@@ -40,8 +40,6 @@ describe('Posts API', function () {
 
     afterEach(function () {
         mockManager.restore();
-        sinon.restore();
-        nock.cleanAll();
     });
 
     it('Can retrieve all posts', async function () {
