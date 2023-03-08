@@ -22,6 +22,7 @@ const settingsCache = require('../../core/shared/settings-cache');
 const dnsPromises = require('dns').promises;
 
 let fakedLabsFlags = {};
+let allowedNetworkDomains = [];
 const originalLabsIsSet = labs.isSet;
 
 /**
@@ -47,7 +48,23 @@ const disableNetwork = () => {
     }
 
     // Allow localhost
-    nock.enableNetConnect('127.0.0.1');
+    // Multiple enableNetConnect with different hosts overwrite each other, so we need to add one and use the allowedNetworkDomains variable
+    nock.enableNetConnect((host) => {
+        if (host.includes('127.0.0.1')) {
+            return true;
+        }
+        for (const h of allowedNetworkDomains) {
+            if (host.includes(h)) {
+                return true;
+            }
+        }
+        return false;
+    });
+};
+
+const allowStripe = () => {
+    disableNetwork();
+    allowedNetworkDomains.push('stripe.com');
 };
 
 const mockStripe = () => {
@@ -237,6 +254,7 @@ const restore = () => {
     fakedLabsFlags = {};
     fakedSettings = {};
     emailCount = 0;
+    allowedNetworkDomains = [];
     nock.cleanAll();
     nock.enableNetConnect();
 
@@ -256,6 +274,7 @@ module.exports = {
     disableStripe,
     mockStripe,
     mockSlack,
+    allowStripe,
     mockMailgun,
     mockLabsEnabled,
     mockLabsDisabled,

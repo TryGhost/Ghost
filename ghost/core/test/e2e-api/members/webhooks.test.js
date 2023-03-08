@@ -123,7 +123,7 @@ describe('Members API', function () {
     });
 
     afterEach(function () {
-        nock.cleanAll();
+        mockManager.restore();
     });
 
     // Helper methods to update the customer and subscription

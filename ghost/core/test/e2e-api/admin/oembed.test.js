@@ -25,8 +25,7 @@ describe('Oembed API', function () {
     });
 
     afterEach(function () {
-        sinon.restore();
-        nock.cleanAll();
+        mockManager.restore();
     });
 
     it('can fetch an embed', async function () {

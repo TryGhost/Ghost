@@ -20,10 +20,6 @@ describe('TwitterOEmbedProvider', function () {
         mockManager.restore();
     });
 
-    after(async function () {
-        nock.enableNetConnect();
-    });
-
     it('Can support requests for Tweet URLs', async function () {
         const provider = new TwitterOEmbedProvider();
 

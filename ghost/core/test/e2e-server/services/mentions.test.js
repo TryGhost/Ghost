@@ -23,7 +23,6 @@ describe('Mentions Service', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsAdmin();
-        nock.disableNetConnect(); // make sure we don't actually send mentions
     });
 
     beforeEach(async function () {
@@ -48,12 +47,6 @@ describe('Mentions Service', function () {
 
     afterEach(async function () {
         mockManager.restore();
-        nock.cleanAll();
-    });
-
-    after(function () {
-        nock.enableNetConnect();
-        nock.cleanAll();
     });
 
     describe('Sending Service', function () {
