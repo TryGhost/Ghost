@@ -8,7 +8,14 @@ class LinkReplacer {
     async replace(html, replaceLink) {
         const cheerio = require('cheerio');
         try {
-            const $ = cheerio.load(html);
+            const $ = cheerio.load(html, {
+                xml: {
+                    // This makes sure we use the faster and less destructive htmlparser2 parser
+                    xmlMode: false
+                },
+                // Do not replace &, ', " and others with HTML entities (is bugged because it replaces &map_ with something weird (&#x21A6;))
+                decodeEntities: false
+            }, false);
 
             for (const el of $('a').toArray()) {
                 const href = $(el).attr('href');
