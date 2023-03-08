@@ -301,7 +301,14 @@ class ImportManager {
         const baseDir = this.getBaseDirectory(zipDirectory);
 
         for (const handler of this.handlers) {
-            const files = this.getFilesFromZip(handler, zipDirectory);
+            let files = [];
+            if (handler.directories?.length > 0) {
+                for (const dir of handler.directories) {
+                    files.push(...this.getFilesFromZip(handler, path.join(zipDirectory, (baseDir || ''), dir)));
+                }
+            } else {
+                files.push(...this.getFilesFromZip(handler, zipDirectory));
+            }
 
             debug('handler', handler.type, files);
 
