@@ -166,12 +166,12 @@ describe('Generators', function () {
             it('does not include posts containing canonical_url', function () {
                 generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
                     page: false,
-                    slug: 'some-cool-page',
+                    slug: 'test2',
                     canonical_url: null
                 }));
                 generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
                     page: false,
-                    slug: 'some-cool-page',
+                    slug: 'test',
                     canonical_url: 'https://external.com/test/'
                 }));
                 const xml = generator.getXml();
@@ -344,6 +344,20 @@ describe('Generators', function () {
 
                 // <loc> should exist exactly one time
                 generator.siteMapContent.get(1).match(/<loc>/g).length.should.eql(3);
+            });
+            it('does not include pages containing canonical_url', function () {
+                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
+                    page: true,
+                    slug: 'test2',
+                    canonical_url: null
+                }));
+                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    page: true,
+                    slug: 'test',
+                    canonical_url: 'https://external.com/test/'
+                }));
+                const xml = generator.getXml();
+                xml.should.not.match(/https:\/\/external.com\/test\//);
             });
         });
     });
