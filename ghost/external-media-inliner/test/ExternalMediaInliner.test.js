@@ -110,6 +110,56 @@ describe('ExternalMediaInliner', function () {
             }));
         });
 
+        it('inlines the image from post\'s mobiledoc containing html card', async function () {
+            const imageURL = 'https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/39719fcb-5af0-4764-bf8b-d375f37a09e5_1141x860';
+            const requestMock = nock('https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com')
+                .get('/public/images/39719fcb-5af0-4764-bf8b-d375f37a09e5_1141x860')
+                .reply(200, GIF1x1);
+
+            const postModelInstanceStub = {
+                id: 'inlined-post-with-htmlcard-id',
+                get: sinon.stub()
+                    .withArgs('mobiledoc')
+                    .returns(`{"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<img src="${imageURL}" alt="Lorem ipsum">"}]],"markups":[],"sections":[[10,0],[1,"p",[]]],"ghostVersion":"4.0"}`)
+            };
+
+            postModelStub = {
+                findPage: sinon.stub().returns({
+                    data: [postModelInstanceStub]
+                }),
+                edit: sinon.stub().resolves()
+            };
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-image.jpg')
+                .returns('unique-image.jpg');
+            const inliner = new ExternalMediaInliner({
+                PostModel: postModelStub,
+                PostMetaModel: postMetaModelStub,
+                TagModel: tagModelStub,
+                UserModel: userModelStub,
+                getMediaStorage: sinon.stub().withArgs('.jpg').returns({
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-image.jpg',
+                    saveRaw: () => '/content/images/unique-image.jpg'
+                })
+            });
+
+            await inliner.inline(['https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com']);
+
+            assert.ok(requestMock.isDone());
+            assert.ok(postModelStub.edit.calledOnce);
+            assert.deepEqual(postModelStub.edit.args[0][0], {
+                mobiledoc: `{"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<img src="__GHOST_URL__/content/images/unique-image.jpg" alt="Lorem ipsum">"}]],"markups":[],"sections":[[10,0],[1,"p",[]]],"ghostVersion":"4.0"}`
+            });
+            assert.deepEqual(postModelStub.edit.args[0][1], {
+                id: 'inlined-post-with-htmlcard-id',
+                context: {
+                    internal: true
+                }
+            });
+        });
+
         it('logs an error when fetching an external media fails', async function () {
             const imageURL = 'https://img.stockfresh.com/files/f/image.jpg';
             const requestMock = nock('https://img.stockfresh.com')
