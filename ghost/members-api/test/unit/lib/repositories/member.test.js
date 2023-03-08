@@ -1,6 +1,5 @@
 const assert = require('assert');
 const sinon = require('sinon');
-const should = require('should');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../lib/repositories/member');
 const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
