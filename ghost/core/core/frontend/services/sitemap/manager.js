@@ -36,7 +36,7 @@ class SiteMapManager {
         });
 
         events.on('url.added', (obj) => {
-            if (!obj.resource.data.canonical_url) {
+            if (!obj.resource.data?.canonical_url ?? null) {
                 this[obj.resource.config.type].addUrl(obj.url.absolute, obj.resource.data);
             }
         });

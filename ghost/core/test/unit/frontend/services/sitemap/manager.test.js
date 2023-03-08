@@ -70,6 +70,24 @@ describe('Unit: sitemap/manager', function () {
         });
 
         describe('trigger url events', function () {
+            it('excludes url if contains canonical_url meta', function () {
+                eventsToRemember['url.added']({
+                    url: {
+                        relative: '/link-to-article/',
+                        absolute: 'https://myblog.com/link-to-article/'
+                    },
+                    resource: {
+                        config: {
+                            type: 'posts'
+                        },
+                        data: {
+                            canonical_url: 'https://external-link.com/some-article/'
+                        }
+                    }
+                });
+                PostGenerator.prototype.addUrl.calledOnce.should.be.false();
+            });
+
             it('url.added', function () {
                 eventsToRemember['url.added']({
                     url: {
