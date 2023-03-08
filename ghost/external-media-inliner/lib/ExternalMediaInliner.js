@@ -187,7 +187,7 @@ class ExternalMediaInliner {
      * @param {string[]} domains - domains to inline media from
      */
     async #inlineSimpleFields(resources, model, fields, domains) {
-        logging.info(`Starting inlining external media for ${resources?.length} ${model.tableName}`);
+        logging.info(`Starting inlining external media for ${resources?.length} resources and with ${fields.join(', ')} fields`);
 
         for (const resource of resources) {
             try {
@@ -202,7 +202,7 @@ class ExternalMediaInliner {
                     });
                 }
             } catch (err) {
-                logging.error(`Error inlining media for ${model.tableName}: ${resource.id}`);
+                logging.error(`Error inlining media for: ${resource.id}`);
                 logging.error(new errors.DataImportError({
                     err
                 }));
