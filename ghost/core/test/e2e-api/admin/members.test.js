@@ -4,7 +4,6 @@ const ObjectId = require('bson-objectid').default;
 
 const assert = require('assert');
 const nock = require('nock');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
