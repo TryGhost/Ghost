@@ -82,7 +82,7 @@ class BaseSiteMapGenerator {
     addUrl(url, datum) {
         const node = this.createUrlNodeFromDatum(url, datum);
 
-        if (node && this.hasCanonicalUrl(datum) === false) {
+        if (node && !this.hasCanonicalUrl(datum)) {
             this.updateLastModified(datum);
             this.updateLookups(datum, node);
             // force regeneration of xml
