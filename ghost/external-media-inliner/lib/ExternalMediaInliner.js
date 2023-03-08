@@ -108,7 +108,10 @@ class ExternalMediaInliner {
 
     async #inlineMibiledoc(mobiledoc, domains) {
         for (const domain of domains) {
-            const regex = new RegExp(`"src":"(${domain}.*?)"`, 'igm');
+            // NOTE: the src could end with a quote, apostrophe or double-backslash. backlashes are added to mobiledoc
+            //       as an escape character
+            const srcTerminationSymbols = `"|'|\\\\`;
+            const regex = new RegExp(`(${domain}.*?)(${srcTerminationSymbols})`, 'igm');
             const matches = mobiledoc.matchAll(regex);
 
             for (const [,src] of matches) {
