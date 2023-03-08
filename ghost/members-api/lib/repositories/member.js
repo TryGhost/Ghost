@@ -425,13 +425,15 @@ module.exports = class MemberRepository {
 
         // Determine if we need to fetch the initial member with relations
         const needsProducts = this._stripeAPIService.configured && data.products;
+        
+        // only update newsletters if we are receiving newsletter data
+        const needsNewsletters = memberData.newsletters || typeof memberData.subscribed === 'boolean';
 
         // Build list for withRelated
         const requiredRelations = [];
-        //  always include newsletters for the time being; we need to load archived newsletters to maintain those subs
-        //      which are not exposed by the API
-        requiredRelations.push('newsletters');
-
+        if (needsNewsletters) {
+            requiredRelations.push('newsletters');
+        }
         if (needsProducts) {
             requiredRelations.push('products');
         }
@@ -534,33 +536,37 @@ module.exports = class MemberRepository {
         let newslettersToAdd = [];
         let newslettersToRemove = [];
 
-        const existingNewsletters = initialMember.related('newsletters').models;
+        if (needsNewsletters) {
+            const existingNewsletters = initialMember.related('newsletters').models;
 
-        // This maps the old subscribed property to the new newsletters field
-        if (!memberData.newsletters) {
+            // This maps the old subscribed property to the new newsletters field
             if (memberData.subscribed === false) {
                 memberData.newsletters = [];
             } else if (memberData.subscribed === true && !existingNewsletters.find(n => n.get('status') === 'active')) {
                 const browseOptions = _.pick(options, 'transacting');
                 memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
             }
-        }
 
-        // only ever populated with active newsletters - never archived ones
-        if (memberData.newsletters) {
-            const existingNewsletterIds = existingNewsletters
-                .filter(newsletter => newsletter.attributes.status !== 'archived')
-                .map(newsletter => newsletter.id);
-            const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
+            // only ever populated with active newsletters - never archived ones
+            if (memberData.newsletters) {
+                const existingNewsletterIds = existingNewsletters
+                    .filter(newsletter => newsletter.attributes.status !== 'archived')
+                    .map(newsletter => newsletter.id);
+                const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
 
-            newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
-            newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
-        }
+                newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
+                newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
+            }
 
-        // need to maintain archived newsletters; these are not exposed by the members api
-        const archivedNewsletters = existingNewsletters.filter(n => n.attributes.status === 'archived');
-        if (archivedNewsletters.length > 0) {
-            archivedNewsletters.forEach(n => memberData.newsletters.push(n));
+            // need to maintain archived newsletters; these are not exposed by the members api
+            const archivedNewsletters = existingNewsletters.filter(n => n.attributes.status === 'archived');
+
+            if (archivedNewsletters.length > 0) {
+                // if (!memberData.newsletters) {
+                //     memberData.newsletters = [];
+                // }
+                archivedNewsletters.forEach(n => memberData.newsletters.push(n));
+            }
         }
 
         const member = await this._Member.edit({
