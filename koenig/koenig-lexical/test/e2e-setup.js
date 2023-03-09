@@ -5,7 +5,7 @@ export const E2E_PORT = process.env.E2E_PORT || 3000;
 let server;
 
 export async function setup() {
-    server = await preview({preview: {port: E2E_PORT}});
+    server = await preview({preview: {host: '127.0.0.1', port: E2E_PORT}});
 }
 
 export async function teardown() {
