@@ -18,7 +18,8 @@ const logging = require('@tryghost/logging');
 const messages = {
     archivedNewsletterError: 'Cannot send email to archived newsletters',
     missingNewsletterError: 'The post does not have a newsletter relation',
-    emailSendingDisabled: `Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`
+    emailSendingDisabled: `Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`,
+    retryEmailStatusError: 'Can only retry emails for published posts'
 };
 
 class EmailService {
@@ -156,7 +157,22 @@ class EmailService {
         return email;
     }
     async retryEmail(email) {
+        // Block accidentaly retrying non-published posts (can happen due to bugs in frontend)
+        const post = await email.getLazyRelation('post');
+        if (post.get('status') !== 'published' && post.get('status') !== 'sent') {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.retryEmailStatusError)
+            });
+        }
+
         await this.checkLimits();
+
+        // Change email status back to 'pending' before scheduling
+        // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
+        if (email.get('status') === 'failed') {
+            await email.save({status: 'pending'}, {patch: true});
+        }
+
         this.#batchSendingService.scheduleEmail(email);
         return email;
     }
