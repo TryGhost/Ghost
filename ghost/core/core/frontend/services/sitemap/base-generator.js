@@ -22,6 +22,10 @@ class BaseSiteMapGenerator {
         this.maxPerPage = 50000;
     }
 
+    hasCanonicalUrl(datum) {
+        return Boolean(datum?.canonical_url);
+    }
+
     generateXmlFromNodes(page) {
         // Get a mapping of node to timestamp
         let nodesToProcess = _.map(this.nodeLookup, (node, id) => {
@@ -75,7 +79,7 @@ class BaseSiteMapGenerator {
     addUrl(url, datum) {
         const node = this.createUrlNodeFromDatum(url, datum);
 
-        if (node) {
+        if (node && !this.hasCanonicalUrl(datum)) {
             this.updateLastModified(datum);
             this.updateLookups(datum, node);
             // force regeneration of xml
