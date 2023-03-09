@@ -23,10 +23,7 @@ class BaseSiteMapGenerator {
     }
 
     hasCanonicalUrl(datum) {
-        if (datum.canonical_url) {
-            return true;
-        }
-        return false;
+        return Boolean(datum?.canonical_url);
     }
 
     generateXmlFromNodes(page) {
