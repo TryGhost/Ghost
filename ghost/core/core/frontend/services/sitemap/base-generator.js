@@ -23,7 +23,7 @@ class BaseSiteMapGenerator {
     }
 
     hasCanonicalUrl(datum) {
-        if (datum.canonical_url ?? null) {
+        if (datum.canonical_url) {
             return true;
         }
         return false;

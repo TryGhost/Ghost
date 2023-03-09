@@ -151,6 +151,9 @@ describe('Generators', function () {
 
                 urlNode.should.be.a.ValidUrlNode({withImage: true});
             });
+        });
+
+        describe('fn: hasCanonicalUrl', function () {
             it('can check for canonical url', function () {
                 const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
                     page: false,
@@ -159,6 +162,15 @@ describe('Generators', function () {
                 }
                 ));
                 isCanonical.should.eql(true);
+            });
+            it('returns false if no canonical url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: null
+                }
+                ));
+                isCanonical.should.eql(false);
             });
         });
 
