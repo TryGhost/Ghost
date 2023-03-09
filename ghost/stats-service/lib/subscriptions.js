@@ -93,27 +93,27 @@ class SubscriptionStatsService {
             `))
             .select(knex.raw(`SUM(
                 CASE
-                    WHEN members_paid_subscription_events.type IN ('created','reactivated') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
+                    WHEN members_paid_subscription_events.type IN ('created','reactivated','active') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
                     WHEN members_paid_subscription_events.type='updated' AND price.id = to_price.id THEN 1
                     ELSE 0
                 END
             ) as positive_delta`))
             .select(knex.raw(`SUM(
                 CASE
-                    WHEN members_paid_subscription_events.type IN ('canceled', 'expired') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
+                    WHEN members_paid_subscription_events.type IN ('canceled', 'expired','inactive') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
                     WHEN members_paid_subscription_events.type='updated' AND price.id = from_price.id THEN 1
                     ELSE 0
                 END
             ) as negative_delta`))
             .select(knex.raw(`SUM(
                 CASE
-                    WHEN members_paid_subscription_events.type IN ('created','reactivated') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
+                    WHEN members_paid_subscription_events.type IN ('created','reactivated','active') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
                     ELSE 0
                 END
             ) as signups`))
             .select(knex.raw(`SUM(
                 CASE
-                    WHEN members_paid_subscription_events.type IN ('canceled', 'expired') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
+                    WHEN members_paid_subscription_events.type IN ('canceled', 'expired','inactive') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
                     ELSE 0
                 END
             ) as cancellations`))
