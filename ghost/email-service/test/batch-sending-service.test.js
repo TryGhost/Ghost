@@ -17,6 +17,18 @@ describe('Batch Sending Service', function () {
         sinon.restore();
     });
 
+    describe('constructor', function () {
+        it('works in development mode', async function () {
+            const env = process.env.NODE_ENV;
+            process.env.NODE_ENV = 'development';
+            try {
+                new BatchSendingService({});
+            } finally {
+                process.env.NODE_ENV = env;
+            }
+        });
+    });
+
     describe('scheduleEmail', function () {
         it('schedules email', async function () {
             const jobsService = {
