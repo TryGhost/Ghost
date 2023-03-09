@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@tryghost/kg-utils": "^1.0.12",
-    "markdown-it": "^12.2.0",
+    "markdown-it": "^13.0.0",
     "markdown-it-footnote": "^3.0.3",
     "markdown-it-image-lazy-loading": "^1.1.0",
     "markdown-it-lazy-headers": "^0.1.3",
