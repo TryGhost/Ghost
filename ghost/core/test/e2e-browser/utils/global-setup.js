@@ -9,6 +9,8 @@ const {stopGhost} = require('../../utils/e2e-utils');
 const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
+const nock = require('nock');
+const {allowStripe} = require('../../utils/e2e-framework-mock-manager');
 
 const startWebhookServer = () => {
     const command = `stripe listen --forward-to ${config.getSiteUrl()}members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
@@ -86,6 +88,9 @@ const setup = async (playwrightConfig) => {
             server: true,
             backend: true
         });
+
+        // StartGhost automatically disables network, so we need to re-enable it for Stripe
+        allowStripe();
     }
 
     const {baseURL, storageState} = playwrightConfig.projects[0].use;

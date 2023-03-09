@@ -79,7 +79,7 @@ module.exports = class MentionSendingService {
 
     async send({source, target, endpoint}) {
         logging.info('[Webmention] Sending webmention from ' + source.href + ' to ' + target.href + ' via ' + endpoint.href);
-        
+
         // default content type is application/x-www-form-encoded which is what we need for the webmentions spec
         const response = await this.#externalRequest.post(endpoint.href, {
             form: {
@@ -96,7 +96,7 @@ module.exports = class MentionSendingService {
         if (response.statusCode >= 200 && response.statusCode < 300) {
             return;
         }
-        
+
         throw new errors.BadRequestError({
             message: 'Webmention sending failed with status code ' + response.statusCode,
             statusCode: response.statusCode

@@ -123,7 +123,7 @@ describe('Members API', function () {
     });
 
     afterEach(function () {
-        nock.cleanAll();
+        mockManager.restore();
     });
 
     // Helper methods to update the customer and subscription
@@ -294,7 +294,7 @@ describe('Members API', function () {
                 status: 'canceled'
             });
 
-            // Send the webhook call to anounce the cancelation
+            // Send the webhook call to announce the cancelation
             const webhookPayload = JSON.stringify({
                 type: 'customer.subscription.updated',
                 data: {
@@ -504,7 +504,7 @@ describe('Members API', function () {
                 status: 'canceled'
             });
 
-            // Send the webhook call to anounce the cancelation
+            // Send the webhook call to announce the cancelation
             const webhookPayload = JSON.stringify({
                 type: 'customer.subscription.updated',
                 data: {
@@ -1047,7 +1047,7 @@ describe('Members API', function () {
                 status: 'canceled'
             });
 
-            // Send the webhook call to anounce the cancelation
+            // Send the webhook call to announce the cancelation
             webhookPayload = JSON.stringify({
                 type: 'customer.subscription.updated',
                 data: {
@@ -1443,7 +1443,7 @@ describe('Members API', function () {
                 discount
             });
 
-            // Send the webhook call to anounce the cancelation
+            // Send the webhook call to announce the cancelation
             webhookPayload = JSON.stringify({
                 type: 'customer.subscription.updated',
                 data: {

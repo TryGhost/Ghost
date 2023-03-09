@@ -2,10 +2,13 @@ import Service, {inject as service} from '@ember/service';
 import classic from 'ember-classic-decorator';
 import {get, set} from '@ember/object';
 import {htmlSafe} from '@ember/template';
+import {tracked} from '@glimmer/tracking';
 
 @classic
 export default class UpgradeStatusService extends Service {
     @service notifications;
+
+    @tracked refreshRequired = false;
 
     isRequired = false;
     message = '';

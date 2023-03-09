@@ -1,12 +1,15 @@
 const _ = require('lodash');
 const sinon = require('sinon');
 
-const storage = require('../../../../../../core/server/adapters/storage');
-const ImageImporter = require('../../../../../../core/server/data/importer/importers/image');
+const ContentFileImporter = require('../../../../../../core/server/data/importer/importers/ContentFileImporter');
 
-describe('ImageImporter', function () {
+describe('ContentFileImporter', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('has the correct interface', function () {
-        const imageImporter = new ImageImporter({
+        const imageImporter = new ContentFileImporter({
             type: 'images',
             store: {}
         });
@@ -17,7 +20,8 @@ describe('ImageImporter', function () {
 
     it('does preprocess posts, users and tags correctly', function () {
         let inputData = require('../../../../../utils/fixtures/import/import-data-1.json');
-        const imageImporter = new ImageImporter({
+        const imageImporter = new ContentFileImporter({
+            type: 'images',
             store: {}
         });
         let outputData = imageImporter.preProcess(_.cloneDeep(inputData));
@@ -47,17 +51,33 @@ describe('ImageImporter', function () {
         outputData.users[0].cover_image.should.eql('/content/images/photos/cat.jpg');
     });
 
-    it('does import the images correctly', function () {
+    it('does import the images correctly', async function () {
         const inputData = require('../../../../../utils/fixtures/import/import-data-1.json');
         const storageApi = {
             save: sinon.stub().returns(Promise.resolve())
         };
-        const imageImporter = new ImageImporter({
+        const imageImporter = new ContentFileImporter({
             store: storageApi
         });
 
-        imageImporter.doImport(inputData.images).then(function () {
-            storageApi.save.calledTwice.should.be.true();
+        await imageImporter.doImport(inputData.images);
+
+        storageApi.save.calledTwice.should.be.true();
+    });
+
+    it('does import the files correctly', async function () {
+        const inputData = require('../../../../../utils/fixtures/import/import-data-1.json');
+        const storageApi = {
+            save: sinon.stub().returns(Promise.resolve())
+        };
+        const imageImporter = new ContentFileImporter({
+            store: storageApi
         });
+
+        await imageImporter.doImport(inputData.files);
+
+        storageApi.save.calledOnce.should.be.true();
+        storageApi.save.args[0][0].name.should.eql('best-memes.pdf');
+        storageApi.save.args[0][0].newPath.should.eql('/content/files/best-memes.pdf');
     });
 });

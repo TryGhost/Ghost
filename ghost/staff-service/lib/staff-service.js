@@ -98,13 +98,17 @@ class StaffService {
         });
 
         if (type === MemberCreatedEvent && member.status === 'free') {
-            await this.emails.notifyFreeMemberSignup(member);
+            await this.emails.notifyFreeMemberSignup({
+                member,
+                attribution: event?.data?.attribution
+            });
         } else if (type === SubscriptionActivatedEvent) {
             await this.emails.notifyPaidSubscriptionStarted({
                 member,
                 offer,
                 tier,
-                subscription
+                subscription,
+                attribution: event?.data?.attribution
             });
         } else if (type === SubscriptionCancelledEvent) {
             subscription.canceledAt = event.timestamp;

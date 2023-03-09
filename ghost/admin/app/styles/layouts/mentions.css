@@ -40,7 +40,7 @@
     font-size: 1.35rem;
     line-height: 1.2;
     margin-bottom: 14px;
-    white-space: nowrap;
+    position: relative;
 }
 
 .gh-mention-icon {
@@ -53,6 +53,9 @@
 .gh-mention-publisher {
     color: var(--middarkgrey);
     font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .gh-mention-link-icon {
@@ -89,6 +92,17 @@
     margin-bottom: 0;
 }
 
+.gh-mention-multiple-links-link {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 240px;
+}
+
+.gh-mention-header .popover-arrow  {
+    display: none;
+}
+
 .gh-mention-header .popover {
     border: none;
     /* border: 1px solid var(--whitegrey-l1); */
@@ -101,6 +115,9 @@
 .gh-mention-timestamp {
     margin-left: auto;
     padding-left: 32px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .gh-mention-content {
@@ -151,10 +168,10 @@
 }
 
 .gh-mention-author {
+    white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 240px;
-    white-space: nowrap;
     display: block;
     line-height: 1.65em;
     font-weight: 400;
@@ -194,7 +211,6 @@
 }
 
 .gh-mentions-list-cta h4 {
-    color: var(--black);
     text-align: center;
     font-weight: 600;
     margin-bottom: 8px;

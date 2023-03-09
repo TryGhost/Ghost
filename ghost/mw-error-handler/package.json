@@ -19,13 +19,13 @@
     "c8": "7.13.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "14.0.2"
+    "sinon": "15.0.1"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.21",
+    "@tryghost/debug": "0.1.22",
     "@tryghost/errors": "1.2.21",
-    "@tryghost/http-cache-utils": "0.1.6",
-    "@tryghost/tpl": "0.1.21",
+    "@tryghost/http-cache-utils": "0.1.7",
+    "@tryghost/tpl": "0.1.22",
     "lodash": "4.17.21",
     "semver": "7.3.8"
   }

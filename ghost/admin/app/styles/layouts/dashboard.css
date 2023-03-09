@@ -2601,7 +2601,7 @@ Dashboard Mentions */
 }
 
 .gh-dashboard-mentions-icon svg path {
-    color: var(--blackgrey);
+    stroke: currentColor;
 }
 
 .gh-dashboard-mentions-icon svg circle {
@@ -2619,9 +2619,15 @@ Dashboard Mentions */
     border: none;
 }
 
+.gh-dashboard-mentions-container {
+    border-radius: 3px;
+    box-shadow: var(--box-shadow-m);
+}
+
 .gh-dashboard-mentions {
     min-width: 300px;
-    padding: 20px;
+    max-width: 400px;
+    padding-bottom: 20px;
 }
 
 .gh-dashboard-mentions-header {
@@ -2629,7 +2635,9 @@ Dashboard Mentions */
     align-items: center;
     justify-content: space-between;
     line-height: 1;
-    margin-bottom: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--whitegrey);
+    margin: 20px 20px 16px 20px;
 }
 
 .gh-dashboard-mentions {
@@ -2664,23 +2672,29 @@ Dashboard Mentions */
 }
 
 .gh-dashboard-mention {
-    display: flex;
+    /* display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-start; */
     /* display: grid; */
-    /* grid-template-columns: 20px min-content min-content min-content;
-    grid-template-rows: 20px auto auto auto;
-    grid-column-gap: 4px; */
-    padding: 4px 0;
-    padding: 6px 0;
+    display: block;
+    padding: 6px 20px;
     font-size: 1.4rem;
-    line-height: 1;
+    line-height: 1.2;
+}
+
+.gh-dashboard-mention:hover {
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
 }
 
 .gh-dashboard-mention-content {
-    display: flex;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 20px min-content 16px auto;
+    grid-template-rows: 20px auto auto auto;
+    /* grid-column-gap: 4px; */
     align-items: center;
     color: var(--midlightgrey);
+    font-weight: 500;
 }
 
 .gh-dashboard-mention-title {
@@ -2690,25 +2704,36 @@ Dashboard Mentions */
     white-space: nowrap;
     text-overflow: ellipsis;
     margin-right: 4px;
+    margin-left: 8px;
+}
+
+.gh-dashboard-mention-content .gh-mention-link-icon {
+    margin: 0;
 }
 
 .gh-dashboard-mention-timestamp {
     color: var(--midlightgrey);
     font-size: 1.2rem;
-    font-weight: 500;
+    font-weight: 400;
     padding-left: 28px;
     white-space: nowrap;
     margin-top: 2px;
 }
 
 .gh-dashboard-mention-target {
-    color: var(--darkgrey);
+    /* color: var(--darkgrey); */
+    color: #7c8b9a;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     margin-left: 4px;
+    font-weight: 400;
 }
 
 .gh-dashboard-mentions .gh-dashboard-list-footer {
     margin-top: auto;
+}
+
+.gh-dashboard-mentions .gh-mentions-list-cta {
+    padding: 20px;
 }

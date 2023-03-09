@@ -26,10 +26,6 @@ describe('Posts API', function () {
         await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters', 'members:newsletters');
     });
 
-    beforeEach(function () {
-        mockManager.mockLabsDisabled('emailStability');
-    });
-
     afterEach(function () {
         mockManager.restore();
     });

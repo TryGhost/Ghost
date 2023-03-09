@@ -22,11 +22,11 @@
     "knex": "2.4.2",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "14.0.2"
+    "sinon": "15.0.1"
   },
   "dependencies": {
     "@faker-js/faker": "7.6.0",
-    "@tryghost/root-utils": "0.3.19",
+    "@tryghost/root-utils": "0.3.20",
     "@tryghost/string": "0.2.2",
     "probability-distributions": "0.9.1"
   }

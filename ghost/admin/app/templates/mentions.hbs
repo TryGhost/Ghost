@@ -56,10 +56,10 @@
                                     </div>
                                     <div>
                                         <span class="gh-mention-your-link has-multiple-links">{{mention.mentions.length}} links</span>
-                                        <EmberPopover @tooltipClass="popover" @spacing={{15}} @arrowClass="popover-arrow" @side="top-start">
+                                        <EmberPopover @tooltipClass="popover" @spacing={{8}} @arrowClass="popover-arrow" @side="bottom">
                                             <ul class="gh-mention-multiple-links">
                                                 {{#each mention.mentions as |submention|}}
-                                                    <li>{{if submention.resource submention.resource.name submention.target}}</li>
+                                                    <li class="gh-mention-multiple-links-link">{{if submention.resource submention.resource.name submention.target}}</li>
                                                 {{/each}}
                                             </ul>
                                         </EmberPopover>

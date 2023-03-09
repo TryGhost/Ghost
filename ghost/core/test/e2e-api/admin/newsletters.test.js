@@ -1,7 +1,9 @@
 const assert = require('assert');
+const sinon = require('sinon');
 const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
 const models = require('../../../core/server/models');
+const logging = require('@tryghost/logging');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
     const relations = await dbUtils.knex('members_newsletters').where({newsletter_id: newsletterId}).pluck('id');
@@ -40,6 +42,7 @@ describe('Newsletters API', function () {
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     it('Can browse newsletters', async function () {
@@ -392,6 +395,7 @@ describe('Newsletters API', function () {
                 name: 'Naughty newsletter'
             };
 
+            sinon.stub(logging, 'error');
             await agent
                 .post(`newsletters/?opt_in_existing=true`)
                 .body({newsletters: [newsletter]})
@@ -426,6 +430,7 @@ describe('Newsletters API', function () {
                     name: 'Naughty newsletter'
                 };
 
+                sinon.stub(logging, 'error');
                 await agent
                     .post(`newsletters/?opt_in_existing=true`)
                     .body({newsletters: [newsletter]})
@@ -449,6 +454,7 @@ describe('Newsletters API', function () {
                     name: 'Naughty newsletter'
                 };
 
+                sinon.stub(logging, 'error');
                 // Note that ?opt_in_existing=true will trigger a transaction, so we explicitly test here without a
                 // transaction
                 await agent
@@ -547,6 +553,7 @@ describe('Newsletters API', function () {
                 const archivedNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
                 assert.ok(archivedNewsletter, 'This test expects to have an archived newsletter in the test fixtures');
 
+                sinon.stub(logging, 'error');
                 const id = archivedNewsletter.id;
                 await agent.put(`newsletters/${id}`)
                     .body({
@@ -634,6 +641,7 @@ describe('Newsletters API', function () {
                 location: anyLocationFor('newsletters')
             });
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`newsletters/`)
             .body({newsletters: [secondNewsletter]})
@@ -697,6 +705,7 @@ describe('Newsletters API', function () {
     it(`Can't edit multiple newsletters to existing name`, async function () {
         const id = fixtureManager.get('newsletters', 0).id;
 
+        sinon.stub(logging, 'error');
         await agent.put(`newsletters/${id}`)
             .body({
                 newsletters: [{

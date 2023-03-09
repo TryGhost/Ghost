@@ -94,6 +94,8 @@ class EmailServiceWrapper {
             sentry
         });
 
+        this.renderer = emailRenderer;
+
         this.service = new EmailService({
             batchSendingService,
             sendingService,

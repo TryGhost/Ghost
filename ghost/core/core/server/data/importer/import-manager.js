@@ -11,11 +11,11 @@ const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
-const MediaHandler = require('@tryghost/importer-handler-media');
+const ImporterContentFileHandler = require('@tryghost/importer-handler-content-files');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
-const ImageImporter = require('./importers/image');
+const ContentFileImporter = require('./importers/ContentFileImporter');
 const RevueImporter = require('@tryghost/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
@@ -23,6 +23,7 @@ const {GhostMailer} = require('../../services/mail');
 const jobManager = require('../../services/jobs');
 const mediaStorage = require('../../adapters/storage').getStorage('media');
 const imageStorage = require('../../adapters/storage').getStorage('images');
+const fileStorage = require('../../adapters/storage').getStorage('files');
 
 const emailTemplate = require('./email-template');
 const ghostMailer = new GhostMailer();
@@ -54,25 +55,55 @@ let defaults = {
 
 class ImportManager {
     constructor() {
-        const mediaHandler = new MediaHandler({
-            config: config,
+        const mediaHandler = new ImporterContentFileHandler({
+            type: 'media',
+            // @NOTE: making the second parameter strict folder "content/media" brakes the glob pattern
+            //        in the importer, so we need to keep it as general "content" unless
+            //        it becomes a strict requirement
+            directories: ['media', 'content'],
+            extensions: config.get('uploads').media.extensions,
+            contentTypes: config.get('uploads').media.contentTypes,
+            contentPath: config.getContentPath('media'),
             urlUtils: urlUtils,
             storage: mediaStorage
         });
 
-        const imageImporter = new ImageImporter({
+        const filesHandler = new ImporterContentFileHandler({
+            type: 'files',
+            // @NOTE: making the second parameter strict folder "content/files" brakes the glob pattern
+            //        in the importer, so we need to keep it as general "content" unless
+            //        it becomes a strict requirement
+            directories: ['files', 'content'],
+            extensions: config.get('uploads').files.extensions,
+            contentTypes: config.get('uploads').files.contentTypes,
+            contentPath: config.getContentPath('files'),
+            urlUtils: urlUtils,
+            storage: fileStorage
+        });
+
+        const imageImporter = new ContentFileImporter({
             type: 'images',
             store: imageStorage
         });
+        const mediaImporter = new ContentFileImporter({
+            type: 'media',
+            store: mediaStorage
+        });
+
+        const contentFilesImporter = new ContentFileImporter({
+            type: 'files',
+            store: fileStorage
+        });
+
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [imageImporter, RevueImporter, DataImporter];
+        this.importers = [imageImporter, mediaImporter, contentFilesImporter, RevueImporter, DataImporter];
 
         /**
          * @type {Handler[]}
          */
-        this.handlers = [ImageHandler, mediaHandler, RevueHandler, JSONHandler, MarkdownHandler];
+        this.handlers = [ImageHandler, mediaHandler, filesHandler, RevueHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
         /**
@@ -270,7 +301,14 @@ class ImportManager {
         const baseDir = this.getBaseDirectory(zipDirectory);
 
         for (const handler of this.handlers) {
-            const files = this.getFilesFromZip(handler, zipDirectory);
+            let files = [];
+            if (handler.directories?.length > 0) {
+                for (const dir of handler.directories) {
+                    files.push(...this.getFilesFromZip(handler, path.join(zipDirectory, (baseDir || ''), dir)));
+                }
+            } else {
+                files.push(...this.getFilesFromZip(handler, zipDirectory));
+            }
 
             debug('handler', handler.type, files);
 
@@ -307,7 +345,15 @@ class ImportManager {
      */
     async processFile(file, ext) {
         const fileHandlers = _.filter(this.handlers, function (handler) {
-            return _.includes(handler.extensions, ext);
+            let match = _.includes(handler.extensions, ext);
+
+            // CASE: content file handlers should ignore files in the root directory
+            if (match && handler.directories && handler.directories.length) {
+                const dir = path.dirname(file.path)?.split('/')[1];
+                match = _.includes(handler.directories, dir);
+            }
+
+            return match;
         });
 
         const importData = {};

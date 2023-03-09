@@ -5,6 +5,60 @@ const {createModel} = require('./utils');
 const linkReplacer = require('@tryghost/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
+const {HtmlValidate} = require('html-validate');
+
+function validateHtml(html) {
+    const htmlvalidate = new HtmlValidate({
+        extends: [
+            'html-validate:document',
+            'html-validate:standard'
+        ],
+        rules: {
+            // We need deprecated attrs for legacy tables in older email clients
+            'no-deprecated-attr': 'off',
+
+            // Don't care that the first <hx> isn't <h1>
+            'heading-level': 'off'
+        },
+        elements: [
+            'html5',
+            // By default, html-validate requires the 'lang' attribute on the <html> tag. We don't really want that for now.
+            {
+                html: {
+                    attributes: {
+                        lang: {
+                            required: false
+                        }
+                    }
+                }
+            }
+        ]
+    });
+    const report = htmlvalidate.validateString(html);
+
+    // Improve debugging and show a snippet of the invalid HTML instead of just the line number or a huge HTML-dump
+    const parsedErrors = [];
+
+    if (!report.valid) {
+        const lines = html.split('\n');
+        const messages = report.results[0].messages;
+
+        for (const item of messages) {
+            if (item.severity !== 2) {
+                // Ignore warnings
+                continue;
+            }
+            const start = Math.max(item.line - 4, 0);
+            const end = Math.min(item.line + 4, lines.length - 1);
+
+            const _html = lines.slice(start, end).map(l => l.trim()).join('\n');
+            parsedErrors.push(`${item.ruleId}: ${item.message}\n   At line ${item.line}, col ${item.column}\n   HTML-snippet:\n${_html}`);
+        }
+    }
+
+    // Fail if invalid HTML
+    assert.equal(report.valid, true, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
+}
 
 describe('Email renderer', function () {
     let logStub;
@@ -41,13 +95,13 @@ describe('Email renderer', function () {
 
         it('returns an empty list of replacements if nothing is used', function () {
             const html = 'Hello world';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 0);
         });
 
         it('returns a replacement if it is used', function () {
             const html = 'Hello world %%{uuid}%%';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{uuid\\}%%/g');
             assert.equal(replacements[0].id, 'uuid');
@@ -56,7 +110,7 @@ describe('Email renderer', function () {
 
         it('returns a replacement only once if used multiple times', function () {
             const html = 'Hello world %%{uuid}%% And %%{uuid}%%';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{uuid\\}%%/g');
             assert.equal(replacements[0].id, 'uuid');
@@ -65,7 +119,7 @@ describe('Email renderer', function () {
 
         it('returns correct first name', function () {
             const html = 'Hello %%{first_name}%%,';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name\\}%%/g');
             assert.equal(replacements[0].id, 'first_name');
@@ -74,7 +128,7 @@ describe('Email renderer', function () {
 
         it('returns correct unsubscribe url', function () {
             const html = 'Hello %%{unsubscribe_url}%%,';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{unsubscribe_url\\}%%/g');
             assert.equal(replacements[0].id, 'unsubscribe_url');
@@ -83,9 +137,9 @@ describe('Email renderer', function () {
 
         it('supports fallback values', function () {
             const html = 'Hey %%{first_name, "there"}%%,';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
-            assert.equal(replacements[0].token.toString(), '/%%\\{first_name, "there"\\}%%/g');
+            assert.equal(replacements[0].token.toString(), '/%%\\{first_name, (?:"|&quot;)there(?:"|&quot;)\\}%%/g');
             assert.equal(replacements[0].id, 'first_name_2');
             assert.equal(replacements[0].getValue(member), 'Test');
 
@@ -95,16 +149,16 @@ describe('Email renderer', function () {
 
         it('supports combination of multiple fallback values', function () {
             const html = 'Hey %%{first_name, "there"}%%, %%{first_name, "member"}%% %%{first_name}%% %%{first_name, "there"}%%';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletter});
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 3);
-            assert.equal(replacements[0].token.toString(), '/%%\\{first_name, "there"\\}%%/g');
+            assert.equal(replacements[0].token.toString(), '/%%\\{first_name, (?:"|&quot;)there(?:"|&quot;)\\}%%/g');
             assert.equal(replacements[0].id, 'first_name_2');
             assert.equal(replacements[0].getValue(member), 'Test');
 
             // In case of empty name
             assert.equal(replacements[0].getValue({name: ''}), 'there');
 
-            assert.equal(replacements[1].token.toString(), '/%%\\{first_name, "member"\\}%%/g');
+            assert.equal(replacements[1].token.toString(), '/%%\\{first_name, (?:"|&quot;)member(?:"|&quot;)\\}%%/g');
             assert.equal(replacements[1].id, 'first_name_3');
             assert.equal(replacements[1].getValue(member), 'Test');
 
@@ -341,6 +395,8 @@ describe('Email renderer', function () {
 
     describe('renderBody', function () {
         let renderedPost = '<p>Lexical Test</p>';
+        let postUrl = 'http://example.com';
+        let customSettings = {};
         let emailRenderer = new EmailRenderer({
             audienceFeedbackService: {
                 buildLink: (_uuid, _postId, score) => {
@@ -360,6 +416,9 @@ describe('Email renderer', function () {
             },
             settingsCache: {
                 get: (key) => {
+                    if (customSettings[key]) {
+                        return customSettings[key];
+                    }
                     if (key === 'accent_color') {
                         return '#ffffff';
                     }
@@ -375,7 +434,7 @@ describe('Email renderer', function () {
                 }
             },
             getPostUrl: () => {
-                return 'http://example.com';
+                return postUrl;
             },
             renderers: {
                 lexical: {
@@ -430,6 +489,8 @@ describe('Email renderer', function () {
                 }),
                 loaded: ['posts_meta']
             };
+            postUrl = 'http://example.com';
+            customSettings = {};
         });
 
         it('returns feedback buttons and unsubcribe links', async function () {
@@ -787,6 +848,60 @@ describe('Email renderer', function () {
             responsePaid.html.should.containEql('some text for both');
             responsePaid.html.should.containEql('finishing part only for members');
             responsePaid.html.should.not.containEql('Become a paid member of Test Blog to get access to all');
+        });
+
+        it('should output valid HTML and escape HTML characters in mobiledoc', async function () {
+            const post = createModel({
+                ...basePost,
+                title: 'This is\' a blog po"st test <3</body>',
+                excerpt: 'This is a blog post test <3</body>',
+                authors: [
+                    createModel({
+                        name: 'This is a blog post test <3</body>'
+                    })
+                ],
+                posts_meta: createModel({
+                    feature_image_alt: 'This is a blog post test <3</body>',
+                    feature_image_caption: 'This is escaped in the frontend'
+                })
+            });
+            postUrl = 'https://testpost.com/t&es<3t-post"</body>/';
+            customSettings = {
+                icon: 'icon2<3</body>'
+            };
+
+            const newsletter = createModel({
+                feedback_enabled: true,
+                name: 'My newsletter <3</body>',
+                header_image: 'https://testpost.com/test-post</body>/',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
+            });
+            const segment = null;
+            const options = {};
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            validateHtml(response.html);
+
+            // Check footer content is not escaped
+            assert.equal(response.html.includes('<span>Footer content with valid HTML</span>'), true, 'Should include footer content without escaping');
+
+            // Check doesn't contain the non escaped string '<3'
+            assert.equal(response.html.includes('<3'), false, 'Should escape HTML characters');
         });
     });
 

@@ -4,7 +4,6 @@ const ObjectId = require('bson-objectid').default;
 
 const assert = require('assert');
 const nock = require('nock');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
@@ -18,6 +17,7 @@ const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -726,10 +726,13 @@ describe('Members API', function () {
             });
         const newMember = body.members[0];
 
+        // Cannot add same member twice
+        const loggingStub = sinon.stub(logging, 'error');
         await agent
             .post(`/members/`)
             .body({members: [member]})
             .expectStatus(422);
+        sinon.assert.calledOnce(loggingStub);
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -895,6 +898,7 @@ describe('Members API', function () {
 
         const statusEventsBefore = await models.MemberStatusEvent.findAll();
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`members/?send_email=true&email_type=lel`)
             .body({members: [newMember]})
@@ -1543,6 +1547,7 @@ describe('Members API', function () {
             ]
         };
 
+        sinon.stub(logging, 'error');
         await agent
             .put(`/members/${memberWithPaidSubscription.id}/`)
             .body({members: [compedPayload]})
@@ -1561,6 +1566,7 @@ describe('Members API', function () {
             tiers: []
         };
 
+        sinon.stub(logging, 'error');
         await agent
             .put(`/members/${memberWithPaidSubscription.id}/`)
             .body({members: [compedPayload]})
@@ -1757,7 +1763,8 @@ describe('Members API', function () {
             .expectStatus(404)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyUuid
+                    id: anyUuid,
+                    context: anyString
                 }]
             })
             .matchHeaderSnapshot({
@@ -2299,6 +2306,7 @@ describe('Members API', function () {
     });
 
     it('Errors when fetching stats with unknown days param value', async function () {
+        sinon.stub(logging, 'error');
         await agent
             .get('members/stats/?days=nope')
             .expectStatus(422)
@@ -2398,6 +2406,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`/members/`)
             .body({members: [member]})
@@ -2445,6 +2454,7 @@ describe('Members API', function () {
             });
 
         const memberId = body.members[0].id;
+    
         const editedMember = {
             subscribed: true // no change
         };
@@ -2473,6 +2483,97 @@ describe('Members API', function () {
         assert.equal(changedMember.newsletters.length, 2);
         assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member is still subscribed for a newsletter that is off by default');
         assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed for the newsletter it subscribed to');
+    });
+
+    it('Updating member data without newsletters does not change newsletters', async function () {
+        // check that this newsletter is archived, or this test would not make sense
+        const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const archivedNewsletter = await models.Newsletter.findOne({id: archivedNewsletterId}, {require: true});
+        assert.equal(archivedNewsletter.get('status'), 'archived', 'This test expects the newsletter to be archived');
+
+        const member = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        const memberNewsletters = member.related('newsletters').models;
+        assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
+        assert.equal(memberNewsletters.length, 2, 'This test expects the member to have two newsletter subscriptions');
+
+        const memberId = member.get('id');
+        const editedMember = {
+            id: memberId,
+            name: 'new name'
+        };
+
+        // edit member
+        const {body} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(1).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+        
+        const changedMember = body.members[0];
+        assert.equal(changedMember.newsletters.length, 1); // the api only returns active newsletters
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed to an active newsletter');
+        
+        const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
+    });
+
+    it('Updating newsletter subscriptions does not unsubscribe member from archived newsletter', async function () {
+        // check that this newsletter is archived, or this test would not make sense
+        const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const archivedNewsletter = await models.Newsletter.findOne({id: archivedNewsletterId}, {require: true});
+        assert.equal(archivedNewsletter.get('status'), 'archived', 'This test expects the newsletter to be archived');
+
+        const member = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        const memberNewsletters = member.related('newsletters').models;
+        assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
+        assert.equal(memberNewsletters.length, 2, 'This test expects the member to have two newsletter subscriptions');
+
+        // remove active newsletter subscriptions
+        const memberId = member.get('id');
+        const editedMember = {
+            newsletters: []
+        };
+
+        // edit member
+        const {body} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: anyArray
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+        
+        const changedMember = body.members[0];
+        assert.equal(changedMember.newsletters.length, 0); // the api only returns active newsletters, so this member should have none
+        
+        const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
     });
 
     it('Can add and send a signup confirmation email (old)', async function () {
