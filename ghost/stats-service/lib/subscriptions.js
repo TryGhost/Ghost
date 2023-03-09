@@ -95,6 +95,7 @@ class SubscriptionStatsService {
                 CASE
                     WHEN members_paid_subscription_events.type IN ('created','reactivated','active') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
                     WHEN members_paid_subscription_events.type='updated' AND price.id = to_price.id THEN 1
+                    WHEN members_paid_subscription_events.type='updated' AND members_paid_subscription_events.from_plan = members_paid_subscription_events.to_plan AND members_paid_subscription_events.mrr_delta > 0 THEN 1
                     ELSE 0
                 END
             ) as positive_delta`))
@@ -108,6 +109,7 @@ class SubscriptionStatsService {
             .select(knex.raw(`SUM(
                 CASE
                     WHEN members_paid_subscription_events.type IN ('created','reactivated','active') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
+                    WHEN members_paid_subscription_events.type='updated' AND members_paid_subscription_events.from_plan = members_paid_subscription_events.to_plan AND members_paid_subscription_events.mrr_delta > 0 THEN 1
                     ELSE 0
                 END
             ) as signups`))
