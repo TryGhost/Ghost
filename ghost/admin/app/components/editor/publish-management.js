@@ -216,6 +216,11 @@ export default class PublishManagement extends Component {
 
                 yield post.reload();
 
+                if (!post.isSent && !post.isPublished) {
+                    // A post that is not published doesn't try to send or retry an email
+                    break;
+                }
+
                 if (post.email.status === 'submitted') {
                     break;
                 }

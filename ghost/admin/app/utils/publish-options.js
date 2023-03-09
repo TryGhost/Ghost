@@ -28,8 +28,9 @@ export default class PublishOptions {
                 && this.recipientFilter
                 && this.post.isDraft
                 && !this.post.email
+                && !this.isScheduled
             )
-                || (this.post.isDraft && this.post.email && this.post.email.status === 'failed')
+                || (this.post.isDraft && this.post.email && this.post.email.status === 'failed' && !this.isScheduled)
         );
     }
 
