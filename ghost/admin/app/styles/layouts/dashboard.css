@@ -2735,5 +2735,27 @@ Dashboard Mentions */
 }
 
 .gh-dashboard-mentions .gh-mentions-list-cta {
-    padding: 20px;
+    padding: 24px;
+}
+
+.gh-dashboard-mentions .gh-mentions-list-cta .love-letter {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 10px;
+    margin-top: 4px;
+}
+
+.gh-dashboard-mentions .gh-mentions-list-cta h4 {
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+}
+
+.gh-dashboard-mentions .gh-mentions-list-cta p {
+    color: #7c8b9a;
+    text-align: center;
+    line-height: 1.45em;
+    margin: 0;
+    padding: 0;
+    font-size: 1.4rem;
+    font-weight: 500;
 }
