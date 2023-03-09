@@ -44,7 +44,7 @@ describe('MentionSendingService', function () {
                 })
             };
             service.listen(events);
-            sinon.assert.calledThrice(events.on);
+            sinon.assert.callCount(events.on, 6);
             await callback({});
             sinon.assert.calledOnce(stub);
         });
