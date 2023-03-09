@@ -18,6 +18,10 @@ const CURRENCIES = currencies.map((currency) => {
     };
 });
 
+// Stripe has an upper amount limit of 999,999.99
+// See https://stripe.com/docs/api/payment_intents/object#payment_intent_object-amount
+const MAX_AMOUNT = 999_999.99;
+
 // TODO: update modals to work fully with Glimmer components
 @classic
 export default class ModalTierPrice extends ModalBase {
@@ -211,6 +215,10 @@ export default class ModalTierPrice extends ModalBase {
             const symbol = getSymbol(this.currency);
             if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
                 throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
+            }
+
+            if (yearlyAmount > MAX_AMOUNT || monthlyAmount > MAX_AMOUNT) {
+                throw new TypeError(`Subscription amount cannot be higher than ${symbol}${MAX_AMOUNT}`);
             }
         } catch (err) {
             this.stripePlanError = err.message;
