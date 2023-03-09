@@ -153,6 +153,44 @@ describe('Generators', function () {
             });
         });
 
+        describe('fn: hasCanonicalUrl', function () {
+            it('can check for canonical url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: 'https://myblog.com/test/'
+                }
+                ));
+                isCanonical.should.eql(true);
+            });
+            it('returns false if no canonical url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: null
+                }
+                ));
+                isCanonical.should.eql(false);
+            });
+        });
+
+        describe('fn: addUrl', function () {
+            it('does not include posts containing canonical_url', function () {
+                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'test2',
+                    canonical_url: null
+                }));
+                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'test',
+                    canonical_url: 'https://external.com/test/'
+                }));
+                const xml = generator.getXml();
+                xml.should.not.match(/https:\/\/external.com\/test\//);
+            });
+        });
+
         describe('fn: getXml', function () {
             beforeEach(function () {
                 sinon.stub(urlUtils, 'urlFor');
@@ -318,6 +356,20 @@ describe('Generators', function () {
 
                 // <loc> should exist exactly one time
                 generator.siteMapContent.get(1).match(/<loc>/g).length.should.eql(3);
+            });
+            it('does not include pages containing canonical_url', function () {
+                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
+                    page: true,
+                    slug: 'test2',
+                    canonical_url: null
+                }));
+                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    page: true,
+                    slug: 'test',
+                    canonical_url: 'https://external.com/test/'
+                }));
+                const xml = generator.getXml();
+                xml.should.not.match(/https:\/\/external.com\/test\//);
             });
         });
     });
