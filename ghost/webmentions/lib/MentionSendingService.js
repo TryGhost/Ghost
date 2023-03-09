@@ -35,6 +35,9 @@ module.exports = class MentionSendingService {
         events.on('post.published', this.sendForPost.bind(this));
         events.on('post.published.edited', this.sendForPost.bind(this));
         events.on('post.unpublished', this.sendForPost.bind(this));
+        events.on('page.published', this.sendForPost.bind(this));
+        events.on('page.published.edited', this.sendForPost.bind(this));
+        events.on('page.unpublished', this.sendForPost.bind(this));
     }
 
     async sendForPost(post, options) {
