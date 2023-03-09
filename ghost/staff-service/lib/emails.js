@@ -30,6 +30,8 @@ class StaffServiceEmails {
             const templateData = {
                 memberData,
                 referrerSource: attribution?.referrerSource,
+                attributionTitle: attribution?.title || '',
+                attributionUrl: attribution?.url || '',
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
@@ -76,6 +78,8 @@ class StaffServiceEmails {
             const templateData = {
                 memberData,
                 referrerSource: attribution?.referrerSource,
+                attributionTitle: attribution?.title || '',
+                attributionUrl: attribution?.url || '',
                 tierData,
                 offerData,
                 subscriptionData,

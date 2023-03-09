@@ -429,7 +429,9 @@ describe('StaffService', function () {
                 };
 
                 const attribution = {
-                    referrerSource: 'Twitter'
+                    referrerSource: 'Twitter',
+                    title: 'Welcome Post',
+                    url: 'https://example.com/welcome'
                 };
 
                 await service.emails.notifyFreeMemberSignup({member, attribution}, options);
@@ -449,6 +451,16 @@ describe('StaffService', function () {
                 ).should.be.true();
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Source: Twitter'))
+                ).should.be.true();
+
+                // check attribution page
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Welcome Post'))
+                ).should.be.true();
+
+                // check attribution url
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('https://example.com/welcome'))
                 ).should.be.true();
             });
         });
@@ -486,7 +498,9 @@ describe('StaffService', function () {
 
             it('sends paid subscription start alert with attribution', async function () {
                 const attribution = {
-                    referrerSource: 'Twitter'
+                    referrerSource: 'Twitter',
+                    title: 'Welcome Post',
+                    url: 'https://example.com/welcome'
                 };
                 await service.emails.notifyPaidSubscriptionStarted({member, offer: null, tier, subscription, attribution}, options);
 
@@ -496,6 +510,16 @@ describe('StaffService', function () {
                 // check attribution text
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Source: Twitter'))
+                ).should.be.true();
+
+                // check attribution page
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Welcome Post'))
+                ).should.be.true();
+
+                // check attribution url
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('https://example.com/welcome'))
                 ).should.be.true();
             });
 

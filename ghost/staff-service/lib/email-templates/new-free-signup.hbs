@@ -52,6 +52,11 @@
                                                 {{#if referrerSource}}
                                                   <p class="text-link" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Source: {{referrerSource}}</p>
                                                 {{/if}}
+                                                {{#if attributionTitle}}
+                                                  <p class="text-link" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">
+                                                    Page: <a href="{{attributionUrl}}">{{attributionTitle}}</a>
+                                                  </p>
+                                                {{/if}}
                                             </td>
                                         </tr>
                                     </table>
