@@ -253,11 +253,27 @@ describe('Email Service', function () {
         it('Schedules email again', async function () {
             const email = createModel({
                 status: 'failed',
-                error: 'Test error'
+                error: 'Test error',
+                post: createModel({
+                    status: 'published'
+                })
             });
 
             await service.retryEmail(email);
             sinon.assert.calledOnce(scheduleEmail);
+        });
+
+        it('Does not schedule email again if draft', async function () {
+            const email = createModel({
+                status: 'failed',
+                error: 'Test error',
+                post: createModel({
+                    status: 'draft'
+                })
+            });
+
+            await assert.rejects(service.retryEmail(email));
+            sinon.assert.notCalled(scheduleEmail);
         });
 
         it('Checks limits before scheduling', async function () {

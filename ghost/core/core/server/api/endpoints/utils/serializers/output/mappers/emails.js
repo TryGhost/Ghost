@@ -24,5 +24,8 @@ module.exports = (model, frame) => {
         }
     }
 
+    // Removed loaded post relation if set
+    delete jsonModel.post;
+
     return jsonModel;
 };

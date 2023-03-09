@@ -76,14 +76,14 @@ class BatchSendingService {
         if (BEFORE_RETRY_CONFIG) {
             this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
         } else {
-            if (process.env.NODE_ENV.startsWith('test')) {
+            if (process.env.NODE_ENV.startsWith('test') || process.env.NODE_ENV === 'development') {
                 this.#BEFORE_RETRY_CONFIG = {maxRetries: 0};
             }
         }
         if (AFTER_RETRY_CONFIG) {
             this.#AFTER_RETRY_CONFIG = AFTER_RETRY_CONFIG;
         } else {
-            if (process.env.NODE_ENV.startsWith('test')) {
+            if (process.env.NODE_ENV.startsWith('test') || process.env.NODE_ENV === 'development') {
                 this.#AFTER_RETRY_CONFIG = {maxRetries: 0};
             }
         }
@@ -91,7 +91,7 @@ class BatchSendingService {
         if (MAILGUN_API_RETRY_CONFIG) {
             this.#MAILGUN_API_RETRY_CONFIG = MAILGUN_API_RETRY_CONFIG;
         } else {
-            if (process.env.NODE_ENV.startsWith('test')) {
+            if (process.env.NODE_ENV.startsWith('test') || process.env.NODE_ENV === 'development') {
                 this.#MAILGUN_API_RETRY_CONFIG = {maxRetries: 0};
             }
         }

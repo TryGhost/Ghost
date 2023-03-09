@@ -33,6 +33,10 @@ export default class PublishOptions {
         );
     }
 
+    get willEmailImmediately() {
+        return this.willEmail && !this.isScheduled;
+    }
+
     get willPublish() {
         return this.publishType !== 'send';
     }

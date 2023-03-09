@@ -61,6 +61,7 @@ describe('Email Preview API', function () {
         });
 
         it('can read post email preview with fields', async function () {
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             await agent
                 .get(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
                 .expectStatus(200)
@@ -68,10 +69,19 @@ describe('Email Preview API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
-                .matchBodySnapshot(matchEmailPreviewBody);
+                .matchBodySnapshot(matchEmailPreviewBody)
+                .expect(({body}) => {
+                    testCleanedSnapshot(body.email_previews[0].html, {
+                        [defaultNewsletter.get('uuid')]: 'requested-newsletter-uuid'
+                    });
+                    testCleanedSnapshot(body.email_previews[0].plaintext, {
+                        [defaultNewsletter.get('uuid')]: 'requested-newsletter-uuid'
+                    });
+                });
         });
 
         it('can read post email preview with email card and replacements', async function () {
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             const post = testUtils.DataGenerator.forKnex.createPost({
                 id: ObjectId().toHexString(),
                 title: 'Post with email-only card',
@@ -93,7 +103,15 @@ describe('Email Preview API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
-                .matchBodySnapshot(matchEmailPreviewBody);
+                .matchBodySnapshot(matchEmailPreviewBody)
+                .expect(({body}) => {
+                    testCleanedSnapshot(body.email_previews[0].html, {
+                        [defaultNewsletter.get('uuid')]: 'requested-newsletter-uuid'
+                    });
+                    testCleanedSnapshot(body.email_previews[0].plaintext, {
+                        [defaultNewsletter.get('uuid')]: 'requested-newsletter-uuid'
+                    });
+                });
         });
 
         it('has custom content transformations for email compatibility', async function () {
@@ -125,6 +143,9 @@ describe('Email Preview API', function () {
                     assert.doesNotMatch(body.email_previews[0].html, /Testing links in email excerpt and apostrophes &apos;/);
                     assert.match(body.email_previews[0].html, /Testing links in email excerpt and apostrophes &#39;/);
 
+                    testCleanedSnapshot(body.email_previews[0].html, {
+                        [defaultNewsletter.get('uuid')]: 'requested-newsletter-uuid'
+                    });
                     testCleanedSnapshot(body.email_previews[0].plaintext, {
                         [defaultNewsletter.get('uuid')]: 'requested-newsletter-uuid'
                     });
