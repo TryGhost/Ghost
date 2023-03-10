@@ -146,7 +146,6 @@ describe('Members API', function () {
 
         beforeEach(function () {
             mockManager.mockMail();
-            mockManager.mockStripe();
         });
 
         afterEach(function () {
@@ -194,7 +193,6 @@ describe('Members API', function () {
 
         beforeEach(function () {
             mockManager.mockMail();
-            mockManager.mockStripe();
         });
 
         afterEach(function () {
@@ -610,7 +608,6 @@ describe('Members API', function () {
 
         beforeEach(function () {
             mockManager.mockMail();
-            mockManager.mockStripe();
         });
 
         afterEach(function () {
@@ -926,7 +923,6 @@ describe('Members API', function () {
 
         beforeEach(function () {
             mockManager.mockMail();
-            mockManager.mockStripe();
         });
 
         afterEach(function () {
@@ -1651,7 +1647,6 @@ describe('Members API', function () {
         beforeEach(function () {
             mockManager.mockLabsEnabled('memberAttribution');
             mockManager.mockMail();
-            mockManager.mockStripe();
         });
 
         afterEach(function () {
