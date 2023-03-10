@@ -85,16 +85,16 @@ function RestrictedContentDemo() {
             className="koenig-lexical top"
         >
             <KoenigComposer
-                initialEditorState={defaultContent}
-                fileUploader={{useFileUpload, fileTypes}}
                 cardConfig={cardConfig}
+                fileUploader={{useFileUpload, fileTypes}}
+                initialEditorState={defaultContent}
             >
                 <div className="relative h-full grow">
-                    <div className="h-full overflow-auto" ref={containerRef} onClick={focusEditor}>
+                    <div ref={containerRef} className="h-full overflow-auto" onClick={focusEditor}>
                         <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
                             <KoenigComposableEditor
-                                registerAPI={setEditorAPI}
                                 cursorDidExitAtTop={focusTitle}
+                                registerAPI={setEditorAPI}
                             >
                                 <RestrictContentPlugin paragraphs={paragraphs} />
                             </KoenigComposableEditor>

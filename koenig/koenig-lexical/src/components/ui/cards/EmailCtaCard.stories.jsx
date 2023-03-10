@@ -39,7 +39,7 @@ export default story;
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper wrapperStyle='wide' IndicatorIcon={EmailIndicatorIcon} {...display} {...args}>
+            <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
                 <EmailCtaCard {...display} {...args} />
             </CardWrapper>
         </div>

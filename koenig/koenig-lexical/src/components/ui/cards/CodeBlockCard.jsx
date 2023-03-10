@@ -114,20 +114,20 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     return (
         <div className="not-kg-prose min-h-[170px] bg-[#F4F5F6]">
             <CodeMirror
-                value={code}
-                extensions={extensions}
                 autoFocus={true} // autofocus the editor whenever it is rendered
                 basicSetup={false} // basic setup includes unnecessary extensions
+                extensions={extensions}
+                value={code}
                 onChange={onChange}
             />
             <input
                 aria-label="Code card language"
-                type="text"
+                className={`z-999 absolute top-1.5 right-1.5 w-1/5 rounded border border-grey-300 p-1 font-sans text-[1.3rem] leading-4 text-grey-900 transition-opacity focus-visible:outline-none ${showLanguage ? 'opacity-100' : 'opacity-0'}`}
                 data-testid="code-card-language"
+                placeholder="Language..."
+                type="text"
                 value={language}
                 onChange={onLanguageChange}
-                placeholder="Language..."
-                className={`z-999 absolute top-1.5 right-1.5 w-1/5 rounded border border-grey-300 p-1 font-sans text-[1.3rem] leading-4 text-grey-900 transition-opacity focus-visible:outline-none ${showLanguage ? 'opacity-100' : 'opacity-0'}`}
             />
         </div>
     );
@@ -171,8 +171,8 @@ export function CodeBlockCard({caption, code, isEditing, isSelected, language, u
             <CodeEditor
                 code={code}
                 language={language}
-                updateLanguage={updateLanguage}
                 updateCode={updateCode}
+                updateLanguage={updateLanguage}
             />
         );
     } else {
@@ -181,9 +181,9 @@ export function CodeBlockCard({caption, code, isEditing, isSelected, language, u
                 <CodeBlock caption={caption} code={code} language={language} />
                 <CardCaptionEditor
                     caption={caption || ''}
-                    setCaption={setCaption}
                     captionPlaceholder="Type caption for code block (optional)"
                     isSelected={isSelected}
+                    setCaption={setCaption}
                 />
             </>
         );

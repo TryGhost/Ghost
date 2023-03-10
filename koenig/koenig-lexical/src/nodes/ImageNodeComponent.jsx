@@ -120,54 +120,54 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
     return (
         <>
             <ImageCard
-                isSelected={isSelected}
-                fileInputRef={fileInputRef}
-                onFileChange={onFileChange}
-                src={src}
                 altText={altText}
-                setAltText={setAltText}
                 caption={caption}
-                setCaption={setCaption}
                 cardWidth={cardWidth}
-                previewSrc={previewSrc}
-                imageUploader={imageUploader}
+                fileInputRef={fileInputRef}
                 imageDragHandler={imageDragHandler}
+                imageUploader={imageUploader}
+                isSelected={isSelected}
+                previewSrc={previewSrc}
+                setAltText={setAltText}
+                setCaption={setCaption}
+                src={src}
+                onFileChange={onFileChange}
             />
 
             <ActionToolbar
-                isVisible={showLink}
                 data-kg-card-toolbar="image"
+                isVisible={showLink}
             >
                 <LinkInput
+                    cancel={cancelLinkAndReselect}
+                    href={href}
                     update={(_href) => {
                         setHref(_href);
                         cancelLinkAndReselect();
                     }}
-                    href={href}
-                    cancel={cancelLinkAndReselect}
                 />
             </ActionToolbar>
 
             <ActionToolbar
-                isVisible={src && isSelected && !showLink}
                 data-kg-card-toolbar="image"
+                isVisible={src && isSelected && !showLink}
             >
                 <ImageUploadForm
-                    onFileChange={onFileChange}
                     fileInputRef={toolbarFileInputRef}
                     mimeTypes={fileUploader.fileTypes.image?.mimeTypes}
+                    onFileChange={onFileChange}
                 />
                 <ToolbarMenu>
-                    <ToolbarMenuItem label="Regular" icon="imageRegular" isActive={cardWidth === 'regular' ? true : false} onClick={() => handleImageCardResize('regular')} />
-                    <ToolbarMenuItem label="Wide" icon="imageWide" isActive={cardWidth === 'wide' ? true : false} onClick={() => handleImageCardResize('wide')}/>
-                    <ToolbarMenuItem label="Full" icon="imageFull" isActive={cardWidth === 'full' ? true : false} onClick={() => handleImageCardResize('full')} />
+                    <ToolbarMenuItem icon="imageRegular" isActive={cardWidth === 'regular' ? true : false} label="Regular" onClick={() => handleImageCardResize('regular')} />
+                    <ToolbarMenuItem icon="imageWide" isActive={cardWidth === 'wide' ? true : false} label="Wide" onClick={() => handleImageCardResize('wide')}/>
+                    <ToolbarMenuItem icon="imageFull" isActive={cardWidth === 'full' ? true : false} label="Full" onClick={() => handleImageCardResize('full')} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem label="Link" icon="link" isActive={href === true || false} onClick = {() => {
+                    <ToolbarMenuItem icon="link" isActive={href === true || false} label="Link" onClick = {() => {
                         setShowLink(true);
                     }} />
-                    <ToolbarMenuItem label="Replace" icon="imageReplace" isActive={false} onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})} />
+                    <ToolbarMenuItem icon="imageReplace" isActive={false} label="Replace" onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem label="Snippet" icon="snippet" isActive={false} />
+                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
                 </ToolbarMenu>
             </ActionToolbar>
         </>

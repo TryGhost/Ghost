@@ -9,11 +9,11 @@ export function ButtonGroup({buttons = [], selectedName, onClick}) {
                 {buttons.map(({label, name, Icon}, index) => (
                     <IconButton
                         key={index}
-                        onClick={onClick}
+                        Icon={Icon}
                         label={label}
                         name={name}
                         selectedName={selectedName}
-                        Icon={Icon}
+                        onClick={onClick}
                     />
                 ))}
             </ul>
@@ -26,10 +26,10 @@ export function IconButton({onClick, label, name, selectedName, Icon}) {
     return (
         <li>
             <button
-                type="button"
-                className={`m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded bg-white text-black shadow-sm' : 'text-grey-700' } ${Icon || 'text-[1.3rem] font-bold'}`}
-                onClick={() => onClick(name)}
                 aria-label={label}
+                className={`m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded bg-white text-black shadow-sm' : 'text-grey-700' } ${Icon || 'text-[1.3rem] font-bold'}`}
+                type="button"
+                onClick={() => onClick(name)}
             >
                 {Icon ? <Icon className="fill-black" /> : label}
             </button>

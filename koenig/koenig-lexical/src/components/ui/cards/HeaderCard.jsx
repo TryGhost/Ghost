@@ -50,7 +50,7 @@ export function HeaderCard({isEditing, size, backgroundColor, heading, headingPl
                 { (isEditing || subHeading) && <h3 className={`w-full font-normal ${(size === 'S') ? 'mt-2 text-2xl' : (size === 'M') ? 'mt-3 text-[2.7rem]' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'} ${subHeading || 'opacity-50'}`}>{subHeading || subHeadingPlaceholder}</h3>}
                 { (button && (isEditing || (buttonText && buttonUrl))) && 
                 <div className={`${(size === 'S') ? 'mt-6' : (size === 'M') ? 'mt-8' : 'mt-10'}`}>
-                    {((button && (backgroundColor === 'light')) && <Button value={buttonText} placeholder={buttonPlaceholder} size={size} />) || (button && <Button value={buttonText} placeholder={buttonPlaceholder} size={size} color='light' />)}
+                    {((button && (backgroundColor === 'light')) && <Button placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
                 </div>
                 }
             </div>
@@ -58,19 +58,19 @@ export function HeaderCard({isEditing, size, backgroundColor, heading, headingPl
             {isEditing && (
                 <SettingsPanel>
                     <ButtonGroupSetting
+                        buttons={buttonGroupChildren}
                         label='Size'
                         selectedName={size}
-                        buttons={buttonGroupChildren}
                     />
                     <ColorPickerSetting
+                        buttons={colorPickerChildren}
                         label='Style'
                         selectedName={backgroundColor}
-                        buttons={colorPickerChildren}
                     />
                     <SettingsDivider />
                     <ToggleSetting
-                        label='Button'
                         isChecked={button}
+                        label='Button'
                     />
                     {button && (
                         <>

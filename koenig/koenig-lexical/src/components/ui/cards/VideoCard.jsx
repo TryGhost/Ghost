@@ -53,8 +53,8 @@ function PopulatedVideoCard({
         <>
             <div className="not-kg-prose relative" data-testid="video-card-populated">
                 <div>
-                    <img className="mx-auto" src={thumbnail} alt="Video thumbnail" />
-                    {customThumbnail && <img className="absolute inset-0 h-full w-full object-cover" src={customThumbnail} alt="Video custom thumbnail" />}
+                    <img alt="Video thumbnail" className="mx-auto" src={thumbnail} />
+                    {customThumbnail && <img alt="Video custom thumbnail" className="absolute inset-0 h-full w-full object-cover" src={customThumbnail} />}
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/0 via-black/5 to-black/30">
                     {videoUploader.isLoading || (
@@ -70,7 +70,7 @@ function PopulatedVideoCard({
             {
                 videoUploader.isLoading && (
                     <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="video-progress">
-                        <ProgressBar style={progressStyle} bgStyle='transparent' />
+                        <ProgressBar bgStyle='transparent' style={progressStyle} />
                     </div>
                 )
             }
@@ -79,34 +79,34 @@ function PopulatedVideoCard({
                 !!thumbnail && !videoUploader.isLoading && isEditing && (
                     <SettingsPanel>
                         <ButtonGroupSetting
-                            label="Video width"
-                            onClick={onCardWidthChange}
-                            selectedName={cardWidth}
                             buttons={buttonGroupChildren}
+                            label="Video width"
+                            selectedName={cardWidth}
+                            onClick={onCardWidthChange}
                         />
                         <ToggleSetting
-                            label='Loop'
+                            dataTestID="loop-video"
                             description='Autoplay your video on a loop without sound.'
                             isChecked={isLoopChecked}
+                            label='Loop'
                             onChange={onLoopChange}
-                            dataTestID="loop-video"
                         />
                         {!isLoopChecked && (
                             <ThumbnailSetting
-                                label='Custom thumbnail'
+                                alt='Custom thumbnail'
+                                dataTestID="custom-thumbnail-replace"
+                                errors={customThumbnailUploader.errors}
                                 icon='file'
+                                isDraggedOver={thumbnailDragHandler.isDraggedOver}
+                                isLoading={customThumbnailUploader.isLoading}
+                                label='Custom thumbnail'
+                                mimeTypes={thumbnailMimeTypes}
+                                placeholderRef={thumbnailDragHandler.setRef}
+                                progress={customThumbnailUploader.progress}
                                 size='xsmall'
                                 src={customThumbnail}
-                                alt='Custom thumbnail'
                                 onFileChange={onCustomThumbnailChange}
-                                isLoading={customThumbnailUploader.isLoading}
-                                dataTestID="custom-thumbnail-replace"
-                                progress={customThumbnailUploader.progress}
-                                errors={customThumbnailUploader.errors}
                                 onRemoveCustomThumbnail={onRemoveCustomThumbnail}
-                                isDraggedOver={thumbnailDragHandler.isDraggedOver}
-                                placeholderRef={thumbnailDragHandler.setRef}
-                                mimeTypes={thumbnailMimeTypes}
                             />
                         )}
                     </SettingsPanel>
@@ -120,20 +120,20 @@ function EmptyVideoCard({onFileChange, fileInputRef, errors, videoMimeTypes = []
     return (
         <>
             <MediaPlaceholder
-                filePicker={() => openFileSelection({fileInputRef})}
                 desc="Click to select a video"
+                errors={errors}
+                filePicker={() => openFileSelection({fileInputRef})}
                 icon='video'
                 isDraggedOver={videoDragHandler.isDraggedOver}
                 placeholderRef={videoDragHandler.setRef}
-                errors={errors}
             />
             <form onChange={onFileChange}>
                 <input
+                    ref={fileInputRef}
+                    accept={videoMimeTypes.join(',')}
+                    hidden={true}
                     name="image-input"
                     type='file'
-                    accept={videoMimeTypes.join(',')}
-                    ref={fileInputRef}
-                    hidden={true}
                 />
             </form>
         </>
@@ -158,10 +158,10 @@ const VideoHolder = ({
         return (
             <EmptyVideoCard
                 errors={videoUploadErrors}
-                onFileChange={onVideoFileChange}
                 fileInputRef={fileInputRef}
                 videoDragHandler={videoDragHandler}
                 videoMimeTypes={videoMimeTypes}
+                onFileChange={onVideoFileChange}
             />
         );
     }
@@ -180,11 +180,11 @@ export function VideoCard({
                 <VideoHolder {...props} isEditing={isEditing} />
                 <CardCaptionEditor
                     caption={caption || ''}
-                    setCaption={onCaptionChange}
                     captionPlaceholder="Type caption for video (optional)"
+                    dataTestId="video-card-caption"
                     isSelected={isSelected}
                     readOnly={!isEditing}
-                    dataTestId="video-card-caption"
+                    setCaption={onCaptionChange}
                 />
             </figure>
         </>

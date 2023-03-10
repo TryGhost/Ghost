@@ -21,6 +21,14 @@ module.exports = {
         // ignore prop-types for now
         'react/prop-types': 'off',
 
+        // custom react rules
+        'react/jsx-sort-props': ['error', {
+            reservedFirst: true,
+            callbacksLast: true,
+            shorthandLast: true,
+            locale: 'en'
+        }],
+
         'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],

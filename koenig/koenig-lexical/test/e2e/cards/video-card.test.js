@@ -50,7 +50,7 @@ describe('Video card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="video">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="video">
                 </div>
             </div>
         `, {ignoreCardContents: true});
@@ -68,7 +68,7 @@ describe('Video card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video"></div>
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="video"></div>
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});
@@ -302,7 +302,7 @@ describe('Video card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video"></div>
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="video"></div>
                 <figcaption>
                     <div data-testid="image-caption-editor">
                         <div>
@@ -332,7 +332,7 @@ describe('Video card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="video">
                 </div>
             </div>
             <p><br /></p>
@@ -353,7 +353,7 @@ describe('Video card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="video">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="video">
                 </div>
             </div>
             <p dir="ltr"><span data-lexical-text="true">Testing</span></p>

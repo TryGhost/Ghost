@@ -28,7 +28,7 @@ export function EmailCtaCard({isEditing, visibility, alignment, separators, valu
                     {visibility}
                 </div>
                 {separators && <hr className="-mt-4 mb-12 block border-t-grey-300" />}
-                <input className={`w-full font-serif text-xl text-grey-900 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } value={value} placeholder={placeholder} />
+                <input className={`w-full font-serif text-xl text-grey-900 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } placeholder={placeholder} value={value} />
                 { (button && (isEditing || (buttonText && buttonUrl))) && 
                 <div className={`mt-6 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }>
                     <Button placeholder="Add button text" value={buttonText} />
@@ -41,25 +41,25 @@ export function EmailCtaCard({isEditing, visibility, alignment, separators, valu
             {isEditing && (
                 <SettingsPanel>
                     <DropdownSetting
-                        label='Visibility'
                         description='Visible for this audience when delivered by email. This card is not published on your site.'
-                        trigger={visibility}
+                        label='Visibility'
                         menu={dropdownOptions}
+                        trigger={visibility}
                     />
                     <SettingsDivider />
                     <ButtonGroupSetting
+                        buttons={buttonGroupChildren}
                         label='Content alignment'
                         selectedName={alignment}
-                        buttons={buttonGroupChildren}
                     />
                     <ToggleSetting
-                        label='Separators'
                         isChecked={separators}
+                        label='Separators'
                     />
                     <SettingsDivider />
                     <ToggleSetting
-                        label='Button'
                         isChecked={button}
+                        label='Button'
                     />
                     {button && (
                         <>

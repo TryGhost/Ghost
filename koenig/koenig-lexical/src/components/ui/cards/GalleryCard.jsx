@@ -13,18 +13,18 @@ function EmptyGalleryCard({onFileChange}) {
     return (
         <>
             <MediaPlaceholder
-                filePicker={openFilePicker}
                 desc="Click to select up to 9 images"
+                filePicker={openFilePicker}
                 icon='gallery'
                 size='large'
             />
             <form onChange={onFileChange}>
                 <input
+                    ref={fileInputRef}
+                    accept='image/*'
+                    hidden={true}
                     name="image-input"
                     type='file'
-                    accept='image/*'
-                    ref={fileInputRef}
-                    hidden={true}
                 />
             </form>
         </>
@@ -42,9 +42,9 @@ export function GalleryCard({
             <EmptyGalleryCard onFileChange={onFileChange} />
             <CardCaptionEditor
                 caption={caption || ''}
-                setCaption={setCaption}
                 captionPlaceholder="Type caption for gallery (optional)"
                 isSelected={isSelected}
+                setCaption={setCaption}
             />
         </figure>
     );

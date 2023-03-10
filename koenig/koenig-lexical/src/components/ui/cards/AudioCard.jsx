@@ -48,20 +48,20 @@ function EmptyAudioCard({
         return (
             <>
                 <MediaPlaceholder
-                    placeholderRef={audioDragHandler.setRef}
-                    isDraggedOver={audioDragHandler.isDraggedOver}
-                    filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
                     desc='Click to upload an audio file'
-                    icon='audio'
-                    size='xsmall'
-                    errors={errors}
                     errorDataTestId="audio-upload-errors"
+                    errors={errors}
+                    filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
+                    icon='audio'
+                    isDraggedOver={audioDragHandler.isDraggedOver}
+                    placeholderRef={audioDragHandler.setRef}
+                    size='xsmall'
                 />
                 <AudioUploadForm
-                    filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
-                    onFileChange={onFileChange}
                     fileInputRef={onFileInputRef}
+                    filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
                     mimeTypes={audioMimeTypes}
+                    onFileChange={onFileChange}
                 />
             </>
         );
@@ -111,10 +111,10 @@ function AudioThumbnail({
     } else if (src) {
         return (
             <div className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
-                <img data-testid="audio-thumbnail" src={src} alt="Audio thumbnail" className="h-full w-full rounded-sm object-cover transition ease-in" />
+                <img alt="Audio thumbnail" className="h-full w-full rounded-sm object-cover transition ease-in" data-testid="audio-thumbnail" src={src} />
                 {isEditing && (
                     <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
-                        <IconButton onClick={removeThumbnail} Icon={DeleteIcon} dataTestID='remove-thumbnail' />
+                        <IconButton dataTestID='remove-thumbnail' Icon={DeleteIcon} onClick={removeThumbnail} />
                     </div>
                 )}
             </div>
@@ -122,26 +122,26 @@ function AudioThumbnail({
     } else if (isUploading) {
         return (
             <div className="group flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
-                <ProgressBar style={progressStyle} bgStyle='transparent' />
+                <ProgressBar bgStyle='transparent' style={progressStyle} />
             </div>
         );
     } else {
         return (
             <div className="group flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
                 <button
+                    className="flex h-20 w-20 items-center justify-center"
                     data-testid="upload-thumbnail"
                     type="button"
                     onClick={() => openFileSelection({fileInputRef: fileInputRef})}
-                    className="flex h-20 w-20 items-center justify-center"
                 >
                     {(isEditing && <FilePlaceholderIcon className="ease-inx h-6 w-6 text-white transition-all duration-75 group-hover:scale-105" />) || <AudioFileIcon className="h-6 w-6 text-white" />}
                 </button>
                 <ImageUploadForm
-                    filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
-                    onFileChange={onFileChange}
-                    fileInputRef={onFileInputRef}
-                    mimeTypes={mimeTypes}
                     disabled={!isEditing}
+                    fileInputRef={onFileInputRef}
+                    filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
+                    mimeTypes={mimeTypes}
+                    onFileChange={onFileChange}
                 />
             </div>
         );
@@ -177,32 +177,32 @@ function PopulatedAudioCard({
 
     return (
         <div
+            ref={thumbnailDragHandler.setRef}
             className="flex rounded border border-grey/30 p-2"
             data-testid="audio-card-populated"
-            ref={thumbnailDragHandler.setRef}
         >
             <AudioThumbnail
+                errors={errors}
+                isDraggedOver={thumbnailDragHandler.isDraggedOver}
+                isEditing={isEditing}
+                isUploading={isUploading}
                 mimeTypes={thumbnailMimeTypes}
                 progress={progress}
-                isUploading={isUploading}
-                src={thumbnailSrc}
-                isEditing={isEditing}
-                onFileChange={onFileChange}
-                setFileInputRef={setFileInputRef}
                 removeThumbnail={removeThumbnail}
-                isDraggedOver={thumbnailDragHandler.isDraggedOver}
-                errors={errors}
+                setFileInputRef={setFileInputRef}
+                src={thumbnailSrc}
+                onFileChange={onFileChange}
             />
             <div className="flex h-20 w-full flex-col justify-between px-4">
                 {(isEditing || title) && (
                     <input
-                        value={title}
-                        readOnly={!isEditing}
-                        onChange={handleChange}
-                        placeholder={placeholder}
-                        name="title"
                         className="font-sans text-lg font-bold text-black"
                         data-testid="audio-caption"
+                        name="title"
+                        placeholder={placeholder}
+                        readOnly={!isEditing}
+                        value={title}
+                        onChange={handleChange}
                     />
                 )}
                 <MediaPlayer duration={formatDuration(duration)} theme='dark' />
@@ -246,19 +246,19 @@ export function AudioCard({
         return (
             <div className="not-kg-prose">
                 <PopulatedAudioCard
-                    title={title}
-                    placeholder='Add a title...'
                     duration={duration}
-                    thumbnailUploader={thumbnailUploader}
-                    thumbnailMimeTypes={thumbnailMimeTypes}
-                    setTitle={updateTitle}
                     isEditing={isEditing}
-                    updateTitle={updateTitle}
-                    thumbnailSrc={thumbnailSrc}
-                    setFileInputRef={setThumbnailFileInputRef}
-                    onFileChange={onThumbnailFileChange}
+                    placeholder='Add a title...'
                     removeThumbnail={removeThumbnail}
+                    setFileInputRef={setThumbnailFileInputRef}
+                    setTitle={updateTitle}
                     thumbnailDragHandler={thumbnailDragHandler}
+                    thumbnailMimeTypes={thumbnailMimeTypes}
+                    thumbnailSrc={thumbnailSrc}
+                    thumbnailUploader={thumbnailUploader}
+                    title={title}
+                    updateTitle={updateTitle}
+                    onFileChange={onThumbnailFileChange}
                 />
             </div>
         );
@@ -266,11 +266,11 @@ export function AudioCard({
         return (
             <div className="not-kg-prose">
                 <EmptyAudioCard
+                    audioDragHandler={audioDragHandler}
+                    audioMimeTypes={audioMimeTypes}
+                    audioUploader={audioUploader}
                     setFileInputRef={setAudioFileInputRef}
                     onFileChange={onAudioFileChange}
-                    audioDragHandler={audioDragHandler}
-                    audioUploader={audioUploader}
-                    audioMimeTypes={audioMimeTypes}
                 />
             </div>
         );

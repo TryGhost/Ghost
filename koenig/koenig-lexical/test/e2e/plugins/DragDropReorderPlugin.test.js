@@ -40,12 +40,12 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
             </div>
-            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>        
+            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>
         `, {ignoreCardContents: true});
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
@@ -55,12 +55,12 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
             </div>
-            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>        
+            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>
         `, {ignoreCardContents: true});
     });
 
@@ -86,11 +86,11 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
             </div>
-            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>    
+            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});
@@ -102,13 +102,13 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
             </div>
-            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>       
-            <p><br /></p> 
+            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>
+            <p><br /></p>
         `, {ignoreCardContents: true});
     });
 
@@ -130,15 +130,15 @@ describe('Drag Drop Reorder Plugin', async function () {
         await page.keyboard.press('Enter');
 
         await page.keyboard.type('This is some text');
-        
+
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
             </div>
-            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>    
+            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>
         `, {ignoreCardContents: true});
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
@@ -154,11 +154,11 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
             </div>
-            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>       
+            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
             </div>
         `, {ignoreCardContents: true});
     });
@@ -181,15 +181,15 @@ describe('Drag Drop Reorder Plugin', async function () {
         await page.keyboard.press('Enter');
 
         await page.keyboard.type('This is some text');
-        
+
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
             </div>
-            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>    
+            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>
         `, {ignoreCardContents: true});
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
@@ -205,12 +205,12 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
             </div>
-            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>       
+            <p dir="ltr"><span data-lexical-text="true">This is some text</span></p>
         `, {ignoreCardContents: true});
 
         const indicator = await page.locator('#koenig-drag-drop-indicator');

@@ -22,7 +22,7 @@ const Template = (args) => {
         <div className="relative ml-[66px] mt-[2px]">
             <button onClick={openModal}>Open modal</button>
 
-            <Modal onClose={closeModal} isOpen={isOpen}>
+            <Modal isOpen={isOpen} onClose={closeModal}>
                 <div className="p-8">
                     <h1>Headline</h1>
 

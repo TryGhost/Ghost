@@ -317,7 +317,7 @@ describe('Plus button', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -339,7 +339,7 @@ describe('Plus button', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -352,7 +352,7 @@ describe('Plus button', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -374,7 +374,7 @@ describe('Plus button', async () => {
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div><svg></svg></div>
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="markdown">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="markdown">
                     </div>
                 </div>
                 <p><br /></p>

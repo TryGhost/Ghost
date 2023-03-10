@@ -45,17 +45,17 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop}) {
     if (editorType === 'basic') {
         return (
             <KoenigComposableEditor
-                registerAPI={registerAPI}
                 cursorDidExitAtTop={cursorDidExitAtTop}
                 markdownTransformers={BASIC_TRANSFORMERS}
+                registerAPI={registerAPI}
             />
         );
     } else if (editorType === 'minimal') {
         return (
             <KoenigComposableEditor
-                registerAPI={registerAPI}
                 cursorDidExitAtTop={cursorDidExitAtTop}
                 markdownTransformers={MINIMAL_TRANSFORMERS}
+                registerAPI={registerAPI}
             >
                 <RestrictContentPlugin paragraphs={1} />
             </KoenigComposableEditor>
@@ -64,8 +64,8 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop}) {
 
     return (
         <KoenigEditor
-            registerAPI={registerAPI}
             cursorDidExitAtTop={cursorDidExitAtTop}
+            registerAPI={registerAPI}
         />
     );
 }
@@ -174,27 +174,27 @@ function DemoApp({editorType}) {
             className="koenig-lexical top"
         >
             <KoenigComposer
-                initialEditorState={initialContent}
-                fileUploader={{useFileUpload, fileTypes}}
                 cardConfig={cardConfig}
+                fileUploader={{useFileUpload, fileTypes}}
+                initialEditorState={initialContent}
                 nodes={getAllowedNodes({editorType})}
             >
                 <div className="relative h-full grow">
                     {
                         searchParams !== 'false'
-                            ? <InitialContentToggle setTitle={setTitle} searchParams={searchParams} setSearchParams={setSearchParams} defaultContent={defaultContent} />
+                            ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
                             : null
                     }
-                    <div className="h-full overflow-auto" ref={containerRef} onClick={focusEditor}>
+                    <div ref={containerRef} className="h-full overflow-auto" onClick={focusEditor}>
                         <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
                             { showTitle
-                                ? <TitleTextBox title={title} setTitle={setTitle} editorAPI={editorAPI} ref={titleRef} />
+                                ? <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title} />
                                 : null
                             }
                             <DemoEditor
+                                cursorDidExitAtTop={focusTitle}
                                 editorType={editorType}
                                 registerAPI={setEditorAPI}
-                                cursorDidExitAtTop={focusTitle}
                             />
                         </div>
                     </div>

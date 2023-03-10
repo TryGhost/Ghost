@@ -8,12 +8,12 @@ function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
     return (
         <>
             <div className="fixed inset-0 z-40 h-[100vh] bg-black opacity-60"></div>
-            <div data-kg-modal="unsplash" className="not-kg-prose fixed inset-8 z-50 overflow-hidden rounded bg-white shadow-xl" ref={galleryRef}>
+            <div ref={galleryRef} className="not-kg-prose fixed inset-8 z-50 overflow-hidden rounded bg-white shadow-xl" data-kg-modal="unsplash">
                 <button className="absolute top-6 right-6 cursor-pointer">
                     <CloseIcon
+                        className="h-4 w-4 stroke-2 text-grey-400"
                         data-kg-modal-close-button
                         onClick={() => closeModal()}
-                        className="h-4 w-4 stroke-2 text-grey-400"
                     />
                 </button>
                 <div className="flex h-full flex-col">
@@ -24,7 +24,7 @@ function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
                         </h1>
                         <div className="relative w-full max-w-sm">
                             <SearchIcon className="absolute top-1/2 left-4 h-4 w-4 -translate-y-2 text-grey-700" />
-                            <input data-kg-unsplash-search autoFocus onChange={handleSearch} className="h-10 w-full rounded-full border border-grey-300 pr-8 pl-10 font-sans text-md font-normal text-black focus:border-grey-400 focus-visible:outline-none" placeholder="Search free high-resolution photos" />
+                            <input className="h-10 w-full rounded-full border border-grey-300 pr-8 pl-10 font-sans text-md font-normal text-black focus:border-grey-400 focus-visible:outline-none" placeholder="Search free high-resolution photos" autoFocus data-kg-unsplash-search onChange={handleSearch} />
                         </div>
                     </header>
                     {children}

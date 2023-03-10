@@ -49,15 +49,15 @@ export class VideoNode extends BaseVideoNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
                 <VideoNodeComponent
-                    nodeKey={this.getKey()}
-                    thumbnail={this.getThumbnailSrc()}
-                    customThumbnail={this.getCustomThumbnailSrc()}
-                    totalDuration={this.getFormattedDuration()}
                     caption={this.getCaption()}
                     cardWidth={this.getCardWidth()}
-                    isLoopChecked={this.getLoop()}
-                    triggerFileDialog={this.__triggerFileDialog}
+                    customThumbnail={this.getCustomThumbnailSrc()}
                     initialFile={this.__initialFile}
+                    isLoopChecked={this.getLoop()}
+                    nodeKey={this.getKey()}
+                    thumbnail={this.getThumbnailSrc()}
+                    totalDuration={this.getFormattedDuration()}
+                    triggerFileDialog={this.__triggerFileDialog}
                 />
             </KoenigCardWrapper>
         );

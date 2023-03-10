@@ -12,10 +12,10 @@ export function MarkdownCard({markdown = '', updateMarkdown, isEditing, imageUpl
                 ? (
                     <div className="markdown-editor">
                         <MarkdownEditor
-                            markdown={markdown}
                             imageUploader={imageUploader}
-                            updateMarkdown={updateMarkdown}
+                            markdown={markdown}
                             unsplashConf={unsplashConf}
+                            updateMarkdown={updateMarkdown}
                         />
                     </div>
                 )
@@ -29,7 +29,7 @@ function MarkdownDisplay({markdown}) {
     const markdownHtml = MarkdownRenderer.render(markdown);
     const sanitizedHtml = sanitizeHtml(markdownHtml, {replaceJS: true});
 
-    return <div className="whitespace-normal" dangerouslySetInnerHTML={{__html: sanitizedHtml}}></div>;
+    return <div dangerouslySetInnerHTML={{__html: sanitizedHtml}} className="whitespace-normal"></div>;
 }
 
 MarkdownCard.propTypes = {

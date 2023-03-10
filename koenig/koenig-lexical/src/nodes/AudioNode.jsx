@@ -106,34 +106,34 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
     return (
         <>
             <AudioCard
-                nodeKey={nodeKey}
-                src={src}
-                thumbnailSrc={thumbnailSrc}
-                title={title}
-                isEditing={cardContext.isEditing}
-                duration={duration}
-                updateTitle={setTitle}
-                triggerFileDialog={triggerFileDialog}
-                audioUploader={audioUploader}
-                audioMimeTypes={fileUploader.fileTypes.audio?.mimeTypes}
-                thumbnailUploader={thumbnailUploader}
-                thumbnailMimeTypes={fileUploader.fileTypes.image?.mimeTypes}
+                audioDragHandler={audioDragHandler}
                 audioFileInputRef={audioFileInputRef}
+                audioMimeTypes={fileUploader.fileTypes.audio?.mimeTypes}
+                audioUploader={audioUploader}
+                duration={duration}
+                isEditing={cardContext.isEditing}
+                nodeKey={nodeKey}
+                removeThumbnail={removeThumbnail}
+                src={src}
+                thumbnailDragHandler={thumbnailDragHandler}
                 thumbnailFileInputRef={thumbnailFileInputRef}
+                thumbnailMimeTypes={fileUploader.fileTypes.image?.mimeTypes}
+                thumbnailSrc={thumbnailSrc}
+                thumbnailUploader={thumbnailUploader}
+                title={title}
+                triggerFileDialog={triggerFileDialog}
+                updateTitle={setTitle}
                 onAudioFileChange={onAudioFileChange}
                 onThumbnailFileChange={onThumbnailFileChange}
-                removeThumbnail={removeThumbnail}
-                audioDragHandler={audioDragHandler}
-                thumbnailDragHandler={thumbnailDragHandler}
             />
             <ActionToolbar
-                isVisible={src && isSelected && !isEditing}
                 data-kg-card-toolbar="audio"
+                isVisible={src && isSelected && !isEditing}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem label="Edit" icon="edit" isActive={false} onClick={handleToolbarEdit} />
+                    <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem label="Snippet" icon="snippet" isActive={false} />
+                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
                 </ToolbarMenu>
             </ActionToolbar>
         </>
@@ -182,13 +182,13 @@ export class AudioNode extends BaseAudioNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
                 <AudioNodeComponent
+                    duration={this.__duration}
+                    initialFile={this.__initialFile}
                     nodeKey={this.getKey()}
                     src={this.__src}
                     thumbnailSrc={this.__thumbnailSrc}
-                    duration={this.__duration}
                     title={this.__title}
                     triggerFileDialog={this.__triggerFileDialog}
-                    initialFile={this.__initialFile}
                 />
             </KoenigCardWrapper>
         );

@@ -89,14 +89,14 @@ export class ImageNode extends BaseImageNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
                 <ImageNodeComponent
-                    nodeKey={this.getKey()}
-                    src={this.__src}
-                    href={this.__href}
                     altText={this.__altText}
                     caption={this.__caption}
-                    triggerFileDialog={this.__triggerFileDialog}
-                    previewSrc={this.getPreviewSrc()}
+                    href={this.__href}
                     initialFile={this.__initialFile}
+                    nodeKey={this.getKey()}
+                    previewSrc={this.getPreviewSrc()}
+                    src={this.__src}
+                    triggerFileDialog={this.__triggerFileDialog}
                 />
             </KoenigCardWrapper>
         );

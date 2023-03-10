@@ -78,13 +78,13 @@ export const EmailCtaCard = Template.bind({});
 EmailCtaCard.args = {
     children: [
         <DropdownSetting
-            label='Visibility'
             description='Visible for this audience when delivered by email. This card is not published on your site.'
-            trigger='Free members'
+            label='Visibility'
             menu={['Free members', 'Paid members']}
+            trigger='Free members'
         />,
         <SettingsDivider />,
-        <ButtonGroupSetting label='Content alignment' buttons={alignmentButtonGroup} />,
+        <ButtonGroupSetting buttons={alignmentButtonGroup} label='Content alignment' />,
         <ToggleSetting label='Separators' />,
         <SettingsDivider />,
         <ToggleSetting label='Button' />,
@@ -96,7 +96,7 @@ EmailCtaCard.args = {
 export const ButtonCard = Template.bind({});
 ButtonCard.args = {
     children: [
-        <ButtonGroupSetting label='Content alignment' buttons={alignmentButtonGroup} />,
+        <ButtonGroupSetting buttons={alignmentButtonGroup} label='Content alignment' />,
         <SettingsDivider />,
         <InputSetting label='Button text' placeholder='Add button text' />,
         <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
@@ -145,7 +145,7 @@ const calloutColorPicker = [
 export const CalloutCard = Template.bind({});
 CalloutCard.args = {
     children: [
-        <ColorPickerSetting label='Background color' buttons={calloutColorPicker} layout='stacked' />,
+        <ColorPickerSetting buttons={calloutColorPicker} label='Background color' layout='stacked' />,
         <ToggleSetting label='Emoji' />
     ]
 };
@@ -154,17 +154,17 @@ export const VideoCard = Template.bind({});
 VideoCard.args = {
     children: [
         <ButtonGroupSetting
-            label='Video width'
             buttons={widthButtonGroup}
+            label='Video width'
         />,
         <ToggleSetting
-            label='Loop'
             description='Autoplay your video on a loop without sound.'
+            label='Loop'
         />,
         <ThumbnailSetting
-            label='Custom thumbnail'
-            icon='file'
             desc=''
+            icon='file'
+            label='Custom thumbnail'
             size='xsmall'
         />
     ]
@@ -199,8 +199,8 @@ const headerColorPicker = [
 export const HeaderCard = Template.bind({});
 HeaderCard.args = {
     children: [
-        <ButtonGroupSetting label='Size' buttons={sizeButtonGroup} />,
-        <ColorPickerSetting label='Style' buttons={headerColorPicker} />,
+        <ButtonGroupSetting buttons={sizeButtonGroup} label='Size' />,
+        <ColorPickerSetting buttons={headerColorPicker} label='Style' />,
         <SettingsDivider />,
         <ToggleSetting label='Button' />,
         <InputSetting label='Button text' placeholder='Add button text' />,

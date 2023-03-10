@@ -22,7 +22,7 @@ describe('Renders code block node', async () => {
         await page.keyboard.type('```javascript ');
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="codeblock">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
                 </div>
             </div>
         `, {ignoreCardContents: true});

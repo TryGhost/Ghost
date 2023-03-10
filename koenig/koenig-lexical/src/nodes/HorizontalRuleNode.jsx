@@ -57,7 +57,7 @@ export class HorizontalRuleNode extends DecoratorNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} className="inline-block">
+            <KoenigCardWrapper className="inline-block" nodeKey={this.getKey()}>
                 <HorizontalRuleCard />
             </KoenigCardWrapper>
         );

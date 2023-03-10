@@ -66,19 +66,19 @@ export function CalloutCard({color, emoji, value, placeholder, isEditing}) {
         <>
             <div className={`flex items-center rounded border py-5 px-7 ${CALLOUT_COLORS[color]} `}>
                 {emoji && <button className={`mr-2 h-8 rounded px-2 text-xl ${isEditing ? 'hover:bg-grey-500/20' : ''} ` }>&#128161;</button>}
-                <input className="w-full bg-transparent font-serif text-xl font-normal text-black" value={value} placeholder={placeholder} />
+                <input className="w-full bg-transparent font-serif text-xl font-normal text-black" placeholder={placeholder} value={value} />
             </div>
             {isEditing && (
                 <SettingsPanel>
                     <ColorPickerSetting
-                        label='Background color'
-                        selectedName={color}
                         buttons={calloutColorPicker}
+                        label='Background color'
                         layout='stacked'
+                        selectedName={color}
                     />
                     <ToggleSetting
-                        label='Emoji'
                         isChecked={emoji}
+                        label='Emoji'
                     />
                 </SettingsPanel>    
             )}

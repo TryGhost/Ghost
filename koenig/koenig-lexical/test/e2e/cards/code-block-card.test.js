@@ -42,7 +42,7 @@ describe('Code Block card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="codeblock">
                 </div>
             </div>
         `, {ignoreCardContents: true});
@@ -54,7 +54,7 @@ describe('Code Block card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="true" data-kg-card="codeblock">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
                 </div>
             </div>
         `, {ignoreCardContents: true});

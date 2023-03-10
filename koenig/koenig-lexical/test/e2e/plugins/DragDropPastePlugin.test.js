@@ -34,10 +34,10 @@ describe('Drag Drop Paste Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
-                            <img src="blob:..." alt="" />
+                            <img alt="" src="blob:..." />
                         </div>
 
                         <figcaption>
@@ -68,7 +68,7 @@ describe('Drag Drop Paste Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
                             <img
@@ -79,7 +79,7 @@ describe('Drag Drop Paste Plugin', async function () {
                 </div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
                             <img
@@ -108,7 +108,7 @@ describe('Drag Drop Paste Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="audio">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="audio">
 
                 </div>
             </div>
@@ -134,11 +134,11 @@ describe('Drag Drop Paste Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="audio">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="audio">
                 </div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="audio">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="audio">
 
                 </div>
             </div>

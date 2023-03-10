@@ -35,12 +35,12 @@ export default function MarkdownImageUploader({onChange, inputRef, progress, loa
             }
             <form onChange={onChange}>
                 <input
+                    ref={inputRef}
+                    accept='image/*'
                     name="image"
                     type='file'
-                    accept='image/*'
-                    ref={inputRef}
-                    multiple
                     hidden
+                    multiple
                 />
             </form>
         </>

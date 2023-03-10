@@ -48,7 +48,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                 </div>
             </div>
         `, {ignoreCardContents: true});
@@ -60,7 +60,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div data-testid="media-placeholder">
                             <div>
@@ -70,7 +70,7 @@ describe('Image card', async () => {
                                 </button>
                             </div>
                         </div>
-                        <form><input name="image-input" type="file" hidden="" accept="image/*" /></form>
+                        <form><input accept="image/*" hidden="" name="image-input" type="file" /></form>
                     </figure>
                 </div>
             </div>
@@ -117,9 +117,9 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img src="blob:..." alt="" /></div>
+                        <div><img alt="" src="blob:..." /></div>
                         <figcaption>
                             <input placeholder="Type alt text for image (optional)" value=""/>
                             <button name="alt-toggle-button">Alt</button>
@@ -172,10 +172,10 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
-                            <img src="blob:..." alt="">
+                            <img alt="" src="blob:...">
                         </div>
                         <figcaption>
                             <div data-testid="image-caption-editor">
@@ -345,10 +345,10 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
-                            <img src="blob:..." alt="">
+                            <img alt="" src="blob:...">
                         </div>
                         <figcaption>
                             <div data-testid="image-caption-editor">
@@ -480,10 +480,10 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
-                            <img src="blob:..." alt="" />
+                            <img alt="" src="blob:..." />
                         </div>
                     </figure>
                 </div>
@@ -503,7 +503,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                 </div>
             </div>
             <p><br /></p>
@@ -524,7 +524,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                 </div>
             </div>
             <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
@@ -616,12 +616,12 @@ describe('Image card', async () => {
         await page.click('[data-kg-unsplash-insert-button]');
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
                             <img
-                                src="http://127.0.0.1:5173/Koenig-editor-1.png"
-                                alt="a group of people walking down a street next to tall buildings" />
+                                alt="a group of people walking down a street next to tall buildings"
+                                src="http://127.0.0.1:5173/Koenig-editor-1.png" />
                         </div>
                         <figcaption>
                             <div data-testid="image-caption-editor">

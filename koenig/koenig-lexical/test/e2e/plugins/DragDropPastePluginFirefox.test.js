@@ -53,11 +53,11 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="video">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="video">
                 </div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="video">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="video">
                 </div>
             </div>
             <p><br /></p>
@@ -85,15 +85,15 @@ describe('Drag Drop Paste Plugin Firefox', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="image">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                 </div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="audio">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="audio">
                 </div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="video">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="video">
                 </div>
             </div>
             <p><br /></p>

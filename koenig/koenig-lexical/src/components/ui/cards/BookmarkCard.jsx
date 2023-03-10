@@ -30,15 +30,15 @@ export function BookmarkCard({
                 </div>
                 <CardCaptionEditor
                     caption={caption || ''}
-                    setCaption={setCaption}
                     captionPlaceholder="Type caption for bookmark (optional)"
                     isSelected={isSelected}
+                    setCaption={setCaption}
                 />  
             </>
         );
     }
     return (
-        <input className="w-full rounded border border-grey/60 p-2 font-sans text-sm font-normal text-grey-900" value={urlValue} placeholder={urlPlaceholder} />
+        <input className="w-full rounded border border-grey/60 p-2 font-sans text-sm font-normal text-grey-900" placeholder={urlPlaceholder} value={urlValue} />
     );
 }
 

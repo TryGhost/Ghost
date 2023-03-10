@@ -211,29 +211,29 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
     }, [editor, updateFloatingToolbar]);
 
     return (
-        <div className="not-kg-prose fixed" ref={toolbarRef} data-kg-floating-toolbar style={{opacity: 0}}>
+        <div ref={toolbarRef} className="not-kg-prose fixed" style={{opacity: 0}} data-kg-floating-toolbar>
             <ToolbarMenu>
-                <ToolbarMenuItem label="Format text as bold" isActive={isBold} icon="bold" onClick={() => {
+                <ToolbarMenuItem data-kg-toolbar-button="bold" icon="bold" isActive={isBold} label="Format text as bold" onClick={() => {
                     setStickyToolbar(true);
                     editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
-                }} data-kg-toolbar-button="bold" />
-                <ToolbarMenuItem label="Format text as italics" isActive={isItalic} icon="italic" onClick={() => {
+                }} />
+                <ToolbarMenuItem data-kg-toolbar-button="italic" icon="italic" isActive={isItalic} label="Format text as italics" onClick={() => {
                     setStickyToolbar(true);
                     editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
-                }} data-kg-toolbar-button="italic" />
-                <ToolbarMenuItem label="Toggle heading 1" isActive={blockType === 'h2'} icon="headingOne" onClick={() => {
+                }} />
+                <ToolbarMenuItem data-kg-toolbar-button="h2" hide={hideHeading} icon="headingOne" isActive={blockType === 'h2'} label="Toggle heading 1" onClick={() => {
                     (blockType === 'h2' ? formatParagraph() : formatHeading('h2'));
                     setStickyToolbar(true);
-                }} data-kg-toolbar-button="h2" hide={hideHeading} />
-                <ToolbarMenuItem label="Toggle heading 2" isActive={blockType === 'h3'} icon="headingTwo" onClick={() => {
+                }} />
+                <ToolbarMenuItem data-kg-toolbar-button="h3" hide={hideHeading} icon="headingTwo" isActive={blockType === 'h3'} label="Toggle heading 2" onClick={() => {
                     (blockType === 'h3' ? formatParagraph() : formatHeading('h3'));
                     setStickyToolbar(true);
-                }} data-kg-toolbar-button="h3" hide={hideHeading} />
+                }} />
                 <ToolbarMenuSeparator hide={hideQuotes} />
-                <ToolbarMenuItem label="Toggle blockquote" isActive={blockType === 'quote' || blockType === 'aside'} icon={blockType === 'aside' ? 'quoteOne' : 'quoteTwo'} onClick={() => {
+                <ToolbarMenuItem data-kg-toolbar-button="quote" hide={hideQuotes} icon={blockType === 'aside' ? 'quoteOne' : 'quoteTwo'} isActive={blockType === 'quote' || blockType === 'aside'} label="Toggle blockquote" onClick={() => {
                     (formatQuote());
                     setStickyToolbar(true);
-                }} data-kg-toolbar-button="quote" hide={hideQuotes} />
+                }} />
             </ToolbarMenu>
         </div>
     );
@@ -328,12 +328,12 @@ function useFloatingFormatToolbar(editor, anchorElem) {
     return (
         <Portal>
             <FloatingFormatToolbar
-                isText={isText}
-                editor={editor}
                 anchorElem={anchorElem}
                 blockType={blockType}
+                editor={editor}
                 isBold={isBold}
                 isItalic={isItalic}
+                isText={isText}
             />
         </Portal>
     );

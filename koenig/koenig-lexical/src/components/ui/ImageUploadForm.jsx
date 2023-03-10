@@ -5,12 +5,12 @@ export function ImageUploadForm({onFileChange, fileInputRef, mimeTypes = ['image
         <form onChange={onFileChange}>
             <input
                 ref={fileInputRef}
+                accept={accept}
+                disabled={disabled}
+                hidden={true}
+                multiple={multiple}
                 name="image-input"
                 type='file'
-                hidden={true}
-                accept={accept}
-                multiple={multiple}
-                disabled={disabled}
             />
         </form>
     );

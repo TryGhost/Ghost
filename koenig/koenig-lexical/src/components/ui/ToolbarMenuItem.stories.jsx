@@ -18,7 +18,7 @@ const Template = (args) => {
     return (
         <div className="flex">
             <div className="rounded bg-black">
-                <ToolbarMenuItem {...args} onClick={() => setActive(!isActive)} isActive={isActive} />
+                <ToolbarMenuItem {...args} isActive={isActive} onClick={() => setActive(!isActive)} />
             </div>
         </div>
     );

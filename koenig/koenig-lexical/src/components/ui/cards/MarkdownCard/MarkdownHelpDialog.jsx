@@ -102,7 +102,7 @@ export default function MarkdownHelpDialog(props) {
                         </tbody>
                     </table>
                     <span className="text-sm font-normal">
-                        For further Markdown syntax reference: <a href="https://ghost.org/help/using-the-editor/#using-markdown" target="_blank" rel="noopener noreferrer" className="font-medium text-green">Markdown Documentation</a>
+                        For further Markdown syntax reference: <a className="font-medium text-green" href="https://ghost.org/help/using-the-editor/#using-markdown" rel="noopener noreferrer" target="_blank">Markdown Documentation</a>
                     </span>
                 </section>
             </div>

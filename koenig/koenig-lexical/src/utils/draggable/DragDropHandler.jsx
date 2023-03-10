@@ -670,7 +670,7 @@ export class DragDropHandler {
                 };
 
                 return (
-                    <div id={constants.DROP_INDICATOR_ID} className="rounded-full bg-green" style={style}></div>
+                    <div className="rounded-full bg-green" id={constants.DROP_INDICATOR_ID} style={style}></div>
                 );
             };
 

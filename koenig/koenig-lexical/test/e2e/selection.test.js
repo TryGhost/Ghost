@@ -58,7 +58,7 @@ describe('Selection behaviour', async () => {
         await assertHTML(page, html`
             <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                     <hr>
                 </div>
             </div>

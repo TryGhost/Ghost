@@ -16,10 +16,10 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
     return (
         <div>
             <img
-                className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
-                src={previewSrc ? previewSrc : src}
                 alt={alt ? alt : progressAlt}
+                className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
                 data-testid={imageUploader.isLoading ? 'image-card-loading' : 'image-card-populated'}
+                src={previewSrc ? previewSrc : src}
             />
             {imageUploader.isLoading ?
                 <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="upload-progress">
@@ -42,17 +42,17 @@ function EmptyImageCard({onFileChange, setFileInputRef, imageDragHandler, errors
     return (
         <>
             <MediaPlaceholder
-                placeholderRef={imageDragHandler.setRef}
-                isDraggedOver={imageDragHandler.isDraggedOver}
-                filePicker={() => openFileSelection({fileInputRef})}
                 desc="Click to select an image"
-                icon='image'
                 errors={errors}
+                filePicker={() => openFileSelection({fileInputRef})}
+                icon='image'
+                isDraggedOver={imageDragHandler.isDraggedOver}
+                placeholderRef={imageDragHandler.setRef}
             />
             <ImageUploadForm
+                fileInputRef={onFileInputRef}
                 filePicker={() => openFileSelection({fileInputRef})}
                 onFileChange={onFileChange}
-                fileInputRef={onFileInputRef}
             />
         </>
     );
@@ -70,19 +70,19 @@ const ImageHolder = ({
     if (previewSrc || src) {
         return (
             <PopulatedImageCard
-                src={src}
                 alt={altText}
-                previewSrc={previewSrc}
                 imageUploader={imageUploader}
+                previewSrc={previewSrc}
+                src={src}
             />
         );
     } else {
         return (
             <EmptyImageCard
-                onFileChange={onFileChange}
-                setFileInputRef={setFileInputRef}
-                imageDragHandler={imageDragHandler}
                 errors={imageUploader.errors}
+                imageDragHandler={imageDragHandler}
+                setFileInputRef={setFileInputRef}
+                onFileChange={onFileChange}
             />
         );
     }
@@ -118,26 +118,26 @@ export function ImageCard({
     };
     return (
         <>
-            <figure data-kg-card-width={cardWidth} ref={figureRef}>
+            <figure ref={figureRef} data-kg-card-width={cardWidth}>
                 <ImageHolder
-                    src={src}
                     altText={altText}
-                    previewSrc={previewSrc}
-                    imageUploader={imageUploader}
                     imageDragHandler={imageDragHandler}
-                    onFileChange={onFileChange}
+                    imageUploader={imageUploader}
+                    previewSrc={previewSrc}
                     setFileInputRef={setFileInputRef}
+                    src={src}
+                    onFileChange={onFileChange}
                 />
                 <CardCaptionEditor
                     altText={altText || ''}
-                    setAltText={setAltText}
                     altTextPlaceholder="Type alt text for image (optional)"
                     caption={caption || ''}
-                    setCaption={setCaption}
                     captionPlaceholder="Type caption for image (optional)"
+                    dataTestId="image-caption-editor"
                     isSelected={isSelected}
                     readOnly={!isSelected}
-                    dataTestId="image-caption-editor"
+                    setAltText={setAltText}
+                    setCaption={setCaption}
                 />
             </figure>
         </>

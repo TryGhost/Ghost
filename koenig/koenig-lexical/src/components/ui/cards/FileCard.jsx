@@ -17,8 +17,8 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
     return (
         <div className="flex justify-between rounded border border-grey/30 p-2">
             <div className="flex w-full flex-col justify-center px-2 font-sans" {...args}>
-                { (isEditing || title) && <input value={title} placeholder={titlePlaceholder} className="text-lg font-bold tracking-tight text-black" />}
-                { (isEditing || desc) && <input value={desc} placeholder={descPlaceholder} className="pb-1 text-[1.6rem] font-normal text-grey-700" />}
+                { (isEditing || title) && <input className="text-lg font-bold tracking-tight text-black" placeholder={titlePlaceholder} value={title} />}
+                { (isEditing || desc) && <input className="pb-1 text-[1.6rem] font-normal text-grey-700" placeholder={descPlaceholder} value={desc} />}
                 <div className="py-1 text-sm font-medium text-grey-900">
                     {name}
                     <span className="text-grey-700"> • {size}</span>
@@ -35,12 +35,12 @@ export function FileCard({isPopulated, fileTitle, fileTitlePlaceholder, fileDesc
     if (isPopulated) {
         return (
             <PopulatedFileCard 
+                desc={fileDesc}
+                descPlaceholder={fileDescPlaceholder}
+                name={fileName} 
+                size={fileSize}
                 title={fileTitle}
                 titlePlaceholder={fileTitlePlaceholder}
-                desc={fileDesc} 
-                descPlaceholder={fileDescPlaceholder}
-                name={fileName}
-                size={fileSize}
                 {...args} 
             />
         );

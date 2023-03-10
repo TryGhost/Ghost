@@ -15,12 +15,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <Router>
             <Routes>
-                <Route path="/designsandbox" element={<DesignSandbox />} />
-                <Route path="/contentrestricted" element={<RestrictedContentDemo paragraphs={1} />} />
-                <Route path="/html-output" element={<HtmlOutputDemo />} />
-                <Route path="/" element={<DemoApp introContent={true} />} />
-                <Route path="/basic" element={<DemoApp introContent={true} editorType='basic' />} />
-                <Route path="/minimal" element={<DemoApp introContent={true} editorType='minimal' />} />
+                <Route element={<DesignSandbox />} path="/designsandbox" />
+                <Route element={<RestrictedContentDemo paragraphs={1} />} path="/contentrestricted" />
+                <Route element={<HtmlOutputDemo />} path="/html-output" />
+                <Route element={<DemoApp introContent={true} />} path="/" />
+                <Route element={<DemoApp editorType='basic' introContent={true} />} path="/basic" />
+                <Route element={<DemoApp editorType='minimal' introContent={true} />} path="/minimal" />
             </Routes>
         </Router>
     </React.StrictMode>

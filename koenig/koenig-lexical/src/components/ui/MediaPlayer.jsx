@@ -15,7 +15,7 @@ export function MediaPlayer({type, duration, theme, ...args}) {
             <div className={`relative mx-2 h-1 grow rounded ${theme === 'light' ? 'bg-white/40' : 'bg-grey/30'}`}>
                 <button className="absolute left-0 top-[-6px] h-4 w-4 rounded-full border border-grey/50 bg-white shadow"></button>
             </div>
-            <button type="button" className={`mr-4 mb-[1px] px-1 font-sans text-sm font-medium ${theme === 'light' ? 'text-white' : 'text-black'}`}>1&#215;</button>
+            <button className={`mr-4 mb-[1px] px-1 font-sans text-sm font-medium ${theme === 'light' ? 'text-white' : 'text-black'}`} type="button">1&#215;</button>
             <button type="button">
                 <UnmuteIcon className={`${theme === 'light' ? 'fill-white' : 'fill-black'}`} />
             </button>

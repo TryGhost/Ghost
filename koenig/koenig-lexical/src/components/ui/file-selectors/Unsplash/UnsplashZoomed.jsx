@@ -4,19 +4,19 @@ import UnsplashImage from './UnsplashImage';
 
 function UnsplashZoomed({payload, insertImage, selectImg, zoomed}) {
     return (
-        <div data-kg-unsplash-zoomed onClick={() => selectImg(null)} className="flex h-full grow basis-0 justify-center">
+        <div className="flex h-full grow basis-0 justify-center" data-kg-unsplash-zoomed onClick={() => selectImg(null)}>
             <UnsplashImage 
-                payload={payload}
-                srcUrl={payload.urls.regular}
                 alt={payload.alt_description}
-                links={payload.links}
-                likes={payload.likes}
-                user={payload.user}
-                urls={payload.urls}
                 height={payload.height}
-                width={payload.width}
-                selectImg={selectImg}
                 insertImage={insertImage}
+                likes={payload.likes}
+                links={payload.links}
+                payload={payload}
+                selectImg={selectImg}
+                srcUrl={payload.urls.regular}
+                urls={payload.urls}
+                user={payload.user}
+                width={payload.width}
                 zoomed={zoomed}
 
             />

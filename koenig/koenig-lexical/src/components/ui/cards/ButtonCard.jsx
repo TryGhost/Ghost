@@ -29,15 +29,15 @@ export function ButtonCard({
         <>
             <div className="inline-block w-full">
                 <div className={`my-3 flex h-10 items-center ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} ${alignment === 'left' ? 'justify-start' : 'justify-center'} `}>
-                    <Button value={buttonText} placeholder={buttonPlaceholder} />
+                    <Button placeholder={buttonPlaceholder} value={buttonText} />
                 </div>
             </div>
             {isEditing && (
                 <SettingsPanel>
                     <ButtonGroupSetting
+                        buttons={buttonGroupChildren}
                         label="Content alignment"
                         selectedName={alignment}
-                        buttons={buttonGroupChildren}
                     />
                     <InputSetting
                         label='Button text'

@@ -16,9 +16,9 @@ const KoenigCaptionEditor = ({paragraphs = 1, html, setHtml, placeholderText, re
         >
             <KoenigComposableEditor
                 className="koenig-lexical-caption"
+                markdownTransformers={MINIMAL_TRANSFORMERS}
                 placeholder={<Placeholder text={placeholderText} />}
                 readOnly={readOnly}
-                markdownTransformers={MINIMAL_TRANSFORMERS}
             >
                 <RestrictContentPlugin paragraphs={paragraphs} />
                 <HtmlOutputPlugin html={html} setHtml={setHtml} />

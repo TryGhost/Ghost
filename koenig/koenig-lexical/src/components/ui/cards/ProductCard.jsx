@@ -29,7 +29,7 @@ export function ProductCard({isEditing, image, title, titlePlaceholder, desc, de
                 {(desc || isEditing) && <p className={`mt-2 text-[1.6rem] font-normal leading-snug text-grey-700 ${desc || 'opacity-50'}`}>{desc || descPlaceholder}</p>}
                 {(button && (isEditing || (buttonText || buttonUrl))) && 
                 <div className={`mt-6 w-full ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} `}>
-                    <Button width='full' value={buttonText} url={buttonUrl} />
+                    <Button url={buttonUrl} value={buttonText} width='full' />
                 </div>
                 }
             </div>
@@ -37,13 +37,13 @@ export function ProductCard({isEditing, image, title, titlePlaceholder, desc, de
             {isEditing && (
                 <SettingsPanel>
                     <ToggleSetting
-                        label='Rating'
                         isChecked={rating}
+                        label='Rating'
                     />
                     <SettingsDivider />
                     <ToggleSetting
-                        label='Button'
                         isChecked={button}
+                        label='Button'
                     />
                     {button && (
                         <>
@@ -68,7 +68,7 @@ export function ProductCard({isEditing, image, title, titlePlaceholder, desc, de
 function RatingButton() {
     const n = 5;
     return (
-        [...Array(n)].map(i => <button className="flex h-7 w-5 items-center justify-center" key={i}><StarIcon /></button>)
+        [...Array(n)].map(i => <button key={i} className="flex h-7 w-5 items-center justify-center"><StarIcon /></button>)
     );
 }
 

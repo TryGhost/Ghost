@@ -149,13 +149,13 @@ const UnsplashModal = ({onClose, onImageInsert, unsplashConf}) => {
                 handleSearch={handleSearch}
             >
                 <UnsplashGallery
-                    galleryRef={galleryRef}
-                    zoomed={zoomedImg}
-                    isLoading={isLoading}
                     dataset={dataset}
-                    selectImg={selectImg}
-                    insertImage={insertImage}
                     error={UnsplashLib.error}
+                    galleryRef={galleryRef}
+                    insertImage={insertImage}
+                    isLoading={isLoading}
+                    selectImg={selectImg}
+                    zoomed={zoomedImg}
                 />
             </UnsplashSelector>
         </Portal>

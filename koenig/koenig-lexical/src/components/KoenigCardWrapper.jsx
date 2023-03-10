@@ -311,13 +311,13 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
             cardContainerRef: containerRef
         }}>
             <CardWrapper
-                isSelected={isFocused}
-                isEditing={isEditing}
-                cardType={cardType}
                 ref={containerRef}
+                cardType={cardType}
                 cardWidth={cardWidth}
-                wrapperStyle={wrapperStyle}
                 IndicatorIcon={IndicatorIcon}
+                isEditing={isEditing}
+                isSelected={isFocused}
+                wrapperStyle={wrapperStyle}
             >
                 {children}
             </CardWrapper>

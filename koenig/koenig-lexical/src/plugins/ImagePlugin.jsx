@@ -82,8 +82,8 @@ export const ImagePlugin = () => {
 
     if (showModal && selector) {
         return (<UnsplashPlugin
-            nodeKey={selectedKey}
             handleModalClose={setShowModal}
+            nodeKey={selectedKey}
         />);
     }
 

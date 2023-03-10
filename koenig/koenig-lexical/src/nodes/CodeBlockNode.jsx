@@ -30,13 +30,13 @@ function CodeBlockNodeComponent({nodeKey, caption, code, language}) {
 
     return (
         <CodeBlockCard
-            nodeKey={nodeKey}
             caption={caption}
             code={code}
-            updateCode={updateCode}
-            language={language}
-            updateLanguage={updateLanguage}
             isEditing={cardContext.isEditing}
+            language={language}
+            nodeKey={nodeKey}
+            updateCode={updateCode}
+            updateLanguage={updateLanguage}
         />
     );
 }
@@ -63,12 +63,12 @@ export class CodeBlockNode extends BaseCodeBlockNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper wrapperStyle="code-card" nodeKey={this.getKey()} width={this.__cardWidth} openInEditMode={this.__openInEditMode}>
+            <KoenigCardWrapper nodeKey={this.getKey()} openInEditMode={this.__openInEditMode} width={this.__cardWidth} wrapperStyle="code-card">
                 <CodeBlockNodeComponent
-                    nodeKey={this.getKey()}
                     caption={this.__caption}
                     code={this.__code}
                     language={this.__language}
+                    nodeKey={this.getKey()}
                 />
             </KoenigCardWrapper>
         );

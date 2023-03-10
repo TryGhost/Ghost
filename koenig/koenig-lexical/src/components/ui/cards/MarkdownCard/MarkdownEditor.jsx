@@ -202,24 +202,24 @@ export default function MarkdownEditor({
             <textarea ref={editorRef}></textarea>
 
             <MarkdownHelpDialog
-                onClose={closeHelpDialog}
                 isOpen={isHelpDialogOpen}
+                onClose={closeHelpDialog}
             />
 
             <MarkdownImageUploader
-                inputRef={imageInputRef}
-                onChange={uploadImages}
-                progress={progress}
-                loading={isLoading}
                 errors={imageUploadErrors}
                 filesNumber={filesNumber}
+                inputRef={imageInputRef}
+                loading={isLoading}
+                progress={progress}
+                onChange={uploadImages}
             />
 
             {isUnsplashDialogOpen && (
                 <UnsplashModal
+                    unsplashConf={unsplashConf}
                     onClose={closeUnsplashDialog}
                     onImageInsert={onUnsplashInsert}
-                    unsplashConf={unsplashConf}
                 />
             )}
         </div>

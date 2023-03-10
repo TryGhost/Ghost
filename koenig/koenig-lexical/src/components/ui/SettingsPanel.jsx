@@ -20,8 +20,8 @@ export function SettingsPanel({children}) {
         // Block with fixed position and transformed ancestor can be incorrectly positioned https://bugs.chromium.org/p/chromium/issues/detail?id=20574
         // Using Portal to avoid such issue as some cards using transformation
         <Portal>
-            <div className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 overflow-y-auto rounded-lg bg-white bg-clip-padding p-6 font-sans shadow"
-                ref={ref}
+            <div ref={ref}
+                className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 overflow-y-auto rounded-lg bg-white bg-clip-padding p-6 font-sans shadow"
                 data-testid="video-settings-panel"
             >
                 {children}
@@ -40,7 +40,7 @@ export function ToggleSetting({label, description, isChecked, onChange, dataTest
                 }
             </div>
             <div className="flex shrink-0 pl-2">
-                <Toggle isChecked={isChecked} onChange={onChange} dataTestID={dataTestID} />
+                <Toggle dataTestID={dataTestID} isChecked={isChecked} onChange={onChange} />
             </div>
         </div>
     );
@@ -50,7 +50,7 @@ export function InputSetting({label, description, value, placeholder}) {
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900">{label}</div>
-            <Input value={value} placeholder={placeholder} />
+            <Input placeholder={placeholder} value={value} />
             {description &&
                     <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }
@@ -63,8 +63,8 @@ export function DropdownSetting({label, description, trigger, menu}) {
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900">{label}</div>
             <Dropdown
-                trigger={trigger}
                 menu={menu}
+                trigger={trigger}
             />
             {description &&
                     <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
@@ -79,7 +79,7 @@ export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
             <div className="font-bold text-grey-900">{label}</div>
 
             <div className="shrink-0 pl-2">
-                <ButtonGroup onClick={onClick} selectedName={selectedName} buttons={buttons} />
+                <ButtonGroup buttons={buttons} selectedName={selectedName} onClick={onClick} />
             </div>
         </div>
     );
@@ -91,7 +91,7 @@ export function ColorPickerSetting({label, onClick, selectedName, buttons, layou
             <div className="font-bold text-grey-900">{label}</div>
 
             <div className={`shrink-0 ${layout === 'stacked' ? '-mx-1 pt-1' : 'pl-2'}`}>
-                <ColorPicker onClick={onClick} selectedName={selectedName} buttons={buttons} />
+                <ColorPicker buttons={buttons} selectedName={selectedName} onClick={onClick} />
             </div>
         </div>
     );
@@ -122,22 +122,22 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
             {isEmpty &&
                 <div className="h-32">
                     <MediaPlaceholder
-                        placeholderRef={placeholderRef}
+                        borderStyle='dashed'
+                        dataTestId="thumbnail-media-placeholder"
+                        desc={desc}
+                        errorDataTestId="custom-thumbnails-errors"
+                        errors={errors}
                         filePicker={() => openFileSelection({fileInputRef})}
                         icon={icon}
-                        desc={desc}
-                        size={size}
-                        borderStyle='dashed'
                         isDraggedOver={isDraggedOver}
-                        dataTestId="thumbnail-media-placeholder"
-                        errors={errors}
-                        errorDataTestId="custom-thumbnails-errors"
+                        placeholderRef={placeholderRef}
+                        size={size}
                     />
                     <ImageUploadForm
-                        filePicker={() => openFileSelection({fileInputRef})}
-                        onFileChange={onFileChange}
                         fileInputRef={onFileInputRef}
+                        filePicker={() => openFileSelection({fileInputRef})}
                         mimeTypes={mimeTypes}
+                        onFileChange={onFileChange}
                     />
                 </div>
             }
@@ -146,14 +146,14 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
                 <div className="group relative flex h-32 items-center justify-center rounded" data-testid="custom-thumbnail-filled">
                     {src && (
                         <>
-                            <img className="mx-auto h-full w-full rounded object-cover" src={src} alt={alt} />
+                            <img alt={alt} className="mx-auto h-full w-full rounded object-cover" src={src} />
                             <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
                         </>
                     )}
 
                     {!isLoading && (
                         <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
-                            <IconButton onClick={onRemove} Icon={DeleteIcon} dataTestID={dataTestID} />
+                            <IconButton dataTestID={dataTestID} Icon={DeleteIcon} onClick={onRemove} />
                         </div>
                     )}
 

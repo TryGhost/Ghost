@@ -102,15 +102,15 @@ const DesignSandbox = () => {
         return (
             <div className="max-w-fit">
                 <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
-                    <ToolbarItem label="Format text as bold" Icon={BoldIcon} />
-                    <ToolbarItem label="Format text as italics" Icon={ItalicIcon} />
-                    <ToolbarItem label="Toggle heading 1" Icon={HeadingOneIcon} />
-                    <ToolbarItem label="Toggle heading 2" Icon={HeadingTwoIcon} />
+                    <ToolbarItem Icon={BoldIcon} label="Format text as bold" />
+                    <ToolbarItem Icon={ItalicIcon} label="Format text as italics" />
+                    <ToolbarItem Icon={HeadingOneIcon} label="Toggle heading 1" />
+                    <ToolbarItem Icon={HeadingTwoIcon} label="Toggle heading 2" />
                     <ToolbarSeparator />
-                    <ToolbarItem label="Toggle blockquote" Icon={QuoteIcon} />
-                    <ToolbarItem label="Insert link" Icon={LinkIcon} />
+                    <ToolbarItem Icon={QuoteIcon} label="Toggle blockquote" />
+                    <ToolbarItem Icon={LinkIcon} label="Insert link" />
                     <ToolbarSeparator />
-                    <ToolbarItem label="Save as snippet" Icon={SnippetIcon} />
+                    <ToolbarItem Icon={SnippetIcon} label="Save as snippet" />
                 </ul>
             </div>  
         );
@@ -120,14 +120,14 @@ const DesignSandbox = () => {
         return (
             <div className="max-w-fit">
                 <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
-                    <ToolbarItem label="Set image to regular" Icon={ImgRegularIcon} />
-                    <ToolbarItem label="Set image to wide" Icon={ImgWideIcon} />
-                    <ToolbarItem label="Set image to full" Icon={ImgFullIcon} />
+                    <ToolbarItem Icon={ImgRegularIcon} label="Set image to regular" />
+                    <ToolbarItem Icon={ImgWideIcon} label="Set image to wide" />
+                    <ToolbarItem Icon={ImgFullIcon} label="Set image to full" />
                     <ToolbarSeparator />
-                    <ToolbarItem label="Insert link" Icon={LinkIcon} />
-                    <ToolbarItem label="Replace image" Icon={ReplaceIcon} />
+                    <ToolbarItem Icon={LinkIcon} label="Insert link" />
+                    <ToolbarItem Icon={ReplaceIcon} label="Replace image" />
                     <ToolbarSeparator />
-                    <ToolbarItem label="Save as snippet" Icon={SnippetIcon} />
+                    <ToolbarItem Icon={SnippetIcon} label="Save as snippet" />
                 </ul>
             </div>  
         );
@@ -137,9 +137,9 @@ const DesignSandbox = () => {
         return (
             <div className="max-w-fit">
                 <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
-                    <ToolbarItem label="Add image" Icon={AddIcon} />
+                    <ToolbarItem Icon={AddIcon} label="Add image" />
                     <ToolbarSeparator />
-                    <ToolbarItem label="Save as snippet" Icon={SnippetIcon} />
+                    <ToolbarItem Icon={SnippetIcon} label="Save as snippet" />
                 </ul>
             </div>  
         );
@@ -149,8 +149,8 @@ const DesignSandbox = () => {
         return (
             <li className="m-0 flex p-0 first:m-0" {...props}>
                 <div
-                    type="button"
                     className="flex h-9 w-9 items-center justify-center"
+                    type="button"
                 >
                     <Icon className="fill-white" />
                 </div>
@@ -170,9 +170,9 @@ const DesignSandbox = () => {
     function PlusButton() {
         return (
             <button
-                type="button"
                 aria-label="Add a card"
                 className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-grey bg-white transition-all ease-linear hover:border-grey-900 md:h-9 md:w-9"
+                type="button"
             >
                 <PlusIcon className="h-4 w-4 stroke-grey-800 stroke-2 group-hover:stroke-grey-900" />
             </button>
@@ -186,36 +186,36 @@ const DesignSandbox = () => {
         return (
             <div className="z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 text-sm shadow">
                 <CardMenuSection label="Primary" />
-                <CardMenuItem label="Image" desc="Upload, or embed with /image [url]" Icon={ImageCardIcon} />
-                <CardMenuItem label="Markdown" desc="Insert a Markdown editor card" Icon={MarkdownCardIcon} />
-                <CardMenuItem label="HTML" desc="Insert a raw HTML card" Icon={HtmlCardIcon} />
-                <CardMenuItem label="Gallery" desc="Create an image gallery" Icon={GalleryCardIcon} />
-                <CardMenuItem label="Divider" desc="Insert a dividing line" Icon={DividerCardIcon} />
-                <CardMenuItem label="Bookmark" desc="Embed a link as a visual bookmark" Icon={BookmarkCardIcon} />
-                <CardMenuItem label="Email content" desc="Only visible when delivered by email" Icon={EmailCardIcon} />
-                <CardMenuItem label="Email call to action" desc="Target free or paid members with a CTA" Icon={EmailCtaCardIcon} />
-                <CardMenuItem label="Public preview" desc="Attract signups with a public intro" Icon={PreviewCardIcon} />
-                <CardMenuItem label="Button" desc="Add a button to your post" Icon={ButtonCardIcon} />
-                <CardMenuItem label="Callout" desc="Info boxes that stand out" Icon={CalloutCardIcon} />
-                <CardMenuItem label="GIF" desc="Search and embed gifs" Icon={GifCardIcon} />
-                <CardMenuItem label="Toggle" desc="Add collapsible content" Icon={ToggleCardIcon} />
-                <CardMenuItem label="Video" desc="Upload and play a video" Icon={VideoCardIcon} />
-                <CardMenuItem label="Audio" desc="Upload and play an audio file" Icon={AudioCardIcon} />
-                <CardMenuItem label="File" desc="Upload a downloadable file" Icon={FileCardIcon} />
-                <CardMenuItem label="Product" desc="Add a product recommendation" Icon={ProductCardIcon} />
-                <CardMenuItem label="Header" desc="Add a bold section header" Icon={HeaderCardIcon} />
+                <CardMenuItem desc="Upload, or embed with /image [url]" Icon={ImageCardIcon} label="Image" />
+                <CardMenuItem desc="Insert a Markdown editor card" Icon={MarkdownCardIcon} label="Markdown" />
+                <CardMenuItem desc="Insert a raw HTML card" Icon={HtmlCardIcon} label="HTML" />
+                <CardMenuItem desc="Create an image gallery" Icon={GalleryCardIcon} label="Gallery" />
+                <CardMenuItem desc="Insert a dividing line" Icon={DividerCardIcon} label="Divider" />
+                <CardMenuItem desc="Embed a link as a visual bookmark" Icon={BookmarkCardIcon} label="Bookmark" />
+                <CardMenuItem desc="Only visible when delivered by email" Icon={EmailCardIcon} label="Email content" />
+                <CardMenuItem desc="Target free or paid members with a CTA" Icon={EmailCtaCardIcon} label="Email call to action" />
+                <CardMenuItem desc="Attract signups with a public intro" Icon={PreviewCardIcon} label="Public preview" />
+                <CardMenuItem desc="Add a button to your post" Icon={ButtonCardIcon} label="Button" />
+                <CardMenuItem desc="Info boxes that stand out" Icon={CalloutCardIcon} label="Callout" />
+                <CardMenuItem desc="Search and embed gifs" Icon={GifCardIcon} label="GIF" />
+                <CardMenuItem desc="Add collapsible content" Icon={ToggleCardIcon} label="Toggle" />
+                <CardMenuItem desc="Upload and play a video" Icon={VideoCardIcon} label="Video" />
+                <CardMenuItem desc="Upload and play an audio file" Icon={AudioCardIcon} label="Audio" />
+                <CardMenuItem desc="Upload a downloadable file" Icon={FileCardIcon} label="File" />
+                <CardMenuItem desc="Add a product recommendation" Icon={ProductCardIcon} label="Product" />
+                <CardMenuItem desc="Add a bold section header" Icon={HeaderCardIcon} label="Header" />
                 <CardMenuSection label="Embed" />
-                <CardMenuItem label="YouTube" desc="/youtube [video url]" Icon={YoutubeCardIcon} />
-                <CardMenuItem label="Twitter" desc="/twitter [tweet url]" Icon={TwitterCardIcon} />
-                <CardMenuItem label="Unsplash" desc="/unsplash [search-term or url]" Icon={UnsplashCardIcon} />
-                <CardMenuItem label="Vimeo" desc="/vimeo [video url]" Icon={VimeoCardIcon} />
-                <CardMenuItem label="CodePen" desc="/codepen [pen url]" Icon={CodepenCardIcon} />
-                <CardMenuItem label="Spotify" desc="/spotify [track or playlist url]" Icon={SpotifyCardIcon} />
-                <CardMenuItem label="SoundCloud" desc="/soundcloud [track or playlist url]" Icon={SoundcloudCardIcon} />
-                <CardMenuItem label="NFT" desc="/nft [opensea url]" Icon={NftCardIcon} />
-                <CardMenuItem label="Other..." desc="/embed [url]" Icon={OtherCardIcon} />
+                <CardMenuItem desc="/youtube [video url]" Icon={YoutubeCardIcon} label="YouTube" />
+                <CardMenuItem desc="/twitter [tweet url]" Icon={TwitterCardIcon} label="Twitter" />
+                <CardMenuItem desc="/unsplash [search-term or url]" Icon={UnsplashCardIcon} label="Unsplash" />
+                <CardMenuItem desc="/vimeo [video url]" Icon={VimeoCardIcon} label="Vimeo" />
+                <CardMenuItem desc="/codepen [pen url]" Icon={CodepenCardIcon} label="CodePen" />
+                <CardMenuItem desc="/spotify [track or playlist url]" Icon={SpotifyCardIcon} label="Spotify" />
+                <CardMenuItem desc="/soundcloud [track or playlist url]" Icon={SoundcloudCardIcon} label="SoundCloud" />
+                <CardMenuItem desc="/nft [opensea url]" Icon={NftCardIcon} label="NFT" />
+                <CardMenuItem desc="/embed [url]" Icon={OtherCardIcon} label="Other..." />
                 <CardMenuSection label="Snippets" />
-                <CardSnippetItem label="A random snippet" Icon={SnippetCardIcon} />
+                <CardSnippetItem Icon={SnippetCardIcon} label="A random snippet" />
             </div>
         );
     }
@@ -333,10 +333,10 @@ const DesignSandbox = () => {
                 </figure>
                 <form>
                     <input
-                        type='file'
                         accept='image/*'
-                        name="image"
                         hidden={true}
+                        name="image"
+                        type='file'
                     />
                 </form>
             </div>

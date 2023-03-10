@@ -40,15 +40,15 @@ const KoenigComposableEditor = ({
     };
 
     return (
-        <div className={`koenig-lexical ${className}`} ref={editorContainerRef}>
+        <div ref={editorContainerRef} className={`koenig-lexical ${className}`}>
             <RichTextPlugin
                 contentEditable={
                     <div ref={onRef} data-kg="editor">
                         <ContentEditable className="kg-prose" readOnly={readOnly} />
                     </div>
                 }
-                placeholder={placeholder || <EditorPlaceholder />}
                 ErrorBoundary={LexicalErrorBoundary}
+                placeholder={placeholder || <EditorPlaceholder />}
             />
             <OnChangePlugin onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}

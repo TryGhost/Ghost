@@ -7,11 +7,11 @@ export function ColorPicker({buttons = [], selectedName, onClick}) {
                 {buttons.map(({label, name, color}, index) => (
                     <ColorButton
                         key={index}
-                        onClick={onClick}
+                        color={color}
                         label={label}
                         name={name}
                         selectedName={selectedName}
-                        color={color}
+                        onClick={onClick}
                     />
                 ))}
             </ul>
@@ -24,10 +24,10 @@ export function ColorButton({onClick, label, name, color, selectedName}) {
     return (
         <li>
             <button
-                type="button"
-                className={`flex h-[3rem] w-[3rem] cursor-pointer items-center justify-center rounded-full border-2 ${isActive ? 'border-green' : 'border-white'}`}
-                onClick={() => onClick(name)}
                 aria-label={label}
+                className={`flex h-[3rem] w-[3rem] cursor-pointer items-center justify-center rounded-full border-2 ${isActive ? 'border-green' : 'border-white'}`}
+                type="button"
+                onClick={() => onClick(name)}
             >
                 <span
                     className={`bg-${color} h-6 w-6 rounded-full border-2 border-black/5`}

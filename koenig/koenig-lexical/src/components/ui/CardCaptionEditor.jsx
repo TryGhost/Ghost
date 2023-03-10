@@ -9,10 +9,10 @@ function CaptionInput({value, placeholder, onChange, readOnly, dataTestId}) {
             data-testid={dataTestId}
         >
             <KoenigCaptionEditor
-                readOnly={readOnly}
                 html={value}
-                setHtml={onChange}
                 placeholderText={placeholder}
+                readOnly={readOnly}
+                setHtml={onChange}
             />
         </div>
     );
@@ -21,13 +21,13 @@ function CaptionInput({value, placeholder, onChange, readOnly, dataTestId}) {
 function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoFocus = true}) {
     return (
         <TextInput
-            onChange={onChange}
-            value={value}
+            autoFocus={autoFocus}
             className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
+            data-testid={dataTestId}
             placeholder={placeholder}
             readOnly={readOnly}
-            data-testid={dataTestId}
-            autoFocus={autoFocus}
+            value={value}
+            onChange={onChange}
         />
     );
 }
@@ -35,8 +35,8 @@ function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoF
 function AltToggleButton({isEditingAlt, onClick}) {
     return (
         <button
-            name="alt-toggle-button"
             className={`absolute bottom-0 right-0 m-2 cursor-pointer rounded border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${isEditingAlt ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
+            name="alt-toggle-button"
             onClick={onClick}
         >
             Alt
@@ -73,8 +73,8 @@ export function CardCaptionEditor({
         return (
             <figcaption className="flex min-h-[40px] w-full p-2">
                 {isEditingAlt
-                    ? <AltTextInput value={altText} placeholder={altTextPlaceholder} onChange={setAltText} readOnly={readOnly} dataTestId={dataTestId} />
-                    : <CaptionInput value={caption} placeholder={captionPlaceholder} onChange={setCaption} readOnly={readOnly} dataTestId={dataTestId}/> }
+                    ? <AltTextInput dataTestId={dataTestId} placeholder={altTextPlaceholder} readOnly={readOnly} value={altText} onChange={setAltText} />
+                    : <CaptionInput dataTestId={dataTestId} placeholder={captionPlaceholder} readOnly={readOnly} value={caption} onChange={setCaption}/> }
                 {setAltText && <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />}
             </figcaption>
         );

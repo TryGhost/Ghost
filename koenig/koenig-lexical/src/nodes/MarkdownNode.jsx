@@ -26,12 +26,12 @@ function MarkdownNodeComponent({nodeKey, markdown}) {
 
     return (
         <MarkdownCard
-            nodeKey={nodeKey}
-            markdown={markdown}
-            updateMarkdown={updateMarkdown}
-            isEditing={cardContext.isEditing}
             imageUploader={fileUploader.useFileUpload}
+            isEditing={cardContext.isEditing}
+            markdown={markdown}
+            nodeKey={nodeKey}
             unsplashConf={cardConfig.unsplash}
+            updateMarkdown={updateMarkdown}
         />
     );
 }
@@ -71,15 +71,15 @@ export class MarkdownNode extends BaseMarkdownNode {
     decorate() {
         return (
             <KoenigCardWrapper
-                nodeKey={this.getKey()}
-                wrapperStyle="wide"
-                width={this.__cardWidth}
-                openInEditMode={this.__openInEditMode}
                 IndicatorIcon={MarkdownIndicatorIcon}
+                nodeKey={this.getKey()}
+                openInEditMode={this.__openInEditMode}
+                width={this.__cardWidth}
+                wrapperStyle="wide"
             >
                 <MarkdownNodeComponent
-                    nodeKey={this.getKey()}
                     markdown={this.__markdown}
+                    nodeKey={this.getKey()}
                 />
             </KoenigCardWrapper>
         );

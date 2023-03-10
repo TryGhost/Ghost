@@ -229,7 +229,7 @@ describe('Slash menu', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p><br /></p>
             `);
@@ -254,7 +254,7 @@ describe('Slash menu', async () => {
             await assertHTML(page, html`
                 <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p dir="ltr"><br /></p>
             `);
@@ -280,10 +280,10 @@ describe('Slash menu', async () => {
             // image card retains focus after insert
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image"></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image"></div>
                 </div>
                 <p><br /></p>
             `, {ignoreCardContents: true});
@@ -296,7 +296,7 @@ describe('Slash menu', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="image"></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image"></div>
                 </div>
                 <p><br /></p>
             `, {ignoreCardContents: true});

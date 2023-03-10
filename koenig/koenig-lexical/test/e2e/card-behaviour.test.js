@@ -28,12 +28,12 @@ describe('Card behaviour', async () => {
             await page.click('hr');
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -44,12 +44,12 @@ describe('Card behaviour', async () => {
             await page.click('[data-lexical-decorator]:nth-of-type(2) hr');
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -65,7 +65,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -81,7 +81,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -97,7 +97,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -174,11 +174,11 @@ describe('Card behaviour', async () => {
             // Neither card should be in editing mode right now
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="codeblock">
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="codeblock">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="codeblock">
                     </div>
                 </div>
             `, {ignoreCardContents: true});
@@ -199,7 +199,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="codeblock">
                         <div>
                             <pre><code class="language-python">import pandas as pd</code></pre>
                             <div><span>python</span></div>
@@ -207,7 +207,7 @@ describe('Card behaviour', async () => {
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="codeblock">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="codeblock">
                         <div>
                             <pre><code class="language-javascript">import React from "react"</code></pre>
                             <div><span>javascript</span></div>
@@ -242,7 +242,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="codeblock">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="codeblock">
                     </div>
                 </div>
                 <p><br /></p>
@@ -270,7 +270,7 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <p><br></p>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -282,7 +282,7 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <p><br></p>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -307,12 +307,12 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -323,12 +323,12 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -348,7 +348,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -359,7 +359,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -383,28 +383,12 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
-                        <hr>
-                    </div>
-                </div>
-                <p><br></p>
-            `);
-
-            await page.keyboard.press('ArrowRight');
-
-            await assertHTML(page, html`
-                <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
-                        <hr>
-                    </div>
-                </div>
-                <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -415,12 +399,28 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+
+            await page.keyboard.press('ArrowRight');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -457,7 +457,7 @@ describe('Card behaviour', async () => {
                     <span data-lexical-text="true">Second line</span>
                 </p>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p dir="ltr"><br /></p>
             `);
@@ -489,10 +489,10 @@ describe('Card behaviour', async () => {
             // sanity check, second card is selected
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p><br /></p>
             `);
@@ -502,10 +502,10 @@ describe('Card behaviour', async () => {
             // first card is now selected
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p><br /></p>
             `);
@@ -566,7 +566,7 @@ describe('Card behaviour', async () => {
             // card is selected
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p dir="ltr">
                     <span data-lexical-text="true">
@@ -621,7 +621,7 @@ describe('Card behaviour', async () => {
             // card is selected
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p dir="ltr">
                     <span data-lexical-text="true">First line</span>
@@ -649,7 +649,7 @@ describe('Card behaviour', async () => {
             // sanity check
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p dir="ltr">
                     <span data-lexical-text="true">First line</span>
@@ -682,10 +682,10 @@ describe('Card behaviour', async () => {
             // sanity check, first card is selected
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p><br /></p>
             `);
@@ -695,10 +695,10 @@ describe('Card behaviour', async () => {
             // first card is now selected
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p><br /></p>
             `);
@@ -763,7 +763,7 @@ describe('Card behaviour', async () => {
                     <span data-lexical-text="true">Second line after break</span>
                 </p>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule"><hr /></div>
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
                 </div>
                 <p><br /></p>
             `);
@@ -777,7 +777,7 @@ describe('Card behaviour', async () => {
             // sanity check
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -788,7 +788,7 @@ describe('Card behaviour', async () => {
             // should create a new paragraph and move cursor to it
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -812,7 +812,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -823,7 +823,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -852,7 +852,7 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -882,12 +882,12 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -898,7 +898,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -934,7 +934,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -973,7 +973,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -996,7 +996,7 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -1036,7 +1036,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -1067,7 +1067,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -1097,7 +1097,7 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <p><br></p>
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -1115,7 +1115,7 @@ describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="true" data-kg-card-editing="false" data-kg-card="horizontalrule">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
                         <hr>
                     </div>
                 </div>
@@ -1306,8 +1306,8 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div
-                        data-kg-card-selected="true"
                         data-kg-card-editing="false"
+                        data-kg-card-selected="true"
                         data-kg-card="horizontalrule"
                     >
                         <hr />
@@ -1423,8 +1423,8 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div
-                        data-kg-card-selected="true"
                         data-kg-card-editing="false"
+                        data-kg-card-selected="true"
                         data-kg-card="horizontalrule"
                     >
                         <hr />
@@ -1432,8 +1432,8 @@ describe('Card behaviour', async () => {
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div
-                        data-kg-card-selected="false"
                         data-kg-card-editing="false"
+                        data-kg-card-selected="false"
                         data-kg-card="horizontalrule"
                     >
                         <hr />
@@ -1455,8 +1455,8 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div
-                        data-kg-card-selected="true"
                         data-kg-card-editing="false"
+                        data-kg-card-selected="true"
                         data-kg-card="horizontalrule"
                     >
                         <hr />
@@ -1499,8 +1499,8 @@ describe('Card behaviour', async () => {
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div
-                        data-kg-card-selected="false"
                         data-kg-card-editing="false"
+                        data-kg-card-selected="false"
                         data-kg-card="horizontalrule"
                     >
                         <hr />
@@ -1508,8 +1508,8 @@ describe('Card behaviour', async () => {
                 </div>
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div
-                        data-kg-card-selected="true"
                         data-kg-card-editing="false"
+                        data-kg-card-selected="true"
                         data-kg-card="horizontalrule"
                     >
                         <hr />
@@ -1537,8 +1537,8 @@ describe('Card behaviour', async () => {
                 <p dir="ltr"><span data-lexical-text="true">Second</span></p>
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div
-                        data-kg-card-selected="true"
                         data-kg-card-editing="false"
+                        data-kg-card-selected="true"
                         data-kg-card="horizontalrule"
                     >
                         <hr />

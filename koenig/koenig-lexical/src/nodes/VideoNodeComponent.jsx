@@ -192,37 +192,37 @@ export function VideoNodeComponent({
     return (
         <>
             <VideoCard
-                thumbnail={previewThumbnail || thumbnail}
-                thumbnailMimeTypes={fileUploader.fileTypes.image.mimeTypes}
-                customThumbnail={customThumbnail}
-                onCustomThumbnailChange={onCustomThumbnailChange}
-                onRemoveCustomThumbnail={onRemoveCustomThumbnail}
-                fileInputRef={videoFileInputRef}
-                onVideoFileChange={onVideoFileChange}
                 caption={caption}
-                onCaptionChange={onCaptionChange}
-                isLoopChecked={isLoopChecked}
-                onLoopChange={onLoopChange}
-                totalDuration={totalDuration}
-                videoUploader={videoUploader}
-                videoMimeTypes={videoMimeTypes}
-                customThumbnailUploader={customThumbnailUploader}
-                isSelected={cardContext.isSelected}
-                isEditing={cardContext.isEditing}
                 cardWidth={cardWidth}
-                onCardWidthChange={onCardWidthChange}
-                videoUploadErrors={[...thumbnailUploader.errors, ...metadataExtractionErrors, ...videoUploader.errors]}
-                videoDragHandler={videoDragHandler}
+                customThumbnail={customThumbnail}
+                customThumbnailUploader={customThumbnailUploader}
+                fileInputRef={videoFileInputRef}
+                isEditing={cardContext.isEditing}
+                isLoopChecked={isLoopChecked}
+                isSelected={cardContext.isSelected}
+                thumbnail={previewThumbnail || thumbnail}
                 thumbnailDragHandler={thumbnailDragHandler}
+                thumbnailMimeTypes={fileUploader.fileTypes.image.mimeTypes}
+                totalDuration={totalDuration}
+                videoDragHandler={videoDragHandler}
+                videoMimeTypes={videoMimeTypes}
+                videoUploader={videoUploader}
+                videoUploadErrors={[...thumbnailUploader.errors, ...metadataExtractionErrors, ...videoUploader.errors]}
+                onCaptionChange={onCaptionChange}
+                onCardWidthChange={onCardWidthChange}
+                onCustomThumbnailChange={onCustomThumbnailChange}
+                onLoopChange={onLoopChange}
+                onRemoveCustomThumbnail={onRemoveCustomThumbnail}
+                onVideoFileChange={onVideoFileChange}
             />
             <ActionToolbar
-                isVisible={isCardPopulated && cardContext.isSelected && !cardContext.isEditing}
                 data-kg-card-toolbar="video"
+                isVisible={isCardPopulated && cardContext.isSelected && !cardContext.isEditing}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem label="Edit" icon="edit" isActive={false} onClick={handleToolbarEdit} dataTestId="edit-video-card" />
+                    <ToolbarMenuItem dataTestId="edit-video-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem label="Snippet" icon="snippet" isActive={false} />
+                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
                 </ToolbarMenu>
             </ActionToolbar>
         </>

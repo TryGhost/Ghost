@@ -36,9 +36,9 @@ const UnsplashPlugin = ({nodeKey, handleModalClose}) => {
 
     return (
         <UnsplashModal
+            unsplashConf={cardConfig.unsplash}
             onClose={onClose}
             onImageInsert={insertImageToNode}
-            unsplashConf={cardConfig.unsplash}
         />
     );
 };
