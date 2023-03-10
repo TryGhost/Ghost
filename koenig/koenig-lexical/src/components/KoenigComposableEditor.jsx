@@ -50,7 +50,7 @@ const KoenigComposableEditor = ({
                 ErrorBoundary={LexicalErrorBoundary}
                 placeholder={placeholder || <EditorPlaceholder />}
             />
-            <OnChangePlugin onChange={_onChange} />
+            <OnChangePlugin ignoreSelectionChange={true} onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
