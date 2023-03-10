@@ -38,6 +38,7 @@ class StripeMocker {
         this.prices = [];
         this.products = [];
 
+        // Fix for now, because of importing order breaking some things when they are not initialized
         members = require('../../core/server/services/members');
         stripeService = require('../../core/server/services/stripe');
         tiers = require('../../core/server/services/tiers');
@@ -99,7 +100,7 @@ class StripeMocker {
     }
 
     async updateSubscription({id, ...overrides}) {
-        const [_, subscription] = this.#postData(this.subscriptions, id, overrides, 'subscriptions');
+        const subscription = this.#postData(this.subscriptions, id, overrides, 'subscriptions')[1];
 
         // Send update webhook
         await this.sendWebhook({
@@ -268,7 +269,7 @@ class StripeMocker {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri, body) => {
+            .reply((uri) => {
                 const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
                 if (!match) {
@@ -310,7 +311,7 @@ class StripeMocker {
             .persist()
             .post(/v1\/.*/)
             .reply((uri, body) => {
-                const [match, resource, id, action] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
 
                 if (!match) {
                     return [500];
@@ -346,8 +347,8 @@ class StripeMocker {
         nock('https://api.stripe.com')
             .persist()
             .delete(/v1\/.*/)
-            .reply((uri, body) => {
-                const [match, resource, id, action] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
+            .reply((uri) => {
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
 
                 if (!match) {
                     return [500];
