@@ -295,11 +295,13 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
             .getByRole('button', {name: 'Archive'})
             .click();
 
-        // waiting for offer to be archived
-        await expect(await page.locator('.modal-content')).toBeHidden();
-
-        await expect(await page.getByTestId('offers-type-select')).toBeVisible();
-        await page.getByTestId('offers-type-select').click();
+        // TODO: Use a more resilient selector
+        const statusDropdown = await page.getByRole('button', {name: 'Archived offers'});
+        await statusDropdown.waitFor({
+            state: 'visible',
+            timeout: 1000
+        });
+        await statusDropdown.click();
         await page.getByRole('option', {name: 'Active offers'}).click();
     }
 
