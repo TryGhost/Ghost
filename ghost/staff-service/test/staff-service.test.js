@@ -449,8 +449,13 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
                 ).should.be.true();
+
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Source: Twitter'))
+                    sinon.match.has('html', sinon.match('Source'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Twitter'))
                 ).should.be.true();
 
                 // check attribution page
@@ -509,7 +514,12 @@ describe('StaffService', function () {
 
                 // check attribution text
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Source: Twitter'))
+                    sinon.match.has('html', sinon.match('Twitter'))
+                ).should.be.true();
+
+                // check attribution text
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Source'))
                 ).should.be.true();
 
                 // check attribution page
