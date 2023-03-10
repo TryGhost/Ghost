@@ -1,9 +1,10 @@
 const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
-const Promise = require('bluebird');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
+const {sequence} = require('@tryghost/promise');
+
 const SchedulingDefault = require('../../../../core/server/adapters/scheduling/SchedulingDefault');
 const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
@@ -86,9 +87,9 @@ describe('Schedules API', function () {
             }]
         }));
 
-        const result = await Promise.mapSeries(resources, function (post) {
+        const result = await sequence(resources.map(post => () => {
             return models.Post.add(post, {context: {internal: true}});
-        });
+        }));
 
         result.length.should.eql(5);
     });

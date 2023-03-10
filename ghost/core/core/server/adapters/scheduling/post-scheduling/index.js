@@ -1,4 +1,4 @@
-const Promise = require('bluebird');
+const {sequence} = require('@tryghost/promise');
 const events = require('../../../lib/common/events');
 const localUtils = require('../utils');
 const PostScheduler = require('./post-scheduler');
@@ -13,7 +13,8 @@ const loadScheduledResources = async function () {
     const SCHEDULED_RESOURCES = ['post', 'page'];
 
     // Fetches all scheduled resources(posts/pages) with default API
-    const results = await Promise.mapSeries(SCHEDULED_RESOURCES, async (resourceType) => {
+
+    const results = await sequence(SCHEDULED_RESOURCES.map(resourceType => async () => {
         const result = await api.schedules.getScheduled.query({
             options: {
                 resource: resourceType
@@ -21,7 +22,7 @@ const loadScheduledResources = async function () {
         });
 
         return result[resourceType] || [];
-    });
+    }));
 
     return SCHEDULED_RESOURCES.reduce(function (obj, entry, index) {
         return Object.assign(obj, {

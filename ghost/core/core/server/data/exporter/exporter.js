@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const db = require('../../data/db');
 const commands = require('../schema').commands;
 const ghostVersion = require('@tryghost/version');
@@ -36,10 +35,6 @@ const doExport = async function doExport(options) {
     try {
         const tables = await commands.getTables(options.transacting);
 
-        const tableData = await Promise.mapSeries(tables, function (tableName) {
-            return exportTable(tableName, options);
-        });
-
         const exportData = {
             meta: {
                 exported_on: new Date().getTime(),
@@ -50,13 +45,15 @@ const doExport = async function doExport(options) {
             }
         };
 
-        tables.forEach((name, i) => {
-            if (name === 'settings') {
-                exportData.data[name] = getSettingsTableData(tableData[i]);
+        for (const table of tables) {
+            const data = await exportTable(table, options);
+
+            if (table === 'settings') {
+                exportData.data[table] = getSettingsTableData(data);
             } else {
-                exportData.data[name] = tableData[i];
+                exportData.data[table] = data;
             }
-        });
+        }
 
         return exportData;
     } catch (err) {

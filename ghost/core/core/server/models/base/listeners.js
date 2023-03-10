@@ -3,7 +3,6 @@ const _ = require('lodash');
 const models = require('../../models');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const Promise = require('bluebird');
 
 // Listen to settings.timezone.edited and settings.notifications.edited to bind extra logic to settings, similar to the bridge and member service
 const events = require('../../lib/common/events');
@@ -46,7 +45,7 @@ events.on('settings.timezone.edited', function (settingModel, options) {
                 return;
             }
 
-            await Promise.mapSeries(results, async (post) => {
+            for (const post of results) {
                 const newPublishedAtMoment = moment(post.get('published_at')).add(timezoneOffsetDiff, 'minutes');
 
                 /**
@@ -73,7 +72,7 @@ events.on('settings.timezone.edited', function (settingModel, options) {
                         err
                     }));
                 }
-            });
+            }
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 err: err,

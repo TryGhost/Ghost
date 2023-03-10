@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('test:dbUtils');
 
 // Utility Packages
 const fs = require('fs-extra');
-const Promise = require('bluebird');
 const KnexMigrator = require('knex-migrator');
 const knexMigrator = new KnexMigrator();
 const DatabaseInfo = require('@tryghost/database-info');
@@ -126,46 +125,42 @@ const forceReinit = async () => {
  * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
  * Sqlite3 has no truncate command.
  */
-const truncateAll = () => {
+const truncateAll = async () => {
     debug('Database teardown');
     urlServiceUtils.reset();
 
     const tables = schemaTables.concat(['migrations']);
 
     if (module.exports.isSQLite()) {
-        return Promise
-            .mapSeries(tables, function createTable(table) {
-                return (async function () {
-                    const [foreignKeysEnabled] = await db.knex.raw('PRAGMA foreign_keys;');
-                    if (foreignKeysEnabled.foreign_keys) {
-                        await db.knex.raw('PRAGMA foreign_keys = OFF;');
-                    }
-                    await db.knex.raw('DELETE FROM ' + table + ';');
-                    if (foreignKeysEnabled.foreign_keys) {
-                        await db.knex.raw('PRAGMA foreign_keys = ON;');
-                    }
-                })();
-            })
-            .catch(function (err) {
+        for (const table of tables) {
+            try {
+                const [foreignKeysEnabled] = await db.knex.raw('PRAGMA foreign_keys;');
+                if (foreignKeysEnabled.foreign_keys) {
+                    await db.knex.raw('PRAGMA foreign_keys = OFF;');
+                }
+                await db.knex.raw('DELETE FROM ' + table + ';');
+                if (foreignKeysEnabled.foreign_keys) {
+                    await db.knex.raw('PRAGMA foreign_keys = ON;');
+                }
+            } catch (err) {
                 // CASE: table does not exist
                 if (err.errno === 1) {
                     return Promise.resolve();
                 }
 
                 throw err;
-            })
-            .finally(() => {
+            } finally {
                 debug('Database teardown end');
-            });
+            }
+        }
     }
 
     return db.knex.transaction(function (trx) {
         return db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx)
-            .then(function () {
-                return Promise
-                    .each(tables, function createTable(table) {
-                        return db.knex.raw('TRUNCATE ' + table + ';').transacting(trx);
-                    });
+            .then(async function () {
+                for (const table of tables) {
+                    await db.knex.raw('TRUNCATE ' + table + ';').transacting(trx);
+                }
             })
             .then(function () {
                 return db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
