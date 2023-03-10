@@ -8,7 +8,6 @@ const urlUtils = require('../../../core/shared/url-utils');
 const imageTransform = require('@tryghost/image-transform');
 const sinon = require('sinon');
 const storage = require('../../../core/server/adapters/storage');
-const sleep = require('../../utils/sleep');
 const {anyErrorId} = matchers;
 const {imageSize} = require('../../../core/server/lib/image');
 const configUtils = require('../../utils/configUtils');
