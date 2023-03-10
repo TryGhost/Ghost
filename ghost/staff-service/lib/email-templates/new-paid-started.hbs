@@ -48,14 +48,6 @@
                                                   <p class="text-link" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #394047; font-weight: 400;">{{memberData.email}}</p>
                                                 {{/if}}
                                                 <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Subscription started on {{subscriptionData.startedOn}} </p>
-                                                {{#if referrerSource}}
-                                                  <p class="text-link" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Source: {{referrerSource}}</p>
-                                                {{/if}}
-                                                {{#if attributionTitle}}
-                                                  <p class="text-link" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">
-                                                    Page: <a href="{{attributionUrl}}">{{attributionTitle}}</a>
-                                                  </p>
-                                                {{/if}}
                                             </td>
                                         </tr>
                                     </table>
@@ -65,7 +57,7 @@
                                 <td style="vertical-align: top; padding-top: 0; padding-right: 16px; padding-bottom: 16px; padding-left: 16px;">
                                     <hr style="border-bottom: 2px solid #F4F4F5; margin-top: 0; margin-bottom: 16px;" />
                                     <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Tier</p>
-                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">{{tierData.name}}
+                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">{{tierData.name}}
                                       {{#if tierData.details}} <span style="font-weight: normal; color:#3A464C;"> - {{tierData.details}}</span>{{/if}}
                                       </p>
                                 </td>
@@ -74,7 +66,22 @@
                             <tr>
                                 <td style="vertical-align: top; padding-top: 0; padding-right: 16px; padding-bottom: 16px; padding-left: 16px;">
                                     <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Offer</p>
-                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">{{offerData.name}} <span style="font-weight: normal; color:#3A464C;"> - {{offerData.details}}</span></p>
+                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">{{offerData.name}} <span style="font-weight: normal; color:#3A464C;"> - {{offerData.details}}</span></p>
+                                </td>
+                            </tr>
+                            {{/if}}
+                            {{#if referrerSource}}
+                            <tr>
+                                <td style="vertical-align: top; padding-top: 0; padding-right: 16px; padding-bottom: 16px; padding-left: 16px;">
+                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Signup Info</p>
+                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">Source
+                                        <span style="font-weight: normal; color:#3A464C;"> - {{referrerSource}}</span>
+                                    </p>
+                                    {{#if attributionTitle}}
+                                      <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">Page
+                                          <span style="font-weight: normal; color:#3A464C;"> -  <a href="{{attributionUrl}}" style="font-weight: normal; color:#3A464C;text-decoration:none">{{attributionTitle}}</a></span>
+                                      </p>
+                                    {{/if}}
                                 </td>
                             </tr>
                             {{/if}}
