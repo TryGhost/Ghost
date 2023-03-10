@@ -1,6 +1,6 @@
-import {useLayoutEffect} from 'react';
 import useMovable from './useMovable.js';
 import {debounce} from 'lodash';
+import {useLayoutEffect} from 'react';
 
 const CARD_SPACING = 20;
 const MIN_RIGHT_SPACING = 20;

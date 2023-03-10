@@ -1,5 +1,5 @@
-import {ListItemNode, ListNode} from '@lexical/list';
 import {LinkNode} from '@lexical/link';
+import {ListItemNode, ListNode} from '@lexical/list';
 
 const BASIC_NODES = [
     ListNode,

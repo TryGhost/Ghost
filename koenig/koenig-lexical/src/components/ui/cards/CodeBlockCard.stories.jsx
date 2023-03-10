@@ -1,6 +1,6 @@
 import React from 'react';
-import {CodeBlockCard} from './CodeBlockCard';
 import {CardWrapper} from './../CardWrapper';
+import {CodeBlockCard} from './CodeBlockCard';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

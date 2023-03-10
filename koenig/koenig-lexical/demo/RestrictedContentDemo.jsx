@@ -1,13 +1,13 @@
-import React from 'react';
-import {KoenigComposer, KoenigComposableEditor, RestrictContentPlugin} from '../src';
 import FloatingButton from './components/FloatingButton';
-import {useState} from 'react';
-import Watermark from './components/Watermark';
-import {useFileUpload, fileTypes} from './utils/useFileUpload';
+import React from 'react';
 import Sidebar from './components/Sidebar';
-import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
+import Watermark from './components/Watermark';
 import {$getRoot, $isDecoratorNode} from 'lexical';
+import {KoenigComposableEditor, KoenigComposer, RestrictContentPlugin} from '../src';
+import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
+import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {useLocation} from 'react-router-dom';
+import {useState} from 'react';
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders}

@@ -1,5 +1,5 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {ReactComponent as ArrowDownIcon} from '../../../assets/icons/kg-toggle-arrow.svg';
 
 export function ToggleCard({isEditing, header, headerPlaceholder, content, contentPlaceholder}) {

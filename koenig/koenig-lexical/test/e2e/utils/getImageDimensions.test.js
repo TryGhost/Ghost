@@ -1,7 +1,7 @@
-import {afterAll, beforeAll, beforeEach, describe, test, expect} from 'vitest';
-import {startApp, initialize, focusEditor} from '../../utils/e2e';
-import {getImageDimensions} from '../../../src/utils/getImageDimensions'; 
 import path from 'path';
+import {afterAll, beforeAll, beforeEach, describe, expect, test} from 'vitest';
+import {focusEditor, initialize, startApp} from '../../utils/e2e'; 
+import {getImageDimensions} from '../../../src/utils/getImageDimensions';
 
 describe('Image card', async () => {
     let app;

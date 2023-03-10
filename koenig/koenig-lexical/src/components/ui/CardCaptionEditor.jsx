@@ -1,6 +1,6 @@
+import KoenigCaptionEditor from '../KoenigCaptionEditor';
 import React from 'react';
 import {TextInput} from './TextInput';
-import KoenigCaptionEditor from '../KoenigCaptionEditor';
 
 function CaptionInput({value, placeholder, onChange, readOnly, dataTestId}) {
     return (

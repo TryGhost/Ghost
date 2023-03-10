@@ -1,8 +1,8 @@
 import {
     $createNodeSelection,
-    $setSelection,
+    $createParagraphNode,
     $isParagraphNode,
-    $createParagraphNode
+    $setSelection
 } from 'lexical';
 
 export const $insertAndSelectNode = ({selectedNode, newNode}) => {

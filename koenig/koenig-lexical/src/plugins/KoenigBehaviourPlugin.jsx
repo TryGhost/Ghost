@@ -1,36 +1,36 @@
 import React from 'react';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {$createLinkNode} from '@lexical/link';
 import {
+    $createParagraphNode,
+    $createTextNode,
+    $getRoot,
     $getSelection,
     $isDecoratorNode,
     $isElementNode,
-    $isParagraphNode,
     $isNodeSelection,
+    $isParagraphNode,
     $isRangeSelection,
     $isTextNode,
     $setSelection,
-    $createTextNode,
-    $createParagraphNode,
     COMMAND_PRIORITY_HIGH,
+    INSERT_PARAGRAPH_COMMAND,
     KEY_ARROW_DOWN_COMMAND,
-    KEY_ARROW_UP_COMMAND,
     KEY_ARROW_LEFT_COMMAND,
     KEY_ARROW_RIGHT_COMMAND,
+    KEY_ARROW_UP_COMMAND,
     KEY_BACKSPACE_COMMAND,
     KEY_DELETE_COMMAND,
-    KEY_TAB_COMMAND,
-    PASTE_COMMAND,
-    INSERT_PARAGRAPH_COMMAND,
     KEY_MODIFIER_COMMAND,
-    $getRoot
+    KEY_TAB_COMMAND,
+    PASTE_COMMAND
 } from 'lexical';
 import {
     $isAtStartOfDocument,
     $selectDecoratorNode
 } from '../utils/';
-import {$createLinkNode} from '@lexical/link';
-import {mergeRegister} from '@lexical/utils';
 import {$isListItemNode} from '@lexical/list';
+import {mergeRegister} from '@lexical/utils';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
 

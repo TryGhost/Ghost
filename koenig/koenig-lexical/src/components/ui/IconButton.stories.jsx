@@ -1,7 +1,7 @@
 import React from 'react';
 
-import {IconButton} from './IconButton';
 import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
+import {IconButton} from './IconButton';
 
 const story = {
     title: 'Generic/Icon button',

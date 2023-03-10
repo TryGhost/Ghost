@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {startApp, focusEditor, assertHTML, html, initialize, isMac, pasteText} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, isMac, pasteText, startApp} from '../../utils/e2e';
 
 describe('Html Output Plugin', async function () {
     let app;

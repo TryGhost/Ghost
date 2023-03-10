@@ -1,6 +1,6 @@
 import React from 'react';
-import {FileCard} from './FileCard';
 import {CardWrapper} from './../CardWrapper';
+import {FileCard} from './FileCard';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

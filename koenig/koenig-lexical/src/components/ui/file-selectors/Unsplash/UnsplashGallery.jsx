@@ -1,6 +1,6 @@
 import React from 'react';
-import UnsplashZoomed from './UnsplashZoomed';
 import UnsplashImage from './UnsplashImage';
+import UnsplashZoomed from './UnsplashZoomed';
 
 function UnsplashGalleryLoading() {
     return (

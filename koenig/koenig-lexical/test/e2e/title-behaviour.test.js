@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
-import {startApp, initialize, focusEditor, assertHTML, html, assertSelection} from '../utils/e2e';
+import {assertHTML, assertSelection, focusEditor, html, initialize, startApp} from '../utils/e2e';
 
 describe('Title behaviour (ExternalControlPlugin)', async () => {
     let app;

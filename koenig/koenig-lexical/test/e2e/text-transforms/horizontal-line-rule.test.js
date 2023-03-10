@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
 
 describe('Renders horizontal line rule', async () => {
     let app;

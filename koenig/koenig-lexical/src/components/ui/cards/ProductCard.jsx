@@ -1,8 +1,8 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-import {MediaPlaceholder} from '../MediaPlaceholder';
+import React from 'react';
 import {Button} from '../Button';
-import {SettingsPanel, InputSetting, ToggleSetting, SettingsDivider} from '../SettingsPanel';
+import {InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ReactComponent as StarIcon} from '../../../assets/icons/kg-star.svg';
 
 export function ProductCard({isEditing, image, title, titlePlaceholder, desc, descPlaceholder, button, buttonText, buttonUrl, rating}) {

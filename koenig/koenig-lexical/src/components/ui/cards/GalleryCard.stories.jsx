@@ -1,6 +1,6 @@
 import React from 'react';
-import {GalleryCard} from './GalleryCard';
 import {CardWrapper} from './../CardWrapper';
+import {GalleryCard} from './GalleryCard';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

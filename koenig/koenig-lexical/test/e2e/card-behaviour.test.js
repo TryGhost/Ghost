@@ -1,6 +1,6 @@
-import {beforeAll, afterAll, beforeEach, describe, test} from 'vitest';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {assertHTML, assertSelection, focusEditor, html, initialize, pasteText, startApp} from '../utils/e2e';
 import {expect} from '@playwright/test';
-import {startApp, initialize, focusEditor, assertHTML, html, assertSelection, pasteText} from '../utils/e2e';
 
 describe('Card behaviour', async () => {
     let app;

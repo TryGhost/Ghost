@@ -1,11 +1,11 @@
 import React from 'react';
 
-import {SettingsPanel, ToggleSetting, InputSetting, DropdownSetting, ColorPickerSetting, SettingsDivider, ButtonGroupSetting, ThumbnailSetting} from './SettingsPanel';
+import {ButtonGroupSetting, ColorPickerSetting, DropdownSetting, InputSetting, SettingsDivider, SettingsPanel, ThumbnailSetting, ToggleSetting} from './SettingsPanel';
+import {ReactComponent as CenterAlignIcon} from '../../assets/icons/kg-align-center.svg';
+import {ReactComponent as ImageFullIcon} from '../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImageRegularIcon} from '../../assets/icons/kg-img-regular.svg';
 import {ReactComponent as ImageWideIcon} from '../../assets/icons/kg-img-wide.svg';
-import {ReactComponent as ImageFullIcon} from '../../assets/icons/kg-img-full.svg';
 import {ReactComponent as LeftAlignIcon} from '../../assets/icons/kg-align-left.svg';
-import {ReactComponent as CenterAlignIcon} from '../../assets/icons/kg-align-center.svg';
 
 const story = {
     title: 'Settings panel/Settings panel',

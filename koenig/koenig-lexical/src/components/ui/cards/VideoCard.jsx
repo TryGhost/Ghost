@@ -1,15 +1,15 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
+import {ButtonGroupSetting, SettingsPanel, ThumbnailSetting, ToggleSetting} from '../SettingsPanel';
 import {CardCaptionEditor} from '../CardCaptionEditor';
-import {MediaPlaceholder} from '../MediaPlaceholder';
-import {MediaPlayer} from '../MediaPlayer';
-import {SettingsPanel, ToggleSetting, ButtonGroupSetting, ThumbnailSetting} from '../SettingsPanel';
+import {ReactComponent as ImageFullIcon} from '../../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImageRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
 import {ReactComponent as ImageWideIcon} from '../../../assets/icons/kg-img-wide.svg';
-import {ReactComponent as ImageFullIcon} from '../../../assets/icons/kg-img-full.svg';
+import {MediaPlaceholder} from '../MediaPlaceholder';
+import {MediaPlayer} from '../MediaPlayer';
 import {ReactComponent as PlayIcon} from '../../../assets/icons/kg-play.svg';
-import {openFileSelection} from '../../../utils/openFileSelection';
 import {ProgressBar} from '../ProgressBar';
+import {openFileSelection} from '../../../utils/openFileSelection';
 
 function PopulatedVideoCard({
     thumbnail,

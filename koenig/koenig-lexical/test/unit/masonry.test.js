@@ -1,6 +1,6 @@
-import {describe, it} from 'vitest';
-import UnsplashService from '../../src/utils/services/unsplash';
 import MasonryLayout from '../../src/utils/masonry';
+import UnsplashService from '../../src/utils/services/unsplash';
+import {describe, it} from 'vitest';
 import {fetch} from 'cross-fetch';
 global.fetch = fetch; // polyfill to make fetch work in node
 

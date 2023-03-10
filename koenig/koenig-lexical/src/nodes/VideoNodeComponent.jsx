@@ -1,14 +1,14 @@
-import React, {useState} from 'react';
-import {$getNodeByKey} from 'lexical';
-import KoenigComposerContext from '../context/KoenigComposerContext';
-import {VideoCard} from '../components/ui/cards/VideoCard';
 import CardContext from '../context/CardContext';
-import {openFileSelection} from '../utils/openFileSelection';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import KoenigComposerContext from '../context/KoenigComposerContext';
+import React, {useState} from 'react';
 import extractVideoMetadata from '../utils/extractVideoMetadata';
 import useDragAndDrop from '../hooks/useDragAndDrop';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {VideoCard} from '../components/ui/cards/VideoCard';
+import {openFileSelection} from '../utils/openFileSelection';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function VideoNodeComponent({
     nodeKey,

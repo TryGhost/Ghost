@@ -1,8 +1,8 @@
 import React from 'react';
-import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
-import {$generateNodesFromDOM, $generateHtmlFromNodes} from '@lexical/html';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {$generateHtmlFromNodes, $generateNodesFromDOM} from '@lexical/html';
 import {$getRoot, $insertNodes} from 'lexical';
+import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const HtmlOutputPlugin = ({html = '', setHtml}) => {
     const [editor] = useLexicalComposerContext();

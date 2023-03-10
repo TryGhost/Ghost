@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {startApp, initialize, focusEditor, assertHTML, html, pasteText} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, pasteText, startApp} from '../../utils/e2e';
 
 describe('Links', async () => {
     let app;

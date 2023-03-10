@@ -1,6 +1,6 @@
 import React from 'react';
-import {EmailCtaCard} from './EmailCtaCard';
 import {CardWrapper} from './../CardWrapper';
+import {EmailCtaCard} from './EmailCtaCard';
 import {ReactComponent as EmailIndicatorIcon} from '../../../assets/icons/kg-indicator-email.svg';
 
 const displayOptions = {

@@ -1,13 +1,13 @@
-import {ListItemNode, ListNode} from '@lexical/list';
-import {HeadingNode, QuoteNode} from '@lexical/rich-text';
-import {LinkNode} from '@lexical/link';
 import {AsideNode} from './AsideNode';
-import {HorizontalRuleNode} from './HorizontalRuleNode';
-import {CodeBlockNode} from './CodeBlockNode';
 import {AudioNode} from './AudioNode';
-import {VideoNode} from './VideoNode';
+import {CodeBlockNode} from './CodeBlockNode';
+import {HeadingNode, QuoteNode} from '@lexical/rich-text';
+import {HorizontalRuleNode} from './HorizontalRuleNode';
 import {ImageNode} from './ImageNode';
+import {LinkNode} from '@lexical/link';
+import {ListItemNode, ListNode} from '@lexical/list';
 import {MarkdownNode} from './MarkdownNode';
+import {VideoNode} from './VideoNode';
 
 const DEFAULT_NODES = [
     HeadingNode,

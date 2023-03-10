@@ -1,16 +1,16 @@
+import {$createCodeBlockNode, $isCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
+import {$createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
+import {$createImageNode, $isImageNode, ImageNode} from '../nodes/ImageNode';
+import {$createNodeSelection, $setSelection} from 'lexical';
 import {
     HEADING,
     ORDERED_LIST,
     QUOTE,
-    UNORDERED_LIST,
     TEXT_FORMAT_TRANSFORMERS,
-    TEXT_MATCH_TRANSFORMERS
+    TEXT_MATCH_TRANSFORMERS,
+    UNORDERED_LIST
 } from '@lexical/markdown';
 import {MarkdownShortcutPlugin as LexicalMarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
-import {$createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
-import {$isCodeBlockNode, $createCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
-import {$isImageNode, $createImageNode, ImageNode} from '../nodes/ImageNode';
-import {$createNodeSelection, $setSelection} from 'lexical';
 
 export const HR = {
     dependencies: [HorizontalRuleNode],

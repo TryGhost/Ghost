@@ -1,5 +1,5 @@
-import {ReactComponent as UnsplashHeartIcon} from '../../../../assets/icons/kg-unsplash-heart.svg';
 import {ReactComponent as DownloadIcon} from '../../../../assets/icons/kg-download.svg';
+import {ReactComponent as UnsplashHeartIcon} from '../../../../assets/icons/kg-unsplash-heart.svg';
 
 const BUTTON_ICONS = {
     heart: UnsplashHeartIcon,

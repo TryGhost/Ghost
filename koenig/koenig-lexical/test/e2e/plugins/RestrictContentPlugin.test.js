@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, describe, test} from 'vitest';
-import {startApp, focusEditor, assertHTML, html, initialize, pasteText, pasteHtml, pasteLexical} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, pasteHtml, pasteLexical, pasteText, startApp} from '../../utils/e2e';
 
 describe('Restrict Content Plugin', async function () {
     let app;

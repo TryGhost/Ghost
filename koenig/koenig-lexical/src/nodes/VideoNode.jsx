@@ -1,6 +1,6 @@
+import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import React from 'react';
 import {VideoNode as BaseVideoNode, INSERT_VIDEO_COMMAND} from '@tryghost/kg-default-nodes';
-import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as VideoCardIcon} from '../assets/icons/kg-card-type-video.svg';
 import {VideoNodeComponent} from './VideoNodeComponent';
 

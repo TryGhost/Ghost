@@ -1,6 +1,6 @@
+import prettifyFileName from './prettifyFileName';
 import {$getNodeByKey} from 'lexical';
 import {getAudioMetadata} from './getAudioMetadata';
-import prettifyFileName from './prettifyFileName';
 
 export const audioUploadHandler = async (files, nodeKey, editor, upload) => {
     if (!files) {

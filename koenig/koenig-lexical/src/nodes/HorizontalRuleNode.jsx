@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {createCommand, DecoratorNode} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
+import {DecoratorNode, createCommand} from 'lexical';
 import {ReactComponent as DividerCardIcon} from '../assets/icons/kg-card-type-divider.svg';
 import {HorizontalRuleCard} from '../components/ui/cards/HorizontalRuleCard';
 

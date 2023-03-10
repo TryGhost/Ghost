@@ -1,5 +1,5 @@
-import React, {useEffect, useRef} from 'react';
 import PropTypes from 'prop-types';
+import React, {useEffect, useRef} from 'react';
 import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 
 export function LinkInput({href, update, cancel}) {

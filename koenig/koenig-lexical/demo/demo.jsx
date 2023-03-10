@@ -1,15 +1,15 @@
+import './styles/demo.css';
+import DemoApp from './DemoApp';
+import HtmlOutputDemo from './HtmlOutputDemo';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {
-    HashRouter as Router,
-    Routes,
-    Route
-} from 'react-router-dom';
-import {DesignSandbox} from '../src';
-import DemoApp from './DemoApp';
 import RestrictedContentDemo from './RestrictedContentDemo';
-import HtmlOutputDemo from './HtmlOutputDemo';
-import './styles/demo.css';
+import {DesignSandbox} from '../src';
+import {
+    Route,
+    HashRouter as Router,
+    Routes
+} from 'react-router-dom';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

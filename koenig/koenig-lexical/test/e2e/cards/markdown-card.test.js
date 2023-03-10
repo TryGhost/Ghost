@@ -1,7 +1,7 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {expect} from '@playwright/test';
 import path from 'path';
-import {startApp, initialize, focusEditor, assertHTML, html, isMac, assertRootChildren} from '../../utils/e2e';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {assertHTML, assertRootChildren, focusEditor, html, initialize, isMac, startApp} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 describe('Markdown card', async () => {
     let app;

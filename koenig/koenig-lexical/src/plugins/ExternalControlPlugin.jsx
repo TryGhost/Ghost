@@ -1,9 +1,9 @@
 import React from 'react';
-import {$createParagraphNode, $getRoot, $isDecoratorNode} from 'lexical';
 import {$canShowPlaceholder} from '@lexical/text';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {$createParagraphNode, $getRoot, $isDecoratorNode} from 'lexical';
 import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 // used to register a minimal API for controlling the editor from the consuming app
 // designed to allow typical behaviours without the consuming app needing to bundle the lexical library
@@ -102,3 +102,5 @@ export const ExternalControlPlugin = ({registerAPI}) => {
         };
     }, [editor, registerAPI]);
 };
+
+export default ExternalControlPlugin;

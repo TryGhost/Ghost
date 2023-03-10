@@ -1,17 +1,17 @@
-import React from 'react';
 import ImageUploadForm from './ImageUploadForm';
 import Portal from './Portal';
+import React from 'react';
 import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
 import {ButtonGroup} from './ButtonGroup';
-import {Dropdown} from './Dropdown';
 import {ColorPicker} from './ColorPicker';
+import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
+import {Dropdown} from './Dropdown';
 import {IconButton} from './IconButton';
 import {Input} from './Input';
 import {MediaPlaceholder} from './MediaPlaceholder';
-import {openFileSelection} from '../../utils/openFileSelection';
 import {ProgressBar} from './ProgressBar';
 import {Toggle} from './Toggle';
-import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
+import {openFileSelection} from '../../utils/openFileSelection';
 
 export function SettingsPanel({children}) {
     const {ref} = useSettingsPanelReposition();

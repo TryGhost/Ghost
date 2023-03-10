@@ -1,9 +1,9 @@
-import {renderToString} from 'react-dom/server';
+import * as constants from './draggable-constants';
+import * as utils from './draggable-utils';
 import EventEmitter from 'eventemitter3';
 import {DragDropContainer} from './DragDropContainer';
 import {ScrollHandler} from './ScrollHandler';
-import * as constants from './draggable-constants';
-import * as utils from './draggable-utils';
+import {renderToString} from 'react-dom/server';
 
 export class DragDropHandler {
     EE = null;

@@ -1,3 +1,4 @@
+import CardContext from '../context/CardContext';
 import React from 'react';
 import {
     $createNodeSelection,
@@ -17,12 +18,11 @@ import {
     KEY_ENTER_COMMAND,
     KEY_ESCAPE_COMMAND
 } from 'lexical';
-import {mergeRegister} from '@lexical/utils';
-import {useLexicalNodeSelection} from '@lexical/react/useLexicalNodeSelection';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import CardContext from '../context/CardContext';
-import {CardWrapper} from './ui/CardWrapper';
 import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
+import {CardWrapper} from './ui/CardWrapper';
+import {mergeRegister} from '@lexical/utils';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {useLexicalNodeSelection} from '@lexical/react/useLexicalNodeSelection';
 
 const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon, openInEditMode = false, children}) => {
     const [editor] = useLexicalComposerContext();

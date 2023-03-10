@@ -1,9 +1,9 @@
+import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import React from 'react';
 import {ImageNode as BaseImageNode, INSERT_IMAGE_COMMAND} from '@tryghost/kg-default-nodes';
-import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
-import {ReactComponent as UnsplashIcon} from '../assets/icons/kg-card-type-unsplash.svg';
 import {ImageNodeComponent} from './ImageNodeComponent';
+import {ReactComponent as UnsplashIcon} from '../assets/icons/kg-card-type-unsplash.svg';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_IMAGE_COMMAND} from '@tryghost/kg-default-nodes';

@@ -1,15 +1,15 @@
 import React from 'react';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {mergeRegister} from '@lexical/utils';
 import {
-    RootNode,
-    $getSelection,
-    $isRangeSelection,
-    $isParagraphNode,
     $createParagraphNode,
-    $isDecoratorNode
+    $getSelection,
+    $isDecoratorNode,
+    $isParagraphNode,
+    $isRangeSelection,
+    RootNode
 } from 'lexical';
 import {$isListNode} from '@lexical/list';
+import {mergeRegister} from '@lexical/utils';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const RestrictContentPlugin = ({paragraphs}) => {
     const [editor] = useLexicalComposerContext();

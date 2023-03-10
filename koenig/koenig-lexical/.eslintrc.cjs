@@ -10,6 +10,11 @@ module.exports = {
         'tailwindcss'
     ],
     rules: {
+        // sort multiple import lines into alphabetical groups
+        'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
+            memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
+        }],
+
         'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],

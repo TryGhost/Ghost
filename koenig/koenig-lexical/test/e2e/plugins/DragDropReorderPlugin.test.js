@@ -1,7 +1,7 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {startApp, initialize, focusEditor, dragMouse, html, assertHTML} from '../../utils/e2e';
-import {expect} from '@playwright/test';
 import path from 'path';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {assertHTML, dragMouse, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 describe('Drag Drop Reorder Plugin', async function () {
     let app;

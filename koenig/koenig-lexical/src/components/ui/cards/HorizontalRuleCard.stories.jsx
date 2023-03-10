@@ -1,6 +1,6 @@
 import React from 'react';
-import {HorizontalRuleCard} from './HorizontalRuleCard';
 import {CardWrapper} from './../CardWrapper';
+import {HorizontalRuleCard} from './HorizontalRuleCard';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

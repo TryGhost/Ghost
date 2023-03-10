@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import MarkdownRenderer from '@tryghost/kg-markdown-html-renderer';
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import MarkdownEditor from './MarkdownCard/MarkdownEditor';
+import MarkdownRenderer from '@tryghost/kg-markdown-html-renderer';
+import PropTypes from 'prop-types';
+import React from 'react';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
 export function MarkdownCard({markdown = '', updateMarkdown, isEditing, imageUploader, unsplashConf}) {

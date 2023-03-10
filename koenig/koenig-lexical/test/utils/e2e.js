@@ -1,8 +1,8 @@
-import {expect} from 'vitest';
-import {chromium, webkit, firefox} from 'playwright';
 import jsdom from 'jsdom';
 import prettier from 'prettier';
 import {E2E_PORT} from '../e2e-setup';
+import {chromium, firefox, webkit} from 'playwright';
+import {expect} from 'vitest';
 
 const {JSDOM} = jsdom;
 

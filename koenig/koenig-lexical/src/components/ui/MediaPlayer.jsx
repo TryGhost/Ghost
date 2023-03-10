@@ -1,5 +1,5 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {ReactComponent as PlayIcon} from '../../assets/icons/kg-play.svg';
 import {ReactComponent as UnmuteIcon} from '../../assets/icons/kg-unmute.svg';
 

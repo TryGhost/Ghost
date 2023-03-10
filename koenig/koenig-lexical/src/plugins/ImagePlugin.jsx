@@ -1,18 +1,18 @@
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import UnsplashPlugin from '../components/ui/UnsplashPlugin';
+import {$createImageNode, INSERT_IMAGE_COMMAND, ImageNode} from '../nodes/ImageNode';
 import {
     $getSelection,
-    COMMAND_PRIORITY_HIGH,
+    $isNodeSelection,
     $isRangeSelection,
-    $isNodeSelection
+    COMMAND_PRIORITY_HIGH
 } from 'lexical';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {mergeRegister} from '@lexical/utils';
-import KoenigComposerContext from '../context/KoenigComposerContext';
-import {$createImageNode, ImageNode, INSERT_IMAGE_COMMAND} from '../nodes/ImageNode';
-import {imageUploadHandler} from '../utils/imageUploadHandler';
-import UnsplashPlugin from '../components/ui/UnsplashPlugin';
-import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
+import {imageUploadHandler} from '../utils/imageUploadHandler';
+import {mergeRegister} from '@lexical/utils';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();

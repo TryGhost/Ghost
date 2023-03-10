@@ -1,8 +1,8 @@
-import React from 'react';
-import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import DEFAULT_NODES from '../nodes/DefaultNodes';
-import defaultTheme from '../themes/default';
 import KoenigComposerContext from '../context/KoenigComposerContext';
+import React from 'react';
+import defaultTheme from '../themes/default';
+import {LexicalComposer} from '@lexical/react/LexicalComposer';
 
 // Catch any errors that occur during Lexical updates and log them
 // or throw them as needed. If you don't throw them, Lexical will

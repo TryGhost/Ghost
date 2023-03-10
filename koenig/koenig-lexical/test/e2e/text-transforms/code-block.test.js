@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, startApp, initialize, focusEditor, html} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
 
 describe('Renders code block node', async () => {
     let app;

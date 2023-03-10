@@ -1,8 +1,8 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {expect} from '@playwright/test';
-import path from 'path';
-import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
 import createDataTransfer from '../../utils/createDataTransfer';
+import path from 'path';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 // Video card is tested in firefox
 // Need to get video thumbnail before uploading on the server; for this purpose, convert video to blob https://github.com/TryGhost/Koenig/blob/a04c59c2d81ddc783869c47653aa9d7adf093629/packages/koenig-lexical/src/utils/extractVideoMetadata.js#L45

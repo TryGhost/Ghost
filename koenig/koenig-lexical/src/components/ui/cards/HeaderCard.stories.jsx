@@ -1,6 +1,6 @@
 import React from 'react';
-import {HeaderCard} from './HeaderCard';
 import {CardWrapper} from './../CardWrapper';
+import {HeaderCard} from './HeaderCard';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

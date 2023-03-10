@@ -1,5 +1,5 @@
-import {describe, expect, it} from 'vitest';
 import {buildCardMenu} from '../../src/utils/buildCardMenu';
+import {describe, expect, it} from 'vitest';
 
 const Icon = () => {};
 

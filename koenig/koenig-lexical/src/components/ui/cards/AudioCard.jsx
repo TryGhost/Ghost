@@ -1,15 +1,15 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
+import {ReactComponent as AudioFileIcon} from '../../../assets/icons/kg-audio-file.svg';
+import {AudioUploadForm} from '../AudioUploadForm';
+import {ReactComponent as DeleteIcon} from '../../../assets/icons/kg-trash.svg';
+import {ReactComponent as FilePlaceholderIcon} from '../../../assets/icons/kg-file-placeholder.svg';
 import {IconButton} from '../IconButton';
+import {ImageUploadForm} from '../ImageUploadForm';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
 import {ProgressBar} from '../ProgressBar';
-import {ReactComponent as AudioFileIcon} from '../../../assets/icons/kg-audio-file.svg';
-import {ReactComponent as DeleteIcon} from '../../../assets/icons/kg-trash.svg';
 import {openFileSelection} from '../../../utils/openFileSelection';
-import {ReactComponent as FilePlaceholderIcon} from '../../../assets/icons/kg-file-placeholder.svg';
-import {AudioUploadForm} from '../AudioUploadForm';
-import {ImageUploadForm} from '../ImageUploadForm';
 
 function AudioUploading({progress}) {
     const progressStyle = {

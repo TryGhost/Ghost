@@ -1,9 +1,9 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {Button} from '../Button';
-import {SettingsPanel, ToggleSetting, InputSetting, ButtonGroupSetting, SettingsDivider, DropdownSetting} from '../SettingsPanel';
-import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
+import {ButtonGroupSetting, DropdownSetting, InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
+import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 
 export function EmailCtaCard({isEditing, visibility, alignment, separators, value, placeholder, button, buttonText, buttonUrl}) {
     const buttonGroupChildren = [

@@ -1,4 +1,4 @@
-import {useRef, useEffect, useCallback} from 'react';
+import {useCallback, useEffect, useRef} from 'react';
 
 // TODO: this is a temporary fix, replacement for ember's id, need better solution
 function guidFor() {

@@ -1,10 +1,10 @@
-import React from 'react';
+import ImageUploadForm from '../ImageUploadForm';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
 import {openFileSelection} from '../../../utils/openFileSelection';
-import ImageUploadForm from '../ImageUploadForm';
 
 function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
     const progressStyle = {

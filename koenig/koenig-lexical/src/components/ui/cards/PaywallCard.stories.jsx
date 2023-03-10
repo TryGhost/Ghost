@@ -1,6 +1,6 @@
 import React from 'react';
-import {PaywallCard} from './PaywallCard';
 import {CardWrapper} from './../CardWrapper';
+import {PaywallCard} from './PaywallCard';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

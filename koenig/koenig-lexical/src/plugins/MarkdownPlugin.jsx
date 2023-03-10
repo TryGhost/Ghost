@@ -1,13 +1,13 @@
 import React from 'react';
+import {$createMarkdownNode, INSERT_MARKDOWN_COMMAND, MarkdownNode} from '../nodes/MarkdownNode';
 import {
     $getSelection,
-    COMMAND_PRIORITY_HIGH,
-    $isRangeSelection
+    $isRangeSelection,
+    COMMAND_PRIORITY_HIGH
 } from 'lexical';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {mergeRegister} from '@lexical/utils';
-import {$createMarkdownNode, MarkdownNode, INSERT_MARKDOWN_COMMAND} from '../nodes/MarkdownNode';
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {mergeRegister} from '@lexical/utils';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const MarkdownPlugin = () => {
     const [editor] = useLexicalComposerContext();

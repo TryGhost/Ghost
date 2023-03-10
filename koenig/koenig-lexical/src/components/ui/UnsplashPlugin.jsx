@@ -1,8 +1,8 @@
-import React from 'react';
-import {$getNodeByKey, $createNodeSelection, $setSelection} from 'lexical';
-import UnsplashModal from './UnsplashModal.jsx';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
+import React from 'react';
+import UnsplashModal from './UnsplashModal.jsx';
+import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const UnsplashPlugin = ({nodeKey, handleModalClose}) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);

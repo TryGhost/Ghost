@@ -1,10 +1,10 @@
-import React from 'react';
-import {DRAG_DROP_PASTE} from '@lexical/rich-text';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW, DROP_COMMAND} from 'lexical';
-import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import KoenigComposerContext from '../context/KoenigComposerContext';
+import React from 'react';
+import {COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW, DROP_COMMAND} from 'lexical';
+import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {createCommand} from 'lexical';
+import {getEditorCardNodes} from '../utils/getEditorCardNodes';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const INSERT_MEDIA_COMMAND = createCommand();
 

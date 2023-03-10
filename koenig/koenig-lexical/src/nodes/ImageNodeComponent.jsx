@@ -1,16 +1,16 @@
-import React from 'react';
-import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
-import {ImageCard} from '../components/ui/cards/ImageCard';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
-import {ActionToolbar} from '../components/ui/ActionToolbar';
-import {ImageUploadForm} from '../components/ui/ImageUploadForm';
-import {openFileSelection} from '../utils/openFileSelection';
-import {imageUploadHandler} from '../utils/imageUploadHandler';
-import {LinkInput} from '../components/ui/LinkInput';
+import React from 'react';
 import useDragAndDrop from '../hooks/useDragAndDrop';
+import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {ImageCard} from '../components/ui/cards/ImageCard';
+import {ImageUploadForm} from '../components/ui/ImageUploadForm';
+import {LinkInput} from '../components/ui/LinkInput';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
+import {imageUploadHandler} from '../utils/imageUploadHandler';
+import {openFileSelection} from '../utils/openFileSelection';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();

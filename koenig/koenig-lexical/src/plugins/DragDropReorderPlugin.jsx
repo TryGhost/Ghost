@@ -1,11 +1,11 @@
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
+import {$createImageNode} from '../nodes/ImageNode.jsx';
+import {$createNodeSelection, $getNearestNodeFromDOMNode, $getNodeByKey, $setSelection} from 'lexical';
+import {DragDropHandler} from '../utils/draggable/DragDropHandler.jsx';
+import {isCardDropAllowed} from '../utils/draggable/draggable-utils.js';
 import {renderToString} from 'react-dom/server';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
-import {DragDropHandler} from '../utils/draggable/DragDropHandler.jsx';
-import {$createNodeSelection, $getNearestNodeFromDOMNode, $getNodeByKey, $setSelection} from 'lexical';
-import {$createImageNode} from '../nodes/ImageNode.jsx';
-import {isCardDropAllowed} from '../utils/draggable/draggable-utils.js';
 
 function preventDefault(event) {
     event.preventDefault();

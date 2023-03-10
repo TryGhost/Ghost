@@ -1,6 +1,6 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-import {SettingsPanel, ToggleSetting, ColorPickerSetting} from '../SettingsPanel';
+import React from 'react';
+import {ColorPickerSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 
 export const CALLOUT_COLORS = {
     grey: 'bg-grey/10 border-transparent',

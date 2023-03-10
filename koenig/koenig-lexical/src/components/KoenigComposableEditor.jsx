@@ -1,18 +1,18 @@
-import React from 'react';
-import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-import {ContentEditable} from '@lexical/react/LexicalContentEditable';
-import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
-import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
-import KoenigComposerContext from '../context/KoenigComposerContext';
-import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
-import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
-import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
+import '../styles/index.css';
 import DragDropPastePlugin from '../plugins/DragDropPastePlugin';
+import DragDropReorderPlugin from '../plugins/DragDropReorderPlugin';
+import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
+import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
+import KoenigComposerContext from '../context/KoenigComposerContext';
+import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
+import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
+import React from 'react';
+import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
-import DragDropReorderPlugin from '../plugins/DragDropReorderPlugin';
-import '../styles/index.css';
+import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
+import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
+import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
 
 const KoenigComposableEditor = ({
     onChange,

@@ -1,15 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import CodeMirror from '@uiw/react-codemirror';
-import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
-import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
-import {standardKeymap} from '@codemirror/commands';
-import {EditorView, lineNumbers, keymap} from '@codemirror/view';
-import {javascript} from '@codemirror/lang-javascript';
-import {html} from '@codemirror/lang-html';
-import {css} from '@codemirror/lang-css';
-import {tags as t} from '@lezer/highlight';
+import PropTypes from 'prop-types';
+import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
+import {EditorView, keymap, lineNumbers} from '@codemirror/view';
+import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
+import {css} from '@codemirror/lang-css';
+import {html} from '@codemirror/lang-html';
+import {javascript} from '@codemirror/lang-javascript';
+import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
+import {standardKeymap} from '@codemirror/commands';
+import {tags as t} from '@lezer/highlight';
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
     const [showLanguage, setShowLanguage] = React.useState(true);

@@ -1,7 +1,7 @@
+import '../styles/index.css';
+import KoenigComposableEditor from './KoenigComposableEditor';
 import React from 'react';
 import {AllDefaultPlugins} from '../plugins/AllDefaultPlugins';
-import KoenigComposableEditor from './KoenigComposableEditor';
-import '../styles/index.css';
 
 const KoenigEditor = ({
     ...props

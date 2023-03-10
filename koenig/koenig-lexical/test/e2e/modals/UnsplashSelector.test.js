@@ -1,5 +1,5 @@
-import {afterAll, beforeAll, beforeEach, describe, test, expect} from 'vitest';
-import {startApp, initialize, focusEditor} from '../../utils/e2e';
+import {afterAll, beforeAll, beforeEach, describe, expect, test} from 'vitest';
+import {focusEditor, initialize, startApp} from '../../utils/e2e';
 
 describe('Modals', async () => {
     let app;

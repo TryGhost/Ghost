@@ -1,4 +1,4 @@
-import {describe, test, expect} from 'vitest';
+import {describe, expect, test} from 'vitest';
 import {sanitizeHtml} from '../../../src/utils/sanitize-html';
 
 describe('Utils: sanitize-html', async () => {

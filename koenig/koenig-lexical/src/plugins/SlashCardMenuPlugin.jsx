@@ -1,12 +1,12 @@
 import React from 'react';
 import {$getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {CardMenu} from '../components/ui/CardMenu';
+import {SlashMenu} from '../components/ui/SlashMenu';
+import {buildCardMenu} from '../utils/buildCardMenu';
+import {getEditorCardNodes} from '../utils/getEditorCardNodes';
+import {getSelectedNode} from '../utils/getSelectedNode';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {SlashMenu} from '../components/ui/SlashMenu';
-import {CardMenu} from '../components/ui/CardMenu';
-import {getSelectedNode} from '../utils/getSelectedNode';
-import {getEditorCardNodes} from '../utils/getEditorCardNodes';
-import {buildCardMenu} from '../utils/buildCardMenu';
 
 function useSlashCardMenu(editor) {
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);

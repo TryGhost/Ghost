@@ -2,39 +2,39 @@ import React from 'react';
 
 import {
     CardMenu,
-    CardMenuSection,
     CardMenuItem,
+    CardMenuSection,
     CardSnippetItem
 } from './CardMenu';
 
-import {ReactComponent as ImageCardIcon} from '../../assets/icons/kg-card-type-image.svg';
-import {ReactComponent as MarkdownCardIcon} from '../../assets/icons/kg-card-type-markdown.svg';
-import {ReactComponent as HtmlCardIcon} from '../../assets/icons/kg-card-type-html.svg';
-import {ReactComponent as GalleryCardIcon} from '../../assets/icons/kg-card-type-gallery.svg';
-import {ReactComponent as DividerCardIcon} from '../../assets/icons/kg-card-type-divider.svg';
+import {ReactComponent as AudioCardIcon} from '../../assets/icons/kg-card-type-audio.svg';
 import {ReactComponent as BookmarkCardIcon} from '../../assets/icons/kg-card-type-bookmark.svg';
-import {ReactComponent as EmailCardIcon} from '../../assets/icons/kg-card-type-email.svg';
-import {ReactComponent as EmailCtaCardIcon} from '../../assets/icons/kg-card-type-email-cta.svg';
-import {ReactComponent as PreviewCardIcon} from '../../assets/icons/kg-card-type-preview.svg';
 import {ReactComponent as ButtonCardIcon} from '../../assets/icons/kg-card-type-button.svg';
 import {ReactComponent as CalloutCardIcon} from '../../assets/icons/kg-card-type-callout.svg';
-import {ReactComponent as GifCardIcon} from '../../assets/icons/kg-card-type-gif.svg';
-import {ReactComponent as ToggleCardIcon} from '../../assets/icons/kg-card-type-toggle.svg';
-import {ReactComponent as VideoCardIcon} from '../../assets/icons/kg-card-type-video.svg';
-import {ReactComponent as AudioCardIcon} from '../../assets/icons/kg-card-type-audio.svg';
-import {ReactComponent as FileCardIcon} from '../../assets/icons/kg-card-type-file.svg';
-import {ReactComponent as ProductCardIcon} from '../../assets/icons/kg-card-type-product.svg';
-import {ReactComponent as HeaderCardIcon} from '../../assets/icons/kg-card-type-header.svg';
-import {ReactComponent as YoutubeCardIcon} from '../../assets/icons/kg-card-type-youtube.svg';
-import {ReactComponent as TwitterCardIcon} from '../../assets/icons/kg-card-type-twitter.svg';
-import {ReactComponent as UnsplashCardIcon} from '../../assets/icons/kg-card-type-unsplash.svg';
-import {ReactComponent as VimeoCardIcon} from '../../assets/icons/kg-card-type-vimeo.svg';
 import {ReactComponent as CodePenCardIcon} from '../../assets/icons/kg-card-type-codepen.svg';
-import {ReactComponent as SpotifyCardIcon} from '../../assets/icons/kg-card-type-spotify.svg';
-import {ReactComponent as SoundCloudCardIcon} from '../../assets/icons/kg-card-type-soundcloud.svg';
+import {ReactComponent as DividerCardIcon} from '../../assets/icons/kg-card-type-divider.svg';
+import {ReactComponent as EmailCardIcon} from '../../assets/icons/kg-card-type-email.svg';
+import {ReactComponent as EmailCtaCardIcon} from '../../assets/icons/kg-card-type-email-cta.svg';
+import {ReactComponent as FileCardIcon} from '../../assets/icons/kg-card-type-file.svg';
+import {ReactComponent as GalleryCardIcon} from '../../assets/icons/kg-card-type-gallery.svg';
+import {ReactComponent as GifCardIcon} from '../../assets/icons/kg-card-type-gif.svg';
+import {ReactComponent as HeaderCardIcon} from '../../assets/icons/kg-card-type-header.svg';
+import {ReactComponent as HtmlCardIcon} from '../../assets/icons/kg-card-type-html.svg';
+import {ReactComponent as ImageCardIcon} from '../../assets/icons/kg-card-type-image.svg';
+import {ReactComponent as MarkdownCardIcon} from '../../assets/icons/kg-card-type-markdown.svg';
 import {ReactComponent as NftCardIcon} from '../../assets/icons/kg-card-type-nft.svg';
 import {ReactComponent as OtherCardIcon} from '../../assets/icons/kg-card-type-other.svg';
+import {ReactComponent as PreviewCardIcon} from '../../assets/icons/kg-card-type-preview.svg';
+import {ReactComponent as ProductCardIcon} from '../../assets/icons/kg-card-type-product.svg';
 import {ReactComponent as SnippetCardIcon} from '../../assets/icons/kg-card-type-snippet.svg';
+import {ReactComponent as SoundCloudCardIcon} from '../../assets/icons/kg-card-type-soundcloud.svg';
+import {ReactComponent as SpotifyCardIcon} from '../../assets/icons/kg-card-type-spotify.svg';
+import {ReactComponent as ToggleCardIcon} from '../../assets/icons/kg-card-type-toggle.svg';
+import {ReactComponent as TwitterCardIcon} from '../../assets/icons/kg-card-type-twitter.svg';
+import {ReactComponent as UnsplashCardIcon} from '../../assets/icons/kg-card-type-unsplash.svg';
+import {ReactComponent as VideoCardIcon} from '../../assets/icons/kg-card-type-video.svg';
+import {ReactComponent as VimeoCardIcon} from '../../assets/icons/kg-card-type-vimeo.svg';
+import {ReactComponent as YoutubeCardIcon} from '../../assets/icons/kg-card-type-youtube.svg';
 
 const story = {
     title: 'Card menu/Card menu',

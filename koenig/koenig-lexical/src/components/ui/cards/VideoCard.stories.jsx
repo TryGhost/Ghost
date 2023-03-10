@@ -1,6 +1,6 @@
 import React from 'react';
-import {VideoCard} from './VideoCard';
 import {CardWrapper} from './../CardWrapper';
+import {VideoCard} from './VideoCard';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

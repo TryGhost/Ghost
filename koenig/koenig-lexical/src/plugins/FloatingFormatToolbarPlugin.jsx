@@ -1,4 +1,11 @@
+import Portal from '../components/ui/Portal';
 import React, {useEffect} from 'react';
+import {$createAsideNode} from '../nodes/AsideNode';
+import {
+    $createHeadingNode,
+    $createQuoteNode,
+    $isHeadingNode
+} from '@lexical/rich-text';
 import {
     $createParagraphNode,
     $getSelection,
@@ -9,35 +16,27 @@ import {
     SELECTION_CHANGE_COMMAND
 } from 'lexical';
 import {
-    $wrapNodes
-} from '@lexical/selection';
-import {
-    $createHeadingNode,
-    $isHeadingNode,
-    $createQuoteNode
-} from '@lexical/rich-text';
+    $getNearestNodeOfType,
+    mergeRegister
+} from '@lexical/utils';
 import {
     $isListNode,
     ListNode
 } from '@lexical/list';
 import {
-    $getNearestNodeOfType,
-    mergeRegister
-} from '@lexical/utils';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {$createAsideNode} from '../nodes/AsideNode';
+    $wrapNodes
+} from '@lexical/selection';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
-import {getSelectedNode} from '../utils/getSelectedNode';
-import {setFloatingElemPosition} from '../utils/setFloatingElemPosition';
-import {getDOMRangeRect} from '../utils/getDOMRangeRect';
-import {getScrollParent} from '../utils/getScrollParent';
 import {
     ToolbarMenu,
     ToolbarMenuItem,
     ToolbarMenuSeparator
 } from '../components/ui/ToolbarMenu';
-
-import Portal from '../components/ui/Portal';
+import {getDOMRangeRect} from '../utils/getDOMRangeRect';
+import {getScrollParent} from '../utils/getScrollParent';
+import {getSelectedNode} from '../utils/getSelectedNode';
+import {setFloatingElemPosition} from '../utils/setFloatingElemPosition';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const blockTypeToBlockName = {
     bullet: 'Bulleted List',

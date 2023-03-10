@@ -1,23 +1,23 @@
+import FloatingButton from './components/FloatingButton';
+import InitialContentToggle from './components/InitialContentToggle';
 import React from 'react';
-import {useLocation} from 'react-router-dom';
-import {useSearchParams} from 'react-router-dom';
+import Sidebar from './components/Sidebar';
+import TitleTextBox from './components/TitleTextBox';
+import Watermark from './components/Watermark';
+import basicContent from './content/basic-content.json';
+import content from './content/content.json';
+import minimalContent from './content/minimal-content.json';
+import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
-    KoenigComposer, KoenigComposableEditor, KoenigEditor,
-    BASIC_NODES, MINIMAL_NODES, BASIC_TRANSFORMERS, MINIMAL_TRANSFORMERS,
+    BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor,
+    KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
     RestrictContentPlugin
 } from '../src';
-import FloatingButton from './components/FloatingButton';
-import {useState} from 'react';
-import Watermark from './components/Watermark';
-import {useFileUpload, fileTypes} from './utils/useFileUpload';
-import Sidebar from './components/Sidebar';
-import content from './content/content.json';
-import basicContent from './content/basic-content.json';
-import minimalContent from './content/minimal-content.json';
-import InitialContentToggle from './components/InitialContentToggle';
-import TitleTextBox from './components/TitleTextBox';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
-import {$getRoot, $isDecoratorNode} from 'lexical';
+import {fileTypes, useFileUpload} from './utils/useFileUpload';
+import {useLocation} from 'react-router-dom';
+import {useSearchParams} from 'react-router-dom';
+import {useState} from 'react';
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders}

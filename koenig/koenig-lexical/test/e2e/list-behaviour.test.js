@@ -1,5 +1,5 @@
-import {beforeAll, afterAll, beforeEach, describe, test} from 'vitest';
-import {startApp, initialize, focusEditor, assertHTML, html, assertSelection} from '../utils/e2e';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {assertHTML, assertSelection, focusEditor, html, initialize, startApp} from '../utils/e2e';
 
 describe('List behaviour', async () => {
     let app;

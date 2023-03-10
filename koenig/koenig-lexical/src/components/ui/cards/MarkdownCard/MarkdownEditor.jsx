@@ -1,11 +1,11 @@
-import React, {useRef, useLayoutEffect, useState} from 'react';
-import SimpleMDE from '@tryghost/kg-simplemde';
 import MarkdownHelpDialog from './MarkdownHelpDialog';
 import MarkdownImageUploader from './MarkdownImageUploader';
+import React, {useLayoutEffect, useRef, useState} from 'react';
+import SimpleMDE from '@tryghost/kg-simplemde';
 import UnsplashModal from '../../UnsplashModal';
 
-import useMarkdownImageUploader from './useMarkdownImageUploader';
 import ctrlOrCmd from '../../../../utils/ctrlOrCmd';
+import useMarkdownImageUploader from './useMarkdownImageUploader';
 
 export default function MarkdownEditor({
     markdown,

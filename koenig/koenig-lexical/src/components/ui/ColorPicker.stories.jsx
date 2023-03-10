@@ -1,5 +1,5 @@
 import React from 'react';
-import {ColorPicker, ColorButton} from './ColorPicker';
+import {ColorButton, ColorPicker} from './ColorPicker';
 
 const story = {
     title: 'Generic/Color picker',

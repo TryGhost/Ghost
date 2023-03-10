@@ -1,9 +1,9 @@
 import React from 'react';
-import {MarkdownCard} from './MarkdownCard.jsx';
 import {CardWrapper} from './../CardWrapper';
+import {MarkdownCard} from './MarkdownCard.jsx';
 import {ReactComponent as MarkdownIndicatorIcon} from '../../../assets/icons/kg-indicator-markdown.svg';
-import {useFileUpload} from '../../../../demo/utils/useFileUpload';
 import {defaultHeaders} from '../../../../demo/utils/unsplashConfig';
+import {useFileUpload} from '../../../../demo/utils/useFileUpload';
 
 const unsplashConfig = {
     defaultHeaders

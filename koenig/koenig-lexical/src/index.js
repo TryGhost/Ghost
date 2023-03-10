@@ -1,66 +1,82 @@
+/* Components */
 import DesignSandbox from './components/DesignSandbox';
-import KoenigComposer from './components/KoenigComposer';
 import KoenigComposableEditor from './components/KoenigComposableEditor';
+import KoenigComposer from './components/KoenigComposer';
 import KoenigEditor from './components/KoenigEditor';
-import DEFAULT_NODES from './nodes/DefaultNodes';
-import AllDefaultPlugins from './plugins/AllDefaultPlugins';
-import BASIC_NODES from './nodes/BasicNodes';
-import MINIMAL_NODES from './nodes/MinimalNodes';
-import KoenigBehaviourPlugin from './plugins/KoenigBehaviourPlugin';
-import FloatingFormatToolbarPlugin from './plugins/FloatingFormatToolbarPlugin';
-import RestrictContentPlugin from './plugins/RestrictContentPlugin';
-import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
-import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
+
+/* Plugins */
+import AudioPlugin from './plugins/AudioPlugin';
 import CardMenuPlugin from './plugins/CardMenuPlugin';
 import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
-import {ExternalControlPlugin} from './plugins/ExternalControlPlugin';
-import MarkdownShortcutPlugin, {
+import ExternalControlPlugin from './plugins/ExternalControlPlugin';
+import FloatingFormatToolbarPlugin from './plugins/FloatingFormatToolbarPlugin';
+import HorizontalRulePlugin from './plugins/HorizontalRulePlugin';
+import HtmlOutputPlugin from './plugins/HtmlOutputPlugin';
+import ImagePlugin from './plugins/ImagePlugin';
+import KoenigBehaviourPlugin from './plugins/KoenigBehaviourPlugin';
+import MarkdownPlugin from './plugins/MarkdownPlugin';
+import MarkdownShortcutPlugin from './plugins/MarkdownShortcutPlugin';
+import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
+import RestrictContentPlugin from './plugins/RestrictContentPlugin';
+import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
+import VideoPlugin from './plugins/VideoPlugin';
+
+import AllDefaultPlugins from './plugins/AllDefaultPlugins';
+
+/* Nodes */
+import BASIC_NODES from './nodes/BasicNodes';
+import DEFAULT_NODES from './nodes/DefaultNodes';
+import MINIMAL_NODES from './nodes/MinimalNodes';
+
+/* Transformers */
+import {
+    BASIC_TRANSFORMERS,
+    CODE_BLOCK as CODE_BLOCK_TRANSFORMER,
     DEFAULT_TRANSFORMERS,
     ELEMENT_TRANSFORMERS,
-    BASIC_TRANSFORMERS,
-    MINIMAL_TRANSFORMERS,
     HR as HR_TRANSFORMER,
-    CODE_BLOCK as CODE_BLOCK_TRANSFORMER
+    MINIMAL_TRANSFORMERS
 } from './plugins/MarkdownShortcutPlugin';
-import {AudioPlugin} from './plugins/AudioPlugin';
-import {VideoPlugin} from './plugins/VideoPlugin';
-import HorizontalRulePlugin from './plugins/HorizontalRulePlugin';
-import ImagePlugin from './plugins/ImagePlugin';
-import MarkdownPlugin from './plugins/MarkdownPlugin';
-import HtmlOutputPlugin from './plugins/HtmlOutputPlugin';
+
+/* Exports ------------------------------------------------------------------ */
 
 export * from './utils';
 
 export {
     DesignSandbox,
-    KoenigComposer,
     KoenigComposableEditor,
+    KoenigComposer,
     KoenigEditor,
-    KoenigBehaviourPlugin,
-    FloatingFormatToolbarPlugin,
-    PlusCardMenuPlugin,
-    AllDefaultPlugins,
-    SlashCardMenuPlugin,
-    MarkdownShortcutPlugin,
-    CardMenuPlugin,
+
     AudioPlugin,
-    ImagePlugin,
-    VideoPlugin,
-    MarkdownPlugin,
-    HorizontalRulePlugin,
+    CardMenuPlugin,
     DragDropPastePlugin,
-    ExternalControlPlugin,
     DragDropReorderPlugin,
-    RestrictContentPlugin,
+    ExternalControlPlugin,
+    FloatingFormatToolbarPlugin,
+    HorizontalRulePlugin,
     HtmlOutputPlugin,
+    ImagePlugin,
+    KoenigBehaviourPlugin,
+    MarkdownPlugin,
+    MarkdownShortcutPlugin,
+    PlusCardMenuPlugin,
+    RestrictContentPlugin,
+    SlashCardMenuPlugin,
+    VideoPlugin,
+
+    AllDefaultPlugins,
+
     DEFAULT_NODES,
     BASIC_NODES,
     MINIMAL_NODES,
-    DEFAULT_TRANSFORMERS,
-    BASIC_TRANSFORMERS,
-    MINIMAL_TRANSFORMERS,
+
     ELEMENT_TRANSFORMERS,
     HR_TRANSFORMER,
-    CODE_BLOCK_TRANSFORMER
+    CODE_BLOCK_TRANSFORMER,
+
+    DEFAULT_TRANSFORMERS,
+    BASIC_TRANSFORMERS,
+    MINIMAL_TRANSFORMERS
 };

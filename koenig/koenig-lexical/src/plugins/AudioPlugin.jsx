@@ -1,15 +1,15 @@
 import React from 'react';
+import {$createAudioNode, AudioNode, INSERT_AUDIO_COMMAND} from '../nodes/AudioNode';
 import {
     $getSelection,
-    COMMAND_PRIORITY_HIGH,
+    $isNodeSelection,
     $isRangeSelection,
-    $isNodeSelection
+    COMMAND_PRIORITY_HIGH
 } from 'lexical';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {mergeRegister} from '@lexical/utils';
-import {$createAudioNode, AudioNode, INSERT_AUDIO_COMMAND} from '../nodes/AudioNode';
-import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
+import {mergeRegister} from '@lexical/utils';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const AudioPlugin = () => {
     const [editor] = useLexicalComposerContext();

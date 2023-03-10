@@ -1,8 +1,8 @@
-import React from 'react';
-import UnsplashSelector from './file-selectors/Unsplash/UnsplashSelector';
 import Portal from './Portal';
-import UnsplashService from '../../utils/services/unsplash';
+import React from 'react';
 import UnsplashGallery from './file-selectors/Unsplash/UnsplashGallery';
+import UnsplashSelector from './file-selectors/Unsplash/UnsplashSelector';
+import UnsplashService from '../../utils/services/unsplash';
 import {useMemo} from 'react';
 
 const API_URL = 'https://api.unsplash.com';

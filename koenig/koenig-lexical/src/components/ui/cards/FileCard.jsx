@@ -1,7 +1,7 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-import {MediaPlaceholder} from '../MediaPlaceholder';
+import React from 'react';
 import {ReactComponent as FileUploadIcon} from '../../../assets/icons/kg-file-upload.svg';
+import {MediaPlaceholder} from '../MediaPlaceholder';
 
 function EmptyFileCard() {
     return (

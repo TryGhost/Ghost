@@ -1,6 +1,6 @@
 import React from 'react';
-import {ToggleCard} from './ToggleCard';
 import {CardWrapper} from './../CardWrapper';
+import {ToggleCard} from './ToggleCard';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

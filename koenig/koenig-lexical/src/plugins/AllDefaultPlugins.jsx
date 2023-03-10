@@ -1,12 +1,11 @@
-import React from 'react';
-import {ListPlugin} from '@lexical/react/LexicalListPlugin';
-import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
-import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
+import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
 import MarkdownPlugin from '../plugins/MarkdownPlugin';
-
-import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
+import React from 'react';
 import {AudioPlugin} from '../plugins/AudioPlugin';
+import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
+import {ListPlugin} from '@lexical/react/LexicalListPlugin';
+import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
 
 export const AllDefaultPlugins = () => {
@@ -18,7 +17,7 @@ export const AllDefaultPlugins = () => {
 
             {/* Koenig Plugins */}
             <CardMenuPlugin />
-            
+
             {/* Card Plugins */}
             <AudioPlugin />
             <ImagePlugin />

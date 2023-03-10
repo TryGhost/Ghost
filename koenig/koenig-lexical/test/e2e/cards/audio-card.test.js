@@ -1,8 +1,8 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {expect} from '@playwright/test';
-import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
-import path from 'path';
 import createDataTransfer from '../../utils/createDataTransfer';
+import path from 'path';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 describe('Audio card', async () => {
     let app;

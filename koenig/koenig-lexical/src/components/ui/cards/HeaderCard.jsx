@@ -1,7 +1,7 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {Button} from '../Button';
-import {SettingsPanel, ToggleSetting, InputSetting, ButtonGroupSetting, ColorPickerSetting, SettingsDivider} from '../SettingsPanel';
+import {ButtonGroupSetting, ColorPickerSetting, InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 
 export const HEADER_COLORS = {
     dark: 'bg-black',
