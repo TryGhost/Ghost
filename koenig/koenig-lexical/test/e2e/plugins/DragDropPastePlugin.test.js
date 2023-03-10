@@ -42,7 +42,7 @@ describe('Drag Drop Paste Plugin', async function () {
 
                         <figcaption>
                             <input placeholder="Type caption for image (optional)" value="" />
-                            <button name="alt-toggle-button">Alt</button>
+                            <button name="alt-toggle-button" type="button">Alt</button>
                         </figcaption>
                     </figure>
                 </div>
@@ -88,7 +88,7 @@ describe('Drag Drop Paste Plugin', async function () {
                         </div>
                         <figcaption>
                             <input placeholder="Type caption for image (optional)" value="" />
-                            <button name="alt-toggle-button">Alt</button>
+                            <button name="alt-toggle-button" type="button">Alt</button>
                         </figcaption>
                     </figure>
                 </div>

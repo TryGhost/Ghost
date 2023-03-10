@@ -9,7 +9,7 @@ function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
         <>
             <div className="fixed inset-0 z-40 h-[100vh] bg-black opacity-60"></div>
             <div ref={galleryRef} className="not-kg-prose fixed inset-8 z-50 overflow-hidden rounded bg-white shadow-xl" data-kg-modal="unsplash">
-                <button className="absolute top-6 right-6 cursor-pointer">
+                <button className="absolute top-6 right-6 cursor-pointer" type="button">
                     <CloseIcon
                         className="h-4 w-4 stroke-2 text-grey-400"
                         data-kg-modal-close-button

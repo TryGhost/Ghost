@@ -64,7 +64,7 @@ describe('Image card', async () => {
                     <figure data-kg-card-width="regular">
                         <div data-testid="media-placeholder">
                             <div>
-                                <button name="placeholder-button">
+                                <button name="placeholder-button" type="button">
                                     <svg width="134" height="135" viewBox="0 0 134 135" xmlns="http://www.w3.org/2000/svg"></svg>
                                     <p>Click to select an image</p>
                                 </button>
@@ -122,7 +122,7 @@ describe('Image card', async () => {
                         <div><img alt="" src="blob:..." /></div>
                         <figcaption>
                             <input placeholder="Type alt text for image (optional)" value=""/>
-                            <button name="alt-toggle-button">Alt</button>
+                            <button name="alt-toggle-button" type="button">Alt</button>
                         </figcaption>
                     </figure>
                     <div data-kg-card-toolbar="image"></div>
@@ -193,7 +193,7 @@ describe('Image card', async () => {
                                     <div id="koenig-drag-drop-ghost-container"></div>
                                 </div>
                             </div>
-                            <button name="alt-toggle-button">Alt</button>
+                            <button name="alt-toggle-button" type="button">Alt</button>
                         </figcaption>
                     </figure>
                     <div data-kg-card-toolbar="image"></div>
@@ -362,7 +362,7 @@ describe('Image card', async () => {
                                     <div id="koenig-drag-drop-ghost-container"></div>
                                 </div>
                             </div>
-                            <button name="alt-toggle-button">Alt</button>
+                            <button name="alt-toggle-button" type="button">Alt</button>
                         </figcaption>
                     </figure>
                     <div data-kg-card-toolbar="image"></div>
@@ -635,7 +635,7 @@ describe('Image card', async () => {
                                     <div id="koenig-drag-drop-ghost-container"></div>
                                 </div>
                             </div>
-                            <button name="alt-toggle-button">Alt</button>
+                            <button name="alt-toggle-button" type="button">Alt</button>
                         </figcaption>
                     </figure>
                     <div data-kg-card-toolbar="image"></div>

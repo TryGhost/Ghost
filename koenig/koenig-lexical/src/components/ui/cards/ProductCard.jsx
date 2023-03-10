@@ -17,17 +17,17 @@ export function ProductCard({isEditing, image, title, titlePlaceholder, desc, de
                         size='small'
                     />
                 </div>)
-                } 
+                }
                 <div className="flex items-start justify-between">
                     {(title || isEditing) && <h3 className={`text-xl font-bold leading-snug text-black ${title || 'opacity-40'} ${rating && 'mr-2'}`}>{title || titlePlaceholder}</h3>}
-                    {rating && 
+                    {rating &&
                     <div className="ml-auto flex fill-grey-900 transition-all duration-75 hover:fill-grey-800">
                         <RatingButton />
                     </div>
                     }
                 </div>
                 {(desc || isEditing) && <p className={`mt-2 text-[1.6rem] font-normal leading-snug text-grey-700 ${desc || 'opacity-50'}`}>{desc || descPlaceholder}</p>}
-                {(button && (isEditing || (buttonText || buttonUrl))) && 
+                {(button && (isEditing || (buttonText || buttonUrl))) &&
                 <div className={`mt-6 w-full ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} `}>
                     <Button url={buttonUrl} value={buttonText} width='full' />
                 </div>
@@ -59,7 +59,7 @@ export function ProductCard({isEditing, image, title, titlePlaceholder, desc, de
                             />
                         </>
                     )}
-                </SettingsPanel>    
+                </SettingsPanel>
             )}
         </>
     );
@@ -68,7 +68,7 @@ export function ProductCard({isEditing, image, title, titlePlaceholder, desc, de
 function RatingButton() {
     const n = 5;
     return (
-        [...Array(n)].map(i => <button key={i} className="flex h-7 w-5 items-center justify-center"><StarIcon /></button>)
+        [...Array(n)].map(i => <button key={i} className="flex h-7 w-5 items-center justify-center" type="button"><StarIcon /></button>)
     );
 }
 

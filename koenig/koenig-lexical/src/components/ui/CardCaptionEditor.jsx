@@ -37,6 +37,7 @@ function AltToggleButton({isEditingAlt, onClick}) {
         <button
             className={`absolute bottom-0 right-0 m-2 cursor-pointer rounded border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${isEditingAlt ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
             name="alt-toggle-button"
+            type="button"
             onClick={onClick}
         >
             Alt

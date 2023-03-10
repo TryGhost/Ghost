@@ -13,7 +13,7 @@ export function MediaPlayer({type, duration, theme, ...args}) {
             </div>
             {/* <input type="range" max="100" value="0" className="relative grow bg-transparent mx-1" /> */}
             <div className={`relative mx-2 h-1 grow rounded ${theme === 'light' ? 'bg-white/40' : 'bg-grey/30'}`}>
-                <button className="absolute left-0 top-[-6px] h-4 w-4 rounded-full border border-grey/50 bg-white shadow"></button>
+                <button className="absolute left-0 top-[-6px] h-4 w-4 rounded-full border border-grey/50 bg-white shadow" type="button"></button>
             </div>
             <button className={`mr-4 mb-[1px] px-1 font-sans text-sm font-medium ${theme === 'light' ? 'text-white' : 'text-black'}`} type="button">1&#215;</button>
             <button type="button">
@@ -21,7 +21,7 @@ export function MediaPlayer({type, duration, theme, ...args}) {
             </button>
             <div className={`relative ml-1 h-1 w-[80px] rounded ${theme === 'light' ? 'bg-white/40' : 'bg-grey/30'}`}>
                 <div className={`absolute left-0 h-1 w-[60%] rounded ${theme === 'light' ? 'bg-white' : 'bg-black'}`}></div>
-                <button className="absolute left-[55%] top-[-6px] h-4 w-4 rounded-full border border-grey/50 bg-white shadow"></button>
+                <button className="absolute left-[55%] top-[-6px] h-4 w-4 rounded-full border border-grey/50 bg-white shadow"type="button"></button>
             </div>
         </div>
     );

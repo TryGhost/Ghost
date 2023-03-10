@@ -112,7 +112,7 @@ const DesignSandbox = () => {
                     <ToolbarSeparator />
                     <ToolbarItem Icon={SnippetIcon} label="Save as snippet" />
                 </ul>
-            </div>  
+            </div>
         );
     }
 
@@ -129,7 +129,7 @@ const DesignSandbox = () => {
                     <ToolbarSeparator />
                     <ToolbarItem Icon={SnippetIcon} label="Save as snippet" />
                 </ul>
-            </div>  
+            </div>
         );
     }
 
@@ -141,7 +141,7 @@ const DesignSandbox = () => {
                     <ToolbarSeparator />
                     <ToolbarItem Icon={SnippetIcon} label="Save as snippet" />
                 </ul>
-            </div>  
+            </div>
         );
     }
 
@@ -157,7 +157,7 @@ const DesignSandbox = () => {
             </li>
         );
     }
-    
+
     function ToolbarSeparator() {
         return (
             <li className="m-0 mx-1 h-5 w-px bg-grey-900"></li>
@@ -298,24 +298,25 @@ const DesignSandbox = () => {
 
         if (isActive) {
             return (
-                <div 
+                <div
                     className={`border border-transparent ${isActive ? 'shadow-[0_0_0_2px_#30cf43]' : 'hover:shadow-[0_0_0_1px_#30cf43]'}`}
                     onClick={toggleActive}>
                     <MediaPlaceholder desc="Click to select an image" Icon={ImgPlaceholderIcon} />
                     <CaptionEditor placeholder="Type caption for image (optional)" />
-                    <button 
+                    <button
                         className={`absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
+                        type="button"
                         onClick={e => toggleAltText(e)}>
                             Alt
-                    </button>           
+                    </button>
                 </div>
             );
-        } 
+        }
         return (
-            <div 
+            <div
                 className={`border border-transparent ${isActive ? 'shadow-[0_0_0_2px_#30cf43]' : 'hover:shadow-[0_0_0_1px_#30cf43]'}`}
                 onClick={toggleActive}>
-                <MediaPlaceholder desc="Click to select an image" Icon={ImgPlaceholderIcon} />        
+                <MediaPlaceholder desc="Click to select an image" Icon={ImgPlaceholderIcon} />
             </div>
         );
     }
@@ -325,7 +326,7 @@ const DesignSandbox = () => {
             <div className="relative">
                 <figure className="cursor-pointer border border-transparent" {...props}>
                     <div className="h-100 relative flex items-center justify-center border border-grey-100 bg-grey-50 before:pb-[62.5%]">
-                        <button className="group flex flex-col items-center justify-center p-20">
+                        <button className="group flex flex-col items-center justify-center p-20" type="button">
                             <Icon className="h-32 w-32 opacity-80 transition-all ease-linear group-hover:scale-105 group-hover:opacity-100" />
                             <p className="mt-4 text-sm font-normal text-grey-700 group-hover:text-grey-800">{desc}</p>
                         </button>
@@ -345,9 +346,9 @@ const DesignSandbox = () => {
 
     function CaptionEditor({placeholder}) {
         return (
-            <input 
+            <input
                 className="not-kg-prose w-full p-2 text-center font-sans text-sm font-normal tracking-wide text-grey-900"
-                placeholder={placeholder} 
+                placeholder={placeholder}
             />
         );
     }

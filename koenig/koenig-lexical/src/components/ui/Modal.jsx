@@ -27,7 +27,7 @@ export function Modal({isOpen, onClose, children}) {
             >
                 <div className="fixed inset-0 z-40 h-[100vh] bg-black opacity-60" onClick={onClose}></div>
                 <div className="relative z-50 my-8 w-full max-w-[550px] rounded bg-white drop-shadow-2xl">
-                    <button aria-label="Close dialog" className="absolute top-6 right-6 cursor-pointer" autoFocus>
+                    <button aria-label="Close dialog" className="absolute top-6 right-6 cursor-pointer" type="button" autoFocus>
                         <CloseIcon className="h-4 w-4 stroke-2 text-grey-400" onClick={onClose}/>
                     </button>
                     {children}

@@ -20,7 +20,7 @@ const Template = (args) => {
 
     return (
         <div className="relative ml-[66px] mt-[2px]">
-            <button onClick={openModal}>Open modal</button>
+            <button type="button" onClick={openModal}>Open modal</button>
 
             <Modal isOpen={isOpen} onClose={closeModal}>
                 <div className="p-8">

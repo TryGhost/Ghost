@@ -28,6 +28,7 @@ module.exports = {
             shorthandLast: true,
             locale: 'en'
         }],
+        'react/button-has-type': 'error',
 
         'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
