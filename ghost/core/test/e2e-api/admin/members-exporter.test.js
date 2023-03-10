@@ -213,7 +213,7 @@ describe('Members API — exportCSV', function () {
         });
 
         // NOTE: we need to create a subscription here because of the way the customer id is currently fetched
-        const subscription = await models.StripeCustomerSubscription.add({
+        await models.StripeCustomerSubscription.add({
             subscription_id: 'sub_123',
             customer_id: customer.get('customer_id'),
             stripe_price_id: 'price_123',

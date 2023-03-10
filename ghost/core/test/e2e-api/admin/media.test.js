@@ -4,7 +4,6 @@ const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const localUtils = require('./utils');
-const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const logging = require('@tryghost/logging');
 

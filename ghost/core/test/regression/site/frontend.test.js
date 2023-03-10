@@ -7,7 +7,6 @@ const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const cheerio = require('cheerio');
-const _ = require('lodash');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const config = require('../../../core/shared/config');

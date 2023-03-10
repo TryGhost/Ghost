@@ -1,5 +1,4 @@
 const url = require('url');
-const _ = require('lodash');
 const testUtils = require('../../utils');
 
 const API_URL = '/ghost/api/content/';

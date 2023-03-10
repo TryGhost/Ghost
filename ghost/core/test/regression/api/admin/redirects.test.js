@@ -4,7 +4,6 @@ const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 const uuid = require('uuid');
-const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
 

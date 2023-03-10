@@ -4,7 +4,6 @@ const ObjectId = require('bson-objectid').default;
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('assert');
-const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
 const {MailgunEmailProvider} = require('@tryghost/email-service');

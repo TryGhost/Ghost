@@ -39,13 +39,12 @@ describe('{{#get}} helper', function () {
     });
 
     describe('context preparation', function () {
-        let browsePostsStub;
         const meta = {pagination: {}};
 
         beforeEach(function () {
             locals = {root: {_locals: {}}};
 
-            browsePostsStub = sinon.stub(api, 'postsPublic').get(() => {
+            sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({posts: [{feature_image_caption: '<a href="#">A link</a>'}], meta: meta})
                 };
@@ -69,13 +68,12 @@ describe('{{#get}} helper', function () {
     });
 
     describe('authors', function () {
-        let browseAuthorsStub;
         const meta = {pagination: {}};
 
         beforeEach(function () {
             locals = {root: {_locals: {}}};
 
-            browseAuthorsStub = sinon.stub(api, 'authorsPublic').get(() => {
+            sinon.stub(api, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
