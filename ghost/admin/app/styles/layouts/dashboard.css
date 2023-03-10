@@ -2622,6 +2622,7 @@ Dashboard Mentions */
 .gh-dashboard-mentions-container {
     border-radius: 3px;
     box-shadow: var(--box-shadow-m);
+    top: 88px !important;
 }
 
 .gh-dashboard-mentions {
@@ -2742,7 +2743,7 @@ Dashboard Mentions */
     width: 40px;
     height: 40px;
     margin-bottom: 10px;
-    margin-top: 4px;
+    margin-top: 12px;
 }
 
 .gh-dashboard-mentions .gh-mentions-list-cta h4 {
