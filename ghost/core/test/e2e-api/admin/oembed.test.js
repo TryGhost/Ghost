@@ -132,7 +132,7 @@ describe('Oembed API', function () {
             dnsStub.onCall(0).returns(Promise.resolve({address: '123.123.123.123'}));
             dnsStub.onCall(1).returns(Promise.resolve({address: '0.0.0.0'}));
 
-            const redirectMock = nock('http://test.com/')
+            nock('http://test.com/')
                 .get('/')
                 .reply(302, undefined, {Location: 'http://0.0.0.0:8080'});
 

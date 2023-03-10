@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const path = require('path');
 const BlogIcon = require('../../../../../core/server/lib/image/blog-icon');
 

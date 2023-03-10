@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const urlUtils = require('../../../../../utils/urlUtils');
 const configUtils = require('../../../../../utils/configUtils');
 const urlRedirects = rewire('../../../../../../core/server/web/shared/middleware/url-redirects');
 const {frontendSSLRedirect, adminSSLAndHostRedirect} = urlRedirects;

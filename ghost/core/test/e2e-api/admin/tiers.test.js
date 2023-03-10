@@ -152,7 +152,7 @@ describe('Tiers API', function () {
             })
             .expectStatus(200);
 
-        const {body: {tiers: [updatedTier]}} = await agent.get(`/tiers/${tier.id}/`)
+        await agent.get(`/tiers/${tier.id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,

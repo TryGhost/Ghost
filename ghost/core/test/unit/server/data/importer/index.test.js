@@ -412,7 +412,7 @@ describe('Importer', function () {
                     return ImportManager
                         // Deliberately pass something that can't be extracted just to check this method signature is working
                         .extractZip('test/utils/fixtures/import/zips/zip-with-base-dir')
-                        .then((res) => {
+                        .then(() => {
                             throw new Error('should have failed');
                         })
                         .catch((err) => {

@@ -1,5 +1,4 @@
 const should = require('should');
-const sinon = require('sinon');
 
 const path = require('path');
 const fs = require('fs').promises;

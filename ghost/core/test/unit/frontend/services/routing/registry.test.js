@@ -3,12 +3,6 @@ const sinon = require('sinon');
 const registry = require('../../../../../core/frontend/services/routing/registry');
 
 describe('UNIT: services/routing/registry', function () {
-    let getRssUrlStub;
-
-    beforeEach(function () {
-        getRssUrlStub = sinon.stub();
-    });
-
     afterEach(function () {
         sinon.restore();
     });

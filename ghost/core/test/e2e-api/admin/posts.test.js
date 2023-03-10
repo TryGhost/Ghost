@@ -1,5 +1,4 @@
 const should = require('should');
-const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
@@ -86,7 +85,7 @@ describe('Posts API', function () {
     });
 
     it('Can browse', async function () {
-        const res = await agent.get('posts/?limit=2')
+        await agent.get('posts/?limit=2')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -98,7 +97,7 @@ describe('Posts API', function () {
     });
 
     it('Can browse with formats', async function () {
-        const res = await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
+        await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,

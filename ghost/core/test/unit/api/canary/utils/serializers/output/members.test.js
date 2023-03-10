@@ -6,12 +6,11 @@ const memberSerializer = require('../../../../../../../core/server/api/endpoints
 
 describe('Unit: endpoints/utils/serializers/output/members', function () {
     let memberModel;
-    let labsStub;
     beforeEach(function () {
         memberModel = (data) => {
             return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
-        labsStub = sinon.stub(labs, 'isSet').returns(true);
+        sinon.stub(labs, 'isSet').returns(true);
     });
 
     afterEach(function () {

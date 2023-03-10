@@ -5,8 +5,6 @@ const should = require('should');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/newsletter', function () {
-    const mockDb = require('mock-knex');
-
     before(function () {
         models.init();
     });

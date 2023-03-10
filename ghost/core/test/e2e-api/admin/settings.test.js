@@ -1,6 +1,5 @@
 const assert = require('assert');
 const SingleUseTokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
-const settingsService = require('../../../core/server/services/settings/settings-service');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
@@ -38,14 +37,12 @@ const matchSettingsArray = (length) => {
 };
 
 describe('Settings API', function () {
-    let agent, membersService;
+    let agent;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
-
-        membersService = require('../../../core/server/services/members');
     });
 
     beforeEach(function () {

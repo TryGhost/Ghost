@@ -1,14 +1,10 @@
 const should = require('should');
 const sinon = require('sinon');
-const ghostVersion = require('@tryghost/version');
 
 const urlUtils = require('../../../../../core/shared/url-utils');
 const membersService = require('../../../../../core/server/services/members');
-const newslettersService = require('../../../../../core/server/services/newsletters');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
-const settingsCache = require('../../../../../core/shared/settings-cache');
 const models = require('../../../../../core/server/models');
-const config = require('../../../../../core/shared/config');
 
 describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {

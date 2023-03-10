@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
 const assert = require('assert');
-const domainEvents = require('@tryghost/domain-events');
 const MailgunClient = require('@tryghost/mailgun-client');
 const DomainEvents = require('@tryghost/domain-events');
 const emailAnalytics = require('../../../../core/server/services/email-analytics');
@@ -16,12 +15,9 @@ async function resetFailures(models, emailId) {
 
 // Test the whole E2E flow from Mailgun events -> handling and storage
 describe('EmailEventStorage', function () {
-    let _mailgunClient;
     let agent;
     let events = [];
-    let jobsService;
     let models;
-    let run;
     let membersService;
 
     before(async function () {
@@ -39,7 +35,6 @@ describe('EmailEventStorage', function () {
         // Only reference services after Ghost boot
         models = require('../../../../core/server/models');
         membersService = require('../../../../core/server/services/members');
-        jobsService = require('../../../../core/server/services/jobs');
 
         sinon.stub(MailgunClient.prototype, 'fetchEvents').callsFake(async function (_, batchHandler) {
             const normalizedEvents = (events.map(this.normalizeEvent) || []).filter(e => !!e);
@@ -57,7 +52,6 @@ describe('EmailEventStorage', function () {
 
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
-        const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
 
@@ -100,11 +94,9 @@ describe('EmailEventStorage', function () {
 
     it('Can handle delivered events without user variables', async function () {
         const emailBatch = fixtureManager.get('email_batches', 0);
-        const emailId = emailBatch.email_id;
 
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
-        const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
 
@@ -153,7 +145,6 @@ describe('EmailEventStorage', function () {
 
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
-        const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
 
@@ -389,11 +380,9 @@ describe('EmailEventStorage', function () {
 
     it('Ignores permanent failures if already failed', async function () {
         const emailBatch = fixtureManager.get('email_batches', 0);
-        const emailId = emailBatch.email_id;
 
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
-        const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2001, 0, 1);
 
@@ -1092,7 +1081,6 @@ describe('EmailEventStorage', function () {
 
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
-        const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
 

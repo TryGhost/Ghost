@@ -451,7 +451,6 @@ describe('Unit: models/user', function () {
 
         it('Cannot transfer ownership if not owner', function () {
             const loggedInUser = testUtils.context.admin;
-            const userToChange = loggedInUser;
             const contextUser = sinon.stub();
 
             contextUser.toJSON = sinon.stub().returns(testUtils.permissions.admin.user);

@@ -230,7 +230,7 @@ describe('Exporter', function () {
             } = require('../../../../../core/server/data/exporter/table-lists.js');
             const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
 
-            const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr, index) => {
+            const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr) => {
                 return acc + Object.keys(defaultSettings[curr]).length;
             }, 0);
 

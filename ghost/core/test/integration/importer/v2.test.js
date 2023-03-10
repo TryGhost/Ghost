@@ -42,8 +42,6 @@ describe('Importer', function () {
         beforeEach(testUtils.setup('roles', 'owner'));
 
         it('ensure return structure', function () {
-            let exportData;
-
             return dataImporter.doImport(exportedBodyV2().db[0], importOptions)
                 .then(function (importResult) {
                     should.exist(importResult);

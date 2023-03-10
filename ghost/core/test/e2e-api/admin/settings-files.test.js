@@ -40,7 +40,7 @@ describe('Settings File API', function () {
         const newRoutesYamlPath = `${os.tmpdir()}/routes.yaml`;
 
         await fs.writeFile(newRoutesYamlPath, 'routes:\ncollections:\ntaxonomies:\n');
-        const res = await request
+        await request
             .post(localUtils.API.getApiQuery('settings/routes/yaml/'))
             .set('Origin', config.get('url'))
             .attach('routes', newRoutesYamlPath)

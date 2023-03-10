@@ -1,6 +1,5 @@
 const path = require('path');
 const should = require('should');
-const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');

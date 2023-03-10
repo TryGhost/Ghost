@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
+const {agentProvider, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyString, anyEtag} = matchers;
 
 describe('Members .well-known', function () {

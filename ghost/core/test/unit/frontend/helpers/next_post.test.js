@@ -400,7 +400,7 @@ describe('{{next_post}} helper', function () {
 
         beforeEach(function () {
             member = {uuid: 'test'};
-            browsePostsStub = sinon.stub().callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function () {
                 return Promise.resolve({
                     posts: [{slug: '/next/', title: 'post 3'}]
                 });

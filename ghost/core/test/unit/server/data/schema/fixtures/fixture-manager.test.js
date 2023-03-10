@@ -9,14 +9,7 @@ const fixtures = require('../../../../../utils/fixtures/fixtures.json');
 const fixtureManager = new FixtureManager(fixtures);
 
 describe('Migration Fixture Utils', function () {
-    let loggerStub;
-
     beforeEach(function () {
-        loggerStub = {
-            info: sinon.stub(),
-            warn: sinon.stub()
-        };
-
         models.init();
     });
 

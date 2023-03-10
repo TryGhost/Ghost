@@ -33,7 +33,7 @@ describe('Session controller', function () {
         });
 
         it('it checks the username and password and throws UnauthorizedError if it fails', function () {
-            const userCheckStub = sinon.stub(models.User, 'check')
+            sinon.stub(models.User, 'check')
                 .rejects(new Error());
 
             return sessionController.add({
@@ -89,7 +89,7 @@ describe('Session controller', function () {
             sinon.stub(models.User, 'check')
                 .resolves(fakeUser);
 
-            const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
+            sinon.stub(sessionServiceMiddleware, 'createSession');
 
             return sessionController.add({data: {
                 username: 'freddy@vodafone.com',

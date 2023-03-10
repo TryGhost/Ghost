@@ -6,13 +6,9 @@ const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 const uuid = require('uuid');
-const KnexMigrator = require('knex-migrator');
-const knexMigrator = new KnexMigrator();
 
 // Ghost Internals
-const config = require('../../core/shared/config');
 const boot = require('../../core/boot');
-const db = require('../../core/server/data/db');
 const models = require('../../core/server/models');
 const urlService = require('../../core/server/services/url');
 const settingsService = require('../../core/server/services/settings/settings-service');

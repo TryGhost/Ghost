@@ -25,7 +25,7 @@ describe('Mentions API', function () {
     });
 
     it('Can browse with limits', async function () {
-        const res = await agent.get('mentions/?limit=2')
+        await agent.get('mentions/?limit=2')
             .expectStatus(200)
             .matchBodySnapshot({
                 mentions: new Array(2).fill(matchMentionShallowIncludes)
@@ -34,7 +34,7 @@ describe('Mentions API', function () {
 
     it('Cannot browse when lab disabled', async function () {
         mockManager.mockLabsDisabled('webmentions');
-        const res = await agent.get('mentions/')
+        await agent.get('mentions/')
             .expectStatus(404);
     });
 });

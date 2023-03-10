@@ -1,8 +1,7 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {nullable, anything, anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyErrorId, anyString} = matchers;
+const {nullable, anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString} = matchers;
 const assert = require('assert');
 const sinon = require('sinon');
-const logging = require('@tryghost/logging');
 const jobManager = require('../../../core/server/services/jobs/job-service');
 const models = require('../../../core/server/models');
 

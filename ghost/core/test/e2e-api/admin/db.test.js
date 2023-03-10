@@ -1,4 +1,3 @@
-const path = require('path');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');

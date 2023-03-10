@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const should = require('should');
 const models = require('../../../../core/server/models');
-const labs = require('../../../../core/shared/labs');
 
 describe('Unit: models/stripe-customer-subscription', function () {
     before(function () {

@@ -5,9 +5,8 @@ const labs = require('../../../../../core/shared/labs');
 
 describe('Members Service - utils', function () {
     describe('formattedMemberResponse', function () {
-        let labsStub;
         beforeEach(function () {
-            labsStub = sinon.stub(labs, 'isSet').returns(true);
+            sinon.stub(labs, 'isSet').returns(true);
         });
 
         afterEach(function () {

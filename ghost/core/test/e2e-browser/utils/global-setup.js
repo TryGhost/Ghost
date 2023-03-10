@@ -9,7 +9,6 @@ const {stopGhost} = require('../../utils/e2e-utils');
 const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
-const nock = require('nock');
 const {allowStripe} = require('../../utils/e2e-framework-mock-manager');
 
 const startWebhookServer = () => {

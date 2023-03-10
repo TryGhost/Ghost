@@ -370,9 +370,8 @@ describe('migrations/utils/permissions', function () {
                     role: 'Not there'
                 });
 
-                let runDownMigration;
                 try {
-                    runDownMigration = await runUpMigration(knex, migration);
+                    await runUpMigration(knex, migration);
                     should.fail('addPermissionToRole up migration did not throw');
                 } catch (err) {
                     should.equal(errors.utils.isGhostError(err), true);
@@ -476,7 +475,7 @@ describe('migrations/utils/permissions', function () {
 
             should.ok(permissionAttachedToRoleAfterUp, 'The permission was attached to the role.');
 
-            const allPermissionsForOtherRoleAfterUp = await knex.raw(`
+            await knex.raw(`
                 SELECT
                     p.name
                 FROM

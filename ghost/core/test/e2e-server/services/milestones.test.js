@@ -58,8 +58,8 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
     nock('https://api.stripe.com')
         .persist()
         .get(/v1\/.*/)
-        .reply((uri, body) => {
-            const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
+        .reply((uri) => {
+            const [match, resource] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
             if (!match) {
                 return [500];

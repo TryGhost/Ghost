@@ -1,7 +1,7 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const FormData = require('form-data');
 const p = require('path');
-const {promises: fs, stat} = require('fs');
+const {promises: fs} = require('fs');
 const assert = require('assert');
 const config = require('../../../core/shared/config');
 const urlUtils = require('../../../core/shared/url-utils');

@@ -65,7 +65,6 @@ const fixtures = {
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
         let i;
-        let j;
         let k = 0;
         let posts = [];
 

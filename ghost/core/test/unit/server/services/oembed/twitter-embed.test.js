@@ -2,9 +2,7 @@ const assert = require('assert');
 const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-embed');
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const nock = require('nock');
-const sinon = require('sinon');
 const {mockManager} = require('../../../../utils/e2e-framework');
-const dnsPromises = require('dns').promises;
 
 describe('TwitterOEmbedProvider', function () {
     before(async function () {
