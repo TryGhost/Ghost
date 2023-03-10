@@ -166,4 +166,27 @@ describe('Tiers API', function () {
                 })
             });
     });
+
+    it('Can create a new tier', async function () {
+        const tier = {
+            name: 'new premium tier',
+            monthly_price: 100,
+            currency: 'usd'
+        };
+
+        await agent
+            .post('/tiers/')
+            .body({tiers: [tier]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                tiers: Array(1).fill({
+                    id: matchers.anyObjectId,
+                    created_at: matchers.anyISODate,
+                    name: 'new premium tier',
+                    slug: 'new-premium-tier',
+                    monthly_price: 100,
+                    currency: 'USD'
+                })
+            });
+    });
 });
