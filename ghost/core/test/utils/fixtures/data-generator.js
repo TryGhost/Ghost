@@ -1669,7 +1669,7 @@ DataGenerator.forKnex = (function () {
         createEmailRecipient(DataGenerator.Content.email_recipients[5])
     ];
 
-    const email_recipient_failures = email_recipients.flatMap((recipient, index) => {
+    const email_recipient_failures = email_recipients.flatMap((recipient) => {
         if (recipient.failed_at === null) {
             if (recipient.delivered_at === null) {
                 return [{

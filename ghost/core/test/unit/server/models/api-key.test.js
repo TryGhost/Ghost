@@ -1,7 +1,6 @@
 const models = require('../../../../core/server/models');
 const should = require('should');
 const sinon = require('sinon');
-const testUtils = require('../../../utils');
 
 describe('Unit: models/api_key', function () {
     before(models.init);

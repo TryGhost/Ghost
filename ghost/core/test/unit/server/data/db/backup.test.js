@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const fs = require('fs-extra');
 const models = require('../../../../../core/server/models');
 const exporter = require('../../../../../core/server/data/exporter');

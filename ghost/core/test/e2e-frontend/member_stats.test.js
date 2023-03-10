@@ -1,5 +1,5 @@
 const should = require('should');
-const {memberCountRounding, getMemberStats} = require('../../core/frontend/utils/member-count.js');
+const {getMemberStats} = require('../../core/frontend/utils/member-count.js');
 
 describe('Front-end member stats ', function () {
     it('should return free', async function () {

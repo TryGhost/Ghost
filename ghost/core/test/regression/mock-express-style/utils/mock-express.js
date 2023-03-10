@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const http = require('http');
 
 module.exports = {

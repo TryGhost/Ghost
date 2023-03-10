@@ -9,7 +9,7 @@ const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId, anyObject} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject} = matchers;
 
 let membersAgent;
 let adminAgent;
@@ -59,7 +59,7 @@ describe('Members API', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri, body) => {
+            .reply((uri) => {
                 const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
                 if (!match) {
@@ -95,8 +95,8 @@ describe('Members API', function () {
         nock('https://api.stripe.com')
             .persist()
             .post(/v1\/.*/)
-            .reply((uri, body) => {
-                const [match, resource, id, action] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
+            .reply((uri) => {
+                const [match, resource] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
 
                 if (!match) {
                     return [500];

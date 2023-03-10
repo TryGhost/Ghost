@@ -502,7 +502,7 @@ describe('Posts API', function () {
 
         post.updated_at = res.body.posts[0].updated_at;
 
-        const res2 = await request
+        await request
             .put(localUtils.API.getApiQuery('posts/' + postId + '/'))
             .set('Origin', config.get('url'))
             .send({posts: [post]})
@@ -539,7 +539,7 @@ describe('Posts API', function () {
 
         post.updated_at = res.body.posts[0].updated_at;
 
-        const res2 = await request
+        await request
             .put(localUtils.API.getApiQuery('posts/' + postId + '/'))
             .set('Origin', config.get('url'))
             .send({posts: [post]})
@@ -1526,7 +1526,6 @@ describe('Posts API', function () {
         const id = res.body.posts[0].id;
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
         const newsletterSlug = testUtils.DataGenerator.Content.newsletters[0].slug;
-        const newsletterId2 = testUtils.DataGenerator.Content.newsletters[1].id;
         const newsletterSlug2 = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const updatedPost = {
@@ -1839,7 +1838,6 @@ describe('Posts API', function () {
 
             const draftPost = draftPostResponse.body.posts[0];
 
-            const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
             const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
             const loggingStub = sinon.stub(logging, 'error');

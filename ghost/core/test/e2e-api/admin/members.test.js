@@ -5,6 +5,8 @@ const ObjectId = require('bson-objectid').default;
 const assert = require('assert');
 const nock = require('nock');
 const sinon = require('sinon');
+const should = require('should');
+
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 
@@ -982,7 +984,7 @@ describe('Members API', function () {
 
         const newMember = body.members[0];
 
-        const updatedMember = await agent
+        await agent
             .put(`/members/${newMember.id}/`)
             .body({members: [compedPayload]})
             .expectStatus(200)
@@ -1269,8 +1271,8 @@ describe('Members API', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri, body) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
+            .reply((uri) => {
+                const [match, resource] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
                 if (!match) {
                     return [500];
@@ -1398,8 +1400,8 @@ describe('Members API', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri, body) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
+            .reply((uri) => {
+                const [match, resource] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
                 if (!match) {
                     return [500];
@@ -1588,7 +1590,7 @@ describe('Members API', function () {
         should(memberWithPaidSubscription.tiers[0].id).not.eql(product.id);
 
         // Add it manually
-        const member = await models.Member.edit({
+        await models.Member.edit({
             products: [
                 ...memberWithPaidSubscription.tiers,
                 {
@@ -1963,8 +1965,8 @@ describe('Members API', function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
         const price = testUtils.DataGenerator.Content.stripe_prices[0];
 
-        function nockCallback(method, uri, body) {
-            const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))?/) || [null];
+        function nockCallback(method, uri) {
+            const [match, resource] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))?/) || [null];
 
             if (!match) {
                 return [500];
@@ -1992,12 +1994,12 @@ describe('Members API', function () {
         nock('https://api.stripe.com:443')
             .persist()
             .post(/v1\/.*/)
-            .reply((uri, body) => nockCallback('POST', uri, body));
+            .reply(uri => nockCallback('POST', uri));
 
         nock('https://api.stripe.com:443')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri, body) => nockCallback('GET', uri, body));
+            .reply(uri => nockCallback('GET', uri));
 
         await agent
             .post(`/members/${memberId}/subscriptions/`)
@@ -2454,7 +2456,7 @@ describe('Members API', function () {
             });
 
         const memberId = body.members[0].id;
-    
+
         const editedMember = {
             subscribed: true // no change
         };
@@ -2522,11 +2524,11 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
-        
+
         const changedMember = body.members[0];
         assert.equal(changedMember.newsletters.length, 1); // the api only returns active newsletters
         assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed to an active newsletter');
-        
+
         const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
         assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
     });
@@ -2568,10 +2570,10 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
-        
+
         const changedMember = body.members[0];
         assert.equal(changedMember.newsletters.length, 0); // the api only returns active newsletters, so this member should have none
-        
+
         const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
         assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
     });

@@ -20,8 +20,8 @@ test.describe('Site Settings', () => {
             });
 
             // copy site password
-            const passwordInput = await page.locator('[data-test-password-input]');
-            const sitePassword = await passwordInput.inputValue();
+            //const passwordInput = await page.locator('[data-test-password-input]');
+            //const sitePassword = await passwordInput.inputValue();
 
             // frontend needs new context to store cookies
             const frontendContext = await browser.newContext();
