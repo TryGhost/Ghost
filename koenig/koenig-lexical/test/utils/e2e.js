@@ -150,7 +150,10 @@ export function prettifyHTML(string, options = {}) {
 export function prettifyJSON(string) {
     let output = string;
 
+    // replace urls inside markdown links
     output = output.replace(/\(blob:http[^"]*\)/g, '(blob:...)');
+    // replace any other urls
+    output = output.replace(/blob:http[^"]*/g, 'blob:...');
 
     return prettier.format(output, {
         parser: 'json'
@@ -280,6 +283,8 @@ export async function dragMouse(
     positionStart = 'middle',
     positionEnd = 'middle',
     mouseUp = true,
+    hover = 0,
+    steps = 1
 ) {
     let fromX = fromBoundingBox.x;
     let fromY = fromBoundingBox.y;
@@ -303,7 +308,11 @@ export async function dragMouse(
         toY += toBoundingBox.height;
     }
 
-    await page.mouse.move(toX, toY);
+    await page.mouse.move(toX, toY, {steps: steps});
+
+    if (hover > 0) {
+        await page.waitForTimeout(hover);
+    }
 
     if (mouseUp) {
         await page.mouse.up();
