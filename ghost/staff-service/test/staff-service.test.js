@@ -429,7 +429,9 @@ describe('StaffService', function () {
                 };
 
                 const attribution = {
-                    referrerSource: 'Twitter'
+                    referrerSource: 'Twitter',
+                    title: 'Welcome Post',
+                    url: 'https://example.com/welcome'
                 };
 
                 await service.emails.notifyFreeMemberSignup({member, attribution}, options);
@@ -447,8 +449,23 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
                 ).should.be.true();
+
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Source: Twitter'))
+                    sinon.match.has('html', sinon.match('Source'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Twitter'))
+                ).should.be.true();
+
+                // check attribution page
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Welcome Post'))
+                ).should.be.true();
+
+                // check attribution url
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('https://example.com/welcome'))
                 ).should.be.true();
             });
         });
@@ -486,7 +503,9 @@ describe('StaffService', function () {
 
             it('sends paid subscription start alert with attribution', async function () {
                 const attribution = {
-                    referrerSource: 'Twitter'
+                    referrerSource: 'Twitter',
+                    title: 'Welcome Post',
+                    url: 'https://example.com/welcome'
                 };
                 await service.emails.notifyPaidSubscriptionStarted({member, offer: null, tier, subscription, attribution}, options);
 
@@ -495,7 +514,22 @@ describe('StaffService', function () {
 
                 // check attribution text
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Source: Twitter'))
+                    sinon.match.has('html', sinon.match('Twitter'))
+                ).should.be.true();
+
+                // check attribution text
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Source'))
+                ).should.be.true();
+
+                // check attribution page
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Welcome Post'))
+                ).should.be.true();
+
+                // check attribution url
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('https://example.com/welcome'))
                 ).should.be.true();
             });
 

@@ -5,13 +5,14 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
 class StaffService {
-    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, DomainEvents, labs}) {
+    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, DomainEvents, labs, memberAttributionService}) {
         this.logging = logging;
         this.labs = labs;
         /** @private */
         this.settingsCache = settingsCache;
         this.models = models;
         this.DomainEvents = DomainEvents;
+        this.memberAttributionService = memberAttributionService;
 
         const Emails = require('./emails');
 
@@ -98,17 +99,29 @@ class StaffService {
         });
 
         if (type === MemberCreatedEvent && member.status === 'free') {
+            let attribution;
+            try {
+                attribution = await this.memberAttributionService.getMemberCreatedAttribution(event.data.memberId);
+            } catch (e) {
+                this.logging.warn(`Failed to get attribution for member - ${event?.data?.memberId}`);
+            }
             await this.emails.notifyFreeMemberSignup({
                 member,
-                attribution: event?.data?.attribution
+                attribution
             });
         } else if (type === SubscriptionActivatedEvent) {
+            let attribution;
+            try {
+                attribution = await this.memberAttributionService.getSubscriptionCreatedAttribution(event.data.subscriptionId);
+            } catch (e) {
+                this.logging.warn(`Failed to get attribution for member - ${event?.data?.memberId}`);
+            }
             await this.emails.notifyPaidSubscriptionStarted({
                 member,
                 offer,
                 tier,
                 subscription,
-                attribution: event?.data?.attribution
+                attribution
             });
         } else if (type === SubscriptionCancelledEvent) {
             subscription.canceledAt = event.timestamp;
