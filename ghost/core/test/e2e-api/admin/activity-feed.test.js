@@ -89,7 +89,6 @@ describe('Activity Feed API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockStripe();
         mockManager.mockMail();
     });
 
