@@ -23,6 +23,8 @@ export const CardWrapper = React.forwardRef(({isSelected, isEditing, cardWidth, 
     );
 });
 
+CardWrapper.displayName = 'CardWrapper';
+
 CardWrapper.propTypes = {
     isSelected: PropTypes.bool,
     isEditing: PropTypes.bool,

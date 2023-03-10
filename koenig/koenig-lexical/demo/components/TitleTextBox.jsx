@@ -1,6 +1,6 @@
 import React from 'react';
 
-const TitleTextBox = React.forwardRef(({title, setTitle, editorAPI}, ref) => {
+export const TitleTextBox = React.forwardRef(({title, setTitle, editorAPI}, ref) => {
     const titleEl = React.useRef(null);
 
     React.useImperativeHandle(ref, () => ({
@@ -57,5 +57,7 @@ const TitleTextBox = React.forwardRef(({title, setTitle, editorAPI}, ref) => {
             data-testid="post-title" />
     );
 });
+
+TitleTextBox.displayName = 'TitleTextBox';
 
 export default TitleTextBox;

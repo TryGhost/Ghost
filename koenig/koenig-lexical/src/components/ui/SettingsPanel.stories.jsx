@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-key */
 import React from 'react';
 
 import {ButtonGroupSetting, ColorPickerSetting, DropdownSetting, InputSetting, SettingsDivider, SettingsPanel, ThumbnailSetting, ToggleSetting} from './SettingsPanel';
@@ -153,8 +154,8 @@ export const VideoCard = Template.bind({});
 VideoCard.args = {
     children: [
         <ButtonGroupSetting
-            label='Video width' 
-            buttons={widthButtonGroup} 
+            label='Video width'
+            buttons={widthButtonGroup}
         />,
         <ToggleSetting
             label='Loop'

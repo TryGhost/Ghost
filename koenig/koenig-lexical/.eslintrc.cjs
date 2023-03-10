@@ -3,7 +3,8 @@ module.exports = {
     root: true,
     extends: [
         'react-app',
-        'plugin:ghost/browser'
+        'plugin:ghost/browser',
+        'plugin:react/recommended'
     ],
     plugins: [
         'ghost',
@@ -14,6 +15,11 @@ module.exports = {
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],
+
+        // suppress errors for missing 'import React' in JSX files, as we don't need it
+        'react/react-in-jsx-scope': 'off',
+        // ignore prop-types for now
+        'react/prop-types': 'off',
 
         'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],

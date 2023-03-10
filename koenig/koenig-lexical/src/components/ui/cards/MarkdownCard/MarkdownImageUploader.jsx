@@ -23,8 +23,8 @@ export default function MarkdownImageUploader({onChange, inputRef, progress, loa
 
             {
                 !!errors.length && (
-                    errors.map(error => (
-                        <div className="absolute inset-0 z-10 flex min-w-full flex-col items-center justify-center overflow-hidden bg-white/70">
+                    errors.map((error, i) => (
+                        <div key={`error-${i}`} className="absolute inset-0 z-10 flex min-w-full flex-col items-center justify-center overflow-hidden bg-white/70">
                             <div className="mb-4 w-3/5 text-center">
                                 <h3 className="mb-3 font-sans text-xl font-bold">{error.fileName}<span className="text-red"> failed to upload.</span></h3>
                                 <p className="font-sans text-sm font-normal">{error.message}</p>
