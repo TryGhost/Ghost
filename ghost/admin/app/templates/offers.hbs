@@ -14,6 +14,7 @@
                             @triggerClass="gh-contentfilter-menu-trigger"
                             @dropdownClass="gh-contentfilter-menu-dropdown"
                             @matchTriggerWidth={{false}}
+                            data-testid="offers-type-select"
                             as |type|
                         >
                             {{#if type.name}}{{type.name}} offers{{else}}<span class="red">Unknown type</span>{{/if}}
