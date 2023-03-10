@@ -28,7 +28,7 @@ import {
     $isAtStartOfDocument,
     $selectDecoratorNode
 } from '../utils/';
-import {$isListItemNode} from '@lexical/list';
+import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -571,6 +571,26 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                 },
                 COMMAND_PRIORITY_HIGH
             )
+        );
+    });
+
+    // merge list nodes of the same type when next to each other
+    React.useEffect(() => {
+        // not all editors have lists (e.g. caption inputs) and registering a transform
+        // for a node that isn't loaded in the editor will throw an error
+        if (!editor.hasNodes([ListNode])) {
+            return;
+        }
+
+        return mergeRegister(
+            editor.registerNodeTransform(ListNode, (node) => {
+                const nextSibling = node.getNextSibling();
+
+                if ($isListNode(nextSibling) && nextSibling.getListType() === node.getListType()) {
+                    node.append(...nextSibling.getChildren());
+                    nextSibling.remove();
+                }
+            })
         );
     });
 

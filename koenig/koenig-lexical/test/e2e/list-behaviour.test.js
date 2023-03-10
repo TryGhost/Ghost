@@ -214,4 +214,45 @@ describe('List behaviour', async () => {
             `);
         });
     });
+
+    describe('Merging', function () {
+        test('merges two ULs after deleting a separating paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('- one');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('two');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <ul>
+                    <li value="1" dir="ltr"><span data-lexical-text="true">one</span></li>
+                    <li value="2" dir="ltr"><span data-lexical-text="true">two</span></li>
+                </ul>
+            `);
+        });
+
+        test('does not merge two lists of different types after deleting separating paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('- ul one');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('1. ol one');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <ul>
+                    <li value="1" dir="ltr"><span data-lexical-text="true">ul one</span></li>
+                </ul>
+                <ol>
+                    <li value="1" dir="ltr"><span data-lexical-text="true">ol one</span></li>
+                </ol>
+            `);
+        });
+    });
 });
