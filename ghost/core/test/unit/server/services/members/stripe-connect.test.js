@@ -22,7 +22,7 @@ describe('Members - Stripe Connect', function () {
     });
 
     it('getStripeConnectTokenData returns token data when the state is correct', async function () {
-        const getSessionProp = prop => 'correct_state';
+        const getSessionProp = () => 'correct_state';
 
         const data = {
             p: 'publishable_stripe_key',
@@ -41,7 +41,7 @@ describe('Members - Stripe Connect', function () {
     });
 
     it('getStripeConnectTokenData throws when the state is incorrect', async function () {
-        const getSessionProp = prop => 'incorrect_state';
+        const getSessionProp = () => 'incorrect_state';
 
         const data = {
             p: 'publishable_stripe_key',
@@ -52,7 +52,7 @@ describe('Members - Stripe Connect', function () {
 
         const encodedData = Buffer.from(JSON.stringify(data)).toString('base64');
 
-        await stripeConnect.getStripeConnectTokenData(encodedData, getSessionProp).then((success) => {
+        await stripeConnect.getStripeConnectTokenData(encodedData, getSessionProp).then(() => {
             throw new Error('The token data should not be returned if the state is incorrect');
         }, (error) => {
             should.ok(error);

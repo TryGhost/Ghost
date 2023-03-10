@@ -28,7 +28,6 @@ const newsletterSnapshotWithoutSortOrder = {
 
 describe('Newsletters API', function () {
     let agent;
-    let mailMocks;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -37,7 +36,7 @@ describe('Newsletters API', function () {
     });
 
     beforeEach(function () {
-        mailMocks = mockManager.mockMail();
+        mockManager.mockMail();
     });
 
     afterEach(function () {

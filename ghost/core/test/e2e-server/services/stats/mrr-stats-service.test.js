@@ -51,8 +51,8 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
     nock('https://api.stripe.com')
         .persist()
         .get(/v1\/.*/)
-        .reply((uri, body) => {
-            const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
+        .reply((uri) => {
+            const [match, resource] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
             if (!match) {
                 return [500];
@@ -114,7 +114,7 @@ describe('MRR Stats Service', function () {
                 }
             ]);
         });
-    
+
         it('Increases MRR by 1 / 12 of yearly subscriptions', async function () {
             await createMemberWithSubscription('year', 12, 'usd', '2000-01-10');
             const result = await statsService.mrr.getCurrentMrr();
@@ -129,7 +129,7 @@ describe('MRR Stats Service', function () {
                 }
             ]);
         });
-    
+
         it('Increases MRR with monthly subscriptions', async function () {
             await createMemberWithSubscription('month', 1, 'usd', '2000-01-11');
             const result = await statsService.mrr.getCurrentMrr();

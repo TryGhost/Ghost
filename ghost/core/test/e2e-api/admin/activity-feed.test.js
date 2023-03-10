@@ -1,6 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyObjectId, anyContentLength, anyContentVersion, anyUuid, anyISODate, anyString, anyObject, anyNumber} = matchers;
-const models = require('../../../core/server/models');
 
 const assert = require('assert');
 const moment = require('moment');

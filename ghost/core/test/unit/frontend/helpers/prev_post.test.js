@@ -352,7 +352,7 @@ describe('{{prev_post}} helper', function () {
 
     describe('general error handling', function () {
         beforeEach(function () {
-            browsePostsStub = sinon.stub().callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function () {
                 return Promise.reject(new errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });
@@ -404,7 +404,7 @@ describe('{{prev_post}} helper', function () {
 
         beforeEach(function () {
             member = {uuid: 'test'};
-            browsePostsStub = sinon.stub().callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function () {
                 return Promise.resolve({
                     posts: [{slug: '/next/', title: 'post 3'}]
                 });

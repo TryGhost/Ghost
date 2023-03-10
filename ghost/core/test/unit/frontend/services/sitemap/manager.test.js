@@ -23,9 +23,7 @@ describe('Unit: sitemap/manager', function () {
         let pages;
         let tags;
         let authors;
-        let index;
 
-        index = new IndexGenerator();
         posts = new PostGenerator();
         pages = new PageGenerator();
         tags = new TagGenerator();

@@ -20,7 +20,12 @@ module.exports = {
         // TODO: remove these custom rules and fix the problems in test files where appropriate
         camelcase: 'off',
         'no-prototype-builtins': 'off',
-        'no-unused-vars': 'off',
+        'no-unused-vars': [
+            'error',
+            {
+                varsIgnorePattern: '^should$'
+            }
+        ],
         'no-useless-escape': 'off',
 
         'ghost/mocha/no-skipped-tests': 'error',

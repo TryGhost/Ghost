@@ -60,7 +60,7 @@ describe('Importer 1.0', function () {
             const options = Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal);
 
             return dataImporter.doImport(exportData, importOptions)
-                .then(function (result) {
+                .then(function () {
                     return Promise.all([
                         models.Post.findPage(options)
                     ]);

@@ -1851,7 +1851,6 @@ describe('Post Model', function () {
 
         it('can reorder existing, added and deleted tags', function () {
             const newJSON = _.cloneDeep(postJSON);
-            const lastTag = [postJSON.tags[2]];
 
             // remove tag in the middle (tag1, tag2, tag3 -> tag1, tag3)
             newJSON.tags.splice(1, 1);
