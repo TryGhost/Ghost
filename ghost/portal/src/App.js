@@ -534,7 +534,12 @@ export default class App extends React.Component {
             return null;
         }
         const firstPromoterId = getFirstpromoterId({site});
-        const siteDomain = getSiteDomain({site});
+        let siteDomain = getSiteDomain({site});
+        // Replace any leading subdomain and prefix the siteDomain with
+        // a `.` to allow the FPROM cookie to be accessible across all subdomains
+        // or the root.
+        siteDomain = siteDomain?.replace(/^(\S*\.)?(\S*\.\S*)$/i, '.$2');
+
         if (firstPromoterId && siteDomain) {
             const t = document.createElement('script');
             t.type = 'text/javascript';
