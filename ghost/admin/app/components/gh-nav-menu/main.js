@@ -111,7 +111,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
 
     @action
     toggleExploreWindow() {
-        this.explore.openExploreWindow(this.router.currentURL);
+        this.explore.openExploreWindow();
     }
 
     @task(function* () {

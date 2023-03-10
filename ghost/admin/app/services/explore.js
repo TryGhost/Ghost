@@ -6,14 +6,12 @@ export default class ExploreService extends Service {
     @service feature;
     @service ghostPaths;
 
-    // TODO: make this a config value
     exploreUrl = 'https://ghost.org/explore/';
     exploreRouteRoot = '#/explore';
     submitRoute = 'submit';
 
     @tracked exploreWindowOpen = false;
     @tracked siteData = null;
-    @tracked previousRoute = null;
     @tracked isIframeTransition = false;
 
     get apiUrl() {
@@ -97,34 +95,27 @@ export default class ExploreService extends Service {
         this.exploreWindowOpen = value;
     }
 
-    // Controls navigation to explore window modal which is triggered from the application UI.
-    // For example: pressing "View explore" link in navigation menu. It's main side effect is
-    // remembering the route from which the action has been triggered - "previousRoute" so it
-    // could be reused when closing the explore window
-    openExploreWindow(currentRoute, childRoute) {
+    openExploreWindow() {
         if (this.exploreWindowOpen) {
             // don't attempt to open again
             return;
         }
 
-        this.previousRoute = currentRoute;
-
         // Begin loading the iframe and setting the src if it's not already set
-        if (this.getExploreIframe() && !this.getExploreIframe()?.src) {
-            this.getExploreIframe().src = this.getIframeURL();
-        }
-
-        // Begin loading the iframe and setting the src if it's not already set
-        if (this.getExploreIframe() && !this.getExploreIframe()?.src) {
-            this.getExploreIframe().src = this.getIframeURL();
-        }
+        this.ensureIframeIsLoaded();
 
         // Ensures correct "getIframeURL" calculation when syncing iframe location
         // in toggleExploreWindow
-        window.location.hash = childRoute || '/explore';
+        window.location.hash = '/explore';
 
-        this.router.transitionTo(childRoute || '/explore');
+        this.router.transitionTo('/explore');
         this.toggleExploreWindow(true);
+    }
+
+    ensureIframeIsLoaded() {
+        if (this.getExploreIframe() && !this.getExploreIframe()?.src) {
+            this.getExploreIframe().src = this.getIframeURL();
+        }
     }
 
     getExploreIframe() {
