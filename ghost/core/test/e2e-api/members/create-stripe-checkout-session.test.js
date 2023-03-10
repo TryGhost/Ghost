@@ -24,7 +24,6 @@ describe('Create Stripe Checkout Session', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockManager.mockStripe();
     });
 
     afterEach(function () {

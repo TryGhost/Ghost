@@ -20,10 +20,12 @@ const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
 const dnsPromises = require('dns').promises;
+const StripeMocker = require('./stripe-mocker');
 
 let fakedLabsFlags = {};
 let allowedNetworkDomains = [];
 const originalLabsIsSet = labs.isSet;
+const stripeMocker = new StripeMocker();
 
 /**
  * Stripe Mocks
@@ -69,6 +71,7 @@ const allowStripe = () => {
 
 const mockStripe = () => {
     disableNetwork();
+    stripeMocker.stub();
 };
 
 const mockSlack = () => {
@@ -257,6 +260,7 @@ const restore = () => {
     allowedNetworkDomains = [];
     nock.cleanAll();
     nock.enableNetConnect();
+    stripeMocker.reset();
 
     if (mocks.webhookMockReceiver) {
         mocks.webhookMockReceiver.reset();
@@ -282,6 +286,7 @@ module.exports = {
     mockSetting,
     disableNetwork,
     restore,
+    stripeMocker,
     assert: {
         sentEmailCount,
         sentEmail,

@@ -20,6 +20,7 @@ const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
+const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -72,14 +73,36 @@ const newsletterSnapshot = {
 };
 
 const subscriptionSnapshot = {
+    id: anyString,
     start_date: anyString,
     current_period_end: anyString,
     price: {
+        id: anyString,
         price_id: anyObjectId,
         tier: {
+            id: anyString,
             tier_id: anyObjectId
         }
+    },
+    plan: {
+        id: anyString
+    },
+    customer: {
+        id: anyString
     }
+};
+
+const tierSnapshot = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    monthly_price_id: anyString,
+    yearly_price_id: anyString
+};
+
+const subscriptionSnapshotWithTier = {
+    ...subscriptionSnapshot,
+    tier: tierSnapshot
 };
 
 function buildMemberWithoutIncludesSnapshot(options) {
@@ -1268,24 +1291,9 @@ describe('Members API', function () {
                 data: [fakeSubscription]
             }
         };
-        nock('https://api.stripe.com')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
-
-                if (!match) {
-                    return [500];
-                }
-
-                if (resource === 'customers') {
-                    return [200, fakeCustomer];
-                }
-
-                if (resource === 'subscriptions') {
-                    return [200, fakeSubscription];
-                }
-            });
+        stripeMocker.customers.push(fakeCustomer);
+        stripeMocker.subscriptions.push(fakeSubscription);
+        stripeMocker.prices.push(fakePrice);
 
         const initialMember = {
             name: fakeCustomer.name,
@@ -1397,24 +1405,10 @@ describe('Members API', function () {
                 data: [fakeSubscription]
             }
         };
-        nock('https://api.stripe.com')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
-                if (!match) {
-                    return [500];
-                }
-
-                if (resource === 'customers') {
-                    return [200, fakeCustomer];
-                }
-
-                if (resource === 'subscriptions') {
-                    return [200, fakeSubscription];
-                }
-            });
+        stripeMocker.customers.push(fakeCustomer);
+        stripeMocker.subscriptions.push(fakeSubscription);
+        stripeMocker.prices.push(fakePrice);
 
         const initialMember = {
             name: fakeCustomer.name,
@@ -1963,43 +1957,9 @@ describe('Members API', function () {
 
     it('Can add a subscription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
-        const price = testUtils.DataGenerator.Content.stripe_prices[0];
 
-        function nockCallback(method, uri) {
-            const [match, resource] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))?/) || [null];
-
-            if (!match) {
-                return [500];
-            }
-
-            if (resource === 'customers') {
-                return [200, {id: 'cus_123', email: 'member1@test.com'}];
-            }
-
-            if (resource === 'subscriptions') {
-                const now = Math.floor(Date.now() / 1000);
-                return [200, {id: 'sub_123', customer: 'cus_123', cancel_at_period_end: false, items: {
-                    data: [{price: {
-                        id: price.stripe_price_id,
-                        recurring: {
-                            interval: price.interval
-                        },
-                        unit_amount: price.amount,
-                        currency: price.currency.toLowerCase()
-                    }}]
-                }, status: 'active', current_period_end: now + 24 * 3600, start_date: now}];
-            }
-        }
-
-        nock('https://api.stripe.com:443')
-            .persist()
-            .post(/v1\/.*/)
-            .reply(uri => nockCallback('POST', uri));
-
-        nock('https://api.stripe.com:443')
-            .persist()
-            .get(/v1\/.*/)
-            .reply(uri => nockCallback('GET', uri));
+        // Get the stripe price ID of the default price for month
+        const price = await stripeMocker.getPriceForTier('default-product', 'month');
 
         await agent
             .post(`/members/${memberId}/subscriptions/`)
@@ -2014,8 +1974,9 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    subscriptions: [subscriptionSnapshotWithTier],
+                    newsletters: anyArray,
+                    tiers: [tierSnapshot]
                 })
             })
             .matchHeaderSnapshot({
@@ -2034,8 +1995,9 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    subscriptions: [subscriptionSnapshotWithTier],
+                    newsletters: anyArray,
+                    tiers: [tierSnapshot]
                 })
             })
             .matchHeaderSnapshot({
@@ -2046,48 +2008,9 @@ describe('Members API', function () {
 
     it('Can edit a subscription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[1].id;
-        const price = testUtils.DataGenerator.Content.stripe_prices[0];
-        const stripeCustomerId = 'cus_GbEMMOZNVrL450';
-        const stripeSubscriptionId = 'sub_K1cBgJt6sCMu5n';
 
-        const stripeSubscriptionFixture = ({status = 'active'} = {}) => {
-            const now = Math.floor(Date.now() / 1000);
-            return {
-                id: stripeSubscriptionId,
-                customer: stripeCustomerId,
-                cancel_at_period_end: false,
-                items: {
-                    data: [{
-                        price: {
-                            id: price.stripe_price_id,
-                            recurring: {
-                                interval: price.interval
-                            },
-                            unit_amount: price.amount,
-                            currency: price.currency.toLowerCase()
-                        }
-                    }]
-                },
-                status: status,
-                current_period_end: now + 24 * 3600,
-                start_date: now
-            };
-        };
-
-        nock('https://api.stripe.com:443')
-            .post('/v1/customers')
-            .reply(200, {
-                id: `cus_GbEMMOZNVrL450`,
-                email: 'member1@test.com'
-            });
-
-        nock('https://api.stripe.com:443')
-            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture());
-
-        nock('https://api.stripe.com:443')
-            .post('/v1/subscriptions')
-            .reply(200, stripeSubscriptionFixture());
+        // Get the stripe price ID of the default price for month
+        const price = await stripeMocker.getPriceForTier('default-product', 'year');
 
         const res = await agent
             .post(`/members/${memberId}/subscriptions/`)
@@ -2102,8 +2025,9 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    subscriptions: [subscriptionSnapshotWithTier],
+                    newsletters: anyArray,
+                    tiers: [tierSnapshot]
                 })
             })
             .matchHeaderSnapshot({
@@ -2112,14 +2036,6 @@ describe('Members API', function () {
             });
 
         const subscriptionId = res.body.members[0].subscriptions[0].id;
-
-        nock('https://api.stripe.com:443')
-            .delete(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
-
-        nock('https://api.stripe.com:443')
-            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
 
         const editRes = await agent
             .put(`/members/${memberId}/subscriptions/${subscriptionId}`)
@@ -2135,7 +2051,8 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    newsletters: anyArray,
+                    tiers: []
                 })
             })
             .matchHeaderSnapshot({
@@ -2207,42 +2124,6 @@ describe('Members API', function () {
             });
     });
 
-    it('Can delete a member without cancelling Stripe Subscription', async function () {
-        let subscriptionCanceled = false;
-        nock('https://api.stripe.com')
-            .persist()
-            .delete(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
-
-                if (match && resource === 'subscriptions') {
-                    subscriptionCanceled = true;
-                    return [200, {
-                        id,
-                        status: 'canceled'
-                    }];
-                }
-
-                return [500];
-            });
-
-        // @TODO This is wrong because it changes the state for the rest of the tests
-        // We need to add a member via a fixture and then remove them OR work out how
-        // to reapply fixtures before each test
-        const memberToDelete = fixtureManager.get('members', 2);
-
-        await agent
-            .delete(`members/${memberToDelete.id}/`)
-            .expectStatus(204)
-            .expectEmptyBody()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
-    });
-
     // Export members to CSV
 
     it('Can export CSV', async function () {
@@ -2290,6 +2171,80 @@ describe('Members API', function () {
         should.exist(csv.data.find(row => row.labels.length > 0));
     });
 
+    it('Can delete a member without cancelling Stripe Subscription', async function () {
+        let subscriptionCanceled = false;
+        mockManager.restore();
+        nock('https://api.stripe.com')
+            .persist()
+            .delete(/v1\/.*/)
+            .reply((uri) => {
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
+
+                if (match && resource === 'subscriptions') {
+                    subscriptionCanceled = true;
+                    return [200, {
+                        id,
+                        status: 'canceled'
+                    }];
+                }
+
+                return [500];
+            });
+
+        // @TODO This is wrong because it changes the state for the rest of the tests
+        // We need to add a member via a fixture and then remove them OR work out how
+        // to reapply fixtures before each test
+        const memberToDelete = fixtureManager.get('members', 2);
+
+        await agent
+            .delete(`members/${memberToDelete.id}/`)
+            .expectStatus(204)
+            .expectEmptyBody()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
+    });
+
+    it('Can delete a member while cancelling Stripe Subscription', async function () {
+        let subscriptionCanceled = false;
+        mockManager.restore();
+        nock('https://api.stripe.com')
+            .persist()
+            .delete(/v1\/.*/)
+            .reply((uri) => {
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
+
+                if (match && resource === 'subscriptions') {
+                    subscriptionCanceled = true;
+                    return [200, {
+                        id,
+                        status: 'canceled'
+                    }];
+                }
+
+                return [500];
+            });
+
+        // @TODO This is wrong because it changes the state for the rest of the tests
+        // We need to add a member via a fixture and then remove them OR work out how
+        // to reapply fixtures before each test
+        const memberToDelete = fixtureManager.get('members', 3);
+
+        await agent
+            .delete(`members/${memberToDelete.id}/?cancel=true`)
+            .expectStatus(204)
+            .expectEmptyBody()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        assert.equal(subscriptionCanceled, true, 'expected subscription to be canceled');
+    });
+
     // Get stats
 
     it('Can fetch member counts stats', async function () {
@@ -2328,7 +2283,7 @@ describe('Members API', function () {
             .get('/members/?filter=newsletters:weekly-newsletter')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(4).fill(memberMatcherShallowIncludes)
+                members: new Array(3).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,

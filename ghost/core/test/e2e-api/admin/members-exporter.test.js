@@ -99,7 +99,6 @@ describe('Members API — exportCSV', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockStripe();
         mockManager.mockMail();
     });
 

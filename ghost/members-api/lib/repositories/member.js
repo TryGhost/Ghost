@@ -425,7 +425,7 @@ module.exports = class MemberRepository {
 
         // Determine if we need to fetch the initial member with relations
         const needsProducts = this._stripeAPIService.configured && data.products;
-        
+
         // only update newsletters if we are receiving newsletter data
         const needsNewsletters = memberData.newsletters || typeof memberData.subscribed === 'boolean';
 
