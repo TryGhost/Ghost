@@ -79,7 +79,7 @@
     "@vitejs/plugin-react": "2.2.0",
     "@vitest/coverage-c8": "0.29.2",
     "@vitest/ui": "0.29.2",
-    "autoprefixer": "10.4.13",
+    "autoprefixer": "10.4.14",
     "babel-loader": "9.1.2",
     "cross-fetch": "^3.1.5",
     "eslint-config-react-app": "7.0.1",
