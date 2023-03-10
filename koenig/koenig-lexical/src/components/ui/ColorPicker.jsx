@@ -4,9 +4,9 @@ export function ColorPicker({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
             <ul className="flex w-full items-center justify-between rounded font-sans text-md font-normal text-white">
-                {buttons.map(({label, name, color}, index) => (
+                {buttons.map(({label, name, color}) => (
                     <ColorButton
-                        key={index}
+                        key={`${name}-${label}`}
                         color={color}
                         label={label}
                         name={name}

@@ -16,8 +16,8 @@ export function Dropdown({trigger, menu}) {
             </button>
             {open && (
                 <ul className="absolute mt-[-1px] w-full rounded-b border border-grey-200 bg-white py-1 shadow">
-                    {menu.map((menuItem, index) => (
-                        <li key={index} className="hover:bg-grey-100">
+                    {menu.map(menuItem => (
+                        <li key={menuItem} className="hover:bg-grey-100">
                             <button className="h-full w-full cursor-pointer px-3 py-1 text-left" type="button" onClick={handleOpen}>{menuItem}</button>
                         </li>
                     ))}

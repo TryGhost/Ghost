@@ -29,6 +29,7 @@ module.exports = {
             locale: 'en'
         }],
         'react/button-has-type': 'error',
+        'react/no-array-index-key': 'error',
 
         'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],

@@ -25,10 +25,11 @@ export function UnsplashGalleryColumns(props) {
 
     return (
         props?.columns.map((array, index) => (
+            // eslint-disable-next-line react/no-array-index-key
             <MasonryColumn key={index}>
                 {
                     array.map(payload => (
-                        <UnsplashImage 
+                        <UnsplashImage
                             key={payload.id}
                             alt={payload.alt_description}
                             height={payload.height}
@@ -64,9 +65,9 @@ export function GalleryLayout(props) {
 function UnsplashGallery({zoomed,
     error,
     galleryRef,
-    isLoading, 
-    dataset, 
-    selectImg, 
+    isLoading,
+    dataset,
+    selectImg,
     insertImage}) {
     if (zoomed) {
         return (

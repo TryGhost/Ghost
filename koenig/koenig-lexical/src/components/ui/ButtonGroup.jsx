@@ -6,9 +6,9 @@ export function ButtonGroup({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
             <ul className="flex items-center justify-evenly rounded bg-grey-100 font-sans text-md font-normal text-white">
-                {buttons.map(({label, name, Icon}, index) => (
+                {buttons.map(({label, name, Icon}) => (
                     <IconButton
-                        key={index}
+                        key={`${name}-${label}`}
                         Icon={Icon}
                         label={label}
                         name={name}

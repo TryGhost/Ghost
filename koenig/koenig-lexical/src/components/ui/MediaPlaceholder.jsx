@@ -54,9 +54,9 @@ export function MediaPlaceholder({
                                     <p className={`font-sans text-sm font-normal text-grey-700 transition-all group-hover:text-grey-800 ${size === 'xsmall' ? '' : 'mt-4'}`}>{desc}</p>
                                 </>
                             }
-                            {errors.map((error, index) => (
+                            {errors.map(error => (
                                 <span
-                                    key={index}
+                                    key={error.message}
                                     className={`font-sans text-sm font-semibold text-red ${size === 'xsmall' || 'mt-3 max-w-[65%]'}`}
                                     data-testid={errorDataTestId}
                                 >{error.message}</span>
