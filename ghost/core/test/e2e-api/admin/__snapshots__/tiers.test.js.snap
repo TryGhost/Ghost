@@ -48,6 +48,30 @@ Object {
 }
 `;
 
+exports[`Tiers API Can create a new tier 1: [body] 1`] = `
+Object {
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 100,
+      "name": "new premium tier",
+      "slug": "new-premium-tier",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": null,
+      "visibility": "public",
+      "welcome_page_url": null,
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
 exports[`Tiers API Can edit tier properties and relations 1: [body] 1`] = `
 Object {
   "meta": Object {
