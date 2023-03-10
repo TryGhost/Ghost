@@ -27,8 +27,16 @@ class StaffServiceEmails {
 
             const subject = `🥳 Free member signup: ${memberData.name}`;
 
+            let attributionTitle = attribution?.title || '';
+            // In case of a homepage attribution, we want to show the title as "Homepage" on email
+            if (attributionTitle === 'homepage') {
+                attributionTitle = 'Homepage';
+            }
+
             const templateData = {
                 memberData,
+                attributionTitle,
+                attributionUrl: attribution?.url || '',
                 referrerSource: attribution?.referrerSource,
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
@@ -73,8 +81,16 @@ class StaffServiceEmails {
 
             let offerData = this.getOfferData(offer);
 
+            let attributionTitle = attribution?.title || '';
+            // In case of a homepage attribution, we want to show the title as "Homepage" on email
+            if (attributionTitle === 'homepage') {
+                attributionTitle = 'Homepage';
+            }
+
             const templateData = {
                 memberData,
+                attributionTitle,
+                attributionUrl: attribution?.url || '',
                 referrerSource: attribution?.referrerSource,
                 tierData,
                 offerData,
