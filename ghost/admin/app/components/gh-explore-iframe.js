@@ -7,18 +7,14 @@ export default class GhExploreIframe extends Component {
     @service router;
     @service feature;
 
+    constructor() {
+        super(...arguments);
+        window.addEventListener('message', this.handleIframeMessage);
+    }
+
     willDestroy() {
         super.willDestroy(...arguments);
         window.removeEventListener('message', this.handleIframeMessage);
-    }
-
-    @action
-    setup() {
-        // Only begin setup when Explore window is toggled open
-        // to avoid unnecessary loading of assets
-        if (this.explore.exploreWindowOpen) {
-            this.explore.getExploreIframe().src = this.explore.getIframeURL();
-        }
     }
 
     @action
@@ -48,11 +44,6 @@ export default class GhExploreIframe extends Component {
         if (this.explore.exploreWindowOpen) {
             this.explore.sendUIUpdate({darkMode: this.feature.nightShift});
         }
-    }
-
-    @action
-    attachMessageListener() {
-        window.addEventListener('message', this.handleIframeMessage);
     }
 
     // The iframe can send route updates to navigate to within Admin, as some routes
