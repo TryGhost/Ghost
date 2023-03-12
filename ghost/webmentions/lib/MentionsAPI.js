@@ -38,9 +38,15 @@ const Mention = require('./Mention');
  */
 
 /**
+ * @typedef {object} GetAllOptions
+ * @prop {string} [filter] A valid NQL string
+ */
+
+/**
  * @typedef {object} IMentionRepository
  * @prop {(mention: Mention) => Promise<void>} save
  * @prop {(options: GetPageOptions) => Promise<Page<Mention>>} getPage
+ * @prop {(options: GetAllOptions) => Promise<Mention[]>} getAll
  * @prop {(source: URL, target: URL) => Promise<Mention>} getBySourceAndTarget
  */
 
@@ -72,6 +78,13 @@ const Mention = require('./Mention');
  */
 
 /**
+ * @typedef {object} MentionReport
+ * @prop {Date} startDate
+ * @prop {Date} endDate
+ * @prop {Mention[]} mentions
+ */
+
+/**
  * @typedef {object} IWebmentionMetadata
  * @prop {(url: URL) => Promise<WebmentionMetadata>} fetch
  */
@@ -98,6 +111,25 @@ module.exports = class MentionsAPI {
         this.#resourceService = deps.resourceService;
         this.#routingService = deps.routingService;
         this.#webmentionMetadata = deps.webmentionMetadata;
+    }
+
+    /**
+     * @param {Date} startDate
+     * @param {Date} endDate
+     * @returns {Promise<MentionReport>}
+     */
+    async getMentionReport(startDate, endDate) {
+        const mentions = await this.#repository.getAll({
+            filter: `created_at:>${startDate.toISOString()}+created_at:<${endDate.toISOString()}`
+        });
+
+        const report = {
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            mentions
+        };
+
+        return report;
     }
 
     /**
