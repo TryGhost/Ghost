@@ -32,6 +32,7 @@
     "!core/server/api/endpoints/utils",
     "core/server/services/email-analytics/jobs/**",
     "core/server/services/members/jobs/**",
-    "core/server/services/email-service/wrapper.js"
+    "core/server/services/email-service/wrapper.js",
+    "core/server/services/**/service.js"
   ]
 }
