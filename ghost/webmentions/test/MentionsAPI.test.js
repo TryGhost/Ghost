@@ -44,6 +44,31 @@ describe('MentionsAPI', function () {
         sinon.restore();
     });
 
+    it('Can generate a mentions report', async function () {
+        const repository = new InMemoryMentionRepository();
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: mockResourceService,
+            webmentionMetadata: mockWebmentionMetadata
+        });
+
+        const mention = await api.processWebmention({
+            source: new URL('https://source.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        assert(mention instanceof Mention);
+
+        const now = new Date();
+
+        const report = await api.getMentionReport(new Date(0), new Date());
+
+        assert.deepEqual(report.startDate, new Date(0));
+        assert.deepEqual(report.endDate, now);
+    });
+
     it('Can list paginated mentions', async function () {
         const repository = new InMemoryMentionRepository();
         const api = new MentionsAPI({

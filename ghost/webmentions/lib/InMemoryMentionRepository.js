@@ -115,4 +115,15 @@ module.exports = class InMemoryMentionRepository {
             }
         };
     }
+
+    async getAll(options) {
+        const page = await this.getPage({
+            filter: options.filter,
+            order: options.order,
+            page: null,
+            limit: 'all'
+        });
+
+        return page.data;
+    }
 };
