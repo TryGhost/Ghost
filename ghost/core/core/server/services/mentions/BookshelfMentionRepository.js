@@ -12,6 +12,7 @@ const logging = require('@tryghost/logging');
 
 /**
  * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').GetPageOptions} GetPageOptions
+ * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').GetAllOptions} GetAllOptions
  */
 
 /**
@@ -82,6 +83,16 @@ module.exports = class BookshelfMentionRepository {
             data: await Promise.all(page.data.map(model => this.#modelToMention(model))),
             meta: page.meta
         };
+    }
+
+    /**
+     * @param {GetAllOptions} options
+     * @returns {Promise<import('@tryghost/webmentions/lib/Mention')[]>}
+     */
+    async getAll(options) {
+        const models = await this.#MentionModel.findAll(options);
+
+        return await Promise.all(models.map(model => this.#modelToMention(model)));
     }
 
     /**
