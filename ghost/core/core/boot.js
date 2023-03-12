@@ -315,6 +315,7 @@ async function initServices({config}) {
     const emailService = require('./server/services/email-service');
     const emailAnalytics = require('./server/services/email-analytics');
     const mentionsService = require('./server/services/mentions');
+    const mentionsEmailReport = require('./server/services/mentions-email-report');
     const tagsPublic = require('./server/services/tags-public');
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
@@ -333,6 +334,7 @@ async function initServices({config}) {
     await Promise.all([
         memberAttribution.init(),
         mentionsService.init(),
+        mentionsEmailReport.init(),
         staffService.init(),
         members.init(),
         tiers.init(),
