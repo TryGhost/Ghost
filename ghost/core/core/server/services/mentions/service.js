@@ -25,6 +25,8 @@ function getPostUrl(post) {
 }
 
 module.exports = {
+    /** @type {import('@tryghost/webmentions/lib/MentionsAPI')} */
+    api: null,
     controller: new MentionController(),
     didInit: false,
     async init() {
@@ -55,6 +57,8 @@ module.exports = {
             resourceService,
             routingService
         });
+
+        this.api = api;
 
         this.controller.init({
             api,
