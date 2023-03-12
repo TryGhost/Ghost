@@ -163,6 +163,23 @@ class StaffServiceEmails {
     }
 
     /**
+     * @param {object} recipient
+     * @param {string} recipient.email
+     * @param {string} recipient.slug
+     */
+    async getSharedData(recipient) {
+        return {
+            siteTitle: this.settingsCache.get('title'),
+            siteUrl: this.urlUtils.getSiteUrl(),
+            siteDomain: this.siteDomain,
+            accentColor: this.settingsCache.get('accent_color'),
+            fromEmail: this.fromEmailAddress,
+            toEmail: recipient.email,
+            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${recipient.slug}`)
+        };
+    }
+
+    /**
      *
      * @param {object} eventData
      * @param {object} eventData.milestone
@@ -322,13 +339,53 @@ class StaffServiceEmails {
         });
     }
 
-    async renderEmailTemplate(templateName, data) {
+    async renderHTML(templateName, data) {
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
         const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+
+        this.Handlebars.registerHelper('eq', function (arg, value, options) {
+            if (arg === value) {
+                return options.fn(this);
+            } else {
+                return options.inverse(this);
+            }
+        });
+
+        this.Handlebars.registerHelper('limit', function (array, limit) {
+            if (!Array.isArray(array)) {
+                return [];
+            }
+            return array.slice(0,limit);
+        });
+
+        let sharedData = {};
+        if (data.recipient) {
+            sharedData = await this.getSharedData(data.recipient);
+        }
+
+        return htmlTemplate({
+            ...data,
+            ...sharedData
+        });
+    }
+
+    async renderText(templateName, data) {
         const textTemplate = require(`./email-templates/${templateName}.txt.js`);
 
-        const html = htmlTemplate(data);
-        const text = textTemplate(data);
+        let sharedData = {};
+        if (data.recipient) {
+            sharedData = await this.getSharedData(data.recipient);
+        }
+
+        return textTemplate({
+            ...data,
+            ...sharedData
+        });
+    }
+
+    async renderEmailTemplate(templateName, data) {
+        const html = await this.renderHTML(templateName, data);
+        const text = await this.renderText(templateName, data);
 
         return {html, text};
     }

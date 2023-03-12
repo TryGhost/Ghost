@@ -4,6 +4,9 @@ const sinon = require('sinon');
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
+// Stuff we are testing
+const DomainEvents = require('@tryghost/domain-events');
+
 require('./utils');
 const StaffService = require('../index');
 
@@ -190,6 +193,65 @@ describe('StaffService', function () {
                 subscribeStub.calledWith(SubscriptionCancelledEvent).should.be.true();
                 subscribeStub.calledWith(MemberCreatedEvent).should.be.true();
                 subscribeStub.calledWith(MilestoneCreatedEvent).should.be.true();
+            });
+
+            it('listens to events', async function () {
+                service = new StaffService({
+                    logging: {
+                        info: loggingInfoStub,
+                        warn: () => {},
+                        error: () => {}
+                    },
+                    models: {
+                        User: {
+                            getEmailAlertUsers: getEmailAlertUsersStub
+                        }
+                    },
+                    mailer: {
+                        send: mailStub
+                    },
+                    DomainEvents,
+                    settingsCache,
+                    urlUtils,
+                    settingsHelpers
+                });
+                service.subscribeEvents();
+                sinon.spy(service, 'handleEvent');
+                DomainEvents.dispatch(MemberCreatedEvent.create({
+                    source: 'member',
+                    memberId: 'member-2'
+                }));
+                await DomainEvents.allSettled();
+                service.handleEvent.calledWith(MemberCreatedEvent).should.be.true();
+
+                DomainEvents.dispatch(SubscriptionActivatedEvent.create({
+                    source: 'member',
+                    memberId: 'member-1',
+                    subscriptionId: 'sub-1',
+                    offerId: 'offer-1',
+                    tierId: 'tier-1'
+                }));
+                await DomainEvents.allSettled();
+                service.handleEvent.calledWith(SubscriptionActivatedEvent).should.be.true();
+
+                DomainEvents.dispatch(SubscriptionCancelledEvent.create({
+                    source: 'member',
+                    memberId: 'member-1',
+                    subscriptionId: 'sub-1',
+                    tierId: 'tier-1'
+                }));
+                await DomainEvents.allSettled();
+                service.handleEvent.calledWith(SubscriptionCancelledEvent).should.be.true();
+
+                DomainEvents.dispatch(MilestoneCreatedEvent.create({
+                    milestone: {
+                        type: 'arr',
+                        value: '100',
+                        currency: 'usd'
+                    }
+                }));
+                await DomainEvents.allSettled();
+                service.handleEvent.calledWith(MilestoneCreatedEvent).should.be.true();
             });
         });
 
