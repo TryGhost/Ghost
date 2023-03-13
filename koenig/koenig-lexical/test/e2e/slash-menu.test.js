@@ -48,6 +48,14 @@ describe('Slash menu', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
+        it('opens with / + SHIFT', async function () {
+            await focusEditor(page);
+            await page.keyboard.down('Shift');
+            await page.keyboard.type('/');
+            await page.keyboard.up('Shift');
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
+        });
+
         it('does not open with / on populated paragraph', async function () {
             await focusEditor(page);
             await page.keyboard.type('testing');

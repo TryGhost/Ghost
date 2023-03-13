@@ -121,10 +121,10 @@ function useSlashCardMenu(editor) {
         }
 
         const triggerMenu = (event) => {
-            const {key, isComposing, shiftKey, ctrlKey, metaKey, altKey} = event;
+            const {key, isComposing, ctrlKey, metaKey} = event;
 
             // we only care about / presses when not composing or pressed with modifiers
-            if (key !== '/' || isComposing || shiftKey || ctrlKey || metaKey || altKey) {
+            if (key !== '/' || isComposing || ctrlKey || metaKey) {
                 return;
             }
 
