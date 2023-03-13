@@ -728,13 +728,6 @@
     padding: 2.4rem;
 }
 
-.modal-fullsettings-preview-container-labs {
-    overflow: hidden;
-    background: var(--white);
-    height: 100vh;
-    overflow-y: scroll;
-}
-
 .modal-fullsettings-bottom {
     position: sticky;
     -webkit-position: sticky;

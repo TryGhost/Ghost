@@ -1,4 +1,4 @@
-<div class="gh-members-emailpreview">
+<div class="gh-members-emailpreview gh-members-emailpreview-labs">
     <div class="gh-members-emailpreview-container">
         <div class="gh-members-emailpreview-faux">
             <p>
@@ -27,9 +27,10 @@
             {{/if}}
             <div class="gh-members-emailpreview-title {{if (eq @newsletter.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
                 <h2 class="{{if (eq @newsletter.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
-                <p>
-                    <span>By {{or this.session.user.name this.session.user.email}} – {{moment-format (moment-site-tz) "D MMM YYYY"}} – </span> <a href="javascript:">View online →</a>
-                </p>
+                <div>
+                    <p>By {{or this.session.user.name this.session.user.email}} on {{moment-format (moment-site-tz) "D MMM YYYY"}}</p>
+                    <a href="javascript:">{{svg-jar "arrow-top-right"}} View online</a> <a href="javascript:"> {{svg-jar "comments"}} Comments</a>
+                </div>
             </div>
             {{#if @newsletter.showFeatureImage}}
                 <div class="gh-members-emailpreview-featureimage" style={{this.featureImageStyle}}></div>
@@ -43,7 +44,6 @@
 
             {{#if (and @newsletter.feedbackEnabled (feature "audienceFeedback"))}}
                 <div class="gh-members-emailpreview-feedback gh-members-emailpreview-content">
-                    <h4 class="gh-members-emailpreview-feedback-title">Give feedback on this post</h4>
 
                     <div class="gh-members-emailpreview-feedback-buttons-group">
                         <Modals::Newsletters::Components::FeedbackButton
@@ -53,6 +53,10 @@
                         <Modals::Newsletters::Components::FeedbackButton
                             @text="Less like this"
                             @icon="thumbs-down" />
+
+                        <Modals::Newsletters::Components::FeedbackButton
+                            @text="Comments"
+                            @icon="comments" />
                     </div>
                 </div>
             {{/if}}
