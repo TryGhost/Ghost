@@ -1,53 +1,16 @@
 import {
-    $createParagraphNode,
-    ElementNode
+    $createParagraphNode
 } from 'lexical';
+import {AsideNode as BaseAsideNode} from '@tryghost/kg-default-nodes';
 import {
     addClassNamesToElement
 } from '@lexical/utils';
 
-export class AsideNode extends ElementNode {
-    static getType() {
-        return 'aside';
-    }
-
-    static clone(node) {
-        return new AsideNode(node.__key);
-    }
-
-    // View
-
+export class AsideNode extends BaseAsideNode {
     createDOM(config) {
         const element = document.createElement('aside');
         addClassNamesToElement(element, config.theme.aside);
         return element;
-    }
-    updateDOM(prevNode, dom) {
-        return false;
-    }
-
-    static importDOM() {
-        return {
-            aside: node => ({
-                conversion: convertAsideElement,
-                priority: 0
-            })
-        };
-    }
-
-    static importJSON(serializedNode) {
-        const node = $createAsideNode();
-        node.setFormat(serializedNode.format);
-        node.setIndent(serializedNode.indent);
-        node.setDirection(serializedNode.direction);
-        return node;
-    }
-
-    exportJSON() {
-        return {
-            ...super.exportJSON(),
-            type: 'aside'
-        };
     }
 
     // Mutation
@@ -67,11 +30,6 @@ export class AsideNode extends ElementNode {
         this.replace(paragraph);
         return true;
     }
-}
-
-function convertAsideElement() {
-    const node = $createAsideNode;
-    return {node};
 }
 
 export function $createAsideNode() {
