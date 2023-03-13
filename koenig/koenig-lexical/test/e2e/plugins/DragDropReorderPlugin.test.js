@@ -24,13 +24,16 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await focusEditor(page);
 
+        await page.keyboard.type('/image');
+        await page.waitForSelector('[data-kg-card-menu-item="Image"][data-kg-cardmenu-selected="true"]');
+
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
-            await page.keyboard.type('/image'),
             await page.keyboard.press('Enter')
         ]);
         await fileChooser.setFiles([filePath]);
 
+        await page.waitForSelector('[data-kg-card="image"] [data-testid="image-card-populated"]');
         await page.keyboard.press('ArrowDown');
 
         await page.keyboard.type('/divider');
@@ -70,18 +73,22 @@ describe('Drag Drop Reorder Plugin', async function () {
         await focusEditor(page);
 
         await page.keyboard.type('/divider');
+        await page.waitForSelector('[data-kg-card-menu-item="Divider"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
 
         await page.keyboard.type('This is some text');
         await page.keyboard.press('Enter');
 
+        await page.keyboard.type('/image');
+        await page.waitForSelector('[data-kg-card-menu-item="Image"][data-kg-cardmenu-selected="true"]');
+
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
-            await page.keyboard.type('/image'),
             await page.keyboard.press('Enter')
         ]);
         await fileChooser.setFiles([filePath]);
 
+        await page.waitForSelector('[data-kg-card="image"] [data-testid="image-card-populated"]');
         await page.keyboard.press('ArrowDown');
 
         await assertHTML(page, html`
@@ -117,13 +124,16 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await focusEditor(page);
 
+        await page.keyboard.type('/image');
+        await page.waitForSelector('[data-kg-card-menu-item="Image"][data-kg-cardmenu-selected="true"]');
+
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
-            await page.keyboard.type('/image'),
             await page.keyboard.press('Enter')
         ]);
         await fileChooser.setFiles([filePath]);
 
+        await page.waitForSelector('[data-kg-card="image"] [data-testid="image-card-populated"]');
         await page.keyboard.press('ArrowDown');
 
         await page.keyboard.type('/divider');
@@ -168,13 +178,16 @@ describe('Drag Drop Reorder Plugin', async function () {
 
         await focusEditor(page);
 
+        await page.keyboard.type('/image');
+        await page.waitForSelector('[data-kg-card-menu-item="Image"][data-kg-cardmenu-selected="true"]');
+
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
-            await page.keyboard.type('/image'),
             await page.keyboard.press('Enter')
         ]);
         await fileChooser.setFiles([filePath]);
 
+        await page.waitForSelector('[data-kg-card="image"] [data-testid="image-card-populated"]');
         await page.keyboard.press('ArrowDown');
 
         await page.keyboard.type('/divider');

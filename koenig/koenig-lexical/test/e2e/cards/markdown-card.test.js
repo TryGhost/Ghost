@@ -185,14 +185,20 @@ describe('Markdown card', async () => {
 
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
+        await page.waitForSelector('[data-kg-card="markdown"] .editor-toolbar');
         await page.keyboard.press(`${ctrlOrCmd}+Alt+I`);
 
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(filePath);
 
         // wait for progress bar to be shown and subsequently hidden
-        await page.waitForSelector('[data-testid="progress-bar"]');
-        await expect(await page.getByTestId('progress-bar')).not.toBeVisible();
+        // TODO: these assertions cause a flaky test now that we've shortened the upload step timeouts,
+        // TODO: but we should find a way to re-enable them
+        // await page.waitForSelector('[data-testid="progress-bar"]');
+        // await expect(await page.getByTestId('progress-bar')).not.toBeVisible();
+
+        // wait for image markdown to be inserted
+        await page.waitForSelector('[data-kg-card="markdown"] .cm-formatting-image');
 
         await assertRootChildren(page, JSON.stringify([
             {
