@@ -8,8 +8,11 @@ Early stage re-write of Ghost's editor, using Lexical as the editor framework in
 
 This package makes use of two other built packages in the monorepo, those packages will need to be built before this package's build will succeed.
 
-`cd packages/kg-default-nodes && yarn build`
-`cd packages/kg-clean-basic-html && yarn build`
+```
+cd packages/kg-default-nodes && yarn build
+cd ..
+cd packages/kg-clean-basic-html && yarn build
+```
 
 _Note:_ If any changes are made to those packages you'll need to rebuild them before the changes will show up in the demo site.
 
