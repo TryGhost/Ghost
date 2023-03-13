@@ -38,7 +38,8 @@ const ALPHA_FEATURES = [
     'lexicalEditor',
     'websockets',
     'webmentionEmails',
-    'stripeAutomaticTax'
+    'stripeAutomaticTax',
+    'makingItRain'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

@@ -698,6 +698,10 @@
     padding-bottom: 24px;
 }
 
+.modal-fullsettings-tab-expanded .gh-setting-first {
+    padding-top: 0;
+}
+
 .modal-fullsettings-form-labs .for-checkbox .input-toggle-component {
     background: var(--white);
 }
