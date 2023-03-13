@@ -140,10 +140,14 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         }
     }
 
+    /**
+     * Reset the cache by deleting everything from redis
+     */
     async reset() {
-        // NOTE: dangerous in shared environment, and not used in production code anyway!
-        // return await this.cache.reset();
-        logging.error('Cache reset has not been implemented with shared cache environment in mind');
+        const keys = await this.#getKeys();
+        for (const key of keys) {
+            await this.cache.del(key);
+        }
     }
 
     /**
