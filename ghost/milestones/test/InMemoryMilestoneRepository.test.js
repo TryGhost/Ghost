@@ -136,4 +136,18 @@ describe('InMemoryMilestoneRepository', function () {
         assert(membersCountForValue.value === 100);
         assert(membersCountForValue.name === 'members-100');
     });
+
+    it('Can return all achieved milestones by type', async function () {
+        const allArrUSDMilestones = await repository.getAllByType('arr');
+
+        assert(allArrUSDMilestones.length === 2);
+
+        const allArrGBPMilestones = await repository.getAllByType('arr', 'gbp');
+
+        assert(allArrGBPMilestones.length === 2);
+
+        const allMembersMilestones = await repository.getAllByType('members');
+
+        assert(allMembersMilestones.length === 3);
+    });
 });

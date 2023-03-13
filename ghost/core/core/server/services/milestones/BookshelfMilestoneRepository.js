@@ -68,9 +68,9 @@ module.exports = class BookshelfMilestoneRepository {
      * @param {'arr'|'members'} type
      * @param {string} [currency]
      *
-     * @returns {Promise<import('@tryghost/milestones/lib/Milestone')|null>}
+     * @returns {Promise<import('@tryghost/milestones/lib/Milestone')[]>}
      */
-    async getLatestByType(type, currency = 'usd') {
+    async getAllByType(type, currency = 'usd') {
         let milestone = null;
 
         if (type === 'arr') {
@@ -80,12 +80,24 @@ module.exports = class BookshelfMilestoneRepository {
         }
 
         if (!milestone || !milestone?.models?.length) {
-            return null;
-        } else {
-            milestone = milestone.models?.[0];
+            return [];
         }
 
-        return this.#modelToMilestone(milestone);
+        const milestones = await Promise.all(milestone.models.map(model => this.#modelToMilestone(model)));
+
+        // Enforce ordering by value as Bookshelf seems to ignore it
+        return milestones.sort((a, b) => b.value - a.value);
+    }
+
+    /**
+     * @param {'arr'|'members'} type
+     * @param {string} [currency]
+     *
+     * @returns {Promise<import('@tryghost/milestones/lib/Milestone')|null>}
+     */
+    async getLatestByType(type, currency = 'usd') {
+        const allMilestonesForType = await this.getAllByType(type, currency);
+        return allMilestonesForType?.[0] || null;
     }
 
     /**

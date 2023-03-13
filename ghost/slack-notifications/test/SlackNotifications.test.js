@@ -241,72 +241,42 @@ describe('SlackNotifications', function () {
             assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
         });
 
-        it('Shows the correct reason for email not send when last milestone is too far from actual value', async function () {
+        it('Does not attempt to send notification for `skipped` milestones', async function () {
             await slackNotifications.notifyMilestoneReceived({
                 milestone: {
                     id: ObjectId().toHexString(),
-                    name: 'members-1000',
-                    type: 'members',
+                    name: 'arr-1000-eur',
+                    type: 'arr',
+                    currency: 'eur',
                     createdAt: '2023-02-15T00:00:00.000Z',
-                    emailSentAt: null,
                     value: 1000
                 },
                 meta: {
-                    currentValue: 1105,
-                    reason: 'tooFar'
+                    currentValue: 1005,
+                    reason: 'skipped'
                 }
             });
 
-            const expectedResult = {
-                unfurl_links: false,
-                username: 'Ghost Milestone Service',
-                attachments: [{
-                    color: '#36a64f',
-                    blocks: [
-                        {
-                            type: 'header',
-                            text: {
-                                type: 'plain_text',
-                                text: ':tada: Members Milestone 1,000 reached!',
-                                emoji: true
-                            }
-                        },
-                        {
-                            type: 'section',
-                            text: {
-                                type: 'mrkdwn',
-                                text: 'New *Members Milestone* achieved for <https://ghost.example|https://ghost.example>'
-                            }
-                        },
-                        {
-                            type: 'divider'
-                        },
-                        {
-                            type: 'section',
-                            fields: [
-                                {
-                                    type: 'mrkdwn',
-                                    text: '*Milestone:*\n1,000'
-                                },
-                                {
-                                    type: 'mrkdwn',
-                                    text: '*Current Members:*\n1,105'
-                                }
-                            ]
-                        },
-                        {
-                            type: 'section',
-                            text: {
-                                type: 'mrkdwn',
-                                text: '*Email sent:*\nno / too far from milestone'
-                            }
-                        }
-                    ]
-                }]
-            };
+            assert(sendStub.callCount === 0);
+        });
 
-            assert(sendStub.calledOnce === true);
-            assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
+        it('Does not attempt to send notification for `initial` milestones', async function () {
+            await slackNotifications.notifyMilestoneReceived({
+                milestone: {
+                    id: ObjectId().toHexString(),
+                    name: 'arr-1000-eur',
+                    type: 'arr',
+                    currency: 'eur',
+                    createdAt: '2023-02-15T00:00:00.000Z',
+                    value: 1000
+                },
+                meta: {
+                    currentValue: 1005,
+                    reason: 'initial'
+                }
+            });
+
+            assert(sendStub.callCount === 0);
         });
     });
 

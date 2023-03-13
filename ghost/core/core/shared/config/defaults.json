@@ -210,12 +210,11 @@
             "arr": [
                 {
                     "currency": "usd",
-                    "values": [100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+                    "values": [0, 100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
                 }
             ],
-            "members": [100, 1000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
+            "members": [0, 100, 1000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
             "minDaysSinceImported": 7,
-            "minDaysSinceLastEmail": 14,
-            "maxPercentageFromMilestone": 0.1
+            "minDaysSinceLastEmail": 14
         }
 }

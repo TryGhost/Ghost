@@ -145,7 +145,7 @@ module.exports = class Milestone {
  * @returns {number}
  */
 function validateValue(value) {
-    if (!value || typeof value !== 'number' || value === 0) {
+    if (value === undefined || typeof value !== 'number') {
         throw new ValidationError({
             message: 'Invalid value'
         });

@@ -52,21 +52,8 @@ module.exports = class InMemoryMilestoneRepository {
      * @returns {Promise<Milestone>}
      */
     async getLatestByType(type, currency = 'usd') {
-        if (type === 'arr') {
-            return this.#store
-                .filter(item => item.type === type && item.currency === currency)
-                // sort by created at desc
-                .sort((a, b) => (b.createdAt.valueOf() - a.createdAt.valueOf()))
-                // if we end up with more values created at the same time, pick the highest value
-                .sort((a, b) => b.value - a.value)[0];
-        } else {
-            return this.#store
-                .filter(item => item.type === type)
-                // sort by created at desc
-                .sort((a, b) => (b.createdAt.valueOf() - a.createdAt.valueOf()))
-                // if we end up with more values created at the same time, pick the highest value
-                .sort((a, b) => b.value - a.value)[0];
-        }
+        const allMilestonesForType = await this.getAllByType(type, currency);
+        return allMilestonesForType?.[0];
     }
 
     /**
@@ -104,5 +91,29 @@ module.exports = class InMemoryMilestoneRepository {
         return this.#store.find((item) => {
             return item.value === value && item.type === 'members';
         });
+    }
+
+    /**
+     * @param {'arr'|'members'} type
+     * @param {string} [currency]
+     *
+     * @returns {Promise<Milestone[]>}
+     */
+    async getAllByType(type, currency = 'usd') {
+        if (type === 'arr') {
+            return this.#store
+                .filter(item => item.type === type && item.currency === currency)
+                // sort by created at desc
+                .sort((a, b) => (b.createdAt.valueOf() - a.createdAt.valueOf()))
+                // sort by highest value
+                .sort((a, b) => b.value - a.value);
+        } else {
+            return this.#store
+                .filter(item => item.type === type)
+                // sort by created at desc
+                .sort((a, b) => (b.createdAt.valueOf() - a.createdAt.valueOf()))
+                // sort by highest value
+                .sort((a, b) => b.value - a.value);
+        }
     }
 };
