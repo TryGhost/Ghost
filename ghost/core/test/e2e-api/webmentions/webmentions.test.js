@@ -19,7 +19,6 @@ async function allSettled() {
 
 describe('Webmentions (receiving)', function () {
     let agent;
-    let emailMockReceiver;
 
     before(async function () {
         agent = await agentProvider.getWebmentionsAPIAgent();
@@ -31,7 +30,6 @@ describe('Webmentions (receiving)', function () {
         mockManager.disableNetwork();
         mockManager.mockLabsEnabled('webmentions');
         mockManager.mockLabsEnabled('webmentionEmails');
-        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(async function () {
@@ -249,152 +247,6 @@ describe('Webmentions (receiving)', function () {
         assert.equal(mention.get('source_excerpt'), 'Test description');
         assert.equal(mention.get('source_author'), 'John Doe');
         assert.equal(mention.get('payload'), JSON.stringify({}));
-    });
-
-    it('can send an email notification for a new webmention', async function () {
-        const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
-        const sourceUrl = new URL('http://testpage.com/external-article-123-email-test/');
-        const html = `
-            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-        `;
-
-        nock(targetUrl.origin)
-            .head(targetUrl.pathname)
-            .reply(200);
-
-        nock(sourceUrl.origin)
-            .get(sourceUrl.pathname)
-            .reply(200, html, {'Content-Type': 'text/html'});
-
-        await agent.post('/receive/')
-            .body({
-                source: sourceUrl.href,
-                target: targetUrl.href
-            })
-            .expectStatus(202);
-
-        await allSettled();
-
-        const users = await models.User.getEmailAlertUsers('mention-received');
-        for (const user of users) {
-            await mockManager.assert.sentEmail({
-                subject: /New mention from/,
-                to: user.email
-            });
-        }
-        emailMockReceiver.sentEmailCount(users.length);
-    });
-
-    it('can display post title in notification email', async function () {
-        const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
-        const sourceUrl = new URL('http://testpage.com/external-article-1234-email-test/');
-        const html = `
-            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-        `;
-
-        nock(targetUrl.origin).persist()
-            .head(targetUrl.pathname)
-            .reply(200);
-
-        nock(sourceUrl.origin).persist()
-            .get(sourceUrl.pathname)
-            .reply(200, html, {'Content-Type': 'text/html'});
-
-        await agent.post('/receive/')
-            .body({
-                source: sourceUrl.href,
-                target: targetUrl.href
-            })
-            .expectStatus(202);
-
-        await allSettled();
-
-        emailMockReceiver.matchHTMLSnapshot();
-    });
-
-    it('can display page title in notification email', async function () {
-        const targetUrl = new URL('about/', urlUtils.getSiteUrl());
-        const sourceUrl = new URL('http://testpage.com/external-article-12345-email-test/');
-        const html = `
-            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-        `;
-
-        nock(targetUrl.origin).persist()
-            .head(targetUrl.pathname)
-            .reply(200);
-
-        nock(sourceUrl.origin).persist()
-            .get(sourceUrl.pathname)
-            .reply(200, html, {'Content-Type': 'text/html'});
-
-        await agent.post('/receive/')
-            .body({
-                source: sourceUrl.href,
-                target: targetUrl.href
-            })
-            .expectStatus(202);
-
-        await allSettled();
-
-        emailMockReceiver.matchHTMLSnapshot();
-    });
-
-    it('does not send notification with flag disabled', async function () {
-        mockManager.mockLabsDisabled('webmentions');
-
-        const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
-        const sourceUrl = new URL('http://testpage.com/external-article-123-email-test/');
-        const html = `
-            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-        `;
-
-        nock(targetUrl.origin)
-            .head(targetUrl.pathname)
-            .reply(200);
-
-        nock(sourceUrl.origin)
-            .get(sourceUrl.pathname)
-            .reply(200, html, {'Content-Type': 'text/html'});
-
-        await agent.post('/receive/')
-            .body({
-                source: sourceUrl.href,
-                target: targetUrl.href
-            })
-            .expectStatus(202);
-
-        await allSettled();
-
-        emailMockReceiver.sentEmailCount(0);
-    });
-
-    it('does not send notification with email flag disabled', async function () {
-        mockManager.mockLabsDisabled('webmentionEmails');
-
-        const targetUrl = new URL('integrations/', urlUtils.getSiteUrl());
-        const sourceUrl = new URL('http://testpage.com/external-article-123-email-test-2/');
-        const html = `
-            <html><head><title>Test Page</title><meta name="description" content="Test description"><meta name="author" content="John Doe"></head><body></body></html>
-        `;
-
-        nock(targetUrl.origin)
-            .head(targetUrl.pathname)
-            .reply(200);
-
-        nock(sourceUrl.origin)
-            .get(sourceUrl.pathname)
-            .reply(200, html, {'Content-Type': 'text/html'});
-
-        await agent.post('/receive/')
-            .body({
-                source: sourceUrl.href,
-                target: targetUrl.href
-            })
-            .expectStatus(202);
-
-        await allSettled();
-
-        emailMockReceiver.sentEmailCount(0);
     });
 
     it('can verify a webmention <a> link', async function () {
