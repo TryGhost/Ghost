@@ -121,22 +121,22 @@
                     <div class="gh-stack">
                         {{#if (feature 'makingItRain')}}
                             <GhFormGroup class="gh-stack-item gh-setting">
-                                <label class="modal-fullsettings-title">Newsletter title</label>
+                                <label class="modal-fullsettings-title">Post title</label>
                                 <div class="for-switch small">
-                                    <label class="switch" for="show-newsletter-title">
+                                    <label class="switch" for="show-post-title">
                                         <input
                                             type="checkbox"
-                                            checked={{@newsletter.showNewsletterTitle}}
-                                            id="show-newsletter-title"
-                                            name="show-newsletter-title"
-                                            {{on "click" (fn this.toggleSetting "showNewsletterTitle")}}
+                                            checked={{@newsletter.showPostTitle}}
+                                            id="show-post-title"
+                                            name="show-post-title"
+                                            {{on "click" (fn this.toggleSetting "showPostTitle")}}
                                         >
                                         <span class="input-toggle-component"></span>
                                     </label>
                                 </div>
                             </GhFormGroup>
 
-                            {{!-- {{#if @newsletter.showNewsletterTitle}} --}}
+                            {{!-- {{#if @newsletter.showPostTitle}} --}}
                                 <GhFormGroup class="gh-stack-item">
                                     <div class="gh-email-design-typography-wrapper header">
                                         <div class="modal-fullsettings-radiogroup gh-email-design-typography" data-test-input="titleFontCategory">
@@ -154,7 +154,7 @@
                             {{!-- {{/if}} --}}
                         {{else}}
                             <GhFormGroup class="gh-stack-item">
-                                <label class="modal-fullsettings-title">Newsletter title style</label>
+                                <label class="modal-fullsettings-title">Post title style</label>
                                 <div class="gh-email-design-typography-wrapper header">
                                     <div class="modal-fullsettings-radiogroup gh-email-design-typography" data-test-input="titleFontCategory">
                                         <GhFontSelector
@@ -229,7 +229,7 @@
                         {{#if (feature 'makingItRain')}}
                             {{!-- {{#if @site.comments_enabled}} --}}
                                 <GhFormGroup class="gh-stack-item gh-setting">
-                                    <label for="comments-link" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Include a link to comments</label>
+                                    <label for="comments-link" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Add a link to your comments</label>
                                     <div class="for-switch small">
                                         <div class="container">
                                             <input
@@ -245,7 +245,7 @@
                             {{!-- {{/if}} --}}
 
                             <GhFormGroup class="gh-stack-item gh-setting gh-setting-extra">
-                                <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Show three latest posts</label>
+                                <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Share your latest posts</label>
                                 <div class="for-switch small">
                                     <div class="container">
                                         <input
