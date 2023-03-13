@@ -7,6 +7,7 @@ const Milestone = require('./Milestone');
  * @prop {(count: number) => Promise<Milestone>} getByCount
  * @prop {(type: 'arr'|'members', [currency]: string|null) => Promise<Milestone>} getLatestByType
  * @prop {() => Promise<Milestone>} getLastEmailSent
+ * @prop {(type: 'arr'|'members', [currency]: string|null) => Promise<Milestone[]>} getAllByType
  */
 
 /**
@@ -23,7 +24,6 @@ const Milestone = require('./Milestone');
  * @prop {string} milestonesConfig.arr.currency
  * @prop {number[]} milestonesConfig.arr.values
  * @prop {number[]} milestonesConfig.members
- * @prop {number} milestonesConfig.maxPercentageFromMilestone
  * @prop {number} milestonesConfig.minDaysSinceLastEmail
  */
 
@@ -115,12 +115,12 @@ module.exports = class MilestonesService {
      * @param {number[]} goalValues
      * @param {number} current
      *
-     * @returns {number}
+     * @returns {number[]}
      */
-    #getMatchedMilestone(goalValues, current) {
-        // return highest suitable milestone
+    #getMatchedMilestones(goalValues, current) {
+        // return all achieved milestones and sort by value ascending
         return goalValues.filter(value => current >= value)
-            .sort((a, b) => b - a)[0];
+            .sort((a, b) => a - b);
     }
 
     /**
@@ -135,7 +135,7 @@ module.exports = class MilestonesService {
      * @returns {Promise<Milestone>}
      */
     async #saveMileStoneAndSendEmail(milestone) {
-        const {shouldSendEmail, reason} = await this.#shouldSendEmail(milestone);
+        const {shouldSendEmail, reason} = await this.#shouldSendEmail();
 
         if (shouldSendEmail) {
             milestone.emailSentAt = new Date();
@@ -156,17 +156,21 @@ module.exports = class MilestonesService {
      * @param {string|null} [milestone.currency]
      * @param {Date|null} [milestone.emailSentAt]
      *
+     * @returns {Promise<Milestone>}
+     */
+    async #saveMileStoneWithoutEmail(milestone) {
+        return await this.#createMilestone(milestone);
+    }
+
+    /**
      * @returns {Promise<{shouldSendEmail: boolean, reason: string}>}
      */
-    async #shouldSendEmail(milestone) {
+    async #shouldSendEmail() {
         let emailTooSoon = false;
-        let emailTooClose = false;
         let reason = null;
-        // Three cases in which we don't want to send an email
+        // Two cases in which we don't want to send an email
         // 1. There has been an import of members within the last week
         // 2. The last email has been sent less than two weeks ago
-        // 3. The current members or ARR value is x% above the achieved milestone
-        //    as defined in default shared config for `maxPercentageFromMilestone`
         const lastMilestoneSent = await this.#repository.getLastEmailSent();
 
         if (lastMilestoneSent) {
@@ -176,20 +180,11 @@ module.exports = class MilestonesService {
             emailTooSoon = differenceInDays <= this.#milestonesConfig.minDaysSinceLastEmail;
         }
 
-        if (milestone?.meta) {
-            // Check how much the value currently differs from the milestone
-            const difference = milestone?.meta?.currentValue - milestone.value;
-            const differenceInPercentage = difference / milestone.value;
-
-            emailTooClose = differenceInPercentage >= this.#milestonesConfig.maxPercentageFromMilestone;
-        }
-
         const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
-        const shouldSendEmail = !emailTooSoon && !hasMembersImported && !emailTooClose;
+        const shouldSendEmail = !emailTooSoon && !hasMembersImported;
 
         if (!shouldSendEmail) {
-            reason = hasMembersImported ? 'import' :
-                emailTooSoon ? 'email' : 'tooFar';
+            reason = hasMembersImported ? 'import' : 'email';
         }
 
         return {shouldSendEmail, reason};
@@ -209,29 +204,54 @@ module.exports = class MilestonesService {
 
         // First check the currency matches
         if (currentARR.length) {
-            let milestone;
-
             const currentARRForCurrency = currentARR.filter(arr => arr.currency === defaultCurrency && supportedCurrencies.includes(defaultCurrency))[0];
             const milestonesForCurrency = arrMilestoneSettings.filter(milestoneSetting => milestoneSetting.currency === defaultCurrency)[0];
 
             if (milestonesForCurrency && currentARRForCurrency) {
-                // get the closest milestone we're over now
-                milestone = this.#getMatchedMilestone(milestonesForCurrency.values, currentARRForCurrency.arr);
+                // get all milestones that have been achieved
+                const achievedMilestones = this.#getMatchedMilestones(milestonesForCurrency.values, currentARRForCurrency.arr);
 
-                if (milestone && milestone > 0) {
-                    // Fetch the latest milestone for this currency
-                    const latestMilestone = await this.#getLatestArrMilestone(defaultCurrency);
+                // check for previously achieved milestones. We do not send an email when no
+                // previous milestones exist
+                const allMilestonesForCurrency = await this.#repository.getAllByType('arr', defaultCurrency);
+                const isInitialRun = !allMilestonesForCurrency || allMilestonesForCurrency?.length === 0;
+                const highestAchievedMilestone = Math.max(...achievedMilestones);
 
-                    // Ensure the milestone doesn't already exist
-                    const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'arr', currency: defaultCurrency});
+                if (achievedMilestones && achievedMilestones.length) {
+                    for await (const milestone of achievedMilestones) {
+                        // Fetch the latest milestone for this currency
+                        const latestMilestone = await this.#getLatestArrMilestone(defaultCurrency);
 
-                    if (!milestoneExists && (!latestMilestone || milestone > latestMilestone.value)) {
-                        const meta = {
-                            currentValue: currentARRForCurrency.arr
-                        };
-                        return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr', currency: defaultCurrency, meta});
+                        // Ensure the milestone doesn't already exist
+                        const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'arr', currency: defaultCurrency});
+
+                        if (!milestoneExists) {
+                            if (isInitialRun) {
+                                // No milestones have been saved yet, don't send an email
+                                // for the first initial run
+                                const meta = {
+                                    currentValue: currentARRForCurrency.arr,
+                                    reason: 'initial'
+                                };
+                                await this.#saveMileStoneWithoutEmail({value: milestone, type: 'arr', currency: defaultCurrency, meta});
+                            } else if ((latestMilestone && milestone <= latestMilestone?.value) || milestone < highestAchievedMilestone) {
+                                // The highest achieved milestone is higher than the current on hand.
+                                // Do not send an email, but save it.
+                                const meta = {
+                                    currentValue: currentARRForCurrency.arr,
+                                    reason: 'skipped'
+                                };
+                                await this.#saveMileStoneWithoutEmail({value: milestone, type: 'arr', currency: defaultCurrency, meta});
+                            } else if ((!latestMilestone || milestone > latestMilestone.value)) {
+                                const meta = {
+                                    currentValue: currentARRForCurrency.arr
+                                };
+                                await this.#saveMileStoneAndSendEmail({value: milestone, type: 'arr', currency: defaultCurrency, meta});
+                            }
+                        }
                     }
                 }
+                return await this.#getLatestArrMilestone(defaultCurrency);
             }
         }
     }
@@ -247,21 +267,48 @@ module.exports = class MilestonesService {
         const membersMilestones = this.#milestonesConfig.members;
 
         // get the closest milestone we're over now
-        let milestone = this.#getMatchedMilestone(membersMilestones, membersCount);
+        let achievedMilestones = this.#getMatchedMilestones(membersMilestones, membersCount);
 
-        if (milestone && milestone > 0) {
-            // Fetch the latest achieved Members milestones
-            const latestMembersMilestone = await this.#getLatestMembersCountMilestone();
+        // check for previously achieved milestones. We do not send an email when no
+        // previous milestones exist
+        const allMembersMilestones = await this.#repository.getAllByType('members', null);
+        const isInitialRun = !allMembersMilestones || allMembersMilestones?.length === 0;
+        const highestAchievedMilestone = Math.max(...achievedMilestones);
 
-            // Ensure the milestone doesn't already exist
-            const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'members', currency: null});
+        if (achievedMilestones && achievedMilestones.length) {
+            for await (const milestone of achievedMilestones) {
+                // Fetch the latest achieved Members milestones
+                const latestMembersMilestone = await this.#getLatestMembersCountMilestone();
 
-            if (!milestoneExists && (!latestMembersMilestone || milestone > latestMembersMilestone.value)) {
-                const meta = {
-                    currentValue: membersCount
-                };
-                return await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members', meta});
+                // Ensure the milestone doesn't already exist
+                const milestoneExists = await this.#checkMilestoneExists({value: milestone, type: 'members', currency: null});
+
+                if (!milestoneExists) {
+                    if (isInitialRun) {
+                        // No milestones have been saved yet, don't send an email
+                        // for the first initial run
+                        const meta = {
+                            currentValue: membersCount,
+                            reason: 'initial'
+                        };
+                        await this.#saveMileStoneWithoutEmail({value: milestone, type: 'members', meta});
+                    } else if ((latestMembersMilestone && milestone <= latestMembersMilestone?.value) || milestone < highestAchievedMilestone) {
+                        // The highest achieved milestone is higher than the current on hand.
+                        // Do not send an email, but save it.
+                        const meta = {
+                            currentValue: membersCount,
+                            reason: 'skipped'
+                        };
+                        await this.#saveMileStoneWithoutEmail({value: milestone, type: 'members', meta});
+                    } else if ((!latestMembersMilestone || milestone > latestMembersMilestone.value)) {
+                        const meta = {
+                            currentValue: membersCount
+                        };
+                        await this.#saveMileStoneAndSendEmail({value: milestone, type: 'members', meta});
+                    }
+                }
             }
+            return await this.#getLatestMembersCountMilestone();
         }
     }
 

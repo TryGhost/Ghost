@@ -49,16 +49,18 @@ class SlackNotifications {
      * @param {object} eventData
      * @param {import('@tryghost/milestones/lib/InMemoryMilestoneRepository').Milestone} eventData.milestone
      * @param {object} [eventData.meta]
-     * @param {'import'|'email'|'tooFar'} [eventData.meta.reason]
+     * @param {'import'|'email'|'skipped'|'initial'} [eventData.meta.reason]
      * @param {number} [eventData.meta.currentValue]
      *
      * @returns {Promise<void>}
      */
     async notifyMilestoneReceived({milestone, meta}) {
+        if (meta?.reason === 'skipped' || meta?.reason === 'initial') {
+            return;
+        }
         const hasImportedMembers = meta?.reason === 'import' ? 'has imported members' : null;
         const lastEmailTooSoon = meta?.reason === 'email' ? 'last email too recent' : null;
-        const tooFarFromMilestone = meta?.reason === 'tooFar' ? 'too far from milestone' : null;
-        const emailNotSentReason = hasImportedMembers || lastEmailTooSoon || tooFarFromMilestone;
+        const emailNotSentReason = hasImportedMembers || lastEmailTooSoon;
         const milestoneTypePretty = milestone.type === 'arr' ? 'ARR' : 'Members';
         const valueFormatted = this.#getFormattedAmount({amount: milestone.value, currency: milestone?.currency});
         const emailSentText = milestone?.emailSentAt ? this.#getFormattedDate(milestone?.emailSentAt) : `no / ${emailNotSentReason}`;
