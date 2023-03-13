@@ -33,7 +33,7 @@
     "coverage": "vitest run --coverage",
     "lint": "eslint --ext .js,.cjs,.jsx --cache demo src test",
     "prepare": "NODE_ENV=production yarn build",
-    "storybook": "start-storybook -p 6006",
+    "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006 -h 127.0.0.1",
     "build-storybook": "build-storybook"
   },
   "dependencies": {
