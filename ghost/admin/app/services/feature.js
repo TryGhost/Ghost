@@ -72,6 +72,7 @@ export default class FeatureService extends Service {
     @feature('websockets') websockets;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('mediaInliner') mediaInliner;
+    @feature('makingItRain') makingItRain;
 
     _user = null;
 
