@@ -2,7 +2,6 @@
 // const testUtils = require('./utils');
 const sinon = require('sinon');
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
-const {MentionCreatedEvent} = require('@tryghost/webmentions');
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 require('./utils');
@@ -186,11 +185,10 @@ describe('StaffService', function () {
         describe('subscribeEvents', function () {
             it('subscribes to events', async function () {
                 service.subscribeEvents();
-                subscribeStub.callCount.should.eql(5);
+                subscribeStub.callCount.should.eql(4);
                 subscribeStub.calledWith(SubscriptionActivatedEvent).should.be.true();
                 subscribeStub.calledWith(SubscriptionCancelledEvent).should.be.true();
                 subscribeStub.calledWith(MemberCreatedEvent).should.be.true();
-                subscribeStub.calledWith(MentionCreatedEvent).should.be.true();
                 subscribeStub.calledWith(MilestoneCreatedEvent).should.be.true();
             });
         });
@@ -333,21 +331,6 @@ describe('StaffService', function () {
 
                 mailStub.calledWith(
                     sinon.match({subject: '⚠️ Cancellation: Jamie'})
-                ).should.be.true();
-            });
-
-            it('handles new mention notification', async function () {
-                await service.handleEvent(MentionCreatedEvent, {
-                    data: {
-                        mention: {
-                            source: 'https://exmaple.com/some-post',
-                            target: 'https://exmaple.com/some-mentioned-post',
-                            sourceSiteTitle: 'Exmaple'
-                        }
-                    }
-                });
-                mailStub.calledWith(
-                    sinon.match({subject: `💌 New mention from: Exmaple`})
                 ).should.be.true();
             });
 
