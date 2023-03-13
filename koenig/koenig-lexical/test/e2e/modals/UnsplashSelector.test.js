@@ -1,4 +1,5 @@
-import {afterAll, beforeAll, beforeEach, describe, expect, test} from 'vitest';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {expect} from '@playwright/test';
 import {focusEditor, initialize, startApp} from '../../utils/e2e';
 
 describe('Modals', async () => {
@@ -20,59 +21,59 @@ describe('Modals', async () => {
     test('can open selector', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
     });
 
     test('renders (empty) image card under container', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
-        expect(await page.$('[data-kg-card="image"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
+        await expect(page.locator('[data-kg-card="image"]')).toBeVisible();
     });
 
     test('can close selector', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
         await page.click('[data-kg-modal-close-button]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).not.toBeVisible();
     });
 
     test('empty image card removed when closing model', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
         await page.click('[data-kg-modal-close-button]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).toBeNull();
-        expect(await page.$('[data-kg-card="image"]')).toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).not.toBeVisible();
+        await expect(page.locator('[data-kg-card="image"]')).not.toBeVisible();
     });
 
     test('renders unsplash gallery', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
         await page.waitForSelector('[data-kg-unsplash-gallery]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
-        expect(await page.$('[data-kg-unsplash-gallery]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
+        await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
     });
 
     test('can select / zoom image', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery]');
-        expect(await page.$('[data-kg-unsplash-gallery]')).not.toBeNull();
+        await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery-item]');
         await page.click('[data-kg-unsplash-gallery-item]');
         expect(await page.$('[data-kg-unsplash-zoomed]')).not.toBeNull();
@@ -81,11 +82,11 @@ describe('Modals', async () => {
     test('can download image', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery]');
-        expect(await page.$('[data-kg-unsplash-gallery]')).not.toBeNull();
+        await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery-item]');
         await page.click('[data-kg-unsplash-gallery-item]');
         const [download] = await Promise.all([
@@ -98,14 +99,14 @@ describe('Modals', async () => {
     test('can click like button, opens in new tab', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery]');
-        expect(await page.$('[data-kg-unsplash-gallery]')).not.toBeNull();
+        await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery-item]');
         await page.click('[data-kg-unsplash-gallery-item]');
-        expect(await page.$('[data-kg-button="unsplash-like"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-button="unsplash-like"]')).toBeVisible();
         const [newPage] = await Promise.all([
             page.waitForEvent('popup'),
             page.click('[data-kg-button="unsplash-like"]')
@@ -116,12 +117,12 @@ describe('Modals', async () => {
     test('can search for photos', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery]');
-        expect(await page.$('[data-kg-unsplash-gallery]')).not.toBeNull();
-        expect(await page.$('[data-kg-unsplash-search]')).not.toBeNull();
+        await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
+        await expect(page.locator('[data-kg-unsplash-search]')).toBeVisible();
         const searchTerm = 'kitten';
         await page.click('[data-kg-unsplash-search]');
         await page.type('[data-kg-unsplash-search]', searchTerm);
@@ -136,22 +137,22 @@ describe('Modals', async () => {
     test('closes a zoomed image when searching', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
-        expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
-        expect(await page.$('[data-kg-modal="unsplash"]')).not.toBeNull();
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery]');
-        expect(await page.$('[data-kg-unsplash-gallery]')).not.toBeNull();
+        await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery-item]');
         await page.click('[data-kg-unsplash-gallery-item]');
-        expect(await page.$('[data-kg-unsplash-zoomed]')).not.toBeNull();
-        expect(await page.$('[data-kg-unsplash-search]')).not.toBeNull();
+        await expect(page.locator('[data-kg-unsplash-zoomed]')).toBeVisible();
+        await expect(page.locator('[data-kg-unsplash-search]')).toBeVisible();
         const searchTerm = 'kitten';
         await page.click('[data-kg-unsplash-search]');
         await page.type('[data-kg-unsplash-search]', searchTerm);
         // wait 5 seconds for search results
         await page.waitForTimeout(5000);
         await page.waitForSelector('[data-kg-unsplash-gallery-item]');
-        expect(await page.$('[data-kg-unsplash-zoomed]')).toBeNull();
+        await expect(page.locator('[data-kg-unsplash-zoomed]')).not.toBeVisible();
     });
 
     test.todo('can infinite scroll');
