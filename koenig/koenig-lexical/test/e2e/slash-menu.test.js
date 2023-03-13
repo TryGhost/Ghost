@@ -1,5 +1,6 @@
-import {afterAll, beforeAll, beforeEach, describe, expect, it, test} from 'vitest';
+import {afterAll, beforeAll, beforeEach, describe, it, test} from 'vitest';
 import {assertHTML, assertSelection, focusEditor, html, initialize, startApp} from '../utils/e2e';
+import {expect} from '@playwright/test';
 
 describe('Slash menu', async () => {
     let app;
@@ -20,9 +21,9 @@ describe('Slash menu', async () => {
     describe('open/close', function () {
         it('opens with / on blank paragraph', async function () {
             await focusEditor(page);
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
             await page.keyboard.type('/');
-            expect(await page.$('[data-kg-slash-menu]')).not.toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
         it('opens with / on paragraph that is entirely selected', async function () {
@@ -44,7 +45,7 @@ describe('Slash menu', async () => {
             // sanity check that text was fully selected + replaced
             await assertHTML(page, html`<p><span data-lexical-text="true">/</span></p>`);
 
-            expect(await page.$('[data-kg-slash-menu]')).not.toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
         it('does not open with / on populated paragraph', async function () {
@@ -52,7 +53,7 @@ describe('Slash menu', async () => {
             await page.keyboard.type('testing');
             await page.keyboard.type('/');
 
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
 
             await page.keyboard.press('Backspace');
             for (let i = 0; i < 'testing'.length; i++) {
@@ -68,18 +69,18 @@ describe('Slash menu', async () => {
 
             await page.keyboard.type('/');
 
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
 
         it('closes when / deleted', async function () {
             await focusEditor(page);
             await page.keyboard.type('/');
 
-            expect(await page.$('[data-kg-slash-menu]')).not.toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
 
             await page.keyboard.press('Backspace');
 
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
 
         it('closes on Escape', async function () {
@@ -87,7 +88,7 @@ describe('Slash menu', async () => {
             await page.keyboard.type('/');
             await page.keyboard.press('Escape');
 
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
 
             await assertSelection(page, {
                 anchorOffset: 1,
@@ -102,7 +103,7 @@ describe('Slash menu', async () => {
             await page.keyboard.type('/');
             await page.click('body');
 
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
 
         it('does not close on click inside menu', async function () {
@@ -110,7 +111,7 @@ describe('Slash menu', async () => {
             await page.keyboard.type('/');
             await page.click('[data-kg-slash-menu] [role="separator"] > span'); // better selector for menu headings?
 
-            expect(await page.$('[data-kg-slash-menu]')).not.toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
         it('does not re-open when cursor placed back on /', async function () {
@@ -120,7 +121,7 @@ describe('Slash menu', async () => {
             await page.click('body');
             await page.click('[data-lexical-editor] > p:nth-of-type(2)');
 
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
 
             // TODO: this fails in CI but passes locally
             // await assertSelection(page, {
@@ -154,7 +155,7 @@ describe('Slash menu', async () => {
             await focusEditor(page);
             await page.keyboard.type('/unknown');
 
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
     });
 
@@ -164,8 +165,8 @@ describe('Slash menu', async () => {
             await page.keyboard.type('/');
 
             const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).to.equal('true');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).to.equal('false');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('true');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('false');
         });
 
         test('DOWN selects next item', async function () {
@@ -174,8 +175,8 @@ describe('Slash menu', async () => {
             await page.keyboard.press('ArrowDown');
 
             const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).to.equal('false');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).to.equal('true');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('false');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('true');
         });
 
         test('RIGHT selects next item', async function () {
@@ -184,8 +185,8 @@ describe('Slash menu', async () => {
             await page.keyboard.press('ArrowRight');
 
             const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).to.equal('false');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).to.equal('true');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('false');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('true');
         });
 
         test('UP selects previous item', async function () {
@@ -195,8 +196,8 @@ describe('Slash menu', async () => {
             await page.keyboard.press('ArrowUp');
 
             const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).to.equal('true');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).to.equal('false');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('true');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('false');
         });
 
         test('LEFT selects previous time', async function () {
@@ -206,8 +207,8 @@ describe('Slash menu', async () => {
             await page.keyboard.press('ArrowLeft');
 
             const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).to.equal('true');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).to.equal('false');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('true');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('false');
         });
 
         test('first item is selected after changing query', async function () {
@@ -217,7 +218,7 @@ describe('Slash menu', async () => {
             await page.keyboard.type('hr');
 
             const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).to.equal('true');
+            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('true');
         });
     });
 
@@ -241,7 +242,7 @@ describe('Slash menu', async () => {
                 focusPath: [1]
             });
 
-            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+            await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
 
         it('has correct order when inserting after text', async function () {
@@ -303,7 +304,7 @@ describe('Slash menu', async () => {
 
             expect(await page.evaluate(() => {
                 return document.querySelector('[data-kg-card="image"] img').src;
-            })).to.equal('https://example.com/image.jpg');
+            })).toEqual('https://example.com/image.jpg');
         });
     });
 });
