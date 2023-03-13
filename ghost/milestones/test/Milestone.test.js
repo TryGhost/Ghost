@@ -35,6 +35,7 @@ describe('Milestone', function () {
             const invalidInputs = [
                 {id: 'Invalid ID provided for Milestone'},
                 {id: 124},
+                {value: undefined},
                 {value: 'Invalid Value'},
                 {createdAt: 'Invalid Date'},
                 {emailSentAt: 'Invalid Date'}
@@ -66,6 +67,8 @@ describe('Milestone', function () {
                 {id: new ObjectID()},
                 {id: new ObjectID().toString()},
                 {id: null},
+                {value: 0},
+                {value: 25000},
                 {type: 'something'},
                 {name: 'testing'},
                 {name: 'members-10000000'},
@@ -95,12 +98,12 @@ describe('Milestone', function () {
         it('Will generate a valid name for ARR milestone', async function () {
             const milestone = await Milestone.create({
                 ...validInputARR,
-                value: 500,
+                value: 0,
                 type: 'arr',
                 currency: 'aud'
             });
 
-            assert(milestone.name === 'arr-500-aud');
+            assert(milestone.name === 'arr-0-aud');
         });
 
         it('Will generate a valid name for Members milestone', async function () {
