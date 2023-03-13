@@ -147,8 +147,7 @@ describe('Milestones Service', function () {
         arr: [{currency: 'usd', values: [100, 150]}],
         members: [10, 20, 30],
         minDaysSinceImported: 7,
-        minDaysSinceLastEmail: 14,
-        maxPercentageFromMilestone: 0.35
+        minDaysSinceLastEmail: 14
     };
 
     before(async function () {

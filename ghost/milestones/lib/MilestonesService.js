@@ -23,7 +23,6 @@ const Milestone = require('./Milestone');
  * @prop {string} milestonesConfig.arr.currency
  * @prop {number[]} milestonesConfig.arr.values
  * @prop {number[]} milestonesConfig.members
- * @prop {number} milestonesConfig.maxPercentageFromMilestone
  * @prop {number} milestonesConfig.minDaysSinceLastEmail
  */
 
@@ -160,13 +159,12 @@ module.exports = class MilestonesService {
      */
     async #shouldSendEmail(milestone) {
         let emailTooSoon = false;
-        let emailTooClose = false;
         let reason = null;
         // Three cases in which we don't want to send an email
         // 1. There has been an import of members within the last week
         // 2. The last email has been sent less than two weeks ago
-        // 3. The current members or ARR value is x% above the achieved milestone
-        //    as defined in default shared config for `maxPercentageFromMilestone`
+        // TODO: implement testing for 0 milestone
+        // 3. The current milestone is 0
         const lastMilestoneSent = await this.#repository.getLastEmailSent();
 
         if (lastMilestoneSent) {
@@ -176,20 +174,11 @@ module.exports = class MilestonesService {
             emailTooSoon = differenceInDays <= this.#milestonesConfig.minDaysSinceLastEmail;
         }
 
-        if (milestone?.meta) {
-            // Check how much the value currently differs from the milestone
-            const difference = milestone?.meta?.currentValue - milestone.value;
-            const differenceInPercentage = difference / milestone.value;
-
-            emailTooClose = differenceInPercentage >= this.#milestonesConfig.maxPercentageFromMilestone;
-        }
-
         const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
-        const shouldSendEmail = !emailTooSoon && !hasMembersImported && !emailTooClose;
+        const shouldSendEmail = !emailTooSoon && !hasMembersImported;
 
         if (!shouldSendEmail) {
-            reason = hasMembersImported ? 'import' :
-                emailTooSoon ? 'email' : 'tooFar';
+            reason = hasMembersImported ? 'import' : 'email';
         }
 
         return {shouldSendEmail, reason};
