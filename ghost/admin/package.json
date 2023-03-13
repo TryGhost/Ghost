@@ -181,6 +181,6 @@
   },
   "dependencies": {
     "path-browserify": "1.0.1",
-    "webpack": "5.76.0"
+    "webpack": "5.76.1"
   }
 }
