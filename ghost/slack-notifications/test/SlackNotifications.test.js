@@ -240,6 +240,44 @@ describe('SlackNotifications', function () {
             assert(sendStub.calledOnce === true);
             assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
         });
+
+        it('Does not attempt to send notification for `skipped` milestones', async function () {
+            await slackNotifications.notifyMilestoneReceived({
+                milestone: {
+                    id: ObjectId().toHexString(),
+                    name: 'arr-1000-eur',
+                    type: 'arr',
+                    currency: 'eur',
+                    createdAt: '2023-02-15T00:00:00.000Z',
+                    value: 1000
+                },
+                meta: {
+                    currentValue: 1005,
+                    reason: 'skipped'
+                }
+            });
+
+            assert(sendStub.callCount === 0);
+        });
+
+        it('Does not attempt to send notification for `initial` milestones', async function () {
+            await slackNotifications.notifyMilestoneReceived({
+                milestone: {
+                    id: ObjectId().toHexString(),
+                    name: 'arr-1000-eur',
+                    type: 'arr',
+                    currency: 'eur',
+                    createdAt: '2023-02-15T00:00:00.000Z',
+                    value: 1000
+                },
+                meta: {
+                    currentValue: 1005,
+                    reason: 'initial'
+                }
+            });
+
+            assert(sendStub.callCount === 0);
+        });
     });
 
     describe('send', function () {

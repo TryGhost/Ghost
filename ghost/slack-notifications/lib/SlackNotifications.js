@@ -49,12 +49,15 @@ class SlackNotifications {
      * @param {object} eventData
      * @param {import('@tryghost/milestones/lib/InMemoryMilestoneRepository').Milestone} eventData.milestone
      * @param {object} [eventData.meta]
-     * @param {'import'|'email'} [eventData.meta.reason]
+     * @param {'import'|'email'|'skipped'|'initial'} [eventData.meta.reason]
      * @param {number} [eventData.meta.currentValue]
      *
      * @returns {Promise<void>}
      */
     async notifyMilestoneReceived({milestone, meta}) {
+        if (meta?.reason === 'skipped' || meta?.reason === 'initial') {
+            return;
+        }
         const hasImportedMembers = meta?.reason === 'import' ? 'has imported members' : null;
         const lastEmailTooSoon = meta?.reason === 'email' ? 'last email too recent' : null;
         const emailNotSentReason = hasImportedMembers || lastEmailTooSoon;
