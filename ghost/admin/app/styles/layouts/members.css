@@ -1900,7 +1900,11 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    background: var(--white);
+    height: 100vh;
     padding: 32px;
+    overflow-y: auto;
 }
 
 .gh-members-emailpreview:after {
@@ -2040,6 +2044,10 @@ p.gh-members-import-errordetail:first-of-type {
     color: #15212A;
 }
 
+.gh-members-emailpreview-labs .gh-members-emailpreview-title h2 {
+    padding: 0 0 16px;
+}
+
 .gh-members-emailpreview-title p {
     margin: 0;
     padding: 0 0 10px;
@@ -2052,6 +2060,11 @@ p.gh-members-import-errordetail:first-of-type {
     color: #15212A;
 }
 
+.gh-members-emailpreview-labs .gh-members-emailpreview-title p {
+    padding: 0 0 4px;
+    color: var(--midgrey);
+}
+
 .gh-members-emailpreview-title p span {
     color: var(--midgrey);
 }
@@ -2059,6 +2072,25 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-title a {
     text-decoration: none;
     color: #15212A;
+}
+
+.gh-members-emailpreview-labs .gh-members-emailpreview-title a {
+    padding-right: 8px;
+    text-decoration: none;
+    text-transform: uppercase;
+    color: #15212A;
+    font-size: 1.3rem;
+    line-height: 1;
+    letter-spacing: 0.2px;
+}
+
+.gh-members-emailpreview-labs .gh-members-emailpreview-title a svg {
+    display: inline-block;
+    margin-top: -2px;
+    vertical-align: middle;
+    width: 14px;
+    height: 14px;
+    stroke-width: 1.5px;
 }
 
 .gh-members-emailpreview-featureimage {
@@ -2188,6 +2220,11 @@ p.gh-members-import-errordetail:first-of-type {
     padding: 40px;
 }
 
+.gh-members-emailpreview-labs .gh-members-emailpreview-feedback {
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
 .gh-members-emailpreview-feedback-title {
     text-align: center;
     color: #15212a;
@@ -2208,9 +2245,18 @@ p.gh-members-import-errordetail:first-of-type {
     cursor: default;
 }
 
+.gh-members-emailpreview-labs .gh-members-emailpreview-feedback-button {
+    border: 0;
+    font-weight: 600;
+}
+
 .gh-members-emailpreview-feedback-button svg {
     width: 24px;
     height: 24px;
+}
+
+.gh-members-emailpreview-labs .gh-members-emailpreview-feedback-button svg {
+    stroke-width: 1.5px;
 }
 
 .gh-members-emailpreview-feedback-button-body {
