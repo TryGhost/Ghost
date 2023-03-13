@@ -4,7 +4,7 @@ Early stage re-write of Ghost's editor, using Lexical as the editor framework in
 
 ## Development
 
-**Pre-requisites**
+### Pre-requisites
 
 This package makes use of two other built packages in the monorepo, those packages will need to be built before this package's build will succeed.
 
@@ -16,9 +16,11 @@ cd packages/kg-clean-basic-html && yarn build
 
 _Note:_ If any changes are made to those packages you'll need to rebuild them before the changes will show up in the demo site.
 
-**Running the development version**
+### Running the development version
 
 Run `yarn dev` to start the development server to test/develop the editor standalone. This will generate a demo site from the `index.html` file which renders the demo app in `demo/demo.jsx` and makes it available on http://localhost:5173
+
+### Running inside Admin
 
 To test/develop inside of Admin you can run `yarn preview` then in Ghost set your `editor.url` value in `config.local.json` to `http://127.0.0.1:4173/koenig-lexical.umd.js` and load Admin as usual.
 
