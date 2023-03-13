@@ -46,7 +46,7 @@ exports[`Members API - member attribution Can read member attributed to a page 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2186",
+  "content-length": "2234",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -101,7 +101,7 @@ exports[`Members API - member attribution Can read member attributed to a post 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2169",
+  "content-length": "2217",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -156,7 +156,7 @@ exports[`Members API - member attribution Can read member attributed to a tag 2:
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2175",
+  "content-length": "2223",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -211,7 +211,7 @@ exports[`Members API - member attribution Can read member attributed to an autho
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2157",
+  "content-length": "2205",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -266,54 +266,9 @@ exports[`Members API - member attribution Can read member attributed to an url 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2153",
+  "content-length": "2201",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API - member attribution Returns sign up attributions in activity feed 1: [body] 1`] = `
-Object {
-  "events": Array [
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 10,
-      "total": 5,
-    },
-  },
-}
-`;
-
-exports[`Members API - member attribution Returns sign up attributions in activity feed 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9249",
-  "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -393,199 +348,6 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "271",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Archived newsletter subscriptions are maintained when updating member data 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6e3",
-        "referrer_medium": null,
-        "referrer_source": "Direct",
-        "referrer_url": null,
-        "title": "Short and Sweet",
-        "type": "post",
-        "url": "http://127.0.0.1:2369/short-and-sweet/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "new name",
-      "newsletters": Array [
-        Object {
-          "body_font_category": "serif",
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "description": null,
-          "feedback_enabled": false,
-          "footer_content": null,
-          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Weekly newsletter",
-          "sender_email": "jamie@example.com",
-          "sender_name": "Jamie",
-          "sender_reply_to": "newsletter",
-          "show_badge": true,
-          "show_feature_image": true,
-          "show_header_icon": true,
-          "show_header_name": true,
-          "show_header_title": true,
-          "slug": "weekly-newsletter",
-          "sort_order": 2,
-          "status": "active",
-          "subscribe_on_signup": true,
-          "title_alignment": "center",
-          "title_font_category": "serif",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          "visibility": "members",
-        },
-      ],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Archived newsletter subscriptions are maintained when updating member data 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1576",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Archived newsletter subscriptions are maintained when updating member data 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": null,
-        "referrer_medium": "Ghost Admin",
-        "referrer_source": "Created manually",
-        "referrer_url": null,
-        "title": null,
-        "type": "url",
-        "url": null,
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "fgfdgdfgdf@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "test newsletter",
-      "newsletters": Array [
-        Object {
-          "body_font_category": "serif",
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "description": null,
-          "feedback_enabled": false,
-          "footer_content": null,
-          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Daily newsletter",
-          "sender_email": "jamie@example.com",
-          "sender_name": "Jamie",
-          "sender_reply_to": "newsletter",
-          "show_badge": true,
-          "show_feature_image": true,
-          "show_header_icon": true,
-          "show_header_name": true,
-          "show_header_title": true,
-          "slug": "daily-newsletter",
-          "sort_order": 1,
-          "status": "active",
-          "subscribe_on_signup": false,
-          "title_alignment": "center",
-          "title_font_category": "serif",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          "visibility": "members",
-        },
-        Object {
-          "body_font_category": "serif",
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "description": null,
-          "feedback_enabled": false,
-          "footer_content": null,
-          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Weekly newsletter",
-          "sender_email": "jamie@example.com",
-          "sender_name": "Jamie",
-          "sender_reply_to": "newsletter",
-          "show_badge": true,
-          "show_feature_image": true,
-          "show_header_icon": true,
-          "show_header_name": true,
-          "show_header_title": true,
-          "slug": "weekly-newsletter",
-          "sort_order": 2,
-          "status": "active",
-          "subscribe_on_signup": true,
-          "title_alignment": "center",
-          "title_font_category": "serif",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          "visibility": "members",
-        },
-      ],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Archived newsletter subscriptions are maintained when updating member data 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2122",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -818,46 +580,6 @@ Object {
 }
 `;
 
-exports[`Members API Bulk operations Can filter members by offer redeemed 1: [body] 1`] = `
-Object {
-  "offers": Array [
-    Object {
-      "amount": 12,
-      "cadence": "year",
-      "code": "black-friday",
-      "currency": null,
-      "currency_restriction": false,
-      "display_description": "10% off on yearly plan",
-      "display_title": "Black Friday Sale!",
-      "duration": "once",
-      "duration_in_months": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Black Friday",
-      "redemption_count": 0,
-      "status": "active",
-      "tier": Object {
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      },
-      "type": "percent",
-    },
-  ],
-}
-`;
-
-exports[`Members API Bulk operations Can filter members by offer redeemed 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "389",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-cache-invalidate": "/*",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API Bulk operations Doesn't delete labels apart from the passed label id 1: [body] 1`] = `
 Object {
   "bulk": Object {
@@ -988,7 +710,7 @@ exports[`Members API Can add a member and trigger host email verification limits
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2142",
+  "content-length": "2190",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1044,119 +766,9 @@ exports[`Members API Can add a member and trigger host email verification limits
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2142",
+  "content-length": "2190",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can add a member and trigger host limit 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": null,
-        "referrer_medium": "Ghost Admin",
-        "referrer_source": "Created manually",
-        "referrer_url": null,
-        "title": null,
-        "type": "url",
-        "url": null,
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "memberPassVerifivation@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "pass verification",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can add a member and trigger host limit 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2080",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can add a member and trigger host limit 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": null,
-        "referrer_medium": "Ghost Admin",
-        "referrer_source": "Created manually",
-        "referrer_url": null,
-        "title": null,
-        "type": "url",
-        "url": null,
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "memberFailVerifivation@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "fail verification",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can add a member and trigger host limit 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2080",
-  "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -1353,7 +965,7 @@ exports[`Members API Can add a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3395",
+  "content-length": "3419",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1495,7 +1107,7 @@ exports[`Members API Can add a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3395",
+  "content-length": "3419",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1547,6 +1159,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -1579,7 +1192,7 @@ exports[`Members API Can add and edit with custom newsletters 2: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1603",
+  "content-length": "1627",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1632,6 +1245,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -1664,7 +1278,7 @@ exports[`Members API Can add and edit with custom newsletters 4: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1602",
+  "content-length": "1626",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1716,6 +1330,7 @@ Object {
           "sender_name": null,
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -1744,6 +1359,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -1776,7 +1392,7 @@ exports[`Members API Can add and send a signup confirmation email (old) 2: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2154",
+  "content-length": "2202",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1840,6 +1456,7 @@ Object {
           "sender_name": null,
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -1868,6 +1485,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -1900,7 +1518,7 @@ exports[`Members API Can add and send a signup confirmation email 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2149",
+  "content-length": "2197",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1967,7 +1585,7 @@ exports[`Members API Can add complimentary subscription (out of date) 2: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1361",
+  "content-length": "1385",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2043,7 +1661,7 @@ exports[`Members API Can add complimentary subscription (out of date) 4: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3121",
+  "content-length": "3145",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2273,7 +1891,7 @@ exports[`Members API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "14728",
+  "content-length": "14896",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2328,7 +1946,7 @@ exports[`Members API Can browse with filter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1488",
+  "content-length": "1512",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2383,7 +2001,7 @@ exports[`Members API Can browse with search 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1488",
+  "content-length": "1512",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2435,6 +2053,7 @@ Object {
           "sender_name": null,
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -2487,7 +2106,7 @@ exports[`Members API Can create a member with an existing complimentary subscrip
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3172",
+  "content-length": "3196",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2540,6 +2159,7 @@ Object {
           "sender_name": null,
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -2592,7 +2212,7 @@ exports[`Members API Can create a member with an existing paid subscription 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3158",
+  "content-length": "3182",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2645,6 +2265,7 @@ Object {
           "sender_name": null,
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -2697,7 +2318,7 @@ exports[`Members API Can create a new member with a product (complimentary) 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2819",
+  "content-length": "2843",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2775,7 +2396,7 @@ exports[`Members API Can destroy 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2124",
+  "content-length": "2172",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2960,7 +2581,7 @@ exports[`Members API Can edit a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3238",
+  "content-length": "3262",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3063,7 +2684,7 @@ exports[`Members API Can edit a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2338",
+  "content-length": "2362",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3118,7 +2739,7 @@ exports[`Members API Can edit by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1379",
+  "content-length": "1403",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3385,7 +3006,7 @@ exports[`Members API Can filter by paid status 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10720",
+  "content-length": "10816",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3486,49 +3107,11 @@ Object {
 }
 `;
 
-exports[`Members API Can filter by signup attribution 2: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
 exports[`Members API Can filter by signup attribution 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4695",
+  "content-length": "4743",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3579,23 +3162,11 @@ Object {
 }
 `;
 
-exports[`Members API Can filter by signup attribution 3: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1379",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API Can filter by signup attribution 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1488",
+  "content-length": "1512",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3725,137 +3296,7 @@ exports[`Members API Can filter by tier id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10086",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can filter by tier slug 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 4,
-    },
-  },
-}
-`;
-
-exports[`Members API Can filter by tier slug 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9962",
+  "content-length": "10182",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3960,7 +3401,7 @@ exports[`Members API Can filter on newsletter slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "6765",
+  "content-length": "6885",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4198,7 +3639,7 @@ exports[`Members API Can filter on tier slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "22756",
+  "content-length": "22948",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4408,7 +3849,7 @@ exports[`Members API Can ignore any unknown includes 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10720",
+  "content-length": "10816",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4923,7 +4364,7 @@ exports[`Members API Can read 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1628",
+  "content-length": "1652",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4979,7 +4420,7 @@ exports[`Members API Can read and include email_recipients 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1650",
+  "content-length": "1674",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5034,7 +4475,7 @@ exports[`Members API Can read and include tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1628",
+  "content-length": "1652",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5142,6 +4583,7 @@ Object {
           "sender_name": null,
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -5170,6 +4612,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -5202,7 +4645,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2138",
+  "content-length": "2186",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5257,7 +4700,7 @@ exports[`Members API Can subscribe to a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1369",
+  "content-length": "1393",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5313,7 +4756,7 @@ exports[`Members API Can subscribe to a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1425",
+  "content-length": "1449",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5326,7 +4769,7 @@ exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5237",
+  "content-length": "5309",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5378,6 +4821,7 @@ Object {
           "sender_name": null,
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -5410,7 +4854,7 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1387",
+  "content-length": "1411",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5599,236 +5043,6 @@ Object {
 }
 `;
 
-exports[`Members API Returns click events in activity feed 1: [body] 1`] = `
-Object {
-  "events": Array [
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/0",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "member1@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Mr Egg",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "HTML Ipsum",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/1",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "member2@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": null,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Ghostly Kitchen Sink",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/2",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "paid@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Egon Spengler",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Short and Sweet",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/3",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "trialing@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Ray Stantz",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Not finished yet",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/4",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "comped@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Vinz Clortho",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "Not so short, bit complex",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/5",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "vip@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Winston Zeddemore",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "This is a static page",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/6",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "vip-paid@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Peter Venkman",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "This is a draft static page",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-        "link": Object {
-          "from": "/r/7",
-          "to": "https:://ghost.org",
-        },
-        "member": Object {
-          "avatar_image": null,
-          "email": "with-product@test.com",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Dana Barrett",
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-        "post": Object {
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": "This is a scheduled post!!",
-          "url": Any<String>,
-          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-        },
-      },
-      "type": Any<String>,
-    },
-  ],
-}
-`;
-
-exports[`Members API Returns click events in activity feed 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3631",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Returns comments in activity feed 1: [body] 1`] = `
-Object {
-  "events": Array [
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-  ],
-}
-`;
-
-exports[`Members API Returns comments in activity feed 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1147",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API Search by case-insensitive email MEMBER2 receives member with email member2@test.com 1: [body] 1`] = `
 Object {
   "members": Array [
@@ -5875,7 +5089,7 @@ exports[`Members API Search by case-insensitive email MEMBER2 receives member wi
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1335",
+  "content-length": "1359",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5930,7 +5144,7 @@ exports[`Members API Search by case-insensitive name egg receives member with na
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1488",
+  "content-length": "1512",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6014,7 +5228,7 @@ exports[`Members API Search for paid members retrieves member with email paid@te
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2669",
+  "content-length": "2693",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6066,6 +5280,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -6094,6 +5309,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -6126,7 +5342,7 @@ exports[`Members API Setting subscribed when editing a member won't reset to def
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2209",
+  "content-length": "2257",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6179,6 +5395,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -6207,6 +5424,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -6239,7 +5457,7 @@ exports[`Members API Setting subscribed when editing a member won't reset to def
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2209",
+  "content-length": "2257",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6294,7 +5512,7 @@ exports[`Members API Subscribes to default newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2125",
+  "content-length": "2173",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6347,6 +5565,7 @@ Object {
           "sender_name": "Jamie",
           "sender_reply_to": "newsletter",
           "show_badge": true,
+          "show_comment_cta": true,
           "show_feature_image": true,
           "show_header_icon": true,
           "show_header_name": true,
@@ -6379,7 +5598,7 @@ exports[`Members API Updating member data without newsletters does not change ne
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1607",
+  "content-length": "1631",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6470,283 +5689,6 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members APi - member attribution Can read 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": null,
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members APi - member attribution Can read 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1321",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to a page 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6e9",
-        "title": "This is a static page",
-        "type": "page",
-        "url": "http://127.0.0.1:2369/static-page-test/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-page@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to a page 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1955",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to a post 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6df",
-        "title": "HTML Ipsum",
-        "type": "post",
-        "url": "http://127.0.0.1:2369/html-ipsum/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-post@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to a post 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1938",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to a tag 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1febe2896088840a6db",
-        "title": "kitchen sink",
-        "type": "tag",
-        "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-tag@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to a tag 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1944",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to an author 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "1",
-        "title": "Joe Bloggs",
-        "type": "author",
-        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-author@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to an author 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1926",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to an url 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": null,
-        "title": "/a-static-page/",
-        "type": "url",
-        "url": "http://127.0.0.1:2369/a-static-page/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-url@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members APi - member attribution Can read member attributed to an url 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1922",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
