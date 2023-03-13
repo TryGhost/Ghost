@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-nodes",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-nodes",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -41,8 +41,8 @@
     "sinon": "15.0.2"
   },
   "dependencies": {
-    "@tryghost/kg-clean-basic-html": "^3.0.6",
-    "@tryghost/kg-markdown-html-renderer": "^6.0.4",
+    "@tryghost/kg-clean-basic-html": "^3.0.7",
+    "@tryghost/kg-markdown-html-renderer": "^6.0.5",
     "jsdom": "^21.0.0",
     "lexical": "^0.9.0"
   }
