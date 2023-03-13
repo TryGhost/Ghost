@@ -40,6 +40,7 @@ module.exports = {
         show_post_title_section: {type: 'boolean', nullable: false, defaultTo: true},
         show_comment_cta: {type: 'boolean', nullable: false, defaultTo: true},
         show_subscription_details: {type: 'boolean', nullable: false, defaultTo: false},
+        show_latest_posts: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
