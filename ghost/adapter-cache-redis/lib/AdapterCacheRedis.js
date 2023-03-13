@@ -83,6 +83,14 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         });
     }
 
+    async #getKeys() {
+        const primaryNode = this.#getPrimaryRedisNode();
+        if (primaryNode === null) {
+            return [];
+        }
+        return await this.#scanNodeForKeys(primaryNode);
+    }
+
     /**
      * This is a recommended way to build cache key prefixes from
      * the cache-manager package. Might be a good contribution to make
@@ -144,12 +152,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      */
     async keys() {
         try {
-            const primaryNode = this.#getPrimaryRedisNode();
-            if (primaryNode === null) {
-                return [];
-            }
-            const rawKeys = await this.#scanNodeForKeys(primaryNode);
-            return rawKeys.map((key) => {
+            return (await this.#getKeys()).map((key) => {
                 return this._removeKeyPrefix(key);
             });
         } catch (err) {
