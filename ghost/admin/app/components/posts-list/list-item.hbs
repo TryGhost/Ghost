@@ -60,7 +60,7 @@
                         {{#if @post.primaryTag}}
                             in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
                         {{/if}}
-                        - 
+                        -
                     </span>
                     <span class="gh-content-entry-date" {{on "mouseover" (fn (mut this.isDateHovered) true)}} {{on "mouseleave" (fn (mut this.isDateHovered) false)}}>
                         {{gh-format-post-time @post.updatedAtUTC draft=true}}
@@ -78,7 +78,14 @@
                             <span class="status-dot"></span>
                             Scheduled
                             {{#if this.isHovered}}
-                                <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
+                                <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>
+                                    {{#if @post.emailOnly}}
+                                        to be sent
+                                    {{else}}
+                                        to be published {{if @post.newsletter "and sent "}}
+                                    {{/if}}
+                                    {{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}
+                                </span>
                             {{/if}}
                         </span>
                     {{/if}}
@@ -96,7 +103,7 @@
                             {{#if @post.didEmailFail}}
                                 but failed to send newsletter
                             {{else if @post.hasBeenEmailed}}
-                                and sent 
+                                and sent
                                 {{#if this.isHovered}}
                                     <span {{css-transition "anim-fade-in-scale"}}>to {{gh-pluralize @post.email.emailCount "member"}}</span>
                                 {{/if}}
@@ -109,7 +116,7 @@
                             {{#if @post.didEmailFail}}
                                 Failed to send newsletter
                             {{else}}
-                                Sent 
+                                Sent
                                 {{#if this.isHovered}}
                                     <span {{css-transition "anim-fade-in-scale"}}>to {{gh-pluralize @post.email.emailCount "member"}}</span>
                                 {{/if}}
@@ -140,7 +147,7 @@
             {{!-- Empty on purpose --}}
         </LinkTo>
     {{/if}}
-    
+
     {{!-- Clicked / Conversions column --}}
     {{#if @post.showEmailClickAnalytics }}
         <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
