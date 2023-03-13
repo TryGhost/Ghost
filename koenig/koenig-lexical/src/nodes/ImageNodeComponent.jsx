@@ -16,7 +16,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
     const [editor] = useLexicalComposerContext();
     const [showLink, setShowLink] = React.useState(false);
     const {fileUploader} = React.useContext(KoenigComposerContext);
-    const {isSelected, cardWidth, setCardWidth} = React.useContext(CardContext);
+    const {isSelected, cardWidth, setCardWidth, setCaptionHasFocus, captionHasFocus} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
 
@@ -130,13 +130,14 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
                 previewSrc={previewSrc}
                 setAltText={setAltText}
                 setCaption={setCaption}
+                setCaptionHasFocus={setCaptionHasFocus}
                 src={src}
                 onFileChange={onFileChange}
             />
 
             <ActionToolbar
                 data-kg-card-toolbar="image"
-                isVisible={showLink}
+                isVisible={showLink && !captionHasFocus}
             >
                 <LinkInput
                     cancel={cancelLinkAndReselect}
@@ -150,7 +151,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
 
             <ActionToolbar
                 data-kg-card-toolbar="image"
-                isVisible={src && isSelected && !showLink}
+                isVisible={src && isSelected && !showLink && !captionHasFocus}
             >
                 <ImageUploadForm
                     fileInputRef={toolbarFileInputRef}

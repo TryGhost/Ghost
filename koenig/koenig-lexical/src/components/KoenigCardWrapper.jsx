@@ -30,6 +30,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
     const [isEditing, setEditing] = React.useState(openInEditMode);
     const [selection, setSelection] = React.useState(null);
     const [cardType, setCardType] = React.useState(null);
+    const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
     const [cardWidth, setCardWidth] = React.useState(width || 'regular');
     const containerRef = React.useRef(null);
 
@@ -303,11 +304,14 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
     return (
         <CardContext.Provider value={{
             isSelected: isFocused,
+            captionHasFocus,
             isEditing,
             cardWidth,
             setCardWidth,
+            setCaptionHasFocus,
             setEditing,
             selection,
+            nodeKey,
             cardContainerRef: containerRef
         }}>
             <CardWrapper

@@ -154,7 +154,7 @@ describe('Image card', async () => {
         await expect(await page.locator('text="This is a caption"')).toBeVisible();
     });
 
-    test('can past html to caption', async function () {
+    test('can paste html to caption', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);
@@ -196,7 +196,6 @@ describe('Image card', async () => {
                             <button name="alt-toggle-button" type="button">Alt</button>
                         </figcaption>
                     </figure>
-                    <div data-kg-card-toolbar="image"></div>
                 </div>
             </div>
         `, {ignoreCardToolbarContents: true});
