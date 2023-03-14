@@ -34,7 +34,8 @@ const {
     OffersImporter,
     LabelsImporter,
     MembersLabelsImporter,
-    RolesUsersImporter
+    RolesUsersImporter,
+    MembersFeedbackImporter
 } = tables;
 const path = require('path');
 const fs = require('fs/promises');
@@ -409,11 +410,8 @@ class DataGenerator {
         const rolesUsersImporter = new RolesUsersImporter(transaction, {roles});
         await rolesUsersImporter.importForEach(users, {amount: 1});
 
-        // TODO: Members labels
-
-        // TODO: Email clicks - redirect, members_click_events (relies on emails)
-
-        // TODO: Feedback - members_feedback (relies on members and posts)
+        const membersFeedbackImporter = new MembersFeedbackImporter(transaction, {emails});
+        await membersFeedbackImporter.importForEach(emailRecipients, {amount: 1});
 
         await transaction.commit();
 

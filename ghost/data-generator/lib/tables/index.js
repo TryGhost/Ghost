@@ -33,5 +33,6 @@ module.exports = {
     OffersImporter: require('./offers'),
     LabelsImporter: require('./labels'),
     MembersLabelsImporter: require('./members-labels'),
-    RolesUsersImporter: require('./roles-users')
+    RolesUsersImporter: require('./roles-users'),
+    MembersFeedbackImporter: require('./members-feedback')
 };
