@@ -51,7 +51,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email": Object {},
       "email_only": false,
       "email_segment": "all",
       "email_subject": null,
@@ -1914,9 +1913,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email": Object {
-        "opened_count": null,
-      },
       "email_only": false,
       "email_segment": "all",
       "email_subject": null,
@@ -2156,9 +2152,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email": Object {
-        "opened_count": null,
-      },
       "email_only": false,
       "email_segment": "all",
       "email_subject": null,
