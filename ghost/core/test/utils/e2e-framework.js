@@ -40,6 +40,9 @@ const {stopGhost} = require('./e2e-utils');
 const adapterManager = require('../../core/server/services/adapter-manager');
 const DomainEvents = require('@tryghost/domain-events');
 
+// Require additional assertions which help us keep our tests small and clear
+require('./assertions');
+
 /**
  * @param {Object} [options={}]
  * @param {Boolean} [options.backend] Boot the backend
