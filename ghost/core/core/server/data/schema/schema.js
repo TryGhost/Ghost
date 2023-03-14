@@ -38,6 +38,7 @@ module.exports = {
         show_badge: {type: 'boolean', nullable: false, defaultTo: true},
         show_header_name: {type: 'boolean', nullable: false, defaultTo: true},
         show_post_title_section: {type: 'boolean', nullable: false, defaultTo: true},
+        show_comment_cta: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
