@@ -583,7 +583,8 @@ class EmailRenderer {
             },
 
             newsletter: {
-                name: newsletter.get('name')
+                name: newsletter.get('name'),
+                showPostTitleSection: newsletter.get('show_post_title_section')
             },
 
             //CSS
@@ -595,6 +596,8 @@ class EmailRenderer {
             headerImage,
             headerImageWidth,
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),
+
+            // TODO: consider moving these to newsletter property
             showHeaderTitle: newsletter.get('show_header_title'),
             showHeaderName: newsletter.get('show_header_name'),
             showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,

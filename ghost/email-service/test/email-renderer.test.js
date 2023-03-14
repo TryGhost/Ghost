@@ -499,7 +499,8 @@ describe('Email renderer', function () {
                 header_image: null,
                 name: 'Test Newsletter',
                 show_badge: false,
-                feedback_enabled: true
+                feedback_enabled: true,
+                show_post_title_section: true
             });
             const segment = null;
             const options = {};
@@ -548,7 +549,8 @@ describe('Email renderer', function () {
                 header_image: null,
                 name: 'Test Newsletter',
                 show_badge: false,
-                feedback_enabled: true
+                feedback_enabled: true,
+                show_post_title_section: true
             });
             const segment = null;
             const options = {};
@@ -580,7 +582,8 @@ describe('Email renderer', function () {
                 header_image: null,
                 name: 'Test Newsletter',
                 show_badge: false,
-                feedback_enabled: true
+                feedback_enabled: true,
+                show_post_title_section: true
             });
             const segment = null;
             const options = {};
@@ -606,7 +609,8 @@ describe('Email renderer', function () {
 
                 show_header_icon: true,
                 show_header_title: true,
-                show_header_name: true
+                show_header_name: true,
+                show_post_title_section: true
             });
             const segment = null;
             const options = {};
@@ -633,7 +637,8 @@ describe('Email renderer', function () {
 
                 show_header_icon: true,
                 show_header_title: false,
-                show_header_name: true
+                show_header_name: true,
+                show_post_title_section: true
             });
             const segment = null;
             const options = {};
@@ -705,7 +710,8 @@ describe('Email renderer', function () {
                 header_image: null,
                 name: 'Test Newsletter',
                 show_badge: true,
-                feedback_enabled: true
+                feedback_enabled: true,
+                show_post_title_section: true
             });
             const segment = null;
             const options = {

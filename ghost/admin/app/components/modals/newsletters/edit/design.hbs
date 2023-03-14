@@ -126,17 +126,17 @@
                                     <label class="switch" for="show-post-title">
                                         <input
                                             type="checkbox"
-                                            checked={{@newsletter.showPostTitle}}
+                                            checked={{@newsletter.showPostTitleSection}}
                                             id="show-post-title"
                                             name="show-post-title"
-                                            {{on "click" (fn this.toggleSetting "showPostTitle")}}
+                                            {{on "click" (fn this.toggleSetting "showPostTitleSection")}}
                                         >
                                         <span class="input-toggle-component"></span>
                                     </label>
                                 </div>
                             </GhFormGroup>
 
-                            {{!-- {{#if @newsletter.showPostTitle}} --}}
+                            {{#if @newsletter.showPostTitleSection}}
                                 <GhFormGroup class="gh-stack-item">
                                     <div class="gh-email-design-typography-wrapper header">
                                         <div class="modal-fullsettings-radiogroup gh-email-design-typography" data-test-input="titleFontCategory">
@@ -151,7 +151,7 @@
                                         </div>
                                     </div>
                                 </GhFormGroup>
-                            {{!-- {{/if}} --}}
+                            {{/if}}
                         {{else}}
                             <GhFormGroup class="gh-stack-item">
                                 <label class="modal-fullsettings-title">Post title style</label>

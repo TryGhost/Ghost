@@ -1984,6 +1984,14 @@ p.gh-members-import-errordetail:first-of-type {
     margin: 12px auto 0;
 }
 
+.gh-members-emailpreview-header-image + .gh-members-emailpreview-featureimage {
+    margin-top: 12px;
+}
+
+.gh-members-emailpreview-featureimage:first-child {
+    margin-top: 12px;
+}
+
 .gh-members-emailpreview-header {
     display: flex;
     flex-direction: column;
