@@ -48,7 +48,7 @@ class SlackNotificationsServiceWrapper {
         const hostSettings = config.get('hostSettings');
         const urlUtils = require('../../../shared/url-utils');
         const siteUrl = urlUtils.getSiteUrl();
-        const isEnabled = labs.isSet('milestoneEmails') && hostSettings?.milestones?.enabled && hostSettings?.milestones?.url;
+        const isEnabled = (labs.isSet('milestoneEmails') && hostSettings?.milestones?.enabled && hostSettings?.milestones?.url) ? true : false;
         const webhookUrl = hostSettings?.milestones?.url;
 
         this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl});
