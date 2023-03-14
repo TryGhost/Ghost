@@ -82,6 +82,7 @@ describe('Acceptance: Staff', function () {
             enableStripe(this.server);
             enableLabsFlag(this.server, 'webmentions');
             enableLabsFlag(this.server, 'webmentionEmails');
+            enableLabsFlag(this.server, 'milestoneEmails');
 
             admin = this.server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 
@@ -873,11 +874,13 @@ describe('Acceptance: Staff', function () {
                 expect(find('[data-test-checkbox="paid-started-notifications"]')).to.not.be.checked;
                 expect(find('[data-test-checkbox="paid-canceled-notifications"]')).to.not.be.checked;
                 expect(find('[data-test-checkbox="mention-notifications"]')).to.not.be.checked;
+                expect(find('[data-test-checkbox="milestone-notifications"]')).to.not.be.checked;
 
                 await click('[data-test-label="free-signup-notifications"]');
                 await click('[data-test-label="paid-started-notifications"]');
                 await click('[data-test-label="paid-canceled-notifications"]');
                 await click('[data-test-label="mention-notifications"]');
+                await click('[data-test-label="milestone-notifications"]');
                 await click('[data-test-save-button]');
 
                 await visit(`/settings/staff/${admin.slug}`);
@@ -886,6 +889,7 @@ describe('Acceptance: Staff', function () {
                 expect(find('[data-test-checkbox="paid-started-notifications"]')).to.be.checked;
                 expect(find('[data-test-checkbox="paid-canceled-notifications"]')).to.be.checked;
                 expect(find('[data-test-checkbox="mention-notifications"]')).to.be.checked;
+                expect(find('[data-test-checkbox="milestone-notifications"]')).to.be.checked;
             });
         });
 
