@@ -80,6 +80,9 @@ describe('Email renderer', function () {
             emailRenderer = new EmailRenderer({
                 urlUtils: {
                     urlFor: () => 'http://example.com/subdirectory'
+                },
+                labs: {
+                    isSet: () => true
                 }
             });
             newsletter = createModel({
@@ -178,6 +181,9 @@ describe('Email renderer', function () {
         const emailRenderer = new EmailRenderer({
             urlUtils: {
                 urlFor: () => 'http://example.com'
+            },
+            labs: {
+                isSet: () => true
             }
         });
 
@@ -220,6 +226,9 @@ describe('Email renderer', function () {
                 getNoReplyAddress: () => {
                     return 'reply@example.com';
                 }
+            },
+            labs: {
+                isSet: () => true
             }
         });
 
@@ -277,6 +286,9 @@ describe('Email renderer', function () {
                 getNoReplyAddress: () => {
                     return 'reply@example.com';
                 }
+            },
+            labs: {
+                isSet: () => true
             }
         });
 
@@ -317,6 +329,9 @@ describe('Email renderer', function () {
             },
             getPostUrl: () => {
                 return 'http://example.com/post-id';
+            },
+            labs: {
+                isSet: () => true
             }
         });
 
@@ -353,6 +368,9 @@ describe('Email renderer', function () {
                 },
                 getPostUrl: () => {
                     return 'http://example.com/post-id';
+                },
+                labs: {
+                    isSet: () => true
                 }
             });
 
@@ -378,6 +396,9 @@ describe('Email renderer', function () {
                 },
                 getPostUrl: () => {
                     return 'http://example.com/post-id';
+                },
+                labs: {
+                    isSet: () => true
                 }
             });
 
@@ -467,6 +488,9 @@ describe('Email renderer', function () {
                     u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
                     return u;
                 }
+            },
+            labs: {
+                isSet: () => true
             }
         });
         let basePost;
@@ -913,6 +937,7 @@ describe('Email renderer', function () {
 
     describe('getTemplateData', function () {
         let settings = {};
+        let labsEnabled = true;
         const emailRenderer = new EmailRenderer({
             audienceFeedbackService: {
                 buildLink: (_uuid, _postId, score) => {
@@ -937,11 +962,15 @@ describe('Email renderer', function () {
             },
             getPostUrl: () => {
                 return 'http://example.com';
+            },
+            labs: {
+                isSet: () => labsEnabled
             }
         });
 
         beforeEach(function () {
             settings = {};
+            labsEnabled = true;
         });
 
         it('uses default accent color', async function () {
@@ -1013,6 +1042,82 @@ describe('Email renderer', function () {
                 meta: 'post-meta post-meta-left',
                 body: 'post-content-sans-serif'
             });
+        });
+
+        it('show comment CTA is disabled if labs disabled', async function () {
+            labsEnabled = false;
+            settings.comments_enabled = 'all';
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_comment_cta: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.newsletter.showCommentCta, false);
+        });
+
+        it('show comment CTA is disabled if comments disabled', async function () {
+            labsEnabled = true;
+            settings.comments_enabled = 'off';
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_comment_cta: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.newsletter.showCommentCta, false);
+        });
+
+        it('show comment CTA is disabled if disabled', async function () {
+            labsEnabled = true;
+            settings.comments_enabled = 'all';
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_comment_cta: false
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.newsletter.showCommentCta, false);
+        });
+
+        it('show comment CTA is enabled if all enabled', async function () {
+            labsEnabled = true;
+            settings.comments_enabled = 'all';
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_comment_cta: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.newsletter.showCommentCta, true);
         });
     });
 

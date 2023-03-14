@@ -59,6 +59,7 @@ class EmailRenderer {
     #memberAttributionService;
     #outboundLinkTagger;
     #audienceFeedbackService;
+    #labs;
 
     /**
      * @param {object} dependencies
@@ -76,6 +77,7 @@ class EmailRenderer {
      * @param {object} dependencies.memberAttributionService
      * @param {object} dependencies.audienceFeedbackService
      * @param {object} dependencies.outboundLinkTagger
+     * @param {object} dependencies.labs
      */
     constructor({
         settingsCache,
@@ -89,7 +91,8 @@ class EmailRenderer {
         linkTracking,
         memberAttributionService,
         audienceFeedbackService,
-        outboundLinkTagger
+        outboundLinkTagger,
+        labs
     }) {
         this.#settingsCache = settingsCache;
         this.#settingsHelpers = settingsHelpers;
@@ -103,6 +106,7 @@ class EmailRenderer {
         this.#memberAttributionService = memberAttributionService;
         this.#audienceFeedbackService = audienceFeedbackService;
         this.#outboundLinkTagger = outboundLinkTagger;
+        this.#labs = labs;
     }
 
     getSubject(post) {
@@ -559,6 +563,9 @@ class EmailRenderer {
             0
         ).href.replace('--uuid--', '%%{uuid}%%');
 
+        const commentUrl = new URL(postUrl);
+        commentUrl.hash = '#ghost-comments-root';
+
         const data = {
             site: {
                 title: this.#settingsCache.get('title'),
@@ -574,6 +581,7 @@ class EmailRenderer {
             post: {
                 title: post.get('title'),
                 url: postUrl,
+                commentUrl: commentUrl.href,
                 authors,
                 publishedAt,
                 feature_image: postFeatureImage,
@@ -584,7 +592,8 @@ class EmailRenderer {
 
             newsletter: {
                 name: newsletter.get('name'),
-                showPostTitleSection: newsletter.get('show_post_title_section')
+                showPostTitleSection: newsletter.get('show_post_title_section'),
+                showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && this.#labs.isSet('makingItRain')
             },
 
             //CSS

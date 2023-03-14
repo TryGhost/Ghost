@@ -25,6 +25,7 @@ class EmailServiceWrapper {
         const sentry = require('../../../shared/sentry');
         const membersRepository = membersService.api.members;
         const limitService = require('../limits');
+        const labs = require('../../../shared/labs');
 
         const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
@@ -68,7 +69,8 @@ class EmailServiceWrapper {
             linkTracking,
             memberAttributionService: memberAttribution.service,
             audienceFeedbackService: audienceFeedback.service,
-            outboundLinkTagger: memberAttribution.outboundLinkTagger
+            outboundLinkTagger: memberAttribution.outboundLinkTagger,
+            labs
         });
 
         const sendingService = new SendingService({

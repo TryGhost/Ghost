@@ -82,7 +82,7 @@
                                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td class="{{classes.meta}}">
-                                                                By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>
+                                                                By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>{{#if newsletter.showCommentCta}} <a href="{{post.commentUrl}}" class="view-online-link">Comment</a>{{/if}}
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -129,14 +129,22 @@
 
                             <!-- END MAIN CONTENT AREA -->
 
-                            {{#if feedbackButtons }}
+                            {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
                                     <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 40px 4px; border-bottom: 1px solid #e5eff5" align="center">
-                                        <h3 style="text-align: center; margin-bottom: 22px; font-size: 17px; letter-spacing: -0.2px; margin-top: 0 !important;">Give feedback on this post</h3>
+                                        {{#if feedbackButtons }}
+                                            <h3 style="text-align: center; margin-bottom: 22px; font-size: 17px; letter-spacing: -0.2px; margin-top: 0 !important;">Give feedback on this post</h3>
+                                        {{/if}}
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: auto; width: auto !important;">
                                             <tr>
-                                                {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this.png" }}
-                                                {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png" }}
+                                                {{#if feedbackButtons }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this.png" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png" }}
+                                                {{/if}}
+                                                {{#if newsletter.showCommentCta}}
+                                                    {{!-- TODO: replace image with comment image --}}
+                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png" }}
+                                                {{/if}}
                                             </tr>
                                         </table>
                                     </td>
