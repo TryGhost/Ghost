@@ -207,7 +207,6 @@ module.exports = function apiRoutes() {
 
     router.post('/db/media/inline',
         mw.authAdminApi,
-        labs.enabledMiddleware('mediaInliner'),
         http(api.db.inlineMedia)
     );
 
