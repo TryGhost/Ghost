@@ -94,7 +94,7 @@ const FormEditor = ({submit, progress, setProgress, close, reduced, isOpen, edit
             `}>
                 <EditorContent
                     onMouseDown={stopIfFocused} onTouchStart={stopIfFocused}
-                    editor={editor} 
+                    editor={editor}
                 />
             </div>
             <div className="absolute right-[9px] bottom-[9px] flex space-x-4 transition-[opacity] duration-150">
@@ -168,7 +168,7 @@ const Form = ({comment, submit, submitText, submitSize, close, editor, reduced, 
         }
     };
 
-    const openEditDetails = useCallback((options) => {        
+    const openEditDetails = useCallback((options) => {
         editor?.commands?.blur();
 
         dispatchAction('openPopup', {
@@ -184,7 +184,7 @@ const Form = ({comment, submit, submitText, submitSize, close, editor, reduced, 
                 if (!succeeded) {
                     return;
                 }
-        
+
                 // useEffect is not fast enought to enable it
                 editor.setEditable(true);
                 editor.commands.focus();
@@ -224,7 +224,7 @@ const Form = ({comment, submit, submitText, submitSize, close, editor, reduced, 
     }, [editor, memberName, progress]);
 
     return (
-        <form ref={formEl} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`-mx-3 -mt-[14px] mb-10 rounded-md px-3 pt-3 pb-2 transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}
+        <form ref={formEl} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`-mx-3 -mt-[10px] mb-10 rounded-md px-3 pt-3 pb-2 transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}
         `}>
             <div className="relative w-full">
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
