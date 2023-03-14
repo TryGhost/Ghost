@@ -24,6 +24,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: true}) showHeaderTitle;
     @attr({defaultValue: true}) showHeaderName;
     @attr({defaultValue: true}) showPostTitleSection;
+    @attr({defaultValue: true}) showCommentCta;
     @attr({defaultValue: 'sans_serif'}) titleFontCategory;
     @attr({defaultValue: 'center'}) titleAlignment;
     @attr({defaultValue: true}) showFeatureImage;

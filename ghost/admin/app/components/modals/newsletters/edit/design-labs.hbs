@@ -208,22 +208,22 @@
                             </GhFormGroup>
                         {{/if}}
 
-                        {{!-- {{#if @site.comments_enabled}} --}}
+                        {{#unless (eq this.settings.commentsEnabled 'off') }}
                             <GhFormGroup class="gh-stack-item row">
-                                <label for="comments-link" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Add a link to your comments</label>
+                                <label for="comments-link" class="modal-fullsettings-title" data-test-toggle="showCommentCta">Add a link to your comments</label>
                                 <div class="for-switch small">
                                     <div class="container">
                                         <input
                                             type="checkbox"
                                             id="comments-link"
-                                            checked={{@newsletter.feedbackEnabled}}
-                                            {{on "change" (fn this.onCheckboxChange "feedbackEnabled")}}
+                                            checked={{@newsletter.showCommentCta}}
+                                            {{on "change" (fn this.onCheckboxChange "showCommentCta")}}
                                         >
-                                        <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "feedbackEnabled")}}></button>
+                                        <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "showCommentCta")}}></button>
                                     </div>
                                 </div>
                             </GhFormGroup>
-                        {{!-- {{/if}} --}}
+                        {{/unless}}
 
                         <GhFormGroup class="gh-stack-item row">
                             <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Share your latest posts</label>
