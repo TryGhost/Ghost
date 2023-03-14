@@ -92,12 +92,12 @@
     "@tryghost/importer-handler-content-files": "0.0.0",
     "@tryghost/importer-revue": "0.0.0",
     "@tryghost/job-manager": "0.0.0",
-    "@tryghost/kg-card-factory": "4.0.4",
+    "@tryghost/kg-card-factory": "4.0.5",
     "@tryghost/kg-default-atoms": "4.0.1",
-    "@tryghost/kg-default-cards": "6.0.4",
-    "@tryghost/kg-default-nodes": "0.0.15",
-    "@tryghost/kg-lexical-html-renderer": "0.1.11",
-    "@tryghost/kg-mobiledoc-html-renderer": "6.0.4",
+    "@tryghost/kg-default-cards": "6.0.5",
+    "@tryghost/kg-default-nodes": "0.0.16",
+    "@tryghost/kg-lexical-html-renderer": "0.1.12",
+    "@tryghost/kg-mobiledoc-html-renderer": "6.0.5",
     "@tryghost/limit-service": "1.2.5",
     "@tryghost/link-redirects": "0.0.0",
     "@tryghost/link-replacer": "0.0.0",
@@ -206,7 +206,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "2.0.6",
+    "@tryghost/html-to-mobiledoc": "2.0.7",
     "sqlite3": "5.1.5"
   },
   "devDependencies": {
