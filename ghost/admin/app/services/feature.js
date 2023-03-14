@@ -71,7 +71,6 @@ export default class FeatureService extends Service {
     @feature('milestoneEmails') milestoneEmails;
     @feature('websockets') websockets;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
-    @feature('mediaInliner') mediaInliner;
     @feature('makingItRain') makingItRain;
 
     _user = null;
