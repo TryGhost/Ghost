@@ -880,42 +880,12 @@
 /* Email newsletter
 /* ---------------------------------------------------------- */
 
-.gh-setting-email-section:first-of-type {
-    margin-bottom: 20px;
-}
-
-.gh-setting-email-section .gh-expandable {
-    margin-bottom: 20px;
-}
-
-.gh-setting-email-section .gh-expandable:last-of-type {
-    margin-bottom: 0;
-}
-
-.gh-setting-email-section.content-preview {
-    display: grid;
-    grid-template-columns: auto calc(336px * .9);
-    grid-gap: 4rem;
-}
-
 .gh-setting-email hr {
     margin: 4.8em 0;
 }
 
-.gh-setting-email-section .gh-setting-richdd-container {
-    margin: 0;
-    background: var(--white);
-}
-
 .gh-email-design-typography-wrapper .gh-setting-dropdown .ember-power-select-status-icon {
     right: 16px;
-}
-
-.gh-update-support-address {
-    margin: 4px 0 0;
-    color: var(--green);
-    font-size: 1.25rem;
-    font-weight: 400;
 }
 
 .gh-mailgun-region {
@@ -939,16 +909,6 @@
     right: 16px;
     width: 10px;
     height: 6px;
-}
-
-.member-segments .select-members {
-    margin-bottom: .4rem;
-}
-
-.member-segments .segment-totals {
-    position: relative;
-    top: 2px;
-    line-height: 1.65;
 }
 
 
@@ -1221,6 +1181,18 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
 .gh-newsletters-labs .gh-members-emailpreview-faux p {
     color: var(--midgrey-l2);
 }
+
+/* Customise email newsletter LABS
+/* ---------------------------------------------------------- */
+
+.modal-fullsettings-form-labs.email-design .modal-fullsettings-tab-expanded {
+    padding: 20px 32px;
+}
+
+.modal-fullsettings-form-labs.email-design .gh-stack-item {
+    margin: 10px 0;
+}
+
 
 /* Code injection
 /* ---------------------------------------------------------- */
