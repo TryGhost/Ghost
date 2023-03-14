@@ -51,7 +51,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email": Object {},
       "excerpt": null,
       "feature_image": null,
       "feature_image_alt": null,
@@ -1833,9 +1832,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email": Object {
-        "opened_count": null,
-      },
       "excerpt": null,
       "feature_image": null,
       "feature_image_alt": null,
@@ -2051,9 +2047,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email": Object {
-        "opened_count": null,
-      },
       "excerpt": null,
       "feature_image": null,
       "feature_image_alt": null,
