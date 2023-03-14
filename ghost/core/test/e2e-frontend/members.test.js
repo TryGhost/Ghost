@@ -240,6 +240,7 @@ describe('Front-end members behavior', function () {
                 'show_badge',
                 'show_header_name',
                 'show_post_title_section',
+                'show_comment_cta',
                 'created_at',
                 'updated_at'
             ]);
