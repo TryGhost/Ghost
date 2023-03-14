@@ -33,9 +33,9 @@
   "scripts": {
     "start": "PORT=4000 BROWSER=none react-scripts start",
     "start:combined": "PORT=4000 BROWSER=none node ./scripts/start-combined.js",
-    "start:dev": "PORT=4000 node ./scripts/start-mode.js",
+    "start:dev": "NODE_OPTIONS=--openssl-legacy-provider PORT=4000 node ./scripts/start-mode.js",
     "dev": "node ./scripts/dev-mode.js",
-    "build": "npm run build:combined",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider npm run build:combined",
     "build:original": "react-scripts build",
     "build:combined": "node ./scripts/build-combined.js",
     "build:bundle": "webpack --config webpack.config.js",
