@@ -2,7 +2,7 @@
     "core": {
         "last_mentions_report_email_timestamp": {
             "defaultValue": null,
-            "type": "datetime"
+            "type": "string"
         },
         "db_hash": {
             "defaultValue": null,
