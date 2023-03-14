@@ -217,6 +217,11 @@ export default class UserController extends Controller {
     }
 
     @action
+    toggleMilestoneNotifications(event) {
+        this.user.milestoneNotifications = event.target.checked;
+    }
+
+    @action
     toggleMemberEmailAlerts(type, event) {
         if (type === 'free-signup') {
             this.user.freeMemberSignupNotification = event.target.checked;
