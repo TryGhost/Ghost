@@ -29,7 +29,7 @@
                                 <td class="wrapper">
                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                         {{#if headerImage}}
-                                            <tr>
+                                            <tr class="header-image-row">
                                                 <td class="header-image" width="100%" align="center">
                                                     <img
                                                         src="{{headerImage}}"
@@ -43,7 +43,7 @@
 
                                         {{#if (or showHeaderIcon showHeaderTitle showHeaderName) }}
                                             <tr>
-                                                <td class="{{#if showHeaderTitle}}site-info-bordered{{else}}site-info{{/if}}" width="100%" align="center">
+                                                <td class="{{#if (and newsletter.showPostTitleSection showHeaderTitle) }}site-info-bordered{{else}}site-info{{/if}}" width="100%" align="center">
                                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                         {{#if (and showHeaderIcon site.iconUrl) }}
                                                             <tr>
@@ -71,22 +71,25 @@
                                             </tr>
                                         {{/if}}
 
-                                        <tr>
-                                            <td class="{{classes.title}}">
-                                                <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                    <tr>
-                                                        <td class="{{classes.meta}}">
-                                                            By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
+                                        {{#if newsletter.showPostTitleSection}}
+                                            <tr>
+                                                <td class="{{classes.title}}">
+                                                    <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                        <tr>
+                                                            <td class="{{classes.meta}}">
+                                                                By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        {{/if}}
+
                                         {{#if showFeatureImage }}
                                             <tr>
                                                 <td class="feature-image
@@ -109,7 +112,7 @@
                                                 </tr>
                                             {{/if}}
                                         {{/if}}
-                                        <tr>
+                                        <tr class="post-content-row">
                                             <td class="{{classes.body}}">
                                                 <!-- POST CONTENT START -->
                                                 {{{html}}}
