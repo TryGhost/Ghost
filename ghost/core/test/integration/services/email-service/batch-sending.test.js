@@ -7,6 +7,13 @@ const assert = require('assert');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
 const {MailgunEmailProvider} = require('@tryghost/email-service');
+const escapeRegExp = require('lodash/escapeRegExp');
+const configUtils = require('../../../utils/configUtils');
+const {settingsCache} = require('../../../../core/server/services/settings-helpers');
+const DomainEvents = require('@tryghost/domain-events');
+const emailService = require('../../../../core/server/services/email-service');
+const should = require('should');
+
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
 const mobileDocWithFreeMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:free","alignment":"left","html":"<p>This is for free members only</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[1,"p",[[0,[],0,"Bye."]]]],"ghostVersion":"4.0"}';
@@ -14,11 +21,6 @@ const mobileDocWithPaidMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["em
 const mobileDocWithPaidAndFreeMemberOnly = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:free","alignment":"left","html":"<p>This is for free members only</p>"}],["email-cta",{"showButton":false,"showDividers":true,"segment":"status:-free","alignment":"left","html":"<p>This is for paid members only</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[10,1],[1,"p",[[0,[],0,"Bye."]]]],"ghostVersion":"4.0"}';
 const mobileDocWithFreeMemberOnlyAndPaywall = '{"version":"0.3.1","atoms":[],"cards":[["email-cta",{"showButton":false,"showDividers":true,"segment":"status:free","alignment":"left","html":"<p>This is for free members only</p>"}],["paywall",{}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]],[10,0],[1,"p",[[0,[],0,"Bye."]]],[10,1],[1,"p",[[0,[],0,"This is after the paywall."]]]],"ghostVersion":"4.0"}';
 const mobileDocWithReplacements = '{"version":"0.3.1","atoms":[],"cards":[["email",{"html":"<p>Hey {first_name, \\"there\\"}, Hey {first_name},</p>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello {first_name},"]]],[10,0]],"ghostVersion":"4.0"}';
-
-const configUtils = require('../../../utils/configUtils');
-const {settingsCache} = require('../../../../core/server/services/settings-helpers');
-const DomainEvents = require('@tryghost/domain-events');
-const emailService = require('../../../../core/server/services/email-service');
 
 let agent;
 let stubbedSend;
@@ -34,6 +36,11 @@ function sortBatches(a, b) {
         return -1;
     }
     return aId.localeCompare(bId);
+}
+
+async function getDefaultNewsletter() {
+    const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
+    return await models.Newsletter.findOne({slug: newsletterSlug});
 }
 
 async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
@@ -98,7 +105,7 @@ async function retryEmail(emailId) {
  */
 async function getLastEmail() {
     // Get the email body
-    sinon.assert.calledOnce(stubbedSend);
+    sinon.assert.called(stubbedSend);
     const messageData = stubbedSend.lastArg;
     let html = messageData.html;
     let plaintext = messageData.text;
@@ -116,6 +123,41 @@ async function getLastEmail() {
         plaintext,
         recipientData
     };
+}
+
+function testCleanedSnapshot(html, ignoreReplacements) {
+    for (const {match, replacement} of ignoreReplacements) {
+        if (match instanceof RegExp) {
+            html = html.replace(match, replacement);
+        } else {
+            html = html.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
+        }
+    }
+    should({html}).matchSnapshot();
+}
+
+async function lastEmailMatchSnapshot() {
+    const lastEmail = await getLastEmail();
+    const defaultNewsletter = await getDefaultNewsletter();
+    const linkRegexp = /http:\/\/127\.0\.0\.1:2369\/r\/\w+/g;
+
+    const ignoreReplacements = [
+        {
+            match: defaultNewsletter.get('uuid'),
+            replacement: 'requested-newsletter-uuid'
+        },
+        {
+            match: lastEmail.recipientData.uuid,
+            replacement: 'member-uuid'
+        },
+        {
+            match: linkRegexp,
+            replacement: 'http://127.0.0.1:2369/r/xxxxxx'
+        }
+    ];
+
+    testCleanedSnapshot(lastEmail.html, ignoreReplacements);
+    testCleanedSnapshot(lastEmail.plaintext, ignoreReplacements);
 }
 
 /**
@@ -787,6 +829,8 @@ describe('Batch sending tests', function () {
             assert.match(plaintext, /Hello {first_name},/);
             assert.match(plaintext, /Hey there, Hey ,/);
             assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+
+            await lastEmailMatchSnapshot();
         });
 
         it('Does replace with and without fallback in both plaintext and html for member with name', async function () {
@@ -817,6 +861,8 @@ describe('Batch sending tests', function () {
             assert.match(plaintext, /Hello {first_name},/);
             assert.match(plaintext, /Hey Simon, Hey Simon,/);
             assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+
+            await lastEmailMatchSnapshot();
         });
     });
 
@@ -831,6 +877,40 @@ describe('Batch sending tests', function () {
 
             // Check plaintext version dropped the bold tag
             assert.match(plaintext, /Testing feature image caption/);
+
+            await lastEmailMatchSnapshot();
+        });
+    });
+
+    describe('Newsletter settings', function () {
+        it('Hides post title section if show_post_title_section is false', async function () {
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_post_title_section: false}, {id: defaultNewsletter.id});
+
+            const {html, plaintext} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            });
+
+            // Check does not contain post title section
+            const withoutTitleTag = html.replace(/<title>.*<\/title>/, '');
+            assert.doesNotMatch(withoutTitleTag, /This is a test post title/);
+            assert.doesNotMatch(plaintext, /This is a test post title/);
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_post_title_section: true}, {id: defaultNewsletter.id});
+
+            // Check does contain post title section
+            const {html: html2, plaintext: plaintext2} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            });
+
+            const withoutTitleTag2 = html2.replace(/<title>.*<\/title>/, '');
+            assert.match(withoutTitleTag2, /This is a test post title/);
+            assert.match(plaintext2, /This is a test post title/);
+            await lastEmailMatchSnapshot();
         });
     });
 });

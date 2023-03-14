@@ -11,7 +11,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
 const logging = require('@tryghost/logging');
 
-async function testCleanedSnapshot(html, cleaned) {
+function testCleanedSnapshot(html, cleaned) {
     for (const [key, value] of Object.entries(cleaned)) {
         html = html.replace(new RegExp(escapeRegExp(key), 'g'), value);
     }
