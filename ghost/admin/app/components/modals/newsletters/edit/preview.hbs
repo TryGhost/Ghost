@@ -25,14 +25,12 @@
                     {{/if}}
                 </div>
             {{/if}}
-            {{#if @newsletter.showPostTitleSection}}
-                <div class="gh-members-emailpreview-title {{if (eq @newsletter.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
-                    <h2 class="{{if (eq @newsletter.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
-                    <p>
-                        <span>By {{or this.session.user.name this.session.user.email}} – {{moment-format (moment-site-tz) "D MMM YYYY"}} – </span> <a href="javascript:">View online →</a>
-                    </p>
-                </div>
-            {{/if}}
+            <div class="gh-members-emailpreview-title {{if (eq @newsletter.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
+                <h2 class="{{if (eq @newsletter.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
+                <p>
+                    <span>By {{or this.session.user.name this.session.user.email}} – {{moment-format (moment-site-tz) "D MMM YYYY"}} – </span> <a href="javascript:">View online →</a>
+                </p>
+            </div>
             {{#if @newsletter.showFeatureImage}}
                 <div class="gh-members-emailpreview-featureimage" style={{this.featureImageStyle}}></div>
                 <div class="gh-members-emailpreview-featureimage-caption">Feature image caption</div>
