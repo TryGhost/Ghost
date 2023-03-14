@@ -7,7 +7,7 @@ import {GlobalStyles} from './Global.styles';
 import {ActionButtonStyles} from './common/ActionButton';
 import {BackButtonStyles} from './common/BackButton';
 import {SwitchStyles} from './common/Switch';
-import AccountHomePageStyles from '!!raw-loader!./pages/AccountHomePage/AccountHomePage.css';
+import AccountHomePageStyles from './pages/AccountHomePage/AccountHomePage.css';
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
@@ -17,9 +17,9 @@ import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {PopupNotificationStyles} from './common/PopupNotification';
 import {OfferPageStyles} from './pages/OfferPage';
 import {FeedbackPageStyles} from './pages/FeedbackPage';
-import EmailSuppressedPage from '!!raw-loader!./pages/EmailSuppressedPage.css';
-import EmailSuppressionFAQ from '!!raw-loader!./pages/EmailSuppressionFAQ.css';
-import EmailReceivingFAQ from '!!raw-loader!./pages/EmailReceivingFAQ.css';
+import EmailSuppressedPage from './pages/EmailSuppressedPage.css';
+import EmailSuppressionFAQ from './pages/EmailSuppressionFAQ.css';
+import EmailReceivingFAQ from './pages/EmailReceivingFAQ.css';
 
 // Global styles
 const FrameStyles = `
