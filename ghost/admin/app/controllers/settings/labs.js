@@ -151,11 +151,6 @@ export default class LabsController extends Controller {
     }
 
     @action
-    startMediaInlinerAction() {
-        return this.startMediaInliner.perform();
-    }
-
-    @action
     confirmDeleteAll() {
         return this.modals.open(DeleteAllModal);
     }
@@ -217,19 +212,6 @@ export default class LabsController extends Controller {
 
         return RSVP.resolve();
     }
-
-    @(task(function*() {
-        const inlineURL = this.ghostPaths.url.api('db/media/inline');
-        yield this.ajax.post(inlineURL, {
-            dataType: 'json',
-            // @NOTE: the domains list will become input based
-            data: {
-                domains: []
-            }
-        });
-        // TODO: notify user the inliner has started
-    }).drop())
-        startMediaInliner;
 
     @(task(function* (success) {
         this.set('redirectSuccess', success);
