@@ -4,10 +4,10 @@ export function ColorPicker({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
             <ul className="flex w-full items-center justify-between rounded font-sans text-md font-normal text-white">
-                {buttons.map(({label, name, color}) => (
+                {buttons.map(({label, name, colorClass}) => (
                     <ColorButton
                         key={`${name}-${label}`}
-                        color={color}
+                        colorClass={colorClass}
                         label={label}
                         name={name}
                         selectedName={selectedName}
@@ -19,7 +19,7 @@ export function ColorPicker({buttons = [], selectedName, onClick}) {
     );
 }
 
-export function ColorButton({onClick, label, name, color, selectedName}) {
+export function ColorButton({onClick, label, name, colorClass, selectedName}) {
     const isActive = name === selectedName;
     return (
         <li>
@@ -30,7 +30,7 @@ export function ColorButton({onClick, label, name, color, selectedName}) {
                 onClick={() => onClick(name)}
             >
                 <span
-                    className={`bg-${color} h-6 w-6 rounded-full border-2 border-black/5`}
+                    className={`${colorClass} h-6 w-6 rounded-full border-2 border-black/5`}
                 ></span>
             </button>
         </li>

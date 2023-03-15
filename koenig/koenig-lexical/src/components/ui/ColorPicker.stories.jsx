@@ -30,31 +30,38 @@ Default.args = {
     buttons: [
         {
             label: 'Grey',
-            color: 'grey'
+            name: 'grey',
+            colorClass: 'bg-grey'
         },
         {
             label: 'Blue',
-            color: 'blue'
+            name: 'blue',
+            colorClass: 'bg-blue'
         },
         {
             label: 'Green',
-            color: 'green'
+            name: 'green',
+            colorClass: 'bg-green'
         },
         {
             label: 'Yellow',
-            color: 'yellow'
+            name: 'yellow',
+            colorClass: 'bg-yellow'
         },
         {
             label: 'Red',
-            color: 'red'
+            name: 'red',
+            colorClass: 'bg-red'
         },
         {
             label: 'Pink',
-            color: 'pink'
+            name: 'pink',
+            colorClass: 'bg-pink'
         },
         {
             label: 'Purple',
-            color: 'purple'
+            name: 'purple',
+            colorClass: 'bg-purple'
         }
     ]
 };

@@ -106,39 +106,48 @@ ButtonCard.args = {
 const calloutColorPicker = [
     {
         label: 'Grey',
-        color: 'grey-100'
+        name: 'grey',
+        colorClass: 'bg-grey-100'
     },
     {
         label: 'White',
-        color: 'white'
+        name: 'white',
+        colorClass: 'bg-white'
     },
     {
         label: 'Blue',
-        color: 'blue-100'
+        name: 'blue',
+        colorClass: 'bg-blue-100'
     },
     {
         label: 'Green',
-        color: 'green-100'
+        name: 'green',
+        colorClass: 'bg-green-100'
     },
     {
         label: 'Yellow',
-        color: 'yellow-100'
+        name: 'yellow',
+        colorClass: 'bg-yellow-100'
     },
     {
         label: 'Red',
-        color: 'red-100'
+        name: 'red',
+        colorClass: 'bg-red-100'
     },
     {
         label: 'Pink',
-        color: 'pink-100'
+        name: 'pink',
+        colorClass: 'bg-pink-100'
     },
     {
         label: 'Purple',
-        color: 'purple-100'
+        name: 'purple',
+        colorClass: 'bg-purple-100'
     },
     {
         label: 'Accent',
-        color: 'pink'
+        name: 'accent',
+        colorClass: 'bg-pink'
     }
 ];
 

@@ -18,47 +18,47 @@ export function CalloutCard({color, emoji, value, placeholder, isEditing}) {
         {
             label: 'Grey',
             name: 'grey',
-            color: 'grey-100'
+            colorClass: 'bg-grey-100'
         },
         {
             label: 'White',
             name: 'white',
-            color: 'white'
+            colorClass: 'bg-white'
         },
         {
             label: 'Blue',
             name: 'blue',
-            color: 'blue-100'
+            colorClass: 'bg-blue-100'
         },
         {
             label: 'Green',
             name: 'green',
-            color: 'green-100'
+            colorClass: 'bg-green-100'
         },
         {
             label: 'Yellow',
             name: 'yellow',
-            color: 'yellow-100'
+            colorClass: 'bg-yellow-100'
         },
         {
             label: 'Red',
             name: 'red',
-            color: 'red-100'
+            colorClass: 'bg-red-100'
         },
         {
             label: 'Pink',
             name: 'pink',
-            color: 'pink-100'
+            colorClass: 'bg-pink-100'
         },
         {
             label: 'Purple',
             name: 'purple',
-            color: 'purple-100'
+            colorClass: 'bg-purple-100'
         },
         {
             label: 'Accent',
             name: 'accent',
-            color: 'pink'
+            colorClass: 'bg-pink'
         }
     ];
 
