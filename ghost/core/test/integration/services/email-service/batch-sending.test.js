@@ -64,7 +64,9 @@ async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
 
     const updatedPost = {
         status: 'published',
-        updated_at: res.body.posts[0].updated_at
+        updated_at: res.body.posts[0].updated_at,
+        // Fixed publish date to make sure snapshots are consistent
+        published_at: moment(new Date(2023, 0, 1, 12)).toISOString()
     };
 
     const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
