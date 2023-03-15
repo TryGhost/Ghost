@@ -16,6 +16,10 @@ export default class EditNewsletterPreview extends Component {
         return this.headerTitle || this.headerSubtitle;
     }
 
+    get showCommentCta() {
+        return this.args.newsletter.showCommentCta && this.settings.commentsEnabled !== 'off';
+    }
+
     get headerTitle() {
         if (this.args.newsletter.showHeaderTitle) {
             return this.settings.title;
