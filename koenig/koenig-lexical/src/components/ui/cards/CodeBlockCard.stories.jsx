@@ -37,7 +37,7 @@ export default story;
 
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
-        <div className="mx-auto my-8 max-w-[740px] min-w-[initial]">
+        <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
             <CardWrapper wrapperStyle='code-card' {...display} {...args}>
                 <CodeBlockCard updateCode={() => {}} {...display} {...args} />
             </CardWrapper>

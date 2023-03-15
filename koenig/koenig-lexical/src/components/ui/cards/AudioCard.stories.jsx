@@ -37,7 +37,7 @@ export default story;
 
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
-        <div className="not-kg-prose mx-auto my-8 max-w-[740px] min-w-[initial]">
+        <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
             <CardWrapper {...display} {...args}>
                 <AudioCard {...display} {...args} />
             </CardWrapper>
