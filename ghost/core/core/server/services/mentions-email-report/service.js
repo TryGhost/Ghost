@@ -72,21 +72,21 @@ module.exports = {
         const mentionReportHistoryService = {
             async getLatestReportDate() {
                 const setting = settingsCache.get('lastMentionsReportEmailTimestamp');
-                const parsedDate = Date.parse(setting);
+                const parsedInt = parseInt(setting);
 
                 // Protect against missing/bad data
-                if (Number.isNaN(parsedDate)) {
+                if (Number.isNaN(parsedInt) || !parsedInt) {
                     const date = new Date();
                     date.setDate(date.getDate() - 1);
                     return date;
                 }
 
-                return new Date(parsedDate);
+                return new Date(parsedInt);
             },
             async setLatestReportDate(date) {
                 await models.Settings.edit({
                     key: 'lastMentionsReportEmailTimestamp',
-                    value: date
+                    value: date.getTime()
                 });
             }
         };
