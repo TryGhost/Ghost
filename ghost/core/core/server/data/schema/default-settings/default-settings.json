@@ -1,5 +1,9 @@
 {
     "core": {
+        "last_mentions_report_email_timestamp": {
+            "defaultValue": null,
+            "type": "number"
+        },
         "db_hash": {
             "defaultValue": null,
             "type": "string"
