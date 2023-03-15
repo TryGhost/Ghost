@@ -28,14 +28,16 @@
             {{#if @newsletter.showPostTitleSection}}
                 <div class="gh-members-emailpreview-title {{if (eq @newsletter.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
                     <h2 class="{{if (eq @newsletter.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
-                    <div class="flex justify-between w-100 {{if (eq @newsletter.titleAlignment "center") "flex-column"}}">
-                        <p>By {{or this.session.user.name this.session.user.email}} on {{moment-format (moment-site-tz) "D MMM YYYY"}}</p>
-                        <div class="{{if (eq @newsletter.titleAlignment "center") "gh-members-emailpreview-meta-center"}}">
-                            <a href="javascript:">View in browser</a>
+                    <div class="gh-members-emailpreview-meta {{if (eq @newsletter.titleAlignment "center") "center-aligned"}}">
+                        <p>By {{or this.session.user.name this.session.user.email}}
+                            <span>{{moment-format (moment-site-tz) "D MMM YYYY"}}</span> 
                             {{#if this.showCommentCta}}
-                                <a href="javascript:"> {{svg-jar "comments"}}</a>
+                                <span><a href="javascript:"> {{svg-jar "comments"}}</a></span>
                             {{/if}}
-                        </div>
+                        </p>
+                        <p>
+                            <a href="javascript:">View in browser</a>
+                        </p>
                     </div>
                 </div>
             {{/if}}
