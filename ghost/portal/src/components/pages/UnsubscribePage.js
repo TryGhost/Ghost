@@ -1,13 +1,11 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
-import {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {getSiteNewsletters} from '../../utils/helpers';
 import setupGhostApi from '../../utils/api';
 import NewsletterManagement from '../common/NewsletterManagement';
 import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
-
-const React = require('react');
 
 function SiteLogo() {
     const {site} = useContext(AppContext);

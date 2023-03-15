@@ -1,3 +1,4 @@
+import React from 'react';
 import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
@@ -5,8 +6,6 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-
-const React = require('react');
 
 export default class AccountProfilePage extends React.Component {
     static contextType = AppContext;

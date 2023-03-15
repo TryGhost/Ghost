@@ -1,5 +1,5 @@
 // Ref: https://reactjs.org/docs/context.html
-const React = require('react');
+import React from 'react';
 
 const AppContext = React.createContext({
     site: {},

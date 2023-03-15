@@ -1,3 +1,4 @@
+import React from 'react';
 import Frame from './Frame';
 import MemberGravatar from './common/MemberGravatar';
 import AppContext from '../AppContext';
@@ -10,8 +11,6 @@ import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
 import TriggerButtonStyle from './TriggerButton.styles';
 import {isInviteOnlySite} from '../utils/helpers';
 import {hasMode} from '../utils/check-mode';
-
-const React = require('react');
 
 const ICON_MAPPING = {
     'icon-1': ButtonIcon1,

@@ -1,3 +1,4 @@
+import React from 'react';
 import ActionButton from '../common/ActionButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
@@ -6,7 +7,6 @@ import InputForm from '../common/InputForm';
 import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 import NewsletterSelectionPage from './NewsletterSelectionPage';
-const React = require('react');
 
 export const OfferPageStyles = ({site}) => {
     return `
