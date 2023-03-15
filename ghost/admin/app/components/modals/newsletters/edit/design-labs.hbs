@@ -225,6 +225,23 @@
                             </GhFormGroup>
                         {{/unless}}
 
+                        {{#if this.membersUtils.isMembersEnabled }}
+                            <GhFormGroup class="gh-stack-item row">
+                                <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="showSubscriptionDetails">Show subscription details</label>
+                                <div class="for-switch small">
+                                    <div class="container">
+                                        <input
+                                            type="checkbox"
+                                            id="capture-feedback"
+                                            checked={{@newsletter.showSubscriptionDetails}}
+                                            {{on "change" (fn this.onCheckboxChange "showSubscriptionDetails")}}
+                                        >
+                                        <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "showSubscriptionDetails")}}></button>
+                                    </div>
+                                </div>
+                            </GhFormGroup>
+                        {{/if}}
+
                         <GhFormGroup class="gh-stack-item row">
                             <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Share your latest posts</label>
                             <div class="for-switch small">
