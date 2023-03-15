@@ -898,7 +898,7 @@ table.body figcaption a {
                                                 </td>
                                             </tr>
 
-                                            <tr>
+                                            <tr class=\\"feature-image-row\\">
                                                 <td class=\\"feature-image
                                                 \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-bottom: 30px; width: 100%;\\" width=\\"100%\\" valign=\\"top\\"><img src=\\"https://example.com/super_photo.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\"></td>
                                             </tr>
@@ -1100,7 +1100,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23753",
+  "content-length": "23781",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
