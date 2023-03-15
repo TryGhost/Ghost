@@ -11,7 +11,7 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
             subject: `${siteTitle} hit ${formattedValue} ARR`,
             heading: `Congrats! You reached ${formattedValue} ARR`,
             content: [
-                `<strong>${siteTitle}</strong> is now generating ${formattedValue} in annual recurring revenue. Congratulations &mdash; this is a significant milestone.`,
+                `<strong>${siteTitle}</strong> is now generating <strong>${formattedValue}</strong> in annual recurring revenue. Congratulations &mdash; this is a significant milestone.`,
                 'Subscription revenue is predictable and sustainable, meaning you can keep focusing on delivering great content while watching your business grow. Keep up the great work. See you at the next milestone!'
             ],
             ctaText: 'Login to your dashboard',
