@@ -5,8 +5,12 @@ const {luck} = require('../utils/random');
 class MembersCreatedEventsImporter extends TableImporter {
     static table = 'members_created_events';
 
-    constructor(knex) {
+    constructor(knex, {posts}) {
         super(MembersCreatedEventsImporter.table, knex);
+
+        this.posts = [...posts];
+        // Sort posts in reverse chronologoical order
+        this.posts.sort((a, b) => new Date(b.published_at).valueOf() - new Date(a.published_at).valueOf());
     }
 
     setImportOptions({model}) {
@@ -26,13 +30,24 @@ class MembersCreatedEventsImporter extends TableImporter {
     }
 
     generate() {
-        // TODO: Add attribution
-        return {
+        const source = this.generateSource();
+        let attribution = {};
+        if (source === 'member' && luck(30)) {
+            const post = this.posts.find(p => p.visibility === 'public' && new Date(p.published_at) < new Date(this.model.created_at));
+            if (post) {
+                attribution = {
+                    attribution_id: post.id,
+                    attribution_type: post.type,
+                    attribution_url: post.slug
+                };
+            }
+        }
+        return Object.assign({}, {
             id: faker.database.mongodbObjectId(),
             created_at: this.model.created_at,
             member_id: this.model.id,
-            source: this.generateSource()
-        };
+            source
+        }, attribution);
     }
 }
 
