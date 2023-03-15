@@ -17,6 +17,7 @@ export const MagicLinkStyles = `
     }
 
     .gh-portal-inbox-notification p {
+        max-width: 420px;
         text-align: center;
         margin-bottom: 30px;
     }
