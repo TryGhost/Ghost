@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import config from 'ghost-admin/config/environment';
+import semver from 'semver';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -21,9 +22,26 @@ export default class AboutModal extends Component {
     }
 
     get linkToGitHubReleases() {
-        // Don't link to GitHub Releases if the version contains the
-        // pre-release identifier
-        return !this.config.version.includes('-pre.');
+        if (this.config.version.includes('-pre.')) {
+            try {
+                const semverVersion = semver.parse(this.config.version, {includePrerelease: true});
+
+                // Ensure this follows our prerelease format
+                if (semverVersion
+                    && semverVersion.prerelease?.[0] === 'pre'
+                    && semverVersion.prerelease?.[1]
+                    && Number.isInteger(semverVersion.prerelease?.[2])
+                ) {
+                    return `https://github.com/TryGhost/Ghost/commit/${semverVersion.prerelease[1]}`;
+                }
+
+                return false;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        return `https://github.com/TryGhost/Ghost/releases/tag/v${this.config.version}`;
     }
 
     get showSystemInfo() {
