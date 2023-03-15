@@ -32,9 +32,9 @@
                         <p>By {{or this.session.user.name this.session.user.email}} on {{moment-format (moment-site-tz) "D MMM YYYY"}}</p>
                         <div class="{{if (eq @newsletter.titleAlignment "center") "gh-members-emailpreview-meta-center"}}">
                             <a href="javascript:">View in browser</a>
-                            {{!-- {{#if newsletter.showCommentCta}} --}}
+                            {{#if this.showCommentCta}}
                                 <a href="javascript:"> {{svg-jar "comments"}}</a>
-                            {{!-- {{/if}} --}}
+                            {{/if}}
                         </div>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                 <p>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
             </div>
 
-            {{!-- {{#if (or (and @newsletter.feedbackEnabled (feature "audienceFeedback")) newsletter.showCommentCta)}} --}}
+            {{#if (or (and @newsletter.feedbackEnabled (feature "audienceFeedback")) this.showCommentCta)}}
                 <div class="gh-members-emailpreview-feedback gh-members-emailpreview-content">
 
                     <div class="gh-members-emailpreview-feedback-buttons-group">
@@ -63,14 +63,14 @@
                                 @icon="thumbs-down" />
                         {{/if}}
 
-                        {{!-- {{#if newsletter.showCommentCta}} --}}
+                        {{#if this.showCommentCta}}
                             <Modals::Newsletters::Components::FeedbackButton
                                 @text="Comments"
                                 @icon="comments" />
-                        {{!-- {{/if}} --}}
+                        {{/if}}
                     </div>
                 </div>
-            {{!-- {{/if}} --}}
+            {{/if}}
 
             <div class="gh-members-emailpreview-footer">
                 <div class="gh-members-emailpreview-footercontent">
