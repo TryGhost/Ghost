@@ -30,7 +30,7 @@
                     <h2 class="{{if (eq @newsletter.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
                     <div class="gh-members-emailpreview-meta {{if (eq @newsletter.titleAlignment "center") "center-aligned"}}">
                         <p>By {{or this.session.user.name this.session.user.email}}
-                            <span>{{moment-format (moment-site-tz) "D MMM YYYY"}}</span> 
+                            <span>{{moment-format (moment-site-tz) "D MMM YYYY"}}</span>
                             {{#if this.showCommentCta}}
                                 <span><a href="javascript:"> {{svg-jar "comments"}}</a></span>
                             {{/if}}
@@ -71,6 +71,12 @@
                                 @icon="comments" />
                         {{/if}}
                     </div>
+                </div>
+            {{/if}}
+
+            {{#if @newsletter.showSubscriptionDetails}}
+                <div class="gh-members-emailpreview-subscription-details">
+                    Subscription details
                 </div>
             {{/if}}
 
