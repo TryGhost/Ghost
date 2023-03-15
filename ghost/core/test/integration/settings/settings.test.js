@@ -15,6 +15,7 @@ describe('Settings', function () {
 
     // Allowlist: Only this list needs updating when a core setting is added/removed/renamed
     const coreSettingKeys = [
+        'last_mentions_report_email_timestamp',
         'db_hash',
         'routes_hash',
         'next_update_check',
