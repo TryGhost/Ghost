@@ -187,7 +187,7 @@ class StaffServiceEmails {
      * @returns {Promise<void>}
      */
     async notifyMilestoneReceived({milestone}) {
-        if (!milestone?.emailSentAt || (milestone?.meta && milestone?.meta?.reason)) {
+        if (!milestone?.emailSentAt || milestone?.meta?.reason) {
             // Do not send an email when no email was set to be sent or a reason
             // not to send provided
             return;
