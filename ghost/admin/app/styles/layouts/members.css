@@ -2068,6 +2068,10 @@ p.gh-members-import-errordetail:first-of-type {
     color: #15212A;
 }
 
+.gh-members-emailpreview-meta-center {
+    text-align: center;
+}
+
 .gh-members-emailpreview-labs .gh-members-emailpreview-title p {
     padding: 0 0 4px;
     color: var(--midgrey);
@@ -2092,7 +2096,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-labs .gh-members-emailpreview-title a svg {
     display: inline-block;
-    margin: -2px 0 0 12px;
+    margin: -2px 0 0 10px;
     vertical-align: middle;
     width: 16px;
     height: 16px;
