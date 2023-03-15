@@ -20,6 +20,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
  * @prop {string} uuid
  * @prop {string} email
  * @prop {string} name
+ * @prop {Date|null} createdAt This can be null if the member has been deleted for older email recipient rows
  */
 
 /**
@@ -372,6 +373,29 @@ class EmailRenderer {
                 getValue: (member) => {
                     return member.name?.split(' ')[0];
                 }
+            },
+            {
+                id: 'name',
+                getValue: (member) => {
+                    return member.name;
+                }
+            },
+            {
+                id: 'email',
+                getValue: (member) => {
+                    return member.email;
+                }
+            },
+            {
+                id: 'created_at',
+                getValue: (member) => {
+                    const timezone = this.#settingsCache.get('timezone');
+                    return member.createdAt ? DateTime.fromJSDate(member.createdAt).setZone(timezone).setLocale('en-gb').toLocaleString({
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) : '';
+                }
             }
         ];
 
@@ -593,7 +617,8 @@ class EmailRenderer {
             newsletter: {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
-                showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && this.#labs.isSet('makingItRain')
+                showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && this.#labs.isSet('makingItRain'),
+                showSubscriptionDetails: newsletter.get('show_subscription_details') && this.#labs.isSet('makingItRain')
             },
 
             //CSS

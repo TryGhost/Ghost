@@ -584,18 +584,26 @@ describe('Batch Sending Service', function () {
         beforeEach(function () {
             EmailRecipient = createModelClass({
                 findAll: [
-                    createModel({
+                    {
                         member_id: '123',
                         member_uuid: '123',
                         member_email: 'example@example.com',
-                        member_name: 'Test User'
-                    }),
-                    createModel({
+                        member_name: 'Test User',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date()
+                        })
+                    },
+                    {
                         member_id: '124',
                         member_uuid: '124',
                         member_email: 'example2@example.com',
-                        member_name: 'Test User 2'
-                    })
+                        member_name: 'Test User 2',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date()
+                        })
+                    }
                 ]
             });
         });
@@ -909,6 +917,31 @@ describe('Batch Sending Service', function () {
             assert.equal(loggedExeption.code, 'BULK_EMAIL_DB_RETRY');
 
             sinon.assert.notCalled(sendingService.send);
+        });
+    });
+
+    describe('getBatchMembers', function () {
+        it('Works for recipients without members', async function () {
+            const EmailRecipient = createModelClass({
+                findAll: [
+                    {
+                        member_id: '123',
+                        member_uuid: '123',
+                        member_email: 'example@example.com',
+                        member_name: 'Test User',
+                        loaded: ['member'],
+                        member: null
+                    }
+                ]
+            });
+
+            const service = new BatchSendingService({
+                models: {EmailRecipient}
+            });
+
+            const result = await service.getBatchMembers('id123');
+            assert.equal(result.length, 1);
+            assert.equal(result[0].createdAt, null);
         });
     });
 
