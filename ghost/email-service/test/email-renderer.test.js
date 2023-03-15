@@ -83,6 +83,13 @@ describe('Email renderer', function () {
                 },
                 labs: {
                     isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                    }
                 }
             });
             newsletter = createModel({
@@ -92,7 +99,8 @@ describe('Email renderer', function () {
                 id: '456',
                 uuid: 'myuuid',
                 name: 'Test User',
-                email: 'test@example.com'
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0)
             };
         });
 
@@ -136,6 +144,43 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].token.toString(), '/%%\\{unsubscribe_url\\}%%/g');
             assert.equal(replacements[0].id, 'unsubscribe_url');
             assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=myuuid&newsletter=newsletteruuid`);
+        });
+
+        it('returns correct name', function () {
+            const html = 'Hello %%{name}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{name\\}%%/g');
+            assert.equal(replacements[0].id, 'name');
+            assert.equal(replacements[0].getValue(member), 'Test User');
+        });
+
+        it('returns correct email', function () {
+            const html = 'Hello %%{email}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{email\\}%%/g');
+            assert.equal(replacements[0].id, 'email');
+            assert.equal(replacements[0].getValue(member), 'test@example.com');
+        });
+
+        it('returns correct createdAt', function () {
+            const html = 'Hello %%{created_at}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('returns missing created at', function () {
+            member.createdAt = null;
+            const html = 'Hello %%{created_at}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '');
         });
 
         it('supports fallback values', function () {
@@ -1118,6 +1163,60 @@ describe('Email renderer', function () {
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.equal(data.newsletter.showCommentCta, true);
+        });
+
+        it('showSubscriptionDetails is disabled if labs disabled', async function () {
+            labsEnabled = false;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_subscription_details: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.newsletter.showSubscriptionDetails, false);
+        });
+
+        it('showSubscriptionDetails works is enabled', async function () {
+            labsEnabled = true;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_subscription_details: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.newsletter.showSubscriptionDetails, true);
+        });
+
+        it('showSubscriptionDetails can be disabled', async function () {
+            labsEnabled = true;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_subscription_details: false
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.newsletter.showSubscriptionDetails, false);
         });
     });
 
