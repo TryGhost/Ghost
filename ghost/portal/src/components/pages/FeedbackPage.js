@@ -1,4 +1,4 @@
-import {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.svg';
 import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
@@ -8,8 +8,6 @@ import {HumanReadableError} from '../../utils/errors';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import LoadingPage from './LoadingPage';
-
-const React = require('react');
 
 export const FeedbackPageStyles = `
     .gh-portal-feedback {

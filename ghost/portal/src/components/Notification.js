@@ -1,3 +1,4 @@
+import React from 'react';
 import Frame from './Frame';
 import AppContext from '../AppContext';
 import NotificationStyle from './Notification.styles';
@@ -6,8 +7,6 @@ import {ReactComponent as CheckmarkIcon} from '../images/icons/checkmark-fill.sv
 import {ReactComponent as WarningIcon} from '../images/icons/warning-fill.svg';
 import NotificationParser, {clearURLParams} from '../utils/notifications';
 import {getPortalLink} from '../utils/helpers';
-
-const React = require('react');
 
 const Styles = () => {
     return {

@@ -1,9 +1,7 @@
 import AppContext from '../../AppContext';
-import {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {isPaidMember} from '../../utils/helpers';
 import NewsletterManagement from '../common/NewsletterManagement';
-
-const React = require('react');
 
 export default function AccountEmailPage() {
     const {member, onAction, site, t} = useContext(AppContext);

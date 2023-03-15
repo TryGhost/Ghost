@@ -1,11 +1,9 @@
 import AppContext from '../../AppContext';
-import {useContext, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as LockIcon} from '../../images/icons/lock.svg';
-
-const React = require('react');
 
 function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters}) {
     const isChecked = subscribedNewsletters.some((d) => {
