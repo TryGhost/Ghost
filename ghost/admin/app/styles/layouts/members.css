@@ -2083,10 +2083,8 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-labs .gh-members-emailpreview-title a {
-    padding-right: 8px;
-    text-decoration: none;
-    text-transform: uppercase;
-    color: #15212A;
+    text-decoration: underline;
+    color: var(--midgrey);
     font-size: 1.3rem;
     line-height: 1;
     letter-spacing: 0.2px;
@@ -2094,10 +2092,10 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-labs .gh-members-emailpreview-title a svg {
     display: inline-block;
-    margin-top: -2px;
+    margin: -2px 0 0 12px;
     vertical-align: middle;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     stroke-width: 1.5px;
 }
 
@@ -2264,6 +2262,8 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-labs .gh-members-emailpreview-feedback-button svg {
+    width: 20px;
+    height: 20px;
     stroke-width: 1.5px;
 }
 
