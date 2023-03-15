@@ -104,7 +104,10 @@
                                                         {{#if parsedEvent.info}}
                                                             <span class="highlight">({{parsedEvent.info}})</span>
                                                         {{/if}}
-                                                        {{#if parsedEvent.url}}
+                                                        {{#if parsedEvent.route}}
+                                                            <span class="gh-members-activity-event-join">{{parsedEvent.join}}</span>
+                                                            <LinkTo class="gh-members-activity-object-link" @route={{parsedEvent.route.name}} @model={{parsedEvent.route.model}}>{{parsedEvent.object}}</LinkTo>
+                                                        {{else if parsedEvent.url}}
                                                             <span class="gh-members-activity-event-join">{{parsedEvent.join}}</span>
                                                             <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>
                                                         {{else if parsedEvent.email}}
