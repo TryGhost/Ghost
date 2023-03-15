@@ -801,7 +801,7 @@ const FrameStyles = `
 const MobileStyles = `
 @media (max-width: 1440px) {
     .gh-portal-popup-container:not(.full-size):not(.large-size):not(.preview) {
-        width: 460px;
+        width: 480px;
     }
 
     .gh-portal-popup-container.large-size {
