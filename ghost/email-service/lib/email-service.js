@@ -188,7 +188,8 @@ class EmailService {
             id: 'example-id',
             uuid: 'example-uuid',
             email: 'jamie@example.com',
-            name: 'Jamie Larson'
+            name: 'Jamie Larson',
+            createdAt: new Date()
         };
     }
 
@@ -211,6 +212,7 @@ class EmailService {
                 exampleMember.uuid = member.get('uuid');
                 exampleMember.email = member.get('email');
                 exampleMember.name = member.get('name');
+                exampleMember.createdAt = member.get('created_at');
             } else {
                 exampleMember.name = ''; // Force empty name to simulate name fallbacks
                 exampleMember.email = email;

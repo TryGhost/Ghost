@@ -151,6 +151,19 @@
                                 </tr>
                             {{/if}}
 
+                            {{#if newsletter.showSubscriptionDetails}}
+                                <tr>
+                                    <td>
+                                        <h3>Subscription details</h3>
+                                        <p>You are receiving this because you are a <strong data-gh-segment="status:-free">paid</strong><strong data-gh-segment="status:free">free</strong> subscriber to <span>{{site.title}}</span>.</p>
+                                        <p>Name: %%{name}%%</p>
+                                        <p>Email: %%{email}%%</p>
+                                        <p>Member since: %%{created_at}%%</p>
+                                        <p data-gh-segment="status:-free">Renewal date: todo</p>
+                                    </td>
+                                </tr>
+                            {{/if}}
+
                             <tr>
                                 <td class="wrapper" align="center">
                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px; padding-bottom: 30px;">
