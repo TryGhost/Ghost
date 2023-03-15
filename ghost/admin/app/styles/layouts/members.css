@@ -1981,15 +1981,15 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-header-image img {
     display: block;
-    margin: 16px auto 0;
+    margin: 24px auto 0;
 }
 
 .gh-members-emailpreview-header-image + .gh-members-emailpreview-featureimage {
-    margin-top: 16px;
+    margin-top: 24px;
 }
 
 .gh-members-emailpreview-featureimage:first-child {
-    margin-top: 16px;
+    margin-top: 24px;
 }
 
 .gh-members-emailpreview-header {
@@ -2140,11 +2140,11 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-content:first-child {
-    margin-top: 40px;
+    margin-top: 52px;
 }
 
 .gh-members-emailpreview-header-image + .gh-members-emailpreview-content {
-    margin-top: 40px;
+    margin-top: 52px;
 }
 
 .gh-members-emailpreview-content p {
