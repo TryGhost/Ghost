@@ -1,3 +1,4 @@
+import React from 'react';
 import ActionButton from '../common/ActionButton';
 import AppContext from '../../AppContext';
 import CloseButton from '../common/CloseButton';
@@ -8,8 +9,6 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice, hasMultipleNewsletters, hasFreeTrialTier} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
-
-const React = require('react');
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {

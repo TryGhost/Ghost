@@ -1,11 +1,10 @@
+import React from 'react';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 // import SiteTitleBackButton from '../common/SiteTitleBackButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-
-const React = require('react');
 
 export default class SigninPage extends React.Component {
     static contextType = AppContext;

@@ -1,3 +1,4 @@
+import React from 'react';
 import Frame from './Frame';
 import {hasMode} from '../utils/check-mode';
 import AppContext from '../AppContext';
@@ -6,8 +7,6 @@ import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
 import PoweredBy from './common/PoweredBy';
 import {getSiteProducts, isInviteOnlySite, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
-
-const React = require('react');
 
 const StylesWrapper = ({member}) => {
     return {
