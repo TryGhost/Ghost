@@ -10942,7 +10942,7 @@ diff@^4.0.2:
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
   integrity sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
 
-diff@^5.0.0, diff@^5.1.0:
+diff@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-5.1.0.tgz#bc52d298c5ea8df9194800224445ed43ffc87e40"
   integrity sha512-D+mk+qE8VC/PAUrlAU34N+VfXev0ghe5ywmpqrawphmVZc1bEfn56uo9qpyGp1p4xpzOHkSW4ztBd6L7Xx4ACw==
@@ -12624,10 +12624,10 @@ ember-template-imports@^3.4.1:
     string.prototype.matchall "^4.0.6"
     validate-peer-dependencies "^1.1.0"
 
-ember-template-lint@5.6.0:
-  version "5.6.0"
-  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-5.6.0.tgz#ea8a533254d7ccde261ea6be53fd562f2cd5c73f"
-  integrity sha512-UdgTdxout2b5VVQL1dnxOu+0tf//lV0uhwkwDDF9RWMbZjGrVsEHV2ci/vPS9QQiJSjKqH6tRdk3ueA9OYVMaw==
+ember-template-lint@5.7.0:
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-5.7.0.tgz#7b191cabb1fe323a6c6c5f69bd4ae50bf8c35595"
+  integrity sha512-y3Hb5xQsQKt3IgbD45xCXINRoTWmxUM425P2OXwMplZLo1feCWz3Jd6i+WxQFu0a6q3rnCdrCUh6lLoGtIB5XQ==
   dependencies:
     "@lint-todo/utils" "^13.0.3"
     aria-query "^5.0.2"
@@ -12646,7 +12646,7 @@ ember-template-lint@5.6.0:
     micromatch "^4.0.5"
     resolve "^1.22.1"
     v8-compile-cache "^2.3.0"
-    yargs "^17.7.0"
+    yargs "^17.7.1"
 
 ember-template-recast@^6.1.3:
   version "6.1.3"
@@ -20116,7 +20116,7 @@ nise@^4.0.4:
     just-extend "^4.0.2"
     path-to-regexp "^1.7.0"
 
-nise@^5.1.2, nise@^5.1.4:
+nise@^5.1.4:
   version "5.1.4"
   resolved "https://registry.yarnpkg.com/nise/-/nise-5.1.4.tgz#491ce7e7307d4ec546f5a659b2efe94a18b4bbc0"
   integrity sha512-8+Ib8rRJ4L0o3kfmyVCL7gzrohyDe0cMFTBa2d364yIrEGMEoetznKJx899YxjybU6bL9SQkYPSBBs1gyYs8Xg==
@@ -24357,18 +24357,6 @@ simple-update-notifier@^1.0.7:
   dependencies:
     semver "~7.0.0"
 
-sinon@15.0.1:
-  version "15.0.1"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-15.0.1.tgz#ce062611a0b131892e2c18f03055b8eb6e8dc234"
-  integrity sha512-PZXKc08f/wcA/BMRGBze2Wmw50CWPiAH3E21EOi4B49vJ616vW4DQh4fQrqsYox2aNR/N3kCqLuB0PwwOucQrg==
-  dependencies:
-    "@sinonjs/commons" "^2.0.0"
-    "@sinonjs/fake-timers" "10.0.2"
-    "@sinonjs/samsam" "^7.0.1"
-    diff "^5.0.0"
-    nise "^5.1.2"
-    supports-color "^7.2.0"
-
 sinon@15.0.2:
   version "15.0.2"
   resolved "https://registry.yarnpkg.com/sinon/-/sinon-15.0.2.tgz#f3e3aacb990bbaa8a7bb976e86118c5dc0154e66"
@@ -27657,7 +27645,7 @@ yargs@16.2.0, yargs@^16.1.1, yargs@^16.2.0:
     y18n "^5.0.5"
     yargs-parser "^20.2.2"
 
-yargs@^17.0.0, yargs@^17.0.1, yargs@^17.3.1, yargs@^17.7.0:
+yargs@^17.0.0, yargs@^17.0.1, yargs@^17.3.1, yargs@^17.7.1:
   version "17.7.1"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-17.7.1.tgz#34a77645201d1a8fc5213ace787c220eabbd0967"
   integrity sha512-cwiTb08Xuv5fqF4AovYacTFNxk62th7LKJ6BL9IGUpTJrWoU7/7WdQGTP2SjKf1dUNBGzDd28p/Yfs/GI6JrLw==
