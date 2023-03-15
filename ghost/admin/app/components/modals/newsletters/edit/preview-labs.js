@@ -6,6 +6,7 @@ export default class EditNewsletterPreview extends Component {
     @service ghostPaths;
     @service session;
     @service settings;
+    @service membersUtils;
 
     get showHeader() {
         return (this.args.newsletter.showHeaderIcon && this.settings.icon)
