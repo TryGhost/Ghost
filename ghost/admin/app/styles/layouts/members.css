@@ -2140,7 +2140,11 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-content:first-child {
-    margin-top: 48px;
+    margin-top: 40px;
+}
+
+.gh-members-emailpreview-header-image + .gh-members-emailpreview-content {
+    margin-top: 40px;
 }
 
 .gh-members-emailpreview-content p {
