@@ -19,7 +19,7 @@ class PostsImporter extends TableImporter {
     async addNewsletters({posts}) {
         for (const {id, visibility} of posts) {
             await this.knex('posts').update({
-                newsletter_id: luck(90) ? (visibility === 'paid' ? this.newsletters[1].id : this.newsletters[0].id) : null
+                newsletter_id: luck(90) ? (visibility === 'paid' ? this.newsletters[0].id : this.newsletters[1].id) : null
             }).where({id, type: 'post', status: 'published'});
         }
     }
@@ -48,7 +48,7 @@ class PostsImporter extends TableImporter {
             status = 'published';
         }
 
-        const visibility = luck(90) ? 'paid' : luck(10) ? 'members' : 'public';
+        const visibility = luck(85) ? 'paid' : luck(10) ? 'members' : 'public';
 
         return {
             id: faker.database.mongodbObjectId(),
@@ -82,7 +82,7 @@ class PostsImporter extends TableImporter {
             }),
             html: content.map(paragraph => `<p>${paragraph}</p>`).join(''),
             email_recipient_filter: 'all',
-            newsletter_id: this.type === 'post' && status === 'published' && luck(90) ? (visibility === 'paid' ? this.newsletters[1].id : this.newsletters[0].id) : null
+            newsletter_id: this.type === 'post' && status === 'published' && luck(90) ? (visibility === 'paid' ? this.newsletters[0].id : this.newsletters[1].id) : null
         };
     }
 }
