@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 
 export default class EditNewsletterDesignForm extends Component {
     @service settings;
+    @service membersUtils;
 
     imageExtensions = IMAGE_EXTENSIONS;
 
