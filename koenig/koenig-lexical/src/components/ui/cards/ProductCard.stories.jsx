@@ -37,7 +37,7 @@ export default story;
 
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
-        <div className="not-kg-prose mx-auto my-8 w-[740px] min-w-[initial]">
+        <div className="not-kg-prose mx-auto my-8 max-w-[740px] min-w-[initial]">
             <CardWrapper {...display} {...args}>
                 <div className="flex justify-center p-3">
                     <ProductCard {...display} {...args} />
