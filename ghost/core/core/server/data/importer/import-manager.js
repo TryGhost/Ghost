@@ -61,6 +61,7 @@ class ImportManager {
             //        in the importer, so we need to keep it as general "content" unless
             //        it becomes a strict requirement
             directories: ['media', 'content'],
+            ignoreRootFolderFiles: true,
             extensions: config.get('uploads').media.extensions,
             contentTypes: config.get('uploads').media.contentTypes,
             contentPath: config.getContentPath('media'),
@@ -74,6 +75,7 @@ class ImportManager {
             //        in the importer, so we need to keep it as general "content" unless
             //        it becomes a strict requirement
             directories: ['files', 'content'],
+            ignoreRootFolderFiles: true,
             extensions: config.get('uploads').files.extensions,
             contentTypes: config.get('uploads').files.contentTypes,
             contentPath: config.getContentPath('files'),

@@ -88,5 +88,41 @@ describe('ImporterContentFileHandler', function () {
             assert.equal(files[0].targetDir, '/var/www/ghost/content/media');
             assert.equal(files[0].newPath, '//blog/content/media/1.mp4');
         });
+
+        it('ignores files in root folder', async function () {
+            const contentFileImporter = new ImporterContentFileHandler({
+                storage: {
+                    staticFileURLPrefix: 'content/media',
+                    getUniqueFileName: (file, targetDir) => Promise.resolve(targetDir + '/' + file.name)
+                },
+                contentPath: '/var/www/ghost/content/media',
+                ignoreRootFolderFiles: true,
+                urlUtils: {
+                    getSubdir: () => 'blog',
+                    urlJoin: (...args) => args.join('/')
+                }
+            });
+
+            const files = [{
+                name: 'root.mp4'
+            }, {
+                name: 'content/media/1.mp4'
+            }];
+
+            await contentFileImporter.loadFile(files);
+
+            // @NOTE: the root file is ignored. It's a weird test because ideally the file
+            //        should be removed completely from the list, but the importer works
+            //        by modifying the list in place and it's not easy to remove the file
+            assert.equal(files[0].name, 'root.mp4');
+            assert.equal(files[0].originalPath, undefined);
+            assert.equal(files[0].targetDir, undefined);
+            assert.equal(files[0].newPath, undefined);
+
+            assert.equal(files[1].name, '1.mp4');
+            assert.equal(files[1].originalPath, 'content/media/1.mp4');
+            assert.equal(files[1].targetDir, '/var/www/ghost/content/media');
+            assert.equal(files[1].newPath, '//blog/content/media/1.mp4');
+        });
     });
 });
