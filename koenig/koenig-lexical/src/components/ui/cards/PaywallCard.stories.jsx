@@ -35,7 +35,12 @@ export default story;
 
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
-        <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
+        <div className="mx-auto my-8 min-w-[initial] max-w-[740px] px-3 py-9">
+            <CardWrapper {...display} {...args}>
+                <PaywallCard {...display} />
+            </CardWrapper>
+        </div>
+        <div className="dark mx-auto my-8 min-w-[initial] max-w-[740px] bg-black px-3 py-9">
             <CardWrapper {...display} {...args}>
                 <PaywallCard {...display} />
             </CardWrapper>
