@@ -32,7 +32,7 @@
                         <p>By {{or this.session.user.name this.session.user.email}}
                             <span>{{moment-format (moment-site-tz) "D MMM YYYY"}}</span>
                             {{#if this.showCommentCta}}
-                                <span><a href="javascript:"> {{svg-jar "comments"}}</a></span>
+                                <span><a href="javascript:" class="gh-members-emailpreview-comment-link"> {{svg-jar "comment"}}</a></span>
                             {{/if}}
                         </p>
                         <p>
@@ -67,8 +67,8 @@
 
                         {{#if this.showCommentCta}}
                             <Modals::Newsletters::Components::FeedbackButton
-                                @text="Comments"
-                                @icon="comments" />
+                                @text="Comment"
+                                @icon="comment" />
                         {{/if}}
                     </div>
                 </div>

@@ -2087,7 +2087,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-meta p span::before{
     content: "•";
-    padding: 0 4px;
+    padding: 0 4px 0 2px;
 }
 
 .gh-members-emailpreview-title p span {
@@ -2114,6 +2114,10 @@ p.gh-members-import-errordetail:first-of-type {
     width: 16px;
     height: 16px;
     stroke-width: 1.5px;
+}
+
+.gh-members-emailpreview-comment-link {
+    display: inline-block;
 }
 
 .gh-members-emailpreview-featureimage {
