@@ -621,6 +621,8 @@ class EmailRenderer {
                 showSubscriptionDetails: newsletter.get('show_subscription_details') && this.#labs.isSet('makingItRain')
             },
 
+            labs: this.#settingsCache.get('labs'),
+
             //CSS
             accentColor: accentColor, // default to #15212A
             adjustedAccentColor: adjustedAccentColor || '#3498db', // default to #3498db

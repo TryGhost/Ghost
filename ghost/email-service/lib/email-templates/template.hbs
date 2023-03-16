@@ -79,13 +79,31 @@
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                        <tr>
-                                                            <td class="{{classes.meta}}">
-                                                                By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>{{#if newsletter.showCommentCta}} <a href="{{post.commentUrl}}" class="view-online-link">Comment</a>{{/if}}
-                                                            </td>
-                                                        </tr>
-                                                    </table>
+                                                    {{#if labs.makingItRain}}
+                                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 48px;">
+                                                            <tr>
+                                                                <td class="{{classes.meta}} post-meta-labs author-date" align="left">
+                                                                    By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
+                                                                    {{#if newsletter.showCommentCta}} 
+                                                                        <a href="{{post.commentUrl}}" class="comment-link" valign="middle">
+                                                                            • <img src="https://static.ghost.org/v5.0.0/images/comment-icon.png" border="0" width="16" height="16" alt="Comment">
+                                                                        </a>
+                                                                    {{/if}}
+                                                                </td>
+                                                                <td class="{{classes.meta}} view-online view-online-labs" align="right">
+                                                                    <a href="{{post.url}}" class="view-online-link">View in browser</a>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    {{else}}
+                                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                            <tr>
+                                                                <td class="{{classes.meta}}">
+                                                                    By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>{{#if newsletter.showCommentCta}} <a href="{{post.commentUrl}}" class="view-online-link">Comment</a>{{/if}}
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    {{/if}}
                                                 </td>
                                             </tr>
                                         {{/if}}
@@ -131,19 +149,15 @@
 
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
-                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 40px 4px; border-bottom: 1px solid #e5eff5" align="center">
-                                        {{#if feedbackButtons }}
-                                            <h3 style="text-align: center; margin-bottom: 22px; font-size: 17px; letter-spacing: -0.2px; margin-top: 0 !important;">Give feedback on this post</h3>
-                                        {{/if}}
+                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 4px 24px; border-bottom: 1px solid #e5eff5" align="center">
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: auto; width: auto !important;">
                                             <tr>
                                                 {{#if feedbackButtons }}
-                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this.png" }}
-                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this.png?v=1" width="145px" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png?v=1" width="142px" }}
                                                 {{/if}}
                                                 {{#if newsletter.showCommentCta}}
-                                                    {{!-- TODO: replace image with comment image --}}
-                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png" }}
+                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment.png?v=1" width="122px" }}
                                                 {{/if}}
                                             </tr>
                                         </table>
