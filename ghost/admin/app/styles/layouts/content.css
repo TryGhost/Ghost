@@ -1517,6 +1517,10 @@
     border: 1px solid #ECEEF0;
 }
 
+.gh-tabs-analytics.no-tabs {
+    padding: 28px 24px;
+}
+
 .gh-tabs-analytics .tab {
     display: flex;
     flex-direction: column;
@@ -1536,12 +1540,24 @@
     border-radius: 5px 5px 0 0;
 }
 
+.gh-tabs-analytics.no-tabs .tab-selected {
+    padding: 0 0 20px;
+    border: 0;
+    border-bottom: 1px solid #eceef0;
+    box-shadow: none;
+}
+
 .gh-tabs-analytics .tab-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     padding: 8px 8px 0px;
     background: linear-gradient(360deg, #F7F8F9 -6.38%, rgba(247, 248, 249, 0) 159.57%);
     box-shadow: inset 0 -1px 0 #eceef0;
+}
+
+.gh-tabs-analytics.no-tabs .tab-list {
+    padding: 0;
+    background: transparent;
 }
 
 .gh-tabs-analytics .tab-panel {
@@ -1558,6 +1574,10 @@
     min-height: 121px;
 }
 
+.gh-tabs-analytics.no-tabs .tab-panel-selected {
+    padding: 0;
+}
+
 .gh-tabs-analytics .tab-list h3 {
     display: flex;
     flex-direction: row;
@@ -1571,6 +1591,13 @@
     letter-spacing: -0.05em;
     color: var(--black);
     white-space: nowrap;
+}
+
+.gh-tabs-analytics.no-tabs .tab-list h3 {
+    margin-bottom: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 .gh-tabs-analytics .tab-list h3 svg {
@@ -1594,6 +1621,10 @@
     text-transform: uppercase;
     padding: 0;
     margin: 0;
+}
+
+.gh-tabs-analytics.no-tabs .tab-list p {
+    display: none;
 }
 
 .gh-tabs-analytics .tab-list p svg {
