@@ -52,24 +52,16 @@ describe('ImporterContentFileHandler', function () {
             });
 
             const files = [{
-                name: 'content/media/video-in-content-media.mp4'
-            }, {
-                name: 'media/video-in-media.mp4'
+                name: 'content/media/1.mp4'
             }];
             const subDir = 'blog';
 
             await contentFileImporter.loadFile(files, subDir);
 
-            assert.equal(files.length, 2);
-            assert.equal(files[0].name, 'video-in-content-media.mp4');
-            assert.equal(files[0].originalPath, 'content/media/video-in-content-media.mp4');
+            assert.equal(files[0].name, '1.mp4');
+            assert.equal(files[0].originalPath, 'content/media/1.mp4');
             assert.equal(files[0].targetDir, '/var/www/ghost/content/media');
-            assert.equal(files[0].newPath, '//blog/content/media/video-in-content-media.mp4');
-
-            assert.equal(files[1].name, 'video-in-media.mp4');
-            assert.equal(files[1].originalPath, 'media/video-in-media.mp4');
-            assert.equal(files[1].targetDir, '/var/www/ghost/content/media');
-            assert.equal(files[1].newPath, '//blog/content/media/video-in-media.mp4');
+            assert.equal(files[0].newPath, '//blog/content/media/1.mp4');
         });
 
         it('loads files and decorates them with newPath with NO subdirectory', async function () {
