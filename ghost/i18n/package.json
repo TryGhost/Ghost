@@ -12,7 +12,8 @@
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
-    "translate": "yarn translate:portal && yarn translate:test",
+    "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:test",
+    "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx}'",
     "translate:portal": "NAMESPACE=portal i18next '../portal/src/**/*.{js,jsx}'",
     "translate:test": "NAMESPACE=test i18next './test/**/*.js'"
   },
