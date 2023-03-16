@@ -6,16 +6,77 @@
  * @returns {Object.<string, object>}
  */
 const milestoneEmailConfig = (siteTitle, formattedValue) => {
+    const arrContent = {
+        subject: `${siteTitle} hit ${formattedValue} ARR`,
+        heading: `Congrats! You reached ${formattedValue} ARR`,
+        content: [
+            `<strong>${siteTitle}</strong> is now generating <strong>${formattedValue}</strong> in annual recurring revenue. Congratulations &mdash; this is a significant milestone.`,
+            'Subscription revenue is predictable and sustainable, meaning you can keep focusing on delivering great content while watching your business grow. Keep up the great work. See you at the next milestone!'
+        ],
+        ctaText: 'Login to your dashboard'
+    };
+
     return {
+        // For ARR we use the same content and only the image changes
+        // Should we start to support different currencies, we'll need
+        // to update the structure for ARR content to reflect that.
         arr: {
-            subject: `${siteTitle} hit ${formattedValue} ARR`,
-            heading: `Congrats! You reached ${formattedValue} ARR`,
-            content: [
-                `<strong>${siteTitle}</strong> is now generating <strong>${formattedValue}</strong> in annual recurring revenue. Congratulations &mdash; this is a significant milestone.`,
-                'Subscription revenue is predictable and sustainable, meaning you can keep focusing on delivering great content while watching your business grow. Keep up the great work. See you at the next milestone!'
-            ],
-            ctaText: 'Login to your dashboard',
-            imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+            100: {
+                ...arrContent,
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-100.png',
+                    height: 348
+                }
+            },
+            1000: {
+                ...arrContent,
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-1000.png',
+                    height: 348
+                }
+            },
+            10000: {
+                ...arrContent,
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-10k.png',
+                    height: 348
+                }
+            },
+            50000: {
+                ...arrContent,
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-50k.png',
+                    height: 348
+                }
+            },
+            100000: {
+                ...arrContent,
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-100k.png',
+                    height: 348
+                }
+            },
+            250000: {
+                ...arrContent,
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-250k.png',
+                    height: 348
+                }
+            },
+            500000: {
+                ...arrContent,
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-500k.png',
+                    height: 348
+                }
+            },
+            1000000: {
+                ...arrContent,
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-1m.png',
+                    height: 348
+                }
+            }
         },
         members: {
             100: {
@@ -28,7 +89,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'You got this!'
                 ],
                 ctaText: 'Login to your dashboard',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-100.png'
+                }
             },
             1000: {
                 subject: `${siteTitle} now has ${formattedValue} members`,
@@ -39,7 +102,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'Imagine 1,000 people all in one room at the same time. That\'s a lot of people. It\'s also how many people are happy that you show up to create your work. Very cool. Keep up the great work!'
                 ],
                 ctaText: 'Login to see your member stats',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-1000.png'
+                }
             },
             10000: {
                 subject: `${siteTitle} now has 10k members`,
@@ -49,7 +114,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'Building an audience of any size as an independent creator requires dedication, but reaching this incredible milestone is an impressive feat worth celebrating. There\'s no stopping you now, keep up the great work!'
                 ],
                 ctaText: 'Go to your dashboard',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-10k.png'
+                }
             },
             25000: {
                 subject: `${siteTitle} now has 25k members`,
@@ -60,7 +127,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'Keep up the great work. You\'ll be able to sell out Madison Square Garden twice in no time!'
                 ],
                 ctaText: 'View your dashboard',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-25k.png'
+                }
             },
             50000: {
                 subject: `${siteTitle} now has 50k members`,
@@ -71,7 +140,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'See you at the next milestone!'
                 ],
                 ctaText: 'Go to your Dashboard',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-50k.png'
+                }
             },
             100000: {
                 subject: `${siteTitle} just hit 100k members!`,
@@ -81,7 +152,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'Whatever you\'re doing, it\'s working. The sky is the limit from here. Keep up the great work (but first, go and celebrate this impressive milestone, you earned it).'
                 ],
                 ctaText: 'Go to your dashboard',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-100k.png'
+                }
             },
             250000: {
                 subject: `${siteTitle} now has 250k members`,
@@ -92,7 +165,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'Keep up the amazing work!'
                 ],
                 ctaText: 'Go to your dashboard',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-250k.png'
+                }
             },
             500000: {
                 subject: `${siteTitle} has ${formattedValue} members`,
@@ -103,7 +178,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'It takes a huge amount of hard work and dedication to build an audience of this size. It is a testament to how much value your work is providing to thousands of people all over the world. Keep up the great work, and make sure to take the time to celebrate this incredible milestone.'
                 ],
                 ctaText: 'Login to your dashboard',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-500k.png'
+                }
             },
             1000000: {
                 subject: `${siteTitle} has 1 million members`,
@@ -114,7 +191,9 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
                     'Keep it up, you\'re creating amazing value in the world!'
                 ],
                 ctaText: 'Go to your dashboard',
-                imageUrl: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+                image: {
+                    url: 'https://static.ghost.org/v5.0.0/images/milestone-email-members-1m.png'
+                }
             }
         }
     };

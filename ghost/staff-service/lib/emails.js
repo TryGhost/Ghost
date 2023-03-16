@@ -193,12 +193,19 @@ class StaffServiceEmails {
             return;
         }
 
-        const emailPromises = [];
-        const users = await this.models.User.getEmailAlertUsers('milestone-received');
         const formattedValue = this.getFormattedAmount({currency: milestone?.currency, amount: milestone.value, maximumFractionDigits: 0});
         const milestoneEmailConfig = require('./milestone-email-config')(this.settingsCache.get('title'), formattedValue);
 
-        const emailData = milestone.type === 'arr' ? milestoneEmailConfig.arr : milestoneEmailConfig.members?.[milestone.value];
+        const emailData = milestoneEmailConfig?.[milestone.type]?.[milestone.value];
+
+        if (!emailData || Object.keys(emailData).length === 0) {
+            // Do not attempt to send an email with invalid or missing data
+            this.logging.warn('No Milestone email sent. Invalid or missing data.');
+            return;
+        }
+
+        const emailPromises = [];
+        const users = await this.models.User.getEmailAlertUsers('milestone-received');
 
         for (const user of users) {
             const to = user.email;
