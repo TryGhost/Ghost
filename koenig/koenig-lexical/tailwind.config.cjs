@@ -7,6 +7,7 @@ module.exports = {
         './src/**/*.{js,jsx,ts,tsx}',
         './demo/**/*.{js,jsx,ts,tsx}'
     ],
+    darkMode: 'class',
     theme: {
         colors: {
             transparent: 'transparent',
