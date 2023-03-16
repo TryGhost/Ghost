@@ -228,7 +228,7 @@ describe('Importer', function () {
                     extractSpy.calledOnce.should.be.true();
                     validSpy.calledOnce.should.be.true();
                     baseDirSpy.calledOnce.should.be.true();
-                    getFileSpy.callCount.should.eql(9);
+                    getFileSpy.callCount.should.eql(6);
                     jsonSpy.calledOnce.should.be.true();
                     imageSpy.called.should.be.false();
                     mdSpy.called.should.be.false();
