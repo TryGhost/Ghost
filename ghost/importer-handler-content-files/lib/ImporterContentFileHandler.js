@@ -24,6 +24,7 @@ class ImporterContentFileHandler {
      * @param {Object} deps dependencies
      * @param {'media' | 'files' | 'images'} deps.type type of content file
      * @param {string[]} deps.extensions file extensions to search for
+     * @param {boolean} [deps.ignoreRootFolderFiles] whether to ignore files in the root folder
      * @param {string[]} deps.contentTypes content types to search for
      * @param {string[]} deps.directories directories to search for content files
      * @param {string} deps.contentPath path to the destination content directory
@@ -35,6 +36,7 @@ class ImporterContentFileHandler {
         this.directories = deps.directories;
         this.extensions = deps.extensions;
         this.contentTypes = deps.contentTypes;
+        this.ignoreRootFolderFiles = deps.ignoreRootFolderFiles;
         this.storage = deps.storage;
         this.#contentPath = deps.contentPath;
         this.urlUtils = deps.urlUtils;
@@ -46,6 +48,12 @@ class ImporterContentFileHandler {
         const contentFilesFolderRegexes = _.map(this.storage.staticFileURLPrefix.split('/'), function (dir) {
             return new RegExp('^' + dir + '/');
         });
+
+        if (this.ignoreRootFolderFiles) {
+            files = _.filter(files, function (file) {
+                return file.name.indexOf('/') !== -1;
+            });
+        }
 
         // normalize the directory structure
         const filesContentPath = this.#contentPath;
