@@ -189,7 +189,12 @@ export default class KoenigEditor extends Component {
             spellcheck: this.spellcheck,
             autofocus: this.autofocus,
             atoms,
-            cards
+            cards,
+            unknownCardHandler: ({env}) => {
+                console.warn(`Unknown card encountered: ${env.name}`); //eslint-disable-line
+                
+                env.remove();
+            }
         }, options);
     }
 
@@ -807,7 +812,7 @@ export default class KoenigEditor extends Component {
         // refresh drag/drop
         // TODO: can be made more performant by only refreshing when droppable
         // order changes or when sections are added/removed
-        this._cardDragDropContainer.refresh();
+        this._cardDragDropContainer?.refresh();
     }
 
     cursorDidChange(editor) {
