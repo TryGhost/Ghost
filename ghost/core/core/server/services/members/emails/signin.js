@@ -4,7 +4,7 @@ module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>${t('🔑 Secure sign in link for {{siteTitle}}', {siteTitle})}</title>
+    <title>🔑 ${t('Secure sign in link for {{siteTitle}}', {siteTitle})}</title>
     <style>
     /* -------------------------------------
         RESPONSIVE AND MOBILE FRIENDLY STYLES
