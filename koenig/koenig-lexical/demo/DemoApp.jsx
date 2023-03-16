@@ -1,3 +1,4 @@
+import DarkModeToggle from './components/DarkModeToggle';
 import FloatingButton from './components/FloatingButton';
 import InitialContentToggle from './components/InitialContentToggle';
 import React from 'react';
@@ -41,11 +42,12 @@ function getAllowedNodes({editorType}) {
     return undefined;
 }
 
-function DemoEditor({editorType, registerAPI, cursorDidExitAtTop}) {
+function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
     if (editorType === 'basic') {
         return (
             <KoenigComposableEditor
                 cursorDidExitAtTop={cursorDidExitAtTop}
+                darkMode={darkMode}
                 markdownTransformers={BASIC_TRANSFORMERS}
                 registerAPI={registerAPI}
             />
@@ -54,6 +56,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop}) {
         return (
             <KoenigComposableEditor
                 cursorDidExitAtTop={cursorDidExitAtTop}
+                darkMode={darkMode}
                 markdownTransformers={MINIMAL_TRANSFORMERS}
                 registerAPI={registerAPI}
             >
@@ -65,6 +68,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop}) {
     return (
         <KoenigEditor
             cursorDidExitAtTop={cursorDidExitAtTop}
+            darkMode={darkMode}
             registerAPI={registerAPI}
         />
     );
@@ -75,6 +79,7 @@ function DemoApp({editorType}) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
 
+    const darkMode = searchParams.get('darkMode') === 'true';
     const hideContent = searchParams.get('content') === 'false';
 
     const defaultContent = React.useMemo(() => {
@@ -141,6 +146,15 @@ function DemoApp({editorType}) {
         }
     }
 
+    function toggleDarkMode() {
+        if (darkMode) {
+            searchParams.delete('darkMode');
+        } else {
+            searchParams.set('darkMode', 'true');
+        }
+        setSearchParams(searchParams);
+    }
+
     React.useEffect(() => {
         const handleFileDrag = (event) => {
             event.preventDefault();
@@ -171,7 +185,7 @@ function DemoApp({editorType}) {
     return (
         <div
             key={location.key}
-            className="koenig-lexical top"
+            className={`koenig-lexical top ${darkMode ? 'dark' : ''}`}
         >
             <KoenigComposer
                 cardConfig={cardConfig}
@@ -185,6 +199,7 @@ function DemoApp({editorType}) {
                             ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
                             : null
                     }
+                    <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                     <div ref={containerRef} className="h-full overflow-auto" onClick={focusEditor}>
                         <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
                             { showTitle
@@ -193,6 +208,7 @@ function DemoApp({editorType}) {
                             }
                             <DemoEditor
                                 cursorDidExitAtTop={focusTitle}
+                                darkMode={darkMode}
                                 editorType={editorType}
                                 registerAPI={setEditorAPI}
                             />

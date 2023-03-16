@@ -13,7 +13,8 @@ const InitialContentToggle = ({defaultContent, setTitle, searchParams, setSearch
             const editorState = editor.parseEditorState(defaultContent);
             editor.setEditorState(editorState);
             setTitle('Meet the Koenig editor.');
-            setSearchParams({});
+            searchParams.delete('content');
+            setSearchParams(searchParams);
         }
         if (isOn) {
             editor.update(() => {
@@ -24,7 +25,8 @@ const InitialContentToggle = ({defaultContent, setTitle, searchParams, setSearch
                 paragraph.select();
             });
             setTitle('');
-            setSearchParams({content: 'false'});
+            searchParams.set('content', 'false');
+            setSearchParams(searchParams);
         }
         setIsOn(!isOn);
     };
