@@ -1,6 +1,6 @@
 import React from 'react';
-import AppContext from 'AppContext';
-import {getSupportAddress} from 'utils/helpers';
+import AppContext from '../../../AppContext';
+import {getSupportAddress} from '../../../utils/helpers';
 
 import AccountFooter from './components/AccountFooter';
 import AccountMain from './components/AccountMain';

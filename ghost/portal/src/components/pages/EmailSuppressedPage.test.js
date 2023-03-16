@@ -1,5 +1,5 @@
 import React from 'react';
-import {render, fireEvent} from 'utils/test-utils';
+import {render, fireEvent} from '../../utils/test-utils';
 import EmailSuppressedPage from './EmailSuppressedPage';
 
 const setup = (overrides) => {

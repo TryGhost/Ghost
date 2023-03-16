@@ -1,6 +1,6 @@
-import AppContext from 'AppContext';
-import ActionButton from 'components/common/ActionButton';
-import {hasOnlyFreePlan} from 'utils/helpers';
+import AppContext from '../../../../AppContext';
+import ActionButton from '../../../common/ActionButton';
+import {hasOnlyFreePlan} from '../../../../utils/helpers';
 import {useContext} from 'react';
 
 const SubscribeButton = () => {

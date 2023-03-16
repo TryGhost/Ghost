@@ -1,8 +1,8 @@
-import AppContext from 'AppContext';
+import AppContext from '../../AppContext';
 import {useContext} from 'react';
-import BackButton from 'components/common/BackButton';
-import CloseButton from 'components/common/CloseButton';
-import {getDefaultNewsletterSender, getSupportAddress} from 'utils/helpers';
+import BackButton from '../../components/common/BackButton';
+import CloseButton from '../../components/common/CloseButton';
+import {getDefaultNewsletterSender, getSupportAddress} from '../../utils/helpers';
 
 export default function EmailReceivingPage() {
     const {brandColor, onAction, site, lastPage, member} = useContext(AppContext);

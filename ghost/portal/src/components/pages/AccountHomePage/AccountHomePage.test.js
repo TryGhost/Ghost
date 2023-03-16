@@ -1,7 +1,7 @@
 import React from 'react';
-import {render, fireEvent} from 'utils/test-utils';
+import {render, fireEvent} from '../../../utils/test-utils';
 import AccountHomePage from './AccountHomePage';
-import {site} from 'utils/fixtures';
+import {site} from '../../../utils/fixtures';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(

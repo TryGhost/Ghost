@@ -1,6 +1,6 @@
-import AppContext from 'AppContext';
-import Switch from 'components/common/Switch';
-import {getSiteNewsletters, hasMemberGotEmailSuppression} from 'utils/helpers';
+import AppContext from '../../../../AppContext';
+import Switch from '../../../common/Switch';
+import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../../../utils/helpers';
 import {useContext} from 'react';
 
 function EmailNewsletterAction() {
