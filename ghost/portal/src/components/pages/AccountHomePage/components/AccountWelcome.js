@@ -1,6 +1,6 @@
-import AppContext from 'AppContext';
-import {getCompExpiry, getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from 'utils/helpers';
-import {getDateString} from 'utils/date-time';
+import AppContext from '../../../../AppContext';
+import {getCompExpiry, getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
 
 import SubscribeButton from './SubscribeButton';

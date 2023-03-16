@@ -1,7 +1,7 @@
-import AppContext from 'AppContext';
+import AppContext from '../../../../AppContext';
 import {useContext} from 'react';
-import {isEmailSuppressed} from 'utils/helpers';
-import {ReactComponent as EmailDeliveryFailedIcon} from 'images/icons/email-delivery-failed.svg';
+import {isEmailSuppressed} from '../../../../utils/helpers';
+import {ReactComponent as EmailDeliveryFailedIcon} from '../../../../images/icons/email-delivery-failed.svg';
 
 function EmailPreferencesAction() {
     const {onAction, member, t} = useContext(AppContext);

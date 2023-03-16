@@ -1,5 +1,5 @@
-import AppContext from 'AppContext';
-import MemberAvatar from 'components/common/MemberGravatar';
+import AppContext from '../../../../AppContext';
+import MemberAvatar from '../../../common/MemberGravatar';
 import React, {useContext} from 'react';
 
 const UserHeader = () => {

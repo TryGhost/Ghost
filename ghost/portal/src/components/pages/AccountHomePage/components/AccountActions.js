@@ -1,6 +1,6 @@
-import AppContext from 'AppContext';
+import AppContext from '../../../../AppContext';
 import {useContext} from 'react';
-import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed} from 'utils/helpers';
+import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed} from '../../../../utils/helpers';
 
 import PaidAccountActions from './PaidAccountActions';
 import EmailNewsletterAction from './EmailNewsletterAction';

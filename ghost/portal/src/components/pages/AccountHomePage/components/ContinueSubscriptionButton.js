@@ -1,7 +1,7 @@
-import AppContext from 'AppContext';
-import ActionButton from 'components/common/ActionButton';
-import {getMemberSubscription} from 'utils/helpers';
-import {getDateString} from 'utils/date-time';
+import AppContext from '../../../../AppContext';
+import ActionButton from '../../../common/ActionButton';
+import {getMemberSubscription} from '../../../../utils/helpers';
+import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
 
 const ContinueSubscriptionButton = () => {
