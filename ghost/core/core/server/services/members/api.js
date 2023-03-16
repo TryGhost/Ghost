@@ -17,6 +17,7 @@ const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
+const {t} = require('../i18n');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -58,28 +59,28 @@ function createApiInstance(config) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return `📫 Confirm your subscription to ${siteTitle}`;
+                    return t(`📫 Confirm your subscription to {{siteTitle}}`, {siteTitle});
                 case 'signup':
-                    return `🙌 Complete your sign up to ${siteTitle}!`;
+                    return t(`🙌 Complete your sign up to {{siteTitle}}!`, {siteTitle});
                 case 'signup-paid':
-                    return `🙌 Thank you for signing up to ${siteTitle}!`;
+                    return t(`🙌 Thank you for signing up to {{siteTitle}}!`, {siteTitle});
                 case 'updateEmail':
-                    return `📫 Confirm your email update for ${siteTitle}!`;
+                    return t(`📫 Confirm your email update for {{siteTitle}}!`, {siteTitle});
                 case 'signin':
                 default:
-                    return `🔑 Secure sign in link for ${siteTitle}`;
+                    return t(`🔑 Secure sign in link for {{siteTitle}}`, {siteTitle});
                 }
             },
             getText(url, type, email) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return `
+                    return t(`
                         Hey there,
 
-                        You're one tap away from subscribing to ${siteTitle} — please confirm your email address with this link:
+                        You're one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:
 
-                        ${url}
+                        {{- url}}
 
                         For your security, the link will expire in 24 hours time.
 
@@ -87,16 +88,16 @@ function createApiInstance(config) {
 
                         ---
 
-                        Sent to ${email}
+                        Sent to {{email}}
                         If you did not make this request, you can simply delete this message. You will not be subscribed.
-                        `;
+                        `, {url, email, siteTitle});
                 case 'signup':
-                    return `
+                    return t(`
                         Hey there!
 
-                        Tap the link below to complete the signup process for ${siteTitle}, and be automatically signed in:
+                        Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:
 
-                        ${url}
+                        {{- url}}
 
                         For your security, the link will expire in 24 hours time.
 
@@ -104,16 +105,16 @@ function createApiInstance(config) {
 
                         ---
 
-                        Sent to ${email}
+                        Sent to {{email}}
                         If you did not make this request, you can simply delete this message. You will not be signed up, and no account will be created for you.
-                        `;
+                        `, {url, email, siteTitle});
                 case 'signup-paid':
-                    return `
+                    return t(`
                         Hey there!
 
-                        Thank you for subscribing to ${siteTitle}. Tap the link below to be automatically signed in:
+                        Thank you for subscribing to {{siteTitle}}. Tap the link below to be automatically signed in:
 
-                        ${url}
+                        {{- url}}
 
                         For your security, the link will expire in 24 hours time.
 
@@ -121,32 +122,32 @@ function createApiInstance(config) {
 
                         ---
 
-                        Sent to ${email}
-                        Thank you for subscribing to ${siteTitle}!
-                        `;
+                        Sent to {{email}}
+                        Thank you for subscribing to {{siteTitle}}!
+                        `, {url, email, siteTitle});
                 case 'updateEmail':
-                    return `
+                    return t(`
                             Hey there,
 
                             Please confirm your email address with this link:
 
-                            ${url}
+                            {{- url}}
 
                             For your security, the link will expire in 24 hours time.
 
                             ---
 
-                            Sent to ${email}
+                            Sent to {{email}}
                             If you did not make this request, you can simply delete this message. This email address will not be used.
-                            `;
+                            `, {url, email});
                 case 'signin':
                 default:
-                    return `
+                    return t(`
                         Hey there,
 
-                        Welcome back! Use this link to securely sign in to your ${siteTitle} account:
+                        Welcome back! Use this link to securely sign in to your {{siteTitle}} account:
 
-                        ${url}
+                        {{- url}}
 
                         For your security, the link will expire in 24 hours time.
 
@@ -154,9 +155,9 @@ function createApiInstance(config) {
 
                         ---
 
-                        Sent to ${email}
+                        Sent to {{email}}
                         If you did not make this request, you can safely ignore this email.
-                        `;
+                        `, {url, email, siteTitle});
                 }
             },
             getHTML(url, type, email) {
@@ -167,16 +168,16 @@ function createApiInstance(config) {
                 const accentColor = settingsCache.get('accent_color');
                 switch (type) {
                 case 'subscribe':
-                    return subscribeEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                    return subscribeEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signup':
-                    return signupEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                    return signupEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signup-paid':
-                    return signupPaidEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                    return signupPaidEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'updateEmail':
-                    return updateEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                    return updateEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signin':
                 default:
-                    return signinEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                    return signinEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 }
             }
         },
