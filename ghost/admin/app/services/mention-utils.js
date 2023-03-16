@@ -6,7 +6,12 @@ export default class MentionUtilsService extends Service {
     async loadGroupedMentions(mentions) {
         // Fetch mentions with the same source
         const sources = mentions.mapBy('source').uniq();
-        const sourceMentions = await this.store.query('mention', {filter: `source:[${sources.map(s => `'${s}'`).join(',')}]`});
+        let filter;
+        if (sources.length > 0) {
+            filter = `source:[${sources.map(s => `'${s}'`).join(',')}]`;
+        }
+
+        const sourceMentions = await this.store.query('mention', {filter});
         mentions.forEach((mention) => {
             mention.set('mentions', sourceMentions.filterBy('source', mention.source));
         });
