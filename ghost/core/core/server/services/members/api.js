@@ -59,16 +59,16 @@ function createApiInstance(config) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return t(`📫 Confirm your subscription to {{siteTitle}}`, {siteTitle});
+                    return `📫 ${t(`Confirm your subscription to {{siteTitle}}`, {siteTitle})}`;
                 case 'signup':
-                    return t(`🙌 Complete your sign up to {{siteTitle}}!`, {siteTitle});
+                    return `🙌 ${t(`Complete your sign up to {{siteTitle}}!`, {siteTitle})}`;
                 case 'signup-paid':
-                    return t(`🙌 Thank you for signing up to {{siteTitle}}!`, {siteTitle});
+                    return `🙌 ${t(`Thank you for signing up to {{siteTitle}}!`, {siteTitle})}`;
                 case 'updateEmail':
-                    return t(`📫 Confirm your email update for {{siteTitle}}!`, {siteTitle});
+                    return `📫 ${t(`Confirm your email update for {{siteTitle}}!`, {siteTitle})}`;
                 case 'signin':
                 default:
-                    return t(`🔑 Secure sign in link for {{siteTitle}}`, {siteTitle});
+                    return `🔑 ${t(`Secure sign in link for {{siteTitle}}`, {siteTitle})}`;
                 }
             },
             getText(url, type, email) {
