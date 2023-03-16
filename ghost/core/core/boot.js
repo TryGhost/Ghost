@@ -102,6 +102,11 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
     debug('End: settings');
 
+    debug('Begin: i18n');
+    const i18n = require('./server/services/i18n');
+    await i18n.init();
+    debug('End: i18n');
+
     // The URLService is a core part of Ghost, which depends on models.
     debug('Begin: Url Service');
     const urlService = require('./server/services/url');
