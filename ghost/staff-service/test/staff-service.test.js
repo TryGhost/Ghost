@@ -824,7 +824,7 @@ describe('StaffService', function () {
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Congrats, what an incredible milestone you have reached with 25k members choosing to support and follow your work. That\'s a big enough audience to sell out Madison Square Garden.'))
+                    sinon.match.has('html', sinon.match('Congrats, what an incredible milestone you have reached with <strong>25k members</strong> choosing to support and follow your work. That\'s a big enough audience to sell out Madison Square Garden.'))
                 ).should.be.true();
 
                 mailStub.calledWith(
