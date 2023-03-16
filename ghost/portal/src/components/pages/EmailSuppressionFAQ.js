@@ -1,8 +1,8 @@
-import AppContext from 'AppContext';
+import AppContext from '../../AppContext';
 import {useContext} from 'react';
-import BackButton from 'components/common/BackButton';
-import CloseButton from 'components/common/CloseButton';
-import {getSupportAddress} from 'utils/helpers';
+import BackButton from '../../components/common/BackButton';
+import CloseButton from '../../components/common/CloseButton';
+import {getSupportAddress} from '../../utils/helpers';
 
 export default function EmailSuppressedPage() {
     const {brandColor, onAction, site} = useContext(AppContext);

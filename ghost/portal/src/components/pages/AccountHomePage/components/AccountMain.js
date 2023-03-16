@@ -1,4 +1,4 @@
-import CloseButton from 'components/common/CloseButton';
+import CloseButton from '../../../../components/common/CloseButton';
 
 import UserHeader from './UserHeader';
 import AccountWelcome from './AccountWelcome';
