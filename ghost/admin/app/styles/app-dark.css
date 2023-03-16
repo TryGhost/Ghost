@@ -1458,7 +1458,8 @@ kbd {
 
 .gh-post-activity-feed .gh-dashboard-list-item + .gh-dashboard-list-item,
 .feature-audienceFeedback .gh-links-list-item,
-.gh-post-activity-feed-footer {
+.gh-post-activity-feed-footer,
+.gh-tabs-analytics.no-tabs .tab-selected {
     border-color: #17191c;
 }
 
