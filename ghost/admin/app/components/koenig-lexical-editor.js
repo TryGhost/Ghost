@@ -120,6 +120,7 @@ const KoenigEditor = (props) => {
 
 export default class KoenigLexicalEditor extends Component {
     @service ajax;
+    @service feature;
 
     @inject config;
 
@@ -354,6 +355,7 @@ export default class KoenigLexicalEditor extends Component {
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
+                                darkMode={this.feature.nightShift}
                             />
                         </KoenigComposer>
                     </Suspense>
