@@ -75,89 +75,89 @@ function createApiInstance(config) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return t(`
-                        Hey there,
+                    return `
+                        ${t(`Hey there,`)}
 
-                        You're one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:
+                        ${t('You\'re one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:', {siteTitle})}
 
-                        {{- url}}
+                        ${url}
 
-                        For your security, the link will expire in 24 hours time.
+                        ${t('For your security, the link will expire in 24 hours time.')}
 
-                        All the best!
+                        ${t('All the best!')}
 
                         ---
 
-                        Sent to {{email}}
-                        If you did not make this request, you can simply delete this message. You will not be subscribed.
-                        `, {url, email, siteTitle});
+                        ${t('Sent to {{email}}', {email})}
+                        ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be subscribed.')}
+                        `;
                 case 'signup':
-                    return t(`
-                        Hey there!
+                    return `
+                        ${t(`Hey there,`)}
 
-                        Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:
+                        ${t('Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:', {siteTitle})}
 
-                        {{- url}}
+                        ${url}
 
-                        For your security, the link will expire in 24 hours time.
+                        ${t('For your security, the link will expire in 24 hours time.')}
 
-                        See you soon!
+                        ${t('See you soon!')}
 
                         ---
 
-                        Sent to {{email}}
-                        If you did not make this request, you can simply delete this message. You will not be signed up, and no account will be created for you.
-                        `, {url, email, siteTitle});
+                        ${t('Sent to {{email}}', {email})}
+                        ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}
+                        `;
                 case 'signup-paid':
-                    return t(`
-                        Hey there!
+                    return `
+                        ${t(`Hey there,`)}
 
-                        Thank you for subscribing to {{siteTitle}}. Tap the link below to be automatically signed in:
+                        ${t('Thank you for subscribing to {{siteTitle}}. Tap the link below to be automatically signed in:', {siteTitle})}
 
-                        {{- url}}
+                        ${url}
 
-                        For your security, the link will expire in 24 hours time.
+                        ${t('For your security, the link will expire in 24 hours time.')}
 
-                        See you soon!
+                        ${t('See you soon!')}
 
                         ---
 
-                        Sent to {{email}}
-                        Thank you for subscribing to {{siteTitle}}!
-                        `, {url, email, siteTitle});
+                        ${t('Sent to {{email}}', {email})}
+                        ${t('Thank you for subscribing to {{siteTitle}}!', {siteTitle})}
+                        `;
                 case 'updateEmail':
-                    return t(`
-                            Hey there,
+                    return `
+                        ${t(`Hey there,`)}
 
-                            Please confirm your email address with this link:
+                        ${t('Please confirm your email address with this link:')}
 
-                            {{- url}}
+                        ${url}
 
-                            For your security, the link will expire in 24 hours time.
+                        ${t('For your security, the link will expire in 24 hours time.')}
 
-                            ---
+                        ---
 
-                            Sent to {{email}}
-                            If you did not make this request, you can simply delete this message. This email address will not be used.
-                            `, {url, email});
+                        ${t('Sent to {{email}}', {email})}
+                        ${t('If you did not make this request, you can simply delete this message.')} ${t('This email address will not be used.')}
+                        `;
                 case 'signin':
                 default:
-                    return t(`
-                        Hey there,
+                    return `
+                        ${t(`Hey there,`)}
 
-                        Welcome back! Use this link to securely sign in to your {{siteTitle}} account:
+                        ${t('Welcome back! Use this link to securely sign in to your {{siteTitle}} account:', {siteTitle})}
 
-                        {{- url}}
+                        ${url}
 
-                        For your security, the link will expire in 24 hours time.
+                        ${t('For your security, the link will expire in 24 hours time.')}
 
-                        See you soon!
+                        ${t('See you soon!')}
 
                         ---
 
-                        Sent to {{email}}
-                        If you did not make this request, you can safely ignore this email.
-                        `, {url, email, siteTitle});
+                        ${t('Sent to {{email}}', {email})}
+                        ${t('If you did not make this request, you can safely ignore this email.')}
+                        `;
                 }
             },
             getHTML(url, type, email) {
