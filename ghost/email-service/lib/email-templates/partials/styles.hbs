@@ -372,8 +372,12 @@ figure blockquote p {
 .post-meta-center,
 .post-meta-center.view-online {
     display: inline-block;
-    width: 100%;
+    width: 100% !important;
     text-align: center;
+}
+
+.post-meta-center.view-online {
+    text-decoration: underline;
 }
 
 .post-meta-date {
@@ -418,6 +422,23 @@ figure blockquote p {
     text-align: center;
     font-size: 13px;
     color: #738a94;
+}
+
+.feedback-buttons {
+    width: auto !important;
+    margin: auto; 
+}
+
+.feedback-buttons-mobile {
+    display: none !important;
+    width: auto !important;
+    margin: auto !important; 
+}
+
+.feedback-button-mobile-text {
+    color: #15212A;
+    font-size: 13px !important;
+    font-weight: 500;
 }
 
 .post-content {
@@ -1032,6 +1053,18 @@ a[data-flickr-embed] img {
     table.body .post-title a {
         font-size: 32px !important;
         line-height: 1.15em !important;
+    }
+
+    table.feedback-buttons {
+        display: none !important;
+    }
+
+    table.feedback-buttons-mobile {
+        display: block !important;
+    }
+
+    table.body .feedback-button-mobile-text {
+        font-size: 13px !important;
     }
 
     table.body .kg-bookmark-card {

@@ -509,6 +509,9 @@ class EmailRenderer {
         const feedbackButtonPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button.hbs`), 'utf8');
         this.#handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
 
+        const feedbackButtonMobilePartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button-mobile.hbs`), 'utf8');
+        this.#handlebars.registerPartial('feedbackButtonMobile', feedbackButtonMobilePartial);
+
         // Actual template
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
         this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
