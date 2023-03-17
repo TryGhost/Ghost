@@ -127,3 +127,5 @@ Caddyfile
 
 # Sodo-Search
 /ghost/sodo-search/public/main.css
+/ghost/sodo-search/umd
+/ghost/sodo-search/build
