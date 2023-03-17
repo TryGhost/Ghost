@@ -820,6 +820,8 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `%%{unsubscribe_url}%%`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fsource_tracking%3Dsite`
             ]);
