@@ -1,3 +1,5 @@
+import {readCaptionFromElement} from '../../utils/read-caption-from-element';
+
 export class VideoParser {
     constructor(NodeClass) {
         this.NodeClass = NodeClass;
@@ -17,8 +19,7 @@ export class VideoParser {
                         const videoWidth = videoNode && videoNode.width;
                         const videoHeight = videoNode && videoNode.height;
                         const durationText = durationNode && durationNode.innerHTML.trim();
-                        const captionNode = domNode.querySelector('figcaption');
-                        const captionText = captionNode && captionNode.innerHTML.trim();
+                        const captionText = readCaptionFromElement(domNode);
 
                         if (!videoSrc) {
                             return null;

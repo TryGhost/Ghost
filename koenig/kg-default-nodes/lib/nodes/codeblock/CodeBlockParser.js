@@ -1,3 +1,5 @@
+import {readCaptionFromElement} from '../../utils/read-caption-from-element';
+
 export class CodeBlockParser {
     constructor(NodeClass) {
         this.NodeClass = NodeClass;
@@ -26,19 +28,9 @@ export class CodeBlockParser {
                         }
 
                         let payload = {
-                            code: code.textContent
+                            code: code.textContent,
+                            caption: readCaptionFromElement(domNode)
                         };
-
-                        let figcaptions = Array.from(domNode.querySelectorAll('figcaption'));
-                        if (figcaptions.length) {
-                            figcaptions.forEach((caption) => {
-                                //TODO: use cleanBasicHtml here
-                                // let cleanHtml = cleanBasicHtml(caption.innerHTML);
-                                let cleanHtml = caption.innerHTML;
-                                payload.caption = payload.caption ? `${payload.caption} / ${cleanHtml}` : cleanHtml;
-                                caption.remove(); // cleanup this processed element
-                            });
-                        }
 
                         let preClass = pre.getAttribute('class') || '';
                         let codeClass = code.getAttribute('class') || '';
@@ -53,7 +45,7 @@ export class CodeBlockParser {
                     }
                     return null;
                 },
-                priority: 1
+                priority: 2 // falls back to pre if no caption
             }),
             pre: () => ({
                 conversion(domNode) {
