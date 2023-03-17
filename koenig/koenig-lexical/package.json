@@ -50,6 +50,7 @@
     "@tryghost/kg-default-nodes": "^0.0.17",
     "@tryghost/kg-markdown-html-renderer": "^6.0.5",
     "@tryghost/kg-simplemde": "^2.0.9",
+    "@uiw/codemirror-theme-github": "^4.19.9",
     "@uiw/react-codemirror": "^4.19.6",
     "codemirror": "^6.0.1",
     "dompurify": "^3.0.0",

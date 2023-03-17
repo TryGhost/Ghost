@@ -22,6 +22,7 @@ const KoenigComposer = ({
     onError = defaultOnError,
     fileUploader = {},
     cardConfig = {},
+    darkMode = false,
     children
 }) => {
     const initialConfig = React.useMemo(() => {
@@ -43,7 +44,7 @@ const KoenigComposer = ({
 
     return (
         <LexicalComposer initialConfig={initialConfig}>
-            <KoenigComposerContext.Provider value={{fileUploader, editorContainerRef, cardConfig}}>
+            <KoenigComposerContext.Provider value={{fileUploader, editorContainerRef, cardConfig, darkMode}}>
                 {children}
             </KoenigComposerContext.Provider>
         </LexicalComposer>

@@ -4,12 +4,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
-export function HtmlCard({html, updateHtml, isEditing}) {
+export function HtmlCard({html, updateHtml, isEditing, darkMode}) {
     return (
         <>
             {isEditing
                 ? (
                     <HtmlEditor
+                        darkMode={darkMode}
                         html={html}
                         updateHtml={updateHtml}
                     />

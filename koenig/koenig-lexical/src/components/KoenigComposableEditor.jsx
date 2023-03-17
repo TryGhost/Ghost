@@ -22,15 +22,14 @@ const KoenigComposableEditor = ({
     children,
     placeholder,
     className = '',
-    readOnly = false,
-    darkMode = false
+    readOnly = false
 }) => {
     const _onChange = React.useCallback((editorState) => {
         const json = editorState.toJSON();
         onChange?.(json);
     }, [onChange]);
 
-    const {editorContainerRef} = React.useContext(KoenigComposerContext);
+    const {editorContainerRef, darkMode} = React.useContext(KoenigComposerContext);
     // we need an element reference for the container element that
     // any floating elements in plugins will be rendered inside
     const [floatingAnchorElem, setFloatingAnchorElem] = React.useState(null);

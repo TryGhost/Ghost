@@ -47,7 +47,6 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
         return (
             <KoenigComposableEditor
                 cursorDidExitAtTop={cursorDidExitAtTop}
-                darkMode={darkMode}
                 markdownTransformers={BASIC_TRANSFORMERS}
                 registerAPI={registerAPI}
             />
@@ -56,7 +55,6 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
         return (
             <KoenigComposableEditor
                 cursorDidExitAtTop={cursorDidExitAtTop}
-                darkMode={darkMode}
                 markdownTransformers={MINIMAL_TRANSFORMERS}
                 registerAPI={registerAPI}
             >
@@ -189,6 +187,7 @@ function DemoApp({editorType}) {
         >
             <KoenigComposer
                 cardConfig={cardConfig}
+                darkMode={darkMode}
                 fileUploader={{useFileUpload, fileTypes}}
                 initialEditorState={initialContent}
                 nodes={getAllowedNodes({editorType})}

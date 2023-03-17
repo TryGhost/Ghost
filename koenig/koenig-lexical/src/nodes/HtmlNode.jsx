@@ -15,7 +15,7 @@ export {INSERT_HTML_COMMAND} from '@tryghost/kg-default-nodes';
 function HtmlNodeComponent({nodeKey, html}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
-    const {cardConfig} = React.useContext(KoenigComposerContext);
+    const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
 
     const updateHtml = (value) => {
         editor.update(() => {
@@ -26,6 +26,7 @@ function HtmlNodeComponent({nodeKey, html}) {
 
     return (
         <HtmlCard
+            darkMode={darkMode}
             html={html}
             isEditing={cardContext.isEditing}
             nodeKey={nodeKey}
