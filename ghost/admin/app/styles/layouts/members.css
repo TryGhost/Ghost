@@ -2071,6 +2071,7 @@ p.gh-members-import-errordetail:first-of-type {
     margin: 0;
     padding: 0 0 10px;
     white-space: nowrap;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 1.3rem;
     line-height: 1;
     letter-spacing: 0.1px;
@@ -2082,6 +2083,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-meta p {
     padding: 0 0 8px;
     color: var(--midgrey);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     text-transform: none;
 }
 
@@ -2161,9 +2163,9 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-content.sans-serif p {
-    font-family: var(--font-family);
-    font-size: 1.75rem;
-    line-height: 1.5em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1.7rem;
+    line-height: 1.6em;
 }
 
 .gh-members-emailpreview-footer {
@@ -2196,10 +2198,11 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-footersite {
+    padding: 10px 30px 60px;
+    color: #738a94;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 1.3rem;
     text-align: center;
-    color: #738a94;
-    padding: 10px 30px 60px;
 }
 
 .gh-members-emailpreview-footersite span {
