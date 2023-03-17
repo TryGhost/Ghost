@@ -354,7 +354,7 @@ describe('Posts Content API', function () {
         let response = await agent
             .get(`posts/${post.id}/`)
             .expectStatus(200);
-        assert(response.body.posts[0].html.includes('<a href="https://example.com/?ref=ghost">Link</a><a href="invalid">Test</a>'), 'Html not expected (should contain ?ref): ' + response.body.posts[0].html);
+        assert(response.body.posts[0].html.includes('<a href="https://example.com/?ref=127.0.0.1">Link</a><a href="invalid">Test</a>'), 'Html not expected (should contain ?ref): ' + response.body.posts[0].html);
 
         // Disable outbound link tracking
         mockManager.mockSetting('outbound_link_tagging', false);

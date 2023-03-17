@@ -17,12 +17,12 @@ class OutboundLinkTagger {
      *
      * @param {Object} deps
      * @param {() => boolean} deps.isEnabled
-     * @param {() => string} deps.getSiteTitle
+     * @param {() => string} deps.getSiteUrl
      * @param {{isSiteUrl(url, context): boolean}} deps.urlUtils
      */
-    constructor({isEnabled, getSiteTitle, urlUtils}) {
+    constructor({isEnabled, getSiteUrl, urlUtils}) {
         this._isEnabled = isEnabled;
-        this._getSiteTitle = getSiteTitle;
+        this._getSiteUrl = getSiteUrl;
         this._urlUtils = urlUtils;
     }
 
@@ -30,8 +30,8 @@ class OutboundLinkTagger {
         return this._isEnabled();
     }
 
-    get siteTitle() {
-        return this._getSiteTitle();
+    get siteUrl() {
+        return new URL(this._getSiteUrl());
     }
 
     /**
@@ -60,14 +60,16 @@ class OutboundLinkTagger {
             return url;
         }
 
+        // Tag url with site's base domain, excluding www
+        const domain = this.getDomainFromUrl(this.siteUrl);
         if (useNewsletter) {
             const name = slugify(useNewsletter.get('name'));
 
             // If newsletter name ends with newsletter, don't add it again
-            const ref = name.endsWith('newsletter') ? name : `${name}-newsletter`;
+            const ref = name.endsWith('newsletter') ? `${domain}-${name}` : `${domain}-${name}-newsletter`;
             url.searchParams.append('ref', ref);
         } else {
-            url.searchParams.append('ref', slugify(this.siteTitle));
+            url.searchParams.append('ref', domain);
         }
         return url;
     }
@@ -83,6 +85,21 @@ class OutboundLinkTagger {
             }
             return this.addToUrl(url);
         });
+    }
+
+    /**  *
+     * Extracts the domain from a given URL for use in the ?ref= parameter
+     * e.g. https://example.com/ -> example.com
+     * e.g. https://example.ghost.io/ -> example.ghost.io
+     * e.g. https://www.example.com/ -> example.com
+     * 
+     * @param {URL} url to extract domain from
+     * @returns {string} just the domain, e.g. example.com or example.ghost.io, but not www.example.com
+    */
+    getDomainFromUrl(url) {
+        const hostname = url.hostname;
+        const domain = hostname.replace(/^www\./, '');
+        return domain;
     }
 }
 
