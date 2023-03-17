@@ -2080,7 +2080,7 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-meta p {
-    padding: 0 0 4px;
+    padding: 0 0 8px;
     color: var(--midgrey);
     text-transform: none;
 }
