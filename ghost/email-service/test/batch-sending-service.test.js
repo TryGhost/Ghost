@@ -591,7 +591,11 @@ describe('Batch Sending Service', function () {
                         member_name: 'Test User',
                         loaded: ['member'],
                         member: createModel({
-                            created_at: new Date()
+                            created_at: new Date(),
+                            loaded: ['stripeSubscriptions', 'products'],
+                            status: 'free',
+                            stripeSubscriptions: [],
+                            products: []
                         })
                     },
                     {
@@ -601,7 +605,11 @@ describe('Batch Sending Service', function () {
                         member_name: 'Test User 2',
                         loaded: ['member'],
                         member: createModel({
-                            created_at: new Date()
+                            created_at: new Date(),
+                            status: 'free',
+                            loaded: ['stripeSubscriptions', 'products'],
+                            stripeSubscriptions: [],
+                            products: []
                         })
                     }
                 ]
