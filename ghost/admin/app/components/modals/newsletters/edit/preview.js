@@ -6,6 +6,7 @@ export default class EditNewsletterPreview extends Component {
     @service ghostPaths;
     @service session;
     @service settings;
+    @service membersUtils;
 
     get showHeader() {
         return (this.args.newsletter.showHeaderIcon && this.settings.icon)
@@ -14,6 +15,10 @@ export default class EditNewsletterPreview extends Component {
 
     get showHeaderTitle() {
         return this.headerTitle || this.headerSubtitle;
+    }
+
+    get showCommentCta() {
+        return this.args.newsletter.showCommentCta && this.settings.commentsEnabled !== 'off';
     }
 
     get headerTitle() {
