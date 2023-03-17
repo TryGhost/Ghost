@@ -80,7 +80,7 @@
   "devDependencies": {
     "autoprefixer": "^10.4.7",
     "chalk": "4.1.2",
-    "chokidar": "3.5.2",
+    "chokidar": "3.5.3",
     "copy-webpack-plugin": "6.4.1",
     "eslint-plugin-ghost": "2.12.0",
     "minimist": "1.2.5",
