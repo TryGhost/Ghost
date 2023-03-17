@@ -815,7 +815,7 @@ describe('StaffService', function () {
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('You have an audience of 25,000 people'))
+                    sinon.match.has('html', sinon.match('Celebrating 25,000 signups'))
                 ).should.be.true();
 
                 // Correct image and NO height for Members milestone
@@ -824,7 +824,7 @@ describe('StaffService', function () {
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Congrats, what an incredible milestone you have reached with <strong>25k members</strong> choosing to support and follow your work. That\'s a big enough audience to sell out Madison Square Garden.'))
+                    sinon.match.has('html', sinon.match('Congrats, <strong>25k people</strong> have chosen to support and follow your work. That’s an audience big enough to sell out Madison Square Garden. What an incredible milestone!'))
                 ).should.be.true();
 
                 mailStub.calledWith(
