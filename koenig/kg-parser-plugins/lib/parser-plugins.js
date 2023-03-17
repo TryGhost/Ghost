@@ -12,7 +12,6 @@
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 
 import * as audioCard from './cards/audio';
-import * as beforeAfterCard from './cards/before-after';
 import * as buttonCard from './cards/button';
 import * as embedCard from './cards/embed';
 import * as fileCard from './cards/file';
@@ -290,8 +289,6 @@ export function createParserPlugins(_options = {}) {
     }
 
     return [
-        beforeAfterCard.fromKoenigCard(options),
-        beforeAfterCard.fromJetpackCard(options),
         embedCard.fromNFTEmbed(),
         embedCard.fromMixtape(options),
         htmlCard.fromKoenigCard(options),
