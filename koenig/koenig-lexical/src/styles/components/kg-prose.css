@@ -705,6 +705,31 @@
             display: inline;
         }
     }
+
+    /* Dark mode
+    /* -------------------------------------------------------------------- */
+
+    .dark {
+        :where(
+                h1,
+                h2,
+                h3,
+                h4,
+                h5,
+                h6
+            ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+                color: var(--white);
+            }
+
+        :where(
+            code
+        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            background: var(--grey-900);
+            border: 1px solid var(--grey-900);
+            border-radius: 2px;
+            /* color: var(--grey-900); */
+        }
+    }
 }
 
 .koenig-lexical-caption {
