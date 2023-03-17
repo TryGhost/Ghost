@@ -356,23 +356,24 @@ figure blockquote p {
 
 .post-meta,
 .view-online {
-    padding-bottom: 50px;
     color: #738a94;
     font-size: 13px;
-    letter-spacing: 0.2px;
-    text-transform: uppercase;
-    text-align: center;
-}
-
-.post-meta-labs,
-.view-online-labs {
-    padding-bottom: 0;
     letter-spacing: 0.1px;
-    text-transform: none;
 }
 
 .post-meta-left {
     text-align: left;
+}
+
+.view-online {
+    text-align: right;
+}
+
+.post-meta-center,
+.post-meta-center.view-online {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
 }
 
 .post-meta-date {
@@ -392,17 +393,9 @@ figure blockquote p {
     vertical-align: middle;
 }
 
-.view-online {
-    text-align: right;
-}
-
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: #15212A;
-}
-
-.view-online-labs .view-online-link {
     color: #738a94;
 }
 
@@ -1015,8 +1008,8 @@ a[data-flickr-embed] img {
         line-height: 1.5em;
     }
 
-    table.body .post-meta-labs,
-    table.body .view-online-labs {
+    table.body .post-meta,
+    table.body .view-online {
         display: inline-block;
     }
 
@@ -1024,7 +1017,7 @@ a[data-flickr-embed] img {
         width: 100%;
     }
 
-    table.body .view-online-labs {
+    table.body .view-online {
         text-decoration: underline;
     }
 
