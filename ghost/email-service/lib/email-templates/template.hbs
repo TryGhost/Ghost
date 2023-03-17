@@ -79,31 +79,21 @@
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    {{#if labs.makingItRain}}
-                                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 48px;">
-                                                            <tr>
-                                                                <td class="{{classes.meta}} post-meta-labs author-date" align="left">
-                                                                    By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
-                                                                    {{#if newsletter.showCommentCta}} 
-                                                                        <a href="{{post.commentUrl}}" class="comment-link" valign="middle">
-                                                                            • <img src="https://static.ghost.org/v5.0.0/images/comment-icon.png" border="0" width="16" height="16" alt="Comment">
-                                                                        </a>
-                                                                    {{/if}}
-                                                                </td>
-                                                                <td class="{{classes.meta}} view-online view-online-labs" align="right">
-                                                                    <a href="{{post.url}}" class="view-online-link">View in browser</a>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    {{else}}
-                                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                            <tr>
-                                                                <td class="{{classes.meta}}">
-                                                                    By {{post.authors}} – <span class="post-meta-date">{{post.publishedAt}} – </span><a href="{{post.url}}" class="view-online-link">View online →</a>{{#if newsletter.showCommentCta}} <a href="{{post.commentUrl}}" class="view-online-link">Comment</a>{{/if}}
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    {{/if}}
+                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 48px;">
+                                                        <tr>
+                                                            <td class="{{classes.meta}} author-date" align="left">
+                                                                By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
+                                                                {{#if newsletter.showCommentCta}} 
+                                                                    <a href="{{post.commentUrl}}" class="comment-link" valign="middle">
+                                                                        • <img src="https://static.ghost.org/v5.0.0/images/comment-icon.png" border="0" width="16" height="16" alt="Comment">
+                                                                    </a>
+                                                                {{/if}}
+                                                            </td>
+                                                            <td class="{{classes.meta}} view-online" align="right">
+                                                                <a href="{{post.url}}" class="view-online-link">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
                                         {{/if}}
