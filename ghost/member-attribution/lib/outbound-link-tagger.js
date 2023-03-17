@@ -66,7 +66,7 @@ class OutboundLinkTagger {
             const name = slugify(useNewsletter.get('name'));
 
             // If newsletter name ends with newsletter, don't add it again
-            const ref = name.endsWith('newsletter') ? `${domain}-${name}` : `${domain}-${name}-newsletter`;
+            const ref = name.endsWith('newsletter') ? name : `${name}-newsletter`;
             url.searchParams.append('ref', ref);
         } else {
             url.searchParams.append('ref', domain);
@@ -92,7 +92,7 @@ class OutboundLinkTagger {
      * e.g. https://example.com/ -> example.com
      * e.g. https://example.ghost.io/ -> example.ghost.io
      * e.g. https://www.example.com/ -> example.com
-     * 
+     *
      * @param {URL} url to extract domain from
      * @returns {string} just the domain, e.g. example.com or example.ghost.io, but not www.example.com
     */

@@ -51,7 +51,7 @@ describe('OutboundLinkTagger', function () {
 
             const updatedUrl = await service.addToUrl(url, newsletter);
 
-            should(updatedUrl.toString()).equal('https://example.com/?ref=blog.com-used-newsletter-name-newsletter');
+            should(updatedUrl.toString()).equal('https://example.com/?ref=used-newsletter-name-newsletter');
         });
 
         it('does not repeat newsletter at the end of the newsletter name', async function () {
@@ -70,7 +70,7 @@ describe('OutboundLinkTagger', function () {
             };
             const updatedUrl = await service.addToUrl(url, newsletter);
 
-            should(updatedUrl.toString()).equal('https://example.com/?ref=blog.com-weekly-newsletter');
+            should(updatedUrl.toString()).equal('https://example.com/?ref=weekly-newsletter');
         });
 
         it('does not add ref to blocked domains', async function () {
