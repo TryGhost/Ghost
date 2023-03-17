@@ -37,10 +37,17 @@ export default story;
 
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
-        <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
+        <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px] py-10">
             <CardWrapper {...display} {...args}>
                 <ToggleCard {...display} {...args} />
             </CardWrapper>
+        </div>
+        <div className="w-full bg-black py-10">
+            <div className="not-kg-prose dark mx-auto my-8 min-w-[initial] max-w-[740px]">
+                <CardWrapper {...display} {...args}>
+                    <ToggleCard {...display} {...args} />
+                </CardWrapper>
+            </div>
         </div>
     </div>
 );
