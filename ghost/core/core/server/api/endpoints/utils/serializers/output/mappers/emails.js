@@ -7,7 +7,8 @@ module.exports = (model, frame) => {
 
     // Ensure we're not outputting unwanted replacement strings when viewing email contents
     // TODO: extract this to a utility, it's duplicated in the email-preview API controller
-    if (jsonModel.html) {
+    if (jsonModel.html && emailService.renderer && emailService.service) {
+        // In worker threads the renderer and servie service are not available, but we don't need to do this, so okay to skip.
         const replacements = emailService.renderer.buildReplacementDefinitions({html: jsonModel.html, newsletterUuid: 'preview'});
         const exampleMember = emailService.service.getDefaultExampleMember();
 
