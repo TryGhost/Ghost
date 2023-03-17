@@ -17,7 +17,7 @@ let commands = [];
 
 const COMMAND_GHOST = {
     name: 'ghost',
-    command: 'yarn nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built -i ghost/portal',
+    command: 'yarn nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built -i ghost/portal -i ghost/sodo-search',
     prefixColor: 'blue',
     env: {}
 };
@@ -47,6 +47,18 @@ if (DASH_DASH_ARGS.includes('portal')) {
         env: {}
     });
     COMMAND_GHOST.env['portal__url'] = 'http://localhost:5368/umd/portal.min.js';
+}
+
+if (DASH_DASH_ARGS.includes('search')) {
+    commands.push({
+        name: 'search',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/sodo-search'),
+        prefixColor: '#23de43',
+        env: {}
+    });
+    COMMAND_GHOST.env['sodoSearch__url'] = 'http://localhost:5370/umd/sodo-search.min.js';
+    COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:5370/umd/main.css';
 }
 
 (async () => {
