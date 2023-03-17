@@ -139,15 +139,26 @@
 
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
-                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 4px 24px; border-bottom: 1px solid #e5eff5" align="center">
-                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: auto; width: auto !important;">
+                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 4px 24px;" align="center">
+                                        <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
-                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this.png?v=1" width="145px" }}
-                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png?v=1" width="142px" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this.png" width="145" height="36" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png" width="142" height="36" }}
                                                 {{/if}}
                                                 {{#if newsletter.showCommentCta}}
-                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment.png?v=1" width="122px" }}
+                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment.png" width="122" height="36" }}
+                                                {{/if}}
+                                            </tr>
+                                        </table>
+                                        <table class="feedback-buttons-mobile" role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                {{#if feedbackButtons }}
+                                                    {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" }}
+                                                    {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" }}
+                                                {{/if}}
+                                                {{#if newsletter.showCommentCta}}
+                                                    {{> feedbackButtonMobile href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42" }}
                                                 {{/if}}
                                             </tr>
                                         </table>
@@ -170,7 +181,7 @@
 
                             <tr>
                                 <td class="wrapper" align="center">
-                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px; padding-bottom: 30px;">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #e5eff5; padding-top: 40px; padding-bottom: 30px;">
                                         {{#if footerContent }}
                                             <tr><td class="footer">{{{footerContent}}}</td></tr>
                                         {{/if}}

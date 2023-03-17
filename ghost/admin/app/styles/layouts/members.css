@@ -2067,6 +2067,10 @@ p.gh-members-import-errordetail:first-of-type {
     flex-direction: column;
 }
 
+.gh-members-emailpreview-meta.center-aligned .gh-members-emailpreview-view-online {
+    text-decoration: underline;
+}
+
 .gh-members-emailpreview-title p {
     margin: 0;
     padding: 0 0 10px;
