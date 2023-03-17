@@ -1,4 +1,4 @@
-<div class="gh-members-emailpreview">
+<div class="gh-members-emailpreview gh-members-emailpreview-labs">
     <div class="gh-members-emailpreview-container">
         <div class="gh-members-emailpreview-faux">
             <p>
@@ -25,12 +25,22 @@
                     {{/if}}
                 </div>
             {{/if}}
-            <div class="gh-members-emailpreview-title {{if (eq @newsletter.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
-                <h2 class="{{if (eq @newsletter.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
-                <p>
-                    <span>By {{or this.session.user.name this.session.user.email}} – {{moment-format (moment-site-tz) "D MMM YYYY"}} – </span> <a href="javascript:">View online →</a>
-                </p>
-            </div>
+            {{#if @newsletter.showPostTitleSection}}
+                <div class="gh-members-emailpreview-title {{if (eq @newsletter.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
+                    <h2 class="{{if (eq @newsletter.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
+                    <div class="gh-members-emailpreview-meta {{if (eq @newsletter.titleAlignment "center") "center-aligned"}}">
+                        <p>By {{or this.session.user.name this.session.user.email}}
+                            <span>{{moment-format (moment-site-tz) "D MMM YYYY"}}</span>
+                            {{#if this.showCommentCta}}
+                                <span><a href="javascript:" class="gh-members-emailpreview-comment-link"> {{svg-jar "comment"}}</a></span>
+                            {{/if}}
+                        </p>
+                        <p>
+                            <a href="javascript:">View in browser</a>
+                        </p>
+                    </div>
+                </div>
+            {{/if}}
             {{#if @newsletter.showFeatureImage}}
                 <div class="gh-members-emailpreview-featureimage" style={{this.featureImageStyle}}></div>
                 <div class="gh-members-emailpreview-featureimage-caption">Feature image caption</div>
@@ -41,18 +51,25 @@
                 <p>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
             </div>
 
-            {{#if (and @newsletter.feedbackEnabled (feature "audienceFeedback"))}}
+            {{#if (or (and @newsletter.feedbackEnabled (feature "audienceFeedback")) this.showCommentCta)}}
                 <div class="gh-members-emailpreview-feedback gh-members-emailpreview-content">
-                    <h4 class="gh-members-emailpreview-feedback-title">Give feedback on this post</h4>
 
                     <div class="gh-members-emailpreview-feedback-buttons-group">
-                        <Modals::Newsletters::Components::FeedbackButton
-                            @text="More like this"
-                            @icon="thumbs-up" />
+                        {{#if (and @newsletter.feedbackEnabled (feature "audienceFeedback"))}}
+                            <Modals::Newsletters::Components::FeedbackButton
+                                @text="More like this"
+                                @icon="thumbs-up" />
 
-                        <Modals::Newsletters::Components::FeedbackButton
-                            @text="Less like this"
-                            @icon="thumbs-down" />
+                            <Modals::Newsletters::Components::FeedbackButton
+                                @text="Less like this"
+                                @icon="thumbs-down" />
+                        {{/if}}
+
+                        {{#if this.showCommentCta}}
+                            <Modals::Newsletters::Components::FeedbackButton
+                                @text="Comment"
+                                @icon="comment" />
+                        {{/if}}
                     </div>
                 </div>
             {{/if}}
