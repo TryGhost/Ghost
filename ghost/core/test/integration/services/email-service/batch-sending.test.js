@@ -13,6 +13,7 @@ const {settingsCache} = require('../../../../core/server/services/settings-helpe
 const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
 const should = require('should');
+const {mockSetting} = require('../../../utils/e2e-framework-mock-manager');
 
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
@@ -25,6 +26,7 @@ const mobileDocWithReplacements = '{"version":"0.3.1","atoms":[],"cards":[["emai
 let agent;
 let stubbedSend;
 let frontendAgent;
+let lastEmailModel;
 
 function sortBatches(a, b) {
     const aId = a.get('provider_id');
@@ -93,6 +95,8 @@ async function sendEmail(settings, email_recipient_filter) {
     await emailModel.refresh();
     assert.equal(emailModel.get('status'), 'submitted');
 
+    lastEmailModel = emailModel;
+
     // Get the email that was sent
     return {emailModel, ...(await getLastEmail())};
 }
@@ -120,6 +124,7 @@ async function getLastEmail() {
     }
 
     return {
+        emailModel: lastEmailModel,
         ...messageData,
         html,
         plaintext,
@@ -140,7 +145,7 @@ function testCleanedSnapshot(html, ignoreReplacements) {
 
 async function lastEmailMatchSnapshot() {
     const lastEmail = await getLastEmail();
-    const defaultNewsletter = await getDefaultNewsletter();
+    const defaultNewsletter = await lastEmail.emailModel.getLazyRelation('newsletter');
     const linkRegexp = /http:\/\/127\.0\.0\.1:2369\/r\/\w+/g;
 
     const ignoreReplacements = [
@@ -149,14 +154,37 @@ async function lastEmailMatchSnapshot() {
             replacement: 'requested-newsletter-uuid'
         },
         {
-            match: lastEmail.recipientData.uuid,
-            replacement: 'member-uuid'
+            match: lastEmail.emailModel.get('post_id'),
+            replacement: 'post-id'
+        },
+        {
+            match: (await lastEmail.emailModel.getLazyRelation('post')).get('uuid'),
+            replacement: 'post-uuid'
+        },
+        {
+            match: linkRegexp,
+            replacement: 'http://127.0.0.1:2369/r/xxxxxx'
         },
         {
             match: linkRegexp,
             replacement: 'http://127.0.0.1:2369/r/xxxxxx'
         }
     ];
+
+    if (lastEmail.recipientData.uuid) {
+        ignoreReplacements.push({
+            match: lastEmail.recipientData.uuid,
+            replacement: 'member-uuid'
+        });
+    } else {
+        // Sometimes uuid is not used if link tracking is disabled
+        // Need to replace unsubscribe url instead (uuid is missing but it is inside the usubscribe url, causing snapshot updates)
+        // Need to use unshift to make replacement work before newsletter uuid
+        ignoreReplacements.unshift({
+            match: lastEmail.recipientData.unsubscribe_url,
+            replacement: 'unsubscribe_url'
+        });
+    }
 
     testCleanedSnapshot(lastEmail.html, ignoreReplacements);
     testCleanedSnapshot(lastEmail.plaintext, ignoreReplacements);
@@ -913,6 +941,98 @@ describe('Batch sending tests', function () {
             assert.match(withoutTitleTag2, /This is a test post title/);
             assert.match(plaintext2, /This is a test post title/);
             await lastEmailMatchSnapshot();
+        });
+
+        it('Shows 2 comment buttons for published posts without feedback enabled', async function () {
+            mockSetting('comments_enabled', 'all');
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
+            assert(!defaultNewsletter.get('feedback_enabled'), 'feedback_enabled should be off for this test');
+
+            const {html} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            });
+
+            // Currently the link is not present in plaintext version (because no text)
+            assert.equal(html.match(/#ghost-comments/g).length, 2, 'Every email should have two buttons to comments');
+            await lastEmailMatchSnapshot();
+        });
+
+        it('Shows 2 comment buttons for published posts with feedback enabled', async function () {
+            mockSetting('comments_enabled', 'all');
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
+            await models.Newsletter.edit({feedback_enabled: true}, {id: defaultNewsletter.id});
+
+            const {html} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            });
+
+            // Currently the link is not present in plaintext version (because no text)
+            assert.equal(html.match(/#ghost-comments/g).length, 2, 'Every email should have two buttons to comments');
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({feedback_enabled: false}, {id: defaultNewsletter.id});
+        });
+
+        it('Hides comments button for email only posts', async function () {
+            mockSetting('comments_enabled', 'all');
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
+
+            const {html} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample,
+                email_only: true
+            });
+
+            // Check does not contain post title section
+            assert.doesNotMatch(html, /#ghost-comments/);
+            await lastEmailMatchSnapshot();
+        });
+
+        it('Hides comments button if comments disabled', async function () {
+            mockSetting('comments_enabled', 'off');
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
+
+            const {html} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            });
+
+            assert.doesNotMatch(html, /#ghost-comments/);
+            await lastEmailMatchSnapshot();
+        });
+
+        it('Hides comments button if disabled in newsletter', async function () {
+            mockSetting('comments_enabled', 'all');
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_comment_cta: false}, {id: defaultNewsletter.id});
+
+            const {html} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            });
+
+            assert.doesNotMatch(html, /#ghost-comments/);
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_comment_cta: true}, {id: defaultNewsletter.id});
         });
     });
 });
