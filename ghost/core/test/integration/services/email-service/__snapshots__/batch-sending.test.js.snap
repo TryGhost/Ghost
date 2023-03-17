@@ -33,9 +33,6 @@ Object {
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
-  color: #15212A;
-}
-.view-online-labs .view-online-link {
   color: #738a94;
 }
 .kg-nft-link {
@@ -129,8 +126,8 @@ table.body .post-meta-date {
     line-height: 1.5em;
   }
 
-  table.body .post-meta-labs,
-table.body .view-online-labs {
+  table.body .post-meta,
+table.body .view-online {
     display: inline-block;
   }
 
@@ -138,7 +135,7 @@ table.body .view-online-labs {
     width: 100%;
   }
 
-  table.body .view-online-labs {
+  table.body .view-online {
     text-decoration: underline;
   }
 
@@ -318,16 +315,16 @@ table.body figcaption a {
                                             </tr>
                                             <tr>
                                                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
-                                                            <tr>
-                                                                <td class=\\"post-meta post-meta-labs author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; text-align: center; padding-bottom: 0; letter-spacing: 0.1px; text-transform: none;\\" valign=\\"top\\">
-                                                                    By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2023 </span>
-                                                                </td>
-                                                                <td class=\\"post-meta view-online view-online-labs\\" align=\\"right\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; padding-bottom: 0; letter-spacing: 0.1px; text-transform: none; text-align: right;\\" valign=\\"top\\">
-                                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; overflow-wrap: anywhere; color: #738a94;\\" target=\\"_blank\\">View in browser</a>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
+                                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
+                                                        <tr>
+                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                                By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2023 </span>
+                                                            </td>
+                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
 
@@ -547,9 +544,6 @@ Object {
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
-  color: #15212A;
-}
-.view-online-labs .view-online-link {
   color: #738a94;
 }
 .kg-nft-link {
@@ -643,8 +637,8 @@ table.body .post-meta-date {
     line-height: 1.5em;
   }
 
-  table.body .post-meta-labs,
-table.body .view-online-labs {
+  table.body .post-meta,
+table.body .view-online {
     display: inline-block;
   }
 
@@ -652,7 +646,7 @@ table.body .view-online-labs {
     width: 100%;
   }
 
-  table.body .view-online-labs {
+  table.body .view-online {
     text-decoration: underline;
   }
 
@@ -1005,9 +999,6 @@ Object {
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
-  color: #15212A;
-}
-.view-online-labs .view-online-link {
   color: #738a94;
 }
 .kg-nft-link {
@@ -1101,8 +1092,8 @@ table.body .post-meta-date {
     line-height: 1.5em;
   }
 
-  table.body .post-meta-labs,
-table.body .view-online-labs {
+  table.body .post-meta,
+table.body .view-online {
     display: inline-block;
   }
 
@@ -1110,7 +1101,7 @@ table.body .view-online-labs {
     width: 100%;
   }
 
-  table.body .view-online-labs {
+  table.body .view-online {
     text-decoration: underline;
   }
 
@@ -1290,16 +1281,16 @@ table.body figcaption a {
                                             </tr>
                                             <tr>
                                                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
-                                                            <tr>
-                                                                <td class=\\"post-meta post-meta-labs author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; text-align: center; padding-bottom: 0; letter-spacing: 0.1px; text-transform: none;\\" valign=\\"top\\">
-                                                                    By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2023 </span>
-                                                                </td>
-                                                                <td class=\\"post-meta view-online view-online-labs\\" align=\\"right\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; padding-bottom: 0; letter-spacing: 0.1px; text-transform: none; text-align: right;\\" valign=\\"top\\">
-                                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; overflow-wrap: anywhere; color: #738a94;\\" target=\\"_blank\\">View in browser</a>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
+                                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
+                                                        <tr>
+                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                                By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2023 </span>
+                                                            </td>
+                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
 
@@ -1505,9 +1496,6 @@ Object {
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
-  color: #15212A;
-}
-.view-online-labs .view-online-link {
   color: #738a94;
 }
 .kg-nft-link {
@@ -1601,8 +1589,8 @@ table.body .post-meta-date {
     line-height: 1.5em;
   }
 
-  table.body .post-meta-labs,
-table.body .view-online-labs {
+  table.body .post-meta,
+table.body .view-online {
     display: inline-block;
   }
 
@@ -1610,7 +1598,7 @@ table.body .view-online-labs {
     width: 100%;
   }
 
-  table.body .view-online-labs {
+  table.body .view-online {
     text-decoration: underline;
   }
 
@@ -1790,16 +1778,16 @@ table.body figcaption a {
                                             </tr>
                                             <tr>
                                                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
-                                                            <tr>
-                                                                <td class=\\"post-meta post-meta-labs author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; text-align: center; padding-bottom: 0; letter-spacing: 0.1px; text-transform: none;\\" valign=\\"top\\">
-                                                                    By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2023 </span>
-                                                                </td>
-                                                                <td class=\\"post-meta view-online view-online-labs\\" align=\\"right\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; padding-bottom: 0; letter-spacing: 0.1px; text-transform: none; text-align: right;\\" valign=\\"top\\">
-                                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; overflow-wrap: anywhere; color: #738a94;\\" target=\\"_blank\\">View in browser</a>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
+                                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
+                                                        <tr>
+                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                                By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2023 </span>
+                                                            </td>
+                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
 
@@ -2007,9 +1995,6 @@ Object {
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
-  color: #15212A;
-}
-.view-online-labs .view-online-link {
   color: #738a94;
 }
 .kg-nft-link {
@@ -2103,8 +2088,8 @@ table.body .post-meta-date {
     line-height: 1.5em;
   }
 
-  table.body .post-meta-labs,
-table.body .view-online-labs {
+  table.body .post-meta,
+table.body .view-online {
     display: inline-block;
   }
 
@@ -2112,7 +2097,7 @@ table.body .view-online-labs {
     width: 100%;
   }
 
-  table.body .view-online-labs {
+  table.body .view-online {
     text-decoration: underline;
   }
 
@@ -2292,16 +2277,16 @@ table.body figcaption a {
                                             </tr>
                                             <tr>
                                                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
-                                                            <tr>
-                                                                <td class=\\"post-meta post-meta-labs author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; text-align: center; padding-bottom: 0; letter-spacing: 0.1px; text-transform: none;\\" valign=\\"top\\">
-                                                                    By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2023 </span>
-                                                                </td>
-                                                                <td class=\\"post-meta view-online view-online-labs\\" align=\\"right\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; padding-bottom: 0; letter-spacing: 0.1px; text-transform: none; text-align: right;\\" valign=\\"top\\">
-                                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; overflow-wrap: anywhere; color: #738a94;\\" target=\\"_blank\\">View in browser</a>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
+                                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
+                                                        <tr>
+                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                                By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2023 </span>
+                                                            </td>
+                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
 
