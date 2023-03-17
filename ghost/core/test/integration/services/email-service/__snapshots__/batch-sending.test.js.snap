@@ -309,7 +309,7 @@ table.body figcaption a {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #15212A; padding-bottom: 10px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #15212A; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 50px; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
@@ -1275,7 +1275,7 @@ table.body figcaption a {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #15212A; padding-bottom: 10px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #15212A; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 50px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -1772,7 +1772,7 @@ table.body figcaption a {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #15212A; padding-bottom: 10px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #15212A; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 50px; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
@@ -2271,7 +2271,7 @@ table.body figcaption a {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #15212A; padding-bottom: 10px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #15212A; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 50px; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>

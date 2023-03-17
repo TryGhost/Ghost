@@ -588,7 +588,7 @@ class EmailRenderer {
         ).href.replace('--uuid--', '%%{uuid}%%');
 
         const commentUrl = new URL(postUrl);
-        commentUrl.hash = '#ghost-comments-root';
+        commentUrl.hash = '#ghost-comments';
 
         const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
 
