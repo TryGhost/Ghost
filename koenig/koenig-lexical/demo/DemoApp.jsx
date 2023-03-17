@@ -183,7 +183,7 @@ function DemoApp({editorType}) {
     return (
         <div
             key={location.key}
-            className={`koenig-lexical top ${darkMode ? 'dark' : ''}`}
+            className={`koenig-lexical top`}
         >
             <KoenigComposer
                 cardConfig={cardConfig}
@@ -192,7 +192,7 @@ function DemoApp({editorType}) {
                 initialEditorState={initialContent}
                 nodes={getAllowedNodes({editorType})}
             >
-                <div className="relative h-full grow">
+                <div className={`relative h-full grow ${darkMode ? 'dark' : ''}`}>
                     {
                         searchParams !== 'false'
                             ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
