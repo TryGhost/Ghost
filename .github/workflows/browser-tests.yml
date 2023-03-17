@@ -21,6 +21,8 @@ on:
         description: 'Owner password (override)'
         required: false
         type: string
+concurrency:
+  group: ${{ github.workflow }}
 jobs:
   test:
     timeout-minutes: 60
