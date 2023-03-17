@@ -2,6 +2,7 @@ const urlService = require('../url');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
 const labs = require('../../../shared/labs');
+const config = require('../../../shared/config');
 
 class MemberAttributionServiceWrapper {
     init() {
@@ -35,7 +36,7 @@ class MemberAttributionServiceWrapper {
 
         this.outboundLinkTagger = new OutboundLinkTagger({
             isEnabled: () => !labs.isSet('outboundLinkTagging') || !!settingsCache.get('outbound_link_tagging'),
-            getSiteTitle: () => settingsCache.get('title'),
+            getSiteUrl: () => config.getSiteUrl(),
             urlUtils
         });
 
