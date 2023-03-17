@@ -776,6 +776,7 @@ input[type="image"] {
 .liquid-container.show-overflow,
 .liquid-container.show-overflow .liquid-child {
     overflow: visible;
+    z-index: 1;
 }
 .liquid-container.show-overflow.liquid-animating,
 .liquid-container.show-overflow.liquid-animating .liquid-child {
