@@ -242,7 +242,7 @@ Object {
     "totals": Array [
       Object {
         "cadence": "month",
-        "count": 2,
+        "count": 3,
         "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       },
     ],
@@ -251,11 +251,11 @@ Object {
     Object {
       "cadence": "month",
       "cancellations": 0,
-      "count": 2,
+      "count": 3,
       "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "negative_delta": 1,
-      "positive_delta": 5,
-      "signups": 5,
+      "positive_delta": 6,
+      "signups": 6,
       "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
     Object {
