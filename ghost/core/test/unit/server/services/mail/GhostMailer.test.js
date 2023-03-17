@@ -1,3 +1,4 @@
+const dns = require('dns');
 const should = require('should');
 const sinon = require('sinon');
 const mail = require('../../../../../core/server/services/mail');
@@ -115,10 +116,13 @@ describe('Mail: Ghostmailer', function () {
             configUtils.set({mail: {}});
 
             mailer = new mail.GhostMailer();
+
+            sinon.stub(dns, 'resolveMx').yields(null, []);
         });
 
         afterEach(function () {
             mailer = null;
+            sinon.restore();
         });
 
         it('return correct failure message for domain doesn\'t exist', async function () {
