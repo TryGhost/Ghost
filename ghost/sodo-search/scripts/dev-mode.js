@@ -20,16 +20,6 @@ const {v, verbose, port = 5370, basic, b} = minimist(process.argv.slice(2));
 const showVerbose = !!(v || verbose);
 const showBasic = !!(b || basic);
 
-function clearConsole({withHistory = true} = {}) {
-    if (!withHistory) {
-        process.stdout.write('\x1Bc');
-        return;
-    }
-    process.stdout.write(
-        process.platform === 'win32' ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H'
-    );
-}
-
 function maybePluralize(count, noun, suffix = 's') {
     return `${count} ${noun}${count !== 1 ? suffix : ''}`;
 }
@@ -88,33 +78,6 @@ function printBuildComplete(code) {
     log();
 }
 
-function printConfigInstruction() {
-    const data = {
-        portal: {
-            url: `http://localhost:${port}/sodo-search`
-        }
-    };
-    const stringifedData = JSON.stringify(data, null, 2);
-    const splitData = stringifedData.split('\n');
-    log();
-    splitData.forEach((_data, idx, arr) => {
-        if (idx === 0 || idx === arr.length - 1) {
-            log(chalk.grey(_data));
-        } else {
-            log(chalk.bold.whiteBright(_data));
-        }
-    });
-    log();
-}
-
-function printInstructions() {
-    log();
-    log(chalk.yellowBright.underline(`Add portal to your local Ghost config`));
-    printConfigInstruction();
-    log(chalk.cyanBright('='.repeat(50)));
-    log();
-}
-
 function printBuildStart() {
     if (showVerbose) {
         log(chalk.bold.greenBright.bgBlackBright(`${'-'.repeat(32)}Building${'-'.repeat(32)}`));
@@ -131,8 +94,6 @@ function onBuildComplete(code) {
     stdOutChunks = [];
     if (fileChanges.length > 0) {
         buildPortal();
-    } else {
-        log(chalk.yellowBright.bold.underline(`Watching file changes...\n`));
     }
 }
 
@@ -172,7 +133,7 @@ function buildPortal() {
 
 function watchFiles() {
     const watcher = chokidar.watch('.', {
-        ignored: /build|node_modules|.git|public|umd|scripts|(^|[\/\\])\../
+        ignored: /build|node_modules|.git|public|umd|scripts|(^|[/])\../
     });
 
     watcher.on('ready', () => {
@@ -210,11 +171,9 @@ function startDevServer() {
     });
 
     server.listen(port, () => {
-        log(chalk.whiteBright(`Portal dev server is running on http://localhost:${port}`));
-        printInstructions();
+        log(chalk.whiteBright(`Sodo-Search dev server is running on http://localhost:${port}`));
         watchFiles();
     });
 }
 
-clearConsole({withHistory: false});
 startDevServer();
