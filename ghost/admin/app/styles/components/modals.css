@@ -629,7 +629,6 @@
     flex-direction: column;
     justify-content: space-between;
     flex-grow: 1;
-    overflow-y: auto;
     padding: 0;
     margin-bottom: 24px;
 }
@@ -655,6 +654,7 @@
     font-weight: 400;
     font-size: 1.45rem;
     transition: none;
+    z-index: 0;
 }
 
 .modal-fullsettings-tab:hover {

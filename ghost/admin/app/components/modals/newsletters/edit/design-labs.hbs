@@ -116,7 +116,7 @@
                 {{svg-jar "email-body"}} Body
                 <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
             </button>
-            {{#liquid-if isOpen}}
+            {{#liquid-if isOpen class="show-overflow"}}
                 <div class="modal-fullsettings-tab-expanded">
                     <div class="gh-stack">
                         <GhFormGroup class="gh-stack-item row">
