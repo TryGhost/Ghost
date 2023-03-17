@@ -4,10 +4,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:TryGhost/sodo-search.git"
+    "url": "git://github.com/TryGhost/Ghost.git"
   },
   "author": "Ghost Foundation",
-  "unpkg": "umd/sodo-search.min.js",
   "files": [
     "umd/",
     "LICENSE",
@@ -44,9 +43,8 @@
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push ${GHOST_UPSTREAM:-upstream} main --follow-tags; fi",
-    "posttest": "yarn lint",
-    "analyze": "source-map-explorer 'umd/*.js'",
+    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && yarn publish . --tag $npm_package_version",
     "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
