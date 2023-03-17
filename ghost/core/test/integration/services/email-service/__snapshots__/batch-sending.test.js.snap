@@ -156,7 +156,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -679,7 +681,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -1188,7 +1192,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -1697,7 +1703,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -2206,7 +2214,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -2673,7 +2683,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -4256,7 +4268,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -4475,22 +4489,22 @@ table.body figcaption a {
                                                         </a>
                                                     </td>                                            </tr>
                                         </table>
-                                        <table class=\\"feedback-buttons-mobile\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; display: none; width: auto; margin: auto;\\">
+                                        <table class=\\"feedback-buttons-mobile\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; display: none; width: auto; margin: auto;\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 33%;\\" nowrap width=\\"33%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/1/?uuid=member-uuid\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"More like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; font-size: 13px;\\">More like this</p>
+                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">More like this</p>
                                                         </a>
-                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
+                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 33%;\\" nowrap width=\\"33%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/0/?uuid=member-uuid\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Less like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; font-size: 13px;\\">Less like this</p>
+                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Less like this</p>
                                                         </a>
-                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
+                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 33%;\\" nowrap width=\\"33%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; font-size: 13px;\\">Comment</p>
+                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Comment</p>
                                                         </a>
                                                     </td>                                            </tr>
                                         </table>
@@ -4865,7 +4879,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -5076,12 +5092,12 @@ table.body figcaption a {
                                                         </a>
                                                     </td>                                            </tr>
                                         </table>
-                                        <table class=\\"feedback-buttons-mobile\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; display: none; width: auto; margin: auto;\\">
+                                        <table class=\\"feedback-buttons-mobile\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; display: none; width: auto; margin: auto;\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 33%;\\" nowrap width=\\"33%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; font-size: 13px;\\">Comment</p>
+                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Comment</p>
                                                         </a>
                                                     </td>                                            </tr>
                                         </table>
@@ -5959,7 +5975,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
@@ -6470,7 +6488,9 @@ table.body .footer a {
   }
 
   table.feedback-buttons-mobile {
-    display: block !important;
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
   }
 
   table.body .feedback-button-mobile-text {
