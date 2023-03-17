@@ -1089,7 +1089,7 @@ describe('Email renderer', function () {
             });
         });
 
-        it('show comment CTA is disabled if labs disabled', async function () {
+        it('show comment CTA is enabled if labs disabled', async function () {
             labsEnabled = false;
             settings.comments_enabled = 'all';
             const html = '';
@@ -1105,7 +1105,7 @@ describe('Email renderer', function () {
                 show_comment_cta: true
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.newsletter.showCommentCta, false);
+            assert.equal(data.newsletter.showCommentCta, true);
         });
 
         it('show comment CTA is disabled if comments disabled', async function () {

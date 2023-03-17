@@ -73,7 +73,7 @@ module.exports = async function comments(options) {
     const dataAttributes = getDataAttributes(data);
 
     return new SafeString(`
-        <script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>
+        <div id="ghost-comments-test"></div><script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>
     `);
 };
 

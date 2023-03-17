@@ -590,6 +590,8 @@ class EmailRenderer {
         const commentUrl = new URL(postUrl);
         commentUrl.hash = '#ghost-comments-root';
 
+        const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
+
         const data = {
             site: {
                 title: this.#settingsCache.get('title'),
@@ -617,7 +619,7 @@ class EmailRenderer {
             newsletter: {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
-                showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && this.#labs.isSet('makingItRain'),
+                showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details') && this.#labs.isSet('makingItRain')
             },
 
