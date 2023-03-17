@@ -87,10 +87,7 @@ describe('getSchema', function () {
                 height: 500
             },
             keywords: 'one, two, tag',
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': 'http://mysite.com'
-            },
+            mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
             publisher: {
                 '@type': 'Organization',
                 name: 'Site Title',
@@ -191,10 +188,7 @@ describe('getSchema', function () {
                 height: 500
             },
             keywords: 'one, two',
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': 'http://mysite.com'
-            },
+            mainEntityOfPage: 'http://mysite.com/post/my-page-slug/',
             publisher: {
                 '@type': 'Organization',
                 name: 'Site Title',
@@ -299,10 +293,7 @@ describe('getSchema', function () {
                 height: 500
             },
             keywords: 'one, two, tag',
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': 'http://mysite.com'
-            },
+            mainEntityOfPage: 'http://mysite.com/post/my-amp-post-slug/',
             publisher: {
                 '@type': 'Organization',
                 name: 'Site Title',
@@ -366,10 +357,7 @@ describe('getSchema', function () {
             datePublished: '2015-12-25T05:35:01.234Z',
             description: 'Post meta description',
             headline: 'Post Title',
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': null
-            },
+            mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
             publisher: {
                 '@type': 'Organization',
                 name: 'Site Title',
@@ -451,10 +439,7 @@ describe('getSchema', function () {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
             },
             keywords: 'one, two, tag',
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': 'http://mysite.com'
-            },
+            mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
             publisher: {
                 '@type': 'Organization',
                 name: 'Site Title',
@@ -501,10 +486,7 @@ describe('getSchema', function () {
                 width: 500,
                 height: 500
             },
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': null
-            },
+            mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
             publisher: {
                 '@type': 'Organization',
                 name: 'Site Title',
@@ -550,10 +532,7 @@ describe('getSchema', function () {
                 width: 500,
                 height: 500
             },
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': null
-            },
+            mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
             name: 'Great Tag',
             publisher: {
                 '@type': 'Organization',
@@ -597,10 +576,7 @@ describe('getSchema', function () {
             '@context': 'https://schema.org',
             '@type': 'Person',
             description: 'This is the author description!',
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': 'http://mysite.com'
-            },
+            mainEntityOfPage: 'http://mysite.com/author/me/',
             name: 'Author Name',
             sameAs: [
                 'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
