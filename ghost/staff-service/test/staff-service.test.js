@@ -851,7 +851,7 @@ describe('StaffService', function () {
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Congrats! You reached $500,000 ARR'))
+                    sinon.match.has('html', sinon.match('Congrats! You reached $500k ARR'))
                 ).should.be.true();
 
                 // Correct image and height for ARR milestone

@@ -51,6 +51,7 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
             },
             100000: {
                 ...arrContent,
+                heading: `Congrats! You reached $100k ARR`,
                 image: {
                     url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-100k.png',
                     height: 348
@@ -58,6 +59,7 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
             },
             250000: {
                 ...arrContent,
+                heading: `Congrats! You reached $250k ARR`,
                 image: {
                     url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-250k.png',
                     height: 348
@@ -65,6 +67,7 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
             },
             500000: {
                 ...arrContent,
+                heading: `Congrats! You reached $500k ARR`,
                 image: {
                     url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-500k.png',
                     height: 348
@@ -72,6 +75,7 @@ const milestoneEmailConfig = (siteTitle, formattedValue) => {
             },
             1000000: {
                 ...arrContent,
+                heading: `Congrats! You reached $1m ARR`,
                 image: {
                     url: 'https://static.ghost.org/v5.0.0/images/milestone-email-usd-1m.png',
                     height: 348
