@@ -61,10 +61,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/content/images/test-image-about.png\\"
     },
     \\"description\\": \\"all about our site\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/post/\\"
 }
     </script>
 
@@ -200,10 +197,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/content/images/test-image-about.png\\"
     },
     \\"description\\": \\"all about our site\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/post/\\"
 }
     </script>
 
@@ -273,10 +267,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/content/images/test-image-about.png\\"
     },
     \\"description\\": \\"all about our site\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/post/\\"
 }
     </script>
 
@@ -359,10 +350,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/content/images/test-image-about.png\\"
     },
     \\"description\\": \\"all about our site\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/post/\\"
 }
     </script>
 
@@ -434,10 +422,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/content/images/test-image-about.png\\"
     },
     \\"description\\": \\"all about our site\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/post/\\"
 }
     </script>
 
@@ -765,10 +750,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -881,10 +863,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -996,10 +975,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -1112,10 +1088,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -1228,10 +1201,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -1280,10 +1250,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -1396,10 +1363,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://127.0.0.1:2369/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -1543,10 +1507,7 @@ Object {
         \\"url\\": \\"http://localhost:65530/content/images/test-image-about.png\\"
     },
     \\"description\\": \\"all about our site\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/\\"
 }
     </script>
 
@@ -1644,10 +1605,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -1730,10 +1688,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -1783,10 +1738,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -1873,10 +1825,7 @@ Object {
     \\"dateModified\\": \\"1970-01-01T00:00:00.000Z\\",
     \\"keywords\\": \\"tag1, tag2, tag3\\",
     \\"description\\": \\"This is a short post\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/about/\\"
 }
     </script>
 
@@ -1924,10 +1873,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/\\",
     \\"description\\": \\"site SEO description\\"
 }
     </script>
@@ -2039,10 +1985,7 @@ Object {
         \\"url\\": \\"http://localhost:65530/content/images/tag-image.png\\"
     },
     \\"name\\": \\"tagtitle\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/tag/tagtitle/\\",
     \\"description\\": \\"tag meta description\\"
 }
     </script>
@@ -2091,10 +2034,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/author-cover-image.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    },
+    \\"mainEntityOfPage\\": \\"https://mysite.com/fakeauthor/\\",
     \\"description\\": \\"Author bio\\"
 }
     </script>
@@ -2175,10 +2115,7 @@ Object {
     },
     \\"keywords\\": \\"tag1, tag2, tag3\\",
     \\"description\\": \\"site &quot;test&quot; description\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>
 
@@ -2257,10 +2194,7 @@ Object {
     },
     \\"keywords\\": \\"tag1, tag2, tag3\\",
     \\"description\\": \\"site description\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>
 
@@ -2305,10 +2239,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
     },
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/\\",
     \\"description\\": \\"site description\\"
 }
     </script>
@@ -2389,10 +2320,7 @@ Object {
     },
     \\"keywords\\": \\"tag1, tag2, tag3\\",
     \\"description\\": \\"site description\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>
 
@@ -2472,10 +2400,7 @@ Object {
     },
     \\"keywords\\": \\"tag1, tag2, tag3\\",
     \\"description\\": \\"post custom excerpt\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>
 
@@ -2543,10 +2468,7 @@ Object {
     \\"datePublished\\": \\"1970-01-01T00:00:00.000Z\\",
     \\"dateModified\\": \\"1970-01-01T00:00:00.000Z\\",
     \\"description\\": \\"This is a short post\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>
 
@@ -2618,10 +2540,7 @@ Object {
     \\"dateModified\\": \\"1970-01-01T00:00:00.000Z\\",
     \\"keywords\\": \\"tag1, tag2, tag3\\",
     \\"description\\": \\"site description\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>
 
@@ -2693,10 +2612,7 @@ Object {
         \\"url\\": \\"http://localhost:65530/content/images/test-image-about.png\\"
     },
     \\"description\\": \\"all about our site\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/about/\\"
 }
     </script>
 
@@ -2768,10 +2684,7 @@ Object {
         \\"url\\": \\"http://localhost:65530/content/images/test-image-about.png\\"
     },
     \\"description\\": \\"all about our site\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/about/\\"
 }
     </script>
 
@@ -2844,10 +2757,7 @@ Object {
         \\"url\\": \\"http://localhost:65530/content/images/test-image.png\\"
     },
     \\"description\\": \\"site description\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>
 
@@ -2912,10 +2822,7 @@ Object {
     \\"dateModified\\": \\"1970-01-01T00:00:00.000Z\\",
     \\"keywords\\": \\"tag1, tag2, tag3\\",
     \\"description\\": \\"This is a short post\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>
 
@@ -2962,10 +2869,7 @@ Object {
         \\"url\\": \\"http://localhost:65530/content/images/tag-image.png\\"
     },
     \\"name\\": \\"tagtitle\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    }
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/tag/tagtitle/\\"
 }
     </script>
 
@@ -3015,10 +2919,7 @@ Object {
         \\"url\\": \\"http://localhost:65530/content/images/tag-image.png\\"
     },
     \\"name\\": \\"tagtitle\\",
-    \\"mainEntityOfPage\\": {
-        \\"@type\\": \\"WebPage\\",
-        \\"@id\\": \\"http://localhost:65530/\\"
-    },
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/tag/tagtitle/\\",
     \\"description\\": \\"tag description\\"
 }
     </script>
