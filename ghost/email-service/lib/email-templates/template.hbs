@@ -83,7 +83,7 @@
                                                         <tr>
                                                             <td class="{{classes.meta}} author-date" align="left">
                                                                 By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
-                                                                {{#if newsletter.showCommentCta}} 
+                                                                {{#if newsletter.showCommentCta}}
                                                                     <a href="{{post.commentUrl}}" class="comment-link" valign="middle">
                                                                         • <img src="https://static.ghost.org/v5.0.0/images/comment-icon.png" border="0" width="16" height="16" alt="Comment">
                                                                     </a>
@@ -162,6 +162,14 @@
                                                 {{/if}}
                                             </tr>
                                         </table>
+                                    </td>
+                                </tr>
+                            {{/if}}
+
+                             {{#if latestPosts.length}}
+                                <tr>
+                                    <td>
+                                        {{> latestPosts}}
                                     </td>
                                 </tr>
                             {{/if}}
