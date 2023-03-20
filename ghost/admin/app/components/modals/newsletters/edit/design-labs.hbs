@@ -241,16 +241,16 @@
                         </GhFormGroup>
 
                         <GhFormGroup class="gh-stack-item row">
-                            <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Share your latest posts</label>
+                            <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="showLatestPosts">Share your latest posts</label>
                             <div class="for-switch small">
                                 <div class="container">
                                     <input
                                         type="checkbox"
                                         id="latest-posts"
-                                        checked={{@newsletter.feedbackEnabled}}
-                                        {{on "change" (fn this.onCheckboxChange "feedbackEnabled")}}
+                                        checked={{@newsletter.showLatestPosts}}
+                                        {{on "change" (fn this.onCheckboxChange "showLatestPosts")}}
                                     >
-                                    <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "feedbackEnabled")}}></button>
+                                    <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "showLatestPosts")}}></button>
                                 </div>
                             </div>
                         </GhFormGroup>
