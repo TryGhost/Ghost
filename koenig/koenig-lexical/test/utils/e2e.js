@@ -16,7 +16,7 @@ export async function startApp(browserName = BROWSER_NAME) {
         slowMo: slowMo
     });
     const page = await browser.newPage();
-
+    
     return {
         app: {
             stop: async () => {

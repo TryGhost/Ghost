@@ -1,21 +1,23 @@
+// we can probably refactor this so that KoenigCaptionEditor can be replaced with this:
+
 import CardContext from '../context/CardContext.jsx';
 import React, {useCallback, useContext} from 'react';
-import {$createParagraphNode, $getNodeByKey, $setSelection, BLUR_COMMAND, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {$createParagraphNode, $getNodeByKey, $setSelection, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
 import {HtmlOutputPlugin, KoenigComposableEditor, KoenigComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const Placeholder = ({text = 'Type here'}) => {
     return (
-        <div className="pointer-events-none absolute top-0 left-0 m-0 min-w-full cursor-text font-sans text-sm font-normal tracking-wide text-grey-500 ">
+        <div className="pointer-events-none absolute top-0 left-0 m-0 min-w-full cursor-text font-sans text-xl font-normal tracking-wide text-grey-500 ">
             {text}
         </div>
     );
 };
 
-function CaptionPlugin({parentEditor}) {
+function CalloutEditorPlugin({parentEditor}) {
     const [editor] = useLexicalComposerContext();
-    const {setCaptionHasFocus, captionHasFocus, nodeKey} = useContext(CardContext);
+    const {nodeKey} = useContext(CardContext);
 
     // focus on caption editor when something is typed while card is selected
     const handleKeyDown = useCallback((event) => {
@@ -23,12 +25,12 @@ function CaptionPlugin({parentEditor}) {
         if (event.target.matches('input, textarea')) {
             return;
         }
-
+    
         // only if key is printable key, focus on editor
-        if (!captionHasFocus && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
             editor.focus();
         }
-    }, [editor, captionHasFocus]);
+    }, [editor]);
 
     React.useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
@@ -37,32 +39,29 @@ function CaptionPlugin({parentEditor}) {
         };
     }, [handleKeyDown, editor]);
 
-    // handle focus/blur and enter key commands
     React.useEffect(
         () => {
             return mergeRegister(
                 editor.registerCommand(
                     FOCUS_COMMAND,
                     () => {
-                        setCaptionHasFocus(true);
-                        return false;
-                    },
-                    COMMAND_PRIORITY_LOW
-                ),
-                editor.registerCommand(
-                    BLUR_COMMAND,
-                    () => {
-                        setCaptionHasFocus(false);
-                        editor.update(() => {
-                            $setSelection(null);
+                        // focus on the parent node key
+                        parentEditor.update(() => {
+                            const cardNode = $getNodeByKey(nodeKey);
+                            $setSelection(cardNode);
                         });
+
                         return false;
                     },
                     COMMAND_PRIORITY_LOW
                 ),
                 editor.registerCommand(
                     KEY_ENTER_COMMAND,
-                    () => {
+                    (event) => {
+                        // if hitting enter while holding shift, don't create a new paragraph
+                        if (event.shiftKey) {
+                            return false;
+                        }
                         parentEditor.update(() => {
                             const cardNode = $getNodeByKey(nodeKey);
                             const paragraphNode = $createParagraphNode();
@@ -75,13 +74,12 @@ function CaptionPlugin({parentEditor}) {
                 )
             );
         },
-        [editor, setCaptionHasFocus, parentEditor, nodeKey]
+        [editor, parentEditor, nodeKey]
     );
-
     return null;
 }
 
-const KoenigCaptionEditor = ({paragraphs = 1, html, setHtml, placeholderText, readOnly, className = 'koenig-lexical-caption'}) => {
+const KoenigCalloutEditor = ({paragraphs = 1, html, setHtml, placeholderText, readOnly, className, nodeKey}) => {
     const [parentEditor] = useLexicalComposerContext();
     return (
         <KoenigComposer
@@ -93,7 +91,7 @@ const KoenigCaptionEditor = ({paragraphs = 1, html, setHtml, placeholderText, re
                 placeholder={<Placeholder text={placeholderText} />}
                 readOnly={readOnly}
             >
-                <CaptionPlugin parentEditor={parentEditor} />
+                <CalloutEditorPlugin parentEditor={parentEditor} parentNode={nodeKey} />
                 <RestrictContentPlugin paragraphs={paragraphs} />
                 <HtmlOutputPlugin html={html} setHtml={setHtml} />
             </KoenigComposableEditor>
@@ -101,4 +99,4 @@ const KoenigCaptionEditor = ({paragraphs = 1, html, setHtml, placeholderText, re
     );
 };
 
-export default KoenigCaptionEditor;
+export default KoenigCalloutEditor;

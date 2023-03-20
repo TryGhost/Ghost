@@ -85,9 +85,9 @@ export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
     );
 }
 
-export function ColorPickerSetting({label, onClick, selectedName, buttons, layout}) {
+export function ColorPickerSetting({label, onClick, selectedName, buttons, layout, dataTestID}) {
     return (
-        <div className={`mt-2 flex w-full text-[1.3rem] first:mt-0 ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`}>
+        <div className={`mt-2 flex w-full text-[1.3rem] first:mt-0 ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`} data-testID={dataTestID}>
             <div className="font-bold text-grey-900">{label}</div>
 
             <div className={`shrink-0 ${layout === 'stacked' ? '-mx-1 pt-1' : 'pl-2'}`}>

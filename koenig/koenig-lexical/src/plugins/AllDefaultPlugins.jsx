@@ -4,6 +4,7 @@ import ImagePlugin from '../plugins/ImagePlugin';
 import MarkdownPlugin from '../plugins/MarkdownPlugin';
 import React from 'react';
 import {AudioPlugin} from '../plugins/AudioPlugin';
+import {CalloutPlugin} from '../plugins/CalloutPlugin';
 import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
@@ -25,6 +26,7 @@ export const AllDefaultPlugins = () => {
             <VideoPlugin />
             <MarkdownPlugin />
             <HorizontalRulePlugin />
+            <CalloutPlugin />
             <HtmlPlugin />
         </>
     );

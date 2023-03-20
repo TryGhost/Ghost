@@ -362,7 +362,6 @@ describe('ImageNode', function () {
                 </figure>
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
-
             nodes.length.should.equal(1);
             nodes[0].getCardWidth().should.equal('wide');
         }));

@@ -6,6 +6,7 @@ import KoenigEditor from './components/KoenigEditor';
 
 /* Plugins */
 import AudioPlugin from './plugins/AudioPlugin';
+import CalloutPlugin from './plugins/CalloutPlugin';
 import CardMenuPlugin from './plugins/CardMenuPlugin';
 import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
@@ -65,6 +66,7 @@ export {
     RestrictContentPlugin,
     SlashCardMenuPlugin,
     VideoPlugin,
+    CalloutPlugin,
 
     AllDefaultPlugins,
 

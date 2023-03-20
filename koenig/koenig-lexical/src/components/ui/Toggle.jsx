@@ -3,7 +3,7 @@ import React from 'react';
 
 export function Toggle({isChecked, onChange, dataTestID}) {
     return (
-        <label className="relative inline-block h-5 w-[34px] outline-none" data-testid={dataTestID}>
+        <label className="relative inline-block h-5 w-[34px] outline-none" data-testid={dataTestID} id={dataTestID}>
             <input
                 checked={isChecked}
                 className="peer absolute hidden"
