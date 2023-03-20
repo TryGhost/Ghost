@@ -1,4 +1,4 @@
-import { buildCleanBasicHtmlForElement } from "./build-clean-basic-html-for-element";
+import {buildCleanBasicHtmlForElement} from './build-clean-basic-html-for-element';
 
 export function readCaptionFromElement(element, {selector = 'figcaption'} = {}) {
     const cleanBasicHtml = buildCleanBasicHtmlForElement(element);
