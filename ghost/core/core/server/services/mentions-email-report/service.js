@@ -71,7 +71,7 @@ module.exports = {
         const settingsCache = require('../../../shared/settings-cache');
         const mentionReportHistoryService = {
             async getLatestReportDate() {
-                const setting = settingsCache.get('lastMentionsReportEmailTimestamp');
+                const setting = settingsCache.get('last_mentions_report_email_timestamp');
                 const parsedInt = parseInt(setting);
 
                 // Protect against missing/bad data
@@ -85,7 +85,7 @@ module.exports = {
             },
             async setLatestReportDate(date) {
                 await models.Settings.edit({
-                    key: 'lastMentionsReportEmailTimestamp',
+                    key: 'last_mentions_report_email_timestamp',
                     value: date.getTime()
                 });
             }
