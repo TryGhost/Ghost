@@ -26,7 +26,7 @@ concurrency:
 jobs:
   test:
     timeout-minutes: 60
-    runs-on: linux
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     environment: ${{ github.event.inputs.environment || 'browser-tests-local' }}
     env:
