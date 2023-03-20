@@ -71,6 +71,7 @@ export default class FeatureService extends Service {
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('makingItRain') makingItRain;
     @feature('migrateApp') migrateApp;
+    @feature('i18n') i18n;
 
     _user = null;
 

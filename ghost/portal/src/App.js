@@ -157,7 +157,9 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
-            const i18n = i18nLib(/*site.locale || */ 'en', 'portal'); // TODO: uncomment when you want to enable i18n translations
+            const i18nLanguage = this.props.siteI18nEnabled ? site.locale : 'en';
+
+            const i18n = i18nLib(i18nLanguage, 'portal');
             const state = {
                 site,
                 member,

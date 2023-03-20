@@ -17,10 +17,11 @@ function getSiteData() {
      */
     const scriptTag = document.querySelector('script[data-ghost]');
     if (scriptTag) {
+        const siteI18nEnabled = scriptTag.dataset.i18n === 'true';
         const siteUrl = scriptTag.dataset.ghost;
         const apiKey = scriptTag.dataset.key;
         const apiUrl = scriptTag.dataset.api;
-        return {siteUrl, apiKey, apiUrl};
+        return {siteUrl, apiKey, apiUrl, siteI18nEnabled};
     }
     return {};
 }
@@ -40,12 +41,12 @@ function setup({siteUrl}) {
 
 function init() {
     // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl, apiKey, apiUrl} = getSiteData();
+    const {siteUrl: customSiteUrl, apiKey, apiUrl, siteI18nEnabled} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} />
+            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} siteI18nEnabled={siteI18nEnabled} />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );

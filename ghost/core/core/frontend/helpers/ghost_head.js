@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
+const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 
 // BAD REQUIRE
@@ -52,6 +52,7 @@ function getMembersHelper(data, frontendKey) {
 
     const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
     const attributes = {
+        i18n: labs.isSet('i18n'),
         ghost: urlUtils.getSiteUrl(),
         key: frontendKey,
         api: urlUtils.urlFor('api', {type: 'content'}, true)
