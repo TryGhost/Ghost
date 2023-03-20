@@ -111,6 +111,10 @@ test.describe('Portal', () => {
             // unsubscribe from all emails
             await portalFrame.locator('[data-test-button="unsubscribe-from-all-emails"]').click();
 
+            // todo: replace class locator on data-attr locator
+            await expect(await portalFrame.locator('.gh-portal-popupnotification.success')).toBeVisible();
+            await expect(await portalFrame.locator('.gh-portal-popupnotification.success')).toBeHidden();
+
             // all newsletters should be disabled
             for (let i = 0; i < count; i++) {
                 await expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).not.toBeTruthy();
