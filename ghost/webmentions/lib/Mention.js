@@ -112,7 +112,11 @@ module.exports = class Mention {
         /** @type {string | null} */
         const sourceExcerpt = validateString(metadata.sourceExcerpt, 2000, 'sourceExcerpt');
         /** @type {string | null} */
-        const sourceSiteTitle = validateString(metadata.sourceSiteTitle, 2000, 'sourceSiteTitle');
+        let sourceSiteTitle = validateString(metadata.sourceSiteTitle, 2000, 'sourceSiteTitle');
+        if (sourceSiteTitle === null) {
+            sourceSiteTitle = this.#source.host;
+        }
+
         /** @type {string | null} */
         const sourceAuthor = validateString(metadata.sourceAuthor, 2000, 'sourceAuthor');
 
