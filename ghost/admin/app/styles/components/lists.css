@@ -454,7 +454,8 @@ ul.nostyle li {
     border-bottom: none;
     background: var(--main-bg-color);
     background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
-    padding: 0 60px 0 0;
+    padding-right: 60px;
+    padding-left: 0;
     z-index: 99;
 }
 
