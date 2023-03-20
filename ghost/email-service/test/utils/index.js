@@ -64,6 +64,25 @@ const createModelClass = (options = {}) => {
                 (options.findAll ?? []).map(f => createModel({...f, ...data}))
             );
         },
+        findPage: async (data) => {
+            const all = options.findAll ?? [];
+            const limit = data.limit ?? 15;
+            const page = data.page ?? 1;
+
+            const start = (page - 1) * limit;
+            const end = start + limit;
+
+            const pageData = all.slice(start, end);
+            return Promise.resolve(
+                {
+                    data: pageData.map(f => createModel({...f, ...data})),
+                    meta: {
+                        page,
+                        limit
+                    }
+                }
+            );
+        },
         transaction: async (callback) => {
             const transacting = {transacting: 'transacting'};
             return await callback(transacting);

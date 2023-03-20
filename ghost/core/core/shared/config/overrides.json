@@ -121,7 +121,8 @@
         },
         "internalImageSizes": {
             "icon": {"width": 256, "height": 256},
-            "email-header-image": {"width": 1200}
+            "email-header-image": {"width": 1200},
+            "email-latest-posts-image": {"width": 200}
         }
     }
 }
