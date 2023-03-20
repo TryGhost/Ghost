@@ -3,8 +3,8 @@
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
-const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
-const {Color, textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
+const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
+const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
@@ -61,6 +61,7 @@ class EmailRenderer {
     #outboundLinkTagger;
     #audienceFeedbackService;
     #labs;
+    #models;
 
     /**
      * @param {object} dependencies
@@ -79,6 +80,7 @@ class EmailRenderer {
      * @param {object} dependencies.audienceFeedbackService
      * @param {object} dependencies.outboundLinkTagger
      * @param {object} dependencies.labs
+     * @param {{Post: object}} dependencies.models
      */
     constructor({
         settingsCache,
@@ -93,7 +95,8 @@ class EmailRenderer {
         memberAttributionService,
         audienceFeedbackService,
         outboundLinkTagger,
-        labs
+        labs,
+        models
     }) {
         this.#settingsCache = settingsCache;
         this.#settingsHelpers = settingsHelpers;
@@ -108,6 +111,7 @@ class EmailRenderer {
         this.#audienceFeedbackService = audienceFeedbackService;
         this.#outboundLinkTagger = outboundLinkTagger;
         this.#labs = labs;
+        this.#models = models;
     }
 
     getSubject(post) {
@@ -512,6 +516,9 @@ class EmailRenderer {
         const feedbackButtonMobilePartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button-mobile.hbs`), 'utf8');
         this.#handlebars.registerPartial('feedbackButtonMobile', feedbackButtonMobilePartial);
 
+        const latestPostsPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `latest-posts.hbs`), 'utf8');
+        this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
+
         // Actual template
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
         this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
@@ -595,6 +602,38 @@ class EmailRenderer {
 
         const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
 
+        const latestPosts = [];
+        let latestPostsHasImages = false;
+        if (newsletter.get('show_latest_posts') && this.#labs.isSet('makingItRain')) {
+            // Fetch last 3 published posts
+            const {data} = await this.#models.Post.findPage({
+                filter: 'status:published',
+                order: 'published_at DESC',
+                limit: 3
+            });
+
+            for (const latestPost of data) {
+                // Please also adjust email-latest-posts-image if you make changes to the image width (100 x 2 = 200 -> should be in email-latest-posts-image)
+                const {href: featureImage, width: featureImageWidth} = await this.limitImageWidth(latestPost.get('feature_image'), 100);
+
+                latestPosts.push({
+                    title: latestPost.get('title'),
+                    publishedAt: (latestPost.get('published_at') ? DateTime.fromJSDate(latestPost.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    }),
+                    url: this.#getPostUrl(latestPost),
+                    featureImage,
+                    featureImageWidth
+                });
+
+                if (featureImage) {
+                    latestPostsHasImages = true;
+                }
+            }
+        }
+
         const data = {
             site: {
                 title: this.#settingsCache.get('title'),
@@ -625,6 +664,8 @@ class EmailRenderer {
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details') && this.#labs.isSet('makingItRain')
             },
+            latestPosts,
+            latestPostsHasImages,
 
             labs: this.#settingsCache.get('labs'),
 
@@ -673,7 +714,7 @@ class EmailRenderer {
      * Sets and limits the width of an image + returns the width
      * @returns {Promise<{href: string, width: number}>}
      */
-    async limitImageWidth(href) {
+    async limitImageWidth(href, visibleWidth = 600) {
         if (!href) {
             return {
                 href,
@@ -683,25 +724,25 @@ class EmailRenderer {
         if (isUnsplashImage(href)) {
             // Unsplash images have a minimum size so assuming 1200px is safe
             const unsplashUrl = new URL(href);
-            unsplashUrl.searchParams.set('w', '1200');
+            unsplashUrl.searchParams.set('w', (visibleWidth * 2).toFixed(0));
 
             return {
                 href: unsplashUrl.href,
-                width: 600
+                width: visibleWidth
             };
         } else {
             try {
                 const size = await this.#imageSize.getImageSizeFromUrl(href);
 
-                if (size.width >= 600) {
+                if (size.width >= visibleWidth) {
                     // keep original image, just set a fixed width
-                    size.width = 600;
+                    size.width = visibleWidth;
                 }
 
                 if (this.#storageUtils.isLocalImage(href)) {
                     // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                     return {
-                        href: href.replace(/\/content\/images\//, '/content/images/size/w1200/'),
+                        href: href.replace(/\/content\/images\//, '/content/images/size/w' + (visibleWidth * 2) + '/'),
                         width: size.width
                     };
                 }

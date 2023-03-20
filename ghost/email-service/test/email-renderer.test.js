@@ -1,11 +1,12 @@
 const {EmailRenderer} = require('../');
 const assert = require('assert');
 const cheerio = require('cheerio');
-const {createModel} = require('./utils');
+const {createModel, createModelClass} = require('./utils');
 const linkReplacer = require('@tryghost/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
+const {DateTime} = require('luxon');
 
 function validateHtml(html) {
     const htmlvalidate = new HtmlValidate({
@@ -985,39 +986,61 @@ describe('Email renderer', function () {
     describe('getTemplateData', function () {
         let settings = {};
         let labsEnabled = true;
-        const emailRenderer = new EmailRenderer({
-            audienceFeedbackService: {
-                buildLink: (_uuid, _postId, score) => {
-                    return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
-                }
-            },
-            urlUtils: {
-                urlFor: (type) => {
-                    if (type === 'image') {
-                        return 'http://icon.example.com';
-                    }
-                    return 'http://example.com/subdirectory';
-                },
-                isSiteUrl: (u) => {
-                    return u.hostname === 'example.com';
-                }
-            },
-            settingsCache: {
-                get: (key) => {
-                    return settings[key];
-                }
-            },
-            getPostUrl: () => {
-                return 'http://example.com';
-            },
-            labs: {
-                isSet: () => labsEnabled
-            }
-        });
+        let emailRenderer;
 
         beforeEach(function () {
             settings = {};
             labsEnabled = true;
+            emailRenderer = new EmailRenderer({
+                audienceFeedbackService: {
+                    buildLink: (_uuid, _postId, score) => {
+                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
+                    }
+                },
+                urlUtils: {
+                    urlFor: (type) => {
+                        if (type === 'image') {
+                            return 'http://icon.example.com';
+                        }
+                        return 'http://example.com/subdirectory';
+                    },
+                    isSiteUrl: (u) => {
+                        return u.hostname === 'example.com';
+                    }
+                },
+                settingsCache: {
+                    get: (key) => {
+                        return settings[key];
+                    }
+                },
+                getPostUrl: () => {
+                    return 'http://example.com';
+                },
+                labs: {
+                    isSet: () => labsEnabled
+                },
+                models: {
+                    Post: createModelClass({
+                        findAll: [
+                            {
+                                title: 'Test Post 1',
+                                published_at: new Date('2018-01-01T00:00:00.000Z'),
+                                feature_image: 'http://example.com/image.jpg'
+                            },
+                            {
+                                title: 'Test Post 2',
+                                published_at: new Date('2018-01-01T00:00:00.000Z'),
+                                feature_image: null
+                            },
+                            {
+                                title: 'Test Post 3',
+                                published_at: null, // required for full test coverage
+                                feature_image: null
+                            }
+                        ]
+                    })
+                }
+            });
         });
 
         it('uses default accent color', async function () {
@@ -1219,6 +1242,87 @@ describe('Email renderer', function () {
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.equal(data.newsletter.showSubscriptionDetails, false);
+        });
+
+        it('latestPosts can be disabled', async function () {
+            labsEnabled = true;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_latest_posts: false
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.deepEqual(data.latestPosts, []);
+        });
+
+        it('latestPosts can be disabled via labs', async function () {
+            labsEnabled = false;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_latest_posts: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.deepEqual(data.latestPosts, []);
+        });
+
+        it('latestPosts can be enabled', async function () {
+            labsEnabled = true;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_latest_posts: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.deepEqual(data.latestPosts,
+                [
+                    {
+                        featureImage: 'http://example.com/image.jpg',
+                        featureImageWidth: 0,
+                        publishedAt: '1 Jan 2018',
+                        title: 'Test Post 1',
+                        url: 'http://example.com'
+                    },
+                    {
+                        featureImage: null,
+                        featureImageWidth: 0,
+                        publishedAt: '1 Jan 2018',
+                        title: 'Test Post 2',
+                        url: 'http://example.com'
+                    },
+                    {
+                        featureImage: null,
+                        featureImageWidth: 0,
+                        publishedAt: DateTime.local().setZone('UTC').setLocale('en-gb').toLocaleString({
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        }),
+                        title: 'Test Post 3',
+                        url: 'http://example.com'
+                    }
+                ]);
         });
     });
 

@@ -70,7 +70,8 @@ class EmailServiceWrapper {
             memberAttributionService: memberAttribution.service,
             audienceFeedbackService: audienceFeedback.service,
             outboundLinkTagger: memberAttribution.outboundLinkTagger,
-            labs
+            labs,
+            models: {Post}
         });
 
         const sendingService = new SendingService({
