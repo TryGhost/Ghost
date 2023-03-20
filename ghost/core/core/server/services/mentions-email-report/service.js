@@ -38,8 +38,23 @@ module.exports = {
             /**
              * @returns {Promise<string>}
              */
-            async renderSubject() {
-                return 'Mention Report';
+            async renderSubject(report) {
+                const sourceSiteTitles = report?.mentions?.map(mention => mention.sourceSiteTitle);
+                const uniqueSourceSiteTitles = [...new Set(sourceSiteTitles)];
+                const totalSiteMentions = uniqueSourceSiteTitles.length;
+                const firstMentionSite = uniqueSourceSiteTitles[0];
+
+                let subject = 'Mention Report';
+
+                if (totalSiteMentions === 1) {
+                    subject = `${firstMentionSite} mentioned you`;
+                } else if (totalSiteMentions === 2) {
+                    subject = `${firstMentionSite} & 1 other mentioned you`;
+                } else if (totalSiteMentions > 2) {
+                    subject = `${firstMentionSite} & ${totalSiteMentions - 1} others mentioned you`;
+                }
+
+                return subject;
             },
 
             /**
