@@ -66,8 +66,8 @@
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
     "@vitejs/plugin-react": "3.1.0",
-    "@vitest/coverage-c8": "0.29.3",
-    "@vitest/ui": "0.29.3",
+    "@vitest/coverage-c8": "0.29.7",
+    "@vitest/ui": "0.29.7",
     "concurrently": "7.6.0",
     "cross-fetch": "3.1.5",
     "eslint": "8.36.0",
@@ -78,6 +78,6 @@
     "vite": "4.2.0",
     "vite-plugin-css-injected-by-js": "3.1.0",
     "vite-plugin-svgr": "2.4.0",
-    "vitest": "0.29.3"
+    "vitest": "0.29.7"
   }
 }
