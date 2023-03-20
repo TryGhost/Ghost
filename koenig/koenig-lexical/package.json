@@ -19,7 +19,8 @@
     }
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"vite\" \"yarn multiplayer\"",
+    "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
     "build": "vite build",
     "build:demo": "vite build --config vite.config.demo.js",
     "preview": "vite preview",
@@ -60,7 +61,9 @@
     "lodash-es": "^4.17.21",
     "pluralize": "^8.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "y-websocket": "^1.5.0",
+    "yjs": "^13.5.50"
   },
   "devDependencies": {
     "@babel/core": "7.21.3",
@@ -83,6 +86,7 @@
     "@vitest/ui": "0.29.3",
     "autoprefixer": "10.4.14",
     "babel-loader": "9.1.2",
+    "concurrently": "^7.6.0",
     "cross-fetch": "^3.1.5",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "27.2.1",

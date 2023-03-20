@@ -1,8 +1,8 @@
-import {resolve} from 'path';
-import {defineConfig} from 'vitest/config';
+import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import pkg from './package.json';
+import {defineConfig} from 'vitest/config';
+import {resolve} from 'path';
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
@@ -15,6 +15,13 @@ export default defineConfig({
     define: {
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
         'process.env.VITEST_SEGFAULT_RETRY': 3
+    },
+    resolve: {
+        alias: {
+            // required to prevent double-bundling of yjs due to cjs/esm mismatch
+            // (see https://github.com/facebook/lexical/issues/2153)
+            yjs: resolve('../../node_modules/yjs/src/index.js')
+        }
     },
     optimizeDeps: {
         include: [

@@ -14,11 +14,16 @@ import {
     KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
     RestrictContentPlugin
 } from '../src';
+import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
+import {createWebsocketProvider} from './multiplayer';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {useLocation} from 'react-router-dom';
 import {useSearchParams} from 'react-router-dom';
 import {useState} from 'react';
+
+const skipCollaborationInit =
+    window.parent !== null && window.parent.frames.right === window;
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders}
@@ -42,7 +47,7 @@ function getAllowedNodes({editorType}) {
     return undefined;
 }
 
-function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
+function DemoEditor({editorType, isMultiplayer, registerAPI, cursorDidExitAtTop, darkMode}) {
     if (editorType === 'basic') {
         return (
             <KoenigComposableEditor
@@ -68,11 +73,19 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
             cursorDidExitAtTop={cursorDidExitAtTop}
             darkMode={darkMode}
             registerAPI={registerAPI}
-        />
+        >
+            {isMultiplayer ? (
+                <CollaborationPlugin
+                    id="main"
+                    providerFactory={createWebsocketProvider}
+                    shouldBootstrap={!skipCollaborationInit}
+                />
+            ) : null}
+        </KoenigEditor>
     );
 }
 
-function DemoApp({editorType}) {
+function DemoApp({editorType, isMultiplayer}) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
@@ -174,7 +187,7 @@ function DemoApp({editorType}) {
         };
     }, [editorAPI]);
 
-    const showTitle = !['basic', 'minimal'].includes(editorType);
+    const showTitle = !isMultiplayer && !['basic', 'minimal'].includes(editorType);
 
     // used to force a re-initialization of the editor when URL changes, otherwise
     // content is memoized and causes issues when switching between editor types
@@ -189,12 +202,12 @@ function DemoApp({editorType}) {
                 cardConfig={cardConfig}
                 darkMode={darkMode}
                 fileUploader={{useFileUpload, fileTypes}}
-                initialEditorState={initialContent}
+                initialEditorState={isMultiplayer ? null : initialContent}
                 nodes={getAllowedNodes({editorType})}
             >
                 <div className={`relative h-full grow ${darkMode ? 'dark' : ''}`}>
                     {
-                        searchParams !== 'false'
+                        !isMultiplayer && searchParams !== 'false'
                             ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
                             : null
                     }
@@ -209,6 +222,7 @@ function DemoApp({editorType}) {
                                 cursorDidExitAtTop={focusTitle}
                                 darkMode={darkMode}
                                 editorType={editorType}
+                                isMultiplayer={isMultiplayer}
                                 registerAPI={setEditorAPI}
                             />
                         </div>
