@@ -201,7 +201,7 @@ function DemoApp({editorType, isMultiplayer}) {
             <KoenigComposer
                 cardConfig={cardConfig}
                 darkMode={darkMode}
-                fileUploader={{useFileUpload, fileTypes}}
+                fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}
                 initialEditorState={isMultiplayer ? null : initialContent}
                 nodes={getAllowedNodes({editorType})}
             >
