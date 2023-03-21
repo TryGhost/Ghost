@@ -20,42 +20,42 @@ export const calloutColorPicker = [
     {
         label: 'Grey',
         name: 'grey',
-        colorClass: 'bg-grey-100'
+        colorClass: 'bg-grey/10 dark:border-white/10'
     },
     {
         label: 'White',
         name: 'white',
-        colorClass: 'bg-white'
+        colorClass: 'bg-transparent dark:border-white/10'
     },
     {
         label: 'Blue',
         name: 'blue',
-        colorClass: 'bg-blue-100'
+        colorClass: 'bg-blue/10 dark:border-white/10'
     },
     {
         label: 'Green',
         name: 'green',
-        colorClass: 'bg-green-100'
+        colorClass: 'bg-green/10 dark:border-white/10'
     },
     {
         label: 'Yellow',
         name: 'yellow',
-        colorClass: 'bg-yellow-100'
+        colorClass: 'bg-yellow/10 dark:border-white/10'
     },
     {
         label: 'Red',
         name: 'red',
-        colorClass: 'bg-red-100'
+        colorClass: 'bg-red/10 dark:border-white/10'
     },
     {
         label: 'Pink',
         name: 'pink',
-        colorClass: 'bg-pink-100'
+        colorClass: 'bg-pink/10 dark:border-white/10'
     },
     {
         label: 'Purple',
         name: 'purple',
-        colorClass: 'bg-purple-100'
+        colorClass: 'bg-purple/10 dark:border-white/10'
     },
     {
         label: 'Accent',
