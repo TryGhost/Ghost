@@ -796,6 +796,11 @@
                 "Ghost Explore Integration": {
                     "explore": "read"
                 },
+                "Self-Serve Migration Integration": {
+                    "db": "importContent",
+                    "member": "add",
+                    "tag": "read"
+                },
                 "Admin Integration": {
                     "mail": "all",
                     "notification": "all",
