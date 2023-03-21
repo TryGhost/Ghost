@@ -26,6 +26,8 @@ module.exports = function apiRoutes() {
 
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));
+    router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));
+
     router.post('/posts', mw.authAdminApi, http(api.posts.add));
     router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
