@@ -57,6 +57,18 @@ class PostsService {
         return model;
     }
 
+    async export() {
+        // Placeholder implementation
+        return [
+            {
+                title: 'Example',
+                url: 'https://example.com',
+                author: 'Jamie Larson',
+                status: 'published'
+            }
+        ];
+    }
+
     async getProductsFromVisibilityFilter(visibilityFilter) {
         try {
             const allProducts = await this.models.Product.findAll();

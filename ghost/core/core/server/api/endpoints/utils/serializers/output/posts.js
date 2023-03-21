@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:posts');
 const mappers = require('./mappers');
 const membersService = require('../../../../../services/members');
+const papaparse = require('papaparse');
 
 module.exports = {
     async all(models, apiConfig, frame) {
@@ -32,5 +33,9 @@ module.exports = {
         frame.response = {
             posts: [post]
         };
+    },
+
+    exportCSV(models, apiConfig, frame) {
+        frame.response = papaparse.unparse(models.data);
     }
 };

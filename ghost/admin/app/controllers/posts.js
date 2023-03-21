@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -52,6 +53,7 @@ export default class PostsController extends Controller {
     @service router;
     @service session;
     @service store;
+    @service utils;
 
     @inject config;
 
@@ -82,6 +84,10 @@ export default class PostsController extends Controller {
 
     get postsInfinityModel() {
         return this.model;
+    }
+
+    get totalPosts() {
+        return this.model.meta?.pagination?.total ?? 0;
     }
 
     get showingAll() {
@@ -134,6 +140,17 @@ export default class PostsController extends Controller {
         let authors = this.availableAuthors;
 
         return authors.findBy('slug', author) || {slug: '!unknown'};
+    }
+
+    @action
+    exportData() {
+        let exportUrl = ghostPaths().url.api('posts/export');
+        // the filter and order params are set from the route to the controller via the infinity model
+        // we can retrieve these via the extraParams of the infinity model
+        let downloadParams = new URLSearchParams(this.model.extraParams);
+        downloadParams.set('limit', 'all');
+
+        this.utils.downloadFile(`${exportUrl}?${downloadParams.toString()}`);
     }
 
     @action

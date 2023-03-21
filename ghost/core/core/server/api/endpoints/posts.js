@@ -9,7 +9,7 @@ const allowedIncludes = [
     'email',
     'tiers',
     'newsletter',
-    'count.conversions', 
+    'count.conversions',
     'count.signups',
     'count.paid_conversions',
     'count.clicks',
@@ -54,6 +54,35 @@ module.exports = {
         },
         query(frame) {
             return models.Post.findPage(frame.options);
+        }
+    },
+
+    exportCSV: {
+        options: [
+            'limit',
+            'filter',
+            'order'
+        ],
+        headers: {
+            disposition: {
+                type: 'csv',
+                value() {
+                    const datetime = (new Date()).toJSON().substring(0, 10);
+                    return `posts.${datetime}.csv`;
+                }
+            }
+        },
+        response: {
+            format: 'plain'
+        },
+        permissions: {
+            method: 'browse'
+        },
+        validation: {},
+        async query(frame) {
+            return {
+                data: await postsService.export(frame)
+            };
         }
     },
 
