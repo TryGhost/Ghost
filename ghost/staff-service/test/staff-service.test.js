@@ -111,7 +111,7 @@ describe('StaffService', function () {
 
     describe('email notifications:', function () {
         let mailStub;
-        let loggingInfoStub;
+        let loggingWarningStub;
         let subscribeStub;
         let getEmailAlertUsersStub;
         let service;
@@ -120,6 +120,14 @@ describe('StaffService', function () {
             forUpdate: true
         };
         let stubs;
+        let labs = {
+            isSet: (flag) => {
+                if (flag === 'milestoneEmails') {
+                    return true;
+                }
+                return false;
+            }
+        };
 
         const settingsCache = {
             get: (setting) => {
@@ -151,7 +159,7 @@ describe('StaffService', function () {
         };
 
         beforeEach(function () {
-            loggingInfoStub = sinon.stub().resolves();
+            loggingWarningStub = sinon.stub().resolves();
             mailStub = sinon.stub().resolves();
             subscribeStub = sinon.stub().resolves();
             getEmailAlertUsersStub = sinon.stub().resolves([{
@@ -160,8 +168,7 @@ describe('StaffService', function () {
             }]);
             service = new StaffService({
                 logging: {
-                    info: loggingInfoStub,
-                    warn: () => {},
+                    warn: loggingWarningStub,
                     error: () => {}
                 },
                 models: {
@@ -177,7 +184,8 @@ describe('StaffService', function () {
                 },
                 settingsCache,
                 urlUtils,
-                settingsHelpers
+                settingsHelpers,
+                labs
             });
             stubs = {mailStub, getEmailAlertUsersStub};
         });
@@ -198,7 +206,6 @@ describe('StaffService', function () {
             it('listens to events', async function () {
                 service = new StaffService({
                     logging: {
-                        info: loggingInfoStub,
                         warn: () => {},
                         error: () => {}
                     },
@@ -257,8 +264,6 @@ describe('StaffService', function () {
 
         describe('handleEvent', function () {
             beforeEach(function () {
-                loggingInfoStub = sinon.stub().resolves();
-
                 const models = {
                     User: {
                         getEmailAlertUsers: sinon.stub().resolves([{
@@ -322,7 +327,6 @@ describe('StaffService', function () {
 
                 service = new StaffService({
                     logging: {
-                        info: loggingInfoStub,
                         warn: () => {},
                         error: () => {}
                     },
@@ -338,12 +342,6 @@ describe('StaffService', function () {
                     settingsHelpers,
                     labs: {
                         isSet: (flag) => {
-                            if (flag === 'webmentions') {
-                                return true;
-                            }
-                            if (flag === 'webmentionEmails') {
-                                return true;
-                            }
                             if (flag === 'milestoneEmails') {
                                 return true;
                             }
@@ -401,14 +399,15 @@ describe('StaffService', function () {
                     data: {
                         milestone: {
                             type: 'arr',
-                            value: '100',
-                            currency: 'usd'
+                            value: '1000',
+                            currency: 'usd',
+                            emailSentAt: Date.now()
                         }
                     }
                 });
-                mailStub.called.should.be.false();
-                loggingInfoStub.calledOnce.should.be.true();
-                loggingInfoStub.calledWith('Will send email to owner@ghost.org for arr / 100 milestone.').should.be.true();
+                mailStub.calledWith(
+                    sinon.match({subject: `Ghost Site hit $1,000 ARR`})
+                ).should.be.true();
             });
         });
 
@@ -798,7 +797,78 @@ describe('StaffService', function () {
         });
 
         describe('notifyMilestoneReceived', function () {
-            it('prepares to send email when user setting available', async function () {
+            it('send Members milestone email', async function () {
+                const milestone = {
+                    type: 'members',
+                    value: 25000,
+                    emailSentAt: Date.now()
+                };
+
+                await service.emails.notifyMilestoneReceived({milestone});
+
+                getEmailAlertUsersStub.calledWith('milestone-received').should.be.true();
+
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Ghost Site now has 25k members'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Celebrating 25,000 signups'))
+                ).should.be.true();
+
+                // Correct image and NO height for Members milestone
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('src="https://static.ghost.org/v5.0.0/images/milestone-email-members-25k.png" width="580" align="center"'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Congrats, <strong>25k people</strong> have chosen to support and follow your work. That’s an audience big enough to sell out Madison Square Garden. What an incredible milestone!'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('View your dashboard'))
+                ).should.be.true();
+            });
+
+            it('send ARR milestone email', async function () {
+                const milestone = {
+                    type: 'arr',
+                    value: 500000,
+                    currency: 'usd',
+                    emailSentAt: Date.now()
+                };
+
+                await service.emails.notifyMilestoneReceived({milestone});
+
+                getEmailAlertUsersStub.calledWith('milestone-received').should.be.true();
+
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Ghost Site hit $500,000 ARR'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Congrats! You reached $500k ARR'))
+                ).should.be.true();
+
+                // Correct image and height for ARR milestone
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('src="https://static.ghost.org/v5.0.0/images/milestone-email-usd-500k.png" width="580" height="348" align="center"'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('<strong>Ghost Site</strong> is now generating <strong>$500,000</strong> in annual recurring revenue. Congratulations &mdash; this is a significant milestone.'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Login to your dashboard'))
+                ).should.be.true();
+            });
+
+            it('does not send email when no date provided', async function () {
                 const milestone = {
                     type: 'members',
                     value: 25000
@@ -806,8 +876,42 @@ describe('StaffService', function () {
 
                 await service.emails.notifyMilestoneReceived({milestone});
 
+                getEmailAlertUsersStub.calledWith('milestone-received').should.be.false();
+
                 mailStub.called.should.be.false();
-                getEmailAlertUsersStub.calledWith('milestone-received').should.be.true();
+            });
+
+            it('does not send email when a reason not to send email was provided', async function () {
+                const milestone = {
+                    type: 'members',
+                    value: 25000,
+                    emailSentAt: Date.now(),
+                    meta: {
+                        reason: 'no-email'
+                    }
+                };
+
+                await service.emails.notifyMilestoneReceived({milestone});
+
+                getEmailAlertUsersStub.calledWith('milestone-received').should.be.false();
+
+                mailStub.called.should.be.false();
+            });
+
+            it('does not send email for a milestone without correct content', async function () {
+                const milestone = {
+                    type: 'members',
+                    value: 5000, // milestone not configured
+                    emailSentAt: Date.now()
+                };
+
+                await service.emails.notifyMilestoneReceived({milestone});
+
+                getEmailAlertUsersStub.calledWith('milestone-received').should.be.false();
+
+                loggingWarningStub.calledOnce.should.be.true();
+
+                mailStub.called.should.be.false();
             });
         });
     });
