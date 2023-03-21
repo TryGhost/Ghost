@@ -17,7 +17,9 @@ let commands = [];
 
 const COMMAND_GHOST = {
     name: 'ghost',
-    command: 'yarn nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built -i ghost/portal -i ghost/sodo-search',
+    // Note: if this isn't working for you, please use Node 18 and above
+    command: 'node --watch index.js',
+    cwd: path.resolve(__dirname, '../ghost/core'),
     prefixColor: 'blue',
     env: {}
 };
