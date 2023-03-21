@@ -1,12 +1,13 @@
 import EmojiPickerPortal from '../EmojiPickerPortal';
 import KoenigCalloutEditor from '../../KoenigCalloutEditor';
+import KoenigComposerContext from '../../../context/KoenigComposerContext.jsx';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {ColorPickerSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 
 export const CALLOUT_COLORS = {
     grey: 'bg-grey/10 border-transparent',
-    white: 'bg-white border-grey/30',
+    white: 'bg-transparent border-grey/30',
     blue: 'bg-blue/10 border-transparent',
     green: 'bg-green/10 border-transparent',
     yellow: 'bg-yellow/10 border-transparent',
@@ -79,6 +80,7 @@ export function CalloutCard({
     showEmojiPicker
 }) {
     const emojiButtonRef = React.useRef(null);
+    const {darkMode} = React.useContext(KoenigComposerContext);
 
     React.useEffect(() => {
         if (!isEditing) {
@@ -88,7 +90,7 @@ export function CalloutCard({
 
     return (
         <>
-            <div className={`flex items-center rounded border px-7 ${CALLOUT_COLORS[color]} `} data-testid={`callout-bg-${color}`}>
+            <div className={`flex rounded border px-7 py-5 ${CALLOUT_COLORS[color]} `} data-testid={`callout-bg-${color}`}>
                 <div>
                     {emoji && 
                     <>
@@ -113,7 +115,7 @@ export function CalloutCard({
                     }
                 </div>
                 <KoenigCalloutEditor
-                    className="w-full bg-transparent font-serif text-xl font-normal text-black"
+                    className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"
                     html={text}
                     nodeKey={nodeKey}
                     placeholderText={'Callout text...'}
@@ -123,7 +125,9 @@ export function CalloutCard({
             </div>
             {
                 isEditing && (
-                    <SettingsPanel>
+                    <SettingsPanel
+                        darkMode={darkMode}
+                    >
                         <ToggleSetting
                             dataTestID='emoji-toggle'
                             isChecked={emoji}

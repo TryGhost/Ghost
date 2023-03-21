@@ -13,18 +13,20 @@ import {ProgressBar} from './ProgressBar';
 import {Toggle} from './Toggle';
 import {openFileSelection} from '../../utils/openFileSelection';
 
-export function SettingsPanel({children}) {
+export function SettingsPanel({children, darkMode}) {
     const {ref} = useSettingsPanelReposition();
 
     return (
         // Block with fixed position and transformed ancestor can be incorrectly positioned https://bugs.chromium.org/p/chromium/issues/detail?id=20574
         // Using Portal to avoid such issue as some cards using transformation
         <Portal>
-            <div ref={ref}
-                className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 overflow-y-auto rounded-lg bg-white bg-clip-padding p-6 font-sans shadow"
-                data-testid="video-settings-panel"
-            >
-                {children}
+            <div className={`${darkMode ? 'dark' : ''}`}>
+                <div ref={ref}
+                    className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 overflow-y-auto rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-900"
+                    data-testid="video-settings-panel"
+                >
+                    {children}
+                </div>
             </div>
         </Portal>
     );
@@ -34,7 +36,7 @@ export function ToggleSetting({label, description, isChecked, onChange, dataTest
     return (
         <div className="mt-2 flex min-h-[3rem] w-full items-center justify-between text-[1.3rem] first:mt-0">
             <div>
-                <div className="font-bold text-grey-900">{label}</div>
+                <div className="font-bold text-grey-900 dark:text-grey-300">{label}</div>
                 {description &&
                     <p className="w-11/12 text-[1.25rem] font-normal leading-snug text-grey-700   ">{description}</p>
                 }
@@ -88,7 +90,7 @@ export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
 export function ColorPickerSetting({label, onClick, selectedName, buttons, layout, dataTestID}) {
     return (
         <div className={`mt-2 flex w-full text-[1.3rem] first:mt-0 ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`} data-testid={dataTestID}>
-            <div className="font-bold text-grey-900">{label}</div>
+            <div className="font-bold text-grey-900 dark:text-grey-300">{label}</div>
 
             <div className={`shrink-0 ${layout === 'stacked' ? '-mx-1 pt-1' : 'pl-2'}`}>
                 <ColorPicker buttons={buttons} selectedName={selectedName} onClick={onClick} />

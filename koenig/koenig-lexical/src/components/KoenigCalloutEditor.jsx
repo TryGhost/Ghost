@@ -9,7 +9,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const Placeholder = ({text = 'Type here'}) => {
     return (
-        <div className="pointer-events-none absolute top-0 left-0 m-0 min-w-full cursor-text font-sans text-xl font-normal tracking-wide text-grey-500 ">
+        <div className="pointer-events-none absolute top-0 left-0 m-0 min-w-full cursor-text font-serif text-xl font-normal tracking-wide text-grey-500 ">
             {text}
         </div>
     );
