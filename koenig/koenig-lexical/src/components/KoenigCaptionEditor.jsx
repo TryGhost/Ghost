@@ -15,10 +15,15 @@ const Placeholder = ({text = 'Type here'}) => {
 
 function CaptionPlugin({parentEditor}) {
     const [editor] = useLexicalComposerContext();
-    const {setCaptionHasFocus, captionHasFocus, nodeKey} = useContext(CardContext);
+    const {setCaptionHasFocus, captionHasFocus, nodeKey, isSelected} = useContext(CardContext);
 
     // focus on caption editor when something is typed while card is selected
     const handleKeyDown = useCallback((event) => {
+        // don't focus caption input if card is not selected
+        if (!isSelected) {
+            return;
+        }
+
         // don't focus caption input if any other input or textarea is focused
         if (event.target.matches('input, textarea')) {
             return;
@@ -28,7 +33,7 @@ function CaptionPlugin({parentEditor}) {
         if (!captionHasFocus && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
             editor.focus();
         }
-    }, [editor, captionHasFocus]);
+    }, [editor, captionHasFocus, isSelected]);
 
     React.useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
