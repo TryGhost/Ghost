@@ -26,12 +26,16 @@
 }
 
 /* Dark mode */
-.koenig-lexical > .dark {
+.koenig-lexical > .dark, .koenig-lexical.dark, .dark .koenig-lexical {
     background-color: var(--black);
     
-    * {
+    > * {
         color: var(--grey-300);
     }
+}
+
+.dark ::selection {
+    background: var(--grey-900);
 }
 
 .koenig-lexical.koenig-lexical-caption {
@@ -40,4 +44,13 @@
     > * {
         font-size: 1.4rem;
     }
+}
+
+/* Caption in dark mode */
+.koenig-lexical-caption p {
+    color: var(--grey-800);
+}
+
+.dark .koenig-lexical-caption p {
+    color: var(--grey-500);
 }

@@ -727,7 +727,7 @@
             background: var(--grey-900);
             border: 1px solid var(--grey-900);
             border-radius: 2px;
-            /* color: var(--grey-900); */
+            color: var(--grey-300);
         }
     }
 }
@@ -751,4 +751,9 @@
             font-size: 1.4rem;
         }
     }
+}
+
+.koenig-lexical .EmojiPickerReact.epr-main {
+    border: 0;
+    padding: 0;
 }

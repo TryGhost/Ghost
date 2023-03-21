@@ -22,7 +22,7 @@ function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoF
     return (
         <TextInput
             autoFocus={autoFocus}
-            className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
+            className="not-kg-prose w-full bg-transparent px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900 placeholder:text-grey-800 dark:text-grey-500"
             data-testid={dataTestId}
             placeholder={placeholder}
             readOnly={readOnly}
