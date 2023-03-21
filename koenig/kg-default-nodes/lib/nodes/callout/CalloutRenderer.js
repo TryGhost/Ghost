@@ -1,15 +1,7 @@
+import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+
 export function renderCalloutNodeToDOM(node, options = {}) {
-    if (!options.createDocument) {
-        let document = typeof window !== 'undefined' && window.document;
-
-        if (!document) {
-            throw new Error('renderCalloutNodeToDOM() must be passed a `createDocument` function as an option when used in a non-browser environment'); // eslint-disable-line
-        }
-
-        options.createDocument = function () {
-            return document;
-        };
-    }
+    addCreateDocumentOption(options);
 
     /* c8 ignore stop */
 

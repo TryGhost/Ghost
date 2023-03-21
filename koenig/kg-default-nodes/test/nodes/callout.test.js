@@ -1,5 +1,5 @@
 const {html} = require('../utils');
-// const {$getRoot} = require('lexical');
+const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {JSDOM} = require('jsdom');
@@ -126,5 +126,50 @@ describe('CalloutNode', function () {
             nodes[0].getText().should.equal('This is a callout');
             nodes[0].getEmojiValue().should.equal('💡');
         }));
+    });
+
+    describe('static clone', function () {
+        it('can clone a node', editorTest(function () {
+            const node = $createCalloutNode(dataset);
+            const clone = CalloutNode.clone(node);
+            clone.getBackgroundColor().should.equal(node.getBackgroundColor());
+            clone.getHasEmoji().should.equal(node.getHasEmoji());
+            clone.getText().should.equal(node.getText());
+            clone.getEmojiValue().should.equal(node.getEmojiValue());
+        }));
+    });
+
+    describe('importJSON', function () {
+        it('imports all data', function (done) {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'callout',
+                        ...dataset
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const editorState = editor.parseEditorState(serializedState);
+            editor.setEditorState(editorState);
+
+            editor.getEditorState().read(() => {
+                try {
+                    const [calloutNode] = $getRoot().getChildren();
+                    calloutNode.getText().should.equal(dataset.text);
+                    calloutNode.getHasEmoji().should.equal(dataset.hasEmoji);
+                    calloutNode.getEmojiValue().should.equal(dataset.emojiValue);
+                    calloutNode.getBackgroundColor().should.equal(dataset.backgroundColor);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
     });
 });
