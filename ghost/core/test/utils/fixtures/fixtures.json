@@ -77,6 +77,10 @@
                     "description": "Internal Integration for the Ghost Explore directory"
                 },
                 {
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Internal Integration for the Self-Serve migration tool"
+                },
+                {
                     "name": "DB Backup Integration",
                     "description": "Internal DB Backup Client"
                 },
@@ -880,6 +884,18 @@
                     "description": "Built-in Ghost Explore integration",
                     "type": "core",
                     "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
+                },
+                {
+                    "slug": "self-serve-migration",
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Core Self-Serve Migration integration",
+                    "type": "core",
+                    "api_keys": [
+                        {
+                            "type": "admin",
+                            "role": "Self-Serve Migration Integration"
+                        }
+                    ]
                 },
                 {
                     "slug": "ghost-backup",

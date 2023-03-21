@@ -23,7 +23,7 @@ describe('Integrations API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.equal(res.body.integrations.length, 5);
+        should.equal(res.body.integrations.length, 6);
 
         // there is no enforced order for integrations which makes order different on SQLite and MySQL
         const zapierIntegration = _.find(res.body.integrations, {name: 'Zapier'}); // from migrations
@@ -34,6 +34,9 @@ describe('Integrations API', function () {
 
         const exploreIntegration = _.find(res.body.integrations, {name: 'Test Core Integration'}); // from fixtures
         should.exist(exploreIntegration);
+
+        const selfServeMigrationIntegration = _.find(res.body.integrations, {name: 'Self-Serve Migration Integration'}); // from fixtures
+        should.exist(selfServeMigrationIntegration);
     });
 
     it('Can not read internal integration', async function () {
