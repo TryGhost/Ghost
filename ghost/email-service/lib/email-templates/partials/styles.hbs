@@ -373,7 +373,7 @@ figure blockquote p {
 .post-meta-center.view-online {
     display: inline-block;
     width: 100% !important;
-    text-align: center;
+    text-align: center !important;
 }
 
 .post-meta-center.view-online {
@@ -442,6 +442,43 @@ figure blockquote p {
     margin-bottom: 0;
 }
 
+.subscription-box {
+    padding: 24px;
+    background: #F4F5F6;
+    color: #15212A;
+    border-radius: 3px;
+}
+
+.subscription-box h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 16px;
+}
+
+.subscription-box p {
+    margin-bottom: 0;
+    color: #15212A !important;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45em;
+    text-decoration: none;
+}
+
+.subscription-box p a {
+    color: #15212A !important;
+    text-decoration: none;
+}
+
+.manage-subscription {
+    white-space: nowrap;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-align: right;
+    line-height: 1.45em;
+    vertical-align: bottom;
+    color: {{accentColor}};
+}
+
 .post-content {
     max-width: 600px !important;
     font-family: Georgia, serif;
@@ -459,6 +496,11 @@ figure blockquote p {
     color: #15212A;
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
+}
+
+.post-content.no-border,
+.post-content-sans-serif.no-border {
+    border-bottom: 0;
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
@@ -820,12 +862,12 @@ a[data-flickr-embed] img {
 .main {
     background: #ffffff;
     border-radius: 3px;
+    border-spacing: 20px 0;
     width: 100%;
 }
 
 .wrapper {
     box-sizing: border-box;
-    padding: 0 20px;
 }
 
 .content-block {
@@ -979,11 +1021,6 @@ a[data-flickr-embed] img {
         word-break: break-word !important;
     }
 
-    table.body .wrapper,
-    table.body .article {
-        padding: 0 10px !important;
-    }
-
     table.body .content {
         padding: 0 !important;
     }
@@ -994,6 +1031,7 @@ a[data-flickr-embed] img {
     }
 
     table.body .main {
+        border-spacing: 10px 0 !important;
         border-left-width: 0 !important;
         border-radius: 0 !important;
         border-right-width: 0 !important;
@@ -1068,6 +1106,31 @@ a[data-flickr-embed] img {
 
     table.body .feedback-button-mobile-text {
         font-size: 13px !important;
+    }
+
+    table.body .subscription-box {
+        padding: 24px 20px !important;
+    }
+
+    table.body .subscription-box h3 {
+        font-size: 14px !important;
+    }
+
+    table.body .subscription-box p,
+    table.body .subscription-box p span {
+        font-size: 13px !important;
+    }
+
+    table.body .subscription-details,
+    table.body .manage-subscription {
+        display: inline-block;
+        width: 100%;
+        text-align: left !important;
+        font-size: 13px !important;
+    }
+
+    table.body .subscription-details {
+        padding-bottom: 12px;
     }
 
     table.body .kg-bookmark-card {

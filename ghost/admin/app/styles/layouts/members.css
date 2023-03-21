@@ -2038,18 +2038,23 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: center;
     padding: 50px 0 40px;
 }
+
 .gh-members-emailpreview-title-left {
     align-items: flex-start;
 }
 
 .gh-members-emailpreview-title h2 {
+    margin: 0;
+    padding: 0 0 10px;
+    color: #15212A;    
     font-size: 4.2rem;
     line-height: 1.1em;
     font-weight: 700;
     text-align: center;
-    margin: 0;
-    padding: 0 0 10px;
-    color: #15212A;
+}
+
+.gh-members-emailpreview-title-left h2 {
+    text-align: left;
 }
 
 .gh-members-emailpreview-labs .gh-members-emailpreview-title h2 {
@@ -2147,6 +2152,10 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-content {
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
+}
+
+.gh-members-emailpreview-content.no-border {
+    border-bottom: 0;
 }
 
 .gh-members-emailpreview-content:first-child {
@@ -2260,6 +2269,11 @@ p.gh-members-import-errordetail:first-of-type {
     display: grid;
     gap: 20px;
     padding: 40px;
+    border-bottom: 1px solid #e5eff5;
+}
+
+.gh-members-emailpreview-feedback.no-border {
+    border-bottom: 0;
 }
 
 .gh-members-emailpreview-labs .gh-members-emailpreview-feedback {
@@ -2309,6 +2323,50 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: center;
     gap: 8px;
     padding: 7px 18px;
+}
+
+.gh-members-emailpreview-subscription-details {
+    padding: 24px;
+    background: #F4F5F6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1.3rem;
+    font-weight: 400;
+    border-radius: 3px;
+}
+
+.gh-members-emailpreview-subscription-details h4 {
+    font-size: 1.4rem;
+}
+
+.gh-members-emailpreview-subscription-details p {
+    margin: 0;
+}
+
+.gh-members-emailpreview-subscription-details p strong {
+    font-weight: 700;
+}
+
+a.gh-members-emailpreview-subscription-link {
+    align-self: flex-end;
+    white-space: nowrap;
+    width: 100%;
+    color: var(--accent-color);
+    font-weight: 500;
+    text-decoration: none;
+    text-align: right;
+}
+
+@media (max-width: 1000px) {
+    .gh-members-emailpreview-subscription-details .flex {
+        flex-direction: column;
+    }
+
+    a.gh-members-emailpreview-subscription-link {
+        align-self: flex-start;
+        padding-top: 12px;
+        text-align: left;
+    }
+
 }
 
 /* Custom tier member details */
