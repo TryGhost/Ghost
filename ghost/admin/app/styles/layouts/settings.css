@@ -2723,7 +2723,7 @@ p.theme-validation-details {
     display: inline-block;
     background: #f8e5b9;
     color: #983705;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 500;
     line-height: 1em;
     border-radius: 999px;
@@ -2759,7 +2759,7 @@ p.theme-validation-details {
     font-size: 2.6rem;
     font-weight: 600;
     text-align: center;
-    letter-spacing: -.1px;
+    letter-spacing: -.5px;
     margin: 20px 0 10px;
 }
 
@@ -2779,7 +2779,8 @@ p.theme-validation-details {
 
 .gh-stripe-connected-info p {
     margin: 0 10px 0 0;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
+    letter-spacing: -.1px;
 }
 
 .gh-btn-stripe-disconnect {
@@ -2810,7 +2811,7 @@ p.theme-validation-details {
 
 .gh-stripe-guide-container > p {
     text-transform: uppercase;
-    letter-spacing: .115em;
+    letter-spacing: .1em;
     font-weight: 500;
     margin-bottom: 20px;
 }
@@ -2856,7 +2857,7 @@ p.theme-validation-details {
     flex-direction: column;
     flex-grow: 1;
     flex-basis: 100%;
-    padding: 20px 15px;
+    padding: 20px;
     overflow: hidden;
     background-color: var(--white);
     border-top: 1px;
@@ -2874,11 +2875,12 @@ p.theme-validation-details {
 }
 
 .gh-stripe-guide-content-body h3 {
-    font-size: 1.6rem;
+    font-size: 1.7rem;
+    font-weight: 600;
 }
 
 .gh-stripe-guide-content-body p {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
 }
 
 .gh-stripe-guide-content-footer {
@@ -2903,6 +2905,11 @@ p.theme-validation-details {
     margin-left: 5px;
     margin-right: 6px;
     letter-spacing: -0.02em;
+}
+
+.gh-stripe-guide-content-footer p {
+    font-weight: 500;
+    color: #15171a;
 }
 
 .gh-stripe-guide-content-footer span {
