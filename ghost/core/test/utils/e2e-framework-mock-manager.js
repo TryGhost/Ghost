@@ -19,7 +19,8 @@ const originalMailServiceSend = mailService.GhostMailer.prototype.send;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
-const dnsPromises = require('dns').promises;
+const dns = require('dns');
+const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
 
 let fakedLabsFlags = {};
@@ -47,6 +48,14 @@ const disableNetwork = () => {
         sinon.stub(dnsPromises, 'lookup').callsFake(() => {
             return Promise.resolve({address: '123.123.123.123', family: 4});
         });
+    }
+
+    if (!dns.resolveMx.restore) {
+        // without this, Node will try and resolve the domain name but local DNS
+        // resolvers can take a while to timeout, which causes the tests to timeout
+        // `nodemailer-direct-transport` calls `dns.resolveMx`, so if we stub that
+        // function and return an empty array, we can avoid any real DNS lookups
+        sinon.stub(dns, 'resolveMx').yields(null, []);
     }
 
     // Allow localhost
