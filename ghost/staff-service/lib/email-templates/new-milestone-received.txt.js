@@ -3,7 +3,7 @@ module.exports = function (data) {
     return `
 Congratulations!
 
-${data.subject}"
+${data.subject}
 
 ---
 
