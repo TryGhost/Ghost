@@ -27,8 +27,14 @@ const EmojiPickerPortal = ({onEmojiClick, buttonRef}) => {
         <Portal>
             <div className='fixed z-10 mr-9 mt-3 rounded-md bg-white' data-testid="emoji-picker-container" style={{left: x, top: y}} onClick={handleClick}>
                 <div className='overflow-y-scroll rounded bg-white p-4 shadow-lg'>
-                    <EmojiPicker 
-                        onEmojiClick={onEmojiClick} 
+                    <EmojiPicker
+                        height={380}
+                        previewConfig={{
+                            showPreview: false
+                        }}
+                        searchPlaceholder="Search emojis..."
+                        width={380}
+                        onEmojiClick={onEmojiClick}
                     />
                 </div>
             </div>
