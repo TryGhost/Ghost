@@ -82,7 +82,6 @@ describe('Acceptance: Staff', function () {
             enableStripe(this.server);
             enableLabsFlag(this.server, 'webmentions');
             enableLabsFlag(this.server, 'webmentionEmails');
-            enableLabsFlag(this.server, 'milestoneEmails');
 
             admin = this.server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 

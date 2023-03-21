@@ -17,7 +17,6 @@ describe('Staff Service:', function () {
         mockManager.mockMail();
         mockManager.mockSlack();
         mockManager.mockSetting('title', 'The Weekly Roundup');
-        mockManager.mockLabsEnabled('milestoneEmails');
 
         sinon.stub(models.User, 'getEmailAlertUsers').resolves([{
             email: 'owner@ghost.org',

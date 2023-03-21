@@ -1,6 +1,5 @@
 const DomainEvents = require('@tryghost/domain-events');
 const config = require('../../../shared/config');
-const labs = require('../../../shared/labs');
 const logging = require('@tryghost/logging');
 
 class SlackNotificationsServiceWrapper {
@@ -48,7 +47,7 @@ class SlackNotificationsServiceWrapper {
         const hostSettings = config.get('hostSettings');
         const urlUtils = require('../../../shared/url-utils');
         const siteUrl = urlUtils.getSiteUrl();
-        const isEnabled = (labs.isSet('milestoneEmails') && hostSettings?.milestones?.enabled && hostSettings?.milestones?.url) ? true : false;
+        const isEnabled = !!(hostSettings?.milestones?.enabled && hostSettings?.milestones?.url);
         const webhookUrl = hostSettings?.milestones?.url;
 
         this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl});

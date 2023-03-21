@@ -60,22 +60,18 @@ module.exports = {
      * @returns {Promise<object>}
      */
     async run() {
-        const labs = require('../../../shared/labs');
+        const members = await this.api.checkMilestones('members');
+        let arr;
+        const stripeLiveEnabled = getStripeLiveEnabled();
 
-        if (labs.isSet('milestoneEmails')) {
-            const members = await this.api.checkMilestones('members');
-            let arr;
-            const stripeLiveEnabled = getStripeLiveEnabled();
-
-            if (stripeLiveEnabled) {
-                arr = await this.api.checkMilestones('arr');
-            }
-
-            return {
-                members,
-                arr
-            };
+        if (stripeLiveEnabled) {
+            arr = await this.api.checkMilestones('arr');
         }
+
+        return {
+            members,
+            arr
+        };
     },
 
     /**

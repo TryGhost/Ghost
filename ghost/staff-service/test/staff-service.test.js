@@ -121,10 +121,7 @@ describe('StaffService', function () {
         };
         let stubs;
         let labs = {
-            isSet: (flag) => {
-                if (flag === 'milestoneEmails') {
-                    return true;
-                }
+            isSet: () => {
                 return false;
             }
         };
@@ -341,10 +338,7 @@ describe('StaffService', function () {
                     urlUtils,
                     settingsHelpers,
                     labs: {
-                        isSet: (flag) => {
-                            if (flag === 'milestoneEmails') {
-                                return true;
-                            }
+                        isSet: () => {
                             return false;
                         }
                     }

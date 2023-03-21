@@ -78,7 +78,7 @@ class StaffService {
 
     /** @private */
     async handleEvent(type, event) {
-        if (type === MilestoneCreatedEvent && event.data.milestone && this.labs.isSet('milestoneEmails')) {
+        if (type === MilestoneCreatedEvent && event.data.milestone) {
             await this.emails.notifyMilestoneReceived(event.data);
         }
 

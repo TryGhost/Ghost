@@ -166,7 +166,6 @@ describe('Milestones Service', function () {
         });
         sinon.createSandbox();
         configUtils.set('milestones', milestonesConfig);
-        mockManager.mockLabsEnabled('milestoneEmails');
         mockManager.mockMail();
     });
 
@@ -295,17 +294,6 @@ describe('Milestones Service', function () {
         const arrMilestoneModel = await models.Milestone.findOne({value: 150, type: 'arr'});
 
         assert.equal(arrMilestoneModel, null);
-
-        assert(loggingStub.called);
-    });
-
-    it('Does not run when milestoneEmails labs flag is not set', async function () {
-        mockManager.mockLabsDisabled('milestoneEmails');
-
-        const resultPromise = milestonesService.initAndRun(fifteenDays);
-        await clock.tickAsync(fifteenDays);
-        const result = await resultPromise;
-        assert(result === undefined);
 
         assert(loggingStub.called);
     });
