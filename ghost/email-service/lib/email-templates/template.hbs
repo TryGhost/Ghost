@@ -121,7 +121,7 @@
                                             {{/if}}
                                         {{/if}}
                                         <tr class="post-content-row">
-                                            <td class="{{classes.body}}">
+                                            <td class="{{classes.body}}{{#if (and (not (or feedbackButtons newsletter.showCommentCta)) newsletter.showSubscriptionDetails)}} no-border{{/if}}">
                                                 <!-- POST CONTENT START -->
                                                 {{{html}}}
                                                 <!-- POST CONTENT END -->
@@ -139,7 +139,7 @@
 
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
-                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 4px 24px;" align="center">
+                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 0 24px;{{#unless newsletter.showSubscriptionDetails}} border-bottom: 1px solid #e5eff5;{{/unless}}" align="center">
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
@@ -176,20 +176,31 @@
 
                             {{#if newsletter.showSubscriptionDetails}}
                                 <tr>
-                                    <td>
+                                    <td class="subscription-box">
                                         <h3>Subscription details</h3>
-                                        <p>You are receiving this because you are a <strong data-gh-segment="status:-free">paid</strong><strong data-gh-segment="status:free">free</strong> subscriber to <span>{{site.title}}</span>.</p>
-                                        <p>Name: %%{name}%%</p>
-                                        <p>Email: %%{email}%%</p>
-                                        <p>Member since: %%{created_at}%%</p>
-                                        <p data-gh-segment="status:-free">Renewal date: todo</p>
+                                        <p style="margin-bottom: 16px;">
+                                            <span>You are receiving this because you are a <strong><span data-gh-segment="status:-free">paid</span><span data-gh-segment="status:free">free</span> subscriber</strong> to {{site.title}}.</span>
+                                            <span data-gh-segment="status:-free">Your subscription will renew on 20 March 2024.</span>
+                                        </p>
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td class="subscription-details">
+                                                    <p>Name: %%{name}%%</p>
+                                                    <p>Email: <a href="#">%%{email}%%</a></p>
+                                                    <p>Member since: %%{created_at}%%</p>
+                                                </td>
+                                                <td align="right" valign="bottom" class="manage-subscription">
+                                                    <a href="#"> Manage subscription &rarr;</a>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
                             {{/if}}
 
                             <tr>
                                 <td class="wrapper" align="center">
-                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #e5eff5; padding-top: 40px; padding-bottom: 30px;">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px; padding-bottom: 30px;">
                                         {{#if footerContent }}
                                             <tr><td class="footer">{{{footerContent}}}</td></tr>
                                         {{/if}}
