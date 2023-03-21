@@ -1,12 +1,9 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, isMac, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
 
 describe('Html card', async () => {
     let app;
     let page;
-
-    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
 
     beforeAll(async () => {
         ({app, page} = await startApp());
