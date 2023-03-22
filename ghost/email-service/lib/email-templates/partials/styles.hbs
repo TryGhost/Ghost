@@ -1316,6 +1316,11 @@ a[data-flickr-embed] img {
     display: none;
 }
 
+.latest-post-img-mobile img {
+    width: 100% !important;
+    height: auto !important; /* Make sure CSS ignores the height that is defined in HTML, but keep the aspect ratio from the width/height in HTML */
+}
+
 .latest-post p {
     margin: 0;
     padding: 0;

@@ -747,6 +747,7 @@ class EmailRenderer {
             for (const latestPost of data) {
                 // Please also adjust email-latest-posts-image if you make changes to the image width (100 x 2 = 200 -> should be in email-latest-posts-image)
                 const {href: featureImage, width: featureImageWidth, height: featureImageHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 120, 96);
+                const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
                 latestPosts.push({
                     title: latestPost.get('title'),
@@ -756,9 +757,16 @@ class EmailRenderer {
                         day: 'numeric'
                     }),
                     url: this.#getPostUrl(latestPost),
-                    featureImage,
-                    featureImageWidth,
-                    featureImageHeight
+                    featureImage: featureImage ? {
+                        src: featureImage,
+                        width: featureImageWidth,
+                        height: featureImageHeight
+                    } : null,
+                    featureImageMobile: featureImageMobile ? {
+                        src: featureImageMobile,
+                        width: featureImageMobileWidth,
+                        height: featureImageMobileHeight
+                    } : null
                 });
 
                 if (featureImage) {
