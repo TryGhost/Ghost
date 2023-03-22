@@ -7,6 +7,31 @@ const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    subscriptionStatus: {
+        free: 'You are currently subscribed to the free plan.',
+        expired: 'Your subscription has expired.',
+        canceled: 'Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.',
+        active: 'Your subscription will renew on {date}.',
+        trial: 'Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.',
+        complimentaryExpires: 'Your subscription will expire on {date}.',
+        complimentaryInfinite: ''
+    }
+};
+
+function formatDateLong(date, timezone) {
+    return DateTime.fromJSDate(date).setZone(timezone).setLocale('en-gb').toLocaleString({
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * @typedef {string|null} Segment
@@ -20,7 +45,20 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
  * @prop {string} uuid
  * @prop {string} email
  * @prop {string} name
+ * @prop {'free'|'paid'|'comped'} status
  * @prop {Date|null} createdAt This can be null if the member has been deleted for older email recipient rows
+ * @prop {MemberLikeSubscription[]} subscriptions Required to get trial end / next renewal date / expire at date for paid member
+ * @prop {MemberLikeTier[]} tiers Required to get the expiry date in case of a comped member
+ *
+ * @typedef {object} MemberLikeSubscription
+ * @prop {string} status
+ * @prop {boolean} cancel_at_period_end
+ * @prop {Date|null} trial_end_at
+ * @prop {Date} current_period_end
+ *
+ * @typedef {object} MemberLikeTier
+ * @prop {string} product_id
+ * @prop {Date|null} expiry_at
  */
 
 /**
@@ -330,7 +368,7 @@ class EmailRenderer {
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
      * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
      *
-     * @param {string} [uuid] post uuid
+     * @param {string} [uuid] member uuid
      * @param {Object} [options]
      * @param {string} [options.newsletterUuid] newsletter uuid
      * @param {boolean} [options.comments] Unsubscribe from comment emails
@@ -355,6 +393,81 @@ class EmailRenderer {
     }
 
     /**
+     * createManageAccountUrl
+     *
+     * @param {string} [uuid] member uuid
+     */
+    createManageAccountUrl(uuid) {
+        const siteUrl = this.#urlUtils.urlFor('home', true);
+        const url = new URL(siteUrl);
+        url.hash = '#/portal/account';
+
+        return url.href;
+    }
+
+    /**
+     * @param {MemberLike} member
+     * @returns {string}
+     */
+    getMemberStatusText(member) {
+        if (member.status === 'free') {
+            // Not really used, but as a backup
+            return tpl(messages.subscriptionStatus.free);
+        }
+
+        // Do we have an active subscription?
+        if (member.status === 'paid') {
+            let activeSubscription = member.subscriptions.find((subscription) => {
+                return subscription.status === 'active';
+            }) ?? member.subscriptions.find((subscription) => {
+                return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.status);
+            });
+
+            if (!activeSubscription && !member.tiers.length) {
+                // No subscription?
+                return tpl(messages.subscriptionStatus.expired);
+            }
+
+            if (!activeSubscription) {
+                if (!member.tiers[0]?.expiry_at) {
+                    return tpl(messages.subscriptionStatus.complimentaryInfinite);
+                }
+                // Create one manually that is expiring
+                activeSubscription = {
+                    cancel_at_period_end: true,
+                    current_period_end: member.tiers[0].expiry_at,
+                    status: 'active',
+                    trial_end_at: null
+                };
+            }
+            const timezone = this.#settingsCache.get('timezone');
+
+            // Translate to a human readable string
+            if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
+                const date = formatDateLong(activeSubscription.trial_end_at, timezone);
+                return tpl(messages.subscriptionStatus.trial, {date});
+            }
+
+            const date = formatDateLong(activeSubscription.current_period_end, timezone);
+            if (activeSubscription.cancel_at_period_end) {
+                return tpl(messages.subscriptionStatus.canceled, {date});
+            }
+
+            return tpl(messages.subscriptionStatus.active, {date});
+        }
+
+        const expires = member.tiers[0]?.expiry_at ?? null;
+
+        if (expires) {
+            const timezone = this.#settingsCache.get('timezone');
+            const date = formatDateLong(expires, timezone);
+            return tpl(messages.subscriptionStatus.complimentaryExpires, {date});
+        }
+
+        return tpl(messages.subscriptionStatus.complimentaryInfinite);
+    }
+
+    /**
      * Note that we only look in HTML because plaintext and HTML are essentially the same content
      * @returns {ReplacementDefinition[]}
      */
@@ -364,6 +477,12 @@ class EmailRenderer {
                 id: 'unsubscribe_url',
                 getValue: (member) => {
                     return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                }
+            },
+            {
+                id: 'manage_account_url',
+                getValue: (member) => {
+                    return this.createManageAccountUrl(member.uuid);
                 }
             },
             {
@@ -394,11 +513,22 @@ class EmailRenderer {
                 id: 'created_at',
                 getValue: (member) => {
                     const timezone = this.#settingsCache.get('timezone');
-                    return member.createdAt ? DateTime.fromJSDate(member.createdAt).setZone(timezone).setLocale('en-gb').toLocaleString({
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }) : '';
+                    return member.createdAt ? formatDateLong(member.createdAt, timezone) : '';
+                }
+            },
+            {
+                id: 'status',
+                getValue: (member) => {
+                    if (member.status === 'comped') {
+                        return 'complimentary';
+                    }
+                    return member.status;
+                }
+            },
+            {
+                id: 'status_text',
+                getValue: (member) => {
+                    return this.getMemberStatusText(member);
                 }
             }
         ];
@@ -406,10 +536,6 @@ class EmailRenderer {
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
         const REPLACEMENT_STRING_REGEX = /^(?<recipientProperty>\w+?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?$/;
-
-        function escapeRegExp(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
 
         // Stores the definitions that we are actually going to use
         const replacements = [];
