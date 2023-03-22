@@ -1,3 +1,4 @@
 module.exports = {
-    PostsService: require('./lib/PostsService')
+    PostsService: require('./lib/PostsService'),
+    PostsExporter: require('./lib/PostsExporter')
 };
