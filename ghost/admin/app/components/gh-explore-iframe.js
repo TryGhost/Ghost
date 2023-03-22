@@ -22,8 +22,7 @@ export default class GhExploreIframe extends Component {
         // Only begin setup when Explore window is toggled open
         // to avoid unnecessary loading of assets
         if (this.explore.exploreWindowOpen) {
-            console.log('Rebuild');
-            this.explore.getExploreIframe().src = this.explore.getIframeURL();
+            this.explore.getExploreIframe().src = this.explore.iframeURL;
         }
     }
 
@@ -34,7 +33,7 @@ export default class GhExploreIframe extends Component {
         }
 
         // only process messages coming from the explore iframe
-        if (event?.data && this.explore.getIframeURL().includes(event?.origin)) {
+        if (event?.data && this.explore.iframeURL.includes(event?.origin)) {
             if (event.data?.request === 'apiUrl') {
                 this._handleUrlRequest();
             }
