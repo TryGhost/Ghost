@@ -1,5 +1,5 @@
 const statsService = require('../../../../core/server/services/stats');
-const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const moment = require('moment');
 require('should');
 const nock = require('nock');
@@ -87,6 +87,11 @@ describe('MRR Stats Service', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
+        mockManager.mockMail();
+    });
+
+    after(async function () {
+        mockManager.restore();
     });
 
     afterEach(function () {

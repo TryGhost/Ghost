@@ -30,6 +30,7 @@ describe('Stats API', function () {
 
     beforeEach(async function () {
         mockStripe();
+        mockManager.mockMail();
     });
 
     afterEach(async function () {
