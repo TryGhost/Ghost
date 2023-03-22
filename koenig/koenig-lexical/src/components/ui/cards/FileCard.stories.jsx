@@ -42,6 +42,13 @@ const Template = ({display, ...args}) => (
                 <FileCard {...display} {...args} />
             </CardWrapper>
         </div>
+        <div className="dark bg-black py-10">
+            <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
+                <CardWrapper {...display} {...args}>
+                    <FileCard {...display} {...args} />
+                </CardWrapper>
+            </div>
+        </div>
     </div>
 );
 
