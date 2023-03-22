@@ -157,6 +157,25 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].getValue(member), 'Test User');
         });
 
+        it('returns hidden class for missing name', function () {
+            member.name = '';
+            const html = 'Hello %%{name_class}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{name_class\\}%%/g');
+            assert.equal(replacements[0].id, 'name_class');
+            assert.equal(replacements[0].getValue(member), 'hidden');
+        });
+
+        it('returns empty class for available name', function () {
+            const html = 'Hello %%{name_class}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{name_class\\}%%/g');
+            assert.equal(replacements[0].id, 'name_class');
+            assert.equal(replacements[0].getValue(member), '');
+        });
+
         it('returns correct email', function () {
             const html = 'Hello %%{email}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
