@@ -63,7 +63,22 @@ module.exports = {
              * @returns {Promise<string>}
              */
             async renderHTML(report, recipient) {
+                const unqiueMentions = {};
+
+                report?.mentions?.forEach((mention) => {
+                    if (unqiueMentions[mention.source]) {
+                        unqiueMentions[mention.source].count += 1;
+                        unqiueMentions[mention.source].hasMultiple = true;
+                    } else {
+                        unqiueMentions[mention.source] = {
+                            ...mention,
+                            count: 1
+                        };
+                    }
+                });
+
                 return staffService.api.emails.renderHTML('mention-report', {
+                    mentions: Object.values(unqiueMentions),
                     report: report,
                     recipient: recipient,
                     hasMoreMentions: report.mentions.length > 5
