@@ -752,17 +752,3 @@
         }
     }
 }
-
-.koenig-lexical .EmojiPickerReact.epr-main {
-    --epr-header-padding: 1px;
-    --epr-category-navigation-button-size: 24px;
-    --epr-category-label-text-color: var(--grey-900);
-    border: 0;
-    padding: 0;
-}
-
-.koenig-lexical .EmojiPickerReact .epr-emoji-category-label {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--grey-900);
-}
