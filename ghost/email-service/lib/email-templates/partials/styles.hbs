@@ -1112,6 +1112,32 @@ a[data-flickr-embed] img {
         font-size: 13px !important;
     }
 
+    table.body .latest-post a {
+        height: auto !important;
+    }
+
+    table.body .latest-post-img {
+        display: none !important;
+    }
+
+    table.body .latest-post-img-mobile {
+        display: inline-block !important;
+    }
+
+    table.body .latest-post-title {
+        display: inline-block !important;
+        width: 100%;
+    }
+
+    table.body .latest-post h4 {
+        padding: 4px 0 0;
+        font-size: 18px !important;
+    }
+
+    table.body .latest-post p {
+        font-size: 13px !important;
+    }
+
     table.body .subscription-box {
         padding: 24px 20px !important;
     }
@@ -1273,23 +1299,41 @@ a[data-flickr-embed] img {
 /* -------------------------------------
     LATEST POSTS TABLE
 ------------------------------------- */
-.latest-posts-table p {
+.latest-post {
+    padding: 8px 0;
+}
+
+.latest-post-img img,
+.latest-post-img-mobile img {
+    object-fit: cover;
+}
+
+.latest-post-img-mobile {
+    display: none;
+}
+
+.latest-post p {
     margin: 0;
     padding: 0;
+    color: #738a94;
+    font-size: 14px;
+    font-weight: 400;
 }
 
-.latest-posts-table td {
-    padding: 10px 0;
-    vertical-align: center;
-}
-
-.latest-posts-table h4 {
+.latest-post h4 {
     margin: 0;
-    padding: 0;
+    padding: 12px 0 4px;
+    font-size: 19px;
+    font-weight: 700;
+    
 }
 
-.latest-posts-table a {
+.latest-post a {
+    display: block;
+    height: 96px;
+    overflow: hidden;
     color: inherit;
+    text-decoration: none;
 }
 
 </style>
