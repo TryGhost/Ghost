@@ -1545,6 +1545,7 @@ describe('Email renderer', function () {
                     {
                         featureImage: 'http://example.com/image.jpg',
                         featureImageWidth: 0,
+                        featureImageHeight: null,
                         publishedAt: '1 Jan 2018',
                         title: 'Test Post 1',
                         url: 'http://example.com'
@@ -1552,6 +1553,7 @@ describe('Email renderer', function () {
                     {
                         featureImage: null,
                         featureImageWidth: 0,
+                        featureImageHeight: null,
                         publishedAt: '1 Jan 2018',
                         title: 'Test Post 2',
                         url: 'http://example.com'
@@ -1559,6 +1561,7 @@ describe('Email renderer', function () {
                     {
                         featureImage: null,
                         featureImageWidth: 0,
+                        featureImageHeight: null,
                         publishedAt: DateTime.local().setZone('UTC').setLocale('en-gb').toLocaleString({
                             year: 'numeric',
                             month: 'short',
@@ -1619,7 +1622,8 @@ describe('Email renderer', function () {
                 imageSize: {
                     getImageSizeFromUrl() {
                         return {
-                            width: 2000
+                            width: 2000,
+                            height: 1000
                         };
                     }
                 },
@@ -1631,7 +1635,30 @@ describe('Email renderer', function () {
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png');
             assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
             assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200/2017/01/02/example.png');
+        });
+
+        it('Limits width and height of local images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage(url) {
+                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png', 600, 600);
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 600);
+            assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200h1200/2017/01/02/example.png');
         });
 
         it('Ignores and logs errors', async function () {
@@ -1670,7 +1697,30 @@ describe('Email renderer', function () {
             });
             const response = await emailRenderer.limitImageWidth('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
             assert.equal(response.width, 600);
+            assert.equal(response.height, null);
             assert.equal(response.href, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=1200');
+        });
+
+        it('Limits width and height of unsplash images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage(url) {
+                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000', 600, 600);
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 600);
+            assert.equal(response.href, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=1200&h=1200');
         });
 
         it('Does not increase width of images', async function () {
