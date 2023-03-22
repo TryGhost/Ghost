@@ -121,7 +121,7 @@
                                             {{/if}}
                                         {{/if}}
                                         <tr class="post-content-row">
-                                            <td class="{{classes.body}}{{#if (and (not (or feedbackButtons newsletter.showCommentCta)) newsletter.showSubscriptionDetails)}} no-border{{/if}}">
+                                            <td class="{{classes.body}}{{#if (and (not (or feedbackButtons newsletter.showCommentCta latestPosts.length)) newsletter.showSubscriptionDetails)}} no-border{{/if}}">
                                                 <!-- POST CONTENT START -->
                                                 {{{html}}}
                                                 <!-- POST CONTENT END -->
@@ -139,7 +139,7 @@
 
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
-                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 0 24px;{{#unless newsletter.showSubscriptionDetails}} border-bottom: 1px solid #e5eff5;{{/unless}}" align="center">
+                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 0 24px;{{#unless (and (not latestPosts.length) newsletter.showSubscriptionDetails)}} border-bottom: 1px solid #e5eff5;{{/unless}}" align="center">
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
@@ -168,7 +168,7 @@
 
                              {{#if latestPosts.length}}
                                 <tr>
-                                    <td>
+                                    <td style="padding: 24px 0;{{#unless newsletter.showSubscriptionDetails}} border-bottom: 1px solid #e5eff5;{{/unless}}">
                                         {{> latestPosts}}
                                     </td>
                                 </tr>
