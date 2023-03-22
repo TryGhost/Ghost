@@ -268,6 +268,32 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-post a {
+    height: auto !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post h4 {
+    padding: 4px 0 0;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p {
+    font-size: 13px !important;
+  }
+
   table.body .subscription-box {
     padding: 24px 20px !important;
   }
@@ -654,7 +680,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "20881",
+  "content-length": "21371",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -833,6 +859,32 @@ table.body .footer a {
   }
 
   table.body .feedback-button-mobile-text {
+    font-size: 13px !important;
+  }
+
+  table.body .latest-post a {
+    height: auto !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post h4 {
+    padding: 4px 0 0;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p {
     font-size: 13px !important;
   }
 
@@ -1242,7 +1294,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25704",
+  "content-length": "26194",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1452,6 +1504,32 @@ table.body .footer a {
   }
 
   table.body .feedback-button-mobile-text {
+    font-size: 13px !important;
+  }
+
+  table.body .latest-post a {
+    height: auto !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post h4 {
+    padding: 4px 0 0;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p {
     font-size: 13px !important;
   }
 
@@ -1848,7 +1926,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "20647",
+  "content-length": "21137",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2390,6 +2468,32 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-post a {
+    height: auto !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post h4 {
+    padding: 4px 0 0;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p {
+    font-size: 13px !important;
+  }
+
   table.body .subscription-box {
     padding: 24px 20px !important;
   }
@@ -2793,7 +2897,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "21139",
+  "content-length": "21629",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3361,6 +3465,32 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-post a {
+    height: auto !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post h4 {
+    padding: 4px 0 0;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p {
+    font-size: 13px !important;
+  }
+
   table.body .subscription-box {
     padding: 24px 20px !important;
   }
@@ -3764,7 +3894,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "21139",
+  "content-length": "21629",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

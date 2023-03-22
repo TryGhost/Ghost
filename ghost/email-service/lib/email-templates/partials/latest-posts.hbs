@@ -1,30 +1,40 @@
-<h3>Latest</h3>
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="latest-posts-table">
-    {{#each latestPosts}}
+{{#each latestPosts}}
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
         <tr>
-            {{#if ../latestPostsHasImages}}
-                <td width="140"> {{!-- maximum width of image + 20px padding --}}
-                    {{#if featureImage}}
-                        <a href="{{url}}">
-                            <img
-                                src="{{featureImage}}"
-                                {{#if featureImageWidth }}
-                                    width="{{featureImageWidth}}"
+            <td class="latest-post">
+                <a href="{{url}}">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            {{#if ../latestPostsHasImages}}
+                                {{#if featureImage}}
+                                    <td width="140" class="latest-post-img"> {{!-- maximum width of image + 20px padding --}}
+                                        <img
+                                            src="{{featureImage}}"
+                                            {{#if featureImageWidth }}
+                                                width="{{featureImageWidth}}"
+                                            {{/if}}
+                                            {{#if featureImageHeight }}
+                                                height="{{featureImageHeight}}"
+                                            {{/if}}
+                                        />
+                                    </td>
+                                    <td width="100%" class="latest-post-img-mobile">
+                                        <img
+                                            src="{{featureImage}}"
+                                            width="100%"
+                                            height="240"
+                                        />
+                                    </td>
                                 {{/if}}
-                                {{#if featureImageHeight }}
-                                    height="{{featureImageHeight}}"
-                                {{/if}}
-                            />
-                        </a>
-                    {{/if}}
-                </td>
-            {{/if}}
-            <td>
-                <h4>
-                    <a href="{{url}}">{{title}}</a>
-                </h4>
-                <p><a href="{{url}}">{{publishedAt}}</a></p>
+                            {{/if}}
+                            <td valign="top" align="left" class="latest-post-title">
+                                <h4>{{title}}</h4>
+                                <p>{{publishedAt}}</p>
+                            </td>
+                        </tr>
+                    </table>
+                </a>
             </td>
         </tr>
-    {{/each}}
-</table>
+    </table>
+{{/each}}
