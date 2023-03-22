@@ -33,7 +33,9 @@
                             {{/if}}
                             <td valign="top" align="left" class="latest-post-title">
                                 <h4>{{title}}</h4>
-                                <p>{{publishedAt}}</p>
+                                {{#if excerpt}}
+                                    <p>{{excerpt}}</p>
+                                {{/if}}
                             </td>
                         </tr>
                     </table>
