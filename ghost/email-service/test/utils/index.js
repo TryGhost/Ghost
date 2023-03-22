@@ -12,7 +12,10 @@ const createModel = (propertiesAndRelations) => {
             }
             if (Array.isArray(propertiesAndRelations[relation])) {
                 return Promise.resolve({
-                    models: propertiesAndRelations[relation]
+                    models: propertiesAndRelations[relation],
+                    toJSON: () => {
+                        return propertiesAndRelations[relation].map(m => m.toJSON());
+                    }
                 });
             }
             return Promise.resolve(propertiesAndRelations[relation]);
@@ -23,6 +26,13 @@ const createModel = (propertiesAndRelations) => {
             }
             if (!propertiesAndRelations.loaded.includes(relation)) {
                 throw new Error(`Model.related('${relation}') was used on a test model that didn't explicitly loaded that relation.`);
+            }
+            if (Array.isArray(propertiesAndRelations[relation])) {
+                const arr = [...propertiesAndRelations[relation]];
+                arr.toJSON = () => {
+                    return arr.map(m => m.toJSON());
+                };
+                return arr;
             }
             return propertiesAndRelations[relation];
         },

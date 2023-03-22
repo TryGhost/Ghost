@@ -1034,5 +1034,24 @@ describe('Batch sending tests', function () {
             // undo
             await models.Newsletter.edit({show_comment_cta: true}, {id: defaultNewsletter.id});
         });
+
+        it('Shows subscription details box', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
+
+            const {html} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            });
+
+            // Currently the link is not present in plaintext version (because no text)
+            assert.equal(html.match(/#\/portal\/account/g).length, 1, 'Subscription details box should contain a link to the account page');
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
+        });
     });
 });

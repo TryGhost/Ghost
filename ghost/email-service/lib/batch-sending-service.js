@@ -497,14 +497,21 @@ class BatchSendingService {
      * @returns {Promise<MemberLike[]>}
      */
     async getBatchMembers(batchId) {
-        const models = await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member']});
+        const models = await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
         return models.map((model) => {
+            // Map subscriptions
+            const subscriptions = model.related('member')?.related('stripeSubscriptions')?.toJSON() ?? [];
+            const tiers = model.related('member')?.related('products')?.toJSON() ?? [];
+
             return {
                 id: model.get('member_id'),
                 uuid: model.get('member_uuid'),
                 email: model.get('member_email'),
                 name: model.get('member_name'),
-                createdAt: model.related('member')?.get('created_at') ?? null
+                createdAt: model.related('member')?.get('created_at') ?? null,
+                status: model.related('member')?.get('status') ?? 'free',
+                subscriptions,
+                tiers
             };
         });
     }

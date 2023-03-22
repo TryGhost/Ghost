@@ -179,18 +179,18 @@
                                     <td class="subscription-box">
                                         <h3>Subscription details</h3>
                                         <p style="margin-bottom: 16px;">
-                                            <span>You are receiving this because you are a <strong><span data-gh-segment="status:-free">paid</span><span data-gh-segment="status:free">free</span> subscriber</strong> to {{site.title}}.</span>
-                                            <span data-gh-segment="status:-free">Your subscription will renew on 20 March 2024.</span>
+                                            <span>You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {{site.title}}.</span>
+                                            <span data-gh-segment="status:-free">%%{status_text}%%</span>
                                         </p>
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
                                                 <td class="subscription-details">
                                                     <p>Name: %%{name}%%</p>
-                                                    <p>Email: <a href="#">%%{email}%%</a></p>
+                                                    <p>Email: <a href="mailto:%%{email}%%">%%{email}%%</a></p>
                                                     <p>Member since: %%{created_at}%%</p>
                                                 </td>
                                                 <td align="right" valign="bottom" class="manage-subscription">
-                                                    <a href="#"> Manage subscription &rarr;</a>
+                                                    <a href="%%{manage_account_url}%%"> Manage subscription &rarr;</a>
                                                 </td>
                                             </tr>
                                         </table>

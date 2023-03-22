@@ -80,7 +80,7 @@ describe('Email renderer', function () {
         beforeEach(function () {
             emailRenderer = new EmailRenderer({
                 urlUtils: {
-                    urlFor: () => 'http://example.com/subdirectory'
+                    urlFor: () => 'http://example.com/subdirectory/'
                 },
                 labs: {
                     isSet: () => true
@@ -101,7 +101,8 @@ describe('Email renderer', function () {
                 uuid: 'myuuid',
                 name: 'Test User',
                 email: 'test@example.com',
-                createdAt: new Date(2023, 2, 13, 12, 0)
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
             };
         });
 
@@ -165,6 +166,43 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].getValue(member), 'test@example.com');
         });
 
+        it('returns correct status', function () {
+            const html = 'Hello %%{status}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
+            assert.equal(replacements[0].id, 'status');
+            assert.equal(replacements[0].getValue(member), 'free');
+        });
+
+        it('returns mapped complimentary status', function () {
+            member.status = 'comped';
+            const html = 'Hello %%{status}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
+            assert.equal(replacements[0].id, 'status');
+            assert.equal(replacements[0].getValue(member), 'complimentary');
+        });
+
+        it('returns manage_account_url', function () {
+            const html = 'Hello %%{manage_account_url}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{manage_account_url\\}%%/g');
+            assert.equal(replacements[0].id, 'manage_account_url');
+            assert.equal(replacements[0].getValue(member), 'http://example.com/subdirectory/#/portal/account');
+        });
+
+        it('returns status_text', function () {
+            const html = 'Hello %%{status_text}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status_text\\}%%/g');
+            assert.equal(replacements[0].id, 'status_text');
+            assert.equal(replacements[0].getValue(member), 'You are currently subscribed to the free plan.');
+        });
+
         it('returns correct createdAt', function () {
             const html = 'Hello %%{created_at}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
@@ -220,6 +258,213 @@ describe('Email renderer', function () {
 
             // In case of empty name
             assert.equal(replacements[2].getValue({name: ''}), '');
+        });
+    });
+
+    describe('getMemberStatusText', function () {
+        let emailRenderer;
+
+        beforeEach(function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                    }
+                }
+            });
+        });
+
+        it('Returns for free member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'You are currently subscribed to the free plan.');
+        });
+
+        it('Returns for active paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'active',
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription will renew on 13 March 2023.');
+        });
+
+        it('Returns for canceled paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'active',
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: true
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription has been canceled and will expire on 13 March 2023. You can resume your subscription via your account settings.');
+        });
+
+        it('Returns for expired paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'canceled',
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: true
+                    }
+                ],
+                tiers: []
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription has expired.');
+        });
+
+        it('Returns for trialing paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'trialing',
+                        trial_end_at: new Date(2050, 2, 13, 12, 0),
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ],
+                tiers: []
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your free trial ends on 13 March 2050, at which time you will be charged the regular price. You can always cancel before then.');
+        });
+
+        it('Returns for infinite complimentary member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'comped',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: null
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, '');
+        });
+
+        it('Returns for expiring complimentary member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'comped',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: new Date(2050, 2, 13, 12, 0)
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription will expire on 13 March 2050.');
+        });
+
+        it('Returns for a paid member without subscriptions', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: new Date(2050, 2, 13, 12, 0)
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription has been canceled and will expire on 13 March 2050. You can resume your subscription via your account settings.');
+        });
+
+        it('Returns for an infinte paid member without subscriptions', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: null
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, '');
         });
     });
 
