@@ -259,7 +259,7 @@ export default class StripeSettingsForm extends Component {
         yield this.ajax.delete(url);
         yield this.settings.reload();
 
-        this.args.reset();
+        this.args.reset?.();
         this.args.onDisconnected?.();
     }
 
