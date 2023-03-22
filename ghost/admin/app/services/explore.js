@@ -23,6 +23,21 @@ export default class ExploreService extends Service {
         return url.replace(/\/$/, '');
     }
 
+    get iframeURL() {
+        let url = this.exploreUrl;
+
+        if (window.location.hash && window.location.hash.includes(this.exploreRouteRoot)) {
+            let destinationRoute = window.location.hash.replace(this.exploreRouteRoot, '');
+
+            // Connect is an Ember route, do not use it as iframe src
+            if (destinationRoute && !destinationRoute.includes('connect')) {
+                url += destinationRoute.replace(/^\//, '');
+            }
+        }
+
+        return url;
+    }
+
     constructor() {
         super(...arguments);
 
@@ -51,21 +66,6 @@ export default class ExploreService extends Service {
                 window.history.replaceState(window.history.state, '', exploreRoute);
             }
         }
-    }
-
-    getIframeURL() {
-        let url = this.exploreUrl;
-
-        if (window.location.hash && window.location.hash.includes(this.exploreRouteRoot)) {
-            let destinationRoute = window.location.hash.replace(this.exploreRouteRoot, '');
-
-            // Connect is an Ember route, do not use it as iframe src
-            if (destinationRoute && !destinationRoute.includes('connect')) {
-                url += destinationRoute.replace(/^\//, '');
-            }
-        }
-
-        return url;
     }
 
     // Sends a route update to a child route in the BMA, because we can't control
@@ -104,7 +104,7 @@ export default class ExploreService extends Service {
         // Begin loading the iframe and setting the src if it's not already set
         this.ensureIframeIsLoaded();
 
-        // Ensures correct "getIframeURL" calculation when syncing iframe location
+        // Ensures correct iframe URL calculation when syncing iframe location
         // in toggleExploreWindow
         window.location.hash = '/explore';
 
@@ -114,7 +114,7 @@ export default class ExploreService extends Service {
 
     ensureIframeIsLoaded() {
         if (this.getExploreIframe() && !this.getExploreIframe()?.src) {
-            this.getExploreIframe().src = this.getIframeURL();
+            this.getExploreIframe().src = this.iframeURL;
         }
     }
 
