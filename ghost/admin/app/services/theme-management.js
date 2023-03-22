@@ -122,7 +122,7 @@ export default class ThemeManagementService extends Service {
 
                     if (!isEmpty(warnings) || !isEmpty(errors)) {
                         resultModal = this.modals.open('modals/design/theme-errors', {
-                            title: 'Activation successful',
+                            title: 'Activation <span class="green">successful</span>',
                             canActivate: true,
                             warnings,
                             errors
