@@ -873,13 +873,13 @@ class EmailRenderer {
                 const size = await this.#imageSize.getImageSizeFromUrl(href);
 
                 if (size.width >= visibleWidth) {
-                    // keep original image, just set a fixed width
-                    size.width = visibleWidth;
-
                     if (!visibleHeight) {
                         // Keep aspect ratio
                         size.height = Math.round(size.height * (visibleWidth / size.width));
                     }
+
+                    // keep original image, just set a fixed width
+                    size.width = visibleWidth;
                 }
 
                 if (visibleHeight && size.height >= visibleHeight) {
