@@ -286,9 +286,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -865,9 +864,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -1430,9 +1428,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -1995,9 +1992,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -2560,9 +2556,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -3083,9 +3078,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -4722,9 +4716,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -5387,9 +5380,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -6537,9 +6529,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -7159,9 +7150,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
@@ -7726,9 +7716,8 @@ table.body figcaption a {
   }
 }
 @media all {
-  .latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important;
+  .subscription-details p.hidden {
+    display: none !important;
   }
 
   .ExternalClass {
