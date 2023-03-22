@@ -18,6 +18,16 @@ export default class GhExploreIframe extends Component {
     }
 
     @action
+    setup() {
+        // Only begin setup when Explore window is toggled open
+        // to avoid unnecessary loading of assets
+        if (this.explore.exploreWindowOpen) {
+            console.log('Rebuild');
+            this.explore.getExploreIframe().src = this.explore.getIframeURL();
+        }
+    }
+
+    @action
     async handleIframeMessage(event) {
         if (this.isDestroyed || this.isDestroying) {
             return;
