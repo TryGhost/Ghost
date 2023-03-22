@@ -6,9 +6,10 @@
 .koenig-lexical {
     > * {
         font-size: 1.7rem;
-        font-weight: 300;
+        font-weight: 400;
         letter-spacing: 0.1px;
         color: var(--grey-900);
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;

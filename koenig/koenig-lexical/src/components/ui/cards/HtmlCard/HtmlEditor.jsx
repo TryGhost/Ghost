@@ -15,7 +15,7 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
 
     const editorLightCSS = EditorView.theme({
         '&.cm-editor': {
-            background: '#F4F5F6'
+            background: 'transparent'
         },
         '&.cm-focused': {
             outline: '0'
@@ -37,7 +37,7 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
             minHeight: '170px'
         },
         '&.cm-editor .cm-lineNumbers': {
-            padding: '0 0 0 5px'
+            padding: '0'
         },
         '&.cm-editor .cm-foldGutter': {
             width: '0'
@@ -51,27 +51,92 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
         },
         '&.cm-editor .cm-activeLine, &.cm-editor .cm-activeLineGutter': {
             background: 'none'
+        },
+        '&.cm-editor .cm-cursor, &.cm-editor .cm-dropCursor': {
+            borderLeft: '1.2px solid black'
         }
     });
 
-    const editorHighlightStyle = HighlightStyle.define([
+    const editorDarkCSS = EditorView.theme({
+        '&.cm-editor': {
+            background: 'transparent'
+        },
+        '&.cm-focused': {
+            outline: '0'
+        },
+        '&.cm-editor .cm-content': {
+            padding: '7px 0'
+        },
+        '&.cm-editor .cm-scroller': {
+            overflow: 'auto'
+        },
+        '&.cm-editor .cm-gutters': {
+            background: 'none',
+            border: 'none',
+            fontFamily: 'Consolas,Liberation Mono,Menlo,Courier,monospace;',
+            color: 'rgb(108, 118, 127);',
+            lineHeight: '2.25rem'
+        },
+        '&.cm-editor .cm-gutter': {
+            minHeight: '170px'
+        },
+        '&.cm-editor .cm-lineNumbers': {
+            padding: '0'
+        },
+        '&.cm-editor .cm-foldGutter': {
+            width: '0'
+        },
+        '&.cm-editor .cm-line': {
+            padding: '0 .8rem',
+            color: 'rgb(210, 215, 218)',
+            fontFamily: 'Consolas,Liberation Mono,Menlo,Courier,monospace;',
+            fontSize: '1.6rem',
+            lineHeight: '2.25rem'
+        },
+        '&.cm-editor .cm-activeLine, &.cm-editor .cm-activeLineGutter': {
+            background: 'none'
+        },
+        '&.cm-editor .cm-cursor, &.cm-editor .cm-dropCursor': {
+            borderLeft: '1.2px solid white'
+        }
+        
+    });
+
+    const editorLightHighlightStyle = HighlightStyle.define([
         {tag: t.keyword, color: '#5A5CAD', fontWeight: 'bold'},
         {tag: t.atom, color: '#6C8CD5'},
         {tag: t.number, color: '#116644'},
         {tag: t.definition(t.variableName), textDecoration: 'underline'},
         {tag: t.variableName, color: 'black'},
-        {tag: t.comment, color: '#0080FF', fontStyle: 'italic'},
-        {tag: [t.string, t.special(t.brace)], color: 'red'},
+        {tag: t.comment, color: '#0080FF', fontStyle: 'italic', background: 'rgba(0,0,0,.05)'},
+        {tag: [t.string, t.special(t.brace)], color: '#183691'},
         {tag: t.meta, color: 'yellow'},
-        {tag: t.bracket, color: '#cc7'},
-        {tag: t.tagName, color: '#3F7F7F'},
-        {tag: t.attributeName, color: '#7F007F'}
+        {tag: t.bracket, color: '#63a35c'},
+        {tag: t.tagName, color: '#63a35c'},
+        {tag: t.attributeName, color: '#795da3'}
     ]);
 
+    const editorDarkHighlightStyle = HighlightStyle.define([
+        {tag: t.keyword, color: '#5A5CAD', fontWeight: 'bold'},
+        {tag: t.atom, color: '#6C8CD5'},
+        {tag: t.number, color: '#116644'},
+        {tag: t.definition(t.variableName), textDecoration: 'underline'},
+        {tag: t.variableName, color: 'black'},
+        {tag: t.comment, color: '#0080FF', fontStyle: 'italic', background: 'rgba(0,0,0,.05)'},
+        {tag: [t.string, t.special(t.brace)], color: '#183691'},
+        {tag: t.meta, color: 'yellow'},
+        {tag: t.bracket, color: '#63a35c'},
+        {tag: t.tagName, color: '#63a35c'},
+        {tag: t.attributeName, color: '#795da3'}
+    ]);
+
+    const editorCSS = darkMode ? editorDarkCSS : editorLightCSS;
+    const editorHighlightStyle = darkMode ? editorDarkHighlightStyle : editorLightHighlightStyle;
+    
     // Base extensions for the CodeMirror editor
     const extensions = [
         syntaxHighlighting(editorHighlightStyle), // customizes syntax highlighting rules
-        editorLightCSS, // customizes general editor appearance (does not include syntax highlighting)
+        editorCSS,
         lineNumbers(), // adds line numbers to the gutter
         minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
         keymap.of(standardKeymap), // add back in standardKeymap, which doesn't include Mod+Enter
