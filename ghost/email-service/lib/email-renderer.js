@@ -108,7 +108,7 @@ class EmailRenderer {
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
-     * @param {{getImageSizeFromUrl(url: string): Promise<{width: number}>}} dependencies.imageSize
+     * @param {{getImageSizeFromUrl(url: string): Promise<{width: number, height: number}>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
@@ -686,7 +686,7 @@ class EmailRenderer {
         }
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
-        const {href: postFeatureImage, width: postFeatureImageWidth} = await this.limitImageWidth(post.get('feature_image'));
+        const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
 
         const timezone = this.#settingsCache.get('timezone');
         const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
@@ -740,7 +740,7 @@ class EmailRenderer {
 
             for (const latestPost of data) {
                 // Please also adjust email-latest-posts-image if you make changes to the image width (100 x 2 = 200 -> should be in email-latest-posts-image)
-                const {href: featureImage, width: featureImageWidth} = await this.limitImageWidth(latestPost.get('feature_image'), 100);
+                const {href: featureImage, width: featureImageWidth, height: featureImageHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 120, 96);
 
                 latestPosts.push({
                     title: latestPost.get('title'),
@@ -751,7 +751,8 @@ class EmailRenderer {
                     }),
                     url: this.#getPostUrl(latestPost),
                     featureImage,
-                    featureImageWidth
+                    featureImageWidth,
+                    featureImageHeight
                 });
 
                 if (featureImage) {
@@ -780,6 +781,7 @@ class EmailRenderer {
                 publishedAt,
                 feature_image: postFeatureImage,
                 feature_image_width: postFeatureImageWidth,
+                feature_image_height: postFeatureImageHeight,
                 feature_image_alt: post.related('posts_meta')?.get('feature_image_alt'),
                 feature_image_caption: post.related('posts_meta')?.get('feature_image_caption')
             },
@@ -838,23 +840,33 @@ class EmailRenderer {
     /**
      * @private
      * Sets and limits the width of an image + returns the width
-     * @returns {Promise<{href: string, width: number}>}
+     * @returns {Promise<{href: string, width: number, height: number | null}>}
      */
-    async limitImageWidth(href, visibleWidth = 600) {
+    async limitImageWidth(href, visibleWidth = 600, visibleHeight = null) {
         if (!href) {
             return {
                 href,
-                width: 0
+                width: 0,
+                height: null
             };
         }
         if (isUnsplashImage(href)) {
             // Unsplash images have a minimum size so assuming 1200px is safe
             const unsplashUrl = new URL(href);
+            unsplashUrl.searchParams.delete('w');
+            unsplashUrl.searchParams.delete('h');
+
             unsplashUrl.searchParams.set('w', (visibleWidth * 2).toFixed(0));
+
+            if (visibleHeight) {
+                unsplashUrl.searchParams.set('h', (visibleHeight * 2).toFixed(0));
+                unsplashUrl.searchParams.set('fit', 'crop');
+            }
 
             return {
                 href: unsplashUrl.href,
-                width: visibleWidth
+                width: visibleWidth,
+                height: visibleHeight
             };
         } else {
             try {
@@ -863,19 +875,31 @@ class EmailRenderer {
                 if (size.width >= visibleWidth) {
                     // keep original image, just set a fixed width
                     size.width = visibleWidth;
+
+                    if (!visibleHeight) {
+                        // Keep aspect ratio
+                        size.height = Math.round(size.height * (visibleWidth / size.width));
+                    }
+                }
+
+                if (visibleHeight && size.height >= visibleHeight) {
+                    // keep original image, just set a fixed width
+                    size.height = visibleHeight;
                 }
 
                 if (this.#storageUtils.isLocalImage(href)) {
                     // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                     return {
-                        href: href.replace(/\/content\/images\//, '/content/images/size/w' + (visibleWidth * 2) + '/'),
-                        width: size.width
+                        href: href.replace(/\/content\/images\//, '/content/images/size/w' + (visibleWidth * 2) + (visibleHeight ? 'h' + (visibleHeight * 2) : '') + '/'),
+                        width: size.width,
+                        height: size.height
                     };
                 }
 
                 return {
                     href,
-                    width: size.width
+                    width: size.width,
+                    height: size.height
                 };
             } catch (err) {
                 // log and proceed. Using original header image without fixed width isn't fatal.
@@ -885,7 +909,8 @@ class EmailRenderer {
 
         return {
             href,
-            width: 0
+            width: 0,
+            height: null
         };
     }
 }
