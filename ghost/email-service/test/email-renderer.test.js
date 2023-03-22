@@ -1562,25 +1562,30 @@ describe('Email renderer', function () {
             assert.deepEqual(data.latestPosts,
                 [
                     {
-                        featureImage: 'http://example.com/image.jpg',
-                        featureImageWidth: 0,
-                        featureImageHeight: null,
                         publishedAt: '1 Jan 2018',
                         title: 'Test Post 1',
-                        url: 'http://example.com'
+                        url: 'http://example.com',
+                        featureImage: {
+                            src: 'http://example.com/image.jpg',
+                            width: 0,
+                            height: null
+                        },
+                        featureImageMobile: {
+                            src: 'http://example.com/image.jpg',
+                            width: 0,
+                            height: null
+                        }
                     },
                     {
                         featureImage: null,
-                        featureImageWidth: 0,
-                        featureImageHeight: null,
+                        featureImageMobile: null,
                         publishedAt: '1 Jan 2018',
                         title: 'Test Post 2',
                         url: 'http://example.com'
                     },
                     {
                         featureImage: null,
-                        featureImageWidth: 0,
-                        featureImageHeight: null,
+                        featureImageMobile: null,
                         publishedAt: DateTime.local().setZone('UTC').setLocale('en-gb').toLocaleString({
                             year: 'numeric',
                             month: 'short',

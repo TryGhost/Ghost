@@ -9,20 +9,24 @@
                                 {{#if featureImage}}
                                     <td width="140" class="latest-post-img"> {{!-- maximum width of image + 20px padding --}}
                                         <img
-                                            src="{{featureImage}}"
-                                            {{#if featureImageWidth }}
-                                                width="{{featureImageWidth}}"
+                                            src="{{featureImage.src}}"
+                                            {{#if featureImage.width }}
+                                                width="{{featureImage.width}}"
                                             {{/if}}
-                                            {{#if featureImageHeight }}
-                                                height="{{featureImageHeight}}"
+                                            {{#if featureImage.height }}
+                                                height="{{featureImage.height}}"
                                             {{/if}}
                                         />
                                     </td>
                                     <td width="100%" class="latest-post-img-mobile">
                                         <img
-                                            src="{{featureImage}}"
-                                            width="100%"
-                                            height="240"
+                                            src="{{featureImageMobile.src}}"
+                                            {{#if featureImageMobile.width }}
+                                                width="{{featureImageMobile.width}}"
+                                            {{/if}}
+                                            {{#if featureImageMobile.height }}
+                                                height="{{featureImageMobile.height}}"
+                                            {{/if}}
                                         />
                                     </td>
                                 {{/if}}
