@@ -21,7 +21,7 @@
     "build:prod": "yarn build --environment=production --silent",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
-    "lint:js": "eslint .",
+    "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
     "lint": "yarn lint:js && yarn lint:hbs"
   },
