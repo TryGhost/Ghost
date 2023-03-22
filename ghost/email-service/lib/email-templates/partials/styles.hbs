@@ -1246,6 +1246,11 @@ a[data-flickr-embed] img {
     PRESERVE THESE STYLES IN THE HEAD
 ------------------------------------- */
 @media all {
+    .latest-post-img-mobile img {
+        width: 100% !important;
+        height: auto !important; /* Make sure CSS ignores the height that is defined in HTML, but keep the aspect ratio from the width/height in HTML */
+    }
+
     .ExternalClass {
         width: 100%;
     }
@@ -1314,11 +1319,6 @@ a[data-flickr-embed] img {
 
 .latest-post-img-mobile {
     display: none;
-}
-
-.latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important; /* Make sure CSS ignores the height that is defined in HTML, but keep the aspect ratio from the width/height in HTML */
 }
 
 .latest-post p {
