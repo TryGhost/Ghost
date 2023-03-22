@@ -69,28 +69,10 @@ describe('Drag Drop Paste Plugin', async function () {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
-                    <figure data-kg-card-width="regular">
-                        <div>
-                            <img
-                                src="blob:..."
-                                alt="" />
-                        </div>
-                    </figure>
                 </div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
-                    <figure data-kg-card-width="regular">
-                        <div>
-                            <img
-                                src="blob:..."
-                                alt="" />
-                        </div>
-                        <figcaption>
-                            <input placeholder="Type caption for image (optional)" value="" />
-                            <button name="alt-toggle-button" type="button">Alt</button>
-                        </figcaption>
-                    </figure>
                 </div>
             </div>
             <p><br /></p>

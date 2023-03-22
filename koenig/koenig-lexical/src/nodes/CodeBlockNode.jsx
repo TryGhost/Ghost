@@ -63,7 +63,7 @@ export class CodeBlockNode extends BaseCodeBlockNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} openInEditMode={this.__openInEditMode} width={this.__cardWidth} wrapperStyle="code-card">
+            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth} wrapperStyle="code-card">
                 <CodeBlockNodeComponent
                     caption={this.__caption}
                     code={this.__code}

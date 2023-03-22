@@ -2,13 +2,8 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import UnsplashPlugin from '../components/ui/UnsplashPlugin';
 import {$createImageNode, INSERT_IMAGE_COMMAND, ImageNode} from '../nodes/ImageNode';
-import {
-    $getSelection,
-    $isNodeSelection,
-    $isRangeSelection,
-    COMMAND_PRIORITY_HIGH
-} from 'lexical';
-import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW} from 'lexical';
+import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {mergeRegister} from '@lexical/utils';
@@ -38,33 +33,21 @@ export const ImagePlugin = () => {
             editor.registerCommand(
                 INSERT_IMAGE_COMMAND,
                 async (dataset) => {
-                    const selection = $getSelection();
+                    const cardNode = $createImageNode(dataset);
 
-                    let focusNode;
-                    if ($isRangeSelection(selection)) {
-                        focusNode = selection.focus.getNode();
-                    } else if ($isNodeSelection(selection)) {
-                        focusNode = selection.getNodes()[0];
-                    } else {
-                        return false;
+                    // TODO: move selector handling to a KoenigSelectorPlugin and attach a command to it,
+                    // e.g. editor.dispatchCommand(OPEN_SELECTOR_COMMAND, {selector: 'unsplash', nodeKey: cardNode.getKey()});
+                    if (dataset?.triggerFileSelector === 'unsplash') {
+                        setSelectedKey(cardNode.getKey());
+                        setShowModal(true);
+                        setSelector('unsplash');
                     }
 
-                    if (focusNode !== null) {
-                        const imageNode = $createImageNode(dataset);
-
-                        // opens the unsplash selector
-                        if (dataset?.triggerFileSelector === 'unsplash') {
-                            setSelectedKey(imageNode.getKey());
-                            setShowModal(true);
-                            setSelector('unsplash');
-                        }
-
-                        $insertAndSelectNode({selectedNode: focusNode, newNode: imageNode});
-                    }
+                    editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
                     return true;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 INSERT_MEDIA_COMMAND,

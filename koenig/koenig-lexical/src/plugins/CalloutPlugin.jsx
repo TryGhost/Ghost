@@ -1,7 +1,7 @@
 import React from 'react';
 import {$createCalloutNode, CalloutNode, INSERT_CALLOUT_COMMAND} from '../nodes/CalloutNode';
-import {$getSelection, $isNodeSelection, $isRangeSelection, COMMAND_PRIORITY_HIGH} from 'lexical';
-import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {COMMAND_PRIORITY_LOW} from 'lexical';
+import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -17,24 +17,12 @@ export const CalloutPlugin = () => {
             editor.registerCommand(
                 INSERT_CALLOUT_COMMAND,
                 async (dataset) => {
-                    const selection = $getSelection();
-
-                    let focusNode;
-                    if ($isRangeSelection(selection)) {
-                        focusNode = selection.focus.getNode();
-                    } else if ($isNodeSelection(selection)) {
-                        focusNode = selection.getNodes()[0];
-                    } else {
-                        return false;
-                    }
-                    if (focusNode !== null) {
-                        const calloutNode = $createCalloutNode(dataset);
-                        $insertAndSelectNode({selectedNode: focusNode, newNode: calloutNode});
-                    }
+                    const cardNode = $createCalloutNode(dataset);
+                    editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
                     return true;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             )
         );
     });

@@ -72,7 +72,6 @@ function CalloutNodeComponent({nodeKey, text, hasEmoji, backgroundColor, emojiVa
                 handleColorChange={handleColorChange}
                 isEditing={isEditing}
                 nodeKey={nodeKey}
-                setEditing={setEditing}
                 setShowEmojiPicker={setShowEmojiPicker}
                 setText={setText}
                 showEmojiPicker={showEmojiPicker}

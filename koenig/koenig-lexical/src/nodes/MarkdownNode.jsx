@@ -49,23 +49,8 @@ export class MarkdownNode extends BaseMarkdownNode {
         return 'markdown';
     }
 
-    // transient properties used to control node behaviour
-    __openInEditMode = false;
-
-    constructor(dataset = {}, key) {
-        super(dataset, key);
-
-        const {_openInEditMode} = dataset;
-        this.__openInEditMode = _openInEditMode || false;
-    }
-
     getIcon() {
         return MarkdownCardIcon;
-    }
-
-    clearOpenInEditMode() {
-        const self = this.getWritable();
-        self.__openInEditMode = false;
     }
 
     decorate() {
@@ -73,7 +58,6 @@ export class MarkdownNode extends BaseMarkdownNode {
             <KoenigCardWrapper
                 IndicatorIcon={MarkdownIndicatorIcon}
                 nodeKey={this.getKey()}
-                openInEditMode={this.__openInEditMode}
                 width={this.__cardWidth}
                 wrapperStyle="wide"
             >

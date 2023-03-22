@@ -1230,7 +1230,7 @@ describe('Card behaviour', async () => {
             expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
             expect(await page.$('[data-kg-card-editing="false"]')).not.toBeNull();
 
-            // card is still able to re-enter edit mode with CMD+ETNER
+            // card is still able to re-enter edit mode with CMD+ENTER
             await page.keyboard.press('Meta+Enter');
 
             expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();

@@ -1,11 +1,7 @@
 import React from 'react';
 import {$createMarkdownNode, INSERT_MARKDOWN_COMMAND, MarkdownNode} from '../nodes/MarkdownNode';
-import {
-    $getSelection,
-    $isRangeSelection,
-    COMMAND_PRIORITY_HIGH
-} from 'lexical';
-import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {COMMAND_PRIORITY_HIGH} from 'lexical';
+import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -21,18 +17,8 @@ export const MarkdownPlugin = () => {
             editor.registerCommand(
                 INSERT_MARKDOWN_COMMAND,
                 async (dataset) => {
-                    const selection = $getSelection();
-
-                    if (!$isRangeSelection(selection)) {
-                        return false;
-                    }
-
-                    const focusNode = selection.focus.getNode();
-
-                    if (focusNode !== null) {
-                        const markdownNode = $createMarkdownNode({...dataset, _openInEditMode: true});
-                        $insertAndSelectNode({selectedNode: focusNode, newNode: markdownNode});
-                    }
+                    const cardNode = $createMarkdownNode(dataset);
+                    editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 
                     return true;
                 },

@@ -1,12 +1,7 @@
 import React from 'react';
 import {$createAudioNode, AudioNode, INSERT_AUDIO_COMMAND} from '../nodes/AudioNode';
-import {
-    $getSelection,
-    $isNodeSelection,
-    $isRangeSelection,
-    COMMAND_PRIORITY_HIGH
-} from 'lexical';
-import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW} from 'lexical';
+import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -23,25 +18,12 @@ export const AudioPlugin = () => {
             editor.registerCommand(
                 INSERT_AUDIO_COMMAND,
                 async (dataset) => {
-                    const selection = $getSelection();
-
-                    let focusNode;
-                    if ($isRangeSelection(selection)) {
-                        focusNode = selection.focus.getNode();
-                    } else if ($isNodeSelection(selection)) {
-                        focusNode = selection.getNodes()[0];
-                    } else {
-                        return false;
-                    }
-
-                    if (focusNode !== null) {
-                        const audioNode = $createAudioNode(dataset);
-                        $insertAndSelectNode({selectedNode: focusNode, newNode: audioNode});
-                    }
+                    const cardNode = $createAudioNode(dataset);
+                    editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
                     return true;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 INSERT_MEDIA_COMMAND,

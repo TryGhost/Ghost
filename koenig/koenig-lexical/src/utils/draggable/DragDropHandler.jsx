@@ -119,7 +119,7 @@ export class DragDropHandler {
                 const container = this.containers.find(c => c.element === containerElement);
                 this.sourceContainer = container;
 
-                if (container.isDragEnabled) {
+                if (container?.isDragEnabled) {
                     this._waitForDragStart(event).then(() => {
                         // stop the drag creating a selection
                         window.getSelection().removeAllRanges();

@@ -1,8 +1,11 @@
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$createLinkNode} from '@lexical/link';
 import {
+    $createNodeSelection,
     $createParagraphNode,
     $createTextNode,
+    $getNodeByKey,
     $getRoot,
     $getSelection,
     $isDecoratorNode,
@@ -12,7 +15,9 @@ import {
     $isRangeSelection,
     $isTextNode,
     $setSelection,
+    COMMAND_PRIORITY_EDITOR,
     COMMAND_PRIORITY_HIGH,
+    COMMAND_PRIORITY_LOW,
     INSERT_PARAGRAPH_COMMAND,
     KEY_ARROW_DOWN_COMMAND,
     KEY_ARROW_LEFT_COMMAND,
@@ -20,17 +25,28 @@ import {
     KEY_ARROW_UP_COMMAND,
     KEY_BACKSPACE_COMMAND,
     KEY_DELETE_COMMAND,
+    KEY_ENTER_COMMAND,
+    KEY_ESCAPE_COMMAND,
     KEY_MODIFIER_COMMAND,
     KEY_TAB_COMMAND,
-    PASTE_COMMAND
+    PASTE_COMMAND,
+    createCommand
 } from 'lexical';
+import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
 import {
     $isAtStartOfDocument,
     $selectDecoratorNode
 } from '../utils/';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+
+export const INSERT_CARD_COMMAND = createCommand('INSERT_CARD_COMMAND');
+export const SELECT_CARD_COMMAND = createCommand('SELECT_CARD_COMMAND');
+export const DESELECT_CARD_COMMAND = createCommand('DESELECT_CARD_COMMAND');
+export const EDIT_CARD_COMMAND = createCommand('EDIT_CARD_COMMAND');
+export const DELETE_CARD_COMMAND = createCommand('DELETE_CARD_COMMAND');
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
 
@@ -43,7 +59,54 @@ function getTopLevelNativeElement(node) {
     return node.closest(selector);
 }
 
+function $selectCard(editor, nodeKey) {
+    const selection = $createNodeSelection();
+    selection.add(nodeKey);
+    $setSelection(selection);
+
+    // selecting a decorator node does not change the
+    // window selection (there's no caret) so we need
+    // to manually move focus to the editor element
+    editor.getRootElement().focus();
+}
+
+// remove empty cards when they are deselected
+function $deselectCard(editor, nodeKey) {
+    const cardNode = $getNodeByKey(nodeKey);
+    if (cardNode?.isEmpty?.()) {
+        $removeOrReplaceNodeWithParagraph(editor, cardNode);
+    }
+}
+
+function $removeOrReplaceNodeWithParagraph(editor, node) {
+    if ($getRoot().getLastChild().is(node)) {
+        const paragraph = $createParagraphNode();
+        $getRoot().append(paragraph);
+        paragraph.select();
+    } else {
+        const nextNode = node.getNextSibling();
+        if ($isDecoratorNode(nextNode)) {
+            $selectDecoratorNode(nextNode);
+            // selecting a decorator node does not change the
+            // window selection (there's no caret) so we need
+            // to manually move focus to the editor element
+            editor.getRootElement().focus();
+        } else {
+            nextNode.selectStart();
+        }
+    }
+
+    node.remove();
+}
+
 function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
+    const {
+        selectedCardKey,
+        setSelectedCardKey,
+        isEditingCard,
+        setIsEditingCard
+    } = React.useContext(KoenigComposerContext);
+
     // deselect cards on mousedown outside of the editor container
     React.useEffect(() => {
         const onMousedown = (event) => {
@@ -70,6 +133,241 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
     // Trigger `cursorDidExitAtTop` prop if present and cursor at beginning of doc
     React.useEffect(() => {
         return mergeRegister(
+            editor.registerUpdateListener(({editorState, tags}) => {
+                // ignore updates triggered by other users
+                if (tags.has('collaboration')) {
+                    return;
+                }
+
+                // trigger card selection/deselection when selection changes
+                const {isCardSelected, cardKey, cardNode} = editorState.read(() => {
+                    const selection = $getSelection();
+
+                    const hasCardSelection = $isNodeSelection(selection) &&
+                        selection.getNodes().length === 1 &&
+                        $isKoenigCard(selection.getNodes()[0]);
+
+                    if (hasCardSelection) {
+                        const selectedNode = selection.getNodes()[0];
+                        return {isCardSelected: true, cardKey: selectedNode.getKey(), cardNode: selectedNode};
+                    } else {
+                        return {isCardSelected: false};
+                    }
+                });
+
+                if (isCardSelected && !selectedCardKey) {
+                    setSelectedCardKey(cardKey);
+                    setIsEditingCard(false);
+                } else if (isCardSelected && selectedCardKey !== cardKey) {
+                    editor.update(() => {
+                        $deselectCard(editor, selectedCardKey);
+
+                        setSelectedCardKey(cardKey);
+                        setIsEditingCard(false);
+                    });
+                }
+
+                if (!isCardSelected && selectedCardKey) {
+                    editor.update(() => {
+                        $deselectCard(editor, selectedCardKey);
+
+                        setSelectedCardKey(null);
+                        setIsEditingCard(false);
+                    });
+                }
+
+                // we have special-case cards that are inserted via markdown
+                // expansions where we can't use editor commands to open in
+                // edit mode so we handle that here instead
+                if (isCardSelected && cardNode.__openInEditMode) {
+                    editor.update(() => {
+                        cardNode.clearOpenInEditMode();
+                    });
+
+                    setIsEditingCard(true);
+                }
+            }),
+            editor.registerCommand(
+                INSERT_CARD_COMMAND,
+                ({cardNode, openInEditMode}) => {
+                    let focusNode;
+
+                    const selection = $getSelection();
+                    if ($isRangeSelection(selection)) {
+                        focusNode = selection.focus.getNode();
+                    } else if ($isNodeSelection(selection)) {
+                        focusNode = selection.getNodes()[0];
+                    } else {
+                        return false;
+                    }
+
+                    if (focusNode !== null) {
+                        $insertAndSelectNode({selectedNode: focusNode, newNode: cardNode});
+
+                        setSelectedCardKey(cardNode.getKey());
+
+                        if (openInEditMode) {
+                            setIsEditingCard(true);
+                        }
+                    }
+
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                SELECT_CARD_COMMAND,
+                ({cardKey}) => {
+                    // already selected, delete if empty as we're exiting edit mode
+                    if (selectedCardKey === cardKey && isEditingCard) {
+                        const cardNode = $getNodeByKey(cardKey);
+                        if (cardNode.isEmpty?.()) {
+                            editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey});
+                            return true;
+                        }
+                    }
+
+                    if (selectedCardKey && selectedCardKey !== cardKey) {
+                        $deselectCard(editor, selectedCardKey);
+                    }
+
+                    $selectCard(editor, cardKey);
+
+                    setSelectedCardKey(cardKey);
+                    setIsEditingCard(false);
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                EDIT_CARD_COMMAND,
+                ({cardKey}) => {
+                    if (selectedCardKey && selectedCardKey !== cardKey) {
+                        $deselectCard(editor, selectedCardKey);
+                    }
+                    $selectCard(editor, cardKey);
+
+                    setSelectedCardKey(cardKey);
+
+                    const cardNode = $getNodeByKey(cardKey);
+                    if (cardNode.hasEditMode?.()) {
+                        setIsEditingCard(true);
+                    }
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                DESELECT_CARD_COMMAND,
+                ({cardKey}) => {
+                    $deselectCard(editor, cardKey);
+
+                    setSelectedCardKey(null);
+                    setIsEditingCard(false);
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                DELETE_CARD_COMMAND,
+                ({cardKey, direction = 'forward'}) => {
+                    const cardNode = $getNodeByKey(cardKey);
+                    const previousSibling = cardNode.getPreviousSibling();
+                    const nextSibling = cardNode.getNextSibling();
+
+                    if (direction === 'backward' && previousSibling) {
+                        if (previousSibling.selectEnd) {
+                            previousSibling.selectEnd();
+                        } else if ($isDecoratorNode(previousSibling)) {
+                            const nodeSelection = $createNodeSelection();
+                            nodeSelection.add(previousSibling.getKey());
+                            $setSelection(nodeSelection);
+                        } else {
+                            cardNode.selectPrevious();
+                        }
+                    } else if (nextSibling) {
+                        if (nextSibling.selectStart) {
+                            nextSibling.selectStart();
+                        } else if ($isDecoratorNode(nextSibling)) {
+                            const nodeSelection = $createNodeSelection();
+                            nodeSelection.add(nextSibling.getKey());
+                            $setSelection(nodeSelection);
+                        } else {
+                            cardNode.selectNext();
+                        }
+                    } else {
+                        // ensure we still have a paragraph if the deleted card was the only node
+                        const paragraph = $createParagraphNode();
+                        $getRoot().append(paragraph);
+                        paragraph.select();
+                    }
+
+                    cardNode.remove();
+
+                    // ensure focus moves back to the editor if we lost it by selecting a card
+                    editor.getRootElement().focus();
+
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                KEY_ENTER_COMMAND,
+                (event) => {
+                    // toggle edit mode if a card is selected and ctrl/cmd+enter is pressed
+                    if (selectedCardKey && (event.metaKey || event.ctrlKey)) {
+                        event.preventDefault();
+
+                        const cardNode = $getNodeByKey(selectedCardKey);
+
+                        if (cardNode.hasEditMode?.()) {
+                            // when leaving edit mode, ensure focus moves back to the editor
+                            // otherwise focus can be left on removed elements preventing further key events
+                            if (isEditingCard) {
+                                editor.getRootElement().focus({preventScroll: true});
+
+                                if (cardNode.isEmpty?.()) {
+                                    if ($getRoot().getLastChild().is(cardNode)) {
+                                        // we don't have anything to select after the card, so create a new paragraph
+                                        const paragraph = $createParagraphNode();
+                                        $getRoot().append(paragraph);
+                                        paragraph.select();
+                                    } else {
+                                        // select the next paragraph or card
+                                        editor.dispatchCommand(KEY_ARROW_DOWN_COMMAND);
+                                    }
+
+                                    cardNode.remove();
+                                } else {
+                                    // re-create the node selection because the focus will place the cursor at
+                                    // the beginning of the doc
+                                    $selectCard(editor, selectedCardKey);
+                                }
+
+                                setIsEditingCard(false);
+                            } else {
+                                setIsEditingCard(true);
+                            }
+                        }
+
+                        return true;
+                    }
+
+                    // avoid processing card behaviours when an inner card element has focus
+                    // NOTE: must come after ctrl/cmd+enter because that always toggles no matter the selection
+                    if (document.activeElement !== editor.getRootElement()) {
+                        return false;
+                    }
+
+                    // if a card is selected, insert a new paragraph after it
+                    if (selectedCardKey) {
+                        event.preventDefault();
+                        const cardNode = $getNodeByKey(selectedCardKey);
+                        const paragraphNode = $createParagraphNode();
+                        cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
+                        paragraphNode.select();
+                        return true;
+                    }
+                },
+                COMMAND_PRIORITY_EDITOR
+            ),
             editor.registerCommand(
                 KEY_ARROW_UP_COMMAND,
                 (event) => {
@@ -166,7 +464,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                 KEY_ARROW_DOWN_COMMAND,
                 (event) => {
                     // stick to default behaviour if shift key is pressed
-                    if (event.shiftKey) {
+                    if (event?.shiftKey) {
                         return false;
                     }
 
@@ -196,7 +494,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         }
 
                         // move cursor to end of previous node
-                        event.preventDefault();
+                        event?.preventDefault();
                         nextSibling.selectStart();
                         return true;
                     }
@@ -375,6 +673,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                 },
                 COMMAND_PRIORITY_HIGH
             ),
+            // backspace when card isn't selected
             editor.registerCommand(
                 KEY_BACKSPACE_COMMAND,
                 (event) => {
@@ -383,13 +682,14 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         return true;
                     }
 
-                    const selection = $getSelection();
-
-                    // <KoenigCardWrapper> currently handles the behaviour for
-                    // backspace on a selected card
-                    if ($isNodeSelection(selection)) {
-                        return false;
+                    // delete selected card if we have one
+                    if (selectedCardKey) {
+                        event.preventDefault();
+                        editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey: selectedCardKey, direction: 'backward'});
+                        return true;
                     }
+
+                    const selection = $getSelection();
 
                     if ($isRangeSelection(selection)) {
                         if (selection.isCollapsed) {
@@ -454,14 +754,15 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         return true;
                     }
 
-                    const selection = $getSelection();
-
-                    // <KoenigCardWrapper> currently handles the behaviour for
-                    // delete on a selected card
-                    if ($isNodeSelection(selection)) {
-                        return false;
+                    // delete selected card if we have one
+                    if (selectedCardKey) {
+                        event.preventDefault();
+                        editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey: selectedCardKey, direction: 'forward'});
+                        return true;
                     }
 
+                    // handle card selection around card boundaries
+                    const selection = $getSelection();
                     if ($isRangeSelection(selection)) {
                         if (selection.isCollapsed) {
                             const anchor = selection.anchor;
@@ -543,6 +844,17 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                     }
                 },
                 COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_ESCAPE_COMMAND,
+                (event) => {
+                    event.preventDefault();
+
+                    if (selectedCardKey && isEditingCard) {
+                        editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
+                    }
+                },
+                COMMAND_PRIORITY_EDITOR
             ),
             editor.registerCommand(
                 PASTE_COMMAND,

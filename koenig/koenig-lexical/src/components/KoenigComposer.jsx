@@ -25,6 +25,9 @@ const KoenigComposer = ({
     darkMode = false,
     children
 }) => {
+    const [selectedCardKey, setSelectedCardKey] = React.useState(null);
+    const [isEditingCard, setIsEditingCard] = React.useState(false);
+
     const initialConfig = React.useMemo(() => {
         return Object.assign({}, defaultConfig, {
             nodes,
@@ -44,7 +47,16 @@ const KoenigComposer = ({
 
     return (
         <LexicalComposer initialConfig={initialConfig}>
-            <KoenigComposerContext.Provider value={{fileUploader, editorContainerRef, cardConfig, darkMode}}>
+            <KoenigComposerContext.Provider value={{
+                fileUploader,
+                editorContainerRef,
+                cardConfig,
+                darkMode,
+                selectedCardKey,
+                setSelectedCardKey,
+                isEditingCard,
+                setIsEditingCard
+            }}>
                 {children}
             </KoenigComposerContext.Provider>
         </LexicalComposer>

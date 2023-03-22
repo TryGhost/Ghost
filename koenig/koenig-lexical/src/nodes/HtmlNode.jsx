@@ -49,23 +49,8 @@ export class HtmlNode extends BaseHtmlNode {
         return 'html';
     }
 
-    // transient properties used to control node behaviour
-    __openInEditMode = false;
-
-    constructor(dataset = {}, key) {
-        super(dataset, key);
-
-        const {_openInEditMode} = dataset;
-        this.__openInEditMode = _openInEditMode || false;
-    }
-
     getIcon() {
         return HtmlCardIcon;
-    }
-
-    clearOpenInEditMode() {
-        const self = this.getWritable();
-        self.__openInEditMode = false;
     }
 
     decorate() {
@@ -73,7 +58,6 @@ export class HtmlNode extends BaseHtmlNode {
             <KoenigCardWrapper
                 IndicatorIcon={HtmlIndicatorIcon}
                 nodeKey={this.getKey()}
-                openInEditMode={this.__openInEditMode}
                 width={this.__cardWidth}
                 wrapperStyle="wide"
             >

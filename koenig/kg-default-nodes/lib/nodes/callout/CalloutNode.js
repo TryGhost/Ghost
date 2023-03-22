@@ -130,6 +130,10 @@ export class CalloutNode extends KoenigDecoratorNode {
     decorate() {
         return '';
     }
+
+    hasEditMode() {
+        return true;
+    }
 }
 
 export function $isCalloutNode(node) {

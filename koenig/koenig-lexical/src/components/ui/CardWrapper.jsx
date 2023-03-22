@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-export const CardWrapper = React.forwardRef(({isSelected, isEditing, cardWidth, cardType, wrapperStyle, IndicatorIcon, children, ...props}, ref) => {
+export const CardWrapper = React.forwardRef(({isSelected, isEditing, cardWidth, cardType, wrapperStyle, IndicatorIcon, onClick, children, ...props}, ref) => {
     return (
         <>
             {IndicatorIcon &&
