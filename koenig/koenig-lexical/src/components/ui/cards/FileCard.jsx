@@ -19,7 +19,7 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
             <div className="flex w-full flex-col justify-between px-2 font-sans" {...args}>
                 <div className="flex flex-col">
                     { (isEditing || title) && <input className="h-[30px] bg-transparent text-lg font-bold leading-none tracking-tight text-black dark:text-grey-200" placeholder={titlePlaceholder} value={title} />}
-                    { (isEditing || desc) && <input className="h-[26px] bg-transparent pb-1 text-[1.6rem] font-normal leading-none text-grey-700 placeholder:text-grey-800 dark:text-grey-300" placeholder={descPlaceholder} value={desc} />}
+                    { (isEditing || desc) && <input className="h-[26px] bg-transparent pb-1 text-[1.6rem] font-normal leading-none text-grey-700 placeholder:text-grey-500 dark:text-grey-300 dark:placeholder:text-grey-800" placeholder={descPlaceholder} value={desc} />}
                 </div>
                 <div className="py-1 text-sm font-medium text-grey-900 dark:text-grey-200">
                     {name}
