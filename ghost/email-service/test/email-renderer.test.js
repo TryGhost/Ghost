@@ -1068,6 +1068,7 @@ describe('Email renderer', function () {
 
         it('uses post published_at', async function () {
             const html = '';
+            settings.timezone = 'Etc/UTC';
             const post = createModel({
                 posts_meta: createModel({}),
                 loaded: ['posts_meta'],
@@ -1283,6 +1284,7 @@ describe('Email renderer', function () {
         it('latestPosts can be enabled', async function () {
             labsEnabled = true;
             const html = '';
+            settings.timezone = 'Etc/UTC';
             const post = createModel({
                 posts_meta: createModel({}),
                 loaded: ['posts_meta'],
