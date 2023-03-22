@@ -702,5 +702,45 @@ describe('Acceptance: Editor', function () {
                 ],
                 ghostVersion: '4.0'}));
         });
+
+        it('renders a breadcrumb back to the post list', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Posts');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal('/ghost/posts');
+        });
+
+        it('renders a breadcrumb back to the analytics list if that\'s where we came from ', async function () {
+            let post = this.server.create('post', {
+                authors: [author],
+                status: 'published',
+                title: 'Published Post'
+            });
+
+            // visit the analytics page for the post
+            await visit(`/posts/analytics/${post.id}`);
+            // now visit the editor for the same post
+            await visit(`/editor/post/${post.id}`);
+
+            // Breadcrumbs should point back to Analytics page
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Analytics');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal(`/ghost/posts/analytics/${post.id}`);
+        });
     });
 });
