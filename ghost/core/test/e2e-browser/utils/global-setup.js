@@ -2,7 +2,7 @@ const config = require('../../../core/shared/config');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
 const {knex} = require('../../../core/server/data/db');
-const {setupGhost, setupStripe, setupMailgun} = require('./e2e-browser-utils');
+const {setupGhost, setupStripe, setupMailgun, enableLabs} = require('./e2e-browser-utils');
 const {chromium} = require('@playwright/test');
 const {startGhost} = require('../../utils/e2e-framework');
 const {stopGhost} = require('../../utils/e2e-utils');
@@ -102,6 +102,7 @@ const setup = async (playwrightConfig) => {
         await setupStripe(page, stripeConnectIntegrationToken);
         await setupMailgun(page);
     }
+    await enableLabs(page);
     await page.context().storageState({path: storageState});
     await browser.close();
 
