@@ -738,7 +738,7 @@ describe('Batch sending tests', function () {
         await agent.put(`posts/${id}/?newsletter=${newsletterSlug}`)
             .body({posts: [updatedPost]})
             .expectStatus(403);
-        sinon.assert.calledOnce(getSignupEvents);
+        sinon.assert.calledTwice(getSignupEvents);
         assert.equal(settingsCache.get('email_verification_required'), true);
 
         await configUtils.restore();
