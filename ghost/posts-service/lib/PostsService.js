@@ -8,12 +8,13 @@ const messages = {
 };
 
 class PostsService {
-    constructor({urlUtils, models, isSet, stats, emailService}) {
+    constructor({urlUtils, models, isSet, stats, emailService, postsExporter}) {
         this.urlUtils = urlUtils;
         this.models = models;
         this.isSet = isSet;
         this.stats = stats;
         this.emailService = emailService;
+        this.postsExporter = postsExporter;
     }
 
     async editPost(frame) {
@@ -57,16 +58,8 @@ class PostsService {
         return model;
     }
 
-    async export() {
-        // Placeholder implementation
-        return [
-            {
-                title: 'Example',
-                url: 'https://example.com',
-                author: 'Jamie Larson',
-                status: 'published'
-            }
-        ];
+    async export(frame) {
+        return await this.postsExporter.export(frame.options);
     }
 
     async getProductsFromVisibilityFilter(visibilityFilter) {
