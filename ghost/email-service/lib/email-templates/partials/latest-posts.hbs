@@ -3,13 +3,16 @@
     {{#each latestPosts}}
         <tr>
             {{#if ../latestPostsHasImages}}
-                <td width="120"> {{!-- maximum width of image + 20px padding --}}
+                <td width="140"> {{!-- maximum width of image + 20px padding --}}
                     {{#if featureImage}}
                         <a href="{{url}}">
                             <img
                                 src="{{featureImage}}"
                                 {{#if featureImageWidth }}
                                     width="{{featureImageWidth}}"
+                                {{/if}}
+                                {{#if featureImageHeight }}
+                                    height="{{featureImageHeight}}"
                                 {{/if}}
                             />
                         </a>
