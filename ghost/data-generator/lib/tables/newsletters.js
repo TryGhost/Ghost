@@ -23,7 +23,7 @@ class NewslettersImporter extends TableImporter {
             uuid: faker.datatype.uuid(),
             name: name,
             slug: `${slugify(name)}-${faker.random.numeric(3)}`,
-            sender_reply_to: 'hello@example.com',
+            sender_reply_to: 'newsletter',
             status: 'active',
             subscribe_on_signup: faker.datatype.boolean(),
             sort_order: sortOrder,
