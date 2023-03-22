@@ -314,7 +314,7 @@ class EmailRenderer {
 
         // Juice HTML (inline CSS)
         const juice = require('juice');
-        html = juice(html, {inlinePseudoElements: true});
+        html = juice(html, {inlinePseudoElements: true, removeStyleTags: false});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
         const cheerio = require('cheerio');
@@ -501,6 +501,12 @@ class EmailRenderer {
                 id: 'name',
                 getValue: (member) => {
                     return member.name;
+                }
+            },
+            {
+                id: 'name_class',
+                getValue: (member) => {
+                    return member.name ? '' : 'hidden';
                 }
             },
             {
