@@ -31,7 +31,7 @@ class WebhookTrigger {
                 last_triggered_at: Date.now(),
                 last_triggered_status: data.statusCode,
                 last_triggered_error: data.error || null
-            }, {id: webhook.id})
+            }, {id: webhook.id, autoRefresh: false})
             .catch(() => {
                 logging.warn(`Unable to update "last_triggered" for webhook: ${webhook.id}`);
             });
