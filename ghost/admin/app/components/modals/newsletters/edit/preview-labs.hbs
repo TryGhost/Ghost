@@ -93,12 +93,12 @@
             {{#if @newsletter.showSubscriptionDetails}}
                 <div class="gh-members-emailpreview-subscription-details">
                     <h4 class="pb2">Subscription details</h4>
-                    <p class="pb4">You are receiving this because you are a <strong>paid subscriber</strong> to The Local Host. Your paid subscription will renew on 20 March 2024.</p>
+                    <p class="pb4">You are receiving this because you are a <strong>paid subscriber</strong> to The Local Host. Your subscription will renew on {{this.renewDateString}}.</p>
                     <div class="flex">
                         <div class="flex-shrink-0">
                             <p>Name: Jamie Larson</p>
-                            <p>Email: jamie@example.com</p> 
-                            <p>Member since: 20 March 2023</p>
+                            <p>Email: jamie@example.com</p>
+                            <p>Member since: {{this.todayString}}</p>
                         </div>
                         <a href="#" class="gh-members-emailpreview-subscription-link">Manage subscription &rarr;</a>
                     </div>
