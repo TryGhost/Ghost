@@ -676,6 +676,14 @@ class EmailRenderer {
         }
     }
 
+    truncateText(text, maxLength) {
+        if (text && text.length > maxLength) {
+            return text.substring(0, maxLength - 1).trim() + '…';
+        } else {
+            return text ?? '';
+        }
+    }
+
     /**
      * @private
      */
@@ -750,12 +758,7 @@ class EmailRenderer {
                 const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
                 latestPosts.push({
-                    title: latestPost.get('title'),
-                    publishedAt: (latestPost.get('published_at') ? DateTime.fromJSDate(latestPost.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    }),
+                    title: this.truncateText(latestPost.get('title'), 85),
                     url: this.#getPostUrl(latestPost),
                     featureImage: featureImage ? {
                         src: featureImage,
@@ -766,7 +769,8 @@ class EmailRenderer {
                         src: featureImageMobile,
                         width: featureImageMobileWidth,
                         height: featureImageMobileHeight
-                    } : null
+                    } : null,
+                    excerpt: this.truncateText(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), 60)
                 });
 
                 if (featureImage) {

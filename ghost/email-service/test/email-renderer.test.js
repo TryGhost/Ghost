@@ -6,7 +6,6 @@ const linkReplacer = require('@tryghost/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
-const {DateTime} = require('luxon');
 
 function validateHtml(html) {
     const htmlvalidate = new HtmlValidate({
@@ -1289,17 +1288,20 @@ describe('Email renderer', function () {
                             {
                                 title: 'Test Post 1',
                                 published_at: new Date('2018-01-01T00:00:00.000Z'),
+                                custom_excerpt: 'Super long custom excerpt. Super long custom excerpt. Super long custom excerpt. Super long custom excerpt. Super long custom excerpt.',
                                 feature_image: 'http://example.com/image.jpg'
                             },
                             {
                                 title: 'Test Post 2',
                                 published_at: new Date('2018-01-01T00:00:00.000Z'),
-                                feature_image: null
+                                feature_image: null,
+                                plaintext: ''
                             },
                             {
                                 title: 'Test Post 3',
                                 published_at: null, // required for full test coverage
-                                feature_image: null
+                                feature_image: null,
+                                plaintext: 'Nothing special.'
                             }
                         ]
                     })
@@ -1562,7 +1564,7 @@ describe('Email renderer', function () {
             assert.deepEqual(data.latestPosts,
                 [
                     {
-                        publishedAt: '1 Jan 2018',
+                        excerpt: 'Super long custom excerpt. Super long custom excerpt. Super…',
                         title: 'Test Post 1',
                         url: 'http://example.com',
                         featureImage: {
@@ -1579,18 +1581,14 @@ describe('Email renderer', function () {
                     {
                         featureImage: null,
                         featureImageMobile: null,
-                        publishedAt: '1 Jan 2018',
+                        excerpt: '',
                         title: 'Test Post 2',
                         url: 'http://example.com'
                     },
                     {
                         featureImage: null,
                         featureImageMobile: null,
-                        publishedAt: DateTime.local().setZone('UTC').setLocale('en-gb').toLocaleString({
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        }),
+                        excerpt: 'Nothing special.',
                         title: 'Test Post 3',
                         url: 'http://example.com'
                     }
@@ -1637,6 +1635,13 @@ describe('Email renderer', function () {
             });
             const response = await emailRenderer.createUnsubscribeUrl();
             assert.equal(response, `http://example.com/subdirectory/unsubscribe/?preview=1`);
+        });
+    });
+
+    describe('truncateText', function () {
+        it('works for null', async function () {
+            const emailRenderer = new EmailRenderer({});
+            assert.equal(emailRenderer.truncateText(null, 100), '');
         });
     });
 
