@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[ -n "$CI" ] && exit 0
+
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$GIT_BRANCH" = "main" ]; then
+    printf "ℹ️ Pushing to \033[0;42m$GIT_BRANCH\033[0m branch requires some checks in advance\n"
+
+    yarn lerna run --include-dependents --since ${GHOST_UPSTREAM:-origin}/$GIT_BRANCH test:unit
+fi
