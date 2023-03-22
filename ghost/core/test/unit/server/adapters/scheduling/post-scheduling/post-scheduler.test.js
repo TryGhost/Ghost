@@ -41,13 +41,19 @@ describe('Scheduling: Post Scheduler', function () {
                 }));
                 nock('http://scheduler.local:1111')
                     .get(() => true)
+                    .query(true)
                     .reply(200);
                 nock('http://scheduler.local:1111')
                     .post(() => true)
+                    .query(true)
+                    .reply(200);
+                nock('http://scheduler.local:1111')
+                    .put(() => true)
+                    .query(true)
                     .reply(200);
 
                 new PostScheduler({
-                    apiUrl: 'scheduler.local:1111/',
+                    apiUrl: 'http://scheduler.local:1111/',
                     integration: {
                         api_keys: [{
                             id: 'integrationUniqueId',
@@ -71,7 +77,7 @@ describe('Scheduling: Post Scheduler', function () {
                 adapter.schedule.calledOnce.should.eql(true);
 
                 adapter.schedule.args[0][0].time.should.equal(moment(post.get('published_at')).valueOf());
-                adapter.schedule.args[0][0].url.should.startWith(urlUtils.urlJoin('scheduler.local:1111/', 'schedules', 'posts', post.get('id'), '?token='));
+                adapter.schedule.args[0][0].url.should.startWith(urlUtils.urlJoin('http://scheduler.local:1111/', 'schedules', 'posts', post.get('id'), '?token='));
                 adapter.schedule.args[0][0].extra.httpMethod.should.eql('PUT');
                 should.equal(null, adapter.schedule.args[0][0].extra.oldTime);
             });
