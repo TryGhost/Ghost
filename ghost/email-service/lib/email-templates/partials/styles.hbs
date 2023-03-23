@@ -359,21 +359,23 @@ figure blockquote p {
     color: #738a94;
     font-size: 13px;
     letter-spacing: 0.1px;
-}
-
-.post-meta-left {
-    text-align: left;
+    text-align: center;
+    display: inline-block;
+    width: 100% !important;
 }
 
 .view-online {
-    text-align: right;
+    text-align: center;
 }
 
-.post-meta-center,
-.post-meta-center.view-online {
-    display: inline-block;
-    width: 100% !important;
-    text-align: center !important;
+.post-meta-left {
+    display: table-cell;
+    text-align: left;
+}
+
+.post-meta-left.view-online {
+    display: table-cell;
+    text-align: right;
 }
 
 .post-meta-center.view-online {
@@ -424,6 +426,10 @@ figure blockquote p {
     color: #738a94;
 }
 
+/* -------------------------------------
+    FEEDBACK BUTTONS
+------------------------------------- */
+
 .feedback-buttons {
     width: auto !important;
     margin: auto;
@@ -431,8 +437,7 @@ figure blockquote p {
 
 .feedback-buttons-mobile {
     display: none !important;
-    width: auto !important;
-    margin: auto !important;
+    mso-hide: all !important;
 }
 
 .feedback-button-mobile-text {
@@ -441,6 +446,58 @@ figure blockquote p {
     font-weight: 500;
     margin-bottom: 0;
 }
+
+/* -------------------------------------
+    LATEST POSTS TABLE
+------------------------------------- */
+.latest-post {
+    padding: 8px 0;
+}
+
+.latest-post a {
+    display: block;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+}
+
+.latest-post-img img,
+.latest-post-img-mobile img {
+    object-fit: cover;
+}
+
+.latest-post-img-mobile {
+    display: none;
+}
+
+.latest-post-img-mobile img {
+    width: 100% !important;
+    height: auto !important; /* Make sure CSS ignores the height that is defined in HTML, but keep the aspect ratio from the width/height in HTML */
+}
+
+.latest-post-title {
+    padding-right: 12px;
+}
+
+.latest-post p {
+    margin: 0;
+    padding: 0;
+    color: #738a94;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.latest-post h4 {
+    margin: 0;
+    padding: 12px 0 4px;
+    font-size: 18px;
+    font-weight: 700;
+
+}
+
+/* -------------------------------------
+    SUBSCRIPTION DETAILS BOX
+------------------------------------- */
 
 .subscription-box {
     padding: 24px;
@@ -1077,6 +1134,18 @@ a[data-flickr-embed] img {
         display: inline-block;
     }
 
+    table.body .post-meta-left {
+        display: inline-block !important;
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    table.body .post-meta-left.view-online {
+        display: inline-block !important;
+        width: 100% !important;
+        text-align: left !important;
+    }
+
     table.body .post-meta.author-date {
         width: 100%;
     }
@@ -1114,6 +1183,7 @@ a[data-flickr-embed] img {
 
     table.body .latest-post a {
         height: auto !important;
+        padding: 0 !important;
     }
 
     table.body .latest-post-img {
@@ -1122,20 +1192,24 @@ a[data-flickr-embed] img {
 
     table.body .latest-post-img-mobile {
         display: inline-block !important;
+        width: 100%;
     }
 
     table.body .latest-post-title {
         display: inline-block !important;
         width: 100%;
+        padding-right: 0 !important;
+        padding-bottom: 8px !important;
     }
 
     table.body .latest-post h4 {
-        padding: 4px 0 0;
-        font-size: 18px !important;
+        padding: 4px 0 !important;
+        font-size: 16px !important;
     }
 
     table.body .latest-post p {
         font-size: 13px !important;
+        line-height: 1.25em;
     }
 
     table.body .subscription-box {
@@ -1299,50 +1373,5 @@ a[data-flickr-embed] img {
         height: 30px;
     }
 {{/if}}
-
-/* -------------------------------------
-    LATEST POSTS TABLE
-------------------------------------- */
-.latest-post {
-    padding: 8px 0;
-}
-
-.latest-post-img img,
-.latest-post-img-mobile img {
-    object-fit: cover;
-}
-
-.latest-post-img-mobile {
-    display: none;
-}
-
-.latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important; /* Make sure CSS ignores the height that is defined in HTML, but keep the aspect ratio from the width/height in HTML */
-}
-
-.latest-post p {
-    margin: 0;
-    padding: 0;
-    color: #738a94;
-    font-size: 14px;
-    font-weight: 400;
-}
-
-.latest-post h4 {
-    margin: 0;
-    padding: 12px 0 4px;
-    font-size: 19px;
-    font-weight: 700;
-
-}
-
-.latest-post a {
-    display: block;
-    height: 96px;
-    overflow: hidden;
-    color: inherit;
-    text-decoration: none;
-}
 
 </style>

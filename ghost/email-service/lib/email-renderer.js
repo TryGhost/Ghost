@@ -758,7 +758,7 @@ class EmailRenderer {
                 const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
                 latestPosts.push({
-                    title: this.truncateText(latestPost.get('title'), 85),
+                    title: this.truncateText(latestPost.get('title'), 90),
                     url: this.#getPostUrl(latestPost),
                     featureImage: featureImage ? {
                         src: featureImage,
