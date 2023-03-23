@@ -150,6 +150,10 @@ async function lastEmailMatchSnapshot() {
 
     const ignoreReplacements = [
         {
+            match: /\d{2}\s\w+\s\d{4}/g,
+            replacement: 'date'
+        },
+        {
             match: defaultNewsletter.get('uuid'),
             replacement: 'requested-newsletter-uuid'
         },

@@ -6664,7 +6664,7 @@ table.body figcaption a {
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                                                     <p class=\\"\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 14px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Name: Simon Tester</p>
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 14px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Email: <a href=\\"mailto:replacements-test-2@example.com\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">replacements-test-2@example.com</a></p>
-                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 14px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: 22 March 2023</p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 14px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
                                                 <td align=\\"right\\" valign=\\"bottom\\" class=\\"manage-subscription\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; white-space: nowrap; font-size: 13.5px; font-weight: 500; text-align: right; line-height: 1.45em; vertical-align: bottom; color: #FF1A75;\\">
                                                     <a href=\\"http://127.0.0.1:2369/#/portal/account\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"> Manage subscription &#x2192;</a>
@@ -6821,7 +6821,7 @@ Name: Simon Tester
 Email: replacements-test-2@example.com
 
 
-Member since: 22 March 2023
+Member since: date
 
 
 
