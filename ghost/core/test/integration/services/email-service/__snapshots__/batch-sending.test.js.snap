@@ -173,6 +173,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -196,16 +200,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -768,6 +768,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -791,16 +795,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -1349,6 +1349,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -1372,16 +1376,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -1930,6 +1930,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -1953,16 +1957,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -2511,6 +2511,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -2534,16 +2538,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -3050,6 +3050,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -3073,16 +3077,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -4705,6 +4705,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -4728,16 +4732,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -5386,6 +5386,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -5409,16 +5413,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -6552,6 +6552,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -6575,16 +6579,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -6790,7 +6790,7 @@ table.body figcaption a {
                                             </tr>
 
                                         <tr class=\\"post-content-row\\">
-                                            <td class=\\"post-content no-border\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 0; max-width: 600px;\\" valign=\\"top\\">
+                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e5eff5; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
                                                 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Hello world</p>
                                                 <!-- POST CONTENT END -->
@@ -6806,20 +6806,20 @@ table.body figcaption a {
 
 
                                 <tr>
-                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 24px; background: #F4F5F6; color: #15212A; border-radius: 3px;\\" valign=\\"top\\">
-                                        <h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; font-size: 14px; font-weight: 700; margin: 0 0 16px;\\">Subscription details</h3>
-                                        <p style=\\"margin: 0 0 1.5em 0; font-size: 14px; font-weight: 400; line-height: 1.45em; text-decoration: none; margin-bottom: 16px; color: #15212A;\\">
+                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; color: #15212A;\\" valign=\\"top\\">
+                                        <h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; font-size: 14px; font-weight: 700; text-transform: uppercase; margin: 0 0 18px;\\">Subscription details</h3>
+                                        <p style=\\"margin: 0 0 1.5em 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; margin-bottom: 16px; color: #15212A;\\">
                                             <span>You are receiving this because you are a <strong style=\\"font-weight: 700;\\">free subscriber</strong> to Ghost.</span>
                                             
                                         </p>
                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr>
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p class=\\"\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 14px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Name: Simon Tester</p>
-                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 14px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Email: <a href=\\"mailto:replacements-test-2@example.com\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">replacements-test-2@example.com</a></p>
-                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 14px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: date</p>
+                                                    <p class=\\"\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Name: Simon Tester</p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Email: <a href=\\"mailto:replacements-test-2@example.com\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">replacements-test-2@example.com</a></p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
-                                                <td align=\\"right\\" valign=\\"bottom\\" class=\\"manage-subscription\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; white-space: nowrap; font-size: 13.5px; font-weight: 500; text-align: right; line-height: 1.45em; vertical-align: bottom; color: #FF1A75;\\">
+                                                <td align=\\"right\\" valign=\\"bottom\\" class=\\"manage-subscription\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; white-space: nowrap; font-size: 15px; font-weight: 600; text-align: right; line-height: 1.45em; vertical-align: bottom; color: #FF1A75;\\">
                                                     <a href=\\"http://127.0.0.1:2369/#/portal/account\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"> Manage subscription &#x2192;</a>
                                                 </td>
                                             </tr>
@@ -7190,6 +7190,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -7213,16 +7217,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {
@@ -7773,6 +7773,10 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
   table.body .latest-post a {
     height: auto !important;
     padding: 0 !important;
@@ -7796,16 +7800,12 @@ table.body .footer a {
 
   table.body .latest-post h4 {
     padding: 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   table.body .latest-post p {
     font-size: 13px !important;
     line-height: 1.25em;
-  }
-
-  table.body .subscription-box {
-    padding: 24px 20px !important;
   }
 
   table.body .subscription-box h3 {

@@ -2154,10 +2154,6 @@ p.gh-members-import-errordetail:first-of-type {
     border-bottom: 1px solid #e5eff5;
 }
 
-.gh-members-emailpreview-content.no-border {
-    border-bottom: 0;
-}
-
 .gh-members-emailpreview-content:first-child {
     margin-top: 52px;
 }
@@ -2272,10 +2268,6 @@ p.gh-members-import-errordetail:first-of-type {
     border-bottom: 1px solid #e5eff5;
 }
 
-.gh-members-emailpreview-feedback.no-border {
-    border-bottom: 0;
-}
-
 .gh-members-emailpreview-feedback-title {
     text-align: center;
     color: #15212a;
@@ -2311,14 +2303,20 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-latest-posts {
     padding: 24px 0;
+    border-bottom: 1px solid #e5eff5;
 }
 
-.gh-members-emailpreview-latest-posts.border {
-    border-bottom: 1px solid #e5eff5;
+.gh-members-emailpreview-latest-posts h3 {
+    margin: 8px 0 16px;
+    color: #15212A;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 .gh-members-emailpreview-latest-post {
     display: flex;
+    justify-content: space-between;
     gap: 16px;
     padding: 8px 0;
 }
@@ -2334,8 +2332,8 @@ p.gh-members-import-errordetail:first-of-type {
     aspect-ratio: 5 / 4;
 }
 
-.gh-members-emailpreview-latest-post h3 {
-    margin: 12px 0 4px;
+.gh-members-emailpreview-latest-post h4 {
+    margin: 2px 0 4px;
     color: #15212a;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 1.9rem;
@@ -2350,16 +2348,16 @@ p.gh-members-import-errordetail:first-of-type {
 
 
 .gh-members-emailpreview-subscription-details {
-    padding: 24px;
-    background: #F4F5F6;
+    padding: 32px 0;
+    border-bottom: 1px solid #e5eff5;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 400;
-    border-radius: 3px;
 }
 
 .gh-members-emailpreview-subscription-details h4 {
     font-size: 1.4rem;
+    text-transform: uppercase;
 }
 
 .gh-members-emailpreview-subscription-details p {
@@ -2375,7 +2373,7 @@ a.gh-members-emailpreview-subscription-link {
     white-space: nowrap;
     width: 100%;
     color: var(--accent-color);
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
     text-align: right;
 }
