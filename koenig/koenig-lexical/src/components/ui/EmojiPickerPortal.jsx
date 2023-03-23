@@ -1,7 +1,7 @@
-import EmojiPicker from 'emoji-picker-react';
+import Picker from '@emoji-mart/react';
 import Portal from './Portal';
 import React from 'react';
-
+import data from '@emoji-mart/data';
 const EmojiPickerPortal = ({onEmojiClick, buttonRef}) => {
     const [position, setPosition] = React.useState(null);
 
@@ -27,14 +27,9 @@ const EmojiPickerPortal = ({onEmojiClick, buttonRef}) => {
         <Portal>
             <div className='fixed z-10 mr-9 mt-3 rounded-md bg-white' data-testid="emoji-picker-container" style={{left: x, top: y}} onClick={handleClick}>
                 <div className='overflow-y-scroll rounded bg-white p-4 shadow-lg'>
-                    <EmojiPicker
-                        height={380}
-                        previewConfig={{
-                            showPreview: false
-                        }}
-                        searchPlaceholder="Search emojis..."
-                        width={380}
-                        onEmojiClick={onEmojiClick}
+                    <Picker
+                        data={data}
+                        onEmojiSelect={onEmojiClick}
                     />
                 </div>
             </div>

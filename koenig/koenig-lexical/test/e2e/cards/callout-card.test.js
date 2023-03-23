@@ -161,7 +161,7 @@ describe('Callout Card', async () => {
         const editButton = await page.locator('[data-testid="edit-callout-card"]');
         await editButton.click();
         await page.getByRole('button', {name: '💡'}).click();
-        const lolEmoji = await page.locator('[data-unified="1f602"]'); // this is the unified code for 😂
+        const lolEmoji = await page.locator('[aria-label="😂"]').nth(0); // nth(0) is required because there could two emojis with the same label (eg from frequently used)
         await lolEmoji.click();
         // await page.keyboard.type('Joke of the day');
         const calloutCard = await page.locator('[data-kg-card="callout"]');

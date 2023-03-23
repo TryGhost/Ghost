@@ -48,7 +48,7 @@ function CalloutNodeComponent({nodeKey, text, hasEmoji, backgroundColor, emojiVa
     const handleEmojiChange = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setEmojiValue(event.emoji);
+            node.setEmojiValue(event.native);
             toggleEmojiPicker();
         });
     };
