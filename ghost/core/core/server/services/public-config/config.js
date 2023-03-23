@@ -6,7 +6,7 @@ const ghostVersion = require('@tryghost/version');
 
 module.exports = function getConfigProperties() {
     const configProperties = {
-        version: ghostVersion.full,
+        version: ghostVersion.original,
         environment: config.get('env'),
         database: databaseInfo.getEngine(),
         mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
