@@ -63,8 +63,13 @@ module.exports = {
              * @returns {Promise<string>}
              */
             async renderHTML(report, recipient) {
+                // Filter out mentions with duplicate source url from the report
+                const uniqueMentions = report.mentions.filter((mention, index, self) => {
+                    return self.findIndex(m => m.sourceUrl.href === mention.sourceUrl.href) === index;
+                });
+
                 return staffService.api.emails.renderHTML('mention-report', {
-                    report: report,
+                    mentions: uniqueMentions,
                     recipient: recipient,
                     hasMoreMentions: report.mentions.length > 5
                 });
