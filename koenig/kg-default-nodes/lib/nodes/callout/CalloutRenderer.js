@@ -17,7 +17,7 @@ export function renderCalloutNodeToDOM(node, options = {}) {
     }
     const textElement = document.createElement('div');
     textElement.classList.add('kg-callout-text');
-    textElement.textContent = node.getText();
+    textElement.innerHTML = node.getText();
     element.appendChild(textElement);
     return element;
 }
