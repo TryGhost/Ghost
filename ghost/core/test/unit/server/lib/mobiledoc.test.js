@@ -6,7 +6,7 @@ const configUtils = require('../../../utils/configUtils');
 const mobiledocLib = require('../../../../core/server/lib/mobiledoc');
 const storage = require('../../../../core/server/adapters/storage');
 const urlUtils = require('../../../../core/shared/url-utils');
-const mockUtils = require('../../../utils/mocks');
+const moduleMock = require('../../../utils/module-mock');
 const logging = require('@tryghost/logging');
 
 describe('lib/mobiledoc', function () {
@@ -16,7 +16,7 @@ describe('lib/mobiledoc', function () {
         await configUtils.restore();
         // ensure config changes are reset and picked up by next test
         mobiledocLib.reload();
-        mockUtils.modules.unmockNonExistentModule(/sharp/);
+        moduleMock.unmockModules();
     });
 
     describe('mobiledocHtmlRenderer', function () {
@@ -249,7 +249,7 @@ describe('lib/mobiledoc', function () {
         });
 
         it('does not render srcsets when sharp is not available', function () {
-            mockUtils.modules.mockNonExistentModule('sharp', new Error(), true);
+            moduleMock.mockModule('sharp', new Error(), true);
 
             let mobiledoc = {
                 version: '0.3.1',

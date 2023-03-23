@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const assert = require('assert');
 const nock = require('nock');
+const got = require('got');
 const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
 
 // Helper services
@@ -22,6 +23,7 @@ const settingsCache = require('../../core/shared/settings-cache');
 const dns = require('dns');
 const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
+const moduleMock = require('./module-mock');
 
 let fakedLabsFlags = {};
 let allowedNetworkDomains = [];
@@ -42,6 +44,12 @@ const disableStripe = async () => {
 
 const disableNetwork = () => {
     nock.disableNetConnect();
+
+    moduleMock.mockModule('got', got.extend({
+        retry: {
+            limit: 0
+        }
+    }));
 
     // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
     if (!dnsPromises.lookup.restore) {
