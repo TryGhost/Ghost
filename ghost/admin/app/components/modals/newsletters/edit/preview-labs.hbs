@@ -13,7 +13,7 @@
                 </div>
             {{/if}}
             {{#if this.showHeader}}
-                <div class={{if this.showHeaderTitle "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}}>
+                <div class={{if (or (not @newsletter.showPostTitleSection) this.showHeaderTitle) "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}}>
                     {{#if (and this.settings.icon @newsletter.showHeaderIcon)}}
                         <img src={{this.settings.icon}} alt="" role="presentation" />
                     {{/if}}
@@ -45,14 +45,14 @@
                 <div class="gh-members-emailpreview-featureimage" style={{this.featureImageStyle}}></div>
                 <div class="gh-members-emailpreview-featureimage-caption">Feature image caption</div>
             {{/if}}
-            <div class="gh-members-emailpreview-content {{if (eq @newsletter.bodyFontCategory "sans_serif") "sans-serif"}} {{if (and (not (and @newsletter.feedbackEnabled (feature "audienceFeedback")) this.showCommentCta @newsletter.showLatestPosts) @newsletter.showSubscriptionDetails) "no-border"}}">
+            <div class="gh-members-emailpreview-content">
                 <p>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
                 <p>Over there on the left you’ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we’ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
                 <p>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
             </div>
 
             {{#if (or (and @newsletter.feedbackEnabled (feature "audienceFeedback")) this.showCommentCta)}}
-                <div class="gh-members-emailpreview-feedback {{if (and (not @newsletter.showLatestPosts) @newsletter.showSubscriptionDetails) "no-border"}}">
+                <div class="gh-members-emailpreview-feedback">
                     <div class="gh-members-emailpreview-feedback-buttons-group">
                         {{#if (and @newsletter.feedbackEnabled (feature "audienceFeedback"))}}
                             <Modals::Newsletters::Components::FeedbackButton
@@ -74,7 +74,8 @@
             {{/if}}
 
             {{#if @newsletter.showLatestPosts}}
-                <div class="gh-members-emailpreview-latest-posts {{unless @newsletter.showSubscriptionDetails "border"}}">
+                <div class="gh-members-emailpreview-latest-posts">
+                    <h3 class="pb2">Keep reading</h3>
                     <Modals::Newsletters::Components::LatestPost
                         @imgPath="assets/img/latest-posts-1.png"
                         @postTitle="The three latest posts published on your site"
