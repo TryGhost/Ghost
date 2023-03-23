@@ -21,7 +21,7 @@
                                 {{/if}}
                             {{/if}}
                             <td valign="top" align="left" class="latest-post-title">
-                                <h4>{{title}}</h4>
+                                <h4 class="{{#if ../latestPostsHasImages}}{{#if (not featureImage)}}no-image{{/if}}{{/if}}">{{title}}</h4>
                                 {{#if excerpt}}
                                     <p>{{excerpt}}</p>
                                 {{/if}}
