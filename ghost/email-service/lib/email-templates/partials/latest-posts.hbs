@@ -2,23 +2,12 @@
     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
         <tr>
             <td class="latest-post">
-                <a href="{{url}}">
+                <a href="{{url}}" style="{{#if ../latestPostsHasImages}}{{#if featureImage}}height: 96px;{{else}}padding-bottom: 12px;{{/if}}{{/if}}">
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                         <tr>
                             {{#if ../latestPostsHasImages}}
                                 {{#if featureImage}}
-                                    <td width="140" class="latest-post-img"> {{!-- maximum width of image + 20px padding --}}
-                                        <img
-                                            src="{{featureImage.src}}"
-                                            {{#if featureImage.width }}
-                                                width="{{featureImage.width}}"
-                                            {{/if}}
-                                            {{#if featureImage.height }}
-                                                height="{{featureImage.height}}"
-                                            {{/if}}
-                                        />
-                                    </td>
-                                    <td width="100%" class="latest-post-img-mobile">
+                                    <td class="latest-post-img-mobile">
                                         <img
                                             src="{{featureImageMobile.src}}"
                                             {{#if featureImageMobile.width }}
@@ -37,6 +26,21 @@
                                     <p>{{excerpt}}</p>
                                 {{/if}}
                             </td>
+                            {{#if ../latestPostsHasImages}}
+                                {{#if featureImage}}
+                                    <td width="120" class="latest-post-img">
+                                        <img
+                                            src="{{featureImage.src}}"
+                                            {{#if featureImage.width }}
+                                                width="{{featureImage.width}}"
+                                            {{/if}}
+                                            {{#if featureImage.height }}
+                                                height="{{featureImage.height}}"
+                                            {{/if}}
+                                        />
+                                    </td>
+                                {{/if}}
+                            {{/if}}
                         </tr>
                     </table>
                 </a>
