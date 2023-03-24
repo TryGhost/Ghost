@@ -4,6 +4,8 @@ const supertest = require('supertest');
 const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyEtag, anyErrorId, anyContentVersion} = matchers;
 
 describe('Integrations API', function () {
     let request;
@@ -349,5 +351,32 @@ describe('Integrations API', function () {
             .expect(404);
 
         editRes.body.errors[0].context.should.eql('Integration not found.');
+    });
+
+    describe('As Administrator', function () {
+        let agent;
+
+        before(async function () {
+            agent = await agentProvider.getAdminAPIAgent();
+            await fixtureManager.init('users', 'integrations');
+            await agent.loginAsContributor();
+        });
+
+        it('Can\'t see Self-Serve or any other integration', async function () {
+            await agent
+                .get('integrations')
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .expectStatus(403);
+        });
     });
 });
