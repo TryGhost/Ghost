@@ -773,7 +773,7 @@ class EmailRenderer {
         if (newsletter.get('show_latest_posts') && this.#labs.isSet('makingItRain')) {
             // Fetch last 3 published posts
             const {data} = await this.#models.Post.findPage({
-                filter: 'status:published',
+                filter: 'status:published+id:-' + post.id,
                 order: 'published_at DESC',
                 limit: 3
             });
