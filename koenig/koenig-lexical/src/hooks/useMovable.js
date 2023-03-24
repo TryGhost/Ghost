@@ -160,7 +160,6 @@ export default function useMovable({adjustOnResize} = {}) {
     }, [dragEnd, drag]);
 
     const dragStart = useCallback((e) => {
-        e.preventDefault();
         e.stopPropagation();
 
         if (e.type === 'touchstart' || e.button === 0) {

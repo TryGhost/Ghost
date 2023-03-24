@@ -116,7 +116,7 @@ describe('Video card', async () => {
         await uploadVideo(page);
 
         // Settings panel should be visible
-        await expect(await page.getByTestId('video-settings-panel')).toBeVisible();
+        await expect(await page.getByTestId('settings-panel')).toBeVisible();
 
         // Custom thumbnail should be visible
         const emptyThumbnail = await page.getByTestId('thumbnail-media-placeholder');
@@ -143,7 +143,7 @@ describe('Video card', async () => {
         await uploadVideo(page);
 
         // Settings panel should be visible
-        await expect(await page.getByTestId('video-settings-panel')).toBeVisible();
+        await expect(await page.getByTestId('settings-panel')).toBeVisible();
 
         // Errors shouldn't be visible
         await expect(page.getByTestId('media-placeholder-errors')).toBeHidden();

@@ -20,13 +20,13 @@ export class ButtonParser {
                             }
 
                             const buttonNode = domNode?.querySelector('.kg-btn');
-                            const href = buttonNode.href;
-                            const title = buttonNode.textContent;
+                            const buttonUrl = buttonNode.href;
+                            const buttonText = buttonNode.textContent;
 
                             const payload = {
-                                title: title,
+                                buttonText: buttonText,
                                 alignment: alignment,
-                                href: href
+                                buttonUrl: buttonUrl
                             };
 
                             const node = new self.NodeClass(payload);

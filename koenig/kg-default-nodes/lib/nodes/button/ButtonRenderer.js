@@ -1,7 +1,7 @@
 export function renderButtonNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
-    if (!node.getHref() || node.getHref().trim() === '') {
+    if (!node.getButtonUrl() || node.getButtonUrl().trim() === '') {
         return document.createTextNode('');
     }
 
@@ -19,9 +19,9 @@ function frontendTemplate(node, document) {
     cardDiv.setAttribute('class', cardClasses);
 
     const button = document.createElement('a');
-    button.setAttribute('href', node.getHref());
+    button.setAttribute('href', node.getButtonUrl());
     button.setAttribute('class', 'kg-btn kg-btn-accent');
-    button.textContent = node.getTitle() || 'Button Title';
+    button.textContent = node.getButtonText() || 'Button Title';
 
     cardDiv.appendChild(button);
     return cardDiv;
@@ -49,8 +49,8 @@ function emailTemplate(node, document) {
     row.appendChild(cell);
     
     const button = document.createElement('a');
-    button.setAttribute('href', node.getHref());
-    button.textContent = node.getTitle();
+    button.setAttribute('href', node.getButtonUrl());
+    button.textContent = node.getButtonText();
     cell.appendChild(button);
 
     return parent;

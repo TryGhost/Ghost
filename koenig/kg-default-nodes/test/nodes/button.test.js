@@ -30,8 +30,8 @@ describe('ButtonNode', function () {
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
         dataset = {
-            title: 'click me',
-            href: 'http://blog.com/post1',
+            buttonText: 'click me',
+            buttonUrl: 'http://blog.com/post1',
             alignment: 'center'
         };
         exportOptions = {
@@ -50,25 +50,25 @@ describe('ButtonNode', function () {
         it('has getters for all properties', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
 
-            buttonNode.getHref().should.equal(dataset.href);
-            buttonNode.getTitle().should.equal(dataset.title);
+            buttonNode.getButtonUrl().should.equal(dataset.buttonUrl);
+            buttonNode.getButtonText().should.equal(dataset.buttonText);
             buttonNode.getAlignment().should.equal(dataset.alignment);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const buttonNode = $createButtonNode();
 
-            buttonNode.getHref().should.equal('');
-            buttonNode.setHref('http://someblog.com/somepost');
-            buttonNode.getHref().should.equal('http://someblog.com/somepost');
+            buttonNode.getButtonUrl().should.equal('');
+            buttonNode.setButtonUrl('http://someblog.com/somepost');
+            buttonNode.getButtonUrl().should.equal('http://someblog.com/somepost');
 
-            buttonNode.getTitle().should.equal('');
-            buttonNode.setTitle('button text');
-            buttonNode.getTitle().should.equal('button text');
+            buttonNode.getButtonText().should.equal('');
+            buttonNode.setButtonText('button text');
+            buttonNode.getButtonText().should.equal('button text');
 
-            buttonNode.getAlignment().should.equal('');
-            buttonNode.setAlignment('center');
             buttonNode.getAlignment().should.equal('center');
+            buttonNode.setAlignment('left');
+            buttonNode.getAlignment().should.equal('left');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -103,7 +103,7 @@ describe('ButtonNode', function () {
             output.should.containEql('<td align="center">');
         }));
 
-        it('renders nothing with a missing href', editorTest(function () {
+        it('renders nothing with a missing buttonUrl', editorTest(function () {
             const buttonNode = $createButtonNode();
             const {element} = buttonNode.exportDOM(exportOptions);
 
@@ -120,8 +120,8 @@ describe('ButtonNode', function () {
             json.should.deepEqual({
                 type: 'button',
                 version: 1,
-                href: dataset.href,
-                title: dataset.title,
+                buttonUrl: dataset.buttonUrl,
+                buttonText: dataset.buttonText,
                 alignment: dataset.alignment
             });
         }));
@@ -150,8 +150,8 @@ describe('ButtonNode', function () {
                 try {
                     const [buttonNode] = $getRoot().getChildren();
 
-                    buttonNode.getHref().should.equal(dataset.href);
-                    buttonNode.getTitle().should.equal(dataset.title);
+                    buttonNode.getButtonUrl().should.equal(dataset.buttonUrl);
+                    buttonNode.getButtonText().should.equal(dataset.buttonText);
                     buttonNode.getAlignment().should.equal(dataset.alignment);
 
                     done();
@@ -167,7 +167,7 @@ describe('ButtonNode', function () {
             const buttonNode = $createButtonNode(dataset);
             const clonedbuttonNode = ButtonNode.clone(buttonNode);
             $isButtonNode(clonedbuttonNode).should.be.true;
-            clonedbuttonNode.getHref().should.equal(dataset.href);
+            clonedbuttonNode.getButtonUrl().should.equal(dataset.buttonUrl);
         }));
     });
 
@@ -178,7 +178,7 @@ describe('ButtonNode', function () {
 
         it('urlTransformMap', editorTest(function () {
             ButtonNode.urlTransformMap.should.deepEqual({
-                href: 'url'
+                buttonUrl: 'url'
             });
         }));
     });
@@ -190,8 +190,8 @@ describe('ButtonNode', function () {
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getHref().should.equal('http://someblog.com/somepost');
-            nodes[0].getTitle().should.equal('click me');
+            nodes[0].getButtonUrl().should.equal('http://someblog.com/somepost');
+            nodes[0].getButtonText().should.equal('click me');
             nodes[0].getAlignment().should.equal('center');
         }));
     });

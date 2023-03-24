@@ -7,9 +7,9 @@ export const INSERT_BUTTON_COMMAND = createCommand();
 
 export class ButtonNode extends KoenigDecoratorNode {
     // payload properties
-    __title;
+    __buttonText;
     __alignment;
-    __href;
+    __buttonUrl;
 
     static getType() {
         return 'button';
@@ -25,32 +25,32 @@ export class ButtonNode extends KoenigDecoratorNode {
     // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
-            href: 'url'
+            buttonUrl: 'url'
         };
     }
 
     getDataset() {
         const self = this.getLatest();
         return {
-            title: self.__title,
+            buttonText: self.__buttonText,
             alignment: self.__alignment,
-            href: self.__href
+            buttonUrl: self.__buttonUrl
         };
     }
 
-    constructor({title, alignment, href} = {}, key) {
+    constructor({buttonText, alignment, buttonUrl} = {}, key) {
         super(key);
-        this.__title = title || '';
-        this.__alignment = alignment || '';
-        this.__href = href || '';
+        this.__buttonText = buttonText || '';
+        this.__alignment = alignment || 'center';
+        this.__buttonUrl = buttonUrl || '';
     }
 
     static importJSON(serializedNode) {
-        const {title, alignment, href} = serializedNode;
+        const {alignment, buttonText, buttonUrl} = serializedNode;
         const node = new this({
-            title,
             alignment,
-            href
+            buttonText,
+            buttonUrl
         });
         return node;
     }
@@ -59,9 +59,9 @@ export class ButtonNode extends KoenigDecoratorNode {
         const dataset = {
             type: 'button',
             version: 1,
-            title: this.getTitle(),
+            buttonText: this.getButtonText(),
             alignment: this.getAlignment(),
-            href: this.getHref()
+            buttonUrl: this.getButtonUrl()
         };
         return dataset;
     }
@@ -93,14 +93,14 @@ export class ButtonNode extends KoenigDecoratorNode {
     }
     /* c8 ignore stop */
 
-    getTitle() {
+    getButtonText() {
         const self = this.getLatest();
-        return self.__title;
+        return self.__buttonText;
     }
 
-    setTitle(title) {
+    setButtonText(buttonText) {
         const writable = this.getWritable();
-        return writable.__title = title;
+        return writable.__buttonText = buttonText;
     }
 
     getAlignment() {
@@ -113,14 +113,14 @@ export class ButtonNode extends KoenigDecoratorNode {
         return writable.__alignment = alignment;
     }
 
-    getHref() {
+    getButtonUrl() {
         const self = this.getLatest();
-        return self.__href;
+        return self.__buttonUrl;
     }
 
-    setHref(href) {
+    setButtonUrl(buttonUrl) {
         const writable = this.getWritable();
-        return writable.__href = href;
+        return writable.__buttonUrl = buttonUrl;
     }
 
     // should be overridden

@@ -4,6 +4,7 @@ import ImagePlugin from '../plugins/ImagePlugin';
 import MarkdownPlugin from '../plugins/MarkdownPlugin';
 import React from 'react';
 import {AudioPlugin} from '../plugins/AudioPlugin';
+import {ButtonPlugin} from '../plugins/ButtonPlugin';
 import {CalloutPlugin} from '../plugins/CalloutPlugin';
 import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
@@ -29,6 +30,7 @@ export const AllDefaultPlugins = () => {
             <HorizontalRulePlugin />
             <CalloutPlugin />
             <HtmlPlugin />
+            <ButtonPlugin />
             <TogglePlugin />
         </>
     );

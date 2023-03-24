@@ -6,9 +6,10 @@ export function ButtonGroup({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
             <ul className="flex items-center justify-evenly rounded bg-grey-100 font-sans text-md font-normal text-white">
-                {buttons.map(({label, name, Icon}) => (
+                {buttons.map(({label, name, Icon, dataTestId}) => (
                     <IconButton
                         key={`${name}-${label}`}
+                        dataTestId={dataTestId}
                         Icon={Icon}
                         label={label}
                         name={name}
@@ -21,13 +22,14 @@ export function ButtonGroup({buttons = [], selectedName, onClick}) {
     );
 }
 
-export function IconButton({onClick, label, name, selectedName, Icon}) {
+export function IconButton({dataTestId, onClick, label, name, selectedName, Icon}) {
     const isActive = name === selectedName;
     return (
         <li>
             <button
                 aria-label={label}
                 className={`m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded bg-white text-black shadow-sm' : 'text-grey-700' } ${Icon || 'text-[1.3rem] font-bold'}`}
+                data-testid={dataTestId}
                 type="button"
                 onClick={() => onClick(name)}
             >
@@ -38,5 +40,5 @@ export function IconButton({onClick, label, name, selectedName, Icon}) {
 }
 
 ButtonGroup.propTypes = {
-    selectedName: PropTypes.oneOf(['regular', 'wide', 'full'])
+    selectedName: PropTypes.oneOf(['regular', 'wide', 'full', 'center', 'left'])
 };
