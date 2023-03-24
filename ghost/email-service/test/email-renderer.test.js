@@ -858,82 +858,9 @@ describe('Email renderer', function () {
         let renderedPost = '<p>Lexical Test</p>';
         let postUrl = 'http://example.com';
         let customSettings = {};
-        let emailRenderer = new EmailRenderer({
-            audienceFeedbackService: {
-                buildLink: (_uuid, _postId, score) => {
-                    return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
-                }
-            },
-            urlUtils: {
-                urlFor: (type) => {
-                    if (type === 'image') {
-                        return 'http://icon.example.com';
-                    }
-                    return 'http://example.com/subdirectory';
-                },
-                isSiteUrl: (u) => {
-                    return u.hostname === 'example.com';
-                }
-            },
-            settingsCache: {
-                get: (key) => {
-                    if (customSettings[key]) {
-                        return customSettings[key];
-                    }
-                    if (key === 'accent_color') {
-                        return '#ffffff';
-                    }
-                    if (key === 'timezone') {
-                        return 'Etc/UTC';
-                    }
-                    if (key === 'title') {
-                        return 'Test Blog';
-                    }
-                    if (key === 'icon') {
-                        return 'ICON';
-                    }
-                }
-            },
-            getPostUrl: () => {
-                return postUrl;
-            },
-            renderers: {
-                lexical: {
-                    render: () => {
-                        return renderedPost;
-                    }
-                },
-                mobiledoc: {
-                    render: () => {
-                        return '<p> Mobiledoc Test</p>';
-                    }
-                }
-            },
-            linkReplacer,
-            memberAttributionService: {
-                addPostAttributionTracking: (u) => {
-                    u.searchParams.append('post_tracking', 'added');
-                    return u;
-                }
-            },
-            linkTracking: {
-                service: {
-                    addTrackingToUrl: (u, _post, uuid) => {
-                        return new URL('http://tracked-link.com/?m=' + encodeURIComponent(uuid) + '&url=' + encodeURIComponent(u.href));
-                    }
-                }
-            },
-            outboundLinkTagger: {
-                addToUrl: (u, newsletter) => {
-                    u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
-                    return u;
-                }
-            },
-            labs: {
-                isSet: () => true
-            }
-        });
+        let emailRenderer;
         let basePost;
+        let addTrackingToUrlStub;
 
         beforeEach(function () {
             basePost = {
@@ -955,6 +882,83 @@ describe('Email renderer', function () {
             };
             postUrl = 'http://example.com';
             customSettings = {};
+            addTrackingToUrlStub = sinon.stub();
+            addTrackingToUrlStub.callsFake((u, _post, uuid) => {
+                return new URL('http://tracked-link.com/?m=' + encodeURIComponent(uuid) + '&url=' + encodeURIComponent(u.href));
+            });
+            emailRenderer = new EmailRenderer({
+                audienceFeedbackService: {
+                    buildLink: (_uuid, _postId, score) => {
+                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
+                    }
+                },
+                urlUtils: {
+                    urlFor: (type) => {
+                        if (type === 'image') {
+                            return 'http://icon.example.com';
+                        }
+                        return 'http://example.com/subdirectory';
+                    },
+                    isSiteUrl: (u) => {
+                        return u.hostname === 'example.com';
+                    }
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (customSettings[key]) {
+                            return customSettings[key];
+                        }
+                        if (key === 'accent_color') {
+                            return '#ffffff';
+                        }
+                        if (key === 'timezone') {
+                            return 'Etc/UTC';
+                        }
+                        if (key === 'title') {
+                            return 'Test Blog';
+                        }
+                        if (key === 'icon') {
+                            return 'ICON';
+                        }
+                    }
+                },
+                getPostUrl: () => {
+                    return postUrl;
+                },
+                renderers: {
+                    lexical: {
+                        render: () => {
+                            return renderedPost;
+                        }
+                    },
+                    mobiledoc: {
+                        render: () => {
+                            return '<p> Mobiledoc Test</p>';
+                        }
+                    }
+                },
+                linkReplacer,
+                memberAttributionService: {
+                    addPostAttributionTracking: (u) => {
+                        u.searchParams.append('post_tracking', 'added');
+                        return u;
+                    }
+                },
+                linkTracking: {
+                    service: {
+                        addTrackingToUrl: addTrackingToUrlStub
+                    }
+                },
+                outboundLinkTagger: {
+                    addToUrl: (u, newsletter) => {
+                        u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
+                        return u;
+                    }
+                },
+                labs: {
+                    isSet: () => true
+                }
+            });
         });
 
         it('returns feedback buttons and unsubcribe links', async function () {
@@ -1169,6 +1173,68 @@ describe('Email renderer', function () {
         });
 
         it('replaces all links except the unsubscribe and feedback links', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: true,
+                feedback_enabled: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {
+                clickTrackingEnabled: true
+            };
+
+            renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a></p>';
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // Check all links have domain tracked-link.com
+            const $ = cheerio.load(response.html);
+            const links = [];
+            for (const link of $('a').toArray()) {
+                const href = $(link).attr('href');
+                links.push(href);
+                if (href.includes('unsubscribe_url')) {
+                    href.should.eql('%%{unsubscribe_url}%%');
+                } else if (href.includes('feedback-link.com')) {
+                    href.should.containEql('%%{uuid}%%');
+                } else {
+                    href.should.containEql('tracked-link.com');
+                    href.should.containEql('m=%%{uuid}%%');
+                }
+            }
+
+            // Update the following array when you make changes to the email template, check if replacements are correct for each newly added link.
+            assert.deepEqual(links, [
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fencoded-link.com%2F%3Fcode%3Dtest%26source_tracking%3Dsite`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
+                `%%{unsubscribe_url}%%`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fsource_tracking%3Dsite`
+            ]);
+
+            // Check uuid in replacements
+            response.replacements.length.should.eql(2);
+            response.replacements[0].id.should.eql('uuid');
+            response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
+            response.replacements[1].id.should.eql('unsubscribe_url');
+            response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+        });
+
+        it('handles encoded links', async function () {
             const post = createModel(basePost);
             const newsletter = createModel({
                 header_image: null,
