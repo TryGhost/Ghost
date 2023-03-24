@@ -62,6 +62,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -198,12 +206,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -657,6 +667,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -793,12 +811,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -1238,6 +1258,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -1374,12 +1402,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -1819,6 +1849,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -1955,12 +1993,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -2400,6 +2440,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -2536,12 +2584,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -2939,6 +2989,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -3075,12 +3133,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -4594,6 +4654,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -4730,12 +4798,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -5275,6 +5345,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -5411,12 +5489,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -5912,6 +5992,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -6048,12 +6136,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -7797,6 +7887,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -7933,12 +8031,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -8433,6 +8533,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -8569,12 +8677,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -9069,6 +9179,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -9205,12 +9323,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -9705,6 +9825,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -9841,12 +9969,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -10341,6 +10471,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -10477,12 +10615,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -11613,6 +11753,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -11749,12 +11897,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -12196,6 +12346,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -12332,12 +12490,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }

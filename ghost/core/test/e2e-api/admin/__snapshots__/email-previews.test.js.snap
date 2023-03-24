@@ -169,6 +169,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -305,12 +313,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -701,7 +711,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "21891",
+  "content-length": "22062",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -782,6 +792,14 @@ Object {
   table.body {
     width: 100%;
     min-width: 100%;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
   }
 
   table.body p,
@@ -920,12 +938,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -1336,7 +1356,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "26714",
+  "content-length": "26885",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1448,6 +1468,14 @@ Object {
   table.body {
     width: 100%;
     min-width: 100%;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
   }
 
   table.body p,
@@ -1586,12 +1614,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -1989,7 +2019,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "21657",
+  "content-length": "21828",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2432,6 +2462,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -2568,12 +2606,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -2981,7 +3021,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "22149",
+  "content-length": "22320",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3450,6 +3490,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -3586,12 +3634,14 @@ table.body .footer a {
     padding-bottom: 8px !important;
   }
 
-  table.body .latest-post h4 {
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
     padding: 4px 0 !important;
     font-size: 18px !important;
   }
 
-  table.body .latest-post p {
+  table.body .latest-post p,
+table.body .latest-post p span {
     font-size: 13px !important;
     line-height: 1.25em;
   }
@@ -3999,7 +4049,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "22149",
+  "content-length": "22320",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
