@@ -21,6 +21,15 @@ const messages = {
     }
 };
 
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function formatDateLong(date, timezone) {
     return DateTime.fromJSDate(date).setZone(timezone).setLocale('en-gb').toLocaleString({
         year: 'numeric',
@@ -711,6 +720,27 @@ class EmailRenderer {
     }
 
     /**
+     *
+     * @param {*} text
+     * @param {number} maxLength
+     * @param {number} maxLengthMobile should be larger than maxLength
+     * @returns
+     */
+    truncateHtml(text, maxLength, maxLengthMobile) {
+        if (!maxLengthMobile || maxLength >= maxLengthMobile) {
+            return escapeHtml(this.truncateText(text, maxLength));
+        }
+        if (text && text.length > maxLength) {
+            if (text.length <= maxLengthMobile) {
+                return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '<span class="hide-mobile">…</span>';
+            }
+            return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '…';
+        } else {
+            return escapeHtml(text ?? '');
+        }
+    }
+
+    /**
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall}) {
@@ -784,7 +814,7 @@ class EmailRenderer {
                 const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
                 latestPosts.push({
-                    title: this.truncateText(latestPost.get('title'), 85),
+                    title: this.truncateHtml(latestPost.get('title'), featureImage ? 85 : 105, 105),
                     url: this.#getPostUrl(latestPost),
                     featureImage: featureImage ? {
                         src: featureImage,
@@ -796,7 +826,7 @@ class EmailRenderer {
                         width: featureImageMobileWidth,
                         height: featureImageMobileHeight
                     } : null,
-                    excerpt: this.truncateText(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), 60)
+                    excerpt: this.truncateHtml(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), featureImage ? 60 : 70, 105)
                 });
 
                 if (featureImage) {
