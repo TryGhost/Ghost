@@ -78,10 +78,10 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td>
+                                                <td style="width: 100%">
                                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 48px;">
                                                         <tr>
-                                                            <td class="{{classes.meta}} author-date">
+                                                            <td height="20" class="{{classes.meta}}" style="padding: 0;">
                                                                 By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
                                                                 {{#if newsletter.showCommentCta}}
                                                                     <a href="{{post.commentUrl}}" class="comment-link" valign="middle">
@@ -89,7 +89,12 @@
                                                                     </a>
                                                                 {{/if}}
                                                             </td>
-                                                            <td class="{{classes.meta}} view-online">
+                                                            <td class="{{classes.meta}} view-online desktop">
+                                                                <a href="{{post.url}}" class="view-online-link">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="{{classes.meta}} view-online-mobile">
+                                                            <td height="20" class="view-online">
                                                                 <a href="{{post.url}}" class="view-online-link">View in browser</a>
                                                             </td>
                                                         </tr>

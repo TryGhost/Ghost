@@ -360,26 +360,27 @@ figure blockquote p {
     font-size: 13px;
     letter-spacing: 0.1px;
     text-align: center;
-    display: inline-block;
-    width: 100% !important;
-}
-
-.view-online {
-    text-align: center;
 }
 
 .post-meta-left {
-    display: table-cell;
     text-align: left;
 }
 
+.post-meta-left.view-online-mobile {
+    display: none !important;
+}
+
 .post-meta-left.view-online {
-    display: table-cell;
     text-align: right;
 }
 
 .post-meta-center.view-online {
-    text-decoration: underline;
+    display: none !important;
+}
+
+.post-meta-center .view-online,
+.post-meta-center .view-online a {
+    text-decoration: underline !important;
 }
 
 .post-meta-date {
@@ -465,7 +466,12 @@ figure blockquote p {
 }
 
 .latest-post a {
+    text-decoration: none !important;
+}
+
+.latest-post-img a {
     display: block;
+    height: 100px;
     overflow: hidden;
     color: inherit;
     text-decoration: none;
@@ -496,6 +502,14 @@ figure blockquote p {
     font-weight: 700;
 }
 
+.latest-post h4.no-image {
+    padding: 12px 0 4px;
+}
+
+.latest-post h4 a {
+    color: #15212A !important;
+}
+
 .latest-post p {
     margin: 0;
     padding: 0;
@@ -504,8 +518,8 @@ figure blockquote p {
     font-weight: 400;
 }
 
-.latest-post h4.no-image {
-    padding: 12px 0 4px;
+.latest-post p a {
+    color: #738a94 !important;
 }
 
 /* -------------------------------------
@@ -1155,23 +1169,26 @@ a[data-flickr-embed] img {
 
     table.body .post-meta,
     table.body .view-online {
-        display: inline-block;
-    }
-
-    table.body .post-meta-left {
-        display: inline-block !important;
         width: 100% !important;
-        text-align: left !important;
     }
 
+    table.body .post-meta-left,
     table.body .post-meta-left.view-online {
-        display: inline-block !important;
         width: 100% !important;
         text-align: left !important;
     }
 
-    table.body .post-meta.author-date {
-        width: 100%;
+    table.body .post-meta.view-online-mobile {
+        display: table-row !important;
+    }
+
+    table.body .post-meta-left.view-online-mobile,
+    table.body .post-meta-left.view-online-mobile .view-online {
+        text-align: left !important;
+    }
+
+    table.body .post-meta.view-online.desktop {
+        display: none !important;
     }
 
     table.body .view-online {
@@ -1207,11 +1224,6 @@ a[data-flickr-embed] img {
 
     table.body .latest-posts-header {
         font-size: 14px !important;
-    }
-
-    table.body .latest-post a {
-        height: auto !important;
-        padding: 0 !important;
     }
 
     table.body .latest-post-img {

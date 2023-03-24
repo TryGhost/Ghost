@@ -2322,14 +2322,13 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-latest-post-image {
-    border-radius: var(--border-radius);
     width: 100%;
-    max-width: 120px;
+    max-width: 100px;
     height: auto;
     background: transparent;
     background-repeat: no-repeat;
     background-size: cover;
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 1 / 1;
 }
 
 .gh-members-emailpreview-latest-post h4 {
