@@ -74,7 +74,7 @@ ToggleCard.defaultProps = {
     content: '',
     contentPlaceholder: 'Collapsible content',
     header: '',
-    headerPlaceholder: 'Toggle Header',
+    headerPlaceholder: 'Toggle header',
     isContentFocused: false,
     isContentVisible: false,
     isEditing: false,
