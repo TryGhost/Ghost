@@ -539,12 +539,14 @@ module.exports = class MemberRepository {
         if (needsNewsletters) {
             const existingNewsletters = initialMember.related('newsletters').models;
 
-            // This maps the old subscribed property to the new newsletters field
-            if (memberData.subscribed === false) {
-                memberData.newsletters = [];
-            } else if (memberData.subscribed === true && !existingNewsletters.find(n => n.get('status') === 'active')) {
-                const browseOptions = _.pick(options, 'transacting');
-                memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
+            // This maps the old subscribed property to the new newsletters field and is only used to keep backward compatibility
+            if (!memberData.newsletters) {
+                if (memberData.subscribed === false) {
+                    memberData.newsletters = [];
+                } else if (memberData.subscribed === true && !existingNewsletters.find(n => n.get('status') === 'active')) {
+                    const browseOptions = _.pick(options, 'transacting');
+                    memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
+                }
             }
 
             // only ever populated with active newsletters - never archived ones
