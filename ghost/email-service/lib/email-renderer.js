@@ -834,7 +834,7 @@ class EmailRenderer {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
-                showSubscriptionDetails: newsletter.get('show_subscription_details') && this.#labs.isSet('makingItRain')
+                showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
             latestPosts,
             latestPostsHasImages,
