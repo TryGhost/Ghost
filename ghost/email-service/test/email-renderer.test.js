@@ -203,6 +203,24 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].getValue(member), 'complimentary');
         });
 
+        it('returns mapped trialing status', function () {
+            member.status = 'paid';
+            member.subscriptions = [
+                {
+                    status: 'trialing',
+                    trial_end_at: new Date(2050, 2, 13, 12, 0),
+                    current_period_end: new Date(2023, 2, 13, 12, 0),
+                    cancel_at_period_end: false
+                }
+            ];
+            const html = 'Hello %%{status}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
+            assert.equal(replacements[0].id, 'status');
+            assert.equal(replacements[0].getValue(member), 'trialing');
+        });
+
         it('returns manage_account_url', function () {
             const html = 'Hello %%{manage_account_url}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
@@ -214,11 +232,21 @@ describe('Email renderer', function () {
 
         it('returns status_text', function () {
             const html = 'Hello %%{status_text}%%,';
+            member.status = 'paid';
+            member.subscriptions = [
+                {
+                    status: 'trialing',
+                    trial_end_at: new Date(2050, 2, 13, 12, 0),
+                    current_period_end: new Date(2023, 2, 13, 12, 0),
+                    cancel_at_period_end: false
+                }
+            ];
+
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{status_text\\}%%/g');
             assert.equal(replacements[0].id, 'status_text');
-            assert.equal(replacements[0].getValue(member), 'You are currently subscribed to the free plan.');
+            assert.equal(replacements[0].getValue(member), 'Your free trial ends on 13 March 2050, at which time you will be charged the regular price. You can always cancel before then.');
         });
 
         it('returns correct createdAt', function () {
@@ -279,6 +307,109 @@ describe('Email renderer', function () {
         });
     });
 
+    describe('isMemberTrialing', function () {
+        let emailRenderer;
+
+        beforeEach(function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                    }
+                }
+            });
+        });
+
+        it('Returns false for free member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
+            };
+
+            const result = emailRenderer.isMemberTrialing(member);
+            assert.equal(result, false);
+        });
+
+        it('Returns false for paid member without trial', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'active',
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ]
+            };
+
+            const result = emailRenderer.isMemberTrialing(member);
+            assert.equal(result, false);
+        });
+
+        it('Returns true for trialing paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'trialing',
+                        trial_end_at: new Date(2050, 2, 13, 12, 0),
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ],
+                tiers: []
+            };
+
+            const result = emailRenderer.isMemberTrialing(member);
+            assert.equal(result, true);
+        });
+
+        it('Returns false for expired trialing paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'trialing',
+                        trial_end_at: new Date(2000, 2, 13, 12, 0),
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ],
+                tiers: []
+            };
+
+            const result = emailRenderer.isMemberTrialing(member);
+            assert.equal(result, false);
+        });
+    });
+
     describe('getMemberStatusText', function () {
         let emailRenderer;
 
@@ -311,7 +442,7 @@ describe('Email renderer', function () {
             };
 
             const result = emailRenderer.getMemberStatusText(member);
-            assert.equal(result, 'You are currently subscribed to the free plan.');
+            assert.equal(result, '');
         });
 
         it('Returns for active paid member', function () {
