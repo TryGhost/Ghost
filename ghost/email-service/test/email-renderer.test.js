@@ -1659,7 +1659,7 @@ describe('Email renderer', function () {
             assert.deepEqual(data.latestPosts,
                 [
                     {
-                        excerpt: 'Super long custom excerpt. Super long custom excerpt. Super…',
+                        excerpt: 'Super long custom excerpt. Super long custom excerpt. Super<span class="mobile-only"> long custom excerpt. Super long custom excer</span>…',
                         title: 'Test Post 1',
                         url: 'http://example.com',
                         featureImage: {
@@ -1737,6 +1737,18 @@ describe('Email renderer', function () {
         it('works for null', async function () {
             const emailRenderer = new EmailRenderer({});
             assert.equal(emailRenderer.truncateText(null, 100), '');
+        });
+    });
+
+    describe('truncateHTML', function () {
+        it('works correctly', async function () {
+            const emailRenderer = new EmailRenderer({});
+            assert.equal(emailRenderer.truncateHtml('This is a short one', 5, 10), 'This<span class="mobile-only"> is a</span>…');
+            assert.equal(emailRenderer.truncateHtml('This is a', 5, 10), 'This<span class="mobile-only"> is a</span><span class="hide-mobile">…</span>');
+            assert.equal(emailRenderer.truncateHtml('This', 5, 10), 'This');
+            assert.equal(emailRenderer.truncateHtml('This is a long text', 5, 5), 'This…');
+            assert.equal(emailRenderer.truncateHtml('This is a long text', 5), 'This…');
+            assert.equal(emailRenderer.truncateHtml(null, 5, 10), '');
         });
     });
 
