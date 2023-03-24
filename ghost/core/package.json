@@ -134,7 +134,7 @@
     "@tryghost/posts-service": "0.0.0",
     "@tryghost/pretty-cli": "1.2.34",
     "@tryghost/promise": "0.3.2",
-    "@tryghost/request": "0.1.36",
+    "@tryghost/request": "0.1.37",
     "@tryghost/security": "0.0.0",
     "@tryghost/session-service": "0.0.0",
     "@tryghost/settings-path-manager": "0.0.0",
