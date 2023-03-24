@@ -19,10 +19,10 @@
   ],
   "devDependencies": {
     "c8": "7.13.0",
+    "html-validate": "7.13.3",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.2",
-    "html-validate": "7.13.3"
+    "sinon": "15.0.2"
   },
   "dependencies": {
     "@tryghost/color-utils": "0.1.23",
@@ -35,6 +35,7 @@
     "@tryghost/validator": "^0.2.0",
     "bson-objectid": "2.0.4",
     "cheerio": "0.22.0",
+    "entities": "4.4.0",
     "handlebars": "4.7.7",
     "juice": "8.1.0",
     "moment-timezone": "0.5.23"

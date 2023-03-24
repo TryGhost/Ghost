@@ -8,6 +8,7 @@ const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@trygh
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
+const entities = require('entities');
 
 const messages = {
     subscriptionStatus: {
@@ -292,6 +293,8 @@ class EmailRenderer {
         // Link tracking
         if (options.clickTrackingEnabled) {
             html = await this.#linkReplacer.replace(html, async (url) => {
+                // Decode any escaped entities in the url
+                url = new URL(entities.decode(url.toString()));
                 // We ignore all links that contain %%{uuid}%%
                 // because otherwise we would add tracking to links that need to be replaced first
                 if (url.toString().indexOf('%%{uuid}%%') !== -1) {
