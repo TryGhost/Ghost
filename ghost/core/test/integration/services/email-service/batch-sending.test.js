@@ -45,6 +45,8 @@ async function getDefaultNewsletter() {
     return await models.Newsletter.findOne({slug: newsletterSlug});
 }
 
+let postCounter = 0;
+
 async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
     const post = {
         title: 'A random test post',
@@ -64,11 +66,14 @@ async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
 
     const id = res.body.posts[0].id;
 
+    // Make sure all posts are published in the samre order, with minimum 1s difference (to have consistent ordering when including latests posts)
+    postCounter += 1;
+
     const updatedPost = {
         status: 'published',
         updated_at: res.body.posts[0].updated_at,
         // Fixed publish date to make sure snapshots are consistent
-        published_at: moment(new Date(2023, 0, 1, 12)).toISOString()
+        published_at: moment(new Date(2050, 0, 1, 12, 0, postCounter)).toISOString()
     };
 
     const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
@@ -1227,6 +1232,27 @@ describe('Batch sending tests', function () {
 
             // undo
             await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
+        });
+
+        it('Shows 3 latest posts', async function () {
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_latest_posts: true}, {id: defaultNewsletter.id});
+
+            const {html} = await sendEmail({
+                title: 'This is the main post title',
+                mobiledoc: mobileDocExample
+            });
+
+            // Check contains 3 latest posts
+            assert.match(html, /Keep reading/);
+
+            // Check count of title
+            assert.equal(html.match(/This is the main post title/g).length, 2, 'Should only contain the title two times'); // otherwise post is in last 3 posts
+
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_latest_posts: false}, {id: defaultNewsletter.id});
         });
     });
 });
