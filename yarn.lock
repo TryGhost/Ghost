@@ -5108,6 +5108,15 @@
     lodash "^4.17.21"
     uuid "^9.0.0"
 
+"@tryghost/errors@^1.2.22":
+  version "1.2.22"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.22.tgz#951aee3632e8e819f90c04b86e2c443f7ef3855a"
+  integrity sha512-/DsrjIUvXEP2G4/vBUGPifp7D5EBqlE2N955ZGuM1iDLy6wqyA+IKy41huMuTZsZRMSUKeRL37L1OR6axMV3zw==
+  dependencies:
+    "@stdlib/utils" "^0.0.12"
+    lodash "^4.17.21"
+    uuid "^9.0.0"
+
 "@tryghost/express-test@0.13.1":
   version "0.13.1"
   resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.13.1.tgz#731773f9d8e9bf0e5222f50e1f829712c4248c67"
@@ -5396,7 +5405,18 @@
   resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.2.tgz#a3e333e45dca3b5d2f8f72bf31d2ab50b8c4ed6e"
   integrity sha512-ktN80GWQ9WNfbZ7+SRYDJg6MZwttbRfsjvVurx8ng7EpD+9VOe1XP70h7Pt13TP9zD5cfSztwxzI3jEnZmCKKQ==
 
-"@tryghost/request@0.1.36", "@tryghost/request@^0.1.36":
+"@tryghost/request@0.1.37":
+  version "0.1.37"
+  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.37.tgz#c1fa04cc51b36aa25ada0db94a8e0f2666dcc12a"
+  integrity sha512-EtNir45HtTbFapb7vbsk/lxSh8jwwn8F2EbdHLuIQPBVQV+8GQR4tlP6GGWUgLBw06emb+Up6mtgHcSUTNEH4A==
+  dependencies:
+    "@tryghost/errors" "^1.2.22"
+    "@tryghost/validator" "^0.2.2"
+    "@tryghost/version" "^0.1.21"
+    got "9.6.0"
+    lodash "^4.17.21"
+
+"@tryghost/request@^0.1.36":
   version "0.1.36"
   resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.36.tgz#4848adea95d1378913dfea938fb8d2628ae53ffc"
   integrity sha512-sH6SR2lyhXdxi5GdjMn1Eo98yIO2htid+5jbA0l3KwDQ5kCcIjayI9PUOUADG5nbjuLMtRqkqt3CafC5VRJyMg==
@@ -5411,6 +5431,14 @@
   version "0.3.20"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.20.tgz#4d4ed9189932cb189046f4357b6eb9ff57857850"
   integrity sha512-Uyx6Xf/ACKAiGLCpsn463TP+/mGZ93MskCFQC8ccTMXP9y5N70AY/tRG9MBreNo5CmN+sVKLQPwYIOG7cnXb+w==
+  dependencies:
+    caller "^1.0.1"
+    find-root "^1.1.0"
+
+"@tryghost/root-utils@^0.3.21":
+  version "0.3.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.21.tgz#11691e10f3b83f5a3b0ff1ce290ca4d85cb3709c"
+  integrity sha512-JnNKipYhmlMKgD07HO+1doCiqY/TQxi+7QJE6mA69r6aZ8NgGQkJP6QDlg5D/g9K7xYzP0E6dFD7sBXVemWLlQ==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
@@ -5447,6 +5475,13 @@
   dependencies:
     lodash.template "^4.5.0"
 
+"@tryghost/tpl@^0.1.23":
+  version "0.1.23"
+  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.23.tgz#fc9af14d2947c89c8547e7880700e0e4aa5b6917"
+  integrity sha512-UhM4p/7+LgCXm5zHFifQrWtemdqzKPXph/i6I/nJ2z4V5x3buzGzX86BmrejUu/A7tT3XYSWi5A12tLeqqc3DQ==
+  dependencies:
+    lodash.template "^4.5.0"
+
 "@tryghost/url-utils@4.4.0", "@tryghost/url-utils@^4.0.0":
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.4.0.tgz#3f2e0c50ddec49f9c90f6d611eddce51185e6cad"
@@ -5470,12 +5505,31 @@
     moment-timezone "^0.5.23"
     validator "7.2.0"
 
+"@tryghost/validator@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.2.2.tgz#99d120b092cb8dd3945f4adca44b13d670480a03"
+  integrity sha512-VXQjF6GAorWk4aC2HnoMGKRp4LzsJVcGXycjn4y2Tc0o4qiv+42E1lBL+WwhNpX1fv9j5iWR3dMD9BuQ3QpXdw==
+  dependencies:
+    "@tryghost/errors" "^1.2.22"
+    "@tryghost/tpl" "^0.1.23"
+    lodash "^4.17.21"
+    moment-timezone "^0.5.23"
+    validator "7.2.0"
+
 "@tryghost/version@0.1.20", "@tryghost/version@^0.1.20":
   version "0.1.20"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.20.tgz#5b508833d7f5c5185eb78e533a6f11e2ccd32825"
   integrity sha512-Abk7vQVu/ZwdD1Fnv2NqvyZmwML/X3Aui5DeOhCBnpcpD3oGd/jV0FaEoffI9wQmnNTmIPh6F+q8n3ZHc3plXA==
   dependencies:
     "@tryghost/root-utils" "^0.3.20"
+    semver "^7.3.5"
+
+"@tryghost/version@^0.1.21":
+  version "0.1.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.21.tgz#d2a9fb959a1173075a45cdaf03c1020f47bb4932"
+  integrity sha512-vd6E6N6RkFlCy/FavFBd8stwUKF74Rhm8AumpO1kR2IRnS5S2HqgT4znXJ/jBT0FlfGUSQtO8peeFHhDgOd/zQ==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.21"
     semver "^7.3.5"
 
 "@tryghost/webhook-mock-receiver@0.2.4":

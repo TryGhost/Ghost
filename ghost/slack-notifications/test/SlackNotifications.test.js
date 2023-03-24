@@ -289,7 +289,8 @@ describe('SlackNotifications', function () {
                 'https://slack-webhook.com',
                 {
                     body: '{"data":"test"}',
-                    headers: {'user-agent': 'Ghost/5.0.0 (https://github.com/TryGhost/Ghost)'}
+                    headers: {'user-agent': 'Ghost/5.0.0 (https://github.com/TryGhost/Ghost)'},
+                    retry: 0
                 }
             ];
 

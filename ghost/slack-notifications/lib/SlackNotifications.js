@@ -172,6 +172,10 @@ class SlackNotifications {
             }
         };
 
+        if (process.env.NODE_ENV?.startsWith('test')) {
+            requestOptions.retry = 0;
+        }
+
         return await got.post(url, requestOptions);
     }
 

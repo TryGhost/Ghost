@@ -48,15 +48,19 @@ async function errorIfInvalidUrl(options) {
 
 // same as our normal request lib but if any request in a redirect chain resolves
 // to a private IP address it will be blocked before the request is made.
-const externalRequest = got.extend({
+const gotOpts = {
     headers: {
         'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
     },
     timeout: 10000, // default is no timeout
     hooks: {
-        beforeRequest: [errorIfInvalidUrl,errorIfHostnameResolvesToPrivateIp],
+        beforeRequest: [errorIfInvalidUrl, errorIfHostnameResolvesToPrivateIp],
         beforeRedirect: [errorIfHostnameResolvesToPrivateIp]
     }
-});
+};
 
-module.exports = externalRequest;
+if (process.env.NODE_ENV?.startsWith('test')) {
+    gotOpts.retry = 0;
+}
+
+module.exports = got.extend(gotOpts);
