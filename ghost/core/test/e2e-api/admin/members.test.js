@@ -2504,7 +2504,7 @@ describe('Members API', function () {
             });
         const changedMember = body2.members[0];
         assert.equal(changedMember.newsletters.length, 1);
-        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member is still subscribed for a newsletter that is off by default');
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member should be subscribed to the newsletter');
     });
 
     it('Updating member data without newsletters does not change newsletters', async function () {
