@@ -770,7 +770,7 @@ class EmailRenderer {
 
         const latestPosts = [];
         let latestPostsHasImages = false;
-        if (newsletter.get('show_latest_posts') && this.#labs.isSet('makingItRain')) {
+        if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
             const {data} = await this.#models.Post.findPage({
                 filter: 'status:published+id:-' + post.id,
@@ -838,8 +838,6 @@ class EmailRenderer {
             },
             latestPosts,
             latestPostsHasImages,
-
-            labs: this.#settingsCache.get('labs'),
 
             //CSS
             accentColor: accentColor, // default to #15212A
