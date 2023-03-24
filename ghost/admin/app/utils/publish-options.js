@@ -172,7 +172,11 @@ export default class PublishOptions {
     }
 
     get recipientFilter() {
-        return this.selectedRecipientFilter || (this.post.newsletter && this.post.emailSegment) || this.defaultRecipientFilter;
+        if (this.selectedRecipientFilter === undefined) {
+            return (this.post.newsletter && this.post.emailSegment) || this.defaultRecipientFilter;
+        } else {
+            return this.selectedRecipientFilter;
+        }
     }
 
     get defaultRecipientFilter() {
