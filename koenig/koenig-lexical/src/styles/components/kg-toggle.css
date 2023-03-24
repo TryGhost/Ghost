@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .kg-toggle-header-placeholder {
+    @apply font-sans text-xl font-bold leading-snug text-black dark:text-grey-50 opacity-40
+  }
+
+  .kg-toggle-header-text .kg-prose span {
+    @apply font-sans text-xl font-bold leading-snug text-black dark:text-grey-50 opacity-100
+  }
+
+  .kg-toggle-content-placeholder {
+    @apply font-serif text-xl font-normal leading-normal text-grey-900 dark:text-grey-100 opacity-40
+  }
+
+  .kg-toggle-content-text .kg-prose span {
+    @apply font-serif text-xl font-normal leading-normal text-grey-900 dark:text-grey-100 opacity-100
+  }
+
+  .kg-toggle-header-text, .kg-toggle-content-text {
+    @apply !whitespace-normal
+  }
+
+  .kg-toggle-content-text .kg-prose :where(
+        p + p,
+        ul + p,
+        ol + p
+    ) {
+        @apply my-0
+    }
+
+    .kg-toggle-content-text .kg-prose :where(
+      p + ul,
+      p + ol,
+    ) {
+        @apply my-2
+    }
+}

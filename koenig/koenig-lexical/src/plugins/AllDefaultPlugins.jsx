@@ -8,6 +8,7 @@ import {CalloutPlugin} from '../plugins/CalloutPlugin';
 import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
+import {TogglePlugin} from '../plugins/TogglePlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
 
 export const AllDefaultPlugins = () => {
@@ -28,6 +29,7 @@ export const AllDefaultPlugins = () => {
             <HorizontalRulePlugin />
             <CalloutPlugin />
             <HtmlPlugin />
+            <TogglePlugin />
         </>
     );
 };

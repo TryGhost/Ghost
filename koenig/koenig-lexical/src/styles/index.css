@@ -1,13 +1,13 @@
 @import "./preflight.css";
 
 @import 'tailwindcss/base';
-
 @import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
 @import './components/koenig-lexical';
 @import './components/kg-prose';
 @import './components/simplemde';
-
-@import 'tailwindcss/utilities';
+@import './components/kg-toggle';
 
  /* Global Koenig content styles
 /* -------------------------------------------------------------------- */

@@ -7,6 +7,7 @@ import * as callout from './nodes/callout/CalloutNode';
 import * as aside from './nodes/aside/AsideNode';
 import * as horizontalrule from './nodes/horizontalrule/HorizontalRuleNode';
 import * as html from './nodes/html/HtmlNode';
+import * as toggle from './nodes/toggle/ToggleNode';
 import * as button from './nodes/button/ButtonNode';
 
 // re-export everything for easier importing
@@ -21,6 +22,7 @@ export * from './nodes/callout/CalloutNode';
 export * from './nodes/aside/AsideNode';
 export * from './nodes/horizontalrule/HorizontalRuleNode';
 export * from './nodes/html/HtmlNode';
+export * from './nodes/toggle/ToggleNode';
 export * from './nodes/button/ButtonNode';
 
 // export convenience objects for use elsewhere
@@ -34,5 +36,6 @@ export const DEFAULT_NODES = [
     aside.AsideNode,
     horizontalrule.HorizontalRuleNode,
     html.HtmlNode,
+    toggle.ToggleNode,
     button.ButtonNode
 ];

@@ -3,7 +3,7 @@ const {html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {VideoNode, $createVideoNode, $isVideoNode} = require('../../');
-const {$generateNodesFromDOM} = require("@lexical/html");
+const {$generateNodesFromDOM} = require('@lexical/html');
 
 const editorNodes = [VideoNode];
 
