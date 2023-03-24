@@ -2442,6 +2442,71 @@ describe('Members API', function () {
         assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed for the newsletter it subscribed to');
     });
 
+    it('Adding newsletters to member with no subscriptions works even with subscribed false', async function () {
+        // Add member with no subscriptions
+        const member = {
+            name: 'test newsletter',
+            email: 'memberAddNewsletterSubscribed@test.com',
+            newsletters: []
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(0).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        const memberId = body.members[0].id;
+
+        const editedMember = {
+            subscribed: false,
+            newsletters: [
+                {
+                    id: testUtils.DataGenerator.Content.newsletters[0].id
+                }
+            ]
+        };
+
+        // Edit member
+        const {body: body2} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(1).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+        const changedMember = body2.members[0];
+        assert.equal(changedMember.newsletters.length, 1);
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member should be subscribed to the newsletter');
+    });
+
     it('Updating member data without newsletters does not change newsletters', async function () {
         // check that this newsletter is archived, or this test would not make sense
         const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
