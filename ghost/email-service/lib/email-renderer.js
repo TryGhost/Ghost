@@ -11,7 +11,7 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     subscriptionStatus: {
-        free: 'You are currently subscribed to the free plan.',
+        free: '',
         expired: 'Your subscription has expired.',
         canceled: 'Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.',
         active: 'Your subscription will renew on {date}.',
@@ -406,6 +406,29 @@ class EmailRenderer {
     }
 
     /**
+     * Returns whether a paid member is trialing a subscription
+     */
+    isMemberTrialing(member) {
+        // Do we have an active subscription?
+        if (member.status === 'paid') {
+            let activeSubscription = member.subscriptions.find((subscription) => {
+                return subscription.status === 'trialing';
+            });
+
+            if (!activeSubscription) {
+                return false;
+            }
+
+            // Translate to a human readable string
+            if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param {MemberLike} member
      * @returns {string}
      */
@@ -527,6 +550,9 @@ class EmailRenderer {
                 getValue: (member) => {
                     if (member.status === 'comped') {
                         return 'complimentary';
+                    }
+                    if (this.isMemberTrialing(member)) {
+                        return 'trialing';
                     }
                     return member.status;
                 }
