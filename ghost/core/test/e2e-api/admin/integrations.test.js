@@ -179,6 +179,17 @@ describe('Integrations API', function () {
 
         body.integrations.forEach((integration) => {
             should.exist(integration.api_keys);
+            if (integration.api_keys.length) {
+                integration.api_keys.forEach((apiKey) => {
+                    should.exist(apiKey.secret);
+
+                    if (apiKey.type === 'content') {
+                        should.equal(apiKey.secret.split(':').length, 1, `${integration.name} api key secret should have correct key format without ":"`);
+                    } else if (apiKey.type === 'admin') {
+                        should.equal(apiKey.secret.split(':').length, 2, `${integration.name} api key secret should have correct key format with ":"`);
+                    }
+                });
+            }
         });
     });
 
