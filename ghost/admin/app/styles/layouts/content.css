@@ -1246,7 +1246,7 @@
     background: none;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1000px), (min-width: 1360px) and (max-width: 1440px) {
     .gh-links-info .gh-links-info-short {
         display: inline;
     }
