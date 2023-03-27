@@ -120,6 +120,30 @@
                 <div class="modal-fullsettings-tab-expanded">
                     <div class="gh-stack">
                         <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Background color</label>
+                            <div class="gh-email-design-color-picker">
+                                <div class="gh-btn-group">
+                                    <button type="button" title="White" class="gh-btn gh-email-design-color white gh-btn-group-selected"></button>
+                                    <button type="button" title="Grey" class="gh-btn gh-email-design-color grey"></button>
+                                    <button type="button" title="Brand color" class="gh-btn gh-email-design-color accent"></button>
+                                    <button type="button" title="Custom color" class="gh-btn gh-email-design-color custom">{{svg-jar "plus"}}</button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Border color</label>
+                            <div class="gh-email-design-color-picker">
+                                <div class="gh-btn-group">
+                                    <button type="button" title="Transparent" class="gh-btn gh-email-design-color transparent gh-btn-group-selected"></button>
+                                    <button type="button" title="Black" class="gh-btn gh-email-design-color black"></button>
+                                    <button type="button" title="Brand color" class="gh-btn gh-email-design-color accent"></button>
+                                    <button type="button" title="Custom color" class="gh-btn gh-email-design-color custom">{{svg-jar "plus"}}</button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                        
+                        <GhFormGroup class="gh-stack-item row">
                             <label class="modal-fullsettings-title">Post title</label>
                             <div class="for-switch small">
                                 <label class="switch" for="show-post-title">
@@ -137,6 +161,7 @@
 
                         {{#if @newsletter.showPostTitleSection}}
                             <GhFormGroup class="gh-stack-item">
+                                <label class="modal-fullsettings-title">Post title style</label>
                                 <div class="gh-email-design-typography-wrapper header">
                                     <div class="modal-fullsettings-radiogroup gh-email-design-typography" data-test-input="titleFontCategory">
                                         <GhFontSelector
@@ -151,6 +176,17 @@
                                 </div>
                             </GhFormGroup>
                         {{/if}}
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Heading color</label>
+                            <div class="gh-email-design-color-picker">
+                                <div class="gh-btn-group">
+                                    <button type="button" title="Black"class="gh-btn gh-email-design-color black gh-btn-group-selected"></button>
+                                    <button type="button" title="Brand color" class="gh-btn gh-email-design-color accent"></button>
+                                    <button type="button" title="Custom color" class="gh-btn gh-email-design-color custom">{{svg-jar "plus"}}</button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+
                         <GhFormGroup class="gh-stack-item row">
                             <label class="modal-fullsettings-title">Feature image</label>
                             <div class="for-switch small">
