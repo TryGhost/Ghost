@@ -12,7 +12,7 @@
         "port": 2369
     },
     "logging": {
-        "level": "fatal"
+        "level": "error"
     },
     "spam": {
         "user_login": {

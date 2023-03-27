@@ -13,7 +13,7 @@
         }
     },
     "logging": {
-        "level": "fatal"
+        "level": "error"
     },
     "spam": {
         "user_login": {
