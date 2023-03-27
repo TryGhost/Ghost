@@ -7,6 +7,7 @@ import {CalloutNode as BaseCalloutNode, INSERT_CALLOUT_COMMAND} from '@tryghost/
 import {CalloutCard} from '../components/ui/cards/CalloutCard';
 import {ReactComponent as CalloutCardIcon} from '../assets/icons/kg-card-type-callout.svg';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {sanitizeHtml} from '../utils/sanitize-html';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 // re-export here so we don't need to import from multiple places throughout the app
@@ -61,6 +62,14 @@ function CalloutNodeComponent({nodeKey, text, hasEmoji, backgroundColor, emojiVa
         setShowEmojiPicker(!showEmojiPicker);
     };
 
+    React.useEffect(() => {
+        if (!isEditing && isSelected) {
+            setEditing(true);
+        }
+        // only run on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <>
             <CalloutCard
@@ -72,6 +81,7 @@ function CalloutNodeComponent({nodeKey, text, hasEmoji, backgroundColor, emojiVa
                 handleColorChange={handleColorChange}
                 isEditing={isEditing}
                 nodeKey={nodeKey}
+                sanitizeHtml={sanitizeHtml}
                 setShowEmojiPicker={setShowEmojiPicker}
                 setText={setText}
                 showEmojiPicker={showEmojiPicker}

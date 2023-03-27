@@ -77,7 +77,8 @@ export function CalloutCard({
     setText,
     nodeKey,
     toggleEmojiPicker,
-    showEmojiPicker
+    showEmojiPicker,
+    sanitizeHtml
 }) {
     const emojiButtonRef = React.useRef(null);
     const {darkMode} = React.useContext(KoenigComposerContext);
@@ -114,14 +115,19 @@ export function CalloutCard({
                     </>
                     }
                 </div>
-                <KoenigCalloutEditor
-                    className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"
-                    html={text}
-                    nodeKey={nodeKey}
-                    placeholderText={'Callout text...'}
-                    readOnly={isEditing}
-                    setHtml={setText}
-                />
+                {
+                    isEditing ?
+                        <KoenigCalloutEditor
+                            className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"
+                            html={text}
+                            nodeKey={nodeKey}
+                            placeholderText={'Callout text...'}
+                            readOnly={isEditing}
+                            setHtml={setText}
+                        />
+                        :
+                        <div dangerouslySetInnerHTML={{__html: sanitizeHtml(text)}} className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"/>
+                }
             </div>
             {
                 isEditing && (

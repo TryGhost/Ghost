@@ -57,7 +57,7 @@ describe('Callout Card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="callout">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="callout">
                 </div>
             </div>
             <p><br /></p>
@@ -68,9 +68,6 @@ describe('Callout Card', async () => {
         await focusEditor(page);
         await page.keyboard.type('/callout');
         await page.keyboard.press('Enter');
-
-        const editButton = await page.locator('[data-testid="edit-callout-card"]');
-        await editButton.click();
 
         // the settings panel consists of emoji-toggle and colour picker
         const emojiToggle = await page.locator('[data-testid="emoji-toggle"]');
@@ -95,10 +92,6 @@ describe('Callout Card', async () => {
         await page.keyboard.type('/callout');
         await page.keyboard.press('Enter');
 
-        // click <button data-testid="edit-callout-card"
-        const editButton = await page.locator('[data-testid="edit-callout-card"]');
-        await editButton.click();
-
         const toggle = await page.locator('[data-testid="emoji-toggle"]');
         await toggle.click();
         // click on data-kg-card="callout"
@@ -113,10 +106,6 @@ describe('Callout Card', async () => {
         await focusEditor(page);
         await page.keyboard.type('/callout');
         await page.keyboard.press('Enter');
-
-        // click <button data-testid="edit-callout-card"
-        const editButton = await page.locator('[data-testid="edit-callout-card"]');
-        await editButton.click();
         
         await page.getByRole('button', {name: '💡'}).click();
         const emojiPickerContainer = await page.locator('[data-testid="emoji-picker-container"]');
@@ -127,8 +116,6 @@ describe('Callout Card', async () => {
         await focusEditor(page);
         await page.keyboard.type('/callout');
         await page.keyboard.press('Enter');
-        const editButton = await page.locator('[data-testid="edit-callout-card"]');
-        await editButton.click();
 
         await Promise.all(calloutColorPicker.map(async (color) => {
             const colorPicker = await page.locator(`[data-test-id="color-picker-${color.name}"]`);
@@ -141,9 +128,6 @@ describe('Callout Card', async () => {
         await page.keyboard.type('/callout');
         await page.keyboard.press('Enter');
 
-        // click <button data-testid="edit-callout-card"
-        const editButton = await page.locator('[data-testid="edit-callout-card"]');
-        await editButton.click();
         const colorPicker = await page.locator(`[data-test-id="color-picker-green"]`);
         await colorPicker.click();
         
@@ -157,14 +141,44 @@ describe('Callout Card', async () => {
         await page.keyboard.type('/callout');
         await page.keyboard.press('Enter');
 
-        // click <button data-testid="edit-callout-card"
-        const editButton = await page.locator('[data-testid="edit-callout-card"]');
-        await editButton.click();
         await page.getByRole('button', {name: '💡'}).click();
         const lolEmoji = await page.locator('[aria-label="😂"]').nth(0); // nth(0) is required because there could two emojis with the same label (eg from frequently used)
         await lolEmoji.click();
         // await page.keyboard.type('Joke of the day');
         const calloutCard = await page.locator('[data-kg-card="callout"]');
         await expect(calloutCard).toContainText('😂');
+    });
+
+    it('has edit toolbar', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('/callout');
+        await page.keyboard.press('Enter');
+        // press arrow down
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown'); // press twice to make sure card gets unselected
+
+        // press arrow up
+        await page.keyboard.press('ArrowUp');
+
+        const editButton = await page.locator('[data-testid="edit-callout-card"]');
+        await expect(editButton).toBeVisible();
+    });
+
+    it('can toggle edit', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('/callout');
+        await page.keyboard.press('Enter');
+        // press arrow down
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown'); // press twice to make sure card gets unselected
+
+        // press arrow up
+        await page.keyboard.press('ArrowUp');
+
+        const editButton = await page.locator('[data-testid="edit-callout-card"]');
+        await editButton.click();
+
+        const calloutCard = await page.locator('[data-kg-card="callout"]');
+        await expect(calloutCard).toHaveAttribute('data-kg-card-editing', 'true');
     });
 });
