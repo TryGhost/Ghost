@@ -76,6 +76,10 @@ Tests use [Vitest](https://vitest.dev) as the test runner, with [Playwright](htt
 
 Before tests are started we build a version of the demo app that is used for the e2e tests.
 
+When developing it can be useful to limit tests to specific keywords (taken from `describe` or `it/test` names). That's possible using the `-t` param and works with any of the above test commands, e.g.:
+
+- `yarn test:watch -t "Callout card"`
+
 ### Editor integration
 
 There's a [vitest vscode extension](https://marketplace.visualstudio.com/items?itemName=ZixuanChen.vitest-explorer) that lets you run and debug individual tests/groups directly inside vscode.
