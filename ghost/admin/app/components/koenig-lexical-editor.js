@@ -31,6 +31,10 @@ export const fileTypes = {
         endpoint: '/media/thumbnail/upload/',
         requestMethod: 'put',
         resourceName: 'media'
+    },
+    file: {
+        endpoint: '/files/upload/',
+        resourceName: 'files'
     }
 };
 
@@ -177,6 +181,10 @@ export default class KoenigLexicalEditor extends Component {
             // we only check the file extension by default because IE doesn't always
             // expose the mime-type, we'll rely on the API for final validation
             function defaultValidator(file) {
+                // if type is file we don't need to validate since the card can accept any file type
+                if (type === 'file') {
+                    return true;
+                }
                 let extensions = fileTypes[type].extensions;
                 let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
