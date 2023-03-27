@@ -128,6 +128,10 @@ export class ButtonNode extends KoenigDecoratorNode {
     decorate() {
         return '';
     }
+
+    hasEditMode() {
+        return true;
+    }
 }
 
 export const $createButtonNode = (dataset) => {

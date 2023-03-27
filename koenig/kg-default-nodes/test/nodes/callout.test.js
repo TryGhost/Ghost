@@ -49,6 +49,13 @@ describe('CalloutNode', function () {
         $isCalloutNode(node).should.be.true;
     }));
 
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const calloutNode = $createCalloutNode(dataset);
+            calloutNode.hasEditMode().should.be.true;
+        }));
+    });
+
     describe('data access', function (){
         it('has getters for all properties', editorTest(function () {
             const node = $createCalloutNode(dataset);

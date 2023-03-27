@@ -183,6 +183,13 @@ describe('ButtonNode', function () {
         }));
     });
 
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const buttonNode = $createButtonNode(dataset);
+            buttonNode.hasEditMode().should.be.true;
+        }));
+    });
+
     describe('importDOM', function () {
         it('parses button card', editorTest(function () {
             const dom = (new JSDOM(html`

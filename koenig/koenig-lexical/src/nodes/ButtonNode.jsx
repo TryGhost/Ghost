@@ -54,7 +54,6 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
                 handleButtonTextChange={handleButtonTextChange}
                 handleButtonUrlChange={handleButtonUrlChange}
                 isEditing={isEditing}
-                setEditing={setEditing}
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"
