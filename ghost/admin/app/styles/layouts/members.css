@@ -1735,6 +1735,72 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Email newsletter design settings
 /* -------------------------------------------------------- */
+
+.gh-btn-group .gh-email-design-color {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--lightgrey);
+    border-radius: 999px;
+    margin-left: 4px;
+}
+
+.gh-email-design-color.gh-btn-group-selected::after {
+    position: absolute;
+    content: "";
+    display: block;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    left: -4px;
+    border: 2px solid var(--green);
+    border-radius: 999px;
+}
+
+.gh-email-design-color.transparent {
+    background: transparent;
+    border: 1px solid var(--midlightgrey-l2);
+}
+
+.gh-email-design-color.transparent::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 0;
+    border-bottom: 1px solid var(--red);
+    width: 100%;
+    transform: rotate(45deg);
+    transform-origin: left;
+}
+
+.gh-email-design-color.white {
+    background: var(--white) !important;
+}
+
+.gh-email-design-color.grey {
+    background: var(--lightgrey) !important;
+}
+
+.gh-email-design-color.black {
+    background: var(--black) !important;
+}
+
+.gh-email-design-color.accent {
+    background: var(--accent-color) !important;
+}
+
+.gh-email-design-color.custom {
+    background: transparent;
+    border: 1px solid var(--lightgrey);
+}
+
+.gh-email-design-color.custom svg {
+    width: 10px;
+    height: 10px;
+    color: var(--black);
+}
+
 .gh-email-design-alignment {
     display: flex;
     justify-content: space-between;
