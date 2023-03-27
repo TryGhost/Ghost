@@ -2,6 +2,7 @@ const should = require('should');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
+const escapeRegExp = require('lodash/escapeRegExp');
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -23,6 +24,17 @@ const matchPostShallowIncludes = {
     updated_at: anyISODateTime,
     published_at: anyISODateTime
 };
+
+function testCleanedSnapshot(text, ignoreReplacements) {
+    for (const {match, replacement} of ignoreReplacements) {
+        if (match instanceof RegExp) {
+            text = text.replace(match, replacement);
+        } else {
+            text = text.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
+        }
+    }
+    should({text}).matchSnapshot();
+}
 
 const createLexical = (text) => {
     return JSON.stringify({
@@ -106,6 +118,76 @@ describe('Posts API', function () {
             .matchBodySnapshot({
                 posts: new Array(2).fill(matchPostShallowIncludes)
             });
+    });
+
+    describe('Export', function () {
+        it('Can export', async function () {
+            const {text} = await agent.get('posts/export')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            // body snapshot doesn't work with text/csv
+            testCleanedSnapshot(text, [
+                {
+                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+                    replacement: '2050-01-01T00:00:00.000Z'
+                }
+            ]);
+        });
+
+        it('Can export with order', async function () {
+            const {text} = await agent.get('posts/export?order=published_at%20ASC')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            // body snapshot doesn't work with text/csv
+            testCleanedSnapshot(text, [
+                {
+                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+                    replacement: '2050-01-01T00:00:00.000Z'
+                }
+            ]);
+        });
+
+        it('Can export with limit', async function () {
+            const {text} = await agent.get('posts/export?limit=1')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            // body snapshot doesn't work with text/csv
+            testCleanedSnapshot(text, [
+                {
+                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+                    replacement: '2050-01-01T00:00:00.000Z'
+                }
+            ]);
+        });
+
+        it('Can export with filter', async function () {
+            const {text} = await agent.get('posts/export?filter=featured:true')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            // body snapshot doesn't work with text/csv
+            testCleanedSnapshot(text, [
+                {
+                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+                    replacement: '2050-01-01T00:00:00.000Z'
+                }
+            ]);
+        });
     });
 
     describe('Create', function () {

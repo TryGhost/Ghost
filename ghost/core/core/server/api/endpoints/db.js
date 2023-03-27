@@ -82,12 +82,20 @@ module.exports = {
             cacheInvalidate: true
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const siteTimezone = settingsCache.get('timezone');
             const importTag = `#Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`;
+
+            let email;
+            if (frame.user) {
+                email = frame.user.get('email');
+            } else {
+                email = await models.User.getOwnerUser().get('email');
+            }
+
             return importer.importFromFile(frame.file, {
                 user: {
-                    email: frame.user.get('email')
+                    email: email
                 },
                 importTag
             });

@@ -169,6 +169,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -231,11 +239,26 @@ table.body .post-meta-date {
 
   table.body .post-meta,
 table.body .view-online {
-    display: inline-block;
+    width: 100% !important;
   }
 
-  table.body .post-meta.author-date {
-    width: 100%;
+  table.body .post-meta-left,
+table.body .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.body .post-meta-left.view-online-mobile,
+table.body .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online.desktop {
+    display: none !important;
   }
 
   table.body .view-online {
@@ -268,8 +291,36 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
-  table.body .subscription-box {
-    padding: 24px 20px !important;
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+    padding-right: 0 !important;
+    padding-bottom: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 !important;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p,
+table.body .latest-post p span {
+    font-size: 13px !important;
+    line-height: 1.25em;
   }
 
   table.body .subscription-box h3 {
@@ -367,6 +418,10 @@ table.body figcaption a {
   }
 }
 @media all {
+  .subscription-details p.hidden {
+    display: none !important;
+  }
+
   .ExternalClass {
     width: 100%;
   }
@@ -451,14 +506,19 @@ table.body figcaption a {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; width: 100%;\\" width=\\"100%\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
                                                         <tr>
-                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 1970 </span>
                                                             </td>
-                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; text-decoration: underline; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center;\\" align=\\"center\\">
+                                                            <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -592,6 +652,11 @@ View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
 
 
 
+View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
+
+
+
+
 
 
 
@@ -654,7 +719,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "20881",
+  "content-length": "23232",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -737,6 +802,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -799,11 +872,26 @@ table.body .post-meta-date {
 
   table.body .post-meta,
 table.body .view-online {
-    display: inline-block;
+    width: 100% !important;
   }
 
-  table.body .post-meta.author-date {
-    width: 100%;
+  table.body .post-meta-left,
+table.body .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.body .post-meta-left.view-online-mobile,
+table.body .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online.desktop {
+    display: none !important;
   }
 
   table.body .view-online {
@@ -836,8 +924,36 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
-  table.body .subscription-box {
-    padding: 24px 20px !important;
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+    padding-right: 0 !important;
+    padding-bottom: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 !important;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p,
+table.body .latest-post p span {
+    font-size: 13px !important;
+    line-height: 1.25em;
   }
 
   table.body .subscription-box h3 {
@@ -935,6 +1051,10 @@ table.body figcaption a {
   }
 }
 @media all {
+  .subscription-details p.hidden {
+    display: none !important;
+  }
+
   .ExternalClass {
     width: 100%;
   }
@@ -1019,14 +1139,19 @@ table.body figcaption a {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; width: 100%;\\" width=\\"100%\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
                                                         <tr>
-                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 2015 </span>
                                                             </td>
-                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; text-decoration: underline; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/html-ipsum/\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center;\\" align=\\"center\\">
+                                                            <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/html-ipsum/\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1164,6 +1289,11 @@ View in browser [http://127.0.0.1:2369/html-ipsum/]
 
 
 
+View in browser [http://127.0.0.1:2369/html-ipsum/]
+
+
+
+
 
 
 
@@ -1242,7 +1372,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25704",
+  "content-length": "27999",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1356,6 +1486,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -1418,11 +1556,26 @@ table.body .post-meta-date {
 
   table.body .post-meta,
 table.body .view-online {
-    display: inline-block;
+    width: 100% !important;
   }
 
-  table.body .post-meta.author-date {
-    width: 100%;
+  table.body .post-meta-left,
+table.body .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.body .post-meta-left.view-online-mobile,
+table.body .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online.desktop {
+    display: none !important;
   }
 
   table.body .view-online {
@@ -1455,8 +1608,36 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
-  table.body .subscription-box {
-    padding: 24px 20px !important;
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+    padding-right: 0 !important;
+    padding-bottom: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 !important;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p,
+table.body .latest-post p span {
+    font-size: 13px !important;
+    line-height: 1.25em;
   }
 
   table.body .subscription-box h3 {
@@ -1554,6 +1735,10 @@ table.body figcaption a {
   }
 }
 @media all {
+  .subscription-details p.hidden {
+    display: none !important;
+  }
+
   .ExternalClass {
     width: 100%;
   }
@@ -1638,14 +1823,19 @@ table.body figcaption a {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; width: 100%;\\" width=\\"100%\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
                                                         <tr>
-                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 1970 </span>
                                                             </td>
-                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; text-decoration: underline; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center;\\" align=\\"center\\">
+                                                            <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1779,6 +1969,11 @@ View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
 
 
 
+View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
+
+
+
+
 
 
 
@@ -1848,7 +2043,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "20647",
+  "content-length": "22998",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2291,6 +2486,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -2353,11 +2556,26 @@ table.body .post-meta-date {
 
   table.body .post-meta,
 table.body .view-online {
-    display: inline-block;
+    width: 100% !important;
   }
 
-  table.body .post-meta.author-date {
-    width: 100%;
+  table.body .post-meta-left,
+table.body .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.body .post-meta-left.view-online-mobile,
+table.body .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online.desktop {
+    display: none !important;
   }
 
   table.body .view-online {
@@ -2390,8 +2608,36 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
-  table.body .subscription-box {
-    padding: 24px 20px !important;
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+    padding-right: 0 !important;
+    padding-bottom: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 !important;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p,
+table.body .latest-post p span {
+    font-size: 13px !important;
+    line-height: 1.25em;
   }
 
   table.body .subscription-box h3 {
@@ -2489,6 +2735,10 @@ table.body figcaption a {
   }
 }
 @media all {
+  .subscription-details p.hidden {
+    display: none !important;
+  }
+
   .ExternalClass {
     width: 100%;
   }
@@ -2578,14 +2828,19 @@ table.body figcaption a {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; width: 100%;\\" width=\\"100%\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
                                                         <tr>
-                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 1970 </span>
                                                             </td>
-                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; text-decoration: underline; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center;\\" align=\\"center\\">
+                                                            <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -2724,6 +2979,11 @@ View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
 
 
 
+View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
+
+
+
+
 
 
 
@@ -2793,7 +3053,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "21139",
+  "content-length": "23490",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3262,6 +3522,14 @@ Object {
     min-width: 100%;
   }
 
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -3324,11 +3592,26 @@ table.body .post-meta-date {
 
   table.body .post-meta,
 table.body .view-online {
-    display: inline-block;
+    width: 100% !important;
   }
 
-  table.body .post-meta.author-date {
-    width: 100%;
+  table.body .post-meta-left,
+table.body .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.body .post-meta-left.view-online-mobile,
+table.body .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online.desktop {
+    display: none !important;
   }
 
   table.body .view-online {
@@ -3361,8 +3644,36 @@ table.body .footer a {
     font-size: 13px !important;
   }
 
-  table.body .subscription-box {
-    padding: 24px 20px !important;
+  table.body .latest-posts-header {
+    font-size: 14px !important;
+  }
+
+  table.body .latest-post-img {
+    display: none !important;
+  }
+
+  table.body .latest-post-img-mobile {
+    display: inline-block !important;
+    width: 100%;
+  }
+
+  table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
+    padding-right: 0 !important;
+    padding-bottom: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 !important;
+    font-size: 18px !important;
+  }
+
+  table.body .latest-post p,
+table.body .latest-post p span {
+    font-size: 13px !important;
+    line-height: 1.25em;
   }
 
   table.body .subscription-box h3 {
@@ -3460,6 +3771,10 @@ table.body figcaption a {
   }
 }
 @media all {
+  .subscription-details p.hidden {
+    display: none !important;
+  }
+
   .ExternalClass {
     width: 100%;
   }
@@ -3549,14 +3864,19 @@ table.body figcaption a {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; width: 100%;\\" width=\\"100%\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 48px;\\">
                                                         <tr>
-                                                            <td class=\\"post-meta post-meta-center author-date\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">1 Jan 1970 </span>
                                                             </td>
-                                                            <td class=\\"post-meta post-meta-center view-online\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; display: inline-block; text-decoration: underline; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\">
+                                                            <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"view-online-link\\" style=\\"text-decoration: none; word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center;\\" align=\\"center\\">
+                                                            <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; letter-spacing: 0.1px; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -3695,6 +4015,11 @@ View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
 
 
 
+View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
+
+
+
+
 
 
 
@@ -3764,7 +4089,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "21139",
+  "content-length": "23490",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

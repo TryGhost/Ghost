@@ -16,7 +16,7 @@ export default AuthenticatedRoute.extend({
     },
 
     setupController(controller, model, transition) {
-        if (transition.from?.name === 'posts.analytics') {
+        if (transition.from?.name === 'posts.analytics' && transition.to?.name !== 'editor.new') {
             controller.fromAnalytics = true;
         }
     },

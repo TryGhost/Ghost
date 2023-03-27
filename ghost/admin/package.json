@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.39.0",
+  "version": "5.40.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -21,7 +21,7 @@
     "build:prod": "yarn build --environment=production --silent",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
-    "lint:js": "eslint .",
+    "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
     "lint": "yarn lint:js && yarn lint:hbs"
   },
@@ -181,6 +181,6 @@
   },
   "dependencies": {
     "path-browserify": "1.0.1",
-    "webpack": "5.76.2"
+    "webpack": "5.76.3"
   }
 }

@@ -187,6 +187,12 @@ class OEmbed {
      * @returns {Promise<Object>}
      */
     async fetchBookmarkData(url, html) {
+        const gotOpts = {};
+
+        if (process.env.NODE_ENV?.startsWith('test')) {
+            gotOpts.retry = 0;
+        }
+
         const metascraper = require('metascraper')([
             require('metascraper-url')(),
             require('metascraper-title')(),
@@ -194,7 +200,9 @@ class OEmbed {
             require('metascraper-author')(),
             require('metascraper-publisher')(),
             require('metascraper-image')(),
-            require('metascraper-logo-favicon')(),
+            require('metascraper-logo-favicon')({
+                gotOpts
+            }),
             require('metascraper-logo')()
         ]);
 

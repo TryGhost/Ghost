@@ -58,7 +58,7 @@
                         </GhFormGroup>
 
                         {{#if this.settings.icon}}
-                            <GhFormGroup class="gh-stack-item">
+                            <GhFormGroup class="gh-stack-item row">
                                 <label class="modal-fullsettings-title {{unless this.settings.icon "disabled"}}">Publication icon</label>
                                 <div class="for-switch small {{unless this.settings.icon "disabled"}}">
                                     <label class="switch" for="show-header">
@@ -224,6 +224,36 @@
                                 </div>
                             </GhFormGroup>
                         {{/unless}}
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="showLatestPosts">Share your latest posts</label>
+                            <div class="for-switch small">
+                                <div class="container">
+                                    <input
+                                        type="checkbox"
+                                        id="latest-posts"
+                                        checked={{@newsletter.showLatestPosts}}
+                                        {{on "change" (fn this.onCheckboxChange "showLatestPosts")}}
+                                    >
+                                    <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "showLatestPosts")}}></button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="showSubscriptionDetails">Show subscription details</label>
+                            <div class="for-switch small">
+                                <div class="container">
+                                    <input
+                                        type="checkbox"
+                                        id="capture-feedback"
+                                        checked={{@newsletter.showSubscriptionDetails}}
+                                        {{on "change" (fn this.onCheckboxChange "showSubscriptionDetails")}}
+                                    >
+                                    <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "showSubscriptionDetails")}}></button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
 
                         <GhFormGroup class="gh-stack-item">
                             <label class="modal-fullsettings-title">Email footer</label>

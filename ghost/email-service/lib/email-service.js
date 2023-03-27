@@ -178,9 +178,10 @@ class EmailService {
     }
 
     /**
+     * @params {string} [segment]
      * @return {import('./email-renderer').MemberLike}
      */
-    getDefaultExampleMember() {
+    getDefaultExampleMember(segment) {
         /**
          * @type {import('./email-renderer').MemberLike}
          */
@@ -189,20 +190,31 @@ class EmailService {
             uuid: 'example-uuid',
             email: 'jamie@example.com',
             name: 'Jamie Larson',
-            createdAt: new Date()
+            createdAt: new Date(),
+            status: segment === 'status:free' ? 'free' : 'paid',
+            subscriptions: segment === 'status:free' ? [] : [
+                {
+                    cancel_at_period_end: false,
+                    trial_end_at: null,
+                    current_period_end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+                    status: 'active'
+                }
+            ],
+            tiers: []
         };
     }
 
     /**
      * @private
      * @param {string} [email] (optional) Search for a member with this email address and use it as the example. If not found, defaults to the default but still uses the provided email address.
+     * @param {string} [segment] (optional) The segment to use for the example member
      * @return {Promise<import('./email-renderer').MemberLike>}
      */
-    async getExampleMember(email) {
+    async getExampleMember(email, segment) {
         /**
          * @type {import('./email-renderer').MemberLike}
          */
-        const exampleMember = this.getDefaultExampleMember();
+        const exampleMember = this.getDefaultExampleMember(segment);
 
         // fetch any matching members so that replacements use expected values
         if (email) {
@@ -213,6 +225,16 @@ class EmailService {
                 exampleMember.email = member.get('email');
                 exampleMember.name = member.get('name');
                 exampleMember.createdAt = member.get('created_at');
+
+                if (segment === 'status:-free' && member.get('status') !== 'free') {
+                    // Make sure the example member matches the chosen segment (otherwise we'll send an email to free segment, but include a paid member details, which looks like a bug)
+                    exampleMember.status = member.get('status');
+                    const subscriptions = (await member.getLazyRelation('stripeSubscriptions')).toJSON();
+                    exampleMember.subscriptions = subscriptions;
+
+                    const tiers = (await member.getLazyRelation('products')).toJSON();
+                    exampleMember.tiers = tiers;
+                }
             } else {
                 exampleMember.name = ''; // Force empty name to simulate name fallbacks
                 exampleMember.email = email;
@@ -246,7 +268,7 @@ class EmailService {
      * @returns {Promise<{subject: string, html: string, plaintext: string}>} Email preview
      */
     async previewEmail(post, newsletter, segment) {
-        const exampleMember = await this.getExampleMember();
+        const exampleMember = await this.getExampleMember(null, segment);
 
         const subject = this.#emailRenderer.getSubject(post);
         let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, segment, {clickTrackingEnabled: false});
@@ -268,7 +290,7 @@ class EmailService {
     async sendTestEmail(post, newsletter, segment, emails) {
         const members = [];
         for (const email of emails) {
-            members.push(await this.getExampleMember(email));
+            members.push(await this.getExampleMember(email, segment));
         }
 
         await this.#sendingService.send({

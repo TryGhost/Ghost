@@ -8,6 +8,14 @@ const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent} = require('@tryghost/member-events');
 
 describe('Import threshold', function () {
+    beforeEach(function () {
+        // Stub this method to prevent unnecessary subscriptions to domain events
+        sinon.stub(DomainEvents, 'subscribe');
+    });
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('Creates a threshold based on config', async function () {
         const trigger = new VerificationTrigger({
             getImportTriggerThreshold: () => 2,
@@ -60,6 +68,15 @@ describe('Import threshold', function () {
 });
 
 describe('Email verification flow', function () {
+    let domainEventsStub;
+
+    beforeEach(function () {
+        domainEventsStub = sinon.stub(DomainEvents, 'subscribe');
+    });
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('Triggers verification process', async function () {
         const emailStub = sinon.stub().resolves(null);
         const settingsStub = sinon.stub().resolves(null);
@@ -169,6 +186,8 @@ describe('Email verification flow', function () {
     });
 
     it('Triggers when a number of API events are dispatched', async function () {
+        // We need to use the real event repository here to test event handling
+        domainEventsStub.restore();
         const emailStub = sinon.stub().resolves(null);
         const settingsStub = sinon.stub().resolves(null);
         const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {

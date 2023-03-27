@@ -6,7 +6,6 @@ const linkReplacer = require('@tryghost/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
-const {DateTime} = require('luxon');
 
 function validateHtml(html) {
     const htmlvalidate = new HtmlValidate({
@@ -80,7 +79,7 @@ describe('Email renderer', function () {
         beforeEach(function () {
             emailRenderer = new EmailRenderer({
                 urlUtils: {
-                    urlFor: () => 'http://example.com/subdirectory'
+                    urlFor: () => 'http://example.com/subdirectory/'
                 },
                 labs: {
                     isSet: () => true
@@ -101,7 +100,8 @@ describe('Email renderer', function () {
                 uuid: 'myuuid',
                 name: 'Test User',
                 email: 'test@example.com',
-                createdAt: new Date(2023, 2, 13, 12, 0)
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
             };
         });
 
@@ -156,6 +156,25 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].getValue(member), 'Test User');
         });
 
+        it('returns hidden class for missing name', function () {
+            member.name = '';
+            const html = 'Hello %%{name_class}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{name_class\\}%%/g');
+            assert.equal(replacements[0].id, 'name_class');
+            assert.equal(replacements[0].getValue(member), 'hidden');
+        });
+
+        it('returns empty class for available name', function () {
+            const html = 'Hello %%{name_class}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{name_class\\}%%/g');
+            assert.equal(replacements[0].id, 'name_class');
+            assert.equal(replacements[0].getValue(member), '');
+        });
+
         it('returns correct email', function () {
             const html = 'Hello %%{email}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
@@ -163,6 +182,71 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].token.toString(), '/%%\\{email\\}%%/g');
             assert.equal(replacements[0].id, 'email');
             assert.equal(replacements[0].getValue(member), 'test@example.com');
+        });
+
+        it('returns correct status', function () {
+            const html = 'Hello %%{status}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
+            assert.equal(replacements[0].id, 'status');
+            assert.equal(replacements[0].getValue(member), 'free');
+        });
+
+        it('returns mapped complimentary status', function () {
+            member.status = 'comped';
+            const html = 'Hello %%{status}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
+            assert.equal(replacements[0].id, 'status');
+            assert.equal(replacements[0].getValue(member), 'complimentary');
+        });
+
+        it('returns mapped trialing status', function () {
+            member.status = 'paid';
+            member.subscriptions = [
+                {
+                    status: 'trialing',
+                    trial_end_at: new Date(2050, 2, 13, 12, 0),
+                    current_period_end: new Date(2023, 2, 13, 12, 0),
+                    cancel_at_period_end: false
+                }
+            ];
+            const html = 'Hello %%{status}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
+            assert.equal(replacements[0].id, 'status');
+            assert.equal(replacements[0].getValue(member), 'trialing');
+        });
+
+        it('returns manage_account_url', function () {
+            const html = 'Hello %%{manage_account_url}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{manage_account_url\\}%%/g');
+            assert.equal(replacements[0].id, 'manage_account_url');
+            assert.equal(replacements[0].getValue(member), 'http://example.com/subdirectory/#/portal/account');
+        });
+
+        it('returns status_text', function () {
+            const html = 'Hello %%{status_text}%%,';
+            member.status = 'paid';
+            member.subscriptions = [
+                {
+                    status: 'trialing',
+                    trial_end_at: new Date(2050, 2, 13, 12, 0),
+                    current_period_end: new Date(2023, 2, 13, 12, 0),
+                    cancel_at_period_end: false
+                }
+            ];
+
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status_text\\}%%/g');
+            assert.equal(replacements[0].id, 'status_text');
+            assert.equal(replacements[0].getValue(member), 'Your free trial ends on 13 March 2050, at which time you will be charged the regular price. You can always cancel before then.');
         });
 
         it('returns correct createdAt', function () {
@@ -220,6 +304,316 @@ describe('Email renderer', function () {
 
             // In case of empty name
             assert.equal(replacements[2].getValue({name: ''}), '');
+        });
+    });
+
+    describe('isMemberTrialing', function () {
+        let emailRenderer;
+
+        beforeEach(function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                    }
+                }
+            });
+        });
+
+        it('Returns false for free member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
+            };
+
+            const result = emailRenderer.isMemberTrialing(member);
+            assert.equal(result, false);
+        });
+
+        it('Returns false for paid member without trial', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'active',
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ]
+            };
+
+            const result = emailRenderer.isMemberTrialing(member);
+            assert.equal(result, false);
+        });
+
+        it('Returns true for trialing paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'trialing',
+                        trial_end_at: new Date(2050, 2, 13, 12, 0),
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ],
+                tiers: []
+            };
+
+            const result = emailRenderer.isMemberTrialing(member);
+            assert.equal(result, true);
+        });
+
+        it('Returns false for expired trialing paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'trialing',
+                        trial_end_at: new Date(2000, 2, 13, 12, 0),
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ],
+                tiers: []
+            };
+
+            const result = emailRenderer.isMemberTrialing(member);
+            assert.equal(result, false);
+        });
+    });
+
+    describe('getMemberStatusText', function () {
+        let emailRenderer;
+
+        beforeEach(function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                    }
+                }
+            });
+        });
+
+        it('Returns for free member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, '');
+        });
+
+        it('Returns for active paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'active',
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription will renew on 13 March 2023.');
+        });
+
+        it('Returns for canceled paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'active',
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: true
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription has been canceled and will expire on 13 March 2023. You can resume your subscription via your account settings.');
+        });
+
+        it('Returns for expired paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'canceled',
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: true
+                    }
+                ],
+                tiers: []
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription has expired.');
+        });
+
+        it('Returns for trialing paid member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [
+                    {
+                        status: 'trialing',
+                        trial_end_at: new Date(2050, 2, 13, 12, 0),
+                        current_period_end: new Date(2023, 2, 13, 12, 0),
+                        cancel_at_period_end: false
+                    }
+                ],
+                tiers: []
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your free trial ends on 13 March 2050, at which time you will be charged the regular price. You can always cancel before then.');
+        });
+
+        it('Returns for infinite complimentary member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'comped',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: null
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, '');
+        });
+
+        it('Returns for expiring complimentary member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'comped',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: new Date(2050, 2, 13, 12, 0)
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription will expire on 13 March 2050.');
+        });
+
+        it('Returns for a paid member without subscriptions', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: new Date(2050, 2, 13, 12, 0)
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription has been canceled and will expire on 13 March 2050. You can resume your subscription via your account settings.');
+        });
+
+        it('Returns for an infinte paid member without subscriptions', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'paid',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: null
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, '');
         });
     });
 
@@ -464,82 +858,9 @@ describe('Email renderer', function () {
         let renderedPost = '<p>Lexical Test</p>';
         let postUrl = 'http://example.com';
         let customSettings = {};
-        let emailRenderer = new EmailRenderer({
-            audienceFeedbackService: {
-                buildLink: (_uuid, _postId, score) => {
-                    return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
-                }
-            },
-            urlUtils: {
-                urlFor: (type) => {
-                    if (type === 'image') {
-                        return 'http://icon.example.com';
-                    }
-                    return 'http://example.com/subdirectory';
-                },
-                isSiteUrl: (u) => {
-                    return u.hostname === 'example.com';
-                }
-            },
-            settingsCache: {
-                get: (key) => {
-                    if (customSettings[key]) {
-                        return customSettings[key];
-                    }
-                    if (key === 'accent_color') {
-                        return '#ffffff';
-                    }
-                    if (key === 'timezone') {
-                        return 'Etc/UTC';
-                    }
-                    if (key === 'title') {
-                        return 'Test Blog';
-                    }
-                    if (key === 'icon') {
-                        return 'ICON';
-                    }
-                }
-            },
-            getPostUrl: () => {
-                return postUrl;
-            },
-            renderers: {
-                lexical: {
-                    render: () => {
-                        return renderedPost;
-                    }
-                },
-                mobiledoc: {
-                    render: () => {
-                        return '<p> Mobiledoc Test</p>';
-                    }
-                }
-            },
-            linkReplacer,
-            memberAttributionService: {
-                addPostAttributionTracking: (u) => {
-                    u.searchParams.append('post_tracking', 'added');
-                    return u;
-                }
-            },
-            linkTracking: {
-                service: {
-                    addTrackingToUrl: (u, _post, uuid) => {
-                        return new URL('http://tracked-link.com/?m=' + encodeURIComponent(uuid) + '&url=' + encodeURIComponent(u.href));
-                    }
-                }
-            },
-            outboundLinkTagger: {
-                addToUrl: (u, newsletter) => {
-                    u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
-                    return u;
-                }
-            },
-            labs: {
-                isSet: () => true
-            }
-        });
+        let emailRenderer;
         let basePost;
+        let addTrackingToUrlStub;
 
         beforeEach(function () {
             basePost = {
@@ -561,6 +882,83 @@ describe('Email renderer', function () {
             };
             postUrl = 'http://example.com';
             customSettings = {};
+            addTrackingToUrlStub = sinon.stub();
+            addTrackingToUrlStub.callsFake((u, _post, uuid) => {
+                return new URL('http://tracked-link.com/?m=' + encodeURIComponent(uuid) + '&url=' + encodeURIComponent(u.href));
+            });
+            emailRenderer = new EmailRenderer({
+                audienceFeedbackService: {
+                    buildLink: (_uuid, _postId, score) => {
+                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
+                    }
+                },
+                urlUtils: {
+                    urlFor: (type) => {
+                        if (type === 'image') {
+                            return 'http://icon.example.com';
+                        }
+                        return 'http://example.com/subdirectory';
+                    },
+                    isSiteUrl: (u) => {
+                        return u.hostname === 'example.com';
+                    }
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (customSettings[key]) {
+                            return customSettings[key];
+                        }
+                        if (key === 'accent_color') {
+                            return '#ffffff';
+                        }
+                        if (key === 'timezone') {
+                            return 'Etc/UTC';
+                        }
+                        if (key === 'title') {
+                            return 'Test Blog';
+                        }
+                        if (key === 'icon') {
+                            return 'ICON';
+                        }
+                    }
+                },
+                getPostUrl: () => {
+                    return postUrl;
+                },
+                renderers: {
+                    lexical: {
+                        render: () => {
+                            return renderedPost;
+                        }
+                    },
+                    mobiledoc: {
+                        render: () => {
+                            return '<p> Mobiledoc Test</p>';
+                        }
+                    }
+                },
+                linkReplacer,
+                memberAttributionService: {
+                    addPostAttributionTracking: (u) => {
+                        u.searchParams.append('post_tracking', 'added');
+                        return u;
+                    }
+                },
+                linkTracking: {
+                    service: {
+                        addTrackingToUrl: addTrackingToUrlStub
+                    }
+                },
+                outboundLinkTagger: {
+                    addToUrl: (u, newsletter) => {
+                        u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
+                        return u;
+                    }
+                },
+                labs: {
+                    isSet: () => true
+                }
+            });
         });
 
         it('returns feedback buttons and unsubcribe links', async function () {
@@ -788,6 +1186,69 @@ describe('Email renderer', function () {
                 clickTrackingEnabled: true
             };
 
+            renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a></p>';
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // Check all links have domain tracked-link.com
+            const $ = cheerio.load(response.html);
+            const links = [];
+            for (const link of $('a').toArray()) {
+                const href = $(link).attr('href');
+                links.push(href);
+                if (href.includes('unsubscribe_url')) {
+                    href.should.eql('%%{unsubscribe_url}%%');
+                } else if (href.includes('feedback-link.com')) {
+                    href.should.containEql('%%{uuid}%%');
+                } else {
+                    href.should.containEql('tracked-link.com');
+                    href.should.containEql('m=%%{uuid}%%');
+                }
+            }
+
+            // Update the following array when you make changes to the email template, check if replacements are correct for each newly added link.
+            assert.deepEqual(links, [
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fencoded-link.com%2F%3Fcode%3Dtest%26source_tracking%3Dsite`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
+                `%%{unsubscribe_url}%%`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fsource_tracking%3Dsite`
+            ]);
+
+            // Check uuid in replacements
+            response.replacements.length.should.eql(2);
+            response.replacements[0].id.should.eql('uuid');
+            response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
+            response.replacements[1].id.should.eql('unsubscribe_url');
+            response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+        });
+
+        it('handles encoded links', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: true,
+                feedback_enabled: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {
+                clickTrackingEnabled: true
+            };
+
             renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a></p>';
 
             let response = await emailRenderer.renderBody(
@@ -815,6 +1276,7 @@ describe('Email renderer', function () {
 
             // Update the following array when you make changes to the email template, check if replacements are correct for each newly added link.
             assert.deepEqual(links, [
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
@@ -1025,17 +1487,20 @@ describe('Email renderer', function () {
                             {
                                 title: 'Test Post 1',
                                 published_at: new Date('2018-01-01T00:00:00.000Z'),
+                                custom_excerpt: 'Super long custom excerpt. Super long custom excerpt. Super long custom excerpt. Super long custom excerpt. Super long custom excerpt.',
                                 feature_image: 'http://example.com/image.jpg'
                             },
                             {
                                 title: 'Test Post 2',
                                 published_at: new Date('2018-01-01T00:00:00.000Z'),
-                                feature_image: null
+                                feature_image: null,
+                                plaintext: ''
                             },
                             {
                                 title: 'Test Post 3',
                                 published_at: null, // required for full test coverage
-                                feature_image: null
+                                feature_image: null,
+                                plaintext: 'Nothing special.'
                             }
                         ]
                     })
@@ -1190,24 +1655,6 @@ describe('Email renderer', function () {
             assert.equal(data.newsletter.showCommentCta, true);
         });
 
-        it('showSubscriptionDetails is disabled if labs disabled', async function () {
-            labsEnabled = false;
-            const html = '';
-            const post = createModel({
-                posts_meta: createModel({}),
-                loaded: ['posts_meta'],
-                published_at: new Date(0)
-            });
-            const newsletter = createModel({
-                title_font_category: 'serif',
-                title_alignment: 'left',
-                body_font_category: 'sans_serif',
-                show_subscription_details: true
-            });
-            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.newsletter.showSubscriptionDetails, false);
-        });
-
         it('showSubscriptionDetails works is enabled', async function () {
             labsEnabled = true;
             const html = '';
@@ -1262,24 +1709,6 @@ describe('Email renderer', function () {
             assert.deepEqual(data.latestPosts, []);
         });
 
-        it('latestPosts can be disabled via labs', async function () {
-            labsEnabled = false;
-            const html = '';
-            const post = createModel({
-                posts_meta: createModel({}),
-                loaded: ['posts_meta'],
-                published_at: new Date(0)
-            });
-            const newsletter = createModel({
-                title_font_category: 'serif',
-                title_alignment: 'left',
-                body_font_category: 'sans_serif',
-                show_latest_posts: true
-            });
-            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.deepEqual(data.latestPosts, []);
-        });
-
         it('latestPosts can be enabled', async function () {
             labsEnabled = true;
             const html = '';
@@ -1298,27 +1727,31 @@ describe('Email renderer', function () {
             assert.deepEqual(data.latestPosts,
                 [
                     {
-                        featureImage: 'http://example.com/image.jpg',
-                        featureImageWidth: 0,
-                        publishedAt: '1 Jan 2018',
+                        excerpt: 'Super long custom excerpt. Super long custom excerpt. Super<span class="mobile-only"> long custom excerpt. Super long custom excer</span>…',
                         title: 'Test Post 1',
-                        url: 'http://example.com'
+                        url: 'http://example.com',
+                        featureImage: {
+                            src: 'http://example.com/image.jpg',
+                            width: 0,
+                            height: null
+                        },
+                        featureImageMobile: {
+                            src: 'http://example.com/image.jpg',
+                            width: 0,
+                            height: null
+                        }
                     },
                     {
                         featureImage: null,
-                        featureImageWidth: 0,
-                        publishedAt: '1 Jan 2018',
+                        featureImageMobile: null,
+                        excerpt: '',
                         title: 'Test Post 2',
                         url: 'http://example.com'
                     },
                     {
                         featureImage: null,
-                        featureImageWidth: 0,
-                        publishedAt: DateTime.local().setZone('UTC').setLocale('en-gb').toLocaleString({
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        }),
+                        featureImageMobile: null,
+                        excerpt: 'Nothing special.',
                         title: 'Test Post 3',
                         url: 'http://example.com'
                     }
@@ -1368,13 +1801,33 @@ describe('Email renderer', function () {
         });
     });
 
+    describe('truncateText', function () {
+        it('works for null', async function () {
+            const emailRenderer = new EmailRenderer({});
+            assert.equal(emailRenderer.truncateText(null, 100), '');
+        });
+    });
+
+    describe('truncateHTML', function () {
+        it('works correctly', async function () {
+            const emailRenderer = new EmailRenderer({});
+            assert.equal(emailRenderer.truncateHtml('This is a short one', 5, 10), 'This<span class="mobile-only"> is a</span>…');
+            assert.equal(emailRenderer.truncateHtml('This is a', 5, 10), 'This<span class="mobile-only"> is a</span><span class="hide-mobile">…</span>');
+            assert.equal(emailRenderer.truncateHtml('This', 5, 10), 'This');
+            assert.equal(emailRenderer.truncateHtml('This is a long text', 5, 5), 'This…');
+            assert.equal(emailRenderer.truncateHtml('This is a long text', 5), 'This…');
+            assert.equal(emailRenderer.truncateHtml(null, 5, 10), '');
+        });
+    });
+
     describe('limitImageWidth', function () {
         it('Limits width of local images', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getImageSizeFromUrl() {
                         return {
-                            width: 2000
+                            width: 2000,
+                            height: 1000
                         };
                     }
                 },
@@ -1386,7 +1839,30 @@ describe('Email renderer', function () {
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png');
             assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
             assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200/2017/01/02/example.png');
+        });
+
+        it('Limits width and height of local images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage(url) {
+                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png', 600, 600);
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 600);
+            assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200h1200/2017/01/02/example.png');
         });
 
         it('Ignores and logs errors', async function () {
@@ -1425,7 +1901,30 @@ describe('Email renderer', function () {
             });
             const response = await emailRenderer.limitImageWidth('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
             assert.equal(response.width, 600);
+            assert.equal(response.height, null);
             assert.equal(response.href, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=1200');
+        });
+
+        it('Limits width and height of unsplash images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage(url) {
+                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000', 600, 600);
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 600);
+            assert.equal(response.href, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=1200&h=1200');
         });
 
         it('Does not increase width of images', async function () {

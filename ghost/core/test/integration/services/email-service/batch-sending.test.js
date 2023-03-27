@@ -13,7 +13,7 @@ const {settingsCache} = require('../../../../core/server/services/settings-helpe
 const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
 const should = require('should');
-const {mockSetting} = require('../../../utils/e2e-framework-mock-manager');
+const {mockSetting, stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
 
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
@@ -45,6 +45,8 @@ async function getDefaultNewsletter() {
     return await models.Newsletter.findOne({slug: newsletterSlug});
 }
 
+let postCounter = 0;
+
 async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
     const post = {
         title: 'A random test post',
@@ -64,11 +66,14 @@ async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
 
     const id = res.body.posts[0].id;
 
+    // Make sure all posts are published in the samre order, with minimum 1s difference (to have consistent ordering when including latests posts)
+    postCounter += 1;
+
     const updatedPost = {
         status: 'published',
         updated_at: res.body.posts[0].updated_at,
         // Fixed publish date to make sure snapshots are consistent
-        published_at: moment(new Date(2023, 0, 1, 12)).toISOString()
+        published_at: moment(new Date(2050, 0, 1, 12, 0, postCounter)).toISOString()
     };
 
     const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
@@ -149,6 +154,10 @@ async function lastEmailMatchSnapshot() {
     const linkRegexp = /http:\/\/127\.0\.0\.1:2369\/r\/\w+/g;
 
     const ignoreReplacements = [
+        {
+            match: /\d{1,2}\s\w+\s\d{4}/g,
+            replacement: 'date'
+        },
         {
             match: defaultNewsletter.get('uuid'),
             replacement: 'requested-newsletter-uuid'
@@ -259,6 +268,7 @@ describe('Batch sending tests', function () {
             // Allows for setting stubbedSend during tests
             return stubbedSend.call(this, ...arguments);
         });
+        mockManager.mockStripe();
     });
 
     afterEach(async function () {
@@ -738,7 +748,7 @@ describe('Batch sending tests', function () {
         await agent.put(`posts/${id}/?newsletter=${newsletterSlug}`)
             .body({posts: [updatedPost]})
             .expectStatus(403);
-        sinon.assert.calledOnce(getSignupEvents);
+        sinon.assert.calledTwice(getSignupEvents);
         assert.equal(settingsCache.get('email_verification_required'), true);
 
         await configUtils.restore();
@@ -1033,6 +1043,216 @@ describe('Batch sending tests', function () {
 
             // undo
             await models.Newsletter.edit({show_comment_cta: true}, {id: defaultNewsletter.id});
+        });
+
+        it('Shows subscription details box for free members', async function () {
+            // Create a new member without a first_name
+            await models.Member.add({
+                email: 'subscription-box-1@example.com',
+                labels: [{name: 'subscription-box-tests'}],
+                newsletters: [{
+                    id: fixtureManager.get('newsletters', 0).id
+                }]
+            });
+
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
+
+            const {html, plaintext} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            }, 'label:subscription-box-tests');
+
+            // Currently the link is not present in plaintext version (because no text)
+            assert.equal(html.match(/#\/portal\/account/g).length, 1, 'Subscription details box should contain a link to the account page');
+
+            // Check text matches
+            assert.match(plaintext, /You are receiving this because you are a free subscriber to Ghost\./);
+
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
+        });
+
+        it('Shows subscription details box for comped members', async function () {
+            // Create a new member without a first_name
+            await models.Member.add({
+                email: 'subscription-box-comped@example.com',
+                labels: [{name: 'subscription-box-comped-tests'}],
+                newsletters: [{
+                    id: fixtureManager.get('newsletters', 0).id
+                }],
+                status: 'comped'
+            });
+
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
+
+            const {html, plaintext} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            }, 'label:subscription-box-comped-tests');
+
+            // Currently the link is not present in plaintext version (because no text)
+            assert.equal(html.match(/#\/portal\/account/g).length, 1, 'Subscription details box should contain a link to the account page');
+
+            // Check text matches
+            assert.match(plaintext, /You are receiving this because you are a complimentary subscriber to Ghost\./);
+
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
+        });
+
+        it('Shows subscription details box for trialing member', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            // Create a new member without a first_name
+            const customer = stripeMocker.createCustomer({
+                email: 'trialing-paid@example.com'
+            });
+            const price = await stripeMocker.getPriceForTier('default-product', 'month');
+            await stripeMocker.createTrialSubscription({
+                customer,
+                price
+            });
+
+            const member = await models.Member.findOne({email: customer.email}, {require: true});
+            await models.Member.edit({
+                labels: [{name: 'subscription-box-trialing-tests'}],
+                newsletters: [{
+                    id: fixtureManager.get('newsletters', 0).id
+                }]
+            }, {id: member.id});
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
+
+            const {html, plaintext} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            }, 'label:subscription-box-trialing-tests');
+
+            // Currently the link is not present in plaintext version (because no text)
+            assert.equal(html.match(/#\/portal\/account/g).length, 1, 'Subscription details box should contain a link to the account page');
+
+            // Check text matches
+            assert.match(plaintext, /You are receiving this because you are a trialing subscriber to Ghost\. Your free trial ends on \d+ \w+ \d+, at which time you will be charged the regular price\. You can always cancel before then\./);
+
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
+        });
+
+        it('Shows subscription details box for paid member', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            // Create a new member without a first_name
+            const customer = stripeMocker.createCustomer({
+                email: 'paid@example.com'
+            });
+            const price = await stripeMocker.getPriceForTier('default-product', 'month');
+            await stripeMocker.createSubscription({
+                customer,
+                price
+            });
+
+            const member = await models.Member.findOne({email: customer.email}, {require: true});
+            await models.Member.edit({
+                labels: [{name: 'subscription-box-paid-tests'}],
+                newsletters: [{
+                    id: fixtureManager.get('newsletters', 0).id
+                }]
+            }, {id: member.id});
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
+
+            const {html, plaintext} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            }, 'label:subscription-box-paid-tests');
+
+            // Currently the link is not present in plaintext version (because no text)
+            assert.equal(html.match(/#\/portal\/account/g).length, 1, 'Subscription details box should contain a link to the account page');
+
+            // Check text matches
+            assert.match(plaintext, /You are receiving this because you are a paid subscriber to Ghost\. Your subscription will renew on \d+ \w+ \d+\./);
+
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
+        });
+
+        it('Shows subscription details box for canceled paid member', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            // Create a new member without a first_name
+            const customer = stripeMocker.createCustomer({
+                email: 'canceled-paid@example.com'
+            });
+            const price = await stripeMocker.getPriceForTier('default-product', 'month');
+            await stripeMocker.createSubscription({
+                customer,
+                price,
+                cancel_at_period_end: true
+            });
+
+            const member = await models.Member.findOne({email: customer.email}, {require: true});
+            await models.Member.edit({
+                labels: [{name: 'subscription-box-canceled-tests'}],
+                newsletters: [{
+                    id: fixtureManager.get('newsletters', 0).id
+                }]
+            }, {id: member.id});
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
+
+            const {html, plaintext} = await sendEmail({
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            }, 'label:subscription-box-canceled-tests');
+
+            // Currently the link is not present in plaintext version (because no text)
+            assert.equal(html.match(/#\/portal\/account/g).length, 1, 'Subscription details box should contain a link to the account page');
+
+            // Check text matches
+            assert.match(plaintext, /You are receiving this because you are a paid subscriber to Ghost\. Your subscription has been canceled and will expire on \d+ \w+ \d+\. You can resume your subscription via your account settings\./);
+
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
+        });
+
+        it('Shows 3 latest posts', async function () {
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_latest_posts: true}, {id: defaultNewsletter.id});
+
+            const {html} = await sendEmail({
+                title: 'This is the main post title',
+                mobiledoc: mobileDocExample
+            });
+
+            // Check contains 3 latest posts
+            assert.match(html, /Keep reading/);
+
+            // Check count of title
+            assert.equal(html.match(/This is the main post title/g).length, 2, 'Should only contain the title two times'); // otherwise post is in last 3 posts
+
+            await lastEmailMatchSnapshot();
+
+            // undo
+            await models.Newsletter.edit({show_latest_posts: false}, {id: defaultNewsletter.id});
         });
     });
 });

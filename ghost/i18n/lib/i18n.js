@@ -1,6 +1,11 @@
 const i18next = require('i18next');
 
-const SUPPORTED_LOCALES = ['en', 'nl', 'mn'];
+const SUPPORTED_LOCALES = [
+    'en',
+    'fr',
+    'mn',
+    'nl'
+];
 
 /**
  * @param {string} [lng]

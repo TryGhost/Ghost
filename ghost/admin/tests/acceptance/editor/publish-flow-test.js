@@ -178,6 +178,35 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="email-recipients"] [data-test-setting-title]');
             expect(find('[data-test-select="newsletter"]'), 'newsletter select').to.not.exist;
 
+            // check that the Free + Paid members toggle works properly
+            const freeCheckbox = find('[data-test-checkbox="free-members"]');
+            const paidCheckbox = find('[data-test-checkbox="paid-members"]');
+
+            // toggles exist
+            expect(freeCheckbox, 'free members checkbox').to.exist;
+            expect(paidCheckbox, 'paid members checkbox').to.exist;
+
+            // both toggles are checked by default
+            expect(freeCheckbox.checked, 'free members checkbox checked').to.be.true;
+            expect(paidCheckbox.checked, 'paid members checkbox checked').to.be.true;
+
+            // uncheck both and check that the title updates
+            await click(freeCheckbox);
+            await click(paidCheckbox);
+            expect(freeCheckbox.checked, 'free members checkbox checked').to.be.false;
+            expect(paidCheckbox.checked, 'paid members checkbox checked').to.be.false;
+
+            expect(
+                find('[data-test-setting="email-recipients"] [data-test-setting-title]')
+            ).to.have.trimmed.rendered.text('Not sent as newsletter');
+
+            // check them both again
+            await click(freeCheckbox);
+            await click(paidCheckbox);
+            
+            expect(freeCheckbox.checked, 'free members checkbox checked').to.be.true;
+            expect(paidCheckbox.checked, 'paid members checkbox checked').to.be.true;
+
             await click('[data-test-button="continue"]');
 
             // confirm text is correct

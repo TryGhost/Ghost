@@ -7,6 +7,41 @@ const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const tpl = require('@tryghost/tpl');
+const entities = require('entities');
+
+const messages = {
+    subscriptionStatus: {
+        free: '',
+        expired: 'Your subscription has expired.',
+        canceled: 'Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.',
+        active: 'Your subscription will renew on {date}.',
+        trial: 'Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.',
+        complimentaryExpires: 'Your subscription will expire on {date}.',
+        complimentaryInfinite: ''
+    }
+};
+
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatDateLong(date, timezone) {
+    return DateTime.fromJSDate(date).setZone(timezone).setLocale('en-gb').toLocaleString({
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * @typedef {string|null} Segment
@@ -20,7 +55,20 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
  * @prop {string} uuid
  * @prop {string} email
  * @prop {string} name
+ * @prop {'free'|'paid'|'comped'} status
  * @prop {Date|null} createdAt This can be null if the member has been deleted for older email recipient rows
+ * @prop {MemberLikeSubscription[]} subscriptions Required to get trial end / next renewal date / expire at date for paid member
+ * @prop {MemberLikeTier[]} tiers Required to get the expiry date in case of a comped member
+ *
+ * @typedef {object} MemberLikeSubscription
+ * @prop {string} status
+ * @prop {boolean} cancel_at_period_end
+ * @prop {Date|null} trial_end_at
+ * @prop {Date} current_period_end
+ *
+ * @typedef {object} MemberLikeTier
+ * @prop {string} product_id
+ * @prop {Date|null} expiry_at
  */
 
 /**
@@ -70,7 +118,7 @@ class EmailRenderer {
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
-     * @param {{getImageSizeFromUrl(url: string): Promise<{width: number}>}} dependencies.imageSize
+     * @param {{getImageSizeFromUrl(url: string): Promise<{width: number, height: number}>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
@@ -245,6 +293,8 @@ class EmailRenderer {
         // Link tracking
         if (options.clickTrackingEnabled) {
             html = await this.#linkReplacer.replace(html, async (url) => {
+                // Decode any escaped entities in the url
+                url = new URL(entities.decode(url.toString()));
                 // We ignore all links that contain %%{uuid}%%
                 // because otherwise we would add tracking to links that need to be replaced first
                 if (url.toString().indexOf('%%{uuid}%%') !== -1) {
@@ -276,7 +326,7 @@ class EmailRenderer {
 
         // Juice HTML (inline CSS)
         const juice = require('juice');
-        html = juice(html, {inlinePseudoElements: true});
+        html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
         const cheerio = require('cheerio');
@@ -330,7 +380,7 @@ class EmailRenderer {
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
      * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
      *
-     * @param {string} [uuid] post uuid
+     * @param {string} [uuid] member uuid
      * @param {Object} [options]
      * @param {string} [options.newsletterUuid] newsletter uuid
      * @param {boolean} [options.comments] Unsubscribe from comment emails
@@ -355,6 +405,104 @@ class EmailRenderer {
     }
 
     /**
+     * createManageAccountUrl
+     *
+     * @param {string} [uuid] member uuid
+     */
+    createManageAccountUrl(uuid) {
+        const siteUrl = this.#urlUtils.urlFor('home', true);
+        const url = new URL(siteUrl);
+        url.hash = '#/portal/account';
+
+        return url.href;
+    }
+
+    /**
+     * Returns whether a paid member is trialing a subscription
+     */
+    isMemberTrialing(member) {
+        // Do we have an active subscription?
+        if (member.status === 'paid') {
+            let activeSubscription = member.subscriptions.find((subscription) => {
+                return subscription.status === 'trialing';
+            });
+
+            if (!activeSubscription) {
+                return false;
+            }
+
+            // Translate to a human readable string
+            if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param {MemberLike} member
+     * @returns {string}
+     */
+    getMemberStatusText(member) {
+        if (member.status === 'free') {
+            // Not really used, but as a backup
+            return tpl(messages.subscriptionStatus.free);
+        }
+
+        // Do we have an active subscription?
+        if (member.status === 'paid') {
+            let activeSubscription = member.subscriptions.find((subscription) => {
+                return subscription.status === 'active';
+            }) ?? member.subscriptions.find((subscription) => {
+                return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.status);
+            });
+
+            if (!activeSubscription && !member.tiers.length) {
+                // No subscription?
+                return tpl(messages.subscriptionStatus.expired);
+            }
+
+            if (!activeSubscription) {
+                if (!member.tiers[0]?.expiry_at) {
+                    return tpl(messages.subscriptionStatus.complimentaryInfinite);
+                }
+                // Create one manually that is expiring
+                activeSubscription = {
+                    cancel_at_period_end: true,
+                    current_period_end: member.tiers[0].expiry_at,
+                    status: 'active',
+                    trial_end_at: null
+                };
+            }
+            const timezone = this.#settingsCache.get('timezone');
+
+            // Translate to a human readable string
+            if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
+                const date = formatDateLong(activeSubscription.trial_end_at, timezone);
+                return tpl(messages.subscriptionStatus.trial, {date});
+            }
+
+            const date = formatDateLong(activeSubscription.current_period_end, timezone);
+            if (activeSubscription.cancel_at_period_end) {
+                return tpl(messages.subscriptionStatus.canceled, {date});
+            }
+
+            return tpl(messages.subscriptionStatus.active, {date});
+        }
+
+        const expires = member.tiers[0]?.expiry_at ?? null;
+
+        if (expires) {
+            const timezone = this.#settingsCache.get('timezone');
+            const date = formatDateLong(expires, timezone);
+            return tpl(messages.subscriptionStatus.complimentaryExpires, {date});
+        }
+
+        return tpl(messages.subscriptionStatus.complimentaryInfinite);
+    }
+
+    /**
      * Note that we only look in HTML because plaintext and HTML are essentially the same content
      * @returns {ReplacementDefinition[]}
      */
@@ -364,6 +512,12 @@ class EmailRenderer {
                 id: 'unsubscribe_url',
                 getValue: (member) => {
                     return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                }
+            },
+            {
+                id: 'manage_account_url',
+                getValue: (member) => {
+                    return this.createManageAccountUrl(member.uuid);
                 }
             },
             {
@@ -385,6 +539,12 @@ class EmailRenderer {
                 }
             },
             {
+                id: 'name_class',
+                getValue: (member) => {
+                    return member.name ? '' : 'hidden';
+                }
+            },
+            {
                 id: 'email',
                 getValue: (member) => {
                     return member.email;
@@ -394,11 +554,25 @@ class EmailRenderer {
                 id: 'created_at',
                 getValue: (member) => {
                     const timezone = this.#settingsCache.get('timezone');
-                    return member.createdAt ? DateTime.fromJSDate(member.createdAt).setZone(timezone).setLocale('en-gb').toLocaleString({
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }) : '';
+                    return member.createdAt ? formatDateLong(member.createdAt, timezone) : '';
+                }
+            },
+            {
+                id: 'status',
+                getValue: (member) => {
+                    if (member.status === 'comped') {
+                        return 'complimentary';
+                    }
+                    if (this.isMemberTrialing(member)) {
+                        return 'trialing';
+                    }
+                    return member.status;
+                }
+            },
+            {
+                id: 'status_text',
+                getValue: (member) => {
+                    return this.getMemberStatusText(member);
                 }
             }
         ];
@@ -406,10 +580,6 @@ class EmailRenderer {
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
         const REPLACEMENT_STRING_REGEX = /^(?<recipientProperty>\w+?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?$/;
-
-        function escapeRegExp(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
 
         // Stores the definitions that we are actually going to use
         const replacements = [];
@@ -544,6 +714,35 @@ class EmailRenderer {
         }
     }
 
+    truncateText(text, maxLength) {
+        if (text && text.length > maxLength) {
+            return text.substring(0, maxLength - 1).trim() + '…';
+        } else {
+            return text ?? '';
+        }
+    }
+
+    /**
+     *
+     * @param {*} text
+     * @param {number} maxLength
+     * @param {number} maxLengthMobile should be larger than maxLength
+     * @returns
+     */
+    truncateHtml(text, maxLength, maxLengthMobile) {
+        if (!maxLengthMobile || maxLength >= maxLengthMobile) {
+            return escapeHtml(this.truncateText(text, maxLength));
+        }
+        if (text && text.length > maxLength) {
+            if (text.length <= maxLengthMobile) {
+                return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '<span class="hide-mobile">…</span>';
+            }
+            return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '…';
+        } else {
+            return escapeHtml(text ?? '');
+        }
+    }
+
     /**
      * @private
      */
@@ -560,7 +759,7 @@ class EmailRenderer {
         }
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
-        const {href: postFeatureImage, width: postFeatureImageWidth} = await this.limitImageWidth(post.get('feature_image'));
+        const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
 
         const timezone = this.#settingsCache.get('timezone');
         const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
@@ -604,28 +803,33 @@ class EmailRenderer {
 
         const latestPosts = [];
         let latestPostsHasImages = false;
-        if (newsletter.get('show_latest_posts') && this.#labs.isSet('makingItRain')) {
+        if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
             const {data} = await this.#models.Post.findPage({
-                filter: 'status:published',
+                filter: 'status:published+id:-' + post.id,
                 order: 'published_at DESC',
                 limit: 3
             });
 
             for (const latestPost of data) {
                 // Please also adjust email-latest-posts-image if you make changes to the image width (100 x 2 = 200 -> should be in email-latest-posts-image)
-                const {href: featureImage, width: featureImageWidth} = await this.limitImageWidth(latestPost.get('feature_image'), 100);
+                const {href: featureImage, width: featureImageWidth, height: featureImageHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 100, 100);
+                const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
                 latestPosts.push({
-                    title: latestPost.get('title'),
-                    publishedAt: (latestPost.get('published_at') ? DateTime.fromJSDate(latestPost.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    }),
+                    title: this.truncateHtml(latestPost.get('title'), featureImage ? 85 : 105, 105),
                     url: this.#getPostUrl(latestPost),
-                    featureImage,
-                    featureImageWidth
+                    featureImage: featureImage ? {
+                        src: featureImage,
+                        width: featureImageWidth,
+                        height: featureImageHeight
+                    } : null,
+                    featureImageMobile: featureImageMobile ? {
+                        src: featureImageMobile,
+                        width: featureImageMobileWidth,
+                        height: featureImageMobileHeight
+                    } : null,
+                    excerpt: this.truncateHtml(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), featureImage ? 60 : 70, 105)
                 });
 
                 if (featureImage) {
@@ -654,6 +858,7 @@ class EmailRenderer {
                 publishedAt,
                 feature_image: postFeatureImage,
                 feature_image_width: postFeatureImageWidth,
+                feature_image_height: postFeatureImageHeight,
                 feature_image_alt: post.related('posts_meta')?.get('feature_image_alt'),
                 feature_image_caption: post.related('posts_meta')?.get('feature_image_caption')
             },
@@ -662,12 +867,10 @@ class EmailRenderer {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
-                showSubscriptionDetails: newsletter.get('show_subscription_details') && this.#labs.isSet('makingItRain')
+                showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
             latestPosts,
             latestPostsHasImages,
-
-            labs: this.#settingsCache.get('labs'),
 
             //CSS
             accentColor: accentColor, // default to #15212A
@@ -712,44 +915,66 @@ class EmailRenderer {
     /**
      * @private
      * Sets and limits the width of an image + returns the width
-     * @returns {Promise<{href: string, width: number}>}
+     * @returns {Promise<{href: string, width: number, height: number | null}>}
      */
-    async limitImageWidth(href, visibleWidth = 600) {
+    async limitImageWidth(href, visibleWidth = 600, visibleHeight = null) {
         if (!href) {
             return {
                 href,
-                width: 0
+                width: 0,
+                height: null
             };
         }
         if (isUnsplashImage(href)) {
             // Unsplash images have a minimum size so assuming 1200px is safe
             const unsplashUrl = new URL(href);
+            unsplashUrl.searchParams.delete('w');
+            unsplashUrl.searchParams.delete('h');
+
             unsplashUrl.searchParams.set('w', (visibleWidth * 2).toFixed(0));
+
+            if (visibleHeight) {
+                unsplashUrl.searchParams.set('h', (visibleHeight * 2).toFixed(0));
+                unsplashUrl.searchParams.set('fit', 'crop');
+            }
 
             return {
                 href: unsplashUrl.href,
-                width: visibleWidth
+                width: visibleWidth,
+                height: visibleHeight
             };
         } else {
             try {
                 const size = await this.#imageSize.getImageSizeFromUrl(href);
 
                 if (size.width >= visibleWidth) {
+                    if (!visibleHeight) {
+                        // Keep aspect ratio
+                        size.height = Math.round(size.height * (visibleWidth / size.width));
+                    }
+
                     // keep original image, just set a fixed width
                     size.width = visibleWidth;
+                }
+
+                if (visibleHeight && size.height >= visibleHeight) {
+                    // keep original image, just set a fixed width
+                    size.height = visibleHeight;
                 }
 
                 if (this.#storageUtils.isLocalImage(href)) {
                     // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                     return {
-                        href: href.replace(/\/content\/images\//, '/content/images/size/w' + (visibleWidth * 2) + '/'),
-                        width: size.width
+                        href: href.replace(/\/content\/images\//, '/content/images/size/w' + (visibleWidth * 2) + (visibleHeight ? 'h' + (visibleHeight * 2) : '') + '/'),
+                        width: size.width,
+                        height: size.height
                     };
                 }
 
                 return {
                     href,
-                    width: size.width
+                    width: size.width,
+                    height: size.height
                 };
             } catch (err) {
                 // log and proceed. Using original header image without fixed width isn't fatal.
@@ -759,7 +984,8 @@ class EmailRenderer {
 
         return {
             href,
-            width: 0
+            width: 0,
+            height: null
         };
     }
 }

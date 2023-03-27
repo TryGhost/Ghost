@@ -26,6 +26,12 @@ jobs:
         with:
           node-version: '16.13.0'
           cache: yarn
+
+      - uses: actions/cache@v3
+        with:
+          path: ghost/**/.eslintcache
+          key: eslint-cache
+
       - run: yarn
       - run: yarn lint
       - uses: daniellockyer/action-slack-build@master
@@ -151,7 +157,7 @@ jobs:
           cache: yarn
 
       - run: yarn
-      - run: yarn workspaces run test:unit
+      - run: yarn test:unit
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '16')

@@ -85,7 +85,8 @@ class StripeMocker {
             customer,
             price,
             status: 'trialing',
-            trial_end_at: (Date.now() + 1000 * 60 * 60 * 24 * 7) / 1000,
+            trial_start: Date.now() / 1000,
+            trial_end: (Date.now() + 1000 * 60 * 60 * 24 * 7) / 1000,
             ...overrides
         });
     }

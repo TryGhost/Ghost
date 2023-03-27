@@ -61,7 +61,7 @@ describe('TwitterOEmbedProvider', function () {
             });
 
         nock('https://api.twitter.com')
-            .get('/2/tweets/')
+            .get('/2/tweets/1630581157568839683')
             .query(true)
             .reply(200, {
                 data: {
