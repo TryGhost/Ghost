@@ -139,7 +139,7 @@ describe('Posts API', function () {
         });
 
         it('Can export with order', async function () {
-            const {text} = await agent.get('posts/export?order=title%20DESC')
+            const {text} = await agent.get('posts/export?order=published_at%20ASC')
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
