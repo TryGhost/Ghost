@@ -314,5 +314,45 @@ describe('Slash menu', async () => {
                 return document.querySelector('[data-kg-card="image"] img').src;
             })).toEqual('https://example.com/image.jpg');
         });
+
+        it('can insert card at beginning of document before text', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.type('/callout');
+            await page.waitForSelector('li:first-child > [data-kg-card-menu-item="Callout"]');
+            await page.keyboard.press('Enter');
+            await page.waitForSelector('[data-kg-card="callout"]');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="callout"></div>
+                </div>
+                <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+            `, {ignoreCardContents: true});
+        });
+
+        it('can insert card at beginning of document before card', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.type('/callout');
+            await page.waitForSelector('li:first-child > [data-kg-card-menu-item="Callout"]');
+            await page.keyboard.press('Enter');
+            await page.waitForSelector('[data-kg-card="callout"]');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="callout"></div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardContents: true});
+        });
     });
 });

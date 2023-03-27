@@ -1,5 +1,5 @@
 import React from 'react';
-import {$getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {$createParagraphNode, $getRoot, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
 import {CardMenu} from '../components/ui/CardMenu';
 import {SlashMenu} from '../components/ui/SlashMenu';
 import {buildCardMenu} from '../utils/buildCardMenu';
@@ -60,8 +60,18 @@ function useSlashCardMenu(editor) {
 
         editor.update(() => {
             const selection = $getSelection();
-            selection.modify('extend', true, 'lineboundary');
-            selection.deleteCharacter(true);
+
+            const focusPNode = selection.focus.getNode().getTopLevelElement();
+
+            // paragraphs at the beginning of the document will delete themselves
+            // via .collapseAtStart() if their contents are deleted so we create
+            // a new paragraph and delete the old one before the insert command
+            // replaces the selection with the new node
+            const paragraph = $createParagraphNode();
+            focusPNode.insertAfter(paragraph);
+            focusPNode.remove();
+            paragraph.select();
+
             editor.dispatchCommand(insertCommand, dataset);
         });
 
