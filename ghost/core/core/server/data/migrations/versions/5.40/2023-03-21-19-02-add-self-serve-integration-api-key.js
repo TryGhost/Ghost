@@ -37,7 +37,7 @@ module.exports = createTransactionalMigration(
 
         await knex('api_keys').insert({
             id: (new ObjectID()).toHexString(),
-            type: 'core',
+            type: 'admin',
             secret: security.secret.create('admin'),
             role_id: role.id,
             integration_id: integration.id,
