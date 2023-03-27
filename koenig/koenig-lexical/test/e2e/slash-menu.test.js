@@ -265,7 +265,7 @@ describe('Slash menu', async () => {
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
-                <p dir="ltr"><br /></p>
+                <p><br /></p>
             `);
 
             // HR card puts focus on paragraph after insert

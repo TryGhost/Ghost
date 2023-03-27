@@ -459,7 +459,7 @@ describe('Card behaviour', async () => {
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
                 </div>
-                <p dir="ltr"><br /></p>
+                <p><br /></p>
             `);
 
             await page.click('[data-kg-card="horizontalrule"]');
