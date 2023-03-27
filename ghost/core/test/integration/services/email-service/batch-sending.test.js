@@ -155,7 +155,7 @@ async function lastEmailMatchSnapshot() {
 
     const ignoreReplacements = [
         {
-            match: /\d{2}\s\w+\s\d{4}/g,
+            match: /\d{1,2}\s\w+\s\d{4}/g,
             replacement: 'date'
         },
         {
