@@ -60,7 +60,7 @@
                         {{#if this.settings.icon}}
                             <GhFormGroup class="gh-stack-item row">
                                 <label class="modal-fullsettings-title {{unless this.settings.icon "disabled"}}">Publication icon</label>
-                                <div class="for-switch small {{unless this.settings.icon "disabled"}}">
+                                <div class="for-switch x-small {{unless this.settings.icon "disabled"}}">
                                     <label class="switch" for="show-header">
                                         <input
                                             type="checkbox"
@@ -78,7 +78,7 @@
 
                         <GhFormGroup class="gh-stack-item row">
                             <label class="modal-fullsettings-title">Publication title</label>
-                            <div class="for-switch small">
+                            <div class="for-switch x-small">
                                 <label class="switch" for="show-title" data-test-toggle="showHeaderTitle">
                                     <input
                                         type="checkbox"
@@ -93,7 +93,7 @@
                         </GhFormGroup>
                         <GhFormGroup class="gh-stack-item row">
                             <label class="modal-fullsettings-title">Newsletter name</label>
-                            <div class="for-switch small">
+                            <div class="for-switch x-small">
                                 <label class="switch" for="show-header-name" data-test-toggle="showHeaderName">
                                     <input
                                         type="checkbox"
@@ -123,10 +123,9 @@
                             <label class="modal-fullsettings-title">Background color</label>
                             <div class="gh-email-design-color-picker">
                                 <div class="gh-btn-group">
-                                    <button type="button" title="White" class="gh-btn gh-email-design-color white gh-btn-group-selected"></button>
-                                    <button type="button" title="Grey" class="gh-btn gh-email-design-color grey"></button>
-                                    <button type="button" title="Brand color" class="gh-btn gh-email-design-color accent"></button>
                                     <button type="button" title="Custom color" class="gh-btn gh-email-design-color custom">{{svg-jar "plus"}}</button>
+                                    <button type="button" title="Black" class="gh-btn gh-email-design-color black"></button>
+                                    <button type="button" title="White" class="gh-btn gh-email-design-color white gh-btn-group-selected"></button>
                                 </div>
                             </div>
                         </GhFormGroup>
@@ -135,17 +134,17 @@
                             <label class="modal-fullsettings-title">Border color</label>
                             <div class="gh-email-design-color-picker">
                                 <div class="gh-btn-group">
-                                    <button type="button" title="Transparent" class="gh-btn gh-email-design-color transparent gh-btn-group-selected"></button>
-                                    <button type="button" title="Black" class="gh-btn gh-email-design-color black"></button>
-                                    <button type="button" title="Brand color" class="gh-btn gh-email-design-color accent"></button>
                                     <button type="button" title="Custom color" class="gh-btn gh-email-design-color custom">{{svg-jar "plus"}}</button>
+                                    <button type="button" title="Brand color" class="gh-btn gh-email-design-color accent"></button>
+                                    <button type="button" title="Black" class="gh-btn gh-email-design-color black"></button>
+                                    <button type="button" title="Transparent" class="gh-btn gh-email-design-color transparent gh-btn-group-selected"></button>
                                 </div>
                             </div>
                         </GhFormGroup>
                         
                         <GhFormGroup class="gh-stack-item row">
                             <label class="modal-fullsettings-title">Post title</label>
-                            <div class="for-switch small">
+                            <div class="for-switch x-small">
                                 <label class="switch" for="show-post-title">
                                     <input
                                         type="checkbox"
@@ -180,16 +179,16 @@
                             <label class="modal-fullsettings-title">Heading color</label>
                             <div class="gh-email-design-color-picker">
                                 <div class="gh-btn-group">
-                                    <button type="button" title="Black"class="gh-btn gh-email-design-color black gh-btn-group-selected"></button>
-                                    <button type="button" title="Brand color" class="gh-btn gh-email-design-color accent"></button>
                                     <button type="button" title="Custom color" class="gh-btn gh-email-design-color custom">{{svg-jar "plus"}}</button>
+                                    <button type="button" title="Brand color" class="gh-btn gh-email-design-color accent"></button>
+                                    <button type="button" title="Auto"class="gh-btn gh-email-design-color black gh-btn-group-selected"></button>
                                 </div>
                             </div>
                         </GhFormGroup>
 
                         <GhFormGroup class="gh-stack-item row">
                             <label class="modal-fullsettings-title">Feature image</label>
-                            <div class="for-switch small">
+                            <div class="for-switch x-small">
                                 <label class="switch" for="show-feature-image">
                                     <input
                                         type="checkbox"
@@ -230,7 +229,7 @@
                         {{#if (feature "audienceFeedback")}}
                             <GhFormGroup class="gh-stack-item row">
                                 <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Ask your readers for feedback</label>
-                                <div class="for-switch small">
+                                <div class="for-switch x-small">
                                     <div class="container">
                                         <input
                                             type="checkbox"
@@ -247,7 +246,7 @@
                         {{#unless (eq this.settings.commentsEnabled 'off') }}
                             <GhFormGroup class="gh-stack-item row">
                                 <label for="comments-link" class="modal-fullsettings-title" data-test-toggle="showCommentCta">Add a link to your comments</label>
-                                <div class="for-switch small">
+                                <div class="for-switch x-small">
                                     <div class="container">
                                         <input
                                             type="checkbox"
@@ -263,7 +262,7 @@
 
                         <GhFormGroup class="gh-stack-item row">
                             <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="showLatestPosts">Share your latest posts</label>
-                            <div class="for-switch small">
+                            <div class="for-switch x-small">
                                 <div class="container">
                                     <input
                                         type="checkbox"
@@ -278,7 +277,7 @@
 
                         <GhFormGroup class="gh-stack-item row">
                             <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="showSubscriptionDetails">Show subscription details</label>
-                            <div class="for-switch small">
+                            <div class="for-switch x-small">
                                 <div class="container">
                                     <input
                                         type="checkbox"
