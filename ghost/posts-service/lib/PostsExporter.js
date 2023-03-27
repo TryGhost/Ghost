@@ -83,7 +83,7 @@ class PostsExporter {
                 tags: post.related('tags').map(tag => tag.get('name')).join(', '),
                 post_access: this.postAccessToString(post),
                 email_recipients: email ? this.humanReadableEmailRecipientFilter(email?.get('recipient_filter'), labels) : null,
-                newsletter: newsletters.length > 1 && post.get('newsletter_id') && email ? newsletters.find(newsletter => newsletter.get('id') === post.get('newsletter_id')).get('name') : null,
+                newsletter: newsletters.length > 1 && post.get('newsletter_id') && email ? newsletters.find(newsletter => newsletter.get('id') === post.get('newsletter_id'))?.get('name') : null,
                 sends: email?.get('email_count') ?? null,
                 opens: trackOpens ? (email?.get('opened_count') ?? null) : null,
                 clicks: showEmailClickAnalytics ? (post.get('count__clicks') ?? 0) : null,
@@ -108,11 +108,11 @@ class PostsExporter {
                 removeableColumns.push('reacted_with_more_like_this', 'reacted_with_less_like_this');
             }
 
-            if (!membersEnabled && !trackClicks) {
+            if (membersEnabled && !trackClicks) {
                 removeableColumns.push('clicks');
             }
 
-            if (!membersEnabled && !trackOpens) {
+            if (membersEnabled && !trackOpens) {
                 removeableColumns.push('opens');
             }
 
@@ -122,10 +122,7 @@ class PostsExporter {
                 removeableColumns.push('paid_signups');
             }
 
-            // Note the strict null check: we allow columns that are all zero
-            const columnsToRemove = removeableColumns.filter(key => mapped.every(row => !row[key] && row[key] !== 0));
-
-            for (const columnToRemove of columnsToRemove) {
+            for (const columnToRemove of removeableColumns) {
                 for (const row of mapped) {
                     delete row[columnToRemove];
                 }
@@ -212,9 +209,6 @@ class PostsExporter {
      * @returns
      */
     filterToString(filter, allLabels) {
-        if (!filter) {
-            return [];
-        }
         const strings = [];
         if (filter.$and) {
             // Not supported
@@ -245,7 +239,7 @@ class PostsExporter {
                         } else if (filter.status === 'paid') {
                             strings.push('paid members');
                         } else if (filter.status === 'comped') {
-                            strings.push('comped members');
+                            strings.push('complimentary members');
                         }
                     } else {
                         if (filter.status.$ne === 'free') {

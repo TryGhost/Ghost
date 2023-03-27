@@ -70,17 +70,20 @@ const createModelClass = (options = {}) => {
             );
         },
         findAll: async (data) => {
-            return Promise.resolve(
-                (options.findAll ?? []).map(f => createModel({...f, ...data}))
-            );
+            const models = (options.findAll ?? []).map(f => createModel({...f, ...data}));
+            return Promise.resolve({
+                models,
+                map: models.map.bind(models),
+                length: models.length
+            });
         },
         findPage: async (data) => {
             const all = options.findAll ?? [];
             const limit = data.limit ?? 15;
             const page = data.page ?? 1;
 
-            const start = (page - 1) * limit;
-            const end = start + limit;
+            const start = (page - 1) * (limit === 'all' ? all.length : limit);
+            const end = limit === 'all' ? all.length : (start + limit);
 
             const pageData = all.slice(start, end);
             return Promise.resolve(
