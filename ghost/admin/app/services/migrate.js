@@ -1,5 +1,5 @@
-import * as jose from 'jose';
 import Service, {inject as service} from '@ember/service';
+import {SignJWT} from 'jose';
 import {tracked} from '@glimmer/tracking';
 
 export default class MigrateService extends Service {
@@ -8,7 +8,7 @@ export default class MigrateService extends Service {
     @service ghostPaths;
     @service settings;
 
-    migrateUrl = 'http://localhost:2370';
+    migrateUrl = 'http://localhost:3010';
     migrateRouteRoot = '#/migrate';
 
     @tracked migrateWindowOpen = false;
@@ -34,17 +34,15 @@ export default class MigrateService extends Service {
             const [id, secret] = key.split(':');
             const encodedSecret = new TextEncoder().encode(secret);
 
-            // console.log({id, secret, encodedSecret});
-
-            const token = await new jose.SignJWT({})
+            const token = await new SignJWT({})
                 .setProtectedHeader({
                     alg: 'HS256',
-                    kid: id,
-                    typ: 'JWT'
+                    typ: 'JWT',
+                    kid: id
                 })
                 .setIssuedAt()
-                .setAudience('/admin/')
                 .setExpirationTime('5m')
+                .setAudience('/admin/')
                 .sign(encodedSecret);
 
             return token;
