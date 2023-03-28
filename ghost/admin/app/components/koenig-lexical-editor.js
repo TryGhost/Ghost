@@ -154,7 +154,8 @@ export default class KoenigLexicalEditor extends Component {
                     'App-Pragma': 'no-cache',
                     'X-Unsplash-Cache': true
                 }
-            }
+            },
+            tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null
         };
 
         const useFileUpload = (type = 'image') => {
