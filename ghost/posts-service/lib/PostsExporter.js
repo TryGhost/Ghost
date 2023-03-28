@@ -88,7 +88,7 @@ class PostsExporter {
                 opens: trackOpens ? (email?.get('opened_count') ?? null) : null,
                 clicks: showEmailClickAnalytics ? (post.get('count__clicks') ?? 0) : null,
                 free_signups: membersTrackSources && published ? (post.get('count__signups') ?? 0) : null,
-                paid_signups: membersTrackSources && paidMembersEnabled && published ? (post.get('count__paid_conversions') ?? 0) : null,
+                paid_conversions: membersTrackSources && paidMembersEnabled && published ? (post.get('count__paid_conversions') ?? 0) : null,
                 reacted_with_more_like_this: feedbackEnabled ? (post.get('count__positive_feedback') ?? 0) : null,
                 reacted_with_less_like_this: feedbackEnabled ? (post.get('count__negative_feedback') ?? 0) : null
             };
@@ -117,9 +117,9 @@ class PostsExporter {
             }
 
             if (!membersTrackSources || !membersEnabled) {
-                removeableColumns.push('free_signups', 'paid_signups');
+                removeableColumns.push('free_signups', 'paid_conversions');
             } else if (!paidMembersEnabled) {
-                removeableColumns.push('paid_signups');
+                removeableColumns.push('paid_conversions');
             }
 
             for (const columnToRemove of removeableColumns) {
