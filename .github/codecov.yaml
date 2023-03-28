@@ -1,5 +1,5 @@
 component_management:
-  indidivudal_components:
+  individual_components:
     - component_id: module_admin
       name: admin
       paths:
