@@ -4,3 +4,7 @@ component_management:
       name: admin
       paths:
         - ghost/admin/**
+comment:
+  behavior: default
+  layout: reach,diff,flags,components,tree,reach
+  show_carryforward_flags: false
