@@ -173,7 +173,7 @@ describe('PostsExporter', function () {
 
             // Signups
             assert.equal(posts[0].free_signups, undefined);
-            assert.equal(posts[0].paid_signups, undefined);
+            assert.equal(posts[0].paid_conversions, undefined);
         });
 
         it('Hides member related columns if members disabled', async function () {
@@ -192,7 +192,7 @@ describe('PostsExporter', function () {
 
             // Signups
             assert.equal(posts[0].free_signups, undefined);
-            assert.equal(posts[0].paid_signups, undefined);
+            assert.equal(posts[0].paid_conversions, undefined);
         });
 
         it('Hides clicks if disabled', async function () {
@@ -205,7 +205,7 @@ describe('PostsExporter', function () {
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].opens, undefined);
             assert.notEqual(posts[0].free_signups, undefined);
-            assert.notEqual(posts[0].paid_signups, undefined);
+            assert.notEqual(posts[0].paid_conversions, undefined);
 
             assert.equal(posts[0].clicks, undefined);
         });
@@ -220,7 +220,7 @@ describe('PostsExporter', function () {
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].clicks, undefined);
             assert.notEqual(posts[0].free_signups, undefined);
-            assert.notEqual(posts[0].paid_signups, undefined);
+            assert.notEqual(posts[0].paid_conversions, undefined);
 
             assert.equal(posts[0].opens, undefined);
         });
@@ -237,7 +237,7 @@ describe('PostsExporter', function () {
             assert.notEqual(posts[0].free_signups, undefined);
             assert.notEqual(posts[0].opens, undefined);
 
-            assert.equal(posts[0].paid_signups, undefined);
+            assert.equal(posts[0].paid_conversions, undefined);
         });
 
         it('Works if relations not loaded correctly', async function () {
@@ -252,7 +252,7 @@ describe('PostsExporter', function () {
 
             assert.equal(posts[0].clicks, 0);
             assert.equal(posts[0].free_signups, 0);
-            assert.equal(posts[0].paid_signups, 0);
+            assert.equal(posts[0].paid_conversions, 0);
             assert.equal(posts[0].reacted_with_more_like_this, 0);
             assert.equal(posts[0].reacted_with_less_like_this, 0);
         });
