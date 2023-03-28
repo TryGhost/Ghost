@@ -35,7 +35,6 @@ const ALPHA_FEATURES = [
     'urlCache',
     'lexicalEditor',
     'websockets',
-    'webmentionEmails',
     'stripeAutomaticTax',
     'makingItRain'
 ];
