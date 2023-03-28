@@ -500,8 +500,8 @@ class BatchSendingService {
         const models = await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
         return models.map((model) => {
             // Map subscriptions
-            const subscriptions = model.related('member')?.related('stripeSubscriptions')?.toJSON() ?? [];
-            const tiers = model.related('member')?.related('products')?.toJSON() ?? [];
+            const subscriptions = model.related('member').related('stripeSubscriptions').toJSON();
+            const tiers = model.related('member').related('products').toJSON();
 
             return {
                 id: model.get('member_id'),
