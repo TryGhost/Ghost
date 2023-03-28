@@ -908,5 +908,28 @@ describe('StaffService', function () {
                 mailStub.called.should.be.false();
             });
         });
+
+        describe('renderText for webmentions', function () {
+            it('renders plaintext report for mentions', async function () {
+                const textTemplate = await service.emails.renderText('mention-report', {
+                    toEmail: 'jamie@example.com',
+                    siteDomain: 'ghost.org',
+                    staffUrl: 'https://admin.example.com/blog/ghost/#/settings/staff/jane.',
+                    mentions: [
+                        {
+                            sourceSiteTitle: 'Webmentions',
+                            sourceUrl: 'https://webmention.io/'
+                        },
+                        {
+                            sourceSiteTitle: 'Ghost Demo',
+                            sourceUrl: 'https://demo.ghost.io/'
+                        }
+                    ]
+                });
+                textTemplate.should.match(/- Webmentions \(https:\/\/webmention.io\/\)/);
+                textTemplate.should.match(/Ghost Demo \(https:\/\/demo.ghost.io\/\)/);
+                textTemplate.should.match(/Sent to jamie@example.com from ghost.org/);
+            });
+        });
     });
 });
