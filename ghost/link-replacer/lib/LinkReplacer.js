@@ -7,6 +7,7 @@ class LinkReplacer {
     */
     async replace(html, replaceLink) {
         const cheerio = require('cheerio');
+        const entities = require('entities');
         try {
             const $ = cheerio.load(html, {
                 xml: {
@@ -22,7 +23,7 @@ class LinkReplacer {
                 if (href) {
                     let url;
                     try {
-                        url = new URL(href);
+                        url = new URL(entities.decode(href));
                     } catch (e) {
                         // Ignore invalid URLs
                     }
