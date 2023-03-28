@@ -116,7 +116,7 @@ describe('PostsExporter', function () {
             assert.equal(posts.length, 1);
 
             // Hides newsletter column
-            assert.equal(posts[0].newsletter, undefined);
+            assert.equal(posts[0].newsletter_name, undefined);
         });
 
         it('Adds newsletter columns if multiple newsletters', async function () {
@@ -134,8 +134,8 @@ describe('PostsExporter', function () {
             assert.equal(posts.length, 2);
 
             // Shows newsletter column
-            assert.equal(posts[0].newsletter, 'Daily Newsletter');
-            assert.equal(posts[1].newsletter, 'Weekly Newsletter');
+            assert.equal(posts[0].newsletter_name, 'Daily Newsletter');
+            assert.equal(posts[1].newsletter_name, 'Weekly Newsletter');
 
             // Shows feedback columns
             assert.equal(posts[0].reacted_with_more_like_this, post.count__positive_feedback);
@@ -169,7 +169,7 @@ describe('PostsExporter', function () {
             assert.equal(posts[0].sends, undefined);
             assert.equal(posts[0].opens, undefined);
             assert.equal(posts[0].clicks, undefined);
-            assert.equal(posts[0].newsletter, undefined);
+            assert.equal(posts[0].newsletter_name, undefined);
 
             // Signups
             assert.equal(posts[0].free_signups, undefined);
