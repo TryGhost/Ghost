@@ -36,6 +36,13 @@ describe('LinkReplacementService', function () {
             assert.equal(replaced, html);
         });
 
+        it('Does escape HTML characters within a link\'s href', async function () {
+            const html = '<a href="https://www.google.com/maps/d/u/0/viewer?mid&#x3D;1kQUV2O5QQOigaxJUorLUC9LBP4Ibppg&amp;ll&#x3D;37.87151888616819%2C-122.27759691003418&amp;z&#x3D;13">link</a>';
+            const expected = '<a href="https://www.google.com/maps/d/u/0/viewer?mid=1kQUV2O5QQOigaxJUorLUC9LBP4Ibppg&ll=37.87151888616819%2C-122.27759691003418&z=13">link</a>';
+            const replaced = await linkReplacer.replace(html, url => new URL(url));
+            assert.equal(replaced, expected);
+        });
+
         it('Can replace to string', async function () {
             const html = '<a href="http://localhost:2368/dir/path">link</a>';
             const expected = '<a href="#valid-string">link</a>';
