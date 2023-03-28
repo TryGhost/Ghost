@@ -3,6 +3,7 @@ import {AudioNode} from './AudioNode';
 import {ButtonNode} from './ButtonNode';
 import {CalloutNode} from './CalloutNode';
 import {CodeBlockNode} from './CodeBlockNode';
+import {FileNode} from './FileNode';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
 import {HtmlNode} from './HtmlNode';
@@ -28,6 +29,7 @@ const DEFAULT_NODES = [
     VideoNode,
     CalloutNode,
     HtmlNode,
+    FileNode,
     ButtonNode,
     ToggleNode
 ];

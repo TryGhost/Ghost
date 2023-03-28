@@ -121,7 +121,6 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
                 thumbnailSrc={thumbnailSrc}
                 thumbnailUploader={thumbnailUploader}
                 title={title}
-                triggerFileDialog={triggerFileDialog}
                 updateTitle={setTitle}
                 onAudioFileChange={onAudioFileChange}
                 onThumbnailFileChange={onThumbnailFileChange}
@@ -165,7 +164,6 @@ export class AudioNode extends BaseAudioNode {
 
         // don't trigger the file dialog when rendering if we've already been given a url
         this.__triggerFileDialog = (!dataset.src && triggerFileDialog) || false;
-
         this.__initialFile = initialFile || null;
     }
 

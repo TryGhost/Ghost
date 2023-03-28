@@ -16,6 +16,10 @@ export const fileTypes = {
     mediaThumbnail: {
         mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/webp'],
         extensions: ['gif', 'jpg', 'jpeg', 'png', 'webp']
+    },
+    file: {
+        mimeTypes: [],
+        extensions: []
     }
 };
 
@@ -27,6 +31,9 @@ export function useFileUpload({isMultiplayer = false} = {}) {
         const [filesNumber, setFilesNumber] = useState(0);
 
         function defaultValidator(file) {
+            if (type === 'file') {
+                return true;
+            }
             let extensions = fileTypes[type].extensions;
             let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
@@ -43,7 +50,6 @@ export function useFileUpload({isMultiplayer = false} = {}) {
                 let validExtensions = `.${extensions.join(', .').toUpperCase()}`;
                 return `The file type you uploaded is not supported. Please use ${validExtensions}`;
             }
-
             return true;
         }
 

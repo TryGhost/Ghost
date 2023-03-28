@@ -55,6 +55,7 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
     });
 
     const setEditing = (shouldEdit) => {
+        // convert nodeKey to int
         if (shouldEdit) {
             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
         } else if (!isSelected) {

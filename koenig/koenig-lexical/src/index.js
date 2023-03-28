@@ -11,6 +11,7 @@ import CardMenuPlugin from './plugins/CardMenuPlugin';
 import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
 import ExternalControlPlugin from './plugins/ExternalControlPlugin';
+import FilePlugin from './plugins/FilePlugin';
 import FloatingFormatToolbarPlugin from './plugins/FloatingFormatToolbarPlugin';
 import HorizontalRulePlugin from './plugins/HorizontalRulePlugin';
 import HtmlOutputPlugin from './plugins/HtmlOutputPlugin';
@@ -69,6 +70,7 @@ export {
     VideoPlugin,
     TogglePlugin,
     CalloutPlugin,
+    FilePlugin,
 
     AllDefaultPlugins,
 

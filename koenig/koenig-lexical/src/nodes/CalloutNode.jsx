@@ -33,11 +33,13 @@ function CalloutNodeComponent({nodeKey, text, hasEmoji, backgroundColor, emojiVa
         });
     };
 
-    const handleToolbarEdit = (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setEditing(true);
-    };
+    // const handleToolbarEdit = (event) => {
+    //     event.preventDefault();
+    //     event.stopPropagation();
+    //     console.log(isEditing);
+    //     setEditing(true);
+    //     console.log('after', isEditing);
+    // };
 
     const handleColorChange = (color) => {
         editor.update(() => {
@@ -94,7 +96,7 @@ function CalloutNodeComponent({nodeKey, text, hasEmoji, backgroundColor, emojiVa
                 isVisible={isSelected && !isEditing}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem dataTestId="edit-callout-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    <ToolbarMenuItem dataTestId="edit-callout-card" icon="edit" isActive={false} label="Edit" />
                     <ToolbarMenuSeparator />
                     <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
                 </ToolbarMenu>
