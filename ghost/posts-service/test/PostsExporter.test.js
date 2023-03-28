@@ -120,6 +120,21 @@ describe('PostsExporter', function () {
 
             // Hides newsletter column
             assert.equal(posts[0].newsletter_name, undefined);
+
+            // Check status
+            assert.equal(posts[0].status, 'published and emailed');
+        });
+
+        it('Can export posts without an email', async function () {
+            post.email = null;
+            const posts = await exporter.export({});
+            assert.equal(posts.length, 1);
+
+            // Hides newsletter column
+            assert.equal(posts[0].newsletter_name, undefined);
+
+            // Check status
+            assert.equal(posts[0].status, 'published only');
         });
 
         it('Adds newsletter columns if multiple newsletters', async function () {

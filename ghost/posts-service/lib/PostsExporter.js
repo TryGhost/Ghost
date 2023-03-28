@@ -63,6 +63,12 @@ class PostsExporter {
 
         const mapped = posts.data.map((post) => {
             let email = post.related('email');
+
+            // Weird bookshelf thing fix
+            if (!email.id) {
+                email = null;
+            }
+
             let published = true;
             if (post.get('status') === 'draft' || post.get('status') === 'scheduled') {
                 // Manually clear it to avoid including information for a post that was reverted to draft

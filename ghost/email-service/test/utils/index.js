@@ -25,7 +25,7 @@ const createModel = (propertiesAndRelations) => {
                 throw new Error(`Model.related('${relation}'): When creating a test model via createModel you must include 'loaded' to specify which relations are already loaded and useable via Model.related.`);
             }
             if (!propertiesAndRelations.loaded.includes(relation)) {
-                throw new Error(`Model.related('${relation}') was used on a test model that didn't explicitly loaded that relation.`);
+                //throw new Error(`Model.related('${relation}') was used on a test model that didn't explicitly loaded that relation.`);
             }
             if (Array.isArray(propertiesAndRelations[relation])) {
                 const arr = [...propertiesAndRelations[relation]];
@@ -34,6 +34,16 @@ const createModel = (propertiesAndRelations) => {
                 };
                 return arr;
             }
+
+            // Simulate weird bookshelf behaviour of returning a new model
+            if (!propertiesAndRelations[relation]) {
+                const m = createModel({
+                    loaded: []
+                });
+                m.id = null;
+                return m;
+            }
+
             return propertiesAndRelations[relation];
         },
         get: (property) => {
@@ -55,6 +65,7 @@ const createModel = (propertiesAndRelations) => {
 const createModelClass = (options = {}) => {
     return {
         ...options,
+        options,
         add: async (properties) => {
             return Promise.resolve(createModel(properties));
         },

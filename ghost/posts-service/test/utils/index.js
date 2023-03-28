@@ -34,6 +34,14 @@ const createModel = (propertiesAndRelations) => {
                 };
                 return arr;
             }
+
+            // Simulate weird bookshelf behaviour of returning a new model
+            if (!propertiesAndRelations[relation]) {
+                const m = createModel({});
+                m.id = null;
+                return m;
+            }
+
             return propertiesAndRelations[relation];
         },
         get: (property) => {
