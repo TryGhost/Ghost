@@ -27,7 +27,9 @@ Object {
       "name": "Test Member",
       "newsletters": Array [
         Object {
+          "background_color": "light",
           "body_font_category": "sans_serif",
+          "border_color": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
           "feedback_enabled": false,
@@ -52,6 +54,7 @@ Object {
           "status": "active",
           "subscribe_on_signup": true,
           "title_alignment": "center",
+          "title_color": null,
           "title_font_category": "sans_serif",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -99,7 +102,9 @@ Object {
         Object {
           "_pivot_member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "_pivot_newsletter_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "background_color": "light",
           "body_font_category": "sans_serif",
+          "border_color": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
           "feedback_enabled": false,
@@ -124,6 +129,7 @@ Object {
           "status": "active",
           "subscribe_on_signup": true,
           "title_alignment": "center",
+          "title_color": null,
           "title_font_category": "sans_serif",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -167,7 +173,9 @@ Object {
       "name": "Ghost",
       "newsletters": Array [
         Object {
+          "background_color": "light",
           "body_font_category": "sans_serif",
+          "border_color": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
           "feedback_enabled": false,
@@ -192,6 +200,7 @@ Object {
           "status": "active",
           "subscribe_on_signup": true,
           "title_alignment": "center",
+          "title_color": null,
           "title_font_category": "sans_serif",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
