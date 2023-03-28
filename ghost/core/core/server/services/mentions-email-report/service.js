@@ -139,7 +139,7 @@ module.exports = {
 
         const labs = require('../../../shared/labs');
         DomainEvents.subscribe(StartMentionEmailReportJob, () => {
-            if (labs.isSet('webmentionEmails')) {
+            if (labs.isSet('webmentions')) {
                 job.sendLatestReport();
             }
         });
