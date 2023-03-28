@@ -3,4 +3,4 @@ component_management:
     - component_id: module_admin
       name: admin
       paths:
-        - ghost/admin/**
+        - ../ghost/admin/**
