@@ -1736,6 +1736,26 @@ p.gh-members-import-errordetail:first-of-type {
 /* Email newsletter design settings
 /* -------------------------------------------------------- */
 
+.gh-email-design-color-picker .gh-btn-group  {
+    vertical-align: middle;
+}
+
+.gh-email-design-color-picker .gh-btn-group p {
+    opacity: 1;
+    margin: 0;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    font-weight: 500;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-email-design-color-picker .gh-btn-group:hover p {
+    opacity: 0;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
 .gh-btn-group .gh-email-design-color {
     display: block;
     opacity: 0;
@@ -1746,19 +1766,8 @@ p.gh-members-import-errordetail:first-of-type {
     margin: 0;
     border: 0;
     border-radius: 999px;
-    transition: all .1s ease-in-out;
+    transition: all .15s ease-in-out;
     transition-delay: .05s;
-}
-
-.gh-email-design-color-picker .gh-btn-group  {
-    vertical-align: middle;
-}
-
-.gh-email-design-color-picker .gh-btn-group p {
-    margin: 0;
-    color: var(--midgrey);
-    font-size: 1.2rem;
-    font-weight: 500;
 }
 
 .gh-btn-group:hover .gh-email-design-color {
@@ -1767,7 +1776,7 @@ p.gh-members-import-errordetail:first-of-type {
     height: 22px;
     margin: 0 0 0 5px;
     border: 1px solid transparent;
-    transition: all .1s ease-in-out;
+    transition: all .15s ease-in-out;
     transition-delay: .05s;
 }
 
@@ -1777,6 +1786,26 @@ p.gh-members-import-errordetail:first-of-type {
     height: 22px;
     margin: 0 0 0 5px;
     border: 1px solid transparent;
+}
+
+.gh-email-design-color.gh-btn-group-selected::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    opacity: 0;
+    border: 2px solid var(--green);
+    border-radius: 999px;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group:hover .gh-email-design-color.gh-btn-group-selected::before {
+    opacity: 1;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
 }
 
 .gh-btn-group .gh-email-design-color.transparent {
@@ -1811,14 +1840,14 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-btn-group .gh-email-design-color.custom {
-    background: var(--white-30) !important;
-    border: 1px solid var(--lightgrey);
+    background: conic-gradient(yellow, red, magenta, blue, aqua, lime, yellow) !important;
+    border: none;
 }
 
 .gh-email-design-color.custom svg {
     width: 10px;
     height: 10px;
-    color: var(--black);
+    color: var(--white);
 }
 
 .gh-email-design-alignment {
