@@ -105,7 +105,7 @@ export function prettifyHTML(string, options = {}) {
         output = output.replace(/\sstyle="([^"]*)"/g, '');
     }
     if (options.ignoreInnerSVG) {
-        output = output.replace(/<svg[^>]*>.*<\/svg>/g, '<svg></svg>');
+        output = output.replace(/<svg[^>]*>.*?<\/svg>/g, '<svg></svg>');
     }
 
     if (options.getBase64FileFormat) {

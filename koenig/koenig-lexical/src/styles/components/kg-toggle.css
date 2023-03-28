@@ -7,7 +7,7 @@
     @apply font-sans text-xl font-bold leading-snug text-black dark:text-grey-50 opacity-40
   }
 
-  .kg-toggle-header-text .kg-prose span {
+  .kg-toggle-header-text span {
     @apply font-sans text-xl font-bold leading-snug text-black dark:text-grey-50 opacity-100
   }
 
@@ -15,7 +15,7 @@
     @apply font-serif text-xl font-normal leading-normal text-grey-900 dark:text-grey-100 opacity-40
   }
 
-  .kg-toggle-content-text .kg-prose span {
+  .kg-toggle-header-content span {
     @apply font-serif text-xl font-normal leading-normal text-grey-900 dark:text-grey-100 opacity-100
   }
 

@@ -302,20 +302,8 @@ describe('Video card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="video"></div>
-                <figcaption>
-                    <div data-testid="image-caption-editor">
-                        <div>
-                            <div data-kg="editor">
-                                <div spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox" contenteditable="true">
-                                    <p><br /></p>
-                                </div>
-                            </div>
-                            <div>Type caption for video (optional)</div>
-                            <div id="koenig-drag-drop-ghost-container"></div>
-                        </div>
-                    </div>
-                </figcaption>
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="video">
+                </div>
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});
