@@ -6,7 +6,8 @@ const blockedReferrerDomains = [
     'facebook.com',
     'www.facebook.com',
     'web.archive.org',
-    'archive.org'
+    'archive.org',
+    'www.federalreserve.gov'
 ];
 
 /**
