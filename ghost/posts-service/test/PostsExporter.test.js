@@ -89,6 +89,9 @@ describe('PostsExporter', function () {
                 }),
                 Label: createModelClass({
                     findAll: []
+                }),
+                Product: createModelClass({
+                    findAll: []
                 })
             };
 
@@ -394,6 +397,7 @@ describe('PostsExporter', function () {
     describe('humanReadableEmailRecipientFilter', function () {
         const exporter = new PostsExporter({});
         let labels;
+        let tiers;
 
         beforeEach(function () {
             labels = [
@@ -406,12 +410,22 @@ describe('PostsExporter', function () {
                     name: 'VIP'
                 })
             ];
+            tiers = [
+                createModel({
+                    slug: 'silver',
+                    name: 'Silver'
+                }),
+                createModel({
+                    slug: 'gold',
+                    name: 'Gold'
+                })
+            ];
         });
 
         it('Returns all', function () {
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('all'),
-                'all'
+                'All subscribers'
             );
         });
 
@@ -424,19 +438,38 @@ describe('PostsExporter', function () {
 
         it('Returns labels', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('label:imported', labels),
+                exporter.humanReadableEmailRecipientFilter('label:imported', labels, tiers),
                 'Imported'
             );
 
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('label:imported,label:vip', labels),
+                exporter.humanReadableEmailRecipientFilter('label:imported,label:vip', labels, tiers),
                 'Imported, VIP'
             );
         });
 
         it('Returns invalid labels', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('label:invalidone', labels),
+                exporter.humanReadableEmailRecipientFilter('label:invalidone', labels, tiers),
+                'invalidone'
+            );
+        });
+
+        it('Returns tiers', function () {
+            assert.equal(
+                exporter.humanReadableEmailRecipientFilter('tier:silver', labels, tiers),
+                'Silver'
+            );
+
+            assert.equal(
+                exporter.humanReadableEmailRecipientFilter('tier:silver,tier:gold', labels, tiers),
+                'Silver, Gold'
+            );
+        });
+
+        it('Returns invalid tiers', function () {
+            assert.equal(
+                exporter.humanReadableEmailRecipientFilter('tier:invalidone', labels, tiers),
                 'invalidone'
             );
         });
@@ -444,47 +477,47 @@ describe('PostsExporter', function () {
         it('Returns status', function () {
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:free'),
-                'free members'
+                'Free subscribers'
             );
 
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:-free'),
-                'paid members'
+                'Paid subscribers'
             );
 
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:paid'),
-                'paid members'
+                'Paid subscribers'
             );
 
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:comped'),
-                'complimentary members'
+                'Complimentary subscribers'
             );
 
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:-paid'),
-                'free members'
+                'Free subscribers'
             );
         });
 
         it('Ignores AND', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('status:free+status:paid', labels),
+                exporter.humanReadableEmailRecipientFilter('status:free+status:paid', labels, tiers),
                 ''
             );
         });
 
         it('Single brackets filter', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('(status:free)', labels),
-                'free members'
+                exporter.humanReadableEmailRecipientFilter('(status:free)', labels, tiers),
+                'Free subscribers'
             );
         });
 
         it('Ignores invalid filters', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('sdgsdgsdg sdg sdg sdgs dgs', labels),
+                exporter.humanReadableEmailRecipientFilter('sdgsdgsdg sdg sdg sdgs dgs', labels, tiers),
                 'sdgsdgsdg sdg sdg sdgs dgs'
             );
         });
