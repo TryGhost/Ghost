@@ -163,20 +163,20 @@ class PostsExporter {
         }
 
         if (visibility === 'members') {
-            return 'Free members';
+            return 'Members-only';
         }
 
         if (visibility === 'paid') {
-            return 'Paid members';
+            return 'Paid members-only';
         }
 
         if (visibility === 'tiers') {
             const tiers = post.related('tiers');
             if (tiers.length === 0) {
-                return 'Nobody';
+                return 'Specific tiers: none';
             }
 
-            return tiers.map(tier => tier.get('name')).join(', ');
+            return 'Specific tiers: ' + tiers.map(tier => tier.get('name')).join(', ');
         }
 
         return visibility;

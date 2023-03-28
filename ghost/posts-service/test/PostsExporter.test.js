@@ -330,7 +330,7 @@ describe('PostsExporter', function () {
             );
             assert.equal(
                 access,
-                'Free members'
+                'Members-only'
             );
         });
 
@@ -342,7 +342,7 @@ describe('PostsExporter', function () {
             );
             assert.equal(
                 access,
-                'Paid members'
+                'Paid members-only'
             );
         });
 
@@ -356,7 +356,7 @@ describe('PostsExporter', function () {
             );
             assert.equal(
                 access,
-                'Nobody'
+                'Specific tiers: none'
             );
         });
 
@@ -377,7 +377,7 @@ describe('PostsExporter', function () {
             );
             assert.equal(
                 access,
-                'Silver, Gold'
+                'Specific tiers: Silver, Gold'
             );
         });
 
