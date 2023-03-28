@@ -1,7 +1,15 @@
 module.exports = function (data) {
+    const {mentions} = data;
+    // Create a list of new mentions with a link to the source
+    const mentionsList = mentions.map((mention) => {
+        return `- ${mention.sourceSiteTitle} (${mention.sourceUrl})`;
+    }).join('\n');
+
     // Be careful when you indent the email, because whitespaces are visible in emails!
     return `
-    You have been mentioned by ${data.sourceUrl}.
+You have been mentioned recently. Here's where:
+
+${mentionsList}
 
 ---
 
