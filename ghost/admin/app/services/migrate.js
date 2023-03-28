@@ -33,7 +33,16 @@ export default class MigrateService extends Service {
 
             const key = ssmIntegration.api_keys[0].secret;
             const [id, secret] = key.split(':');
-            const encodedSecret = new TextEncoder().encode(secret);
+
+            function hexToBytes(hex) {
+                let bytes = [];
+                for (let c = 0; c < hex.length; c += 2) {
+                    bytes.push(parseInt(hex.substr(c, 2), 16));
+                }
+                return new Uint8Array(bytes);
+            }
+
+            const encodedSecret = hexToBytes(secret);
 
             const token = await new SignJWT({})
                 .setProtectedHeader({
@@ -45,8 +54,6 @@ export default class MigrateService extends Service {
                 .setExpirationTime('5m')
                 .setAudience('/admin/')
                 .sign(encodedSecret);
-
-            // console.log({token});
 
             return token;
         }).catch((error) => {
