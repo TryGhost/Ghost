@@ -19,7 +19,8 @@ const getPostServiceInstance = () => {
         models: {
             Post: models.Post,
             Newsletter: models.Newsletter,
-            Label: models.Label
+            Label: models.Label,
+            Product: models.Product
         },
         getPostUrl(post) {
             const jsonModel = post.toJSON();
