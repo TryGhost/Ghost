@@ -1,0 +1,6 @@
+component_management:
+  individual_components:
+    - component_id: module_admin
+      name: admin
+      paths:
+        - ghost/admin/**
