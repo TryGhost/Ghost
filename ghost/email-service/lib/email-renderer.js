@@ -292,8 +292,6 @@ class EmailRenderer {
         // Link tracking
         if (options.clickTrackingEnabled) {
             html = await this.#linkReplacer.replace(html, async (url) => {
-                // Decode any escaped entities in the url
-                url = new URL(url.toString());
                 // We ignore all links that contain %%{uuid}%%
                 // because otherwise we would add tracking to links that need to be replaced first
                 if (url.toString().indexOf('%%{uuid}%%') !== -1) {
