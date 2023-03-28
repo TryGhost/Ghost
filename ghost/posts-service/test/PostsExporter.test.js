@@ -138,8 +138,8 @@ describe('PostsExporter', function () {
             assert.equal(posts[1].newsletter_name, 'Weekly Newsletter');
 
             // Shows feedback columns
-            assert.equal(posts[0].reacted_with_more_like_this, post.count__positive_feedback);
-            assert.equal(posts[0].reacted_with_less_like_this, post.count__negative_feedback);
+            assert.equal(posts[0].feedback_more_like_this, post.count__positive_feedback);
+            assert.equal(posts[0].feedback_less_like_this, post.count__negative_feedback);
         });
 
         it('Hides feedback columns if feedback disabled for all newsletters', async function () {
@@ -147,8 +147,8 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             // Hides feedback columns
-            assert.equal(posts[0].reacted_with_more_like_this, undefined);
-            assert.equal(posts[0].reacted_with_less_like_this, undefined);
+            assert.equal(posts[0].feedback_more_like_this, undefined);
+            assert.equal(posts[0].feedback_less_like_this, undefined);
         });
 
         it('Hides email related analytics when post status is draft', async function () {
@@ -162,8 +162,8 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             // No feedback columns
-            assert.equal(posts[0].reacted_with_more_like_this, undefined);
-            assert.equal(posts[0].reacted_with_less_like_this, undefined);
+            assert.equal(posts[0].feedback_more_like_this, undefined);
+            assert.equal(posts[0].feedback_less_like_this, undefined);
 
             // Sends etc
             assert.equal(posts[0].sends, undefined);
@@ -182,8 +182,8 @@ describe('PostsExporter', function () {
             assert.equal(posts[0].email_recipients, undefined);
 
             // No feedback columns
-            assert.equal(posts[0].reacted_with_more_like_this, undefined);
-            assert.equal(posts[0].reacted_with_less_like_this, undefined);
+            assert.equal(posts[0].feedback_more_like_this, undefined);
+            assert.equal(posts[0].feedback_less_like_this, undefined);
 
             // Sends etc
             assert.equal(posts[0].sends, undefined);
@@ -200,8 +200,8 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             assert.notEqual(posts[0].email_recipients, undefined);
-            assert.notEqual(posts[0].reacted_with_more_like_this, undefined);
-            assert.notEqual(posts[0].reacted_with_less_like_this, undefined);
+            assert.notEqual(posts[0].feedback_more_like_this, undefined);
+            assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].opens, undefined);
             assert.notEqual(posts[0].free_signups, undefined);
@@ -215,8 +215,8 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             assert.notEqual(posts[0].email_recipients, undefined);
-            assert.notEqual(posts[0].reacted_with_more_like_this, undefined);
-            assert.notEqual(posts[0].reacted_with_less_like_this, undefined);
+            assert.notEqual(posts[0].feedback_more_like_this, undefined);
+            assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].clicks, undefined);
             assert.notEqual(posts[0].free_signups, undefined);
@@ -230,8 +230,8 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             assert.notEqual(posts[0].email_recipients, undefined);
-            assert.notEqual(posts[0].reacted_with_more_like_this, undefined);
-            assert.notEqual(posts[0].reacted_with_less_like_this, undefined);
+            assert.notEqual(posts[0].feedback_more_like_this, undefined);
+            assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].clicks, undefined);
             assert.notEqual(posts[0].free_signups, undefined);
@@ -253,8 +253,8 @@ describe('PostsExporter', function () {
             assert.equal(posts[0].clicks, 0);
             assert.equal(posts[0].free_signups, 0);
             assert.equal(posts[0].paid_conversions, 0);
-            assert.equal(posts[0].reacted_with_more_like_this, 0);
-            assert.equal(posts[0].reacted_with_less_like_this, 0);
+            assert.equal(posts[0].feedback_more_like_this, 0);
+            assert.equal(posts[0].feedback_less_like_this, 0);
         });
     });
 

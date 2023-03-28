@@ -89,8 +89,8 @@ class PostsExporter {
                 clicks: showEmailClickAnalytics ? (post.get('count__clicks') ?? 0) : null,
                 free_signups: membersTrackSources && published ? (post.get('count__signups') ?? 0) : null,
                 paid_conversions: membersTrackSources && paidMembersEnabled && published ? (post.get('count__paid_conversions') ?? 0) : null,
-                reacted_with_more_like_this: feedbackEnabled ? (post.get('count__positive_feedback') ?? 0) : null,
-                reacted_with_less_like_this: feedbackEnabled ? (post.get('count__negative_feedback') ?? 0) : null
+                feedback_more_like_this: feedbackEnabled ? (post.get('count__positive_feedback') ?? 0) : null,
+                feedback_less_like_this: feedbackEnabled ? (post.get('count__negative_feedback') ?? 0) : null
             };
         });
 
@@ -103,9 +103,9 @@ class PostsExporter {
             }
 
             if (!membersEnabled) {
-                removeableColumns.push('email_recipients', 'sends', 'opens', 'clicks', 'reacted_with_more_like_this', 'reacted_with_less_like_this');
+                removeableColumns.push('email_recipients', 'sends', 'opens', 'clicks', 'feedback_more_like_this', 'feedback_less_like_this');
             } else if (!hasNewslettersWithFeedback) {
-                removeableColumns.push('reacted_with_more_like_this', 'reacted_with_less_like_this');
+                removeableColumns.push('feedback_more_like_this', 'feedback_less_like_this');
             }
 
             if (membersEnabled && !trackClicks) {
