@@ -29,8 +29,9 @@ export default class MigrateService extends Service {
         // TODO: Getting the token can be improved
         const ghostIntegrationsUrl = this.ghostPaths.url.api('integrations') + '?include=api_keys';
         return this.ajax.request(ghostIntegrationsUrl).then(async (response) => {
-            const integrations = response.integrations.find(r => r.slug === 'self-serve-migration');
-            const key = integrations.api_keys[0].secret;
+            const ssmIntegration = response.integrations.find(r => r.slug === 'self-serve-migration');
+
+            const key = ssmIntegration.api_keys[0].secret;
             const [id, secret] = key.split(':');
             const encodedSecret = new TextEncoder().encode(secret);
 
@@ -44,6 +45,8 @@ export default class MigrateService extends Service {
                 .setExpirationTime('5m')
                 .setAudience('/admin/')
                 .sign(encodedSecret);
+
+            // console.log({token});
 
             return token;
         }).catch((error) => {
