@@ -83,7 +83,7 @@ class PostsExporter {
                 tags: post.related('tags').map(tag => tag.get('name')).join(', '),
                 post_access: this.postAccessToString(post),
                 email_recipients: email ? this.humanReadableEmailRecipientFilter(email?.get('recipient_filter'), labels) : null,
-                newsletter: newsletters.length > 1 && post.get('newsletter_id') && email ? newsletters.find(newsletter => newsletter.get('id') === post.get('newsletter_id'))?.get('name') : null,
+                newsletter_name: newsletters.length > 1 && post.get('newsletter_id') && email ? newsletters.find(newsletter => newsletter.get('id') === post.get('newsletter_id'))?.get('name') : null,
                 sends: email?.get('email_count') ?? null,
                 opens: trackOpens ? (email?.get('opened_count') ?? null) : null,
                 clicks: showEmailClickAnalytics ? (post.get('count__clicks') ?? 0) : null,
@@ -99,7 +99,7 @@ class PostsExporter {
             const removeableColumns = [];
 
             if (newsletters.length <= 1) {
-                removeableColumns.push('newsletter');
+                removeableColumns.push('newsletter_name');
             }
 
             if (!membersEnabled) {
