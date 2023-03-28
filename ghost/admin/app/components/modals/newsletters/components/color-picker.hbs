@@ -1,0 +1,10 @@
+<div class="gh-email-design-color-picker">
+    <div class="gh-btn-group">
+        <p>{{this.currentColorObject.name}}</p>
+        <button type="button" class="gh-btn gh-email-design-color custom">{{svg-jar "plus"}}</button>
+        {{#each this.availablePresetColors as |color|}}
+            <button type="button" class="gh-btn gh-email-design-color {{color.class}}" {{on "click" (fn this.setCurrentColor color.value) }}></button>
+        {{/each}}
+        <button type="button" class="gh-btn gh-email-design-color {{this.currentColorObject.class}} gh-btn-group-selected" style={{html-safe this.currentColorObject.style}}></button>
+    </div>
+</div>
