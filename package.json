@@ -61,7 +61,8 @@
       "validator",
       "codemirror",
       "faker",
-      "@sentry/node"
+      "@sentry/node",
+      "ember-cli-code-coverage"
     ],
     "ignorePaths": [
       "test",
