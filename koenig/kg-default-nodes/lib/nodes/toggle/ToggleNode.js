@@ -71,6 +71,7 @@ export class ToggleNode extends KoenigDecoratorNode {
         return {element};
     }
 
+    /* c8 ignore start */
     createDOM() {
         return document.createElement('div');
     }
@@ -82,6 +83,7 @@ export class ToggleNode extends KoenigDecoratorNode {
     isInline() {
         return false;
     }
+    /* c8 ignore stop */
 
     getContent() {
         const self = this.getLatest();
