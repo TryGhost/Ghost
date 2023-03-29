@@ -12,7 +12,6 @@ img {
 }
 
 body {
-    background-color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
@@ -21,7 +20,7 @@ body {
     padding: 0;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
-    color: #15212A;
+    color: {{textColor}};
 }
 
 table {
@@ -35,14 +34,13 @@ table td {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     font-size: 18px;
     vertical-align: top;
-    color: #15212A;
+    color: {{textColor}};
 }
 
 /* -------------------------------------
     BODY & CONTAINER
 ------------------------------------- */
 .body {
-    background-color: #fff;
     width: 100%;
 }
 
@@ -52,6 +50,9 @@ table td {
     margin: 0 auto !important;
     /* makes it centered */
     max-width: 600px;
+    padding: 12px;
+    background-color: {{backgroundColor}};
+    color: {{textColor}};
 }
 
 /* This should also be a block element, so that it will fill 100% of the .container */
@@ -60,6 +61,9 @@ table td {
     display: block;
     margin: 0 auto;
     max-width: 600px;
+    {{#if borderColor}}
+        border: 1px solid {{borderColor}};
+    {{/if}}
 }
 
 .content a {
@@ -77,7 +81,8 @@ hr {
     padding: 0;
     height: 1px;
     border: 0;
-    border-top: 1px solid #e5eff5;
+    border-top: 1px solid #e5eff5 !important;
+    border-top: 1px solid {{secondaryBorderColor}} !important;
 }
 
 p,
@@ -125,7 +130,7 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
-    color: #15212A;
+    color: {{textColor}};
     font-weight: 500;
     text-align: right;
 }
@@ -151,7 +156,8 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    color: #999999;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
 }
 
 blockquote p {
@@ -189,6 +195,7 @@ h6 {
     line-height: 1.11em;
     font-weight: 700;
     text-rendering: optimizeLegibility;
+    color: {{titleColor}};
 }
 
 h1 {
@@ -303,10 +310,11 @@ figure blockquote p {
 .site-info-bordered {
     padding-top: 50px;
     border-bottom: 1px solid #e5eff5;
+    border-bottom: 1px solid {{secondaryBorderColor}};
 }
 
 .site-url {
-    color: #15212A;
+    color: {{textColor}};
     font-size: 16px;
     letter-spacing: -0.1px;
     font-weight: 700;
@@ -319,11 +327,12 @@ figure blockquote p {
 }
 
 .site-title {
-    color: #15212A;
+    color: {{textColor}};
 }
 
 .site-subtitle {
-    color: #8695a4;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
     font-size: 14px;
     font-weight: 400;
     text-transform: none;
@@ -345,7 +354,7 @@ figure blockquote p {
 }
 
 .post-title-link {
-    color: #15212A;
+    color: {{textColor}};
     display: block;
     text-align: center;
     margin-top: 50px;
@@ -356,7 +365,8 @@ figure blockquote p {
 
 .post-meta,
 .view-online {
-    color: #738a94;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
     font-size: 13px;
     letter-spacing: 0.1px;
     text-align: center;
@@ -388,7 +398,8 @@ figure blockquote p {
 }
 
 .comment-link {
-    color: #738a94;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
     font-size: 13px;
     letter-spacing: 0.1px;
 }
@@ -403,7 +414,8 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: #738a94;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
 }
 
 .feature-image-row:first-child > td {
@@ -424,7 +436,8 @@ figure blockquote p {
     padding-bottom: 30px;
     text-align: center;
     font-size: 13px;
-    color: #738a94;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
 }
 
 /* -------------------------------------
@@ -442,7 +455,7 @@ figure blockquote p {
 }
 
 .feedback-button-mobile-text {
-    color: #15212A;
+    color: {{textColor}};
     font-size: 13px !important;
     font-weight: 500;
     margin-bottom: 0;
@@ -455,7 +468,7 @@ figure blockquote p {
 .latest-posts-header {
     margin: 0;
     padding: 8px 0 16px;
-    color: #15212A;
+    color: {{textColor}};
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
@@ -507,19 +520,21 @@ figure blockquote p {
 }
 
 .latest-post h4 a {
-    color: #15212A !important;
+    color: {{textColor}} !important;
 }
 
 .latest-post p {
     margin: 0;
     padding: 0;
-    color: #738a94;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
     font-size: 15px;
     font-weight: 400;
 }
 
 .latest-post p a {
-    color: #738a94 !important;
+    color: {{textColor}} !important;
+    color: {{secondaryTextColor}} !important;
 }
 
 /* -------------------------------------
@@ -529,7 +544,8 @@ figure blockquote p {
 .subscription-box {
     padding: 32px 0;
     border-bottom: 1px solid #e5eff5;
-    color: #15212A;
+    border-bottom: 1px solid {{secondaryBorderColor}};
+    color: {{textColor}};
 }
 
 .subscription-box h3 {
@@ -541,7 +557,7 @@ figure blockquote p {
 
 .subscription-box p {
     margin-bottom: 0;
-    color: #15212A !important;
+    color: {{textColor}} !important;
     font-size: 15px;
     font-weight: 400;
     line-height: 1.45em;
@@ -549,7 +565,7 @@ figure blockquote p {
 }
 
 .subscription-box p a {
-    color: #15212A !important;
+    color: {{textColor}} !important;
     text-decoration: none;
 }
 
@@ -572,18 +588,20 @@ figure blockquote p {
     font-family: Georgia, serif;
     font-size: 18px;
     line-height: 1.5em;
-    color: #15212A;
+    color: {{textColor}};
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
+    border-bottom: 1px solid {{secondaryBorderColor}};
 }
 
 .post-content-sans-serif {
     max-width: 600px !important;
     font-size: 17px;
     line-height: 1.5em;
-    color: #15212A;
+    color: {{textColor}};
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
+    border-bottom: 1px solid {{secondaryBorderColor}};
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
@@ -602,7 +620,7 @@ a[data-flickr-embed] img {
 
 .kg-bookmark-card {
     width: 100%;
-    background: #ffffff;
+    background: {{backgroundColor}};
 }
 
 .kg-bookmark-card a {
@@ -623,11 +641,12 @@ a[data-flickr-embed] img {
 .kg-bookmark-container {
     display: flex;
     min-height: 148px;
-    color: #15212A;
+    color: {{textColor}};
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     text-decoration: none;
     border-radius: 3px;
     border: 1px solid #e5eff5;
+    border: 1px solid {{secondaryBorderColor}};
 }
 
 .kg-bookmark-content {
@@ -637,7 +656,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-bookmark-title {
-    color: #15212A;
+    color: {{textColor}};
     font-size: 15px;
     line-height: 1.5em;
     font-weight: 600;
@@ -648,7 +667,8 @@ a[data-flickr-embed] img {
     overflow-y: hidden;
     margin-top: 12px;
     max-height: 40px;
-    color: #738a94;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
     font-size: 13px;
     line-height: 1.5em;
     font-weight: 400;
@@ -675,7 +695,7 @@ a[data-flickr-embed] img {
     flex-wrap: wrap;
     align-items: center;
     margin-top: 14px;
-    color: #15212A;
+    color: {{textColor}};
     font-size: 13px;
     font-weight: 400;
 }
@@ -753,7 +773,7 @@ a[data-flickr-embed] img {
 .kg-nft-link {
     display: block;
     text-decoration: none !important;
-    color: #15212A !important;
+    color: {{textColor}} !important;
     font-family: inherit !important;
     font-size: 14px;
     line-height: 1.3em;
@@ -786,6 +806,10 @@ a[data-flickr-embed] img {
 
 .kg-callout-card p {
     margin: 0
+}
+
+.kg-callout-text {
+    color: #15212A;
 }
 
 .kg-callout-card-grey {
@@ -823,10 +847,10 @@ a[data-flickr-embed] img {
 
 .kg-callout-card-accent {
     background: {{accentColor}};
-    color: #fff;
 }
 
-.kg-callout-card-accent a {
+.kg-callout-card-accent a,
+.kg-callout-card-accent .kg-callout-text {
     color: #fff;
 }
 
@@ -857,6 +881,10 @@ a[data-flickr-embed] img {
 
 .kg-header-card.kg-style-dark {
     background: #15171a;
+}
+
+.kg-header-card.kg-style-dark h2,
+.kg-header-card.kg-style-dark h3 {
     color: #ffffff;
 }
 
@@ -864,8 +892,17 @@ a[data-flickr-embed] img {
     background-color: #F9F9FA;
 }
 
+.kg-header-card.kg-style-light h2,
+.kg-header-card.kg-style-light h3 {
+    color: #15171a;
+}
+
 .kg-header-card.kg-style-accent {
     background: {{accentColor}};
+}
+
+.kg-header-card.kg-style-accent h2,
+.kg-header-card.kg-style-accent h3 {
     color: #ffffff;
 }
 
@@ -873,6 +910,10 @@ a[data-flickr-embed] img {
     background-color: #e7e7eb;
     background-size: cover;
     background-position: center center;
+}
+
+.kg-header-card.kg-style-image h2,
+.kg-header-card.kg-style-image h3 {
     color: #ffffff;
 }
 
@@ -942,12 +983,124 @@ a[data-flickr-embed] img {
     color: #ffffff !important;
 }
 
+.kg-product-card {
+    width: 100%;
+    margin: 0 0 1.5em; 
+    padding: 20px;
+    border-radius: 3px; 
+    border: 1px solid #e5eff5;
+    border: 1px solid {{secondaryBorderColor}};
+}
+
+.kg-audio-card {
+    width: auto; 
+    width: 100%;
+    margin: 0 auto 1.5em;
+    border-radius: 3px; 
+    border: 1px solid #e5eff5;
+    border: 1px solid {{secondaryBorderColor}};
+}
+
+.kg-audio-title {
+    display: block; 
+    padding-right: 20px; 
+    padding-bottom: 4px; 
+    padding-top: 4px; 
+    font-size: 16px; 
+    font-weight: 600; 
+    line-height: 18px; 
+    text-decoration: none; 
+    color: {{textColor}};
+}
+
+.kg-audio-play-button {
+    display: block; 
+    box-sizing: border-box; 
+    width: 16px; 
+    height: 16px; 
+    color: {{textColor}}; 
+    border-style: solid; 
+    border-width: 8px 0px 8px 16px; 
+    border-color: transparent transparent transparent currentColor;
+}
+
+.kg-audio-duration {
+    display: block; 
+    text-decoration: none; 
+    font-size: 13px; 
+    color: {{textColor}};
+}
+
+.kg-audio-link {
+    color: {{textColor}}; 
+    color: {{secondaryTextColor}};
+}
+
+.kg-file-card {
+    width: 100%;
+    margin: 0 0 1.5em 0;
+    border-radius: 3px; 
+    border: 1px solid #e5eff5;
+    border: 1px solid {{secondaryBorderColor}};
+}
+
+.kg-file-title {
+    display: block; 
+    width: 100%; 
+    padding-left: 12px; 
+    padding-top: 8px; 
+    font-size: 17px; 
+    font-weight: bold; 
+    line-height: 1.3em; 
+    text-decoration: none;
+    color: {{textColor}}; 
+}
+
+.kg-file-description {
+    display: block; 
+    width: 100%; 
+    padding-left: 12px; 
+    padding-top: 2px; 
+    font-size: 15px; 
+    line-height: 1.4em; 
+    text-decoration: none;
+    color: {{textColor}}; 
+    color: {{secondaryTextColor}}; 
+}
+
+.kg-file-meta {
+    display: block;
+    width: 100%; 
+    padding-left: 12px; 
+    padding-top: 4px; 
+    padding-bottom: 8px;
+    font-size: 13px; 
+    line-height: 1.4em; 
+    text-decoration: none;
+    color: {{textColor}};
+    color: {{secondaryTextColor}}; 
+}
+
+.kg-file-name {
+    font-weight: 500; 
+    color: {{textColor}};
+}
+
+.kg-twitter-card {
+    width: auto; 
+    width: 100%
+    margin: 0 auto;
+    background: #FFFFFF;
+    border-radius: 12px; 
+    border: 1px solid #e5eff5;
+}
+
 
 /* -------------------------------------
     HEADER, FOOTER, MAIN
 ------------------------------------- */
 .main {
-    background: #ffffff;
+    background: {{backgroundColor}};
     border-radius: 3px;
     border-spacing: 20px 0;
     width: 100%;
@@ -963,7 +1116,8 @@ a[data-flickr-embed] img {
 }
 
 .footer {
-    color: #738a94;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
     margin-top: 20px;
     text-align: center;
     font-size: 13px;
@@ -975,7 +1129,8 @@ a[data-flickr-embed] img {
 }
 
 .footer a {
-    color: #738a94;
+    color: {{textColor}};
+    color: {{secondaryTextColor}};
     text-decoration: underline;
 }
 
@@ -1033,7 +1188,7 @@ a[data-flickr-embed] img {
 
 .btn-accent a {
     background-color: {{adjustedAccentColor}};
-    border-color: {{adjustedAccentColor}};
+    border-color: {{adjustedAccentColor}} !important;
     color: {{adjustedAccentContrastColor}};
 }
 
@@ -1094,9 +1249,15 @@ a[data-flickr-embed] img {
 ------------------------------------- */
 @media only screen and (max-width: 620px) {
 
+    body {
+        padding: 0;
+    }
+
     table.body {
         width: 100%;
         min-width: 100%;
+        padding: 8px 4px;
+        background-color: {{backgroundColor}};
     }
 
     .hide-mobile {
