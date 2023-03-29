@@ -10,6 +10,12 @@ export default class ColorPicker extends Component {
     @tracked
         lastSelectedCustomColor = null;
 
+    /**
+     * Whether the custom color was changed during the current hover
+     */
+    @tracked
+        didSelectCustomColor = false;
+
     timer;
 
     get presetColors() {
@@ -37,6 +43,10 @@ export default class ColorPicker extends Component {
             clearTimeout(this.timer);
             this.timer = null;
         }
+
+        if (this.customColorSelected) {
+            this.didSelectCustomColor = true;
+        }
     }
 
     @action
@@ -59,6 +69,8 @@ export default class ColorPicker extends Component {
 
     @action
     updateOrderedPresetColors() {
+        this.didSelectCustomColor = false;
+
         const customColorSelected = !this.presetColors.find(c => c.value === this.currentColor);
         const orderedPresetColors = this.presetColors.filter(c => c.value !== this.currentColor);
         if (!customColorSelected) {
@@ -96,10 +108,10 @@ export default class ColorPicker extends Component {
 
     get customColorStyle() {
         // Make sure the current color is present
-        if (!this.dynamicOrderedPresetColors.find(c => c.value === this.currentColor)) {
+        if (this.customColorSelected) {
             return 'background: ' + this.currentColor + ' !important;';
         } else {
-            if (this.lastSelectedCustomColor) {
+            if (this.lastSelectedCustomColor && this.didSelectCustomColor) {
                 return 'background: ' + this.lastSelectedCustomColor + ' !important;';
             }
         }
@@ -132,6 +144,7 @@ export default class ColorPicker extends Component {
 
     @action
     onOpenColorPicker() {
+        this.didSelectCustomColor = true;
         // This one is required because when choosing custom color, the initial color
         // is never fired in the input or change event, which can be annoying
         this.setCurrentColor(this.colorInputValue);
