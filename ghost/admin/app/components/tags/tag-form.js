@@ -71,6 +71,27 @@ export default class TagForm extends Component {
         return seoURL;
     }
 
+    get tagURL() {
+        const blogUrl = this.config.blogUrl;
+        const tagSlug = this.args.tag.slug || '';
+
+        let tagURL = this.args.tag.canonicalUrl || `${blogUrl}/tag/${tagSlug}`;
+
+        // only append a slash to the URL if the slug exists
+
+        if (!tagURL.endsWith('/')) {
+            tagURL += '/';
+        }
+
+        // if (tagURL.length > 70) {
+        //     tagURL = tagURL.substring(0, 70).trim();
+        //     tagURL = Handlebars.Utils.escapeExpression(tagURL);
+        //     tagURL = htmlSafe(`${tagURL}&hellip;`);
+        // }
+
+        return tagURL;
+    }
+
     get twitterTitle() {
         return this.args.tag.twitterTitle || this.seoTitle;
     }
