@@ -6,5 +6,5 @@ component_management:
         - ghost/admin/**
 comment:
   behavior: default
-  layout: reach,diff,flags,components,tree,reach
+  layout: diff,flags,components
   show_carryforward_flags: false
