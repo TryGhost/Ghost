@@ -13,7 +13,7 @@ function FileUploading({progress}) {
 
     return (
         <div className="h-full border border-transparent">
-            <div className="relative flex h-full items-center justify-center border border-grey/20 bg-grey-50 dark:bg-grey-900 before:pb-[12.5%]">
+            <div className="relative flex h-full items-center justify-center border border-grey/20 bg-grey-50 before:pb-[12.5%] dark:bg-grey-900">
                 <div className="flex w-full items-center justify-center overflow-hidden">
                     <ProgressBar style={progressStyle} />
                 </div>
