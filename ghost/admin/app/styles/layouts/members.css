@@ -1738,6 +1738,11 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-email-design-color-picker .gh-btn-group  {
     vertical-align: middle;
+
+    /* Required to remove glitches in mouseover during animations */
+    overflow: hidden;
+    padding: 4px;
+    margin-right: -4px;
 }
 
 .gh-email-design-color-picker .gh-btn-group p {
@@ -1775,7 +1780,7 @@ p.gh-members-import-errordetail:first-of-type {
     width: 22px;
     height: 22px;
     margin: 0 0 0 5px;
-    border: 1px solid transparent;
+    /*border: 1px solid transparent;*/
     transition: all .15s ease-in-out;
     transition-delay: .05s;
 }
@@ -1785,7 +1790,7 @@ p.gh-members-import-errordetail:first-of-type {
     width: 22px;
     height: 22px;
     margin: 0 0 0 5px;
-    border: 1px solid transparent;
+    /*border: 1px solid transparent;*/
 }
 
 .gh-email-design-color.gh-btn-group-selected::before {
@@ -1810,7 +1815,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-btn-group .gh-email-design-color.transparent {
     background: transparent;
-    border: 1px solid var(--lightgrey);
+    /*border: 1px solid var(--lightgrey);*/
 }
 
 .gh-email-design-color.transparent::after {
@@ -1828,7 +1833,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-btn-group .gh-email-design-color.white {
     background: var(--white) !important;
-    border: 1px solid var(--lightgrey-l1);
+    /*border: 1px solid var(--lightgrey-l1);*/
 }
 
 .gh-btn-group .gh-email-design-color.black {
