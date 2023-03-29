@@ -620,9 +620,6 @@ class EmailRenderer {
     }
 
     async renderTemplate(data) {
-        if (this.#renderTemplate) {
-            return this.#renderTemplate(data);
-        }
         this.#handlebars = require('handlebars');
 
         // Helpers
@@ -671,8 +668,13 @@ class EmailRenderer {
         });
 
         // Partials
-        const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
-        this.#handlebars.registerPartial('styles', cssPartialSource);
+        if (this.#labs.isSet('makingItRain')) {
+            const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
+            this.#handlebars.registerPartial('styles', cssPartialSource);
+        } else {
+            const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles-old.hbs`), 'utf8');
+            this.#handlebars.registerPartial('styles', cssPartialSource);
+        }
 
         const paywallPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `paywall.hbs`), 'utf8');
         this.#handlebars.registerPartial('paywall', paywallPartial);
@@ -687,8 +689,13 @@ class EmailRenderer {
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
 
         // Actual template
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
-        this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+        if (this.#labs.isSet('makingItRain')) {
+            const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
+            this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+        } else {
+            const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template-old.hbs`), 'utf8');
+            this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+        }
         return this.#renderTemplate(data);
     }
 
