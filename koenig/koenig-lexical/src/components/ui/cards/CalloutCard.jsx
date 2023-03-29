@@ -91,43 +91,47 @@ export function CalloutCard({
 
     return (
         <>
-            <div className={`flex rounded border px-7 py-5 ${CALLOUT_COLORS[color]} `} data-testid={`callout-bg-${color}`}>
-                <div>
-                    {emoji && 
-                    <>
-                        <button
-                            ref={emojiButtonRef}
-                            className={`mr-2 cursor-pointer rounded px-2 text-xl ${isEditing ? 'hover:bg-grey-500/20' : ''} ` }
-                            data-testid="emoji-picker-button" 
-                            type="button" 
-                            onClick={toggleEmojiPicker} 
-                        >
-                            {emojiValue}
-                        </button>
-                        {
-                            isEditing && showEmojiPicker && (
-                                <EmojiPickerPortal
-                                    buttonRef={emojiButtonRef}
-                                    togglePortal={toggleEmojiPicker}
-                                    onEmojiClick={changeEmoji} />
-                            )
+            <div>
+                <div className={`flex rounded border px-7 py-5 ${CALLOUT_COLORS[color]} `} data-testid={`callout-bg-${color}`}>
+                    <div>
+                        {emoji && 
+                        <>
+                            <button
+                                ref={emojiButtonRef}
+                                className={`mr-2 cursor-pointer rounded px-2 text-xl ${isEditing ? 'hover:bg-grey-500/20' : ''} ` }
+                                data-testid="emoji-picker-button" 
+                                type="button" 
+                                onClick={toggleEmojiPicker} 
+                            >
+                                {emojiValue}
+                            </button>
+                            {
+                                isEditing && showEmojiPicker && (
+                                    <EmojiPickerPortal
+                                        buttonRef={emojiButtonRef}
+                                        togglePortal={toggleEmojiPicker}
+                                        onEmojiClick={changeEmoji} />
+                                )
+                            }
+                        </>
                         }
-                    </>
+                    </div>
+                    {
+                        isEditing ?
+                            <KoenigCalloutEditor
+                                className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"
+                                html={text}
+                                nodeKey={nodeKey}
+                                placeholderText={'Callout text...'}
+                                readOnly={isEditing}
+                                setHtml={setText}
+                            />
+                            :
+                            <div dangerouslySetInnerHTML={{__html: sanitizeHtml(text)}} className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"/>
                     }
                 </div>
-                {
-                    isEditing ?
-                        <KoenigCalloutEditor
-                            className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"
-                            html={text}
-                            nodeKey={nodeKey}
-                            placeholderText={'Callout text...'}
-                            readOnly={isEditing}
-                            setHtml={setText}
-                        />
-                        :
-                        <div dangerouslySetInnerHTML={{__html: sanitizeHtml(text)}} className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"/>
-                }
+                {!isEditing && <div className="absolute inset-0 z-50">
+                </div>}
             </div>
             {
                 isEditing && (
