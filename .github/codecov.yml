@@ -1,10 +1,19 @@
 component_management:
   individual_components:
-    - component_id: module_admin
-      name: admin
+    - component_id: admin_full_ember_app
+      name: Admin
       paths:
         - ghost/admin/**
+    - component_id: admin_publishing_flow
+      name: Admin Publishing Flow
+      paths:
+        - ghost/admin/app/components/editor/publish-options/**
+        - ghost/admin/app/components/editor/publish-management.js
+        - ghost/admin/app/components/editor/publish-management.hbs
+        - ghost/admin/app/components/editor/modals/publish-flow/**
+        - ghost/admin/app/components/editor/modals/publish-flow.js
+        - ghost/admin/app/components/editor/modals/publish-flow.hbs
 comment:
   behavior: default
-  layout: diff,flags,components,tree,reach
+  layout: diff,flags,components,tree
   show_carryforward_flags: false
