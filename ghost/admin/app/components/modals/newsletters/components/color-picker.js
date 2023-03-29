@@ -137,7 +137,7 @@ export default class ColorPicker extends Component {
             return this.lastSelectedCustomColor;
         }
         if (!this.currentColorObject.value || !this.currentColorObject.value.startsWith('#')) {
-            return '#000000';
+            return '#999999';
         }
         return this.currentColorObject.value;
     }
