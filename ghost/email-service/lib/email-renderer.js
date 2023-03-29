@@ -740,6 +740,65 @@ class EmailRenderer {
         }
     }
 
+    #getBackgroundColor(newsletter) {
+        /** @type {'light' | 'dark' | string | null} */
+        const value = newsletter.get('background_color');
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        if (value === 'dark') {
+            return '#15212a';
+        }
+
+        // value === dark, value === null, value is not valid hex
+        return '#ffffff';
+    }
+
+    #getBorderColor(newsletter, accentColor) {
+        /** @type {'transparent' | 'accent' | 'dark' | string | null} */
+        const value = newsletter.get('border_color');
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        if (value === 'dark') {
+            return '#15212a';
+        }
+
+        if (value === 'accent') {
+            return accentColor;
+        }
+
+        // value === 'transparent', value === null, value is not valid hex
+        return null;
+    }
+
+    #getTitleColor(newsletter, accentColor) {
+        /** @type {'accent' | 'auto' | string | null} */
+        const value = newsletter.get('title_color');
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return accentColor;
+        }
+
+        // value === 'auto', value === null, value is not valid hex
+        const backgroundColor = this.#getBackgroundColor(newsletter);
+        return textColorForBackgroundColor(backgroundColor).hex();
+    }
+
     /**
      * @private
      */
@@ -754,6 +813,15 @@ class EmailRenderer {
             logging.error(e);
             accentColor = '#15212A';
         }
+
+        const backgroundColor = this.#getBackgroundColor(newsletter);
+        const backgroundIsDark = textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
+        const borderColor = this.#getBorderColor(newsletter, accentColor);
+        const secondaryBorderColor = textColorForBackgroundColor(backgroundColor).alpha(0.12).toString();
+        const titleColor = this.#getTitleColor(newsletter, accentColor);
+        const textColor = textColorForBackgroundColor(backgroundColor).hex();
+        const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.45).toString();
+        const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
@@ -874,6 +942,14 @@ class EmailRenderer {
             adjustedAccentColor: adjustedAccentColor || '#3498db', // default to #3498db
             adjustedAccentContrastColor: adjustedAccentContrastColor || '#ffffff', // default to #ffffff
             showBadge: newsletter.get('show_badge'),
+            backgroundColor: backgroundColor,
+            backgroundIsDark: backgroundIsDark,
+            borderColor: borderColor,
+            secondaryBorderColor: secondaryBorderColor,
+            titleColor: titleColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+            linkColor: linkColor,
 
             headerImage,
             headerImageWidth,
