@@ -83,12 +83,6 @@ export default class TagForm extends Component {
             tagURL += '/';
         }
 
-        // if (tagURL.length > 70) {
-        //     tagURL = tagURL.substring(0, 70).trim();
-        //     tagURL = Handlebars.Utils.escapeExpression(tagURL);
-        //     tagURL = htmlSafe(`${tagURL}&hellip;`);
-        // }
-
         return tagURL;
     }
 
