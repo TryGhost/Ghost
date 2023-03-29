@@ -33,7 +33,39 @@ export default class ColorPicker extends Component {
             value: this.currentColor,
             name: this.currentColor,
             class: 'custom-value',
-            style: 'background-color: ' + this.currentColor + ';'
+            style: 'background-color: ' + this.currentColor + ' !important;'
         };
+    }
+
+    get colorInputValue() {
+        if (!this.currentColorObject.value || !this.currentColorObject.value.startsWith('#')) {
+            return '#000000';
+        }
+        return this.currentColorObject.value;
+    }
+
+    @action
+    onOpenColorPicker() {
+        // This one is required because when choosing custom color, the initial color
+        // is never fired in the input or change event, which can be annoying
+        this.setCurrentColor(this.colorInputValue);
+    }
+
+    @action
+    updateColorInputValue(event) {
+        let newColor = event.target.value;
+
+        if (!newColor) {
+            // Invalid
+            return;
+        }
+
+        if (newColor[0] !== '#') {
+            newColor = `#${newColor}`;
+        }
+
+        if (newColor.match(/#[0-9A-Fa-f]{6}$/)) {
+            this.setCurrentColor(newColor.toUpperCase());
+        }
     }
 }
