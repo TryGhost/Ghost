@@ -1,3 +1,6 @@
+## Validate this file before pushing by running this command from project the .github directory: 
+## curl -X POST --data-binary @codecov.yml https://codecov.io/validate
+
 component_management:
   individual_components:
     - component_id: admin_full_ember_app
