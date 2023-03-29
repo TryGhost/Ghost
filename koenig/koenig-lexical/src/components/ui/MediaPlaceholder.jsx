@@ -50,8 +50,8 @@ export function MediaPlaceholder({
                         <button className={`group flex cursor-pointer select-none items-center justify-center ${size === 'xsmall' ? 'p-4' : 'flex-col p-20'}`} name="placeholder-button" type="button" onClick={filePicker}>
                             {(size === 'xsmall' && errors.length > 0) ||
                                 <>
-                                    <Icon className={`shrink-0 opacity-80 transition-all ease-linear group-hover:scale-105 group-hover:opacity-100 ${size === 'large' ? 'h-20 w-20 text-grey' : size === 'small' ? 'h-14 w-14 text-grey' : size === 'xsmall' ? 'h-6 w-6 text-grey-700' : 'h-16 w-16 text-grey'} ${(size === 'xsmall') && desc ? 'mr-3' : ''}`} />
-                                    <p className={`min-w-[auto] font-sans text-sm font-normal text-grey-700 transition-all group-hover:text-grey-800 ${size === 'xsmall' ? 'mt-0' : 'mt-4'}`}>{desc}</p>
+                                    <Icon className={`shrink-0 opacity-80 transition-all ease-linear hover:scale-105 group-hover:opacity-100 ${size === 'large' ? 'h-20 w-20 text-grey' : size === 'small' ? 'h-14 w-14 text-grey' : size === 'xsmall' ? 'h-6 w-6 text-grey-700' : 'h-16 w-16 text-grey'} ${(size === 'xsmall') && desc ? 'mr-3' : ''}`} />
+                                    <p className={`min-w-[auto] font-sans text-sm font-normal text-grey opacity-80 transition-all group-hover:opacity-100 ${size === 'xsmall' ? 'mt-0' : 'mt-4'}`}>{desc}</p>
                                 </>
                             }
                             {errors.map(error => (
