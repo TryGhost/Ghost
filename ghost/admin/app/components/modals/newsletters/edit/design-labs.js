@@ -86,7 +86,8 @@ export default class EditNewsletterDesignForm extends Component {
             {
                 value: null,
                 name: 'Auto',
-                class: 'black',
+                // todo: this is a very basic example on how to switch, and should be calculated on contrast in the future
+                class: this.args.newsletter.backgroundColor === 'dark' ? 'white' : 'black',
                 style: ''
             }
         ];
