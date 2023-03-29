@@ -16,6 +16,20 @@ component_management:
         - ghost/admin/app/components/editor/modals/publish-flow/**
         - ghost/admin/app/components/editor/modals/publish-flow.js
         - ghost/admin/app/components/editor/modals/publish-flow.hbs
+    - component_id: site_setup_flow
+      name: New Site Setup Flow
+      paths:
+        - ghost/admin/app/controllers/setup.js
+        - ghost/admin/app/controllers/setup/done.js
+    - component_id: email_service
+      name: Email Service
+      paths:
+        - ghost/email-service/**
+      statuses:           # the core component has its own statuses
+        - type: project
+          target: 100%
+        - type: patch
+          target: 100%
 comment:
   behavior: default
   layout: diff,flags,components,tree
