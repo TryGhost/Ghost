@@ -2104,15 +2104,12 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-labs .gh-members-emailpreview-contents {
-    max-width: 624px;
-    margin: 0 auto;
-    padding: 12px;
+    margin: 0;
+    padding: 16px;
 }
 
 .gh-members-emailpreview-border {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 40px;
     border: 1px solid transparent;
 }
 
