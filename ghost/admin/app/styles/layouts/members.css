@@ -1735,6 +1735,133 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Email newsletter design settings
 /* -------------------------------------------------------- */
+
+.gh-email-design-color-picker .gh-btn-group  {
+    vertical-align: middle;
+
+    /* Required to remove glitches in mouseover during animations */
+    overflow: hidden;
+    padding: 4px;
+    margin-right: -4px;
+}
+
+.gh-email-design-color-picker .gh-btn-group p {
+    opacity: 1;
+    margin: 0;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    font-weight: 500;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-email-design-color-picker .gh-btn-group:hover p {
+    opacity: 0;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group .gh-email-design-color {
+    display: block;
+    opacity: 0;
+    position: relative;
+    z-index: 2;
+    width: 0;
+    height: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 999px;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group:hover .gh-email-design-color {
+    opacity: 1;
+    width: 22px;
+    height: 22px;
+    margin: 0 0 0 5px;
+    /*border: 1px solid transparent;*/
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-email-design-color.gh-btn-group-selected {
+    opacity: 1;
+    width: 22px;
+    height: 22px;
+    margin: 0 0 0 5px;
+    /*border: 1px solid transparent;*/
+}
+
+.gh-email-design-color.gh-btn-group-selected::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    opacity: 0;
+    border: 2px solid var(--green);
+    border-radius: 999px;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group:hover .gh-email-design-color.gh-btn-group-selected::before {
+    opacity: 1;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group .gh-email-design-color.transparent {
+    background: transparent;
+    /*border: 1px solid var(--lightgrey);*/
+}
+
+.gh-email-design-color.transparent::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 0;
+    z-index: 1;
+    border-bottom: 1px solid var(--red);
+    width: 100%;
+    transform: rotate(45deg);
+    transform-origin: left;
+}
+
+.gh-btn-group .gh-email-design-color.white {
+    background: var(--white) !important;
+    /*border: 1px solid var(--lightgrey-l1);*/
+}
+
+.gh-btn-group .gh-email-design-color.black {
+    background: var(--black) !important;
+}
+
+.gh-btn-group .gh-email-design-color.accent {
+    background: var(--accent-color) !important;
+}
+
+.gh-btn-group .gh-email-design-color.custom {
+    background: conic-gradient(yellow, red, magenta, blue, aqua, lime, yellow) !important;
+    border: none;
+    display: inline-block;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.gh-email-design-color.custom svg {
+    width: 10px;
+    height: 10px;
+    color: var(--white);
+}
+
+.gh-email-design-color.custom input {
+    visibility: hidden;
+}
+
 .gh-email-design-alignment {
     display: flex;
     justify-content: space-between;
@@ -2046,7 +2173,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-title h2 {
     margin: 0;
     padding: 0 0 10px;
-    color: #15212A;    
+    color: #15212A;
     font-size: 4.2rem;
     line-height: 1.1em;
     font-weight: 700;

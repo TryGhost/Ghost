@@ -81,8 +81,13 @@ module.exports = {
              * @returns {Promise<string>}
              */
             async renderText(report, recipient) {
+                // Filter out mentions with duplicate source url from the report
+                const uniqueMentions = report.mentions.filter((mention, index, self) => {
+                    return self.findIndex(m => m.sourceUrl.href === mention.sourceUrl.href) === index;
+                });
+
                 return staffService.api.emails.renderText('mention-report', {
-                    report: report,
+                    mentions: uniqueMentions,
                     recipient: recipient
                 });
             }
@@ -139,7 +144,7 @@ module.exports = {
 
         const labs = require('../../../shared/labs');
         DomainEvents.subscribe(StartMentionEmailReportJob, () => {
-            if (labs.isSet('webmentionEmails')) {
+            if (labs.isSet('webmentions')) {
                 job.sendLatestReport();
             }
         });

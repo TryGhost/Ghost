@@ -13,6 +13,7 @@ class PostsExporter {
      * @param {Object} dependencies.models.Post
      * @param {Object} dependencies.models.Newsletter
      * @param {Object} dependencies.models.Label
+     * @param {Object} dependencies.models.Product
      * @param {Object} dependencies.getPostUrl
      * @param {Object} dependencies.settingsCache
      * @param {Object} dependencies.settingsHelpers
@@ -51,6 +52,7 @@ class PostsExporter {
 
         const newsletters = (await this.#models.Newsletter.findAll()).models;
         const labels = (await this.#models.Label.findAll()).models;
+        const tiers = (await this.#models.Product.findAll()).models;
 
         const membersEnabled = this.#settingsHelpers.isMembersEnabled();
         const membersTrackSources = membersEnabled && this.#settingsCache.get('members_track_sources');
@@ -61,6 +63,12 @@ class PostsExporter {
 
         const mapped = posts.data.map((post) => {
             let email = post.related('email');
+
+            // Weird bookshelf thing fix
+            if (!email.id) {
+                email = null;
+            }
+
             let published = true;
             if (post.get('status') === 'draft' || post.get('status') === 'scheduled') {
                 // Manually clear it to avoid including information for a post that was reverted to draft
@@ -82,15 +90,15 @@ class PostsExporter {
                 featured: post.get('featured'),
                 tags: post.related('tags').map(tag => tag.get('name')).join(', '),
                 post_access: this.postAccessToString(post),
-                email_recipients: email ? this.humanReadableEmailRecipientFilter(email?.get('recipient_filter'), labels) : null,
-                newsletter: newsletters.length > 1 && post.get('newsletter_id') && email ? newsletters.find(newsletter => newsletter.get('id') === post.get('newsletter_id'))?.get('name') : null,
+                email_recipients: email ? this.humanReadableEmailRecipientFilter(email?.get('recipient_filter'), labels, tiers) : null,
+                newsletter_name: newsletters.length > 1 && post.get('newsletter_id') && email ? newsletters.find(newsletter => newsletter.get('id') === post.get('newsletter_id'))?.get('name') : null,
                 sends: email?.get('email_count') ?? null,
                 opens: trackOpens ? (email?.get('opened_count') ?? null) : null,
                 clicks: showEmailClickAnalytics ? (post.get('count__clicks') ?? 0) : null,
                 free_signups: membersTrackSources && published ? (post.get('count__signups') ?? 0) : null,
-                paid_signups: membersTrackSources && paidMembersEnabled && published ? (post.get('count__paid_conversions') ?? 0) : null,
-                reacted_with_more_like_this: feedbackEnabled ? (post.get('count__positive_feedback') ?? 0) : null,
-                reacted_with_less_like_this: feedbackEnabled ? (post.get('count__negative_feedback') ?? 0) : null
+                paid_conversions: membersTrackSources && paidMembersEnabled && published ? (post.get('count__paid_conversions') ?? 0) : null,
+                feedback_more_like_this: feedbackEnabled ? (post.get('count__positive_feedback') ?? 0) : null,
+                feedback_less_like_this: feedbackEnabled ? (post.get('count__negative_feedback') ?? 0) : null
             };
         });
 
@@ -99,13 +107,13 @@ class PostsExporter {
             const removeableColumns = [];
 
             if (newsletters.length <= 1) {
-                removeableColumns.push('newsletter');
+                removeableColumns.push('newsletter_name');
             }
 
             if (!membersEnabled) {
-                removeableColumns.push('email_recipients', 'sends', 'opens', 'clicks', 'reacted_with_more_like_this', 'reacted_with_less_like_this');
+                removeableColumns.push('email_recipients', 'sends', 'opens', 'clicks', 'feedback_more_like_this', 'feedback_less_like_this');
             } else if (!hasNewslettersWithFeedback) {
-                removeableColumns.push('reacted_with_more_like_this', 'reacted_with_less_like_this');
+                removeableColumns.push('feedback_more_like_this', 'feedback_less_like_this');
             }
 
             if (membersEnabled && !trackClicks) {
@@ -117,9 +125,9 @@ class PostsExporter {
             }
 
             if (!membersTrackSources || !membersEnabled) {
-                removeableColumns.push('free_signups', 'paid_signups');
+                removeableColumns.push('free_signups', 'paid_conversions');
             } else if (!paidMembersEnabled) {
-                removeableColumns.push('paid_signups');
+                removeableColumns.push('paid_conversions');
             }
 
             for (const columnToRemove of removeableColumns) {
@@ -161,20 +169,20 @@ class PostsExporter {
         }
 
         if (visibility === 'members') {
-            return 'Free members';
+            return 'Members-only';
         }
 
         if (visibility === 'paid') {
-            return 'Paid members';
+            return 'Paid members-only';
         }
 
         if (visibility === 'tiers') {
             const tiers = post.related('tiers');
             if (tiers.length === 0) {
-                return 'Nobody';
+                return 'Specific tiers: none';
             }
 
-            return tiers.map(tier => tier.get('name')).join(', ');
+            return 'Specific tiers: ' + tiers.map(tier => tier.get('name')).join(', ');
         }
 
         return visibility;
@@ -184,17 +192,18 @@ class PostsExporter {
      * @private Convert an email filter to a human readable string
      * @param {string} recipientFilter
      * @param {*} allLabels
+     * @param {*} allTiers
      * @returns
      */
-    humanReadableEmailRecipientFilter(recipientFilter, allLabels) {
+    humanReadableEmailRecipientFilter(recipientFilter, allLabels, allTiers) {
         // Examples: "label:test"; "label:test,label:batch1"; "status:-free,label:test", "all"
         if (recipientFilter === 'all') {
-            return 'all';
+            return 'All subscribers';
         }
 
         try {
             const parsed = nql(recipientFilter).parse();
-            const strings = this.filterToString(parsed, allLabels);
+            const strings = this.filterToString(parsed, allLabels, allTiers);
             return strings.join(', ');
         } catch (e) {
             logging.error(e);
@@ -208,17 +217,17 @@ class PostsExporter {
      * @param {*} allLabels All available member labels
      * @returns
      */
-    filterToString(filter, allLabels) {
+    filterToString(filter, allLabels, allTiers) {
         const strings = [];
         if (filter.$and) {
             // Not supported
         } else if (filter.$or) {
             for (const subfilter of filter.$or) {
-                strings.push(...this.filterToString(subfilter, allLabels));
+                strings.push(...this.filterToString(subfilter, allLabels, allTiers));
             }
         } else if (filter.yg) {
             // Single filter grouped in brackets
-            strings.push(...this.filterToString(filter.yg, allLabels));
+            strings.push(...this.filterToString(filter.yg, allLabels, allTiers));
         } else {
             for (const key of Object.keys(filter)) {
                 if (key === 'label') {
@@ -232,22 +241,33 @@ class PostsExporter {
                         }
                     }
                 }
+                if (key === 'tier') {
+                    if (typeof filter.tier === 'string') {
+                        const tierSlug = filter.tier;
+                        const tier = allTiers.find(l => l.get('slug') === tierSlug);
+                        if (tier) {
+                            strings.push(tier.get('name'));
+                        } else {
+                            strings.push(tierSlug);
+                        }
+                    }
+                }
                 if (key === 'status') {
                     if (typeof filter.status === 'string') {
                         if (filter.status === 'free') {
-                            strings.push('free members');
+                            strings.push('Free subscribers');
                         } else if (filter.status === 'paid') {
-                            strings.push('paid members');
+                            strings.push('Paid subscribers');
                         } else if (filter.status === 'comped') {
-                            strings.push('complimentary members');
+                            strings.push('Complimentary subscribers');
                         }
                     } else {
                         if (filter.status.$ne === 'free') {
-                            strings.push('paid members');
+                            strings.push('Paid subscribers');
                         }
 
                         if (filter.status.$ne === 'paid') {
-                            strings.push('free members');
+                            strings.push('Free subscribers');
                         }
                     }
                 }

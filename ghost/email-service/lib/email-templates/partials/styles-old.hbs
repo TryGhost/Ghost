@@ -12,6 +12,7 @@ img {
 }
 
 body {
+    background-color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
@@ -20,7 +21,7 @@ body {
     padding: 0;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
-    color: {{textColor}};
+    color: #15212A;
 }
 
 table {
@@ -34,13 +35,14 @@ table td {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     font-size: 18px;
     vertical-align: top;
-    color: {{textColor}};
+    color: #15212A;
 }
 
 /* -------------------------------------
     BODY & CONTAINER
 ------------------------------------- */
 .body {
+    background-color: #fff;
     width: 100%;
 }
 
@@ -50,9 +52,6 @@ table td {
     margin: 0 auto !important;
     /* makes it centered */
     max-width: 600px;
-    padding: 12px;
-    background-color: {{backgroundColor}};
-    color: {{textColor}};
 }
 
 /* This should also be a block element, so that it will fill 100% of the .container */
@@ -61,9 +60,6 @@ table td {
     display: block;
     margin: 0 auto;
     max-width: 600px;
-    {{#if borderColor}}
-        border: 1px solid {{borderColor}};
-    {{/if}}
 }
 
 .content a {
@@ -81,8 +77,7 @@ hr {
     padding: 0;
     height: 1px;
     border: 0;
-    border-top: 1px solid #e5eff5 !important;
-    border-top: 1px solid {{secondaryBorderColor}} !important;
+    border-top: 1px solid #e5eff5;
 }
 
 p,
@@ -130,7 +125,7 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
-    color: {{textColor}};
+    color: #15212A;
     font-weight: 500;
     text-align: right;
 }
@@ -143,7 +138,7 @@ dd {
 blockquote {
     margin: 2em 0 2em 0;
     padding: 0 25px 0 25px;
-    border-left: {{linkColor}} 2px solid;
+    border-left: {{accentColor}} 2px solid;
     font-size: 17px;
     font-weight: 500;
     line-height: 1.6em;
@@ -156,8 +151,7 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #999999;
 }
 
 blockquote p {
@@ -180,12 +174,8 @@ blockquote cite a {
 }
 
 a {
-    color: {{linkColor}};
-    {{#if backgroundIsDark}}
-        text-decoration: underline;
-    {{else}}
-        text-decoration: none;
-    {{/if}}
+    color: {{accentColor}};
+    text-decoration: none;
 }
 
 h1,
@@ -199,7 +189,6 @@ h6 {
     line-height: 1.11em;
     font-weight: 700;
     text-rendering: optimizeLegibility;
-    color: {{titleColor}};
 }
 
 h1 {
@@ -314,11 +303,10 @@ figure blockquote p {
 .site-info-bordered {
     padding-top: 50px;
     border-bottom: 1px solid #e5eff5;
-    border-bottom: 1px solid {{secondaryBorderColor}};
 }
 
 .site-url {
-    color: {{textColor}};
+    color: #15212A;
     font-size: 16px;
     letter-spacing: -0.1px;
     font-weight: 700;
@@ -331,14 +319,11 @@ figure blockquote p {
 }
 
 .site-title {
-    text-decoration: none !important;
-    color: {{textColor}};
+    color: #15212A;
 }
 
 .site-subtitle {
-    text-decoration: none !important;
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #8695a4;
     font-size: 14px;
     font-weight: 400;
     text-transform: none;
@@ -360,21 +345,18 @@ figure blockquote p {
 }
 
 .post-title-link {
+    color: #15212A;
     display: block;
     text-align: center;
     margin-top: 50px;
-    text-decoration: none !important;
-    color: {{titleColor}};
 }
-
 .post-title-link-left {
     text-align: left;
 }
 
 .post-meta,
 .view-online {
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #738a94;
     font-size: 13px;
     letter-spacing: 0.1px;
     text-align: center;
@@ -406,11 +388,9 @@ figure blockquote p {
 }
 
 .comment-link {
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #738a94;
     font-size: 13px;
     letter-spacing: 0.1px;
-    text-decoration: none;
 }
 
 .comment-link img {
@@ -418,16 +398,12 @@ figure blockquote p {
     height: 16px;
     margin-bottom: 1px;
     vertical-align: middle;
-    {{#if backgroundIsDark}}
-        filter: brightness(2);
-    {{/if}}
 }
 
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #738a94;
 }
 
 .feature-image-row:first-child > td {
@@ -448,8 +424,7 @@ figure blockquote p {
     padding-bottom: 30px;
     text-align: center;
     font-size: 13px;
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #738a94;
 }
 
 /* -------------------------------------
@@ -467,7 +442,7 @@ figure blockquote p {
 }
 
 .feedback-button-mobile-text {
-    color: {{textColor}};
+    color: #15212A;
     font-size: 13px !important;
     font-weight: 500;
     margin-bottom: 0;
@@ -480,7 +455,7 @@ figure blockquote p {
 .latest-posts-header {
     margin: 0;
     padding: 8px 0 16px;
-    color: {{textColor}};
+    color: #15212A;
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
@@ -532,21 +507,19 @@ figure blockquote p {
 }
 
 .latest-post h4 a {
-    color: {{textColor}} !important;
+    color: #15212A !important;
 }
 
 .latest-post p {
     margin: 0;
     padding: 0;
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #738a94;
     font-size: 15px;
     font-weight: 400;
 }
 
 .latest-post p a {
-    color: {{textColor}} !important;
-    color: {{secondaryTextColor}} !important;
+    color: #738a94 !important;
 }
 
 /* -------------------------------------
@@ -556,12 +529,10 @@ figure blockquote p {
 .subscription-box {
     padding: 32px 0;
     border-bottom: 1px solid #e5eff5;
-    border-bottom: 1px solid {{secondaryBorderColor}};
-    color: {{textColor}};
+    color: #15212A;
 }
 
 .subscription-box h3 {
-    color: {{textColor}} !important;
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
@@ -570,7 +541,7 @@ figure blockquote p {
 
 .subscription-box p {
     margin-bottom: 0;
-    color: {{textColor}} !important;
+    color: #15212A !important;
     font-size: 15px;
     font-weight: 400;
     line-height: 1.45em;
@@ -578,7 +549,7 @@ figure blockquote p {
 }
 
 .subscription-box p a {
-    color: {{textColor}} !important;
+    color: #15212A !important;
     text-decoration: none;
 }
 
@@ -589,10 +560,7 @@ figure blockquote p {
     text-align: right;
     line-height: 1.45em;
     vertical-align: bottom;
-    color: {{linkColor}};
-    {{#if backgroundIsDark}}
-    text-decoration: underline;
-    {{/if}}
+    color: {{accentColor}};
 }
 
 /* -------------------------------------
@@ -604,20 +572,18 @@ figure blockquote p {
     font-family: Georgia, serif;
     font-size: 18px;
     line-height: 1.5em;
-    color: {{textColor}};
+    color: #15212A;
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
-    border-bottom: 1px solid {{secondaryBorderColor}};
 }
 
 .post-content-sans-serif {
     max-width: 600px !important;
     font-size: 17px;
     line-height: 1.5em;
-    color: {{textColor}};
+    color: #15212A;
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
-    border-bottom: 1px solid {{secondaryBorderColor}};
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
@@ -626,7 +592,7 @@ figure blockquote p {
 
 .post-content a,
 .post-content-sans-serif a {
-    color: {{linkColor}};
+    color: {{accentColor}};
     text-decoration: underline;
 }
 
@@ -636,7 +602,7 @@ a[data-flickr-embed] img {
 
 .kg-bookmark-card {
     width: 100%;
-    background: {{backgroundColor}};
+    background: #ffffff;
 }
 
 .kg-bookmark-card a {
@@ -657,12 +623,11 @@ a[data-flickr-embed] img {
 .kg-bookmark-container {
     display: flex;
     min-height: 148px;
-    color: {{textColor}};
+    color: #15212A;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     text-decoration: none;
     border-radius: 3px;
     border: 1px solid #e5eff5;
-    border: 1px solid {{secondaryBorderColor}};
 }
 
 .kg-bookmark-content {
@@ -672,7 +637,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-bookmark-title {
-    color: {{textColor}};
+    color: #15212A;
     font-size: 15px;
     line-height: 1.5em;
     font-weight: 600;
@@ -683,8 +648,7 @@ a[data-flickr-embed] img {
     overflow-y: hidden;
     margin-top: 12px;
     max-height: 40px;
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #738a94;
     font-size: 13px;
     line-height: 1.5em;
     font-weight: 400;
@@ -711,7 +675,7 @@ a[data-flickr-embed] img {
     flex-wrap: wrap;
     align-items: center;
     margin-top: 14px;
-    color: {{textColor}};
+    color: #15212A;
     font-size: 13px;
     font-weight: 400;
 }
@@ -789,7 +753,7 @@ a[data-flickr-embed] img {
 .kg-nft-link {
     display: block;
     text-decoration: none !important;
-    color: {{textColor}} !important;
+    color: #15212A !important;
     font-family: inherit !important;
     font-size: 14px;
     line-height: 1.3em;
@@ -810,12 +774,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-audio-thumbnail.placeholder {
-    {{#if backgroundIsDark}}
-        background: {{backgroundColor}} !important;
-        background: rgba(255, 255, 255, 0.25) !important;
-    {{else}}
-        background: {{accentColor}} !important;
-    {{/if}}
+    background: {{accentColor}} !important;
 }
 
 .kg-callout-card {
@@ -827,10 +786,6 @@ a[data-flickr-embed] img {
 
 .kg-callout-card p {
     margin: 0
-}
-
-.kg-callout-text {
-    color: #15212A;
 }
 
 .kg-callout-card-grey {
@@ -868,10 +823,10 @@ a[data-flickr-embed] img {
 
 .kg-callout-card-accent {
     background: {{accentColor}};
+    color: #fff;
 }
 
-.kg-callout-card-accent a,
-.kg-callout-card-accent .kg-callout-text {
+.kg-callout-card-accent a {
     color: #fff;
 }
 
@@ -902,10 +857,6 @@ a[data-flickr-embed] img {
 
 .kg-header-card.kg-style-dark {
     background: #15171a;
-}
-
-.kg-header-card.kg-style-dark h2,
-.kg-header-card.kg-style-dark h3 {
     color: #ffffff;
 }
 
@@ -913,17 +864,8 @@ a[data-flickr-embed] img {
     background-color: #F9F9FA;
 }
 
-.kg-header-card.kg-style-light h2,
-.kg-header-card.kg-style-light h3 {
-    color: #15171a;
-}
-
 .kg-header-card.kg-style-accent {
     background: {{accentColor}};
-}
-
-.kg-header-card.kg-style-accent h2,
-.kg-header-card.kg-style-accent h3 {
     color: #ffffff;
 }
 
@@ -931,10 +873,6 @@ a[data-flickr-embed] img {
     background-color: #e7e7eb;
     background-size: cover;
     background-position: center center;
-}
-
-.kg-header-card.kg-style-image h2,
-.kg-header-card.kg-style-image h3 {
     color: #ffffff;
 }
 
@@ -1010,32 +948,18 @@ a[data-flickr-embed] img {
     padding: 20px;
     border-radius: 3px; 
     border: 1px solid #e5eff5;
-    border: 1px solid {{secondaryBorderColor}};
 }
-
-.kg-product-card .btn-accent a {
-    {{#if backgroundIsDark}}
-        color: #15212A !important;
-    {{/if}}
-}
-
 .kg-product-rating img {
     width: 96px;
     border: none;
-    {{#if backgroundIsDark}}
-        filter: brightness(5);
-    {{/if}}
 }
-
 .kg-audio-card {
     width: auto; 
     width: 100%;
     margin: 0 auto 1.5em;
     border-radius: 3px; 
     border: 1px solid #e5eff5;
-    border: 1px solid {{secondaryBorderColor}};
 }
-
 .kg-audio-title {
     display: block; 
     padding-right: 20px; 
@@ -1044,43 +968,35 @@ a[data-flickr-embed] img {
     font-size: 16px; 
     font-weight: 600; 
     line-height: 18px; 
-    text-decoration: none !important; 
-    color: {{textColor}} !important;
+    text-decoration: none; 
+    color: #15212A;
 }
-
 .kg-audio-play-button {
     display: block; 
     box-sizing: border-box; 
     width: 16px; 
     height: 16px; 
-    color: {{textColor}} !important; 
+    color: #15212A; 
     border-style: solid; 
     border-width: 8px 0px 8px 16px; 
     border-color: transparent transparent transparent currentColor;
 }
-
 .kg-audio-duration {
     display: block; 
     text-decoration: none; 
     font-size: 13px; 
-    text-decoration: none !important; 
-    color: {{textColor}} !important;
+    color: #15171A;
 }
-
 .kg-audio-link {
-    text-decoration: none !important; 
-    color: {{textColor}}; 
-    color: {{secondaryTextColor}};
+    color: #738a94; 
 }
-
 .kg-file-card {
+    width: auto;
     width: 100%;
     margin: 0 0 1.5em 0;
     border-radius: 3px; 
     border: 1px solid #e5eff5;
-    border: 1px solid {{secondaryBorderColor}};
 }
-
 .kg-file-title {
     display: block; 
     width: 100%; 
@@ -1089,10 +1005,9 @@ a[data-flickr-embed] img {
     font-size: 17px; 
     font-weight: bold; 
     line-height: 1.3em; 
-    text-decoration: none !important;
-    color: {{textColor}} !important; 
+    text-decoration: none;
+    color: #15212A; 
 }
-
 .kg-file-description {
     display: block; 
     width: 100%; 
@@ -1100,11 +1015,9 @@ a[data-flickr-embed] img {
     padding-top: 2px; 
     font-size: 15px; 
     line-height: 1.4em; 
-    text-decoration: none !important;
-    color: {{textColor}} !important; 
-    color: {{secondaryTextColor}} !important; 
+    text-decoration: none;
+    color: #738a94; 
 }
-
 .kg-file-meta {
     display: block;
     width: 100%; 
@@ -1113,35 +1026,24 @@ a[data-flickr-embed] img {
     padding-bottom: 8px;
     font-size: 13px; 
     line-height: 1.4em; 
-    text-decoration: none !important;
-    color: {{textColor}} !important;
-    color: {{secondaryTextColor}} !important; 
+    text-decoration: none;
+    color: #738a94; 
 }
-
 .kg-file-name {
     font-weight: 500; 
-    color: {{textColor}};
+    color: #15212A;
 }
-
 .kg-file-thumbnail {
     position: relative; 
     vertical-align: middle; 
     text-align: center; 
     border-radius: 2px;
-    {{#if backgroundIsDark}}
-        filter: invert(1);
-        background: rgba(0, 0, 0, 0.25);
-    {{else}}
-        background: #F7F7F7; 
-        background: rgba(0, 0, 0, 0.07);
-    {{/if}}
+    background: #F7F7F7; 
 }
-
 .kg-twitter-card {
     width: auto; 
     width: 100%
     margin: 0 auto;
-    background: #FFFFFF;
     border-radius: 12px; 
     border: 1px solid #e5eff5;
 }
@@ -1151,7 +1053,7 @@ a[data-flickr-embed] img {
     HEADER, FOOTER, MAIN
 ------------------------------------- */
 .main {
-    background: {{backgroundColor}};
+    background: #ffffff;
     border-radius: 3px;
     border-spacing: 20px 0;
     width: 100%;
@@ -1167,8 +1069,7 @@ a[data-flickr-embed] img {
 }
 
 .footer {
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #738a94;
     margin-top: 20px;
     text-align: center;
     font-size: 13px;
@@ -1180,8 +1081,7 @@ a[data-flickr-embed] img {
 }
 
 .footer a {
-    color: {{textColor}};
-    color: {{secondaryTextColor}};
+    color: #738a94;
     text-decoration: underline;
 }
 
@@ -1234,23 +1134,13 @@ a[data-flickr-embed] img {
 }
 
 .btn-accent table td {
-    {{#if backgroundIsDark}}
-        background-color: #FFFFFF;
-    {{else}}
-        background-color: {{adjustedAccentColor}};
-    {{/if}}
+    background-color: {{adjustedAccentColor}};
 }
 
 .btn-accent a {
-    {{#if backgroundIsDark}}
-        background-color: #FFFFFF;
-        border-color: #FFFFFF !important;
-        color: #15212A;
-    {{else}}
-        background-color: {{adjustedAccentColor}};
-        border-color: {{adjustedAccentColor}} !important;
-        color: {{adjustedAccentContrastColor}};
-    {{/if}}
+    background-color: {{adjustedAccentColor}};
+    border-color: {{adjustedAccentColor}};
+    color: {{adjustedAccentContrastColor}};
 }
 
 /* -------------------------------------
@@ -1310,15 +1200,9 @@ a[data-flickr-embed] img {
 ------------------------------------- */
 @media only screen and (max-width: 620px) {
 
-    body {
-        padding: 0;
-    }
-
     table.body {
         width: 100%;
         min-width: 100%;
-        padding: 8px 4px;
-        background-color: {{backgroundColor}};
     }
 
     .hide-mobile {

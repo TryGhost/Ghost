@@ -89,6 +89,9 @@ describe('PostsExporter', function () {
                 }),
                 Label: createModelClass({
                     findAll: []
+                }),
+                Product: createModelClass({
+                    findAll: []
                 })
             };
 
@@ -116,7 +119,22 @@ describe('PostsExporter', function () {
             assert.equal(posts.length, 1);
 
             // Hides newsletter column
-            assert.equal(posts[0].newsletter, undefined);
+            assert.equal(posts[0].newsletter_name, undefined);
+
+            // Check status
+            assert.equal(posts[0].status, 'published and emailed');
+        });
+
+        it('Can export posts without an email', async function () {
+            post.email = null;
+            const posts = await exporter.export({});
+            assert.equal(posts.length, 1);
+
+            // Hides newsletter column
+            assert.equal(posts[0].newsletter_name, undefined);
+
+            // Check status
+            assert.equal(posts[0].status, 'published only');
         });
 
         it('Adds newsletter columns if multiple newsletters', async function () {
@@ -134,12 +152,12 @@ describe('PostsExporter', function () {
             assert.equal(posts.length, 2);
 
             // Shows newsletter column
-            assert.equal(posts[0].newsletter, 'Daily Newsletter');
-            assert.equal(posts[1].newsletter, 'Weekly Newsletter');
+            assert.equal(posts[0].newsletter_name, 'Daily Newsletter');
+            assert.equal(posts[1].newsletter_name, 'Weekly Newsletter');
 
             // Shows feedback columns
-            assert.equal(posts[0].reacted_with_more_like_this, post.count__positive_feedback);
-            assert.equal(posts[0].reacted_with_less_like_this, post.count__negative_feedback);
+            assert.equal(posts[0].feedback_more_like_this, post.count__positive_feedback);
+            assert.equal(posts[0].feedback_less_like_this, post.count__negative_feedback);
         });
 
         it('Hides feedback columns if feedback disabled for all newsletters', async function () {
@@ -147,8 +165,8 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             // Hides feedback columns
-            assert.equal(posts[0].reacted_with_more_like_this, undefined);
-            assert.equal(posts[0].reacted_with_less_like_this, undefined);
+            assert.equal(posts[0].feedback_more_like_this, undefined);
+            assert.equal(posts[0].feedback_less_like_this, undefined);
         });
 
         it('Hides email related analytics when post status is draft', async function () {
@@ -162,18 +180,18 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             // No feedback columns
-            assert.equal(posts[0].reacted_with_more_like_this, undefined);
-            assert.equal(posts[0].reacted_with_less_like_this, undefined);
+            assert.equal(posts[0].feedback_more_like_this, undefined);
+            assert.equal(posts[0].feedback_less_like_this, undefined);
 
             // Sends etc
             assert.equal(posts[0].sends, undefined);
             assert.equal(posts[0].opens, undefined);
             assert.equal(posts[0].clicks, undefined);
-            assert.equal(posts[0].newsletter, undefined);
+            assert.equal(posts[0].newsletter_name, undefined);
 
             // Signups
             assert.equal(posts[0].free_signups, undefined);
-            assert.equal(posts[0].paid_signups, undefined);
+            assert.equal(posts[0].paid_conversions, undefined);
         });
 
         it('Hides member related columns if members disabled', async function () {
@@ -182,8 +200,8 @@ describe('PostsExporter', function () {
             assert.equal(posts[0].email_recipients, undefined);
 
             // No feedback columns
-            assert.equal(posts[0].reacted_with_more_like_this, undefined);
-            assert.equal(posts[0].reacted_with_less_like_this, undefined);
+            assert.equal(posts[0].feedback_more_like_this, undefined);
+            assert.equal(posts[0].feedback_less_like_this, undefined);
 
             // Sends etc
             assert.equal(posts[0].sends, undefined);
@@ -192,7 +210,7 @@ describe('PostsExporter', function () {
 
             // Signups
             assert.equal(posts[0].free_signups, undefined);
-            assert.equal(posts[0].paid_signups, undefined);
+            assert.equal(posts[0].paid_conversions, undefined);
         });
 
         it('Hides clicks if disabled', async function () {
@@ -200,12 +218,12 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             assert.notEqual(posts[0].email_recipients, undefined);
-            assert.notEqual(posts[0].reacted_with_more_like_this, undefined);
-            assert.notEqual(posts[0].reacted_with_less_like_this, undefined);
+            assert.notEqual(posts[0].feedback_more_like_this, undefined);
+            assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].opens, undefined);
             assert.notEqual(posts[0].free_signups, undefined);
-            assert.notEqual(posts[0].paid_signups, undefined);
+            assert.notEqual(posts[0].paid_conversions, undefined);
 
             assert.equal(posts[0].clicks, undefined);
         });
@@ -215,12 +233,12 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             assert.notEqual(posts[0].email_recipients, undefined);
-            assert.notEqual(posts[0].reacted_with_more_like_this, undefined);
-            assert.notEqual(posts[0].reacted_with_less_like_this, undefined);
+            assert.notEqual(posts[0].feedback_more_like_this, undefined);
+            assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].clicks, undefined);
             assert.notEqual(posts[0].free_signups, undefined);
-            assert.notEqual(posts[0].paid_signups, undefined);
+            assert.notEqual(posts[0].paid_conversions, undefined);
 
             assert.equal(posts[0].opens, undefined);
         });
@@ -230,14 +248,14 @@ describe('PostsExporter', function () {
             const posts = await exporter.export({});
 
             assert.notEqual(posts[0].email_recipients, undefined);
-            assert.notEqual(posts[0].reacted_with_more_like_this, undefined);
-            assert.notEqual(posts[0].reacted_with_less_like_this, undefined);
+            assert.notEqual(posts[0].feedback_more_like_this, undefined);
+            assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].clicks, undefined);
             assert.notEqual(posts[0].free_signups, undefined);
             assert.notEqual(posts[0].opens, undefined);
 
-            assert.equal(posts[0].paid_signups, undefined);
+            assert.equal(posts[0].paid_conversions, undefined);
         });
 
         it('Works if relations not loaded correctly', async function () {
@@ -252,9 +270,9 @@ describe('PostsExporter', function () {
 
             assert.equal(posts[0].clicks, 0);
             assert.equal(posts[0].free_signups, 0);
-            assert.equal(posts[0].paid_signups, 0);
-            assert.equal(posts[0].reacted_with_more_like_this, 0);
-            assert.equal(posts[0].reacted_with_less_like_this, 0);
+            assert.equal(posts[0].paid_conversions, 0);
+            assert.equal(posts[0].feedback_more_like_this, 0);
+            assert.equal(posts[0].feedback_less_like_this, 0);
         });
     });
 
@@ -327,7 +345,7 @@ describe('PostsExporter', function () {
             );
             assert.equal(
                 access,
-                'Free members'
+                'Members-only'
             );
         });
 
@@ -339,7 +357,7 @@ describe('PostsExporter', function () {
             );
             assert.equal(
                 access,
-                'Paid members'
+                'Paid members-only'
             );
         });
 
@@ -353,7 +371,7 @@ describe('PostsExporter', function () {
             );
             assert.equal(
                 access,
-                'Nobody'
+                'Specific tiers: none'
             );
         });
 
@@ -374,7 +392,7 @@ describe('PostsExporter', function () {
             );
             assert.equal(
                 access,
-                'Silver, Gold'
+                'Specific tiers: Silver, Gold'
             );
         });
 
@@ -394,6 +412,7 @@ describe('PostsExporter', function () {
     describe('humanReadableEmailRecipientFilter', function () {
         const exporter = new PostsExporter({});
         let labels;
+        let tiers;
 
         beforeEach(function () {
             labels = [
@@ -406,12 +425,22 @@ describe('PostsExporter', function () {
                     name: 'VIP'
                 })
             ];
+            tiers = [
+                createModel({
+                    slug: 'silver',
+                    name: 'Silver'
+                }),
+                createModel({
+                    slug: 'gold',
+                    name: 'Gold'
+                })
+            ];
         });
 
         it('Returns all', function () {
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('all'),
-                'all'
+                'All subscribers'
             );
         });
 
@@ -424,19 +453,38 @@ describe('PostsExporter', function () {
 
         it('Returns labels', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('label:imported', labels),
+                exporter.humanReadableEmailRecipientFilter('label:imported', labels, tiers),
                 'Imported'
             );
 
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('label:imported,label:vip', labels),
+                exporter.humanReadableEmailRecipientFilter('label:imported,label:vip', labels, tiers),
                 'Imported, VIP'
             );
         });
 
         it('Returns invalid labels', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('label:invalidone', labels),
+                exporter.humanReadableEmailRecipientFilter('label:invalidone', labels, tiers),
+                'invalidone'
+            );
+        });
+
+        it('Returns tiers', function () {
+            assert.equal(
+                exporter.humanReadableEmailRecipientFilter('tier:silver', labels, tiers),
+                'Silver'
+            );
+
+            assert.equal(
+                exporter.humanReadableEmailRecipientFilter('tier:silver,tier:gold', labels, tiers),
+                'Silver, Gold'
+            );
+        });
+
+        it('Returns invalid tiers', function () {
+            assert.equal(
+                exporter.humanReadableEmailRecipientFilter('tier:invalidone', labels, tiers),
                 'invalidone'
             );
         });
@@ -444,47 +492,47 @@ describe('PostsExporter', function () {
         it('Returns status', function () {
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:free'),
-                'free members'
+                'Free subscribers'
             );
 
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:-free'),
-                'paid members'
+                'Paid subscribers'
             );
 
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:paid'),
-                'paid members'
+                'Paid subscribers'
             );
 
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:comped'),
-                'complimentary members'
+                'Complimentary subscribers'
             );
 
             assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:-paid'),
-                'free members'
+                'Free subscribers'
             );
         });
 
         it('Ignores AND', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('status:free+status:paid', labels),
+                exporter.humanReadableEmailRecipientFilter('status:free+status:paid', labels, tiers),
                 ''
             );
         });
 
         it('Single brackets filter', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('(status:free)', labels),
-                'free members'
+                exporter.humanReadableEmailRecipientFilter('(status:free)', labels, tiers),
+                'Free subscribers'
             );
         });
 
         it('Ignores invalid filters', function () {
             assert.equal(
-                exporter.humanReadableEmailRecipientFilter('sdgsdgsdg sdg sdg sdgs dgs', labels),
+                exporter.humanReadableEmailRecipientFilter('sdgsdgsdg sdg sdg sdgs dgs', labels, tiers),
                 'sdgsdgsdg sdg sdg sdgs dgs'
             );
         });

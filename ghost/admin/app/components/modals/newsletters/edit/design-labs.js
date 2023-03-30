@@ -34,4 +34,62 @@ export default class EditNewsletterDesignForm extends Component {
     toggleSetting(property, event) {
         this.args.newsletter[property] = event.target.checked;
     }
+
+    get backgroundPresetColors() {
+        return [
+            {
+                value: 'dark',
+                name: 'Black',
+                class: 'black',
+                style: ''
+            },
+            {
+                value: 'light',
+                name: 'White',
+                class: 'white',
+                style: ''
+            }
+        ];
+    }
+
+    get borderPresetColors() {
+        return [
+            {
+                value: 'accent',
+                name: 'Accent',
+                class: 'accent',
+                style: ''
+            },
+            {
+                value: 'dark',
+                name: 'Black',
+                class: 'black',
+                style: ''
+            },
+            {
+                value: null,
+                name: 'Transparent',
+                class: 'transparent',
+                style: ''
+            }
+        ];
+    }
+
+    get titlePresetColors() {
+        return [
+            {
+                value: 'accent',
+                name: 'Accent',
+                class: 'accent',
+                style: ''
+            },
+            {
+                value: null,
+                name: 'Auto',
+                // todo: this is a very basic example on how to switch, and should be calculated on contrast in the future
+                class: this.args.newsletter.backgroundColor === 'dark' ? 'white' : 'black',
+                style: ''
+            }
+        ];
+    }
 }
