@@ -676,7 +676,7 @@ User = ghostBookshelf.Model.extend({
 
                 // CASE: it is possible to add roles by name, by id or by object
                 if (_.isString(roles[0]) && !ObjectId.isValid(roles[0])) {
-                    return Promise.all(roles.map(function (roleName) {
+                    return Promise.map(roles, function (roleName) {
                         return ghostBookshelf.model('Role').findOne({
                             name: roleName
                         }, options);
@@ -686,7 +686,7 @@ User = ghostBookshelf.Model.extend({
                         _.each(roleModels, function (roleModel) {
                             roles.push(roleModel.id);
                         });
-                    }));
+                    });
                 }
 
                 return Promise.resolve();
