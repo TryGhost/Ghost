@@ -59,9 +59,19 @@
 em-emoji-picker {
     --font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
     --border-radius: 5px;
+    /* --background-rgb: 85, 170, 255; */
     --font-size: 13px;
-    --rgb-accent: 103, 204, 88;
+    --rgb-accent: 57, 64, 71;
+    --rgb-color: 174, 183, 193;
+    --em-rgb-accent: (255,0,0)
+    /* --rgb-input: 255, 235, 235; */
     --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+
+    height: 325px;
+  }
+
+  [data-theme="dark"] {
+    --em-rgb-accent: (255,0,0)
   }
 
   em-emoji-picker #nav button[aria-selected] svg {

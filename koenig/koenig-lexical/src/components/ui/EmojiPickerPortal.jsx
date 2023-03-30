@@ -28,14 +28,14 @@ const EmojiPickerPortal = ({onEmojiClick, buttonRef}) => {
             <div className='fixed z-10 mr-9 mt-3 rounded-md bg-white' data-testid="emoji-picker-container" style={{left: x, top: y}} onClick={handleClick}>
                 <div className=''>
                     <Picker
-                        data={data}
-                        onEmojiSelect={onEmojiClick}
-                        previewPosition='none'
-                        maxFrequentRows='1'
-                        noResultsEmoji='cry'
-                        icons='solid'
-                        navPosition='bottom'
                         autoFocus='true'
+                        data={data}
+                        icons='outline'
+                        maxFrequentRows='1'
+                        navPosition='bottom'
+                        noResultsEmoji='cry'
+                        previewPosition='none'
+                        onEmojiSelect={onEmojiClick}
                     />
                 </div>
             </div>
