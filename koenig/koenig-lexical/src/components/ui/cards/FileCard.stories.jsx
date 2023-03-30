@@ -61,7 +61,9 @@ Empty.args = {
     fileDesc: '',
     fileDescPlaceholder: 'Add optional file description',
     fileName: 'Example-file.pdf',
-    fileSize: '165 KB'
+    fileSize: '165 KB',
+    fileInputRef: {},
+    fileDragHandler: {}
 };
 
 export const Populated = Template.bind({});
@@ -73,6 +75,8 @@ Populated.args = {
     fileDesc: '',
     fileDescPlaceholder: 'Add optional file description',
     fileName: 'Example-file.pdf',
-    fileSize: '165 KB'
+    fileSize: '165 KB',
+    fileInputRef: {},
+    fileDragHandler: {}
 };
 
