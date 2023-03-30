@@ -143,7 +143,7 @@ dd {
 blockquote {
     margin: 2em 0 2em 0;
     padding: 0 25px 0 25px;
-    border-left: {{accentColor}} 2px solid;
+    border-left: {{linkColor}} 2px solid;
     font-size: 17px;
     font-weight: 500;
     line-height: 1.6em;
@@ -180,8 +180,12 @@ blockquote cite a {
 }
 
 a {
-    color: {{accentColor}};
-    text-decoration: none;
+    color: {{linkColor}};
+    {{#if backgroundIsDark}}
+        text-decoration: underline;
+    {{else}}
+        text-decoration: none;
+    {{/if}}
 }
 
 h1,
@@ -354,7 +358,7 @@ figure blockquote p {
 }
 
 .post-title-link {
-    color: {{textColor}};
+    color: {{titleColor}};
     display: block;
     text-align: center;
     margin-top: 50px;
@@ -402,6 +406,7 @@ figure blockquote p {
     color: {{secondaryTextColor}};
     font-size: 13px;
     letter-spacing: 0.1px;
+    text-decoration: none;
 }
 
 .comment-link img {
@@ -409,6 +414,9 @@ figure blockquote p {
     height: 16px;
     margin-bottom: 1px;
     vertical-align: middle;
+    {{#if backgroundIsDark}}
+        filter: brightness(2);
+    {{/if}}
 }
 
 .view-online-link {
@@ -549,6 +557,7 @@ figure blockquote p {
 }
 
 .subscription-box h3 {
+    color: {{textColor}} !important;
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
@@ -576,7 +585,10 @@ figure blockquote p {
     text-align: right;
     line-height: 1.45em;
     vertical-align: bottom;
-    color: {{accentColor}};
+    color: {{linkColor}};
+    {{#if backgroundIsDark}}
+    text-decoration: underline;
+    {{/if}}
 }
 
 /* -------------------------------------
@@ -610,7 +622,7 @@ figure blockquote p {
 
 .post-content a,
 .post-content-sans-serif a {
-    color: {{accentColor}};
+    color: {{linkColor}};
     text-decoration: underline;
 }
 
@@ -794,7 +806,12 @@ a[data-flickr-embed] img {
 }
 
 .kg-audio-thumbnail.placeholder {
-    background: {{accentColor}} !important;
+    {{#if backgroundIsDark}}
+        background: {{backgroundColor}} !important;
+        background: rgba(255, 255, 255, 0.25) !important;
+    {{else}}
+        background: {{accentColor}} !important;
+    {{/if}}
 }
 
 .kg-callout-card {
@@ -992,6 +1009,14 @@ a[data-flickr-embed] img {
     border: 1px solid {{secondaryBorderColor}};
 }
 
+.kg-product-rating img {
+    width: 96px;
+    border: none;
+    {{#if backgroundIsDark}}
+        filter: brightness(5);
+    {{/if}}
+}
+
 .kg-audio-card {
     width: auto; 
     width: 100%;
@@ -1084,6 +1109,19 @@ a[data-flickr-embed] img {
 .kg-file-name {
     font-weight: 500; 
     color: {{textColor}};
+}
+
+.kg-file-thumbnail {
+    position: relative; 
+    vertical-align: middle; 
+    text-align: center; 
+    border-radius: 2px;
+    {{#if backgroundIsDark}}
+        filter: invert(1);
+        background: rgba(0, 0, 0, 0.25);
+    {{else}}
+        background: #F7F7F7; 
+    {{/if}}
 }
 
 .kg-twitter-card {
@@ -1183,13 +1221,23 @@ a[data-flickr-embed] img {
 }
 
 .btn-accent table td {
-    background-color: {{adjustedAccentColor}};
+    {{#if backgroundIsDark}}
+        background-color: #FFFFFF;
+    {{else}}
+        background-color: {{adjustedAccentColor}};
+    {{/if}}
 }
 
 .btn-accent a {
-    background-color: {{adjustedAccentColor}};
-    border-color: {{adjustedAccentColor}} !important;
-    color: {{adjustedAccentContrastColor}};
+    {{#if backgroundIsDark}}
+        background-color: #FFFFFF;
+        border-color: #FFFFFF !important;
+        color: #15212A;
+    {{else}}
+        background-color: {{adjustedAccentColor}};
+        border-color: {{adjustedAccentColor}} !important;
+        color: {{adjustedAccentContrastColor}};
+    {{/if}}
 }
 
 /* -------------------------------------
