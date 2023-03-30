@@ -331,10 +331,12 @@ figure blockquote p {
 }
 
 .site-title {
+    text-decoration: none !important;
     color: {{textColor}};
 }
 
 .site-subtitle {
+    text-decoration: none !important;
     color: {{textColor}};
     color: {{secondaryTextColor}};
     font-size: 14px;
@@ -358,11 +360,13 @@ figure blockquote p {
 }
 
 .post-title-link {
-    color: {{titleColor}};
     display: block;
     text-align: center;
     margin-top: 50px;
+    text-decoration: none !important;
+    color: {{titleColor}};
 }
+
 .post-title-link-left {
     text-align: left;
 }
@@ -1040,8 +1044,8 @@ a[data-flickr-embed] img {
     font-size: 16px; 
     font-weight: 600; 
     line-height: 18px; 
-    text-decoration: none; 
-    color: {{textColor}};
+    text-decoration: none !important; 
+    color: {{textColor}} !important;
 }
 
 .kg-audio-play-button {
@@ -1049,7 +1053,7 @@ a[data-flickr-embed] img {
     box-sizing: border-box; 
     width: 16px; 
     height: 16px; 
-    color: {{textColor}}; 
+    color: {{textColor}} !important; 
     border-style: solid; 
     border-width: 8px 0px 8px 16px; 
     border-color: transparent transparent transparent currentColor;
@@ -1059,10 +1063,12 @@ a[data-flickr-embed] img {
     display: block; 
     text-decoration: none; 
     font-size: 13px; 
-    color: {{textColor}};
+    text-decoration: none !important; 
+    color: {{textColor}} !important;
 }
 
 .kg-audio-link {
+    text-decoration: none !important; 
     color: {{textColor}}; 
     color: {{secondaryTextColor}};
 }
@@ -1083,8 +1089,8 @@ a[data-flickr-embed] img {
     font-size: 17px; 
     font-weight: bold; 
     line-height: 1.3em; 
-    text-decoration: none;
-    color: {{textColor}}; 
+    text-decoration: none !important;
+    color: {{textColor}} !important; 
 }
 
 .kg-file-description {
@@ -1094,9 +1100,9 @@ a[data-flickr-embed] img {
     padding-top: 2px; 
     font-size: 15px; 
     line-height: 1.4em; 
-    text-decoration: none;
-    color: {{textColor}}; 
-    color: {{secondaryTextColor}}; 
+    text-decoration: none !important;
+    color: {{textColor}} !important; 
+    color: {{secondaryTextColor}} !important; 
 }
 
 .kg-file-meta {
@@ -1107,9 +1113,9 @@ a[data-flickr-embed] img {
     padding-bottom: 8px;
     font-size: 13px; 
     line-height: 1.4em; 
-    text-decoration: none;
-    color: {{textColor}};
-    color: {{secondaryTextColor}}; 
+    text-decoration: none !important;
+    color: {{textColor}} !important;
+    color: {{secondaryTextColor}} !important; 
 }
 
 .kg-file-name {
@@ -1127,6 +1133,7 @@ a[data-flickr-embed] img {
         background: rgba(0, 0, 0, 0.25);
     {{else}}
         background: #F7F7F7; 
+        background: rgba(0, 0, 0, 0.07);
     {{/if}}
 }
 
