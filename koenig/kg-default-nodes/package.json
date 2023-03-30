@@ -34,6 +34,7 @@
     "@lexical/headless": "^0.9.0",
     "@lexical/html": "^0.9.0",
     "c8": "7.13.0",
+    "html-minifier": "^4.0.0",
     "mocha": "10.2.0",
     "rollup": "^3.5.0",
     "rollup-plugin-babel": "4.4.0",
