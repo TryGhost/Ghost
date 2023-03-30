@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-// import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 
 export default class GhMigrateIframe extends Component {
@@ -26,18 +25,22 @@ export default class GhMigrateIframe extends Component {
             return;
         }
 
-        // only process messages coming from the migrate iframe
-        if (event?.data && this.migrate.getIframeURL().includes(event?.origin)) {
+        // Only process messages coming from the migrate iframe
+        const url = new URL(this.migrate.getIframeURL());
+        if (event.origin === url.origin) {
             if (event.data?.request === 'apiUrl') {
                 await this._handleUrlRequest();
+                return;
             }
 
             if (event.data?.route) {
                 this._handleRouteUpdate(event.data);
+                return;
             }
 
             if (event.data?.siteData) {
                 this._handleSiteDataUpdate(event.data);
+                return;
             }
         }
     }
@@ -52,18 +55,17 @@ export default class GhMigrateIframe extends Component {
     }
 
     async _handleUrlRequest() {
-        let theToken = await this.migrate.apiToken();
+        const theToken = await this.migrate.apiToken();
 
         this.migrate.getMigrateIframe().contentWindow.postMessage({
             request: 'initialData',
             response: {
                 apiUrl: this.migrate.apiUrl,
                 apiToken: theToken,
-                cookie: 'ghost-admin-api-session=s:12345678/po; Path=/ghost; Expires=Wed, 06 Sep 2023 05:18:55 GMT; HttpOnly; SameSite=Lax',
                 darkMode: this.feature.nightShift,
                 stripe: this.migrate.isStripeConnected
             }
-        }, '*');
+        }, new URL(this.migrate.getIframeURL()).origin);
     }
 
     _handleSiteDataUpdate(data) {
