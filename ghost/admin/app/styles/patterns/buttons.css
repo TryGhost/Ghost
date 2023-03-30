@@ -351,7 +351,7 @@ svg.gh-btn-icon-right {
 }
 
 .gh-btn-action-icon {
-    margin-right: 12px
+    margin-right: 10px
 }
 
 .gh-btn-action-icon svg {
@@ -366,8 +366,7 @@ svg.gh-btn-icon-right {
 
 .gh-btn-action-icon svg path,
 .gh-btn-action-icon svg circle {
-    stroke: var(--black);
-    stroke-width: 1.7px;
+    stroke: currentColor;
 }
 
 .gh-btn-label-green {
