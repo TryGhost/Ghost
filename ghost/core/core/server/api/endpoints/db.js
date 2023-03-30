@@ -144,15 +144,15 @@ module.exports = {
 
                     return models.Post.findAll(queryOpts)
                         .then((response) => {
-                            return Promise.map(response.models, (post) => {
+                            return Promise.all(response.models.map((post) => {
                                 return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
-                            }, {concurrency: 100});
+                            }, {concurrency: 100}));
                         })
                         .then(() => models.Tag.findAll(queryOpts))
                         .then((response) => {
-                            return Promise.map(response.models, (tag) => {
+                            return Promise.all(response.models.map((tag) => {
                                 return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
-                            }, {concurrency: 100});
+                            }, {concurrency: 100}));
                         })
                         .catch((err) => {
                             throw new errors.InternalServerError({

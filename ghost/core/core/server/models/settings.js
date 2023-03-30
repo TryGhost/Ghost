@@ -211,7 +211,7 @@ Settings = ghostBookshelf.Model.extend({
             data = [data];
         }
 
-        return Promise.map(data, function (item) {
+        return Promise.all(data.map(function (item) {
             // Accept an array of models as input
             if (item.toJSON) {
                 item = item.toJSON();
@@ -253,7 +253,7 @@ Settings = ghostBookshelf.Model.extend({
 
                 return Promise.reject(new errors.NotFoundError({message: tpl(messages.unableToFindSetting, {key: item.key})}));
             });
-        });
+        }));
     },
 
     populateDefaults: async function populateDefaults(unfilteredOptions) {
