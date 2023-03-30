@@ -97,7 +97,7 @@
     "@tryghost/job-manager": "0.0.0",
     "@tryghost/kg-card-factory": "4.0.5",
     "@tryghost/kg-default-atoms": "4.0.1",
-    "@tryghost/kg-default-cards": "6.0.5",
+    "@tryghost/kg-default-cards": "7.0.0",
     "@tryghost/kg-default-nodes": "0.0.22",
     "@tryghost/kg-lexical-html-renderer": "0.1.18",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.5",
