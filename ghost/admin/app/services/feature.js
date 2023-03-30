@@ -70,6 +70,7 @@ export default class FeatureService extends Service {
     @feature('websockets') websockets;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('makingItRain') makingItRain;
+    @feature('migrateApp') migrateApp;
 
     _user = null;
 

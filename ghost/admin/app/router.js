@@ -112,6 +112,8 @@ Router.map(function () {
     });
     // this.route('settings.labs.import', {path: '/settings/labs/import'});
 
+    this.route('migrate');
+
     this.route('members', function () {
         this.route('import');
     });
