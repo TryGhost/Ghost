@@ -827,7 +827,7 @@ class EmailRenderer {
         const secondaryBorderColor = textColorForBackgroundColor(backgroundColor).alpha(0.12).toString();
         const titleColor = this.#getTitleColor(newsletter, accentColor);
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
-        const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.45).toString();
+        const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
