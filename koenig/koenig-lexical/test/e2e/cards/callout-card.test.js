@@ -54,8 +54,11 @@ describe('Callout Card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="callout">
                     <div>
-                        <div><button type="button">😚</button></div>
-                        <div><p><span>Hello World</span></p></div>
+                       <div>
+                           <div><button type="button">😚</button></div>
+                           <div><p><span>Hello World</span></p></div>
+                       </div>
+                        <div></div>
                     </div>
                 </div>
             </div>
