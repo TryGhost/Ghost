@@ -29,7 +29,6 @@ describe('Webmentions (receiving)', function () {
         await allSettled();
         mockManager.disableNetwork();
         mockManager.mockLabsEnabled('webmentions');
-        mockManager.mockLabsEnabled('webmentionEmails');
     });
 
     afterEach(async function () {

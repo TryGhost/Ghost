@@ -1735,6 +1735,133 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Email newsletter design settings
 /* -------------------------------------------------------- */
+
+.gh-email-design-color-picker .gh-btn-group  {
+    vertical-align: middle;
+
+    /* Required to remove glitches in mouseover during animations */
+    overflow: hidden;
+    padding: 4px;
+    margin-right: -4px;
+}
+
+.gh-email-design-color-picker .gh-btn-group p {
+    opacity: 1;
+    margin: 0;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    font-weight: 500;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-email-design-color-picker .gh-btn-group:hover p {
+    opacity: 0;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group .gh-email-design-color {
+    display: block;
+    opacity: 0;
+    position: relative;
+    z-index: 2;
+    width: 0;
+    height: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 999px;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group:hover .gh-email-design-color {
+    opacity: 1;
+    width: 22px;
+    height: 22px;
+    margin: 0 0 0 5px;
+    /*border: 1px solid transparent;*/
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-email-design-color.gh-btn-group-selected {
+    opacity: 1;
+    width: 22px;
+    height: 22px;
+    margin: 0 0 0 5px;
+    /*border: 1px solid transparent;*/
+}
+
+.gh-email-design-color.gh-btn-group-selected::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    opacity: 0;
+    border: 2px solid var(--green);
+    border-radius: 999px;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group:hover .gh-email-design-color.gh-btn-group-selected::before {
+    opacity: 1;
+    transition: all .15s ease-in-out;
+    transition-delay: .05s;
+}
+
+.gh-btn-group .gh-email-design-color.transparent {
+    background: transparent;
+    /*border: 1px solid var(--lightgrey);*/
+}
+
+.gh-email-design-color.transparent::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 0;
+    z-index: 1;
+    border-bottom: 1px solid var(--red);
+    width: 100%;
+    transform: rotate(45deg);
+    transform-origin: left;
+}
+
+.gh-btn-group .gh-email-design-color.white {
+    background: var(--white) !important;
+    /*border: 1px solid var(--lightgrey-l1);*/
+}
+
+.gh-btn-group .gh-email-design-color.black {
+    background: var(--black) !important;
+}
+
+.gh-btn-group .gh-email-design-color.accent {
+    background: var(--accent-color) !important;
+}
+
+.gh-btn-group .gh-email-design-color.custom {
+    background: conic-gradient(yellow, red, magenta, blue, aqua, lime, yellow) !important;
+    border: none;
+    display: inline-block;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.gh-email-design-color.custom svg {
+    width: 10px;
+    height: 10px;
+    color: var(--white);
+}
+
+.gh-email-design-color.custom input {
+    visibility: hidden;
+}
+
 .gh-email-design-alignment {
     display: flex;
     justify-content: space-between;
@@ -2046,7 +2173,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-title h2 {
     margin: 0;
     padding: 0 0 10px;
-    color: #15212A;    
+    color: #15212A;
     font-size: 4.2rem;
     line-height: 1.1em;
     font-weight: 700;
@@ -2152,10 +2279,6 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-content {
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
-}
-
-.gh-members-emailpreview-content.no-border {
-    border-bottom: 0;
 }
 
 .gh-members-emailpreview-content:first-child {
@@ -2272,10 +2395,6 @@ p.gh-members-import-errordetail:first-of-type {
     border-bottom: 1px solid #e5eff5;
 }
 
-.gh-members-emailpreview-feedback.no-border {
-    border-bottom: 0;
-}
-
 .gh-members-emailpreview-feedback-title {
     text-align: center;
     color: #15212a;
@@ -2311,31 +2430,36 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-latest-posts {
     padding: 24px 0;
+    border-bottom: 1px solid #e5eff5;
 }
 
-.gh-members-emailpreview-latest-posts.border {
-    border-bottom: 1px solid #e5eff5;
+.gh-members-emailpreview-latest-posts h3 {
+    margin: 8px 0 16px;
+    color: #15212A;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 .gh-members-emailpreview-latest-post {
     display: flex;
+    justify-content: space-between;
     gap: 16px;
     padding: 8px 0;
 }
 
 .gh-members-emailpreview-latest-post-image {
-    border-radius: var(--border-radius);
     width: 100%;
-    max-width: 120px;
+    max-width: 100px;
     height: auto;
     background: transparent;
     background-repeat: no-repeat;
     background-size: cover;
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 1 / 1;
 }
 
-.gh-members-emailpreview-latest-post h3 {
-    margin: 12px 0 4px;
+.gh-members-emailpreview-latest-post h4 {
+    margin: 2px 0 4px;
     color: #15212a;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 1.9rem;
@@ -2345,25 +2469,25 @@ p.gh-members-import-errordetail:first-of-type {
     margin: 0;
     color: #738a94;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    font-size: 1.4rem;
+    font-size: 1.5rem;
 }
 
 
 .gh-members-emailpreview-subscription-details {
-    padding: 24px;
-    background: #F4F5F6;
+    padding: 32px 0;
+    border-bottom: 1px solid #e5eff5;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    font-size: 1.3rem;
     font-weight: 400;
-    border-radius: 3px;
 }
 
 .gh-members-emailpreview-subscription-details h4 {
     font-size: 1.4rem;
+    text-transform: uppercase;
 }
 
 .gh-members-emailpreview-subscription-details p {
     margin: 0;
+    font-size: 1.5rem;
 }
 
 .gh-members-emailpreview-subscription-details p strong {
@@ -2375,7 +2499,8 @@ a.gh-members-emailpreview-subscription-link {
     white-space: nowrap;
     width: 100%;
     color: var(--accent-color);
-    font-weight: 500;
+    font-size: 1.5rem;
+    font-weight: 600;
     text-decoration: none;
     text-align: right;
 }

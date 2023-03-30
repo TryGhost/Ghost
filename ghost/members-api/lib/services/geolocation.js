@@ -7,8 +7,17 @@ module.exports = class GeolocationService {
         if (!ipAddress || (!IPV4_REGEX.test(ipAddress) && !IPV6_REGEX.test(ipAddress))) {
             return;
         }
+
+        const gotOpts = {
+            timeout: 500
+        };
+
+        if (process.env.NODE_ENV?.startsWith('test')) {
+            gotOpts.retry = 0;
+        }
+
         const geojsUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ipAddress)}.json`;
-        const response = await got(geojsUrl, {timeout: 500}).json();
+        const response = await got(geojsUrl, gotOpts).json();
         return response;
     }
 };

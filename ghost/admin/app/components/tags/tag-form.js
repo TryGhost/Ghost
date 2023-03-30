@@ -71,6 +71,21 @@ export default class TagForm extends Component {
         return seoURL;
     }
 
+    get tagURL() {
+        const blogUrl = this.config.blogUrl;
+        const tagSlug = this.args.tag.slug || '';
+
+        let tagURL = this.args.tag.canonicalUrl || `${blogUrl}/tag/${tagSlug}`;
+
+        // only append a slash to the URL if the slug exists
+
+        if (!tagURL.endsWith('/')) {
+            tagURL += '/';
+        }
+
+        return tagURL;
+    }
+
     get twitterTitle() {
         return this.args.tag.twitterTitle || this.seoTitle;
     }

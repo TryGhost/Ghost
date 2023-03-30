@@ -28,15 +28,13 @@ const GA_FEATURES = [
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'activitypub',
-    'webmentions',
-    'milestoneEmails'
+    'webmentions'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
     'lexicalEditor',
     'websockets',
-    'webmentionEmails',
     'stripeAutomaticTax',
     'makingItRain'
 ];

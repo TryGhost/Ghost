@@ -13,7 +13,7 @@
                 </div>
             {{/if}}
             {{#if this.showHeader}}
-                <div class={{if this.showHeaderTitle "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}}>
+                <div class={{if (or (not @newsletter.showPostTitleSection) this.showHeaderTitle) "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}}>
                     {{#if (and this.settings.icon @newsletter.showHeaderIcon)}}
                         <img src={{this.settings.icon}} alt="" role="presentation" />
                     {{/if}}
@@ -36,7 +36,7 @@
                             {{/if}}
                         </p>
                         <p>
-                            <a href="javascript:" class="gh-members-emailpreview-view-online">View in browser</a>
+                            <a href="javascript:">View in browser</a>
                         </p>
                     </div>
                 </div>
@@ -52,8 +52,7 @@
             </div>
 
             {{#if (or (and @newsletter.feedbackEnabled (feature "audienceFeedback")) this.showCommentCta)}}
-                <div class="gh-members-emailpreview-feedback gh-members-emailpreview-content">
-
+                <div class="gh-members-emailpreview-feedback">
                     <div class="gh-members-emailpreview-feedback-buttons-group">
                         {{#if (and @newsletter.feedbackEnabled (feature "audienceFeedback"))}}
                             <Modals::Newsletters::Components::FeedbackButton
@@ -70,6 +69,39 @@
                                 @text="Comment"
                                 @icon="comment" />
                         {{/if}}
+                    </div>
+                </div>
+            {{/if}}
+
+            {{#if @newsletter.showLatestPosts}}
+                <div class="gh-members-emailpreview-latest-posts">
+                    <h3 class="pb2">Keep reading</h3>
+                    <Modals::Newsletters::Components::LatestPost
+                        @imgPath="assets/img/latest-posts-1.png"
+                        @postTitle="The three latest posts published on your site"
+                        @postExcerpt="Posts sent as an email only will never be shown here." />
+                    <Modals::Newsletters::Components::LatestPost
+                        @imgPath="assets/img/latest-posts-2.png"
+                        @postTitle="Displayed at the bottom of each newsletter"
+                        @postExcerpt="Giving your readers one more place to discover your stories." />
+                    <Modals::Newsletters::Components::LatestPost
+                        @imgPath="assets/img/latest-posts-3.png"
+                        @postTitle="To keep your work front and center"
+                        @postExcerpt="Making sure that your audience stays engaged." />
+                </div>
+            {{/if}}
+
+            {{#if @newsletter.showSubscriptionDetails}}
+                <div class="gh-members-emailpreview-subscription-details">
+                    <h4 class="pb2">Subscription details</h4>
+                    <p class="pb4">You are receiving this because you are a <strong>paid subscriber</strong> to The Local Host. Your subscription will renew on {{this.renewDateString}}.</p>
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <p>Name: Jamie Larson</p>
+                            <p>Email: jamie@example.com</p>
+                            <p>Member since: {{this.todayString}}</p>
+                        </div>
+                        <a href="#" class="gh-members-emailpreview-subscription-link">Manage subscription &rarr;</a>
                     </div>
                 </div>
             {{/if}}

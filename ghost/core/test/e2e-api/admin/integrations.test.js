@@ -4,6 +4,8 @@ const supertest = require('supertest');
 const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyEtag, anyErrorId, anyContentVersion} = matchers;
 
 describe('Integrations API', function () {
     let request;
@@ -23,7 +25,7 @@ describe('Integrations API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.equal(res.body.integrations.length, 5);
+        should.equal(res.body.integrations.length, 6);
 
         // there is no enforced order for integrations which makes order different on SQLite and MySQL
         const zapierIntegration = _.find(res.body.integrations, {name: 'Zapier'}); // from migrations
@@ -34,6 +36,9 @@ describe('Integrations API', function () {
 
         const exploreIntegration = _.find(res.body.integrations, {name: 'Test Core Integration'}); // from fixtures
         should.exist(exploreIntegration);
+
+        const selfServeMigrationIntegration = _.find(res.body.integrations, {name: 'Self-Serve Migration Integration'}); // from fixtures
+        should.exist(selfServeMigrationIntegration);
     });
 
     it('Can not read internal integration', async function () {
@@ -174,6 +179,17 @@ describe('Integrations API', function () {
 
         body.integrations.forEach((integration) => {
             should.exist(integration.api_keys);
+            if (integration.api_keys.length) {
+                integration.api_keys.forEach((apiKey) => {
+                    should.exist(apiKey.secret);
+
+                    if (apiKey.type === 'content') {
+                        should.equal(apiKey.secret.split(':').length, 1, `${integration.name} api key secret should have correct key format without ":"`);
+                    } else if (apiKey.type === 'admin') {
+                        should.equal(apiKey.secret.split(':').length, 2, `${integration.name} api key secret should have correct key format with ":"`);
+                    }
+                });
+            }
         });
     });
 
@@ -346,5 +362,32 @@ describe('Integrations API', function () {
             .expect(404);
 
         editRes.body.errors[0].context.should.eql('Integration not found.');
+    });
+
+    describe('As Administrator', function () {
+        let agent;
+
+        before(async function () {
+            agent = await agentProvider.getAdminAPIAgent();
+            await fixtureManager.init('users', 'integrations');
+            await agent.loginAsContributor();
+        });
+
+        it('Can\'t see Self-Serve or any other integration', async function () {
+            await agent
+                .get('integrations')
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .expectStatus(403);
+        });
     });
 });

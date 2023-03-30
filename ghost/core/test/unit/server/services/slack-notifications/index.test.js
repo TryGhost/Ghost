@@ -1,4 +1,4 @@
-const {mockManager, configUtils} = require('../../../../utils/e2e-framework');
+const {configUtils} = require('../../../../utils/e2e-framework');
 const assert = require('assert');
 const nock = require('nock');
 const DomainEvents = require('@tryghost/domain-events');
@@ -11,8 +11,6 @@ describe('Slack Notifications Service', function () {
     beforeEach(function () {
         configUtils.set('hostSettings', {milestones: {enabled: true, url: 'https://testhooks.slack.com/'}});
 
-        mockManager.mockLabsEnabled('milestoneEmails');
-
         scope = nock('https://testhooks.slack.com/')
             .post('/')
             .reply(200, {ok: true});
@@ -21,7 +19,6 @@ describe('Slack Notifications Service', function () {
     afterEach(async function () {
         nock.cleanAll();
         await configUtils.restore();
-        mockManager.restore();
     });
 
     it('Can send a milestone created event', async function () {

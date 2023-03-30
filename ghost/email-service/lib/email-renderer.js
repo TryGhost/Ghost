@@ -11,7 +11,7 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     subscriptionStatus: {
-        free: 'You are currently subscribed to the free plan.',
+        free: '',
         expired: 'Your subscription has expired.',
         canceled: 'Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.',
         active: 'Your subscription will renew on {date}.',
@@ -20,6 +20,15 @@ const messages = {
         complimentaryInfinite: ''
     }
 };
+
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 function formatDateLong(date, timezone) {
     return DateTime.fromJSDate(date).setZone(timezone).setLocale('en-gb').toLocaleString({
@@ -108,7 +117,7 @@ class EmailRenderer {
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
-     * @param {{getImageSizeFromUrl(url: string): Promise<{width: number}>}} dependencies.imageSize
+     * @param {{getImageSizeFromUrl(url: string): Promise<{width: number, height: number}>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
@@ -314,7 +323,7 @@ class EmailRenderer {
 
         // Juice HTML (inline CSS)
         const juice = require('juice');
-        html = juice(html, {inlinePseudoElements: true});
+        html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
         const cheerio = require('cheerio');
@@ -403,6 +412,29 @@ class EmailRenderer {
         url.hash = '#/portal/account';
 
         return url.href;
+    }
+
+    /**
+     * Returns whether a paid member is trialing a subscription
+     */
+    isMemberTrialing(member) {
+        // Do we have an active subscription?
+        if (member.status === 'paid') {
+            let activeSubscription = member.subscriptions.find((subscription) => {
+                return subscription.status === 'trialing';
+            });
+
+            if (!activeSubscription) {
+                return false;
+            }
+
+            // Translate to a human readable string
+            if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -504,6 +536,12 @@ class EmailRenderer {
                 }
             },
             {
+                id: 'name_class',
+                getValue: (member) => {
+                    return member.name ? '' : 'hidden';
+                }
+            },
+            {
                 id: 'email',
                 getValue: (member) => {
                     return member.email;
@@ -521,6 +559,9 @@ class EmailRenderer {
                 getValue: (member) => {
                     if (member.status === 'comped') {
                         return 'complimentary';
+                    }
+                    if (this.isMemberTrialing(member)) {
+                        return 'trialing';
                     }
                     return member.status;
                 }
@@ -579,9 +620,6 @@ class EmailRenderer {
     }
 
     async renderTemplate(data) {
-        if (this.#renderTemplate) {
-            return this.#renderTemplate(data);
-        }
         this.#handlebars = require('handlebars');
 
         // Helpers
@@ -630,8 +668,13 @@ class EmailRenderer {
         });
 
         // Partials
-        const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
-        this.#handlebars.registerPartial('styles', cssPartialSource);
+        if (this.#labs.isSet('makingItRain')) {
+            const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
+            this.#handlebars.registerPartial('styles', cssPartialSource);
+        } else {
+            const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles-old.hbs`), 'utf8');
+            this.#handlebars.registerPartial('styles', cssPartialSource);
+        }
 
         const paywallPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `paywall.hbs`), 'utf8');
         this.#handlebars.registerPartial('paywall', paywallPartial);
@@ -646,8 +689,13 @@ class EmailRenderer {
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
 
         // Actual template
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
-        this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+        if (this.#labs.isSet('makingItRain')) {
+            const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
+            this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+        } else {
+            const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template-old.hbs`), 'utf8');
+            this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+        }
         return this.#renderTemplate(data);
     }
 
@@ -670,6 +718,94 @@ class EmailRenderer {
         }
     }
 
+    truncateText(text, maxLength) {
+        if (text && text.length > maxLength) {
+            return text.substring(0, maxLength - 1).trim() + '…';
+        } else {
+            return text ?? '';
+        }
+    }
+
+    /**
+     *
+     * @param {*} text
+     * @param {number} maxLength
+     * @param {number} maxLengthMobile should be larger than maxLength
+     * @returns
+     */
+    truncateHtml(text, maxLength, maxLengthMobile) {
+        if (!maxLengthMobile || maxLength >= maxLengthMobile) {
+            return escapeHtml(this.truncateText(text, maxLength));
+        }
+        if (text && text.length > maxLength) {
+            if (text.length <= maxLengthMobile) {
+                return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '<span class="hide-mobile">…</span>';
+            }
+            return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '…';
+        } else {
+            return escapeHtml(text ?? '');
+        }
+    }
+
+    #getBackgroundColor(newsletter) {
+        /** @type {'light' | 'dark' | string | null} */
+        const value = newsletter.get('background_color');
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        if (value === 'dark') {
+            return '#15212a';
+        }
+
+        // value === dark, value === null, value is not valid hex
+        return '#ffffff';
+    }
+
+    #getBorderColor(newsletter, accentColor) {
+        /** @type {'transparent' | 'accent' | 'dark' | string | null} */
+        const value = newsletter.get('border_color');
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        if (value === 'dark') {
+            return '#15212a';
+        }
+
+        if (value === 'accent') {
+            return accentColor;
+        }
+
+        // value === 'transparent', value === null, value is not valid hex
+        return null;
+    }
+
+    #getTitleColor(newsletter, accentColor) {
+        /** @type {'accent' | 'auto' | string | null} */
+        const value = newsletter.get('title_color');
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return accentColor;
+        }
+
+        // value === 'auto', value === null, value is not valid hex
+        const backgroundColor = this.#getBackgroundColor(newsletter);
+        return textColorForBackgroundColor(backgroundColor).hex();
+    }
+
     /**
      * @private
      */
@@ -685,8 +821,17 @@ class EmailRenderer {
             accentColor = '#15212A';
         }
 
+        const backgroundColor = this.#getBackgroundColor(newsletter);
+        const backgroundIsDark = textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
+        const borderColor = this.#getBorderColor(newsletter, accentColor);
+        const secondaryBorderColor = textColorForBackgroundColor(backgroundColor).alpha(0.12).toString();
+        const titleColor = this.#getTitleColor(newsletter, accentColor);
+        const textColor = textColorForBackgroundColor(backgroundColor).hex();
+        const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
+        const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
+
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
-        const {href: postFeatureImage, width: postFeatureImageWidth} = await this.limitImageWidth(post.get('feature_image'));
+        const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
 
         const timezone = this.#settingsCache.get('timezone');
         const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
@@ -730,28 +875,33 @@ class EmailRenderer {
 
         const latestPosts = [];
         let latestPostsHasImages = false;
-        if (newsletter.get('show_latest_posts') && this.#labs.isSet('makingItRain')) {
+        if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
             const {data} = await this.#models.Post.findPage({
-                filter: 'status:published',
+                filter: 'status:published+id:-' + post.id,
                 order: 'published_at DESC',
                 limit: 3
             });
 
             for (const latestPost of data) {
                 // Please also adjust email-latest-posts-image if you make changes to the image width (100 x 2 = 200 -> should be in email-latest-posts-image)
-                const {href: featureImage, width: featureImageWidth} = await this.limitImageWidth(latestPost.get('feature_image'), 100);
+                const {href: featureImage, width: featureImageWidth, height: featureImageHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 100, 100);
+                const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
                 latestPosts.push({
-                    title: latestPost.get('title'),
-                    publishedAt: (latestPost.get('published_at') ? DateTime.fromJSDate(latestPost.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    }),
+                    title: this.truncateHtml(latestPost.get('title'), featureImage ? 85 : 105, 105),
                     url: this.#getPostUrl(latestPost),
-                    featureImage,
-                    featureImageWidth
+                    featureImage: featureImage ? {
+                        src: featureImage,
+                        width: featureImageWidth,
+                        height: featureImageHeight
+                    } : null,
+                    featureImageMobile: featureImageMobile ? {
+                        src: featureImageMobile,
+                        width: featureImageMobileWidth,
+                        height: featureImageMobileHeight
+                    } : null,
+                    excerpt: this.truncateHtml(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), featureImage ? 60 : 70, 105)
                 });
 
                 if (featureImage) {
@@ -780,6 +930,7 @@ class EmailRenderer {
                 publishedAt,
                 feature_image: postFeatureImage,
                 feature_image_width: postFeatureImageWidth,
+                feature_image_height: postFeatureImageHeight,
                 feature_image_alt: post.related('posts_meta')?.get('feature_image_alt'),
                 feature_image_caption: post.related('posts_meta')?.get('feature_image_caption')
             },
@@ -788,18 +939,24 @@ class EmailRenderer {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
-                showSubscriptionDetails: newsletter.get('show_subscription_details') && this.#labs.isSet('makingItRain')
+                showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
             latestPosts,
             latestPostsHasImages,
-
-            labs: this.#settingsCache.get('labs'),
 
             //CSS
             accentColor: accentColor, // default to #15212A
             adjustedAccentColor: adjustedAccentColor || '#3498db', // default to #3498db
             adjustedAccentContrastColor: adjustedAccentContrastColor || '#ffffff', // default to #ffffff
             showBadge: newsletter.get('show_badge'),
+            backgroundColor: backgroundColor,
+            backgroundIsDark: backgroundIsDark,
+            borderColor: borderColor,
+            secondaryBorderColor: secondaryBorderColor,
+            titleColor: titleColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+            linkColor: linkColor,
 
             headerImage,
             headerImageWidth,
@@ -838,44 +995,66 @@ class EmailRenderer {
     /**
      * @private
      * Sets and limits the width of an image + returns the width
-     * @returns {Promise<{href: string, width: number}>}
+     * @returns {Promise<{href: string, width: number, height: number | null}>}
      */
-    async limitImageWidth(href, visibleWidth = 600) {
+    async limitImageWidth(href, visibleWidth = 600, visibleHeight = null) {
         if (!href) {
             return {
                 href,
-                width: 0
+                width: 0,
+                height: null
             };
         }
         if (isUnsplashImage(href)) {
             // Unsplash images have a minimum size so assuming 1200px is safe
             const unsplashUrl = new URL(href);
+            unsplashUrl.searchParams.delete('w');
+            unsplashUrl.searchParams.delete('h');
+
             unsplashUrl.searchParams.set('w', (visibleWidth * 2).toFixed(0));
+
+            if (visibleHeight) {
+                unsplashUrl.searchParams.set('h', (visibleHeight * 2).toFixed(0));
+                unsplashUrl.searchParams.set('fit', 'crop');
+            }
 
             return {
                 href: unsplashUrl.href,
-                width: visibleWidth
+                width: visibleWidth,
+                height: visibleHeight
             };
         } else {
             try {
                 const size = await this.#imageSize.getImageSizeFromUrl(href);
 
                 if (size.width >= visibleWidth) {
+                    if (!visibleHeight) {
+                        // Keep aspect ratio
+                        size.height = Math.round(size.height * (visibleWidth / size.width));
+                    }
+
                     // keep original image, just set a fixed width
                     size.width = visibleWidth;
+                }
+
+                if (visibleHeight && size.height >= visibleHeight) {
+                    // keep original image, just set a fixed width
+                    size.height = visibleHeight;
                 }
 
                 if (this.#storageUtils.isLocalImage(href)) {
                     // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                     return {
-                        href: href.replace(/\/content\/images\//, '/content/images/size/w' + (visibleWidth * 2) + '/'),
-                        width: size.width
+                        href: href.replace(/\/content\/images\//, '/content/images/size/w' + (visibleWidth * 2) + (visibleHeight ? 'h' + (visibleHeight * 2) : '') + '/'),
+                        width: size.width,
+                        height: size.height
                     };
                 }
 
                 return {
                     href,
-                    width: size.width
+                    width: size.width,
+                    height: size.height
                 };
             } catch (err) {
                 // log and proceed. Using original header image without fixed width isn't fatal.
@@ -885,7 +1064,8 @@ class EmailRenderer {
 
         return {
             href,
-            width: 0
+            width: 0,
+            height: null
         };
     }
 }

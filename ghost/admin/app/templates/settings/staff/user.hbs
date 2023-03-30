@@ -265,7 +265,7 @@
                                     </div>
                                 </div>
                                 {{#if this.user.isAdmin}}
-                                {{#if (and (feature 'webmentions') (feature 'webmentionEmails')) }}
+                                {{#if (feature 'webmentions')}}
                                     <div class="user-setting-toggle">
                                         <div>
                                             <label for="user-email">Mentions</label>
@@ -346,7 +346,6 @@
                                         </div>
                                     </div>
                                     {{/if}}
-                                    {{#if (feature 'milestoneEmails') }}
                                     <div class="user-setting-toggle">
                                         <div>
                                             <label for="user-email">Milestones</label>
@@ -366,7 +365,6 @@
                                             </label>
                                         </div>
                                     </div>
-                                {{/if}}
                                 {{/if}}
                                 {{/if}}
                             </GhFormGroup>

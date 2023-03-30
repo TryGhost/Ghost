@@ -19,6 +19,7 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 coverage-e2e
+coverage_*
 
 # nyc test coverage
 .nyc_output
@@ -88,7 +89,7 @@ typings/
 /ghost/core/content/public/*
 /ghost/core/content/adapters/storage/**/*
 /ghost/core/content/adapters/scheduling/**/*
-!/ghost/core/content/themes/casper
+/ghost/core/content/themes/casper
 !/ghost/core/README.md
 !/ghost/core/content/**/README.md
 

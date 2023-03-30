@@ -45,14 +45,14 @@
                                 {{#if this.totalPosts}}
                                     <button class="mr2" type="button" {{on "click" this.exportData}} data-test-button="export-posts">
                                         {{#if this.showingAll}}
-                                            <span>Export all posts</span>
+                                            <span>Export post analytics</span>
                                         {{else}}
-                                            <span>Export selected posts ({{this.totalPosts}})</span>
+                                            <span>Export post analytics ({{this.totalPosts}})</span>
                                         {{/if}}
                                     </button>
                                 {{else}}
                                     <button class="mr2" disabled="true" type="button" data-test-button="export-posts">
-                                        <span>Export selected posts (0)</span>
+                                        <span>Export post analytics (0)</span>
                                     </button>
                                 {{/if}}
                             </li>

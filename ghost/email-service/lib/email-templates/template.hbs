@@ -78,10 +78,10 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td>
+                                                <td style="width: 100%">
                                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 48px;">
                                                         <tr>
-                                                            <td class="{{classes.meta}} author-date" align="left">
+                                                            <td height="20" class="{{classes.meta}}" style="padding: 0;">
                                                                 By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
                                                                 {{#if newsletter.showCommentCta}}
                                                                     <a href="{{post.commentUrl}}" class="comment-link" valign="middle">
@@ -89,7 +89,12 @@
                                                                     </a>
                                                                 {{/if}}
                                                             </td>
-                                                            <td class="{{classes.meta}} view-online" align="right">
+                                                            <td class="{{classes.meta}} view-online desktop">
+                                                                <a href="{{post.url}}" class="view-online-link">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="{{classes.meta}} view-online-mobile">
+                                                            <td height="20" class="view-online">
                                                                 <a href="{{post.url}}" class="view-online-link">View in browser</a>
                                                             </td>
                                                         </tr>
@@ -121,7 +126,7 @@
                                             {{/if}}
                                         {{/if}}
                                         <tr class="post-content-row">
-                                            <td class="{{classes.body}}{{#if (and (not (or feedbackButtons newsletter.showCommentCta)) newsletter.showSubscriptionDetails)}} no-border{{/if}}">
+                                            <td class="{{classes.body}}">
                                                 <!-- POST CONTENT START -->
                                                 {{{html}}}
                                                 <!-- POST CONTENT END -->
@@ -139,7 +144,7 @@
 
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
-                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 0 24px;{{#unless newsletter.showSubscriptionDetails}} border-bottom: 1px solid #e5eff5;{{/unless}}" align="center">
+                                    <td dir="ltr" width="100%" style="background-color: {{backgroundColor}}; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid {{secondaryBorderColor}};" align="center">
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
@@ -151,7 +156,7 @@
                                                 {{/if}}
                                             </tr>
                                         </table>
-                                        <table class="feedback-buttons-mobile" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <table class="feedback-buttons-mobile" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
                                                     {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" }}
@@ -168,7 +173,8 @@
 
                              {{#if latestPosts.length}}
                                 <tr>
-                                    <td>
+                                    <td style="padding: 24px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid {{secondaryBorderColor}};">
+                                        <h3 class="latest-posts-header">Keep reading</h3>
                                         {{> latestPosts}}
                                     </td>
                                 </tr>
@@ -179,14 +185,13 @@
                                     <td class="subscription-box">
                                         <h3>Subscription details</h3>
                                         <p style="margin-bottom: 16px;">
-                                            <span>You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {{site.title}}.</span>
-                                            <span data-gh-segment="status:-free">%%{status_text}%%</span>
+                                            <span>You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {{site.title}}.</span> %%{status_text}%%
                                         </p>
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
                                                 <td class="subscription-details">
-                                                    <p>Name: %%{name, "not provided"}%%</p>
-                                                    <p>Email: <a href="mailto:%%{email}%%">%%{email}%%</a></p>
+                                                    <p class="%%{name_class}%%">Name: %%{name, "not provided"}%%</p>
+                                                    <p>Email: <a href="#">%%{email}%%</a></p>
                                                     <p>Member since: %%{created_at}%%</p>
                                                 </td>
                                                 <td align="right" valign="bottom" class="manage-subscription">

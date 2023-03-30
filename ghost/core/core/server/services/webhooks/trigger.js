@@ -31,7 +31,7 @@ class WebhookTrigger {
                 last_triggered_at: Date.now(),
                 last_triggered_status: data.statusCode,
                 last_triggered_error: data.error || null
-            }, {id: webhook.id})
+            }, {id: webhook.id, autoRefresh: false})
             .catch(() => {
                 logging.warn(`Unable to update "last_triggered" for webhook: ${webhook.id}`);
             });
@@ -102,7 +102,7 @@ class WebhookTrigger {
                 body: reqPayload,
                 headers,
                 timeout: 2 * 1000,
-                retry: 5
+                retry: process.env.NODE_ENV?.startsWith('test') ? 0 : 5
             };
 
             logging.info(`Triggering webhook for "${webhook.get('event')}" with url "${url}"`);
