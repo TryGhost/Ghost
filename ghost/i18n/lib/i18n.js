@@ -4,6 +4,7 @@ const SUPPORTED_LOCALES = [
     'de',
     'en',
     'fr',
+    'mn',
     'nl',
     'hu'
 ];
