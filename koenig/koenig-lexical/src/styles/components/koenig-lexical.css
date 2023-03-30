@@ -55,3 +55,23 @@
 .dark .koenig-lexical-caption p {
     color: var(--grey-500);
 }
+
+em-emoji-picker {
+    --font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
+    --border-radius: 5px;
+    --font-size: 13px;
+    --rgb-accent: 103, 204, 88;
+    --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+  }
+
+  em-emoji-picker #nav button[aria-selected] svg {
+    fill: red;
+  }
+
+  em-emoji-picker .search input[type="search"] {
+    border-radius: 5px;
+  }
+
+  .search input, .search button {
+    font-size: 20px !important;
+  }
