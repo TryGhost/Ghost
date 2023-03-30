@@ -61,7 +61,7 @@ module.exports = {
 
         if (options.target === 'email') {
             html = `
-            <table cellspacing="0" cellpadding="4" border="0" style="border: 1px solid #E9E9E9; border-radius: 3px; margin: 0 0 1.5em 0;" width="100%">
+            <table cellspacing="0" cellpadding="4" border="0" class="kg-file-card" width="100%">
                 <tr>
                     <td>
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -69,19 +69,19 @@ module.exports = {
                                 <td valign="middle" style="vertical-align: middle;">
                                     ${payload.fileTitle ? `
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                        <a href="${escapeHtml(postUrl)}" style="display: block; font-size: 17px; font-weight: bold; line-height: 1.3em; width: 100%; padding-left: 12px; padding-top: 8px; color: #121212; text-decoration: none;">${escapeHtml(payload.fileTitle)}</a>
+                                        <a href="${escapeHtml(postUrl)}" class="kg-file-title">${escapeHtml(payload.fileTitle)}</a>
                                     </td></tr></table>
                                     ` : ``}
                                     ${payload.fileCaption ? `
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                        <a href="${escapeHtml(postUrl)}" style="display: block; font-size: 15px; line-height: 1.4em; width: 100%; padding-left: 12px; padding-top: 2px; color: #999999; text-decoration: none;">${escapeHtml(payload.fileCaption)}</a>
+                                        <a href="${escapeHtml(postUrl)}" class="kg-file-description">${escapeHtml(payload.fileCaption)}</a>
                                     </td></tr></table>
                                     ` : ``}
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                        <a href="${escapeHtml(postUrl)}" style="display: block; font-size: 13px; line-height: 1.4em; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; color: #999999; text-decoration: none;"><span style="font-weight: 500; color: #222;">${escapeHtml(payload.fileName)}</span> &bull; ${bytesToSize(payload.fileSize)}</a>
+                                        <a href="${escapeHtml(postUrl)}" class="kg-file-meta"><span class="kg-file-name">${escapeHtml(payload.fileName)}</span> &bull; ${bytesToSize(payload.fileSize)}</a>
                                     </td></tr></table>
                                 </td>
-                                <td width="80" valign="middle" style="position: relative; vertical-align: middle; text-align: center; background: #F7F7F7; border-radius: 2px;">
+                                <td width="80" valign="middle" class="kg-file-thumbnail">
                                     <a href="${escapeHtml(postUrl)}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
                                     <img src="https://static.ghost.org/v4.0.0/images/download-icon.png" style="${escapeHtml(emailStyles.icon)}">
                                 </td>

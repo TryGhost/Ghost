@@ -92,7 +92,7 @@ module.exports = {
 
             if (options.target === 'email') {
                 html = `
-                <table cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #E9E9E9; border-radius: 12px; width: auto; margin: 0 auto; width: 100%">
+                <table cellspacing="0" cellpadding="0" border="0" class="kg-twitter-card">
                     <tr>
                         <td>
                             <table cellspacing="0" cellpadding="0" border="0" width="100%">

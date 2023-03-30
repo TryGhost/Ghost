@@ -54,7 +54,7 @@ module.exports = {
         `;
 
         const emailTemplate = hbs`
-        <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;">
+        <table cellspacing="0" cellpadding="0" border="0" class="kg-product-card">
             {{#if productImageEnabled}}
             <tr>
                 <td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
@@ -69,8 +69,8 @@ module.exports = {
             </tr>
             {{#if productRatingEnabled}}
             <tr style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
-                <td valign="top">
-                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-{{productStarRating}}.png" style="border: none; width: 96px;" border="0">
+                <td valign="top" class="kg-product-rating">
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-{{productStarRating}}.png" border="0">
                 </td>
             </tr>
             {{/if}}

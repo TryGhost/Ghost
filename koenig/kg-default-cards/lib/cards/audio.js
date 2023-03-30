@@ -86,7 +86,7 @@ module.exports = {
         const postUrl = options.postUrl || 'https://ghost.org';
 
         const emailTemplate = hbs`
-            <table cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #E9E9E9; border-radius: 3px; width: auto; margin: 0 auto 1.5em; width: 100%;">
+            <table cellspacing="0" cellpadding="0" border="0" class="kg-audio-card">
                 <tr>
                     <td>
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -105,7 +105,7 @@ module.exports = {
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                         <tr>
                                             <td>
-                                                <a href="{{postUrl}}" style="display: block; font-size: 16px; font-weight: 600; line-height: 18px; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; text-decoration: none; color: #121212;">{{title}}</a>
+                                                <a href="{{postUrl}}" class="kg-audio-title">{{title}}</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -113,10 +113,10 @@ module.exports = {
                                                 <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                                     <tr>
                                                         <td width="24" style="vertical-align: middle;" valign="middle">
-                                                            <a href="{{postUrl}}" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
+                                                            <a href="{{postUrl}}" class="kg-audio-play-button"></a>
                                                         </td>
                                                         <td style="vertical-align: middle;" valign="middle">
-                                                            <a href="{{postUrl}}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">{{duration}}<span style="color: #999999"> • Click to play audio</span></a>
+                                                            <a href="{{postUrl}}" class="kg-audio-duration">{{duration}}<span class="kg-audio-link"> • Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </table>
