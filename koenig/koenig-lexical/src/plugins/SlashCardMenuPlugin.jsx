@@ -1,3 +1,4 @@
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$createParagraphNode, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
 import {CardMenu} from '../components/ui/CardMenu';
@@ -17,6 +18,7 @@ function useSlashCardMenu(editor) {
     const [selectedItemIndex, setSelectedItemIndex] = React.useState(0);
     const cachedRange = React.useRef(null);
     const containerRef = React.useRef(null);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
 
     function getTopPosition(elem) {
         const elemRect = elem.getBoundingClientRect();
@@ -289,9 +291,9 @@ function useSlashCardMenu(editor) {
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes, {insert, query}));
+        setCardMenu(buildCardMenu(cardNodes, {insert, query, config: cardConfig}));
         setSelectedItemIndex(0);
-    }, [editor, query, insert, setCardMenu, setSelectedItemIndex]);
+    }, [editor, query, insert, setCardMenu, setSelectedItemIndex, cardConfig]);
 
     if (cardMenu.menu?.size === 0) {
         return null;

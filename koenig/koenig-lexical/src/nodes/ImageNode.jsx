@@ -1,8 +1,10 @@
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import React from 'react';
 import {ImageNode as BaseImageNode, INSERT_IMAGE_COMMAND} from '@tryghost/kg-default-nodes';
+import {ReactComponent as GIFIcon} from '../assets/icons/kg-card-type-gif.svg';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
 import {ImageNodeComponent} from './ImageNodeComponent';
+import {OPEN_TENOR_SELECTOR_COMMAND, OPEN_UNSPLASH_SELECTOR_COMMAND} from '../plugins/KoenigSelectorPlugin.jsx';
 import {ReactComponent as UnsplashIcon} from '../assets/icons/kg-card-type-unsplash.svg';
 
 // re-export here so we don't need to import from multiple places throughout the app
@@ -29,13 +31,24 @@ export class ImageNode extends BaseImageNode {
         label: 'Unsplash',
         desc: '/unsplash [search term or url]',
         Icon: UnsplashIcon,
-        insertCommand: INSERT_IMAGE_COMMAND,
+        insertCommand: OPEN_UNSPLASH_SELECTOR_COMMAND,
         insertParams: {
-            triggerFileDialog: false,
-            triggerFileSelector: 'unsplash'
+            triggerFileDialog: false
         },
         matches: ['unsplash', 'uns'],
         queryParams: ['src']
+    },
+    {
+        label: 'GIF',
+        desc: 'Search and embed gifs',
+        Icon: GIFIcon,
+        insertCommand: OPEN_TENOR_SELECTOR_COMMAND,
+        insertParams: {
+            triggerFileDialog: false
+        },
+        matches: ['gif', 'giphy', 'tenor'],
+        queryParams: ['src'],
+        isHidden: ({config}) => !config?.tenor
     }];
 
     static uploadType = 'image';
@@ -43,7 +56,7 @@ export class ImageNode extends BaseImageNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        const {previewSrc, triggerFileDialog, initialFile} = dataset;
+        const {previewSrc, triggerFileDialog, initialFile, selector, isImageHidden} = dataset;
 
         this.__previewSrc = previewSrc || '';
         // don't trigger the file dialog when rendering if we've already been given a url
@@ -51,6 +64,9 @@ export class ImageNode extends BaseImageNode {
 
         // passed via INSERT_MEDIA_COMMAND on drag+drop or paste
         this.__initialFile = initialFile || null;
+
+        this.__selector = selector;
+        this.__isImageHidden = isImageHidden;
     }
 
     getIcon() {
@@ -86,18 +102,26 @@ export class ImageNode extends BaseImageNode {
     }
 
     decorate() {
+        const Selector = this.__selector;
+
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
-                <ImageNodeComponent
-                    altText={this.__altText}
-                    caption={this.__caption}
-                    href={this.__href}
-                    initialFile={this.__initialFile}
-                    nodeKey={this.getKey()}
-                    previewSrc={this.getPreviewSrc()}
-                    src={this.__src}
-                    triggerFileDialog={this.__triggerFileDialog}
-                />
+                {this.__selector && <Selector nodeKey={this.getKey()} />}
+
+                {
+                    !this.__isImageHidden && (
+                        <ImageNodeComponent
+                            altText={this.__altText}
+                            caption={this.__caption}
+                            href={this.__href}
+                            initialFile={this.__initialFile}
+                            nodeKey={this.getKey()}
+                            previewSrc={this.getPreviewSrc()}
+                            src={this.__src}
+                            triggerFileDialog={this.__triggerFileDialog}
+                        />
+                    )
+                }
             </KoenigCardWrapper>
         );
     }

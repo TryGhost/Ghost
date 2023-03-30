@@ -1,4 +1,4 @@
-export function buildCardMenu(nodes, {query} = {}) {
+export function buildCardMenu(nodes, {query, config} = {}) {
     const menu = new Map();
 
     query = query?.toLowerCase();
@@ -6,6 +6,10 @@ export function buildCardMenu(nodes, {query} = {}) {
     let maxItemIndex = -1;
 
     function addMenuItem(item) {
+        if (!!item.isHidden && item.isHidden?.({config})) {
+            return;
+        }
+
         if (query && (!item.matches || !item.matches.find(m => m.startsWith(query)))) {
             return;
         }

@@ -18,6 +18,7 @@ import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
 import {createWebsocketProvider} from './multiplayer';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
+import {tenorConfig} from './utils/tenorConfig';
 import {useLocation} from 'react-router-dom';
 import {useSearchParams} from 'react-router-dom';
 import {useState} from 'react';
@@ -26,7 +27,8 @@ const skipCollaborationInit =
     window.parent !== null && window.parent.frames.right === window;
 
 const cardConfig = {
-    unsplash: {defaultHeaders: defaultUnsplashHeaders}
+    unsplash: {defaultHeaders: defaultUnsplashHeaders},
+    tenor: tenorConfig
 };
 
 function getDefaultContent({editorType}) {

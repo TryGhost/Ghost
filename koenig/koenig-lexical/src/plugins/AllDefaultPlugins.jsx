@@ -1,6 +1,7 @@
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import HtmlPlugin from './HtmlPlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
+import KoenigSelectorPlugin from './KoenigSelectorPlugin.jsx';
 import MarkdownPlugin from '../plugins/MarkdownPlugin';
 import React from 'react';
 import {AudioPlugin} from '../plugins/AudioPlugin';
@@ -36,6 +37,7 @@ export const AllDefaultPlugins = () => {
             <ButtonPlugin />
             <TogglePlugin />
             <PaywallPlugin />
+            <KoenigSelectorPlugin />
         </>
     );
 };

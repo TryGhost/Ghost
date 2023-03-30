@@ -1,3 +1,4 @@
+import {isTestEnv} from '../../test/utils/isTestEnv';
 import {useState} from 'react';
 
 export const fileTypes = {
@@ -86,7 +87,7 @@ export function useFileUpload({isMultiplayer = false} = {}) {
 
             let stepDelay = 200;
             // adjust when testing to speed up tests
-            if (import.meta.env.VITE_TEST === 'true') {
+            if (isTestEnv) {
                 stepDelay = 0;
             }
 

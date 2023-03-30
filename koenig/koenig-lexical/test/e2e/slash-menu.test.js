@@ -321,7 +321,7 @@ describe('Slash menu', async () => {
             await page.keyboard.type('Testing');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.type('/callout');
-            await page.waitForSelector('li:first-child > [data-kg-card-menu-item="Callout"]');
+            await page.waitForSelector('[data-kg-card-menu-item="Callout"]');
             await page.keyboard.press('Enter');
             await page.waitForSelector('[data-kg-card="callout"]');
 
@@ -340,7 +340,7 @@ describe('Slash menu', async () => {
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.type('/callout');
-            await page.waitForSelector('li:first-child > [data-kg-card-menu-item="Callout"]');
+            await page.waitForSelector('[data-kg-card-menu-item="Callout"]');
             await page.keyboard.press('Enter');
             await page.waitForSelector('[data-kg-card="callout"]');
 

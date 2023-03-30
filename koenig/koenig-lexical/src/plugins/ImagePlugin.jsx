@@ -1,6 +1,5 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
-import UnsplashPlugin from '../components/ui/UnsplashPlugin';
 import {$createImageNode, INSERT_IMAGE_COMMAND, ImageNode} from '../nodes/ImageNode';
 import {COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW} from 'lexical';
 import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
@@ -12,9 +11,6 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();
     const {fileUploader} = React.useContext(KoenigComposerContext);
-    const [selector, setSelector] = React.useState(null);
-    const [selectedKey, setSelectedKey] = React.useState(null);
-    const [showModal, setShowModal] = React.useState(false);
 
     const imageUploader = fileUploader.useFileUpload('image');
 
@@ -34,15 +30,6 @@ export const ImagePlugin = () => {
                 INSERT_IMAGE_COMMAND,
                 async (dataset) => {
                     const cardNode = $createImageNode(dataset);
-
-                    // TODO: move selector handling to a KoenigSelectorPlugin and attach a command to it,
-                    // e.g. editor.dispatchCommand(OPEN_SELECTOR_COMMAND, {selector: 'unsplash', nodeKey: cardNode.getKey()});
-                    if (dataset?.triggerFileSelector === 'unsplash') {
-                        setSelectedKey(cardNode.getKey());
-                        setShowModal(true);
-                        setSelector('unsplash');
-                    }
-
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
                     return true;
@@ -62,13 +49,6 @@ export const ImagePlugin = () => {
             )
         );
     }, [editor, fileUploader, handleImageUpload]);
-
-    if (showModal && selector) {
-        return (<UnsplashPlugin
-            handleModalClose={setShowModal}
-            nodeKey={selectedKey}
-        />);
-    }
 
     return null;
 };

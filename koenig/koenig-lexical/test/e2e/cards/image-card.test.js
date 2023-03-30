@@ -643,4 +643,342 @@ describe('Image card', async () => {
             <p><br /></p>
         `, {ignoreCardToolbarContents: true});
     });
+
+    test('can insert tenor image', async () => {
+        await mockTenorApi(page);
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+
+        await page.click('button[data-kg-card-menu-item="GIF"]');
+
+        // chose second gif from list
+        await expect(await page.locator('[data-tenor-index="1"]')).toBeVisible();
+        await page.click('[data-tenor-index="1"]');
+
+        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
+                    <figure data-kg-card-width="regular">
+                        <div>
+                            <img
+                                alt=""
+                                src="https://media.tenor.com/ocbMLlwniWQAAAAC/steve-harvey-oh.gif" />
+                        </div>
+                        <figcaption>
+                            <div data-testid="image-caption-editor">
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                            <p><br /></p>
+                                        </div>
+                                    </div>
+                                    <div>Type caption for image (optional)</div>
+                                    <div id="koenig-drag-drop-ghost-container"></div>
+                                </div>
+                            </div>
+                            <button name="alt-toggle-button" type="button">Alt</button>
+                        </figcaption>
+                    </figure>
+                    <div data-kg-card-toolbar="image"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true});
+    });
+
+    test('can insert tenor image with key Tab', async () => {
+        await mockTenorApi(page);
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+
+        await page.click('button[data-kg-card-menu-item="GIF"]');
+
+        // chose third gif from list
+        await expect(await page.locator('[data-tenor-index="2"]')).toBeVisible();
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Enter');
+
+        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
+                    <figure data-kg-card-width="regular">
+                        <div>
+                            <img
+                                alt=""
+                                src="https://media.tenor.com/Sm9aylrzSyMAAAAC/cats-animals.gif" />
+                        </div>
+                        <figcaption>
+                            <div data-testid="image-caption-editor">
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                            <p><br /></p>
+                                        </div>
+                                    </div>
+                                    <div>Type caption for image (optional)</div>
+                                    <div id="koenig-drag-drop-ghost-container"></div>
+                                </div>
+                            </div>
+                            <button name="alt-toggle-button" type="button">Alt</button>
+                        </figcaption>
+                    </figure>
+                    <div data-kg-card-toolbar="image"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true});
+    });
+
+    test('can close tenor selector on Esc', async () => {
+        await mockTenorApi(page);
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+
+        await page.click('button[data-kg-card-menu-item="GIF"]');
+
+        await expect(await page.getByTestId('tenor-selector')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(await page.getByTestId('tenor-selector')).toBeHidden();
+    });
+
+    test('can show tenor error', async () => {
+        await mockTenorApi(page, {status: 400});
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+
+        await page.click('button[data-kg-card-menu-item="GIF"]');
+
+        await expect(await page.getByTestId('tenor-selector-error')).toBeVisible();
+    });
 });
+
+function tenorTestData() {
+    return (
+        {
+            locale: 'en',
+            results: [
+                {
+                    id: '6897265628617702942',
+                    title: '',
+                    media_formats: {
+                        tinygif: {
+                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAAM/cat-funny.gif',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                220,
+                                204
+                            ],
+                            size: 522164
+                        },
+                        gif: {
+                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAAC/cat-funny.gif',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                498,
+                                460
+                            ],
+                            size: 4870544
+                        },
+                        tinygifpreview: {
+                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAAF/cat-funny.png',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                220,
+                                204
+                            ],
+                            size: 21743
+                        },
+                        gifpreview: {
+                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAAe/cat-funny.png',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                640,
+                                592
+                            ],
+                            size: 141384
+                        },
+                        mp4: {
+                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAPo/cat-funny.mp4',
+                            duration: 3.7,
+                            preview: '',
+                            dims: [
+                                640,
+                                592
+                            ],
+                            size: 754491
+                        }
+                    },
+                    created: 1580334888.9161069,
+                    content_description: 'Cat Funny GIF',
+                    itemurl: 'https://tenor.com/view/cat-funny-fall-submit-play-gif-16179688',
+                    url: 'https://tenor.com/bf3eS.gif',
+                    tags: [
+                        'cat',
+                        'funny',
+                        'fall',
+                        'submit',
+                        'play'
+                    ],
+                    flags: [],
+                    hasaudio: false
+                },
+                {
+                    id: '11657229184981764452',
+                    title: '',
+                    media_formats: {
+                        tinygifpreview: {
+                            url: 'https://media.tenor.com/ocbMLlwniWQAAAAF/steve-harvey-oh.png',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                220,
+                                124
+                            ],
+                            size: 11388
+                        },
+                        tinygif: {
+                            url: 'https://media.tenor.com/ocbMLlwniWQAAAAM/steve-harvey-oh.gif',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                220,
+                                124
+                            ],
+                            size: 173121
+                        },
+                        gifpreview: {
+                            url: 'https://media.tenor.com/ocbMLlwniWQAAAAe/steve-harvey-oh.png',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                640,
+                                360
+                            ],
+                            size: 65023
+                        },
+                        gif: {
+                            url: 'https://media.tenor.com/ocbMLlwniWQAAAAC/steve-harvey-oh.gif',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                498,
+                                280
+                            ],
+                            size: 1669457
+                        },
+                        mp4: {
+                            url: 'https://media.tenor.com/ocbMLlwniWQAAAPo/steve-harvey-oh.mp4',
+                            duration: 2.4,
+                            preview: '',
+                            dims: [
+                                640,
+                                360
+                            ],
+                            size: 377541
+                        }
+                    },
+                    created: 1600453059.6729331,
+                    content_description: 'Steve Harvey Oh GIF',
+                    itemurl: 'https://tenor.com/view/steve-harvey-oh-you-crazy-point-stop-gif-18502036',
+                    url: 'https://tenor.com/bpNn6.gif',
+                    tags: [
+                        'Steve Harvey',
+                        'oh',
+                        'You Crazy',
+                        'point',
+                        'stop'
+                    ],
+                    flags: [],
+                    hasaudio: false
+                },
+                {
+                    id: '5363605506377337635',
+                    title: '',
+                    media_formats: {
+                        gif: {
+                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAAC/cats-animals.gif',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                498,
+                                431
+                            ],
+                            size: 1574979
+                        },
+                        gifpreview: {
+                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAAe/cats-animals.png',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                640,
+                                554
+                            ],
+                            size: 153379
+                        },
+                        tinygifpreview: {
+                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAAF/cats-animals.png',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                220,
+                                190
+                            ],
+                            size: 25196
+                        },
+                        tinygif: {
+                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAAM/cats-animals.gif',
+                            duration: 0,
+                            preview: '',
+                            dims: [
+                                220,
+                                190
+                            ],
+                            size: 236117
+                        },
+                        mp4: {
+                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAPo/cats-animals.mp4',
+                            duration: 1.2,
+                            preview: '',
+                            dims: [
+                                640,
+                                554
+                            ],
+                            size: 265062
+                        }
+                    },
+                    created: 1616817775.272332,
+                    content_description: 'Cats Animals GIF',
+                    itemurl: 'https://tenor.com/view/cats-animals-reaction-wow-surprised-gif-20914356',
+                    url: 'https://tenor.com/bzUWu.gif',
+                    tags: [
+                        'cats',
+                        'animals',
+                        'reaction',
+                        'wow',
+                        'surprised'
+                    ],
+                    flags: [],
+                    hasaudio: false
+                }
+            ]
+        }
+    );
+}
+
+const tenorUrl = 'https://tenor.googleapis.com/v2/featured?q=excited&media_filter=minimal&key=xxx&client_key=ghost-editor&contentfilter=off';
+async function mockTenorApi(page, {status} = {status: 200}) {
+    await page.route(tenorUrl, route => route.fulfill({
+        status,
+        body: JSON.stringify(tenorTestData())
+    }));
+}

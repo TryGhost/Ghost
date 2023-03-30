@@ -4,9 +4,10 @@ import UnsplashModal from './UnsplashModal.jsx';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-const UnsplashPlugin = ({nodeKey, handleModalClose}) => {
+const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
+    const [isOpen, setIsOpen] = React.useState(isModalOpen);
 
     const onClose = () => {
         // remove the image node from the editor
@@ -16,7 +17,6 @@ const UnsplashPlugin = ({nodeKey, handleModalClose}) => {
                 node.remove();
             });
         }
-        handleModalClose(false);
     };
 
     const insertImageToNode = async (image) => {
@@ -31,8 +31,12 @@ const UnsplashPlugin = ({nodeKey, handleModalClose}) => {
             nodeSelection.add(node.getKey());
             $setSelection(nodeSelection);
         });
-        handleModalClose(false);
+        setIsOpen(false);
     };
+
+    if (!isOpen) {
+        return null;
+    }
 
     return (
         <UnsplashModal

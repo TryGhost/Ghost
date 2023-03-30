@@ -9,6 +9,7 @@ import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {LinkInput} from '../components/ui/LinkInput';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
+import {isGif} from '../utils/isGif';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -159,14 +160,38 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
                     onFileChange={onFileChange}
                 />
                 <ToolbarMenu>
-                    <ToolbarMenuItem icon="imageRegular" isActive={cardWidth === 'regular' ? true : false} label="Regular" onClick={() => handleImageCardResize('regular')} />
-                    <ToolbarMenuItem icon="imageWide" isActive={cardWidth === 'wide' ? true : false} label="Wide" onClick={() => handleImageCardResize('wide')}/>
-                    <ToolbarMenuItem icon="imageFull" isActive={cardWidth === 'full' ? true : false} label="Full" onClick={() => handleImageCardResize('full')} />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuItem
+                        hide={isGif(src)}
+                        icon="imageRegular"
+                        isActive={cardWidth === 'regular'}
+                        label="Regular"
+                        onClick={() => handleImageCardResize('regular')}
+                    />
+                    <ToolbarMenuItem
+                        hide={isGif(src)}
+                        icon="imageWide"
+                        isActive={cardWidth === 'wide'}
+                        label="Wide"
+                        onClick={() => handleImageCardResize('wide')}
+                    />
+                    <ToolbarMenuItem
+                        hide={isGif(src)}
+                        icon="imageFull"
+                        isActive={cardWidth === 'full'}
+                        label="Full"
+                        onClick={() => handleImageCardResize('full')}
+                    />
+                    <ToolbarMenuSeparator hide={isGif(src)} />
                     <ToolbarMenuItem icon="link" isActive={href === true || false} label="Link" onClick = {() => {
                         setShowLink(true);
                     }} />
-                    <ToolbarMenuItem icon="imageReplace" isActive={false} label="Replace" onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})} />
+                    <ToolbarMenuItem
+                        hide={isGif(src)}
+                        icon="imageReplace"
+                        isActive={false}
+                        label="Replace"
+                        onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})}
+                    />
                     <ToolbarMenuSeparator />
                     <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
                 </ToolbarMenu>

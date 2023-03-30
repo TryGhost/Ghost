@@ -1,3 +1,4 @@
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$getSelection, $isParagraphNode, $isRangeSelection, $setSelection} from 'lexical';
 import {CardMenu} from '../components/ui/CardMenu';
@@ -14,6 +15,7 @@ function usePlusCardMenu(editor) {
     const [cachedRange, setCachedRange] = React.useState(null);
     const [cardMenu, setCardMenu] = React.useState({});
     const containerRef = React.useRef(null);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
 
     function getTopPosition(elem) {
         const elemRect = elem.getBoundingClientRect();
@@ -232,8 +234,8 @@ function usePlusCardMenu(editor) {
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes));
-    }, [editor, setCardMenu]);
+        setCardMenu(buildCardMenu(cardNodes, {config: cardConfig}));
+    }, [cardConfig, editor, setCardMenu]);
 
     const style = {
         top: `${topPosition}px`
