@@ -78,7 +78,7 @@ export default class EditNewsletterPreview extends Component {
         return textColorForBackgroundColor(this.backgroundColor).hex();
     }
     get secondaryTextColor() {
-        return textColorForBackgroundColor(this.backgroundColor).alpha(0.45).toString();
+        return textColorForBackgroundColor(this.backgroundColor).alpha(0.5).toString();
     }
     get linkColor() {
         return this.backgroundIsDark ? '#ffffff' : this.accentColor;
