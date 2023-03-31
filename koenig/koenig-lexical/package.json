@@ -84,8 +84,8 @@
     "@types/react": "18.0.31",
     "@types/react-dom": "18.0.11",
     "@vitejs/plugin-react": "3.1.0",
-    "@vitest/coverage-c8": "0.29.7",
-    "@vitest/ui": "0.29.7",
+    "@vitest/coverage-c8": "0.29.8",
+    "@vitest/ui": "0.29.8",
     "autoprefixer": "10.4.14",
     "babel-loader": "9.1.2",
     "concurrently": "^7.6.0",
@@ -105,6 +105,6 @@
     "typescript": "5.0.3",
     "vite": "^4.2.1",
     "vite-plugin-svgr": "2.4.0",
-    "vitest": "0.29.7"
+    "vitest": "0.29.8"
   }
 }
