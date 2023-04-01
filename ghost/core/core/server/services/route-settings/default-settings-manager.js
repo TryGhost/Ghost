@@ -1,5 +1,4 @@
 const fs = require('fs-extra');
-const Promise = require('bluebird');
 const path = require('path');
 const debug = require('@tryghost/debug')('frontend:services:settings:ensure-settings');
 const tpl = require('@tryghost/tpl');
