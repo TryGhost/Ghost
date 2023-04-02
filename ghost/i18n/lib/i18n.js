@@ -5,10 +5,12 @@ const SUPPORTED_LOCALES = [
     'cs',
     'de',
     'en',
+    'es',
     'fr',
+    'hu',
     'mn',
     'nl',
-    'hu'
+    'pl'
 ];
 
 /**
