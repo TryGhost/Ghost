@@ -7,7 +7,7 @@ import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND} from '../plugins/KoenigBehaviour
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon, openInEditMode = false, children}) => {
+const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}) => {
     const [editor] = useLexicalComposerContext();
     const [cardType, setCardType] = React.useState(null);
     const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
@@ -90,4 +90,4 @@ const KoenigCardWrapperComponent = ({nodeKey, width, wrapperStyle, IndicatorIcon
     );
 };
 
-export default KoenigCardWrapperComponent;
+export default KoenigCardWrapper;
