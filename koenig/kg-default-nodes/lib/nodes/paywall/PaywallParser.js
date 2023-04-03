@@ -7,13 +7,20 @@ export class PaywallParser {
         const self = this;
 
         return {
-            paywall: () => ({
-                conversion() {
-                    const node = new self.NodeClass();
-                    return {node};
-                },
-                priority: 0
-            })
+            '#comment': () => {
+                return {
+                    conversion(domNode) {
+                        const isCommentNode = domNode.nodeType === 8;
+                        if (isCommentNode && domNode.nodeValue.trim() === 'members-only') {
+                            const node = new self.NodeClass();
+                            return {node};
+                        }
+
+                        return null;
+                    },
+                    priority: 0
+                };
+            }
         };
     }
 }

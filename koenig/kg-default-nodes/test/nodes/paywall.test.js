@@ -88,20 +88,19 @@ describe('PaywallNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('creates a paywall element', editorTest(function () {
+        it('renders a <!--members-only--> comment', editorTest(function () {
             const paywallNode = $createPaywallNode();
             const {element} = paywallNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.prettifyTo(html`
-                <paywall></paywall>
-            `);
+            element.nodeType.should.equal(8); // comment node
+            element.textContent.should.equal('members-only');
         }));
     });
 
     describe('importDOM', function () {
-        it('parses a paywall element', editorTest(function () {
+        it('parses a <!--members-only--> comment', editorTest(function () {
             const dom = (new JSDOM(html`
-                <paywall></paywall>
+                <div><!--members-only--></div>
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
 
