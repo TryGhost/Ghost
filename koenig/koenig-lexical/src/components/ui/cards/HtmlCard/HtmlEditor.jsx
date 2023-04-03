@@ -103,7 +103,7 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
     });
 
     const editorLightHighlightStyle = HighlightStyle.define([
-        {tag: t.keyword, color: '#5A5CAD', fontWeight: 'bold'},
+        {tag: t.keyword, color: '#5A5CAD'},
         {tag: t.atom, color: '#6C8CD5'},
         {tag: t.number, color: '#116644'},
         {tag: t.definition(t.variableName), textDecoration: 'underline'},
@@ -117,13 +117,13 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
     ]);
 
     const editorDarkHighlightStyle = HighlightStyle.define([
-        {tag: t.keyword, color: '#5A5CAD', fontWeight: 'bold'},
+        {tag: t.keyword, color: '#795da3'},
         {tag: t.atom, color: '#6C8CD5'},
-        {tag: t.number, color: '#116644'},
+        {tag: t.number, color: '#63a35c'},
         {tag: t.definition(t.variableName), textDecoration: 'underline'},
         {tag: t.variableName, color: 'black'},
         {tag: t.comment, color: '#0080FF', fontStyle: 'italic', background: 'rgba(0,0,0,.05)'},
-        {tag: [t.string, t.special(t.brace)], color: '#183691'},
+        {tag: [t.string, t.special(t.brace)], color: 'rgb(72, 110, 225)'},
         {tag: t.meta, color: 'yellow'},
         {tag: t.bracket, color: '#63a35c'},
         {tag: t.tagName, color: '#63a35c'},
