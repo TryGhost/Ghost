@@ -2,7 +2,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import React from 'react';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
-// import {githubDark, githubLight} from '@uiw/codemirror-theme-github';
+import {closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete';
 import {html as langHtml} from '@codemirror/lang-html';
 import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
 import {standardKeymap} from '@codemirror/commands';
@@ -140,8 +140,10 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
         editorCSS,
         lineNumbers(), // adds line numbers to the gutter
         minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
+        keymap.of(closeBracketsKeymap), // required for quote completion; needs to be listed before standardKeymap
         keymap.of(standardKeymap), // add back in standardKeymap, which doesn't include Mod+Enter
-        langHtml()
+        langHtml(),
+        closeBrackets()
     ];
 
     return (
