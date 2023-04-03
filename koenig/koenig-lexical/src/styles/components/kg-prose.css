@@ -696,6 +696,23 @@
             white-space: pre-wrap;
         }
 
+        /* Code
+        /* -------------------------------------------------------------------- */
+
+        :where(
+            pre
+        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+            background: var(--grey-100);
+            border: 1px solid var(--grey-200);
+            border-radius: 2px;
+            color: var(--grey-900);
+            line-height: 1.4em;
+            padding: .8rem .8rem .4rem;
+            vertical-align: middle;
+            white-space: pre-wrap;
+        }
+
         /* Images
         /* -------------------------------------------------------------------- */
 

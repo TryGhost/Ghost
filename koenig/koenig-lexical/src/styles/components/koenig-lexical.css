@@ -85,3 +85,15 @@ em-emoji-picker {
   .search input, .search button {
     font-size: 20px !important;
   }
+
+  /* HTML card */
+
+  .koenig-lexical .js-embed-placeholder {
+    margin: .4rem 0!important;
+    color: var(--grey-700) !important;
+  }
+
+  .koenig-lexical.dark .js-embed-placeholder {
+    background: var(--grey-900);
+    border: none;
+  }
