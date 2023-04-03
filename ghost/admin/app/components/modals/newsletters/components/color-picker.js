@@ -4,8 +4,6 @@ import {tracked} from '@glimmer/tracking';
 
 export default class ColorPicker extends Component {
     @tracked
-        orderedPresetColors = [];
-    @tracked
         mouseOver = false;
     @tracked
         lastSelectedCustomColor = null;
@@ -46,6 +44,7 @@ export default class ColorPicker extends Component {
 
         if (this.customColorSelected) {
             this.didSelectCustomColor = true;
+            this.lastSelectedCustomColor = this.currentColor;
         }
     }
 
@@ -57,50 +56,15 @@ export default class ColorPicker extends Component {
             clearTimeout(this.timer);
         }
 
-        // Wait 200ms after the animation to update
-        // we need to do this on mouse leave, because on mouse enter it breaks the animations
+        // Wait until the animation is complete
         this.timer = setTimeout(() => {
-            if (!this.mouseOver) {
-                this.updateOrderedPresetColors();
-            }
+            this.didSelectCustomColor = false;
             this.timer = null;
         }, 500);
     }
 
-    @action
-    updateOrderedPresetColors() {
-        this.didSelectCustomColor = false;
-
-        const customColorSelected = !this.presetColors.find(c => c.value === this.currentColor);
-        const orderedPresetColors = this.presetColors.filter(c => c.value !== this.currentColor);
-        if (!customColorSelected) {
-            // Never append custom colors here
-            orderedPresetColors.push(this.currentColorObject);
-        } else {
-            // Append custom
-            //orderedPresetColors.push({
-        }
-        this.orderedPresetColors = orderedPresetColors;
-    }
-
-    get dynamicOrderedPresetColors() {
-        // Createa deep clone so we don't update anything
-        const arr = [...this.orderedPresetColors.map((c) => {
-            return {...c};
-        })];
-
-        // Make sure all preset colors are presents
-        for (const preset of this.presetColors) {
-            if (!arr.find(c => c.value === preset.value)) {
-                arr.push({...preset});
-            }
-        }
-
-        return arr;
-    }
-
     get customColorSelected() {
-        if (!this.dynamicOrderedPresetColors.find(c => c.value === this.currentColor)) {
+        if (!this.presetColors.find(c => c.value === this.currentColor)) {
             return true;
         }
         return false;
@@ -145,6 +109,7 @@ export default class ColorPicker extends Component {
     @action
     onOpenColorPicker() {
         this.didSelectCustomColor = true;
+        this.lastSelectedCustomColor = this.colorInputValue;
         // This one is required because when choosing custom color, the initial color
         // is never fired in the input or change event, which can be annoying
         this.setCurrentColor(this.colorInputValue);
