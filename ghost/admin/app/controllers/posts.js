@@ -143,17 +143,6 @@ export default class PostsController extends Controller {
     }
 
     @action
-    exportData() {
-        let exportUrl = ghostPaths().url.api('posts/export');
-        // the filter and order params are set from the route to the controller via the infinity model
-        // we can retrieve these via the extraParams of the infinity model
-        let downloadParams = new URLSearchParams(this.model.extraParams);
-        downloadParams.set('limit', 'all');
-
-        this.utils.downloadFile(`${exportUrl}?${downloadParams.toString()}`);
-    }
-
-    @action
     changeType(type) {
         this.type = type.value;
     }
