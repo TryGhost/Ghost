@@ -10,7 +10,7 @@ describe('lib/lexical', function () {
                 .should.eql('<p>Lexical is <strong><em>rendering.</em></strong></p>');
         });
 
-        /*it('renders all default cards', function () {
+        it('renders all default cards', function () {
             const lexicalState = JSON.stringify({
                 root: {
                     children: [
@@ -43,6 +43,6 @@ describe('lib/lexical', function () {
 
             rendered.should.containEql('<figure class="kg-card kg-image-card kg-width-wide">');
             rendered.should.containEql('<div class="kg-card kg-audio-card">');
-        });*/
+        });
     });
 });
