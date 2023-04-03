@@ -46,25 +46,37 @@ const Template = ({display, ...args}) => (
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Selected',
-    urlValue: '',
+    url: '',
     urlPlaceholder: 'Paste URL to add bookmark content...',
-    bookmarkTitle: 'Ghost: The Creator Economy Platform',
-    bookmarkDesc: 'The world’s most popular modern publishing platform for creating a new media platform. Used by Apple, SkyNews, Buffer, OpenAI, and thousands more.',
-    bookmarkIcon: true,
-    bookmarkPublisher: 'Ghost - The Professional Publishing Platform',
-    bookmarkThumbnail: true
+    title: 'Ghost: The Creator Economy Platform',
+    description: 'The world’s most popular modern publishing platform for creating a new media platform. Used by Apple, SkyNews, Buffer, OpenAI, and thousands more.',
+    icon: 'https://www.ghost.org/favicon.ico',
+    publisher: 'Ghost - The Professional Publishing Platform',
+    thumbnail: 'https://ghost.org/images/meta/ghost.png'
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Selected',
-    urlValue: 'https://ghost.org/',
+    url: 'https://ghost.org/',
     urlPlaceholder: 'Paste URL to add bookmark content...',
-    bookmarkTitle: 'Ghost: The Creator Economy Platform',
-    bookmarkDesc: 'The world’s most popular modern publishing platform for creating a new media platform. Used by Apple, SkyNews, Buffer, OpenAI, and thousands more.',
-    bookmarkIcon: true,
-    bookmarkPublisher: 'Ghost - The Professional Publishing Platform',
-    bookmarkThumbnail: true,
+    title: 'Ghost: The Creator Economy Platform',
+    description: 'The world’s most popular modern publishing platform for creating a new media platform. Used by Apple, SkyNews, Buffer, OpenAI, and thousands more.',
+    icon: 'https://www.ghost.org/favicon.ico',
+    publisher: 'Ghost - The Professional Publishing Platform',
+    thumbnail: 'https://ghost.org/images/meta/ghost.png',
     caption: ''
 };
 
+export const WithCaption = Template.bind({});
+WithCaption.args = {
+    display: 'Selected',
+    url: 'https://ghost.org/',
+    urlPlaceholder: 'Paste URL to add bookmark content...',
+    title: 'Ghost: The Creator Economy Platform',
+    description: 'The world’s most popular modern publishing platform for creating a new media platform. Used by Apple, SkyNews, Buffer, OpenAI, and thousands more.',
+    icon: 'https://www.ghost.org/favicon.ico',
+    publisher: 'Ghost - The Professional Publishing Platform',
+    thumbnail: 'https://ghost.org/images/meta/ghost.png',
+    caption: 'This is a caption'
+};

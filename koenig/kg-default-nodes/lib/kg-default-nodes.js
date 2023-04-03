@@ -9,6 +9,7 @@ import * as horizontalrule from './nodes/horizontalrule/HorizontalRuleNode';
 import * as html from './nodes/html/HtmlNode';
 import * as toggle from './nodes/toggle/ToggleNode';
 import * as button from './nodes/button/ButtonNode';
+import * as bookmark from './nodes/bookmark/BookmarkNode';
 import * as file from './nodes/file/FileNode';
 import * as paywall from './nodes/paywall/PaywallNode';
 import * as product from './nodes/product/ProductNode';
@@ -27,6 +28,7 @@ export * from './nodes/horizontalrule/HorizontalRuleNode';
 export * from './nodes/html/HtmlNode';
 export * from './nodes/toggle/ToggleNode';
 export * from './nodes/button/ButtonNode';
+export * from './nodes/bookmark/BookmarkNode';
 export * from './nodes/file/FileNode';
 export * from './nodes/paywall/PaywallNode';
 export * from './nodes/product/ProductNode';
@@ -45,6 +47,7 @@ export const DEFAULT_NODES = [
     file.FileNode,
     toggle.ToggleNode,
     button.ButtonNode,
+    bookmark.BookmarkNode,
     paywall.PaywallNode,
     product.ProductNode
 ];

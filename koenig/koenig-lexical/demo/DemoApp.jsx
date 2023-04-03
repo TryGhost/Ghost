@@ -17,6 +17,7 @@ import {
 import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
 import {createWebsocketProvider} from './multiplayer';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
+import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {tenorConfig} from './utils/tenorConfig';
 import {useLocation} from 'react-router-dom';
@@ -28,6 +29,7 @@ const skipCollaborationInit =
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders},
+    fetchEmbed: fetchEmbed,
     tenor: tenorConfig
 };
 

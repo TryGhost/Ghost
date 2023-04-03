@@ -1,5 +1,6 @@
 import {AsideNode} from './AsideNode';
 import {AudioNode} from './AudioNode';
+import {BookmarkNode} from './BookmarkNode';
 import {ButtonNode} from './ButtonNode';
 import {CalloutNode} from './CalloutNode';
 import {CodeBlockNode} from './CodeBlockNode';
@@ -33,6 +34,7 @@ const DEFAULT_NODES = [
     FileNode,
     ButtonNode,
     ToggleNode,
+    BookmarkNode,
     PaywallNode
 ];
 

@@ -5,6 +5,7 @@ import KoenigSelectorPlugin from './KoenigSelectorPlugin.jsx';
 import MarkdownPlugin from '../plugins/MarkdownPlugin';
 import React from 'react';
 import {AudioPlugin} from '../plugins/AudioPlugin';
+import {BookmarkPlugin} from '../plugins/BookmarkPlugin';
 import {ButtonPlugin} from '../plugins/ButtonPlugin';
 import {CalloutPlugin} from '../plugins/CalloutPlugin';
 import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
@@ -36,6 +37,7 @@ export const AllDefaultPlugins = () => {
             <FilePlugin />
             <ButtonPlugin />
             <TogglePlugin />
+            <BookmarkPlugin />
             <PaywallPlugin />
             <KoenigSelectorPlugin />
         </>
