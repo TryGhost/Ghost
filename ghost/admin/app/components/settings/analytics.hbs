@@ -111,7 +111,9 @@
                             Download a single, glorious CSV file with all your post analytics
                         </p>
                     </div>
-                    <button type="button" class="gh-btn"><span>Export</span></button>
+                    <button type="button" class="gh-btn" {{on "click" this.exportData}}>
+                        <span>Export</span>
+                    </button>
                 </div>
             </div>
         </section>
