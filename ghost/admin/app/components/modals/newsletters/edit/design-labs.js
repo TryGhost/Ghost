@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import {IMAGE_EXTENSIONS} from 'ghost-admin/components/gh-image-uploader';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 export default class EditNewsletterDesignForm extends Component {
     @service settings;
@@ -35,6 +36,16 @@ export default class EditNewsletterDesignForm extends Component {
         this.args.newsletter[property] = event.target.checked;
     }
 
+    get backgroundColorIsDark() {
+        if (this.args.newsletter.backgroundColor === 'dark') {
+            return true;
+        }
+        if (this.args.newsletter.backgroundColor === 'light') {
+            return false;
+        }
+        return textColorForBackgroundColor(this.args.newsletter.backgroundColor).hex().toLowerCase() === '#ffffff';
+    }
+
     get backgroundPresetColors() {
         return [
             {
@@ -61,9 +72,9 @@ export default class EditNewsletterDesignForm extends Component {
                 style: ''
             },
             {
-                value: 'dark',
-                name: 'Black',
-                class: 'black',
+                value: 'auto',
+                name: 'Auto',
+                class: this.backgroundColorIsDark ? 'white' : 'black',
                 style: ''
             },
             {
@@ -86,8 +97,7 @@ export default class EditNewsletterDesignForm extends Component {
             {
                 value: null,
                 name: 'Auto',
-                // todo: this is a very basic example on how to switch, and should be calculated on contrast in the future
-                class: this.args.newsletter.backgroundColor === 'dark' ? 'white' : 'black',
+                class: this.backgroundColorIsDark ? 'white' : 'black',
                 style: ''
             }
         ];

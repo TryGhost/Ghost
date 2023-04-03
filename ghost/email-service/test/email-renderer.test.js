@@ -1567,7 +1567,8 @@ describe('Email renderer', function () {
             const tests = [
                 {input: 'Invalid Color', expected: null},
                 {input: '#BADA55', expected: '#BADA55'},
-                {input: 'dark', expected: '#15212a'},
+                {input: 'auto', expected: '#FFFFFF', background_color: '#15212A'},
+                {input: 'auto', expected: '#000000', background_color: '#ffffff'},
                 {input: 'light', expected: null},
                 {input: 'accent', expected: settings.accent_color},
                 {input: 'transparent', expected: null}
@@ -1575,7 +1576,8 @@ describe('Email renderer', function () {
 
             for (const test of tests) {
                 const data = await templateDataWithSettings({
-                    border_color: test.input
+                    border_color: test.input,
+                    background_color: test.background_color
                 });
                 assert.equal(data.borderColor, test.expected);
             }
