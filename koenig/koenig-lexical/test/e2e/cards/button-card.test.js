@@ -128,7 +128,7 @@ describe('Button Card', async () => {
         await page.keyboard.press('Enter');
 
         const buttonTextInput = await page.getByTestId('button-input-url');
-        await expect(buttonTextInput).toBeEmpty();
+        await expect(buttonTextInput).toHaveValue('');
 
         await page.getByTestId('button-input-url').fill('https://someblog.com/somepost');
         await expect(buttonTextInput).toHaveValue('https://someblog.com/somepost');
