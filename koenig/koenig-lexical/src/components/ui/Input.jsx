@@ -5,9 +5,9 @@ export function Input({dataTestId, list, value, placeholder, onChange}) {
         <input
             className="w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none"
             data-testid={dataTestId}
-            defaultValue={value}
             list={list}
             placeholder={placeholder}
+            value={value}
             onChange={onChange}
         />
     );

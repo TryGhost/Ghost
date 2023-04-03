@@ -36,3 +36,14 @@ WithText.args = {
     value: 'Subscribe',
     placeholder: 'Add button text'
 };
+
+export const ButtonLink = Template.bind({});
+ButtonLink.args = {
+    color: 'accent',
+    size: 'small',
+    width: 'regular',
+    value: 'Can open link in new tab',
+    placeholder: 'Add button text',
+    href: 'https://google.com/',
+    target: '__blank'
+};

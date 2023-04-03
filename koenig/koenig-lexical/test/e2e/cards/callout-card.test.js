@@ -1,14 +1,7 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, isMac, startApp} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, insertCard, isMac, startApp} from '../../utils/e2e';
 import {calloutColorPicker} from '../../../src/components/ui/cards/CalloutCard';
 import {expect} from '@playwright/test';
-
-async function insertCalloutCard(page) {
-    await page.keyboard.type('/callout');
-    await page.waitForSelector('[data-kg-card-menu-item="Callout"][data-kg-cardmenu-selected="true"]');
-    await page.keyboard.press('Enter');
-    await page.waitForSelector('[data-kg-card="callout"]');
-}
 
 describe('Callout Card', async () => {
     let app;
@@ -81,7 +74,7 @@ describe('Callout Card', async () => {
 
     test('renders callout card', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -94,7 +87,7 @@ describe('Callout Card', async () => {
 
     test('has settings panel', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         // the settings panel consists of emoji-toggle and colour picker
         const emojiToggle = page.locator('[data-testid="emoji-toggle"]');
@@ -105,7 +98,7 @@ describe('Callout Card', async () => {
 
     test('can edit callout card', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         await page.keyboard.type('Hello World');
 
@@ -115,7 +108,7 @@ describe('Callout Card', async () => {
 
     test('can toggle emoji', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         const toggle = page.locator('[data-testid="emoji-toggle"]');
         await toggle.click();
@@ -129,7 +122,7 @@ describe('Callout Card', async () => {
 
     test('can render emoji picker', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         await page.getByRole('button', {name: '💡'}).click();
         const emojiPickerContainer = page.locator('[data-testid="emoji-picker-container"]');
@@ -138,7 +131,7 @@ describe('Callout Card', async () => {
 
     test('colour picker renders all colours', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         await Promise.all(calloutColorPicker.map(async (color) => {
             const colorPicker = page.locator(`[data-test-id="color-picker-${color.name}"]`);
@@ -148,7 +141,7 @@ describe('Callout Card', async () => {
 
     test('can change background color', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         const colorPicker = page.locator(`[data-test-id="color-picker-green"]`);
         await colorPicker.click();
@@ -160,7 +153,7 @@ describe('Callout Card', async () => {
 
     it('can select an emoji', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         await page.getByRole('button', {name: '💡'}).click();
         const lolEmoji = page.locator('[aria-label="😂"]').nth(0); // nth(0) is required because there could two emojis with the same label (eg from frequently used)
@@ -172,7 +165,7 @@ describe('Callout Card', async () => {
 
     it('has edit toolbar', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         // press arrow down
         // TODO: this is a bug! ArrowDown should only be required once
@@ -188,7 +181,7 @@ describe('Callout Card', async () => {
 
     it('can toggle edit', async function () {
         await focusEditor(page);
-        await insertCalloutCard(page);
+        await insertCard(page, {cardName: 'callout'});
 
         // press arrow down
         await page.keyboard.press('ArrowDown');
@@ -207,7 +200,7 @@ describe('Callout Card', async () => {
     describe('nested editor', function () {
         it('syncs display state content', async function () {
             await focusEditor(page);
-            await insertCalloutCard(page);
+            await insertCard(page, {cardName: 'callout'});
             await page.keyboard.type('testing nesting');
             await page.keyboard.press('Enter');
 
@@ -240,7 +233,7 @@ describe('Callout Card', async () => {
 
         it('can toggle edit mode with CMD+ENTER', async function () {
             await focusEditor(page);
-            await insertCalloutCard(page);
+            await insertCard(page, {cardName: 'callout'});
             await page.keyboard.type('testing nesting');
 
             await page.keyboard.press(`${ctrlOrCmd}+Enter`);

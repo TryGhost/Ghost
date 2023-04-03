@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Button Card', async () => {
@@ -50,8 +50,7 @@ describe('Button Card', async () => {
 
     test('renders button card', async function () {
         await focusEditor(page);
-        await page.keyboard.type('/button');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'button'});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -64,8 +63,7 @@ describe('Button Card', async () => {
 
     test('has settings panel', async function () {
         await focusEditor(page);
-        await page.keyboard.type('/button');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'button'});
 
         await expect(await page.getByTestId('settings-panel')).toBeVisible();
         await expect(await page.getByTestId('button-align-left')).toBeVisible();
@@ -76,8 +74,7 @@ describe('Button Card', async () => {
 
     test('alignment buttons work', async function () {
         await focusEditor(page);
-        await page.keyboard.type('/button');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'button'});
 
         // align center by default
         const buttonCard = await page.getByTestId('button-card');
@@ -94,11 +91,9 @@ describe('Button Card', async () => {
 
     test('default settings are appropriate', async function () {
         await focusEditor(page);
-        await page.keyboard.type('/button');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'button'});
 
-        const button = await page.getByTestId('button-card-btn');
-        await expect(button).toHaveAttribute('placeholder','Add button text');
+        await expect(await page.getByTestId('button-card-btn-span').textContent()).toEqual('Add button text');
         const buttonTextInput = await page.getByTestId('button-input-text');
         await expect(buttonTextInput).toHaveAttribute('placeholder','Add button text');
         const buttonUrlInput = await page.getByTestId('button-input-url');
@@ -107,32 +102,29 @@ describe('Button Card', async () => {
 
     test('text input field works', async function () {
         await focusEditor(page);
-        await page.keyboard.type('/button');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'button'});
 
         // verify default values
-        const button = await page.getByTestId('button-card-btn');
-        await expect(button).toHaveAttribute('value','');
+        await expect(await page.getByTestId('button-card-btn-span').textContent()).toEqual('Add button text');
 
         const buttonTextInput = await page.getByTestId('button-input-text');
         await expect(buttonTextInput).toHaveValue('');
 
         await page.getByTestId('button-input-text').fill('test');
         await expect(buttonTextInput).toHaveValue('test');
-        await expect(button).toHaveAttribute('value','test');
+        await expect(await page.getByTestId('button-card-btn-span').textContent()).toEqual('test');
     });
 
     test('url input field works', async function () {
         await focusEditor(page);
-        await page.keyboard.type('/button');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'button'});
 
         const buttonTextInput = await page.getByTestId('button-input-url');
         await expect(buttonTextInput).toHaveValue('');
 
         await page.getByTestId('button-input-url').fill('https://someblog.com/somepost');
         await expect(buttonTextInput).toHaveValue('https://someblog.com/somepost');
-        const buttonLink = await page.getByTestId('button-card-btn-link');
+        const buttonLink = await page.getByTestId('button-card-btn');
         await expect(buttonLink).toHaveAttribute('href','https://someblog.com/somepost');
     });
 
