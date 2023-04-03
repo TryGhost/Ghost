@@ -63,12 +63,16 @@ function DragDropPastePlugin() {
     const {fileUploader} = React.useContext(KoenigComposerContext);
 
     const handleFileUpload = React.useCallback(async (files) => {
+        if (!fileUploader) {
+            return;
+        }
+
         const {acceptableMimeTypes} = await getListOfAcceptableMimeTypes(editor, fileUploader.fileTypes);
         const {processed} = await mediaFileReader(files, acceptableMimeTypes);
         processed.forEach((item) => {
             editor.dispatchCommand(INSERT_MEDIA_COMMAND, item);
         });
-    }, [editor, fileUploader.fileTypes]);
+    }, [editor, fileUploader]);
 
     // override the default Lexical drop handler because we always want to insert
     // where the selection was left rather than where the drop happened (matches mobiledoc editor)

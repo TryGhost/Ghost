@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, isMac, startApp} from '../../utils/e2e';
 import {calloutColorPicker} from '../../../src/components/ui/cards/CalloutCard';
 import {expect} from '@playwright/test';
 
@@ -13,6 +13,8 @@ async function insertCalloutCard(page) {
 describe('Callout Card', async () => {
     let app;
     let page;
+
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
 
     beforeAll(async () => {
         ({app, page} = await startApp());
@@ -54,12 +56,21 @@ describe('Callout Card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="callout">
                     <div>
-                       <div>
-                           <div><button type="button">😚</button></div>
-                           <div><p><span>Hello World</span></p></div>
-                       </div>
-                        <div></div>
+                        <div><button type="button">😚</button></div>
+                        <div>
+                            <div data-kg="editor">
+                                <div
+                                    contenteditable="false"
+                                    spellcheck="true"
+                                    data-lexical-editor="true"
+                                    aria-autocomplete="none"
+                                >
+                                    <p dir="ltr"><span data-lexical-text="true">Hello World</span></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <div></div>
                 </div>
             </div>
         `);
@@ -191,5 +202,85 @@ describe('Callout Card', async () => {
 
         const calloutCard = page.locator('[data-kg-card="callout"]');
         await expect(calloutCard).toHaveAttribute('data-kg-card-editing', 'true');
+    });
+
+    describe('nested editor', function () {
+        it('syncs display state content', async function () {
+            await focusEditor(page);
+            await insertCalloutCard(page);
+            await page.keyboard.type('testing nesting');
+            await page.keyboard.press('Enter');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="callout">
+                        <div>
+                            <div><button type="button">💡</button></div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="false"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        aria-autocomplete="none">
+                                        <p dir="ltr">
+                                            <span data-lexical-text="true">testing nesting</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div></div>
+                    </div>
+                </div>
+                <p><br /></p>
+                <p><br /></p>
+            `, {ignoreCardContents: false});
+        });
+
+        it('can toggle edit mode with CMD+ENTER', async function () {
+            await focusEditor(page);
+            await insertCalloutCard(page);
+            await page.keyboard.type('testing nesting');
+
+            await page.keyboard.press(`${ctrlOrCmd}+Enter`);
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="callout">
+                        <div>
+                            <div><button type="button">💡</button></div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="false"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        aria-autocomplete="none">
+                                        <p dir="ltr">
+                                            <span data-lexical-text="true">testing nesting</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div></div>
+                        <div data-kg-card-toolbar="callout">
+                        </div>
+                    </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardToolbarContents: true});
+
+            await page.keyboard.press(`${ctrlOrCmd}+Enter`);
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="callout">
+                    </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardContents: true});
+        });
     });
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import {CalloutCard} from './CalloutCard';
 import {CardWrapper} from './../CardWrapper';
+import {createEditor} from 'lexical';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -35,15 +36,19 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
-    <div className="kg-prose">
-        <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper {...display} {...args}>
-                <CalloutCard {...display} {...args} />
-            </CardWrapper>
+const Template = ({display, ...args}) => {
+    const textEditor = createEditor();
+
+    return (
+        <div className="kg-prose">
+            <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
+                <CardWrapper {...display} {...args}>
+                    <CalloutCard {...display} {...args} textEditor={textEditor} />
+                </CardWrapper>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 export const Empty = Template.bind({});
 Empty.args = {

@@ -15,8 +15,6 @@ import {
     $isRangeSelection,
     $isTextNode,
     $setSelection,
-    COMMAND_PRIORITY_EDITOR,
-    COMMAND_PRIORITY_HIGH,
     COMMAND_PRIORITY_LOW,
     INSERT_PARAGRAPH_COMMAND,
     KEY_ARROW_DOWN_COMMAND,
@@ -99,7 +97,7 @@ function $removeOrReplaceNodeWithParagraph(editor, node) {
     node.remove();
 }
 
-function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
+function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested}) {
     const {
         selectedCardKey,
         setSelectedCardKey,
@@ -110,23 +108,25 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
     // deselect cards on mousedown outside of the editor container
     React.useEffect(() => {
         const onMousedown = (event) => {
-            if (!containerElem.current.contains(event.target)) {
+            if (containerElem.current && !containerElem.current.contains(event.target)) {
                 editor.update(() => {
                     const selection = $getSelection();
 
                     if ($isNodeSelection(selection)) {
                         $setSelection(null);
                     }
-                });
+                }, {tag: 'history-merge'});
             }
         };
 
-        window.addEventListener('mousedown', onMousedown);
+        if (!isNested) {
+            window.addEventListener('mousedown', onMousedown);
+        }
 
         return () => {
             window.removeEventListener('mousedown', onMousedown);
         };
-    }, [editor, containerElem]);
+    }, [editor, containerElem, isNested]);
 
     // Override built-in keyboard movement around card (DecoratorNode) boundaries,
     // cards should be selected on up/down and when deleting content around them.
@@ -136,6 +136,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
             editor.registerUpdateListener(({editorState, tags}) => {
                 // ignore updates triggered by other users
                 if (tags.has('collaboration')) {
+                    return;
+                }
+
+                // ignore selections inside of nested editors otherwise we'll
+                // mistakenly deselect the card containing the nested editor
+                if (isNested || document.activeElement.closest('[data-lexical-decorator]')) {
                     return;
                 }
 
@@ -164,7 +170,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                         setSelectedCardKey(cardKey);
                         setIsEditingCard(false);
-                    });
+                    }, {tag: 'history-merge'});
                 }
 
                 if (!isCardSelected && selectedCardKey) {
@@ -173,7 +179,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                         setSelectedCardKey(null);
                         setIsEditingCard(false);
-                    });
+                    }, {tag: 'history-merge'});
                 }
 
                 // we have special-case cards that are inserted via markdown
@@ -182,7 +188,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                 if (isCardSelected && cardNode.__openInEditMode) {
                     editor.update(() => {
                         cardNode.clearOpenInEditMode();
-                    });
+                    }, {tag: 'history-merge'});
 
                     setIsEditingCard(true);
                 }
@@ -352,12 +358,13 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                     // avoid processing card behaviours when an inner card element has focus
                     // NOTE: must come after ctrl/cmd+enter because that always toggles no matter the selection
-                    if (document.activeElement !== editor.getRootElement()) {
+
+                    if (!event._fromNested && document.activeElement !== editor.getRootElement()) {
                         return false;
                     }
 
                     // if a card is selected, insert a new paragraph after it
-                    if (selectedCardKey) {
+                    if (!isNested && selectedCardKey) {
                         event.preventDefault();
                         const cardNode = $getNodeByKey(selectedCardKey);
                         const paragraphNode = $createParagraphNode();
@@ -366,7 +373,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         return true;
                     }
                 },
-                COMMAND_PRIORITY_EDITOR
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 KEY_ARROW_UP_COMMAND,
@@ -458,7 +465,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                     return false;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 KEY_ARROW_DOWN_COMMAND,
@@ -545,7 +552,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                     return false;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 KEY_ARROW_LEFT_COMMAND,
@@ -593,7 +600,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                     return false;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 KEY_ARROW_RIGHT_COMMAND,
@@ -622,7 +629,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                     return false;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 KEY_MODIFIER_COMMAND,
@@ -671,7 +678,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                     return false;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             // backspace when card isn't selected
             editor.registerCommand(
@@ -683,7 +690,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                     }
 
                     // delete selected card if we have one
-                    if (selectedCardKey) {
+                    if (!isNested && selectedCardKey) {
                         event.preventDefault();
                         editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey: selectedCardKey, direction: 'backward'});
                         return true;
@@ -744,7 +751,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                     return false;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 KEY_DELETE_COMMAND,
@@ -802,7 +809,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
 
                     return false;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 KEY_TAB_COMMAND,
@@ -843,7 +850,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         }
                     }
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 KEY_ESCAPE_COMMAND,
@@ -854,7 +861,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
                     }
                 },
-                COMMAND_PRIORITY_EDITOR
+                COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
                 PASTE_COMMAND,
@@ -881,7 +888,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
                         return true;
                     }
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             )
         );
     });
@@ -909,7 +916,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop}) {
     return null;
 }
 
-export default function KoenigBehaviourPlugin({containerElem = document.querySelector('.koenig-editor'), cursorDidExitAtTop}) {
+export default function KoenigBehaviourPlugin({containerElem = document.querySelector('.koenig-editor'), cursorDidExitAtTop, isNested}) {
     const [editor] = useLexicalComposerContext();
-    return useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop});
+    return useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested});
 }

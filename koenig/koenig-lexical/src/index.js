@@ -3,6 +3,7 @@ import DesignSandbox from './components/DesignSandbox';
 import KoenigComposableEditor from './components/KoenigComposableEditor';
 import KoenigComposer from './components/KoenigComposer';
 import KoenigEditor from './components/KoenigEditor';
+import KoenigNestedComposer from './components/KoenigNestedComposer';
 
 /* Plugins */
 import AudioPlugin from './plugins/AudioPlugin';
@@ -51,6 +52,7 @@ export {
     KoenigComposableEditor,
     KoenigComposer,
     KoenigEditor,
+    KoenigNestedComposer,
 
     AudioPlugin,
     CardMenuPlugin,
