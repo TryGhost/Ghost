@@ -215,6 +215,7 @@ table.body span {
   }
 
   table.body .main {
+    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -300,6 +301,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -487,14 +493,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -734,7 +740,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23867",
+  "content-length": "24011",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -863,6 +869,7 @@ table.body span {
   }
 
   table.body .main {
+    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -948,6 +955,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -1135,14 +1147,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -1402,7 +1414,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "28682",
+  "content-length": "28826",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1562,6 +1574,7 @@ table.body span {
   }
 
   table.body .main {
+    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -1647,6 +1660,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -1834,14 +1852,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -2088,7 +2106,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23633",
+  "content-length": "23777",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2577,6 +2595,7 @@ table.body span {
   }
 
   table.body .main {
+    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -2662,6 +2681,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -2849,14 +2873,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -3113,7 +3137,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24125",
+  "content-length": "24269",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3628,6 +3652,7 @@ table.body span {
   }
 
   table.body .main {
+    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -3713,6 +3738,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -3900,14 +3930,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -4164,7 +4194,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24125",
+  "content-length": "24269",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
