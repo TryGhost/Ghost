@@ -278,7 +278,7 @@ describe('Callout Card', async () => {
 
         it('can leave edit mode with ESCAPE', async function () {
             await focusEditor(page);
-            await insertCalloutCard(page);
+            await insertCard(page, {cardName: 'callout'});
             await page.keyboard.type('testing nesting');
             await page.keyboard.press('Escape');
 
