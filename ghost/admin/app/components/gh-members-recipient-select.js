@@ -108,6 +108,15 @@ export default class GhMembersRecipientSelect extends Component {
         }
 
         const newSpecificFilters = new Set(selectedOptions.map(o => o.segment));
+
+        // If the user has deselected all options, clear the _previousSpecificFilters
+        // and force the specific filter to be checked so that the user can still see the options select
+        // Refs https://github.com/TryGhost/Team/issues/2859
+        if (newSpecificFilters.size === 0) {
+            this._previousSpecificFilters = undefined;
+            this.forceSpecificChecked = true;
+        }
+
         this.updateFilter({newSpecificFilters});
     }
 
