@@ -78,7 +78,7 @@
 
                 {{#if @newsletter.showLatestPosts}}
                     <div class="gh-members-emailpreview-latest-posts" style={{html-safe (concat "border-color: " this.secondaryBorderColor)}}>
-                        <h3 class="pb2" style={{html-safe (concat "color: " this.textColor)}}>Keep reading</h3>
+                        <h3 class="pb2" style={{html-safe (concat "color: " this.titleColor)}}>Keep reading</h3>
                         <Modals::Newsletters::Components::LatestPost
                             @imgPath="assets/img/latest-posts-1.png"
                             @postTitle="The three latest posts published on your site"
@@ -102,7 +102,7 @@
 
                 {{#if @newsletter.showSubscriptionDetails}}
                     <div class="gh-members-emailpreview-subscription-details" style={{html-safe (concat "border-color: " this.secondaryBorderColor)}}>
-                        <h4 class="pb2" style={{html-safe (concat "color: " this.textColor)}}>Subscription details</h4>
+                        <h4 class="pb2" style={{html-safe (concat "color: " this.titleColor)}}>Subscription details</h4>
                         <p class="pb4" style={{html-safe (concat "color: " this.textColor)}}>You are receiving this because you are a <strong>paid subscriber</strong> to The Local Host. Your subscription will renew on {{this.renewDateString}}.</p>
                         <div class="flex">
                             <div class="flex-shrink-0">
