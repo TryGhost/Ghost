@@ -99,23 +99,21 @@
     </section>
 </div>
 
-{{#if (feature 'makingItRain')}}
-    <div class="gh-main-section">
-        <h4 class="gh-main-section-header small bn">Posts</h4>
-        <section class="gh-expandable">
-            <div class="gh-expandable-block">
-                <div class="gh-expandable-header">
-                    <div>
-                        <h4 class="gh-expandable-title">Export post analytics</h4>
-                        <p class="gh-expandable-description">
-                            Download a single, glorious CSV file with all your post analytics
-                        </p>
-                    </div>
-                    <button type="button" class="gh-btn" {{on "click" this.exportData}}>
-                        <span>Export</span>
-                    </button>
+<div class="gh-main-section">
+    <h4 class="gh-main-section-header small bn">Posts</h4>
+    <section class="gh-expandable">
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Export post analytics</h4>
+                    <p class="gh-expandable-description">
+                        Download a single, glorious CSV file with all your post analytics
+                    </p>
                 </div>
+                <button type="button" class="gh-btn" {{on "click" this.exportData}}>
+                    <span>Export</span>
+                </button>
             </div>
-        </section>
-    </div>
-{{/if}}
+        </div>
+    </section>
+</div>

@@ -68,7 +68,7 @@ module.exports = {
                 type: 'csv',
                 value() {
                     const datetime = (new Date()).toJSON().substring(0, 10);
-                    return `posts.${datetime}.csv`;
+                    return `post-analytics.${datetime}.csv`;
                 }
             }
         },
