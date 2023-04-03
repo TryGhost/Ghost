@@ -10,7 +10,7 @@ export function Toggle({isChecked, onChange, dataTestID}) {
                 type="checkbox"
                 onChange={onChange}
             />
-            <div className="absolute inset-0 cursor-pointer rounded-full bg-grey-300 dark:bg-grey-800 transition-all before:absolute before:left-[2px] before:bottom-[2px] before:h-4 before:w-4 before:rounded-full before:bg-white before:transition-all before:duration-200 peer-checked:bg-black dark:peer-checked:bg-green peer-checked:before:translate-x-[14px]"></div>
+            <div className="absolute inset-0 cursor-pointer rounded-full bg-grey-300 transition-all before:absolute before:left-[2px] before:bottom-[2px] before:h-4 before:w-4 before:rounded-full before:bg-white before:transition-all before:duration-200 peer-checked:bg-black peer-checked:before:translate-x-[14px] dark:bg-grey-800 dark:peer-checked:bg-green"></div>
         </label>
     );
 }
