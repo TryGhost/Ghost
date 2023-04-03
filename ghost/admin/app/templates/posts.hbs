@@ -23,43 +23,6 @@
             />
 
             <div class="view-actions-top-row">
-                {{#if (feature 'makingItRain')}}
-                    <span class="dropdown posts-actions-dropdown">
-                        <GhDropdownButton
-                            @dropdownName="posts-actions-menu"
-                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
-                            @title="Posts Actions"
-                            data-test-button="posts-actions"
-                        >
-                            <span>
-                                {{svg-jar "settings"}}
-                                <span class="hidden">Actions</span>
-                            </span>
-                        </GhDropdownButton>
-                        <GhDropdown
-                            @name="posts-actions-menu"
-                            @tagName="ul"
-                            @classNames="gh-post-actions-menu dropdown-menu dropdown-triangle-top-right"
-                        >
-                            <li class="{{if this.totalPosts "" "disabled"}}">
-                                {{#if this.totalPosts}}
-                                    <button class="mr2" type="button" {{on "click" this.exportData}} data-test-button="export-posts">
-                                        {{#if this.showingAll}}
-                                            <span>Export post analytics</span>
-                                        {{else}}
-                                            <span>Export post analytics ({{this.totalPosts}})</span>
-                                        {{/if}}
-                                    </button>
-                                {{else}}
-                                    <button class="mr2" disabled="true" type="button" data-test-button="export-posts">
-                                        <span>Export post analytics (0)</span>
-                                    </button>
-                                {{/if}}
-                            </li>
-                        </GhDropdown>
-                    </span>
-                {{/if}}
-
                 <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-primary" data-test-new-post-button={{true}}><span>New post</span></LinkTo>
             </div>
         </section>
