@@ -5100,17 +5100,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.6.tgz#82ba6f887b27ee44eb21942deb9a6cbe3ea1f226"
   integrity sha512-BLiRBL1BnicBGEJkuCtR3qdmlWaZ0YB7u9S+9sX4V/E9ikB40hAphS5sIf/l+j7LyyTygMhjIP0PBb64bVdGxA==
 
-"@tryghost/kg-clean-basic-html@3.0.7":
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.7.tgz#d6ee2baecbf86e0c2f485cd88fa4f0a1903e28d3"
-  integrity sha512-sSiow+AfqVyWId3NAyK5EwpAtzPadGUgJbJ4CTA15XNF0fyqBpQNLSx7oKGIDJ8YOVnsIkGC4IeIsFyyOqsmqg==
-
-"@tryghost/kg-clean-basic-html@^3.0.7":
-  version "3.0.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.8.tgz#432f861d240b4e7a5dff71226980169a8525a0c4"
-  integrity sha512-HL9cBtaHIEuOXy5WoYdV+JOMc9Bssr/1KUgh1wxNSzI4SvgHg5ZiXX2A3cSmWogBVPBpj7Q75GTYgvhgpDNWbQ==
-
-"@tryghost/kg-clean-basic-html@^3.0.9":
+"@tryghost/kg-clean-basic-html@3.0.9", "@tryghost/kg-clean-basic-html@^3.0.9":
   version "3.0.9"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.9.tgz#63e847daa53199941ee28414f4279229d8f9558a"
   integrity sha512-s1ZAqgWjhRbskB1xXo45UUW07AiVPD1y8ksICgbqaXObXIkyJExH4buEoaU0wOsMNKsvIlkdXzH8sMfsVqQn0A==
@@ -5211,14 +5201,7 @@
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@3.0.7":
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-3.0.7.tgz#91ce860cbc81b53dd9d5d5b71f5c0a828ff84419"
-  integrity sha512-dL9JmRqAtYsu2YAFxd8w+qM7b2yMZUBdialTtkwuyleZuogi0OmDFotkhI37kZ0FwEBu9IqWkA3SL+yXj9dkww==
-  dependencies:
-    "@tryghost/kg-clean-basic-html" "^3.0.7"
-
-"@tryghost/kg-parser-plugins@^3.0.10":
+"@tryghost/kg-parser-plugins@3.0.10", "@tryghost/kg-parser-plugins@^3.0.10":
   version "3.0.10"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-3.0.10.tgz#f0053b3959b9c78bc56d3f7cad9e6e7b8e83f4c1"
   integrity sha512-mCM+4Y55FJTNcZ1I5zWe1di1ZEaVqpd6sGIH+S+roCkItgfoF2G4k/vGanni+YPOQgJonarUrjQZBemxOkRH5Q==
