@@ -5123,10 +5123,10 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-cards@7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-7.0.1.tgz#d22bb09468a3a392a7435dec289d93e3ceaa033b"
-  integrity sha512-PhvW7t0uG8euirIhev6+5iDOO0Eo9DJjKgSpHzXeelmhKBt6NiRnAMR67C4sdLOnFH2ZBBv07j6fMMOdvroKVw==
+"@tryghost/kg-default-cards@8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-8.0.0.tgz#037fa460b6dea12f02ce74cc3acdfef251728b5e"
+  integrity sha512-7+0/RvG36hKrnPsh45cfyj8cl/1/KO9tsj15vn0Btogx9ztq7dyEoaeeq3Tg6Y638pLrJmTs3mYHAzo9SUafzQ==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "^6.0.6"
     "@tryghost/string" "^0.2.0"
