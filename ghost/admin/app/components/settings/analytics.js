@@ -1,10 +1,12 @@
 import Component from '@glimmer/component';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class Analytics extends Component {
     @service settings;
     @service feature;
+    @service utils;
 
     @action
     toggleEmailTrackOpens(event) {
@@ -12,6 +14,15 @@ export default class Analytics extends Component {
             event.preventDefault();
         }
         this.settings.emailTrackOpens = !this.settings.emailTrackOpens;
+    }
+
+    @action
+    exportData() {
+        let exportUrl = ghostPaths().url.api('posts/export');
+        let downloadParams = new URLSearchParams();
+        downloadParams.set('limit', 'all');
+
+        this.utils.downloadFile(`${exportUrl}?${downloadParams.toString()}`);
     }
 
     @action
