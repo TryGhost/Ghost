@@ -858,7 +858,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     event.preventDefault();
 
                     if (selectedCardKey && isEditingCard) {
-                        editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
+                        (editor._parentEditor || editor).dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
                     }
                 },
                 COMMAND_PRIORITY_LOW

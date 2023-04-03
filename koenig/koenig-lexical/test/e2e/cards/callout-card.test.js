@@ -275,5 +275,20 @@ describe('Callout Card', async () => {
                 <p><br /></p>
             `, {ignoreCardContents: true});
         });
+
+        it('can leave edit mode with ESCAPE', async function () {
+            await focusEditor(page);
+            await insertCalloutCard(page);
+            await page.keyboard.type('testing nesting');
+            await page.keyboard.press('Escape');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="callout">
+                    </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardContents: true});
+        });
     });
 });

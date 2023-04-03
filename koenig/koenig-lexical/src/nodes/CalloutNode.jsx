@@ -10,6 +10,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {CalloutNode as BaseCalloutNode, INSERT_CALLOUT_COMMAND} from '@tryghost/kg-default-nodes';
 import {CalloutCard} from '../components/ui/cards/CalloutCard';
 import {ReactComponent as CalloutCardIcon} from '../assets/icons/kg-card-type-callout.svg';
+import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {sanitizeHtml} from '../utils/sanitize-html';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -62,6 +63,12 @@ function CalloutNodeComponent({nodeKey, textEditor, hasEmoji, backgroundColor, e
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
+    };
+
     return (
         <>
             <CalloutCard
@@ -84,7 +91,7 @@ function CalloutNodeComponent({nodeKey, textEditor, hasEmoji, backgroundColor, e
                 isVisible={isSelected && !isEditing}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem dataTestId="edit-callout-card" icon="edit" isActive={false} label="Edit" />
+                    <ToolbarMenuItem dataTestId="edit-callout-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator />
                     <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
                 </ToolbarMenu>
