@@ -70,7 +70,8 @@ module.exports = {
             {{#if productRatingEnabled}}
             <tr style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
                 <td valign="top" class="kg-product-rating">
-                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-{{productStarRating}}.png" border="0">
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-darkmode-{{productStarRating}}.png" border="0" class="is-dark-background">
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-{{productStarRating}}.png" border="0" class="is-light-background">
                 </td>
             </tr>
             {{/if}}
