@@ -43,8 +43,9 @@ export default class EditNewsletterPreview extends Component {
             return value;
         }
 
-        if (value === 'dark') {
-            return '#15212a';
+        if (value === 'auto') {
+            const backgroundColor = this.backgroundColor;
+            return textColorForBackgroundColor(backgroundColor).hex();
         }
 
         if (value === 'accent') {
