@@ -45,7 +45,7 @@ export default ModalComponent.extend({
         return `data-portal`;
     }),
 
-    portalPreviewUrl: computed('page', 'model.tiers.[]', 'changedTiers.[]', 'membersUtils.{isFreeChecked,isMonthlyChecked,isYearlyChecked}', 'settings.{portalName,portalButton,portalButtonIcon,portalButtonSignupText,portalButtonStyle,accentColor,portalPlans.[]}', function () {
+    portalPreviewUrl: computed('page', 'model.tiers.[]', 'changedTiers.[]', 'membersUtils.{isFreeChecked,isMonthlyChecked,isYearlyChecked}', 'settings.{portalName,portalButton,portalButtonIcon,portalButtonSignupText,portalSignupTermsHtml,portalSignupCheckboxRequired,portalButtonStyle,accentColor,portalPlans.[]}', function () {
         const options = this.getProperties(['page']);
         options.portalTiers = this.model.tiers?.filter((tier) => {
             return tier.get('visibility') === 'public'
@@ -259,6 +259,14 @@ export default ModalComponent.extend({
             } else {
                 this.settings.membersSupportAddress = supportAddress;
             }
+        },
+
+        setTermsHtml(html) {
+            this.settings.portalSignupTermsHtml = html;
+        },
+
+        toggleSignupCheckboxRequired(checked) {
+            this.settings.portalSignupCheckboxRequired = checked;
         }
     },
 

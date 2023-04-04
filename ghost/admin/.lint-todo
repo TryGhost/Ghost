@@ -560,3 +560,5 @@ add|ember-template-lint|require-valid-alt-text|3|44|3|44|a7f0566c430150bae4153e0
 add|ember-template-lint|require-valid-alt-text|8|20|8|20|9d0c591086dc9139ff38a7b385c3367a83438786|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-input-label|10|12|10|12|8c3c0ea315ff4da828363989a45fa11256a78796|1675296000000|1685660400000|1690844400000|lib/koenig-editor/addon/components/koenig-card-image/selector-tenor.hbs
 add|ember-template-lint|no-action|465|46|465|46|f2f0f3f512f141fdd821333c873f5052813bb491|1677974400000|1688342400000|1693526400000|app/components/gh-portal-links.hbs
+add|ember-template-lint|no-action|271|58|271|58|5124558b018d5e90a3d203fd54c5e4ca8e9b0548|1680566400000|1690934400000|1696118400000|app/components/modal-portal-settings.hbs
+add|ember-template-lint|no-action|289|68|289|68|eaa96ff81a7c4b4743ca191655c017bd90549e96|1680566400000|1690934400000|1696118400000|app/components/modal-portal-settings.hbs
