@@ -30,6 +30,10 @@ export function ButtonCard({
         }
     ];
 
+    const testListOptions = [
+        {value: 'Homepage'},{value: 'Free signup'}
+    ];
+
     return (
         <>
             <div className="inline-block w-full">
@@ -55,6 +59,8 @@ export function ButtonCard({
                     <InputListSetting
                         dataTestId="button-input-url"
                         label='Button URL'
+                        list='suggestedUrls'
+                        listOptions={testListOptions}
                         placeholder='https://yoursite.com/#/portal/signup/'
                         value={buttonUrl}
                         onChange={handleButtonUrlChange}
