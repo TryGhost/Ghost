@@ -106,7 +106,6 @@ class PopupContent extends React.Component {
         if (hasMode(['preview'])) {
             return;
         }
-        e.preventDefault();
         if (e.target === e.currentTarget) {
             this.context.onAction('closePopup');
         }
