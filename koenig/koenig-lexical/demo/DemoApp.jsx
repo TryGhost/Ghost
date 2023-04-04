@@ -208,6 +208,7 @@ function DemoApp({editorType, isMultiplayer}) {
                 fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}
                 initialEditorState={isMultiplayer ? null : initialContent}
                 nodes={getAllowedNodes({editorType})}
+                websocketProviderFactory={createWebsocketProvider}
             >
                 <div className={`relative h-full grow ${darkMode ? 'dark' : ''}`}>
                     {

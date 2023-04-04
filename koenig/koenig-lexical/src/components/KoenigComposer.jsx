@@ -23,6 +23,7 @@ const KoenigComposer = ({
     fileUploader = {},
     cardConfig = {},
     darkMode = false,
+    websocketProviderFactory,
     children
 }) => {
     const [selectedCardKey, setSelectedCardKey] = React.useState(null);
@@ -55,7 +56,8 @@ const KoenigComposer = ({
                 selectedCardKey,
                 setSelectedCardKey,
                 isEditingCard,
-                setIsEditingCard
+                setIsEditingCard,
+                websocketProviderFactory
             }}>
                 {children}
             </KoenigComposerContext.Provider>
