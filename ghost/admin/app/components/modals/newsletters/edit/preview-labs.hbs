@@ -60,17 +60,20 @@
                             {{#if (and @newsletter.feedbackEnabled (feature "audienceFeedback"))}}
                                 <Modals::Newsletters::Components::FeedbackButton
                                     @text="More like this"
-                                    @icon="thumbs-up" />
+                                    @icon="thumbs-up"
+                                    @textColor={{html-safe this.textColor}} />
 
                                 <Modals::Newsletters::Components::FeedbackButton
                                     @text="Less like this"
-                                    @icon="thumbs-down" />
+                                    @icon="thumbs-down"
+                                    @textColor={{html-safe this.textColor}} />
                             {{/if}}
 
                             {{#if this.showCommentCta}}
                                 <Modals::Newsletters::Components::FeedbackButton
                                     @text="Comment"
-                                    @icon="comment" />
+                                    @icon="comment"
+                                    @textColor={{html-safe this.textColor}} />
                             {{/if}}
                         </div>
                     </div>
