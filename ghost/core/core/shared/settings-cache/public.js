@@ -34,6 +34,8 @@ module.exports = {
     portal_button_style: 'portal_button_style',
     portal_button_signup_text: 'portal_button_signup_text',
     portal_button_icon: 'portal_button_icon',
+    portal_signup_terms_html: 'portal_signup_terms_html',
+    portal_signup_checkbox_required: 'portal_signup_checkbox_required',
     portal_plans: 'portal_plans',
     portal_name: 'portal_name',
     portal_button: 'portal_button',
