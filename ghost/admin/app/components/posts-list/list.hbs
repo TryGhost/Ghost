@@ -1,0 +1,51 @@
+<MultiList::List @model={{@list}} class="posts-list gh-list {{unless @model "no-posts"}} feature-memberAttribution" as |list| >
+    {{#each @model as |post|}}
+        <list.item @id={{post.id}} class="gh-posts-list-item-group">
+            <PostsList::ListItem
+                @post={{post}}
+                data-test-post-id={{post.id}}
+            />
+        </list.item>
+    {{/each}}
+</MultiList::List>
+
+{{!-- The currently selected item or items are passed to the context menu --}}
+<GhContextMenu
+    @name="context-menu"
+    as |menu selectionList|
+>
+    <ul class="gh-posts-context-menu dropdown-menu dropdown-triangle-top-left">
+        {{#if selectionList.isSingle}}
+            <li>
+                <button class="mr2" type="button" disabled {{on "click" menu.close}}>
+                    <span>Duplicate</span>
+                </button>
+            </li>
+        {{/if}}
+        <li>
+            <button class="mr2" type="button" disabled {{on "click" menu.close}}>
+                <span>Unpublish</span>
+            </button>
+        </li>
+        <li>
+            <button class="mr2" type="button" disabled {{on "click" menu.close}}>
+                <span>Feature</span>
+            </button>
+        </li>
+        <li>
+            <button class="mr2" type="button" disabled {{on "click" menu.close}}>
+                <span>Add tag...</span>
+            </button>
+        </li>
+        <li>
+            <button class="mr2" type="button" disabled {{on "click" menu.close}}>
+                <span>Post access...</span>
+            </button>
+        </li>
+        <li>
+            <button class="mr2" type="button" {{on "click" (fn this.deletePosts menu)}}>
+                <span>Delete</span>
+            </button>
+        </li>
+    </ul>
+</GhContextMenu>

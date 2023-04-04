@@ -562,3 +562,5 @@ add|ember-template-lint|require-input-label|10|12|10|12|8c3c0ea315ff4da828363989
 add|ember-template-lint|no-action|465|46|465|46|f2f0f3f512f141fdd821333c873f5052813bb491|1677974400000|1688342400000|1693526400000|app/components/gh-portal-links.hbs
 add|ember-template-lint|no-action|271|58|271|58|5124558b018d5e90a3d203fd54c5e4ca8e9b0548|1680566400000|1690934400000|1696118400000|app/components/modal-portal-settings.hbs
 add|ember-template-lint|no-action|289|68|289|68|eaa96ff81a7c4b4743ca191655c017bd90549e96|1680566400000|1690934400000|1696118400000|app/components/modal-portal-settings.hbs
+add|ember-template-lint|no-invalid-interactive|1|103|1|103|f5a46b2538fbf79a40f2683ff1151ca60e0fa0ca|1680652800000|1691020800000|1696204800000|app/components/gh-context-menu.hbs
+add|ember-template-lint|no-invalid-interactive|5|53|5|53|9647ef6afba919b2af04fe551b0fdf0fb63be849|1680652800000|1691020800000|1696204800000|app/components/gh-context-menu.hbs

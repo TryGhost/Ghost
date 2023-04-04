@@ -22,7 +22,7 @@ export default class DropdownService extends Service.extend(Evented, BodyEventLi
     }
 
     @action
-    toggleDropdown(dropdownName, dropdownButton) {
-        this.trigger('toggle', {target: dropdownName, button: dropdownButton});
+    toggleDropdown(dropdownName, dropdownButton, options = {}) {
+        this.trigger('toggle', {target: dropdownName, button: dropdownButton, ...options});
     }
 }

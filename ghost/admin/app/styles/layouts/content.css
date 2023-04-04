@@ -153,6 +153,55 @@
     position: relative;
 }
 
+/* START Temporary styles to move post list to use flex instead of tables */
+.gh-posts-list-item-group {
+    padding: 0 var(--main-layout-content-sidepadding);
+    margin: 0 calc(var(--main-layout-content-sidepadding) * -1 + 10px);
+    border-radius: 5px;
+}
+
+.gh-posts-list-item-group .gh-list-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+}
+
+.gh-posts-list-item-group .gh-list-row .gh-list-data {
+    display: block;
+    min-width: 0;
+}
+
+.gh-posts-list-item-group .gh-list-row .gh-list-data:first-child {
+    flex-grow: 1;
+}
+
+.posts-list[data-ctrl] {
+    cursor: default !important; /* Hide pointer */
+}
+
+.posts-list[data-ctrl] .gh-posts-list-item-group * {
+    cursor: default !important; /* Hide pointer */
+    pointer-events: none;
+}
+
+.posts-list .gh-posts-list-item-group:hover {
+    background: #fafafb;
+}
+
+.posts-list[data-ctrl] .gh-posts-list-item-group:hover {
+    background: #f3f3f9;
+}
+
+.gh-posts-list-item-group[data-selected] {
+    background: #eae5ff !important;
+}
+
+.gh-posts-list-item-group .gh-posts-list-item:hover .gh-list-data {
+    background: transparent !important;
+}
+
+/* END Temporary styles to move post list to use flex instead of tables */
+
 .gh-posts-list-item {
     position: relative;
 }
