@@ -54,20 +54,15 @@ function CalloutNodeComponent({nodeKey, textEditor, hasEmoji, backgroundColor, e
         setShowEmojiPicker(!showEmojiPicker);
     };
 
-    // TODO: this should be handled by KoenigBehaviourPlugin when inserting card
-    React.useEffect(() => {
-        if (!isEditing && isSelected) {
-            setEditing(true);
-        }
-        // only run on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
     };
+
+    React.useEffect(() => {
+        textEditor.setEditable(isEditing);
+    }, [isEditing, textEditor]);
 
     return (
         <>

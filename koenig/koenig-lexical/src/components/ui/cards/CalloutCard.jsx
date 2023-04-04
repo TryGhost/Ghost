@@ -87,10 +87,6 @@ export function CalloutCard({
         }
     }, [isEditing, setShowEmojiPicker]);
 
-    React.useEffect(() => {
-        textEditor.setEditable(isEditing);
-    }, [isEditing, textEditor]);
-
     return (
         <>
             <div className={`flex rounded border px-7 py-5 ${CALLOUT_COLORS[color]} `} data-testid={`callout-bg-${color}`}>

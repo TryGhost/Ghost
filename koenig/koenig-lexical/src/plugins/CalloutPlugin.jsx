@@ -18,7 +18,7 @@ export const CalloutPlugin = () => {
                 INSERT_CALLOUT_COMMAND,
                 async (dataset) => {
                     const cardNode = $createCalloutNode(dataset);
-                    editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
+                    editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 
                     return true;
                 },
