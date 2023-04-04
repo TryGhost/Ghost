@@ -1,6 +1,9 @@
 import React from 'react';
+import populateNestedEditor from '../../../utils/populateNestedEditor';
+import {BASIC_NODES, MINIMAL_NODES} from '../../../index.js';
 import {CardWrapper} from './../CardWrapper';
 import {ToggleCard} from './ToggleCard';
+import {createEditor} from 'lexical';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -35,22 +38,30 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
-    <div className="kg-prose">
-        <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px] py-10">
-            <CardWrapper {...display} {...args}>
-                <ToggleCard {...display} {...args} />
-            </CardWrapper>
-        </div>
-        <div className="w-full bg-black py-10">
-            <div className="not-kg-prose dark mx-auto my-8 min-w-[initial] max-w-[740px]">
-                <CardWrapper {...display} {...args}>
-                    <ToggleCard {...display} {...args} />
+const Template = ({display, header, content, ...args}) => {
+    const headerEditor = createEditor({nodes: MINIMAL_NODES});
+    populateNestedEditor({editor: headerEditor, initialHtml: `<p>${header}</p>`});
+
+    const contentEditor = createEditor({nodes: BASIC_NODES});
+    populateNestedEditor({editor: contentEditor, initialHtml: `<p>${content}</p>`});
+
+    return (
+        <div className="kg-prose">
+            <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px] py-10">
+                <CardWrapper {...display}>
+                    <ToggleCard {...display} {...args} contentEditor={contentEditor} headerEditor={headerEditor} />
                 </CardWrapper>
             </div>
+            <div className="w-full bg-black py-10">
+                <div className="not-kg-prose dark mx-auto my-8 min-w-[initial] max-w-[740px]">
+                    <CardWrapper {...display}>
+                        <ToggleCard {...display} {...args} contentEditor={contentEditor} headerEditor={headerEditor} />
+                    </CardWrapper>
+                </div>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 export const Empty = Template.bind({});
 Empty.args = {

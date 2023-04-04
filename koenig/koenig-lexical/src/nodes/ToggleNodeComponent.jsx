@@ -1,83 +1,52 @@
 import CardContext from '../context/CardContext';
-import React, {useEffect, useRef, useState} from 'react';
-import {$getNodeByKey} from 'lexical';
+import React from 'react';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {ToggleCard} from '../components/ui/cards/ToggleCard';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function ToggleNodeComponent({nodeKey, content, header}) {
+export function ToggleNodeComponent({nodeKey, headerEditor, contentEditor}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
-    const {isEditing, isSelected, setEditing} = cardContext;
+    const {isEditing, isSelected} = cardContext;
 
-    const [isContentVisible, setContentVisible] = useState(false);
-    const [isContentFocused, setFocusOnContent] = useState(false);
-    const [isHeaderFocused, setFocusOnHeader] = useState(true);
+    const [isContentVisible, setContentVisible] = React.useState(false);
 
-    const toggleRef = useRef(null);
+    const toggleRef = React.useRef(null);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (toggleRef && toggleRef.current) {
             toggleRef.current.click();
         }
     }, []);
 
-    const toggleContent = () => {
+    const toggleContent = (event) => {
+        event?.preventDefault();
+        event?.stopPropagation();
         setContentVisible(!isContentVisible);
-    };
-
-    const focusOnContent = (e) => {
-        if (e.key === 'Enter') {
-            setFocusOnHeader(false);
-            setFocusOnContent(true);
-
-            if (!isContentVisible && toggleRef && toggleRef.current) {
-                toggleRef.current.click();
-            }
-        }
-    };
-
-    const focusOnHeader = (e) => {
-        setFocusOnContent(false);
-        setFocusOnHeader(true);
-    };
-
-    const setHeader = (newHeader) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setHeader(newHeader);
-        });
-    };
-
-    const setContent = (newContent) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setContent(newContent);
-        });
     };
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
-        setEditing(true);
+        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
     };
+
+    React.useEffect(() => {
+        headerEditor.setEditable(isEditing);
+        contentEditor.setEditable(isEditing);
+    }, [isEditing, headerEditor, contentEditor]);
 
     return (
         <>
             <ToggleCard
-                content={content}
+                contentEditor={contentEditor}
                 contentPlaceholder={'Collapsible content'}
-                focusOnContent={focusOnContent}
-                focusOnHeader={focusOnHeader}
-                header={header}
+                headerEditor={headerEditor}
                 headerPlaceholder={'Toggle header'}
-                isContentFocused={isContentFocused}
                 isContentVisible={isContentVisible}
                 isEditing={isEditing}
-                isHeaderFocused={isHeaderFocused}
-                setContent={setContent}
-                setHeader={setHeader}
                 toggleContent={toggleContent}
                 toggleRef={toggleRef}
             />

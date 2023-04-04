@@ -31,7 +31,7 @@ describe('Toggle card', async () => {
                 root: {
                     children: [{
                         type: 'toggle',
-                        header: '<p dir="ltr"><span>Header</span></p>',
+                        header: '<span><em>Header</em></span>', // header shouldn't have wrapper element like <p> or <h4>
                         content: '<p dir="ltr"><span>Content</span></p>'
                     }],
                     direction: null,
@@ -48,12 +48,21 @@ describe('Toggle card', async () => {
 
         await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="toggle">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="toggle">
                         <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
                             <div class="flex cursor-text items-start justify-between">
                                 <div class="mr-2 w-full">
                                     <div class="kg-toggle-header-text">
-                                        <p><span>Header</span></p>
+                                        <div data-kg="editor">
+                                            <div
+                                                contenteditable="false"
+                                                spellcheck="true"
+                                                data-lexical-editor="true"
+                                                aria-autocomplete="none"
+                                            >
+                                                <p dir="ltr"><em data-lexical-text="true">Header</em></p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div
@@ -63,11 +72,20 @@ describe('Toggle card', async () => {
                             </div>
                             <div class="mt-2 w-full visible">
                                 <div class="kg-toggle-content-text">
-                                    <p><span>Content</span></p>
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="false"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            aria-autocomplete="none"
+                                        >
+                                            <p dir="ltr"><span data-lexical-text="true">Content</span></p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div data-kg-card-toolbar="toggle"></div>
+                        <div></div>
                     </div>
                 </div>
             `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
@@ -79,10 +97,49 @@ describe('Toggle card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="toggle"></div>
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="toggle">
+                    <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
+                        <div class="flex cursor-text items-start justify-between">
+                            <div class="mr-2 w-full">
+                                <div class="kg-toggle-header-text">
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="true"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            role="textbox"
+                                        >
+                                            <p><br /></p>
+                                        </div>
+                                    </div>
+                                    <div>Toggle header</div>
+                                </div>
+                            </div>
+                            <div
+                                class="ml-auto mt-[-1px] flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center">
+                                <svg></svg>
+                            </div>
+                        </div>
+                        <div class="mt-2 w-full visible">
+                            <div class="kg-toggle-content-text">
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="true"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        role="textbox"
+                                    >
+                                        <p><br /></p>
+                                    </div>
+                                </div>
+                                <div>Collapsible content</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <p><br /></p>
-        `, {ignoreCardContents: true});
+        `, {ignoreInnerSVG: true});
     });
 
     it('focuses on the header input when rendered', async function () {
@@ -139,9 +196,12 @@ describe('Toggle card', async () => {
         await expect(header).toContainText('Header');
     });
 
-    it.todo('renders in display mode when unfocused', async function () {
+    it('renders in display mode when unfocused', async function () {
         await focusEditor(page);
         await insertToggleCard(page);
+
+        // add some content to avoid auto-removal when leaving empty
+        await page.keyboard.type('Header');
 
         // Shift focus from header to content
         await page.keyboard.press('ArrowDown');
@@ -153,9 +213,12 @@ describe('Toggle card', async () => {
         await expect(toggleCard).toHaveAttribute('data-kg-card-editing', 'false');
     });
 
-    it.todo('renders an action toolbar', async function () {
+    it('renders an action toolbar', async function () {
         await focusEditor(page);
         await insertToggleCard(page);
+
+        // Add some content to avoid auto-removal
+        await page.keyboard.type('Header');
 
         // Shift focus from header to content
         await page.keyboard.press('ArrowDown');
@@ -168,5 +231,19 @@ describe('Toggle card', async () => {
 
         const editButton = page.locator('[data-kg-card-toolbar="toggle"]');
         await expect(editButton).toBeVisible();
+    });
+
+    it('is removed when left empty', async function () {
+        await focusEditor(page);
+        await insertToggleCard(page);
+
+        // Shift focus from header to content
+        await page.keyboard.press('ArrowDown');
+
+        // Shift focus from content to editor
+        await page.keyboard.press('ArrowDown');
+
+        const toggleCard = page.locator('[data-kg-card="toggle"]');
+        await expect(toggleCard).not.toBeVisible();
     });
 });
