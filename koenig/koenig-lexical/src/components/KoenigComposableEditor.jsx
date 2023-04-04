@@ -13,6 +13,7 @@ import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
+import {useCollaborationContext} from '@lexical/react/LexicalCollaborationContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSharedHistoryContext} from '../context/SharedHistoryContext';
 import {useSharedOnChangeContext} from '../context/SharedOnChangeContext';
@@ -29,8 +30,8 @@ const KoenigComposableEditor = ({
     isDragEnabled = true
 }) => {
     const {historyState} = useSharedHistoryContext();
-
     const [editor] = useLexicalComposerContext();
+    const {isCollabActive} = useCollaborationContext();
     const {editorContainerRef, darkMode} = React.useContext(KoenigComposerContext);
 
     const isNested = !!editor._parentEditor;
@@ -82,7 +83,7 @@ const KoenigComposableEditor = ({
                 placeholder={placeholder || <EditorPlaceholder />}
             />
             <OnChangePlugin ignoreSelectionChange={true} onChange={_onChange} />
-            <HistoryPlugin externalHistoryState={historyState} /> {/* adds undo/redo */}
+            {!isCollabActive && <HistoryPlugin externalHistoryState={historyState} />} {/* adds undo/redo, in multiplayer that's handled by yjs */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} isNested={isNested} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
