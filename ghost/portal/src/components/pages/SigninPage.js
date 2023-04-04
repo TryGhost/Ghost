@@ -33,9 +33,10 @@ export default class SigninPage extends React.Component {
             };
         }, async () => {
             const {email, errors} = this.state;
+            const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('signin', {email});
+                this.context.onAction('signin', {email, redirect});
             }
         });
     }
