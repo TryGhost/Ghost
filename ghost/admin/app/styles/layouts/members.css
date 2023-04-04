@@ -2204,7 +2204,6 @@ p.gh-members-import-errordetail:first-of-type {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    height: 20px;
 }
 
 .gh-members-emailpreview-meta.center-aligned {
