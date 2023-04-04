@@ -42,6 +42,7 @@ export function BookmarkCard({
                     isSelected={isSelected}
                     setCaption={setCaption}
                 />  
+                <div className="absolute inset-0 z-50 mt-0"></div>
             </>
         );
     }
