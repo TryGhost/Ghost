@@ -1,8 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
+import {UrlInput} from '../UrlInput';
 
 export function BookmarkCard({
+    author,
     handleUrlChange,
     handleUrlInput,
     url, 
@@ -27,7 +29,7 @@ export function BookmarkCard({
                         <div className="mt-[20px] flex items-center text-sm font-medium leading-9 text-grey-900">
                             {icon && <BookmarkIcon src={icon} />}
                             <span className=" db max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap leading-6 text-grey-900 dark:text-grey-100">{publisher}</span>
-                            <span className="font-normal text-grey-800 before:mx-1.5 before:text-grey-900 before:content-['•'] dark:text-grey-600 dark:before:text-grey-100">Author McAuthory</span>
+                            <span className="font-normal text-grey-800 before:mx-1.5 before:text-grey-900 before:content-['•'] dark:text-grey-600 dark:before:text-grey-100">{author}</span>
                         </div>
                     </div>
                     {thumbnail &&   
@@ -47,7 +49,16 @@ export function BookmarkCard({
         );
     }
     return (
-        <input className="w-full rounded border border-grey/60 p-2 font-sans text-sm font-normal text-grey-900 dark:border-grey-800 dark:bg-grey-900 dark:text-grey-300 dark:placeholder:text-grey-800" placeholder={urlPlaceholder} value={urlInputValue} onBlur={handleUrlInput} onChange={handleUrlChange} />
+        // <input className="w-full rounded border border-grey/60 p-2 font-sans text-sm font-normal text-grey-900 dark:border-grey-800 dark:bg-grey-900 dark:text-grey-300 dark:placeholder:text-grey-800" placeholder={urlPlaceholder} value={urlInputValue} onBlur={handleUrlInput} onChange={handleUrlChange} />
+        <UrlInput 
+            handleRetry={() => {console.log(`test retry`)}}
+            handleUrlChange={handleUrlChange} 
+            handleUrlInput={handleUrlInput}
+            hasError={false}
+            placeholder={urlPlaceholder}
+            url={url}
+            value={urlInputValue} 
+        />
     );
 }
 

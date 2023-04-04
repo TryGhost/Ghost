@@ -13,7 +13,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_BOOKMARK_COMMAND} from '@tryghost/kg-default-nodes';
 
-function BookmarkNodeComponent({nodeKey, url, icon, title, description, publisher, thumbnail, caption}) {
+function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, publisher, thumbnail, caption}) {
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
@@ -37,15 +37,16 @@ function BookmarkNodeComponent({nodeKey, url, icon, title, description, publishe
         //     url: 'https://www.ghost.org/',
         //     icon: 'https://www.ghost.org/favicon.ico',
         //     title: 'Ghost: The Creator Economy Platform',
-        //     description: 'doing ghost stuff',
+        //     author: 'Arthur McAuthor'
+        //     description: 'here's a long description here's a long description here's a long description here's a long description here's a long description',
         //     publisher: 'Ghost - The Professional Publishing Platform',
         //     thumbnail: 'https://ghost.org/images/meta/ghost.png',
         //     caption: 'caption here'
         // };
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            // console.log(`node`,node);
             node.setUrl(testData.url);
+            node.setAuthor(testData.author);
             node.setIcon(testData.icon);
             node.setTitle(testData.title);
             node.setDescription(testData.description);
@@ -66,6 +67,7 @@ function BookmarkNodeComponent({nodeKey, url, icon, title, description, publishe
     return (
         <>
             <BookmarkCard
+                author={author}
                 caption={caption}
                 description={description}
                 handleUrlChange={handleUrlChange}
@@ -125,6 +127,7 @@ export class BookmarkNode extends BaseBookmarkNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()}>
                 <BookmarkNodeComponent
+                    author={this.__author}
                     caption={this.__caption}
                     description={this.__description}
                     icon={this.__icon}
