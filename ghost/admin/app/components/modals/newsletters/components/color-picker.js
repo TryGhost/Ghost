@@ -60,7 +60,7 @@ export default class ColorPicker extends Component {
         this.timer = setTimeout(() => {
             this.didSelectCustomColor = false;
             this.timer = null;
-        }, 500);
+        }, 350);
     }
 
     get customColorSelected() {
