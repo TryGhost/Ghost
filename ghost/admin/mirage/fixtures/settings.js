@@ -81,6 +81,8 @@ export default [
     setting('portal', 'portal_button_style', 'icon-and-text'),
     setting('portal', 'portal_button_icon', null),
     setting('portal', 'portal_button_signup_text', 'Subscribe'),
+    setting('portal', 'portal_signup_terms_html', null),
+    setting('portal', 'portal_signup_checkbox_required', 'false'),
 
     // EMAIL
     setting('email', 'mailgun_domain', null),
