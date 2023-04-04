@@ -2,12 +2,9 @@ import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vite';
 import {resolve} from 'path';
-import {setLocalEnv} from './config/setLocalEnv.js';
 
 // https://vitejs.dev/config/
 export default (function viteDemoConfig() {
-    setLocalEnv();
-
     return defineConfig({
         plugins: [
             svgr(),

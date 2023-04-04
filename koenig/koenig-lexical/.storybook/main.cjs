@@ -2,10 +2,6 @@ const svgrPlugin = require('vite-plugin-svgr');
 
 module.exports = {
   async viteFinal(config, { configType }) {
-    // use Node import() because storybook config doesn't support ES modules
-    const envModule = await import('../config/setLocalEnv.js');
-    envModule.setLocalEnv();
-
     config.plugins = [
       ...config.plugins,
       svgrPlugin({

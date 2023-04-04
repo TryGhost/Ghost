@@ -3,14 +3,11 @@ import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vitest/config';
 import {resolve} from 'path';
-import {setLocalEnv} from './config/setLocalEnv.js';
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
 // https://vitejs.dev/config/
 export default (function viteConfig() {
-    setLocalEnv();
-
     return defineConfig({
         plugins: [
             svgr(),
