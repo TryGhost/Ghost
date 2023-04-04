@@ -11,7 +11,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
 import i18nLib from '@tryghost/i18n';
@@ -558,7 +558,7 @@ export default class App extends React.Component {
                 if (!_t || 'complete' === _t || 'loaded' === _t) {
                     try {
                         window.$FPROM.init(firstPromoterId, siteDomain);
-                        if (member) {
+                        if (isRecentMember({member})) {
                             const email = member.email;
                             const uid = member.uuid;
                             if (window.$FPROM) {
