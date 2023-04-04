@@ -47,6 +47,8 @@ export default Model.extend(ValidationEngine, {
     portalButtonStyle: attr('string'),
     portalButtonIcon: attr('string'),
     portalButtonSignupText: attr('string'),
+    portalSignupTermsHtml: attr('string'),
+    portalSignupCheckboxRequired: attr('boolean'),
     sharedViews: attr('string'),
     /**
      * Analytics settings
