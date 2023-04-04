@@ -891,3 +891,17 @@ export function getUrlHistory() {
         console.warn(`[Portal] Failed to load member URL history:`, error);
     }
 }
+
+// Check if member is a recent member, i.e. created in last 24 hours
+export function isRecentMember({member}) {
+    if (!member?.created_at) {
+        return false;
+    }
+
+    const now = new Date();
+    const created = new Date(member.created_at);
+    const diff = now.getTime() - created.getTime();
+    const diffHours = Math.round(diff / (1000 * 60 * 60));
+
+    return diffHours < 24;
+}
