@@ -2061,6 +2061,10 @@ p.gh-members-import-errordetail:first-of-type {
     max-width: 700px;
 }
 
+.gh-members-emailpreview-labs .gh-members-emailpreview-container {
+    max-width: 740px;
+}
+
 .gh-members-emailpreview-container a {
     color: var(--midgrey);
     text-decoration: underline;
@@ -2104,7 +2108,8 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-labs .gh-members-emailpreview-contents {
-    margin: 0;
+    max-width: 672px;
+    margin: 0 auto;
     padding: 16px;
 }
 
@@ -2421,6 +2426,10 @@ p.gh-members-import-errordetail:first-of-type {
     white-space: nowrap;
     pointer-events: none;
     cursor: default;
+}
+
+.gh-members-emailpreview-labs .gh-members-emailpreview-feedback-button {
+    background: none;
 }
 
 .gh-members-emailpreview-feedback-button svg {
