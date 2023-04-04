@@ -263,14 +263,13 @@ class SignupPage extends React.Component {
         clearTimeout(this.timeoutId);
     }
 
-    handleSignup(e) {
-        const {site, onAction} = this.context;
-        e.preventDefault();
+    doSignup() {
         this.setState((state) => {
             return {
                 errors: ValidateInputForm({fields: this.getInputFields({state})})
             };
         }, () => {
+            const {site, onAction} = this.context;
             const {name, email, plan, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
@@ -290,30 +289,15 @@ class SignupPage extends React.Component {
         });
     }
 
+    handleSignup(e) {
+        e.preventDefault();
+        this.doSignup();
+    }
+
     handleChooseSignup(e, plan) {
         e.preventDefault();
-        this.setState((state) => {
-            return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
-            };
-        }, () => {
-            const {onAction, site} = this.context;
-            const {name, email, errors} = this.state;
-            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
-            if (!hasFormErrors) {
-                if (hasMultipleNewsletters({site})) {
-                    this.setState({
-                        showNewsletterSelection: true,
-                        pageData: {name, email, plan},
-                        errors: {}
-                    });
-                } else {
-                    onAction('signup', {name, email, plan});
-                    this.setState({
-                        errors: {}
-                    });
-                }
-            }
+        this.setState({plan}, () => {
+            this.doSignup();
         });
     }
 
