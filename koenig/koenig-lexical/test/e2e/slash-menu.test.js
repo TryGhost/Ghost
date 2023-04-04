@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, it, test} from 'vitest';
-import {assertHTML, assertSelection, focusEditor, html, initialize, startApp} from '../utils/e2e';
+import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard, startApp} from '../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Slash menu', async () => {
@@ -320,10 +320,7 @@ describe('Slash menu', async () => {
             await page.keyboard.press('Enter');
             await page.keyboard.type('Testing');
             await page.keyboard.press('ArrowUp');
-            await page.keyboard.type('/callout');
-            await page.waitForSelector('[data-kg-card-menu-item="Callout"]');
-            await page.keyboard.press('Enter');
-            await page.waitForSelector('[data-kg-card="callout"]');
+            await insertCard(page, {cardName: 'callout'});
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
@@ -339,10 +336,7 @@ describe('Slash menu', async () => {
             await page.keyboard.type('--- ');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
-            await page.keyboard.type('/callout');
-            await page.waitForSelector('[data-kg-card-menu-item="Callout"]');
-            await page.keyboard.press('Enter');
-            await page.waitForSelector('[data-kg-card="callout"]');
+            await insertCard(page, {cardName: 'callout'});
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">

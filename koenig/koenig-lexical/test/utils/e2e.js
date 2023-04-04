@@ -1,4 +1,5 @@
 import jsdom from 'jsdom';
+import playwright from '@playwright/test';
 import prettier from 'prettier';
 import {E2E_PORT} from '../e2e-setup';
 import {chromium, firefox, webkit} from 'playwright';
@@ -327,7 +328,7 @@ export function isMac() {
 
 export async function insertCard(page, {cardName}) {
     await page.keyboard.type(`/${cardName}`);
-    await page.waitForSelector(`[data-kg-card-menu-item="${startCase(cardName)}"][data-kg-cardmenu-selected="true"]`);
+    await playwright.expect(await page.locator(`[data-kg-card-menu-item="${startCase(cardName)}"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
     await page.keyboard.press('Enter');
-    await page.waitForSelector(`[data-kg-card="${cardName}"]`);
+    await playwright.expect(await page.locator(`[data-kg-card="${cardName}"]`)).toBeVisible();
 }
