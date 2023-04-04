@@ -162,6 +162,8 @@ export default class MembersUtilsService extends Service {
         settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
         settingsParam.append('membersSignupAccess', membersSignupAccess);
         settingsParam.append('allowSelfSignup', allowSelfSignup);
+        settingsParam.append('signupTermsHtml', this.settings.portalSignupTermsHtml || '');
+        settingsParam.append('signupCheckboxRequired', this.settings.portalSignupCheckboxRequired);
 
         if (portalPlans) {
             settingsParam.append('portalPrices', encodeURIComponent(portalPlans));
