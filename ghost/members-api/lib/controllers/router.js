@@ -319,12 +319,21 @@ module.exports = class RouterController {
 
     async sendMagicLink(req, res) {
         const {email, autoRedirect} = req.body;
-        let {emailType} = req.body;
+        let {emailType, redirect} = req.body;
 
         let referer = req.get('referer');
         if (autoRedirect === false){
             referer = null;
         }
+        if (redirect) {
+            try {
+                // Validate URL
+                referer = new URL(redirect).href;
+            } catch (e) {
+                logging.warn(e);
+            }
+        }
+
         if (!email) {
             throw new errors.BadRequestError({
                 message: tpl(messages.emailRequired)

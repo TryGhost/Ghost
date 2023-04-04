@@ -12,7 +12,10 @@ export default class AccountHomePage extends React.Component {
         const {member} = this.context;
         if (!member) {
             this.context.onAction('switchPage', {
-                page: 'signin'
+                page: 'signin',
+                pageData: {
+                    redirect: window.location.href // This includes the search/fragment of the URL (#/portal/account) which is missing from the default referer header
+                }
             });
         }
     }
