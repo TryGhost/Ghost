@@ -846,6 +846,19 @@ describe('Members API', function () {
             ]
         };
 
+        // Set site title to something with a special character to ensure subject line doesn't get escaped
+        // Refs https://github.com/TryGhost/Team/issues/2895
+        await agent.put('/settings/')
+            .body({
+                settings: [
+                    {
+                        key: 'title',
+                        value: 'Ghost\'s Test Site'
+                    }
+                ]
+            })
+            .expectStatus(200);
+
         const {body} = await agent
             .post('/members/?send_email=true&email_type=signup')
             .body({members: [member]})
@@ -866,7 +879,7 @@ describe('Members API', function () {
         const newMember = body.members[0];
 
         mockManager.assert.sentEmail({
-            subject: '🙌 Complete your sign up to Ghost!',
+            subject: '🙌 Complete your sign up to Ghost\'s Test Site!',
             to: 'member_getting_confirmation@test.com'
         });
 
@@ -913,6 +926,18 @@ describe('Members API', function () {
             memberId: newMember.id,
             asserts: []
         });
+
+        // Reset the site title to the default
+        await agent.put('/settings/')
+            .body({
+                settings: [
+                    {
+                        key: 'title',
+                        value: 'Ghost'
+                    }
+                ]
+            })
+            .expectStatus(200);
     });
 
     it('Add should fail when passing incorrect email_type query parameter', async function () {
