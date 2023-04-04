@@ -3,7 +3,7 @@
 exports[`Comments API when authenticated can get member data 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "created_at": "2023-04-04T18:30:54.000Z",
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
   "email": "member@example.com",
   "email_suppression": Object {
     "info": null,
@@ -49,7 +49,7 @@ Object {
 exports[`Comments API when authenticated can remove member from suppression list and resubscribe to default newsletters 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "created_at": "2023-04-04T18:30:54.000Z",
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
   "email": "member@example.com",
   "email_suppression": Object {
     "info": null,
@@ -82,7 +82,7 @@ Object {
 exports[`Comments API when authenticated can remove member from suppression list and resubscribe to default newsletters 3: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "created_at": "2023-04-04T18:30:54.000Z",
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
   "email": "member@example.com",
   "email_suppression": Object {
     "info": null,
@@ -128,7 +128,7 @@ Object {
 exports[`Comments API when authenticated can update comment notifications 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "created_at": "2023-04-04T18:30:54.000Z",
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
   "email": "member@example.com",
   "email_suppression": Object {
     "info": null,
@@ -266,7 +266,7 @@ Object {
 exports[`Comments API when authenticated can update member expertise 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "created_at": "2023-04-04T18:30:54.000Z",
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
   "email": "member@example.com",
   "email_suppression": Object {
     "info": null,
@@ -312,7 +312,7 @@ Object {
 exports[`Comments API when authenticated can update name 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "created_at": "2023-04-04T18:30:54.000Z",
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
   "email": "member@example.com",
   "email_suppression": Object {
     "info": null,
@@ -358,7 +358,7 @@ Object {
 exports[`Comments API when authenticated trims whitespace from expertise 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "created_at": "2023-04-04T18:30:54.000Z",
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
   "email": "member@example.com",
   "email_suppression": Object {
     "info": null,
