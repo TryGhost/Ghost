@@ -321,6 +321,10 @@ export default class App extends React.Component {
                 data.site.portal_button_icon = value;
             } else if (key === 'signupButtonText') {
                 data.site.portal_button_signup_text = value || '';
+            } else if (key === 'signupTermsHtml') {
+                data.site.portal_signup_terms_html = value || '';
+            } else if (key === 'signupCheckboxRequired') {
+                data.site.portal_signup_checkbox_required = JSON.parse(value);
             } else if (key === 'buttonStyle' && value) {
                 data.site.portal_button_style = value;
             } else if (key === 'monthlyPrice' && !isNaN(Number(value))) {

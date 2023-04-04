@@ -260,6 +260,40 @@
                                         </GhFormGroup>
                                         {{/if}}
                                     {{/if}}
+
+                                    {{#if (feature "makingItRain")}}
+                                        <GhFormGroup class="gh-stack-item">
+                                            <label class="modal-fullsettings-title">Signup terms</label>
+                                            <KoenigBasicHtmlInput
+                                                @name="footer"
+                                                @html={{this.settings.portalSignupTermsHtml}}
+                                                @class="miw-100 form-text gh-members-emailsettings-footer-input"
+                                                @onChange={{action "setTermsHtml"}}
+                                            />
+                                            <p>Any extra information or legal text</p>
+                                        </GhFormGroup>
+
+                                        <GhFormGroup class="gh-members-subscribed-checkbox gh-portal-setting-first mb0 b--whitegrey">
+                                            <div class="flex justify-between items-center">
+                                                <h4 class="gh-portal-setting-title">Require agreement</h4>
+                                                <div class="for-switch small">
+                                                    <label
+                                                        class="switch"
+                                                        for="portal-signup-checkbox-required-checkbox"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={{this.settings.portalSignupCheckboxRequired}}
+                                                            id="portal-signup-checkbox-required-checkbox"
+                                                            name="portal-signup-checkbox-required-checkbox"
+                                                            onclick={{action "toggleSignupCheckboxRequired" value="target.checked"}}
+                                                        >
+                                                        <span class="input-toggle-component"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </GhFormGroup>
+                                    {{/if}}
                                 </div>
                             {{/liquid-if}}
                         {{/let}}
