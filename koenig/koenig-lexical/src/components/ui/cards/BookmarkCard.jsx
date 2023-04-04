@@ -51,7 +51,6 @@ export function BookmarkCard({
     return (
         // <input className="w-full rounded border border-grey/60 p-2 font-sans text-sm font-normal text-grey-900 dark:border-grey-800 dark:bg-grey-900 dark:text-grey-300 dark:placeholder:text-grey-800" placeholder={urlPlaceholder} value={urlInputValue} onBlur={handleUrlInput} onChange={handleUrlChange} />
         <UrlInput 
-            handleRetry={() => {console.log(`test retry`)}}
             handleUrlChange={handleUrlChange} 
             handleUrlInput={handleUrlInput}
             hasError={false}
