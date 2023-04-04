@@ -16,7 +16,7 @@ export async function fetchEmbed(url, {type}) {
             url: 'https://www.ghost.org/',
             icon: 'https://www.ghost.org/favicon.ico',
             title: 'Ghost: The Creator Economy Platform',
-            description: 'doing ghost stuff',
+            description: 'The former of the two songs addresses the issue of negative rumors in a relationship, while the latter, with a more upbeat pulse, is a classic club track; the single is highlighted by a hyped bridge.',
             publisher: 'Ghost - The Professional Publishing Platform',
             thumbnail: 'https://ghost.org/images/meta/ghost.png',
             caption: 'caption here'
