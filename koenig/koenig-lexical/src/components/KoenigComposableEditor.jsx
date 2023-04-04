@@ -15,6 +15,7 @@ import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSharedHistoryContext} from '../context/SharedHistoryContext';
+import {useSharedOnChangeContext} from '../context/SharedOnChangeContext';
 
 const KoenigComposableEditor = ({
     onChange,
@@ -35,16 +36,24 @@ const KoenigComposableEditor = ({
     const isNested = !!editor._parentEditor;
     const isDragReorderEnabled = isDragEnabled && !readOnly && !isNested;
 
-    const _onChange = React.useCallback(() => {
-        if (onChange) {
-            // onChange is called for the main editor and nested editors, we want to
+    const {onChange: sharedOnChange} = useSharedOnChangeContext();
+    const _onChange = React.useCallback((editorState) => {
+        if (sharedOnChange) {
+            // sharedInChange is called for the main editor and nested editors, we want to
             // make sure we don't accidentally serialize only the contents of the nested
             // editor so we need to use the parent editor when it exists
-            const editorState = (editor._parentEditor || editor).getEditorState();
+            const primaryEditorState = (editor._parentEditor || editor).getEditorState();
+            const json = primaryEditorState.toJSON();
+            sharedOnChange(json);
+        }
+
+        if (onChange) {
+            // onChange is only called for this current editor instance, allowing for
+            // per-editor onChange handlers
             const json = editorState.toJSON();
             onChange(json);
         }
-    }, [onChange, editor]);
+    }, [onChange, sharedOnChange, editor]);
 
     const onWrapperRef = (wrapperElem) => {
         if (!isNested) {
