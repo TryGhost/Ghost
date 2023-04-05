@@ -22,7 +22,7 @@ export function SettingsPanel({children, darkMode}) {
         <Portal>
             <div className={`${darkMode ? 'dark' : ''}`}>
                 <div ref={ref}
-                    className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 overflow-y-auto rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-900"
+                    className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-900"
                     data-testid="settings-panel"
                 >
                     {children}
