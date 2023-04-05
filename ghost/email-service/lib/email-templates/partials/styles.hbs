@@ -66,9 +66,9 @@ table td {
 .container {
     display: block;
     margin: 0 auto !important;
+    padding: 12px;
     /* makes it centered */
-    max-width: 640px;
-    padding: 16px;
+    max-width: 600px;
     background-color: {{backgroundColor}};
     color: {{textColor}};
 }
@@ -78,7 +78,7 @@ table td {
     box-sizing: border-box;
     display: block;
     margin: 0 auto;
-    max-width: 640px;
+    max-width: 600px;
     {{#if borderColor}}
         border: 1px solid {{borderColor}};
     {{/if}}
@@ -162,6 +162,7 @@ blockquote {
     margin: 2em 0 2em 0;
     padding: 0 25px 0 25px;
     border-left: {{linkColor}} 2px solid;
+    color: {{textColor}};
     font-size: 17px;
     font-weight: 500;
     line-height: 1.6em;
@@ -1040,9 +1041,6 @@ a[data-flickr-embed] img {
 .kg-product-rating img {
     width: 96px;
     border: none;
-    {{#if backgroundIsDark}}
-        filter: brightness(10);
-    {{/if}}
 }
 
 .kg-audio-card {
@@ -1147,11 +1145,10 @@ a[data-flickr-embed] img {
     text-align: center; 
     border-radius: 2px;
     {{#if backgroundIsDark}}
-        background: #15212A; 
-        background: rgba(255, 255, 255, 0.1);
+        background: {{backgroundColor}} !important;
+        background: rgba(255, 255, 255, 0.25) !important;
     {{else}}
-        background: #F7F7F7; 
-        background: rgba(0, 0, 0, 0.07);
+        background: {{accentColor}} !important;
     {{/if}}
 }
 
@@ -1178,8 +1175,8 @@ a[data-flickr-embed] img {
 ------------------------------------- */
 .main {
     border-radius: 3px;
+    border-spacing: 20px 0;
     width: 100%;
-    padding: 40px;
     background: {{backgroundColor}};
 }
 
@@ -1336,10 +1333,6 @@ a[data-flickr-embed] img {
 ------------------------------------- */
 @media only screen and (max-width: 620px) {
 
-    body {
-        padding: 0;
-    }
-
     table.body {
         width: 100%;
         min-width: 100%;
@@ -1378,7 +1371,6 @@ a[data-flickr-embed] img {
     }
 
     table.body .main {
-        padding: 0 !important;
         border-spacing: 10px 0 !important;
         border-left-width: 0 !important;
         border-radius: 0 !important;
