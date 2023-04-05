@@ -40,7 +40,7 @@
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
-    "@sentry/ember": "7.44.2",
+    "@sentry/ember": "7.46.0",
     "@tryghost/color-utils": "0.1.23",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.76",
