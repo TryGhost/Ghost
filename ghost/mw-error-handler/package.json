@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "0.1.22",
-    "@tryghost/errors": "1.2.23",
+    "@tryghost/errors": "1.2.24",
     "@tryghost/http-cache-utils": "0.1.7",
     "@tryghost/tpl": "0.1.22",
     "lodash": "4.17.21",

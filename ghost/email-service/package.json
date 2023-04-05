@@ -27,7 +27,7 @@
   "dependencies": {
     "@tryghost/color-utils": "0.1.23",
     "@tryghost/email-events": "0.0.0",
-    "@tryghost/errors": "1.2.23",
+    "@tryghost/errors": "1.2.24",
     "@tryghost/html-to-plaintext": "0.0.0",
     "@tryghost/kg-default-cards": "6.0.5",
     "@tryghost/logging": "2.4.1",

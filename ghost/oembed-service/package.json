@@ -22,7 +22,7 @@
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.23",
+    "@tryghost/errors": "1.2.24",
     "@tryghost/logging": "2.4.1",
     "@tryghost/tpl": "0.1.22",
     "charset": "1.0.1",
