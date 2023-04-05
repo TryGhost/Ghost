@@ -83,8 +83,7 @@ module.exports = {
                                 </td>
                                 <td width="80" valign="middle" class="kg-file-thumbnail">
                                     <a href="${escapeHtml(postUrl)}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
-                                    <img src="https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png" style="${escapeHtml(emailStyles.icon)}" class="is-dark-background">
-                                    <img src="https://static.ghost.org/v4.0.0/images/download-icon.png" style="${escapeHtml(emailStyles.icon)}" class="is-light-background">
+                                    <img src="https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png" style="${escapeHtml(emailStyles.icon)}">
                                 </td>
                             </tr>
                         </table>
