@@ -1,0 +1,137 @@
+<div class="gh-members-emailpreview gh-members-emailpreview-labs">
+    <div class="gh-members-emailpreview-container">
+        <div class="gh-members-emailpreview-faux">
+            <p>
+                <span class="strong">{{or @newsletter.senderName this.settings.title}}</span> &lt;{{full-email-address (or @newsletter.senderEmail "noreply")}}&gt;
+            </p>
+            <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
+        </div>
+
+        <div class="gh-members-emailpreview-contents" style={{html-safe (concat "background: " this.backgroundColor)}}>
+            <div class="gh-members-emailpreview-border" style={{html-safe (concat "border-color: " this.borderColor)}}>
+                {{#if @newsletter.headerImage}}
+                    <div class="gh-members-emailpreview-header-image">
+                        <img src={{@newsletter.headerImage}} alt="" role="presentation">
+                    </div>
+                {{/if}}
+                {{#if this.showHeader}}
+                    <div class={{if (or (not @newsletter.showPostTitleSection) this.showHeaderTitle) "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}} style={{html-safe (concat "border-color: " this.secondaryBorderColor)}}>
+                        {{#if (and this.settings.icon @newsletter.showHeaderIcon)}}
+                            <img src={{this.settings.icon}} alt="" role="presentation" />
+                        {{/if}}
+                        {{#if this.headerTitle}}
+                            <h4 style={{html-safe (concat "color: " this.textColor)}}>{{this.headerTitle}}</h4>
+                        {{/if}}
+                        {{#if this.headerSubtitle}}
+                            <h5 style={{html-safe (concat "color: " this.secondaryTextColor)}}>{{this.headerSubtitle}}</h5>
+                        {{/if}}
+                    </div>
+                {{/if}}
+                {{#if @newsletter.showPostTitleSection}}
+                    <div class="gh-members-emailpreview-title {{if (eq @newsletter.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
+                        <h2 class="{{if (eq @newsletter.titleFontCategory "serif") "serif"}}" style={{html-safe (concat "color: " this.titleColor)}}>Your email newsletter</h2>
+                        <div class="gh-members-emailpreview-meta {{if (eq @newsletter.titleAlignment "center") "center-aligned"}}">
+                            <p style={{html-safe (concat "color: " this.secondaryTextColor)}}>By {{or this.session.user.name this.session.user.email}}
+                                <span style={{html-safe (concat "color: " this.secondaryTextColor)}}>{{moment-format (moment-site-tz) "D MMM YYYY"}}</span>
+                                {{#if this.showCommentCta}}
+                                    <span style={{html-safe (concat "color: " this.secondaryTextColor)}}><a href="javascript:" class="gh-members-emailpreview-comment-link" 
+                                    style={{html-safe (if this.backgroundColorIsDark "filter: brightness(2)")}}> {{svg-jar "comment"}}</a></span>
+                                {{/if}}
+                            </p>
+                            <p>
+                                <a href="javascript:" class="gh-members-emailpreview-view-online" style={{html-safe (concat "color: " this.secondaryTextColor)}}>View in browser</a>
+                            </p>
+                        </div>
+                    </div>
+                {{/if}}
+                {{#if @newsletter.showFeatureImage}}
+                    <div class="gh-members-emailpreview-featureimage" style={{this.featureImageStyle}}></div>
+                    <div class="gh-members-emailpreview-featureimage-caption" style={{html-safe (concat "color: " this.secondaryTextColor)}}>Feature image caption</div>
+                {{/if}}
+                <div class="gh-members-emailpreview-content {{if (eq @newsletter.bodyFontCategory "sans_serif") "sans-serif"}}" style={{html-safe (concat "border-color: " this.secondaryBorderColor)}}>
+                    <p style={{html-safe (concat "color: " this.textColor)}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
+                    <p style={{html-safe (concat "color: " this.textColor)}}>Over there on the left you’ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we’ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
+                    <p style={{html-safe (concat "color: " this.textColor)}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
+                </div>
+
+                {{#if (or (and @newsletter.feedbackEnabled (feature "audienceFeedback")) this.showCommentCta)}}
+                    <div class="gh-members-emailpreview-feedback" style={{html-safe (concat "border-color: " this.secondaryBorderColor)}}>
+                        <div class="gh-members-emailpreview-feedback-buttons-group">
+                            {{#if (and @newsletter.feedbackEnabled (feature "audienceFeedback"))}}
+                                <Modals::Newsletters::Components::FeedbackButton
+                                    @text="More like this"
+                                    @icon="thumbs-up"
+                                    @textColor={{html-safe this.textColor}} />
+
+                                <Modals::Newsletters::Components::FeedbackButton
+                                    @text="Less like this"
+                                    @icon="thumbs-down"
+                                    @textColor={{html-safe this.textColor}} />
+                            {{/if}}
+
+                            {{#if this.showCommentCta}}
+                                <Modals::Newsletters::Components::FeedbackButton
+                                    @text="Comment"
+                                    @icon="comment"
+                                    @textColor={{html-safe this.textColor}} />
+                            {{/if}}
+                        </div>
+                    </div>
+                {{/if}}
+
+                {{#if @newsletter.showLatestPosts}}
+                    <div class="gh-members-emailpreview-latest-posts" style={{html-safe (concat "border-color: " this.secondaryBorderColor)}}>
+                        <h3 class="pb2" style={{html-safe (concat "color: " this.titleColor)}}>Keep reading</h3>
+                        <Modals::Newsletters::Components::LatestPost
+                            @imgPath="assets/img/latest-posts-1.png"
+                            @postTitle="The three latest posts published on your site"
+                            @postExcerpt="Posts sent as an email only will never be shown here."
+                            @textColor={{html-safe this.textColor}}
+                            @secondaryTextColor={{html-safe this.secondaryTextColor}} />
+                        <Modals::Newsletters::Components::LatestPost
+                            @imgPath="assets/img/latest-posts-2.png"
+                            @postTitle="Displayed at the bottom of each newsletter"
+                            @postExcerpt="Giving your readers one more place to discover your stories."
+                            @textColor={{html-safe this.textColor}}
+                            @secondaryTextColor={{html-safe this.secondaryTextColor}} />
+                        <Modals::Newsletters::Components::LatestPost
+                            @imgPath="assets/img/latest-posts-3.png"
+                            @postTitle="To keep your work front and center"
+                            @postExcerpt="Making sure that your audience stays engaged."
+                            @textColor={{html-safe this.textColor}}
+                            @secondaryTextColor={{html-safe this.secondaryTextColor}} />
+                    </div>
+                {{/if}}
+
+                {{#if @newsletter.showSubscriptionDetails}}
+                    <div class="gh-members-emailpreview-subscription-details" style={{html-safe (concat "border-color: " this.secondaryBorderColor)}}>
+                        <h4 class="pb2" style={{html-safe (concat "color: " this.titleColor)}}>Subscription details</h4>
+                        <p class="pb4" style={{html-safe (concat "color: " this.textColor)}}>You are receiving this because you are a <strong>paid subscriber</strong> to The Local Host. Your subscription will renew on {{this.renewDateString}}.</p>
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <p style={{html-safe (concat "color: " this.textColor)}}>Name: Jamie Larson</p>
+                                <p style={{html-safe (concat "color: " this.textColor)}}>Email: jamie@example.com</p>
+                                <p style={{html-safe (concat "color: " this.textColor)}}>Member since: {{this.todayString}}</p>
+                            </div>
+                            <a href="#" class="gh-members-emailpreview-subscription-link" style={{html-safe (if this.backgroundColorIsDark "color: #FFF; text-decoration: underline;")}}>Manage subscription &rarr;</a>
+                        </div>
+                    </div>
+                {{/if}}
+
+                <div class="gh-members-emailpreview-footer">
+                    <div class="gh-members-emailpreview-footercontent" style={{html-safe (concat "color: " this.secondaryTextColor)}}>
+                        {{html-safe @newsletter.footerContent}}
+                    </div>
+                    <div class="gh-members-emailpreview-footersite">
+                        <span style={{html-safe (concat "color: " this.secondaryTextColor)}}>{{this.settings.title}} &copy; {{moment-format (moment-site-tz) "YYYY"}} – </span> <a href="javascript:" style={{html-safe (concat "color: " this.secondaryTextColor)}}>Unsubscribe</a>
+                    </div>
+                </div>
+                <div class="gh-members-emailpreview-badge {{unless @newsletter.showBadge "hide"}}">
+                    <a href="javascript:"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12ZM11.8326 2.33879C6.37785 2.95189 3.95901 5.20797 3.41126 9.74699C3.34896 10.2632 3.22642 10.7805 3.10443 11.2954C2.93277 12.02 2.76221 12.74 2.76221 13.4458C2.76221 17.9885 6.5856 21.556 11.1283 21.556C12.8959 21.556 14.4433 20.8144 15.8756 20.048C19.0536 18.3478 22.0328 16.2597 22.0328 12.5411C22.0328 9.91512 20.1051 7.56932 18.466 5.5747C18.3834 5.47416 18.3015 5.37451 18.2206 5.27577C17.3866 4.25742 14.4333 2.04643 11.8326 2.33879Z" fill="black"/>
+                    </svg> <span>Powered by Ghost</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
