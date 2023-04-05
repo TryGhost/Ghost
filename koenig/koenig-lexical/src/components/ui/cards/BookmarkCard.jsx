@@ -5,6 +5,9 @@ import {UrlInput} from '../UrlInput';
 
 export function BookmarkCard({
     author,
+    handleClose,
+    handlePasteAsLink,
+    handleRetry,
     handleUrlChange,
     handleUrlInput,
     url, 
@@ -17,7 +20,9 @@ export function BookmarkCard({
     publisher,
     caption, 
     setCaption, 
-    isSelected
+    isSelected,
+    isLoading,
+    urlError
 }) {
     if (url) {
         return (
@@ -50,11 +55,14 @@ export function BookmarkCard({
     }
     return (
         <UrlInput 
+            handleClose={handleClose}
+            handlePasteAsLink={handlePasteAsLink}
+            handleRetry={handleRetry}
             handleUrlChange={handleUrlChange} 
             handleUrlInput={handleUrlInput}
-            hasError={false}
+            hasError={urlError}
+            isLoading={isLoading}
             placeholder={urlPlaceholder}
-            url={url}
             value={urlInputValue} 
         />
     );

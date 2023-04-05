@@ -2,7 +2,8 @@ import CardContext from '../context/CardContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
-import {$getNodeByKey} from 'lexical';
+import {$createLinkNode} from '@lexical/link';
+import {$createParagraphNode, $createTextNode, $getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {BookmarkNode as BaseBookmarkNode, INSERT_BOOKMARK_COMMAND} from '@tryghost/kg-default-nodes';
 import {BookmarkCard} from '../components/ui/cards/BookmarkCard';
@@ -19,6 +20,8 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const [urlInputValue, setUrlInputValue] = React.useState('');
+    const [loading, setLoading] = React.useState(false);
+    const [urlError, setUrlError] = React.useState(false);
 
     const setCaption = (value) => {
         editor.update(() => {
@@ -32,17 +35,44 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
     };
 
     const handleUrlInput = async (event) => {
-        const testData = await cardConfig.fetchEmbed(event.target.value, {type: 'bookmark'});
-        // const testData = {
-        //     url: 'https://www.ghost.org/',
-        //     icon: 'https://www.ghost.org/favicon.ico',
-        //     title: 'Ghost: The Creator Economy Platform',
-        //     author: 'Arthur McAuthor'
-        //     description: 'here's a long description here's a long description here's a long description here's a long description here's a long description',
-        //     publisher: 'Ghost - The Professional Publishing Platform',
-        //     thumbnail: 'https://ghost.org/images/meta/ghost.png',
-        //     caption: 'caption here'
-        // };
+        fetchMetadata(event.target.value);
+    };
+
+    const handleRetry = async () => {
+        // TODO: this is causing the card to disappear rather than return to the input field
+        //  it almost seems like the card is losing focus and being removed by generic editor behavior..
+        setUrlError(false);
+    };
+
+    const handlePasteAsLink = () => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            const paragraph = $createParagraphNode()
+                .append($createLinkNode(urlInputValue)
+                    .append($createTextNode(urlInputValue)));
+            node.replace(paragraph);
+            paragraph.selectEnd();
+        });
+    };
+
+    const handleClose = () => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.remove();
+        });
+    };
+
+    async function fetchMetadata(href) {
+        setLoading(true);
+        let testData;
+        try {
+            // set the test data return values in fetchEmbed.js
+            testData = await cardConfig.fetchEmbed(href, {type: 'bookmark'});
+        } catch (e) {
+            setLoading(false);
+            setUrlError(true);
+            return;
+        }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setUrl(testData.url);
@@ -53,7 +83,8 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
             node.setPublisher(testData.publisher);
             node.setThumbnail(testData.thumbnail);
         });
-    };
+        setLoading(false);
+    }
 
     React.useEffect(() => {
         editor.focus();
@@ -70,15 +101,20 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
                 author={author}
                 caption={caption}
                 description={description}
+                handleClose={handleClose}
+                handlePasteAsLink={handlePasteAsLink}
+                handleRetry={handleRetry}
                 handleUrlChange={handleUrlChange}
                 handleUrlInput={handleUrlInput}
                 icon={icon}
+                isLoading={loading}
                 isSelected={isSelected}
                 publisher={publisher}
                 setCaption={setCaption}
                 thumbnail={thumbnail}
                 title={title}
                 url={url}
+                urlError={urlError}
                 urlInputValue={urlInputValue}
                 urlPlaceholder={`Paste URL to add bookmark content...`}
             />
