@@ -15,14 +15,14 @@
             <tr>
                 <td>
                     <center>
-                        <table border="0" cellpadding="0" cellspacing="0" width="640">
+                        <table border="0" cellpadding="0" cellspacing="0" width="600">
             <![endif]-->
             <tr>
                 <td>&nbsp;</td>
                 <td class="container">
                     <div class="content">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="20" class="main" width="100%">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -149,53 +149,28 @@
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
                                     <td dir="ltr" width="100%" style="background-color: {{backgroundColor}}; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid {{secondaryBorderColor}};" align="center">
-                                        {{#if backgroundIsDark}}
-                                            <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                <tr>
-                                                    {{#if feedbackButtons }}
-                                                        {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/feedback-more-darkmode.png" width="145" height="36" }}
-                                                        {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/feedback-less-darkmode.png" width="142" height="36" }}
-                                                    {{/if}}
-                                                    {{#if newsletter.showCommentCta}}
-                                                        {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-cta-darkmode.png" width="122" height="36" }}
-                                                    {{/if}}
-                                                </tr>
-                                            </table>
-                                            <table class="feedback-buttons-mobile" role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                <tr>
-                                                    {{#if feedbackButtons }}
-                                                        {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/feedback-more-mobile-darkmode.png" width="42" height="42" }}
-                                                        {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/feedback-less-mobile-darkmode.png" width="42" height="42" }}
-                                                    {{/if}}
-                                                    {{#if newsletter.showCommentCta}}
-                                                        {{> feedbackButtonMobile href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-cta-mobile-darkmode.png" width="42" height="42" }}
-                                                    {{/if}}
-                                                </tr>
-                                            </table>
-                                        {{else}}
-                                            <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                <tr>
-                                                    {{#if feedbackButtons }}
-                                                        {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/feedback-more.png" width="145" height="36" }}
-                                                        {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/feedback-less.png" width="142" height="36" }}
-                                                    {{/if}}
-                                                    {{#if newsletter.showCommentCta}}
-                                                        {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-cta.png" width="122" height="36" }}
-                                                    {{/if}}
-                                                </tr>
-                                            </table>
-                                            <table class="feedback-buttons-mobile" role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                <tr>
-                                                    {{#if feedbackButtons }}
-                                                        {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/feedback-more-mobile.png" width="42" height="42" }}
-                                                        {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/feedback-less-mobile.png" width="42" height="42" }}
-                                                    {{/if}}
-                                                    {{#if newsletter.showCommentCta}}
-                                                        {{> feedbackButtonMobile href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-cta-mobile.png" width="42" height="42" }}
-                                                    {{/if}}
-                                                </tr>
-                                            </table>
-                                        {{/if}}
+                                        <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                {{#if feedbackButtons }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this.png" width="145" height="36" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png" width="142" height="36" }}
+                                                {{/if}}
+                                                {{#if newsletter.showCommentCta}}
+                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment.png" width="122" height="36" }}
+                                                {{/if}}
+                                            </tr>
+                                        </table>
+                                        <table class="feedback-buttons-mobile" role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                {{#if feedbackButtons }}
+                                                    {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" }}
+                                                    {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" }}
+                                                {{/if}}
+                                                {{#if newsletter.showCommentCta}}
+                                                    {{> feedbackButtonMobile href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42" }}
+                                                {{/if}}
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
                             {{/if}}

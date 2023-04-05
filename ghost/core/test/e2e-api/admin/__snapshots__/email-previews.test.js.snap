@@ -173,10 +173,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -215,7 +211,6 @@ table.body span {
   }
 
   table.body .main {
-    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -493,14 +488,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -740,7 +735,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24011",
+  "content-length": "23959",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -827,10 +822,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -869,7 +860,6 @@ table.body span {
   }
 
   table.body .main {
-    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -1147,14 +1137,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -1207,7 +1197,7 @@ table.body figcaption a {
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #000000; padding-bottom: 20px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <!--kg-card-begin: markdown--><h1 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; color: #000000; margin: 1.5em 0 0.5em 0; font-size: 42px; font-weight: 700;\\">HTML Ipsum Presents</h1><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><strong style=\\"font-weight: 700;\\">Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code style=\\"font-size: 0.9em; background: #F2F7FA; word-break: break-all; padding: 1px 7px; border-radius: 3px; color: #FF1A75;\\">commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"\\\\&quot;#\\\\&quot;\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; color: #000000; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">Header Level 2</h2><ol style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; padding-left: 1.3em; padding-right: 1.5em; list-style: decimal; max-width: 100%;\\"><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em;\\">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em;\\">Aliquam tincidunt mauris eu risus.</li></ol><blockquote style=\\"margin: 2em 0 2em 0; padding: 0 25px 0 25px; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 0.8em 0; font-size: 1em;\\">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; color: #000000; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Header Level 3</h3><ul style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; padding-left: 1.3em; padding-right: 1.5em; list-style: disc; max-width: 100%;\\"><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em;\\">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em;\\">Aliquam tincidunt mauris eu risus.</li></ul><pre style=\\"white-space: pre-wrap; overflow: auto; background: #15212A; padding: 15px; border-radius: 3px; line-height: 1.2em; color: #ffffff;\\"><code style=\\"font-size: 0.9em;\\">#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->
+                                                <!--kg-card-begin: markdown--><h1 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; color: #000000; margin: 1.5em 0 0.5em 0; font-size: 42px; font-weight: 700;\\">HTML Ipsum Presents</h1><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><strong style=\\"font-weight: 700;\\">Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code style=\\"font-size: 0.9em; background: #F2F7FA; word-break: break-all; padding: 1px 7px; border-radius: 3px; color: #FF1A75;\\">commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"\\\\&quot;#\\\\&quot;\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; color: #000000; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">Header Level 2</h2><ol style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; padding-left: 1.3em; padding-right: 1.5em; list-style: decimal; max-width: 100%;\\"><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em;\\">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em;\\">Aliquam tincidunt mauris eu risus.</li></ol><blockquote style=\\"margin: 2em 0 2em 0; padding: 0 25px 0 25px; border-left: #FF1A75 2px solid; color: #000000; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 0.8em 0; font-size: 1em;\\">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; color: #000000; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Header Level 3</h3><ul style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; padding-left: 1.3em; padding-right: 1.5em; list-style: disc; max-width: 100%;\\"><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em;\\">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em;\\">Aliquam tincidunt mauris eu risus.</li></ul><pre style=\\"white-space: pre-wrap; overflow: auto; background: #15212A; padding: 15px; border-radius: 3px; line-height: 1.2em; color: #ffffff;\\"><code style=\\"font-size: 0.9em;\\">#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -1414,7 +1404,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "28826",
+  "content-length": "28790",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1532,10 +1522,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -1574,7 +1560,6 @@ table.body span {
   }
 
   table.body .main {
-    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -1852,14 +1837,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -2106,7 +2091,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23777",
+  "content-length": "23725",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2553,10 +2538,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -2595,7 +2576,6 @@ table.body span {
   }
 
   table.body .main {
-    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -2873,14 +2853,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -3137,7 +3117,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24269",
+  "content-length": "24217",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3610,10 +3590,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -3652,7 +3628,6 @@ table.body span {
   }
 
   table.body .main {
-    padding: 0 !important;
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -3930,14 +3905,14 @@ table.body figcaption a {
             <tr>
                 <td>
                     <center>
-                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"640\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 640px; padding: 16px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 640px;\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; width: 100%; padding: 40px; background: #ffffff;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -4194,7 +4169,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24269",
+  "content-length": "24217",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
