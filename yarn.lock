@@ -5724,7 +5724,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.2.21", "@tryghost/errors@1.2.23", "@tryghost/errors@1.2.24", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.21", "@tryghost/errors@^1.2.24", "@tryghost/errors@^1.2.3":
+"@tryghost/errors@1.2.21", "@tryghost/errors@1.2.23", "@tryghost/errors@1.2.24", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.21", "@tryghost/errors@^1.2.22", "@tryghost/errors@^1.2.24", "@tryghost/errors@^1.2.3":
   version "1.2.24"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.24.tgz#5daceff6cdee9421297849474fd885857c4bfe3f"
   integrity sha512-5iRF8dl2wirb/1gQA2dv8MtxK204vnjbWvmb3fULNZoVlmuHY1ZUgwRJRquClfUEFyl2qGmNDuoxGoTvur8JKA==
@@ -6106,7 +6106,7 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/tpl@^0.1.24":
+"@tryghost/tpl@^0.1.23", "@tryghost/tpl@^0.1.24":
   version "0.1.24"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.24.tgz#fcf585be02531baf651f2f7605466a3df744d0bc"
   integrity sha512-8DkKSCUuoGmagQ+LeiICt7mTC12HJdBIBhgK/zmOE/QKdl95G0y1mZuyc7dRaUyoXAwTj5EF+MR8gWOtuLdAEw==
@@ -6147,7 +6147,7 @@
     moment-timezone "^0.5.23"
     validator "7.2.0"
 
-"@tryghost/validator@^0.2.4":
+"@tryghost/validator@^0.2.2", "@tryghost/validator@^0.2.4":
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.2.4.tgz#75322a46f16b033ae27ea0839231ef0a3bc434f6"
   integrity sha512-KhAauvyyebf++bveqgwTiphVzLQrupdWLP8zOWASqRDpKR3x+ztJDm1oy9F2aVQTvhxFq5Gwfwhg6+uZncx7pQ==
@@ -6166,7 +6166,7 @@
     "@tryghost/root-utils" "^0.3.20"
     semver "^7.3.5"
 
-"@tryghost/version@^0.1.22":
+"@tryghost/version@^0.1.21", "@tryghost/version@^0.1.22":
   version "0.1.22"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.22.tgz#e2a9f6eec4f9f8945094d3bd7c0757438f4e0622"
   integrity sha512-LpOglcRlwE9auw+OIIN32DWMc2Xr4I57SzIxfXm+AEZWz/lSrBN/3UCb1CyLAWptdEoKKszX7VVa7gZO66A5wg==
