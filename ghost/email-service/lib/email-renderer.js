@@ -346,6 +346,17 @@ class EmailRenderer {
             }
         });
 
+        // Remove duplicate black/white images (CSS based solution not working in Outlook)
+        if (templateData.backgroundIsDark) {
+            $('img.is-light-background').each((i, elem) => {
+                $(elem).remove();
+            });
+        } else {
+            $('img.is-dark-background').each((i, elem) => {
+                $(elem).remove();
+            });
+        }
+
         // Convert DOM back to HTML
         html = $.html(); // () Fix for vscode syntax highlighter
 
