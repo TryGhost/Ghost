@@ -21,7 +21,7 @@
     "c8": "7.13.0",
     "mocha": "10.2.0",
     "nock": "13.3.0",
-    "sinon": "15.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
     "@tryghost/debug": "0.1.22",

@@ -222,7 +222,7 @@
     "c8": "7.13.0",
     "cli-progress": "3.12.0",
     "cssnano": "5.1.15",
-    "eslint": "8.36.0",
+    "eslint": "8.37.0",
     "expect": "29.3.1",
     "form-data": "4.0.0",
     "inquirer": "8.2.5",
@@ -236,7 +236,7 @@
     "postcss-cli": "10.1.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
-    "sinon": "15.0.2",
+    "sinon": "15.0.3",
     "supertest": "6.3.3",
     "tmp": "0.2.1",
     "toml": "3.0.0"
