@@ -855,7 +855,7 @@ describe('Email renderer', function () {
     });
 
     describe('renderBody', function () {
-        let renderedPost = '<p>Lexical Test</p>';
+        let renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
         let postUrl = 'http://example.com';
         let customSettings = {};
         let emailRenderer;
@@ -1193,6 +1193,52 @@ describe('Email renderer', function () {
             // Test footer
             response.html.should.containEql('Test footer</p>'); // begin tag skipped because style is inlined in that tag
             response.plaintext.should.containEql('Test footer');
+        });
+
+        it('works in dark mode', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_post_title_section: true,
+                background_color: '#000000'
+            });
+            const segment = null;
+            const options = {};
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            assert.doesNotMatch(response.html, /is-light-background/);
+        });
+
+        it('works in light mode', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_post_title_section: true,
+                background_color: '#FFFFFF'
+            });
+            const segment = null;
+            const options = {};
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            assert.doesNotMatch(response.html, /is-dark-background/);
         });
 
         it('replaces all links except the unsubscribe and feedback links', async function () {
