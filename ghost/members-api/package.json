@@ -25,7 +25,7 @@
     "mocha": "10.2.0",
     "nock": "13.3.0",
     "should": "13.2.3",
-    "sinon": "15.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
