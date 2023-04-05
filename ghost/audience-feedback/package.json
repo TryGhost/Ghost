@@ -24,7 +24,7 @@
     "sinon": "15.0.2"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.23",
+    "@tryghost/errors": "1.2.24",
     "@tryghost/tpl": "0.1.22",
     "bson-objectid": "2.0.4"
   }

@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "0.1.22",
-    "@tryghost/errors": "1.2.23",
+    "@tryghost/errors": "1.2.24",
     "@tryghost/tpl": "0.1.22",
     "csso": "5.0.5",
     "terser": "5.16.8",
