@@ -50,6 +50,7 @@
       "@tryghost:groupCSS",
       "@tryghost:groupBuildTools"
     ],
+    "rebaseWhen": "never",
     "ignoreDeps": [
       "got",
       "intl-messageformat",
