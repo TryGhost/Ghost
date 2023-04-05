@@ -5,18 +5,18 @@ export function Input({dataTestId, list, listOptions, handleOptionClick, value, 
         <>
             <div className="relative">
                 <input
-                    className="relative w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none"
+                    className="relative w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-800 dark:text-white dark:placeholder:text-grey-600"
                     data-testid={dataTestId}
                     list={list}
                     placeholder={placeholder}
                     value={value}
                     onChange={onChange}
                 />
-                {list && listOptions && <ul className="absolute mt-[-1px] max-h-[30vh] w-full overflow-y-auto rounded-b border border-grey-200 bg-white py-1 shadow">
+                {list && listOptions && <ul className="absolute mt-[-1px] max-h-[30vh] w-full overflow-y-auto rounded-b border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900">
                     {listOptions.map((item) => {
-                        return <li key={item.value} className="cursor-pointer px-4 py-2 text-left hover:bg-grey-100" onClick={() => handleOptionClick(item.caption)}>
-                            <span className="block text-sm font-semibold leading-tight text-black">{item.value}</span>
-                            <span className="block text-xs leading-tight text-grey-700">
+                        return <li key={item.value} className="cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-black" onClick={() => handleOptionClick(item.caption)}>
+                            <span className="block text-sm font-semibold leading-tight text-black dark:text-white">{item.value}</span>
+                            <span className="block overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-tight text-grey-700 dark:text-grey-600">
                                 {item.caption}
                             </span>
                         </li>;
