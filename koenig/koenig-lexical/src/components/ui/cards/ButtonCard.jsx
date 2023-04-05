@@ -13,6 +13,7 @@ export function ButtonCard({
     handleAlignmentChange,
     handleButtonTextChange,
     handleButtonUrlChange,
+    handleOptionClick,
     isEditing
 }) {
     const buttonGroupChildren = [
@@ -30,8 +31,10 @@ export function ButtonCard({
         }
     ];
 
+    // TODO: this will need to be provided by the digesting code
     const testListOptions = [
-        {value: 'Homepage'},{value: 'Free signup'}
+        {value: 'Homepage', caption: window.location.origin + '/'},
+        {value: 'Free signup', caption: window.location.origin + '/#/portal/signup/free'}
     ];
 
     return (
@@ -58,6 +61,7 @@ export function ButtonCard({
                     />
                     <InputListSetting
                         dataTestId="button-input-url"
+                        handleOptionClick={handleOptionClick}
                         label='Button URL'
                         list='suggestedUrls'
                         listOptions={testListOptions}

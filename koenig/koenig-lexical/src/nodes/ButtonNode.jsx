@@ -43,6 +43,13 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
         });
     };
 
+    const handleOptionClick = (value) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setButtonUrl(value);
+        });
+    };
+
     return (
         <>
             <ButtonCard 
@@ -53,6 +60,7 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
                 handleAlignmentChange={handleAlignmentChange}
                 handleButtonTextChange={handleButtonTextChange}
                 handleButtonUrlChange={handleButtonUrlChange}
+                handleOptionClick={handleOptionClick}
                 isEditing={isEditing}
             />
             <ActionToolbar
