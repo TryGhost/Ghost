@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@testing-library/jest-dom": "5.16.5",
-    "@testing-library/react": "12.1.5",
+    "@testing-library/react": "14.0.0",
     "@testing-library/user-event": "14.4.3",
     "@tryghost/content-api": "1.11.7",
     "flexsearch": "0.7.21",
