@@ -34,7 +34,7 @@ class PostsExporter {
      */
     async export({filter, order, limit}) {
         const posts = await this.#models.Post.findPage({
-            filter,
+            filter: filter ?? 'status:published,status:sent',
             order,
             limit,
             withRelated: [
