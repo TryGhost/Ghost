@@ -3,7 +3,7 @@ const {JSDOM} = require('jsdom');
 const {$getRoot} = require('lexical');
 const {html} = require('../utils');
 const {PaywallNode, $createPaywallNode, $isPaywallNode} = require('../../');
-const {$generateNodesFromDOM} = require('@lexical/html');
+const {$generateNodesFromDOM, $generateHtmlFromNodes} = require('@lexical/html');
 
 const editorNodes = [PaywallNode];
 
@@ -88,24 +88,60 @@ describe('PaywallNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders a <!--members-only--> comment', editorTest(function () {
+        it('renders a paywall node', editorTest(function () {
             const paywallNode = $createPaywallNode();
             const {element} = paywallNode.exportDOM(exportOptions);
 
-            element.nodeType.should.equal(8); // comment node
-            element.textContent.should.equal('members-only');
+            element.outerHTML.should.equal('<span hidden="true"><!--members-only--></span>');
         }));
     });
 
     describe('importDOM', function () {
-        it('parses a <!--members-only--> comment', editorTest(function () {
+        it('parses a paywall node', editorTest(function () {
             const dom = (new JSDOM(html`
-                <div><!--members-only--></div>
+                <span><!--members-only--></span>
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
             nodes[0].should.be.instanceof(PaywallNode);
+        }));
+    });
+
+    describe('HTML generation', function () {
+        // These are required for $generateHtmlFromNodes to work in headless mode
+        before(function () {
+            const dom = new JSDOM();
+            global.window = dom.window;
+            global.document = dom.window.document;
+            global.navigator = dom.window.navigator;
+            global.DocumentFragment = dom.window.DocumentFragment;
+        });
+
+        it('generates the expected html for a paywall node', editorTest(function () {
+            let htmlString = '';
+            const editorState = editor.parseEditorState({
+                root: {
+                    children: [
+                        {
+                            type: 'paywall',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            editor.setEditorState(editorState);
+            editor.getEditorState().read(() => {
+                htmlString = $generateHtmlFromNodes(editor);
+            });
+
+            htmlString.should.equal('<span hidden="true"><!--members-only--></span>');
         }));
     });
 });
