@@ -1,26 +1,26 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 
-const nftCard = require('./types/nft');
-const twitterCard = require('./types/twitter');
+// const nftCard = require('./types/nft');
+// const twitterCard = require('./types/twitter');
 
 export function renderEmbedNodeToDOM(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
     const embedType = node.getEmbedType();
-    const metadata = node.getMetadata();
+    // const metadata = node.getMetadata();
 
     if (!node.getHtml() && embedType !== 'nft') {
         return document.createTextNode('');
     }
 
-    if (embedType === 'twitter') {
-        return twitterCard.render(node, document, options);
-    }
+    // if (embedType === 'twitter') {
+    //     return twitterCard.render(node, document, options);
+    // }
 
-    if (metadata && embedType === 'nft') {
-        return nftCard.render(node, document, options);
-    }
+    // if (metadata && embedType === 'nft') {
+    //     return nftCard.render(node, document, options);
+    // }
 
     return renderTemplate(node, document, options);
 }
