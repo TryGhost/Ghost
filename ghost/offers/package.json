@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/errors": "1.2.21",
+    "@tryghost/errors": "1.2.23",
     "@tryghost/mongo-utils": "0.5.0",
     "@tryghost/string": "0.2.3",
     "lodash": "4.17.21"

@@ -23,7 +23,7 @@
     "sinon": "15.0.2"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.21",
+    "@tryghost/errors": "1.2.23",
     "@tryghost/nql": "0.11.0",
     "@tryghost/tpl": "0.1.22"
   }
