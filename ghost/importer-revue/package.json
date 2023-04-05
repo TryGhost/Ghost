@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "sinon": "15.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
     "@tryghost/debug": "0.1.22",

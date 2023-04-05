@@ -20,7 +20,7 @@
     "devDependencies": {
         "c8": "7.13.0",
         "mocha": "10.2.0",
-        "sinon": "15.0.2"
+        "sinon": "15.0.3"
     },
     "dependencies": {
         "@isaacs/ttlcache": "1.2.2"
