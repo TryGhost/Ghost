@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "0.1.22",
-    "@tryghost/errors": "1.2.23",
+    "@tryghost/errors": "1.2.24",
     "@tryghost/promise": "0.3.2",
     "@tryghost/tpl": "0.1.22",
     "@tryghost/validator": "0.2.1",
