@@ -46,6 +46,8 @@
     "@tryghost/kg-markdown-html-renderer": "^6.0.6",
     "html-minifier": "^4.0.0",
     "jsdom": "^21.0.0",
-    "lexical": "^0.9.0"
+    "lexical": "^0.9.0",
+    "lodash": "^4.17.21",
+    "luxon": "^3.3.0"
   }
 }
