@@ -10,3 +10,9 @@ We appreciate your contribution!
 
 Also, if you'd be interested in writing code like this for us more regularly, we're hiring:
 https://careers.ghost.org
+
+---
+
+For fun, here's what Copilot analyzed from your PR:
+
+copilot:all
