@@ -22,7 +22,7 @@
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "html-to-text": "8.2.1",
+    "html-to-text": "9.0.5",
     "lodash": "4.17.21"
   }
 }
