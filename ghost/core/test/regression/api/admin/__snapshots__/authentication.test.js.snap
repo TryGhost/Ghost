@@ -213,10 +213,8 @@ a {
 </html>"
 `;
 
-exports[`Authentication API Blog setup complete setup 4: [metadata 1] 1`] = `
-Object {
-  "subject": "Your New Ghost Site",
-  "text": " [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
+exports[`Authentication API Blog setup complete setup 4: [text 1] 1`] = `
+" [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
 
 Good news! You've successfully created a brand new Ghost publication over on 
 http://127.0.0.1:2369/ [http://127.0.0.1:2369/]
@@ -234,7 +232,12 @@ xoxo
 Team Ghost – https://ghost.org [https://ghost.org]
 
 This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
-test@example.com [test@example.com]",
+test@example.com [test@example.com]"
+`;
+
+exports[`Authentication API Blog setup complete setup 5: [metadata 1] 1`] = `
+Object {
+  "subject": "Your New Ghost Site",
   "to": "test@example.com",
 }
 `;
@@ -483,10 +486,8 @@ a {
 </html>"
 `;
 
-exports[`Authentication API Blog setup complete setup with default theme 4: [metadata 1] 1`] = `
-Object {
-  "subject": "Your New Ghost Site",
-  "text": " [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
+exports[`Authentication API Blog setup complete setup with default theme 4: [text 1] 1`] = `
+" [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
 
 Good news! You've successfully created a brand new Ghost publication over on 
 http://127.0.0.1:2369/ [http://127.0.0.1:2369/]
@@ -504,7 +505,12 @@ xoxo
 Team Ghost – https://ghost.org [https://ghost.org]
 
 This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
-test@example.com [test@example.com]",
+test@example.com [test@example.com]"
+`;
+
+exports[`Authentication API Blog setup complete setup with default theme 5: [metadata 1] 1`] = `
+Object {
+  "subject": "Your New Ghost Site",
   "to": "test@example.com",
 }
 `;
