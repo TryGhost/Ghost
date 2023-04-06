@@ -1,85 +1,151 @@
+import KoenigProductEditor from '../../KoenigProductEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
 import {InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
-import {MediaPlaceholder} from '../MediaPlaceholder';
-import {ReactComponent as StarIcon} from '../../../assets/icons/kg-star.svg';
+import {ProductCardImage} from './ProductCard/ProductCardImage';
+import {RatingButton} from './ProductCard/RatingButton';
+import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
-export function ProductCard({isEditing, image, title, titlePlaceholder, desc, descPlaceholder, button, buttonText, buttonUrl, rating}) {
+export function ProductCard({
+    isEditing,
+    imgSrc,
+    isButtonEnabled,
+    buttonText,
+    buttonUrl,
+    rating,
+    isRatingEnabled,
+    onButtonToggle,
+    onButtonTextChange,
+    onButtonUrlChange,
+    onRatingToggle,
+    imgDragHandler,
+    onImgChange,
+    imgMimeTypes,
+    imgUploader,
+    onRemoveImage,
+    titleEditor,
+    descriptionEditor,
+    onRatingChange
+}) {
+    const showEditor = (editor) => {
+        return isEditing || !isEditorEmpty(editor);
+    };
+
+    const showFilledButton = !!buttonUrl && !!buttonText && isButtonEnabled;
+    const showButtonInEditMode = isButtonEnabled && isEditing;
     return (
         <>
-            <div className="flex w-full max-w-[550px] flex-col rounded border border-grey/40 p-4 font-sans">
-                {(image && <div className="mb-4 h-[324px] w-full border border-grey-200 bg-grey-200"></div>) || (isEditing &&
-                <div className="mb-4">
-                    <MediaPlaceholder
-                        desc="Click to select a product image"
-                        icon='product'
-                        size='small'
-                    />
-                </div>)
-                }
+            <div className="not-kg-prose mx-auto my-4 flex w-full max-w-[550px] flex-col rounded border border-grey/40 p-4 font-sans">
+                <ProductCardImage
+                    imgDragHandler={imgDragHandler}
+                    imgMimeTypes={imgMimeTypes}
+                    imgSrc={imgSrc}
+                    imgUploader={imgUploader}
+                    isEditing={isEditing}
+                    onImgChange={onImgChange}
+                    onRemoveImage={onRemoveImage}
+                />
+
                 <div className="flex items-start justify-between">
-                    {(title || isEditing) && <h3 className={`text-xl font-bold leading-snug text-black ${title || 'opacity-40'} ${rating && 'mr-2'}`}>{title || titlePlaceholder}</h3>}
-                    {rating &&
-                    <div className="ml-auto flex fill-grey-900 transition-all duration-75 hover:fill-grey-800">
-                        <RatingButton />
-                    </div>
+                    {
+                        showEditor(titleEditor) && (
+                            <div className="mr-2 flex-1">
+                                <KoenigProductEditor
+                                    autoFocus={true}
+                                    focusNext={descriptionEditor}
+                                    initialEditor={titleEditor}
+                                    nodes='minimal'
+                                    placeholderClassName="text-xl font-bold leading-[1] text-black opacity-40"
+                                    placeholderText="Product title"
+                                    singleParagraph={true}
+                                    textClassName="kg-product-title"
+                                />
+                            </div>
+                        )
                     }
+
+                    {isRatingEnabled && (
+                        <RatingButton rating={rating} onRatingChange={onRatingChange} />
+                    )}
                 </div>
-                {(desc || isEditing) && <p className={`mt-2 text-[1.6rem] font-normal leading-snug text-grey-700 ${desc || 'opacity-50'}`}>{desc || descPlaceholder}</p>}
-                {(button && (isEditing || (buttonText || buttonUrl))) &&
-                <div className={`mt-6 w-full ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} `}>
-                    <Button url={buttonUrl} value={buttonText} width='full' />
-                </div>
+
+                {
+                    showEditor(descriptionEditor) && (
+                        <KoenigProductEditor
+                            initialEditor={descriptionEditor}
+                            placeholderClassName="text-[1.6rem] font-normal leading-snug text-grey-700 opacity-50"
+                            placeholderText="Description"
+                            textClassName="kg-product-description"
+                        />
+                    )
                 }
+
+                {(showButtonInEditMode || showFilledButton) && (
+                    <div className={`mt-6 w-full ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} `}>
+                        <Button dataTestId="product-button" href={buttonUrl} value={buttonText} width='full' />
+                    </div>
+                )}
             </div>
 
             {isEditing && (
                 <SettingsPanel>
                     <ToggleSetting
-                        isChecked={rating}
+                        dataTestID="product-rating-toggle"
+                        isChecked={isRatingEnabled}
                         label='Rating'
+                        onChange={onRatingToggle}
                     />
                     <SettingsDivider />
                     <ToggleSetting
-                        isChecked={button}
+                        dataTestID="product-button-toggle"
+                        isChecked={isButtonEnabled}
                         label='Button'
+                        onChange={onButtonToggle}
                     />
-                    {button && (
+                    {isButtonEnabled && (
                         <>
                             <InputSetting
+                                dataTestId="product-button-text-input"
                                 label='Button text'
                                 placeholder='Add button text'
                                 value={buttonText}
+                                onChange={onButtonTextChange}
                             />
                             <InputSetting
+                                dataTestId="product-button-url-input"
                                 label='Button URL'
                                 placeholder='https://yoursite.com/#/portal/signup/'
                                 value={buttonUrl}
+                                onChange={onButtonUrlChange}
                             />
                         </>
                     )}
                 </SettingsPanel>
             )}
+
+            {!isEditing && <div className="absolute top-0 z-10 m-0 h-full w-full cursor-default p-0"></div>}
         </>
     );
 }
 
-function RatingButton() {
-    const n = 5;
-    return (
-        [...Array(n)].map(i => <button key={i} className="flex h-7 w-5 items-center justify-center" type="button"><StarIcon /></button>)
-    );
-}
-
 ProductCard.propTypes = {
-    image: PropTypes.bool,
-    title: PropTypes.string,
-    titlePlaceholder: PropTypes.string,
-    desc: PropTypes.string,
-    descPlaceholder: PropTypes.string,
-    button: PropTypes.bool,
+    isEditing: PropTypes.bool,
+    imgSrc: PropTypes.string,
+    imgWidth: PropTypes.string,
+    imgHeight: PropTypes.string,
+    isButtonEnabled: PropTypes.bool,
     buttonText: PropTypes.string,
     buttonUrl: PropTypes.string,
-    rating: PropTypes.bool
+    isRatingEnabled: PropTypes.bool,
+    rating: PropTypes.number,
+    onButtonToggle: PropTypes.func,
+    onButtonTextChange: PropTypes.func,
+    onButtonUrlChange: PropTypes.func,
+    onRatingToggle: PropTypes.func,
+    onImgChange: PropTypes.func,
+    onRemoveImage: PropTypes.func,
+    imgDragHandler: PropTypes.object,
+    imgUploader: PropTypes.object,
+    imgMimeTypes: PropTypes.array
 };

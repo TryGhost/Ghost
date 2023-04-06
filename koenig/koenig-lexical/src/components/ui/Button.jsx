@@ -12,7 +12,7 @@ export function Button({color, dataTestId, href, size, width, value, placeholder
 
     return (
         <Tag
-            className={`not-kg-prose inline-block rounded font-sans font-medium ${(width === 'regular') || 'w-full' } ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'light') ? 'bg-white text-black' : 'bg-green text-white'} `}
+            className={`not-kg-prose inline-block rounded text-center font-sans font-medium ${(width === 'regular') || 'w-full' } ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'light') ? 'bg-white text-black' : 'bg-green text-white'} `}
             data-testid={`${dataTestId}`}
             {...props}
         >

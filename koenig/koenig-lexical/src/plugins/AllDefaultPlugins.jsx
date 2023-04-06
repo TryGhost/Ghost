@@ -12,6 +12,7 @@ import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
 import {FilePlugin} from '../plugins/FilePlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PaywallPlugin} from '../plugins/PaywallPlugin';
+import {ProductPlugin} from '../plugins/ProductPlugin';
 import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import {TogglePlugin} from '../plugins/TogglePlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
@@ -40,6 +41,7 @@ export const AllDefaultPlugins = () => {
             <BookmarkPlugin />
             <PaywallPlugin />
             <KoenigSelectorPlugin />
+            <ProductPlugin />
         </>
     );
 };

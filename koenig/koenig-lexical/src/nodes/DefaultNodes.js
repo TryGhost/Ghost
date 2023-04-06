@@ -13,6 +13,7 @@ import {LinkNode} from '@lexical/link';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {MarkdownNode} from './MarkdownNode';
 import {PaywallNode} from './PaywallNode';
+import {ProductNode} from './ProductNode';
 import {ToggleNode} from './ToggleNode';
 import {VideoNode} from './VideoNode';
 
@@ -35,7 +36,8 @@ const DEFAULT_NODES = [
     ButtonNode,
     ToggleNode,
     BookmarkNode,
-    PaywallNode
+    PaywallNode,
+    ProductNode
 ];
 
 export default DEFAULT_NODES;
