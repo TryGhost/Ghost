@@ -15,7 +15,7 @@ export function HtmlCard({html, updateHtml, isEditing, darkMode}) {
                         updateHtml={updateHtml}
                     />
                 )
-                : <HtmlDisplay html={html} />
+                : <div><HtmlDisplay html={html} /><div className="absolute inset-0 z-50 mt-0"></div></div>
             }
         </>
     );
