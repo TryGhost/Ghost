@@ -11,6 +11,7 @@ const escapeRegExp = require('lodash/escapeRegExp');
 const configUtils = require('../../../utils/configUtils');
 const {settingsCache} = require('../../../../core/server/services/settings-helpers');
 const DomainEvents = require('@tryghost/domain-events');
+const emailService = require('../../../../core/server/services/email-service');
 const should = require('should');
 const {mockSetting, stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
 
@@ -341,6 +342,34 @@ describe('Batch sending tests', function () {
         // Check members are unique
         const memberIds = emailRecipients.models.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
+    });
+
+    it('Protects the email job from being run multiple times at the same time', async function () {
+        this.retries(1);
+        // Prepare a post and email model
+        const emailModel = await createPublishedPostEmail();
+
+        assert.equal(emailModel.get('source_type'), 'mobiledoc');
+        assert(emailModel.get('subject'));
+        assert(emailModel.get('from'));
+
+        // Retry sending a couple of times
+        const promises = [];
+        for (let i = 0; i < 100; i++) {
+            promises.push(emailService.service.retryEmail(emailModel));
+        }
+        await Promise.all(promises);
+
+        // Await sending job
+        await jobManager.allSettled();
+
+        await emailModel.refresh();
+        assert.equal(emailModel.get('status'), 'submitted');
+        assert.equal(emailModel.get('email_count'), 4);
+
+        // Did we create batches?
+        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        assert.equal(batches.models.length, 1);
     });
 
     it('Doesn\'t include members created after the email in the batches', async function () {
