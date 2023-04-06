@@ -14,8 +14,13 @@ const story = {
 export default story;
 
 const Template = args => (
-    <div className="w-[240px]">
-        <UrlInput {...args} />
+    <div className="w-[740px]">
+        <div className="p-4">
+            <UrlInput {...args} />
+        </div>
+        <div className="dark bg-black p-4">
+            <UrlInput {...args} />
+        </div>
     </div>
 );
 

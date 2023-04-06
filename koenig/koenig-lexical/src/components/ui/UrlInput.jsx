@@ -4,7 +4,7 @@ import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handleUrlInput, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading}) {
     if (isLoading) {
         return (
-            <div>Loading Spinner Placeholder</div>
+            <div className="-ml-1 mr-3 inline-block h-5 w-5 animate-spin rounded-full border-4 border-green/20 text-white after:mt-[11px] after:block after:h-1 after:w-1 after:rounded-full after:bg-green/70 after:content-['']"></div>
         );
     }
     if (hasError) {
