@@ -495,7 +495,13 @@ class SignupPage extends React.Component {
             });
         };
 
-        const checkbox = site.portal_signup_checkbox_required ? (
+        const termsText = (
+            <div className="gh-portal-signup-terms-content"
+                dangerouslySetInnerHTML={{__html: site.portal_signup_terms_html}}
+            ></div>
+        );
+
+        const signupTerms = site.portal_signup_checkbox_required ? (
             <label>
                 <input
                     type="checkbox"
@@ -504,11 +510,9 @@ class SignupPage extends React.Component {
                     onChange={handleCheckboxChange}
                 />
                 <span class="checkbox"></span>
-                <div className="gh-portal-signup-terms-content"
-                    dangerouslySetInnerHTML={{__html: site.portal_signup_terms_html}}
-                ></div>
+                {termsText}
             </label>
-        ) : null;
+        ) : termsText;
 
         const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
 
@@ -516,7 +520,7 @@ class SignupPage extends React.Component {
 
         return (
             <div className={className}>
-                {checkbox}
+                {signupTerms}
             </div>
         );
     }
