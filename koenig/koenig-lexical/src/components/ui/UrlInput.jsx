@@ -4,7 +4,9 @@ import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handleUrlInput, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading}) {
     if (isLoading) {
         return (
-            <div className="-ml-1 mr-3 inline-block h-5 w-5 animate-spin rounded-full border-4 border-green/20 text-white after:mt-[11px] after:block after:h-1 after:w-1 after:rounded-full after:bg-green/70 after:content-['']"></div>
+            <div className="flex w-full items-center justify-center rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-900 dark:placeholder:text-grey-800">
+                <div className="-ml-1 mr-3 inline-block h-5 w-5 animate-spin rounded-full border-4 border-green/20 text-white after:mt-[11px] after:block after:h-1 after:w-1 after:rounded-full after:bg-green/70 after:content-['']"></div>
+            </div>
         );
     }
     if (hasError) {
