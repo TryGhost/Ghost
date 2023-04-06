@@ -263,7 +263,8 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     opacity: 1;
 }
 
-.gh-portal-signup-terms.gh-portal-error .checkbox {
+.gh-portal-signup-terms.gh-portal-error .checkbox,
+.gh-portal-signup-terms.gh-portal-error label:hover input:not(:checked) + .checkbox {
     border: 1px solid var(--red);
     background: var(--white);
     box-shadow: 0 0 0 3px rgb(240, 37, 37, .15);
