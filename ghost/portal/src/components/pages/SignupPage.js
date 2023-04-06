@@ -199,6 +199,35 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     color: var(--grey4);
 }
 
+.gh-portal-signup-terms {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 420px;
+    margin: 16px auto -6px;
+}
+
+.gh-portal-signup-terms input {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 4px 0 0;
+    border-radius: 4px;
+    cursor: pointer;
+    accent-color: var(--grey0);
+}
+
+.gh-portal-signup-terms-content {
+    color: var(--grey4);
+    font-size: 1.5rem;
+}
+
+.gh-portal-signup-terms-content a {
+    color: var(--brandcolor);
+    font-weight: 500;
+    text-decoration: none;
+}
+
 @media (min-width: 480px) {
 
 }
