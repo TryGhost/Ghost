@@ -200,26 +200,87 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 }
 
 .gh-portal-signup-terms {
-    display: flex;
-    gap: 10px;
     width: 100%;
     max-width: 420px;
-    margin: 16px auto -6px;
+    margin: 16px auto -8px;
+}
+
+.gh-portal-signup-terms label {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    cursor: pointer;
 }
 
 .gh-portal-signup-terms input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+}
+
+.gh-portal-signup-terms .checkbox {
+    position: relative;
+    top: 1px;
     flex-shrink: 0;
+    display: inline-block;
+    float: left;
     width: 18px;
     height: 18px;
     margin: 4px 0 0;
+    background: var(--grey11);
+    border: 1px solid var(--grey11);
     border-radius: 4px;
-    cursor: pointer;
-    accent-color: var(--grey0);
+    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.gh-portal-signup-terms label:hover input:not(:checked) + .checkbox {
+    border-color: var(--grey9);
+}
+
+.gh-portal-signup-terms .checkbox:before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 3px;
+    width: 10px;
+    height: 6px;
+    border: 2px solid var(--white);
+    border-top: none;
+    border-right: none;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    transform: rotate(-45deg);
+}
+
+.gh-portal-signup-terms input:checked + .checkbox {
+    border-color: var(--black);
+    background: var(--black);
+}
+
+.gh-portal-signup-terms input:checked + .checkbox:before {
+    opacity: 1;
+}
+
+.gh-portal-signup-terms.gh-portal-error .checkbox {
+    border: 1px solid var(--red);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgb(240, 37, 37, .15);
+}
+
+.gh-portal-signup-terms.gh-portal-error input:checked + .checkbox {
+    box-shadow: none;
 }
 
 .gh-portal-signup-terms-content {
     color: var(--grey4);
     font-size: 1.5rem;
+    line-height: 1.5em;
+}
+
+.gh-portal-error .gh-portal-signup-terms-content {
+    line-height: 1.5em;
 }
 
 .gh-portal-signup-terms-content a {
@@ -435,12 +496,18 @@ class SignupPage extends React.Component {
         };
 
         const checkbox = site.portal_signup_checkbox_required ? (
-            <input
-                type="checkbox"
-                checked={!!this.state.termsCheckboxChecked}
-                required={true}
-                onChange={handleCheckboxChange}
-            />
+            <label>
+                <input
+                    type="checkbox"
+                    checked={!!this.state.termsCheckboxChecked}
+                    required={true}
+                    onChange={handleCheckboxChange}
+                />
+                <span class="checkbox"></span>
+                <div className="gh-portal-signup-terms-content"
+                    dangerouslySetInnerHTML={{__html: site.portal_signup_terms_html}}
+                ></div>
+            </label>
         ) : null;
 
         const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
@@ -450,9 +517,6 @@ class SignupPage extends React.Component {
         return (
             <div className={className}>
                 {checkbox}
-                <div className="gh-portal-signup-terms-content"
-                    dangerouslySetInnerHTML={{__html: site.portal_signup_terms_html}}
-                ></div>
             </div>
         );
     }
