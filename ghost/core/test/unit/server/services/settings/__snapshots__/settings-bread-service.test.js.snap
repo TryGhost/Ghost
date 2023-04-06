@@ -169,12 +169,8 @@ exports[`UNIT > Settings BREAD Service: edit setting members_support_address tri
 "
 `;
 
-exports[`UNIT > Settings BREAD Service: edit setting members_support_address triggers email verification 2: [metadata 1] 1`] = `
-Object {
-  "forceTextContent": true,
-  "from": "noreply@example.com",
-  "subject": "Verify email address",
-  "text": "
+exports[`UNIT > Settings BREAD Service: edit setting members_support_address triggers email verification 2: [text 1] 1`] = `
+"
                 Hey there,
 
                 Please confirm your email address with this link:
@@ -187,7 +183,14 @@ Object {
 
                 Sent to support@example.com
                 If you did not make this request, you can simply delete this message. This email address will not be used.
-                ",
+                "
+`;
+
+exports[`UNIT > Settings BREAD Service: edit setting members_support_address triggers email verification 3: [metadata 1] 1`] = `
+Object {
+  "forceTextContent": true,
+  "from": "noreply@example.com",
+  "subject": "Verify email address",
   "to": "support@example.com",
 }
 `;

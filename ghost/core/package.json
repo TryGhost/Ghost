@@ -80,7 +80,7 @@
     "@tryghost/email-analytics-provider-mailgun": "0.0.0",
     "@tryghost/email-analytics-service": "0.0.0",
     "@tryghost/email-content-generator": "0.0.0",
-    "@tryghost/email-mock-receiver": "0.1.1",
+    "@tryghost/email-mock-receiver": "0.2.2",
     "@tryghost/email-service": "0.0.0",
     "@tryghost/email-suppression-list": "0.0.0",
     "@tryghost/errors": "1.2.24",

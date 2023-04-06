@@ -73,6 +73,7 @@ describe('Authentication API', function () {
 
             // Test our side effects
             emailMockReceiver.matchHTMLSnapshot();
+            emailMockReceiver.matchPlaintextSnapshot();
             emailMockReceiver.matchMetadataSnapshot();
 
             assert.equal(requestMock.isDone(), true, 'The dawn github URL should have been used');
@@ -209,6 +210,7 @@ describe('Authentication API', function () {
 
             // Test our side effects
             emailMockReceiver.matchHTMLSnapshot();
+            emailMockReceiver.matchPlaintextSnapshot();
             emailMockReceiver.matchMetadataSnapshot();
 
             assert.equal(requestMock.isDone(), false, 'The ghost github URL should not have been used');

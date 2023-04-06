@@ -5737,10 +5737,10 @@
     "@tryghost/debug" "^0.1.22"
     split2 "4.1.0"
 
-"@tryghost/email-mock-receiver@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/email-mock-receiver/-/email-mock-receiver-0.1.1.tgz#0c10d57256d0c8e26a4038e7b8cd3d371acf7cf3"
-  integrity sha512-rM4cQa7VHbuIDFxwKSSU28veQq97B6CPQMEktu3mBRgsFeequUU9cfGbSHnc7nriMRFRT8eThDLOJJ27LHcqhA==
+"@tryghost/email-mock-receiver@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-mock-receiver/-/email-mock-receiver-0.2.2.tgz#214f4424a3d7a51df19e9de397a42ccedba3dcb3"
+  integrity sha512-iYAp1BGpHPthWgwklddewNJOGdB4/uetAZJRadVsZd/Y8jqtSXk4TEH3IVJuTcXQTbVam+ggAgnheFDW/ANBZg==
 
 "@tryghost/ember-promise-modals@2.0.1":
   version "2.0.1"

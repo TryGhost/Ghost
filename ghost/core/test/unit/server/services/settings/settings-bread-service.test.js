@@ -197,6 +197,7 @@ describe('UNIT > Settings BREAD Service:', function () {
             assert.deepEqual(settings.meta.sent_email_verification, ['members_support_address']);
 
             emailMockReceiver.matchHTMLSnapshot();
+            emailMockReceiver.matchPlaintextSnapshot();
             emailMockReceiver.matchMetadataSnapshot();
         });
     });
