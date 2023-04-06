@@ -35,7 +35,12 @@ export default story;
 
 const Template = ({display, ...args}) => (
     <div className="kg-prose">
-        <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
+        <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px] p-4">
+            <CardWrapper {...display} {...args}>
+                <BookmarkCard {...display} {...args} />
+            </CardWrapper>
+        </div>
+        <div className="not-kg-prose dark mx-auto my-8 min-w-[initial] max-w-[740px] bg-black p-4">
             <CardWrapper {...display} {...args}>
                 <BookmarkCard {...display} {...args} />
             </CardWrapper>
@@ -52,6 +57,7 @@ Empty.args = {
     description: 'The world’s most popular modern publishing platform for creating a new media platform. Used by Apple, SkyNews, Buffer, OpenAI, and thousands more.',
     icon: 'https://www.ghost.org/favicon.ico',
     publisher: 'Ghost - The Professional Publishing Platform',
+    author: 'Author McAuthory',
     thumbnail: 'https://ghost.org/images/meta/ghost.png'
 };
 
@@ -64,6 +70,7 @@ Populated.args = {
     description: 'The world’s most popular modern publishing platform for creating a new media platform. Used by Apple, SkyNews, Buffer, OpenAI, and thousands more.',
     icon: 'https://www.ghost.org/favicon.ico',
     publisher: 'Ghost - The Professional Publishing Platform',
+    author: 'Author McAuthory',
     thumbnail: 'https://ghost.org/images/meta/ghost.png',
     caption: ''
 };
@@ -77,6 +84,7 @@ WithCaption.args = {
     description: 'The world’s most popular modern publishing platform for creating a new media platform. Used by Apple, SkyNews, Buffer, OpenAI, and thousands more.',
     icon: 'https://www.ghost.org/favicon.ico',
     publisher: 'Ghost - The Professional Publishing Platform',
+    author: 'Author McAuthory',
     thumbnail: 'https://ghost.org/images/meta/ghost.png',
     caption: 'This is a caption'
 };

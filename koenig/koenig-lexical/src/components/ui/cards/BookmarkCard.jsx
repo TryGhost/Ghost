@@ -34,7 +34,7 @@ export function BookmarkCard({
                         <div className="mt-[20px] flex items-center text-sm font-medium leading-9 text-grey-900">
                             {icon && <BookmarkIcon src={icon} />}
                             <span className=" db max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap leading-6 text-grey-900 dark:text-grey-100">{publisher}</span>
-                            <span className="font-normal text-grey-800 before:mx-1.5 before:text-grey-900 before:content-['•'] dark:text-grey-600 dark:before:text-grey-100">{author}</span>
+                            {author && <span className="font-normal text-grey-800 before:mx-1.5 before:text-grey-900 before:content-['•'] dark:text-grey-600 dark:before:text-grey-100">{author}</span>}
                         </div>
                     </div>
                     {thumbnail &&   
