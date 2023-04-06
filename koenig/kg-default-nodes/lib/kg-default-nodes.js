@@ -14,6 +14,7 @@ import * as file from './nodes/file/FileNode';
 import * as paywall from './nodes/paywall/PaywallNode';
 import * as product from './nodes/product/ProductNode';
 import * as embed from './nodes/embed/EmbedNode';
+import * as email from './nodes/email/EmailNode';
 
 // re-export everything for easier importing
 export * from './KoenigDecoratorNode';
@@ -34,6 +35,7 @@ export * from './nodes/file/FileNode';
 export * from './nodes/paywall/PaywallNode';
 export * from './nodes/product/ProductNode';
 export * from './nodes/embed/EmbedNode';
+export * from './nodes/email/EmailNode';
 
 // export convenience objects for use elsewhere
 export const DEFAULT_NODES = [
@@ -52,5 +54,6 @@ export const DEFAULT_NODES = [
     bookmark.BookmarkNode,
     paywall.PaywallNode,
     product.ProductNode,
-    embed.EmbedNode
+    embed.EmbedNode,
+    email.EmailNode
 ];
