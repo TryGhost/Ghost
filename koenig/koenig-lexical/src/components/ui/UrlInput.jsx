@@ -23,7 +23,7 @@ export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handl
     }
     return (
         <input
-            className="w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none"
+            className="w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-900 dark:placeholder:text-grey-800"
             data-testid={dataTestId}
             placeholder={placeholder}
             value={value}
