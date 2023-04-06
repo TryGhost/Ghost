@@ -263,17 +263,17 @@
 
                                     {{#if (feature "makingItRain")}}
                                         <GhFormGroup class="gh-stack-item">
-                                            <label class="modal-fullsettings-title">Signup terms</label>
+                                            <label class="modal-fullsettings-title">Notice on signup</label>
                                             <KoenigBasicHtmlInput
                                                 @name="footer"
                                                 @html={{this.settings.portalSignupTermsHtml}}
                                                 @class="miw-100 form-text gh-members-emailsettings-footer-input"
                                                 @onChange={{action "setTermsHtml"}}
                                             />
-                                            <p>Any extra information or legal text</p>
+                                            <p>Select any text to add a link</p>
                                         </GhFormGroup>
 
-                                        <GhFormGroup class="gh-members-subscribed-checkbox gh-portal-setting-first mb0 b--whitegrey">
+                                        <GhFormGroup class="gh-members-subscribed-checkbox gh-portal-setting-first mb0 b--whitegrey space-l">
                                             <div class="flex justify-between items-center">
                                                 <h4 class="gh-portal-setting-title">Require agreement</h4>
                                                 <div class="for-switch small">
