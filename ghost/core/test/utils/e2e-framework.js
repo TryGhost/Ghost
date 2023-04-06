@@ -451,6 +451,9 @@ module.exports = {
             return path.join(__dirname, 'fixtures', fixturePath);
         }
     },
+    regexes: {
+        anyMajorMinorVersion: /v\d+\.\d+/gi
+    },
     matchers: {
         anyBoolean: any(Boolean),
         anyString: any(String),
