@@ -12,10 +12,10 @@ export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handl
             <div className="min-width-[500px] flex flex-row items-center justify-between rounded-sm border border-red bg-red/5 px-3 py-2 text-sm leading-snug text-red">
                 <div>
                     <span className="mr-3">There was an error when parsing the URL.</span>
-                    <button className="mr-3" type="button"><span className="underline" onClick={handleRetry}><strong>Retry</strong></span></button>
-                    <button className="mr-3" type="button"><span className="underline" onClick={handlePasteAsLink}><strong>Paste URL as link</strong></span></button>
+                    <button className="mr-3 cursor-pointer" type="button"><span className="underline" onClick={handleRetry}><strong>Retry</strong></span></button>
+                    <button className="mr-3 cursor-pointer" type="button"><span className="underline" onClick={handlePasteAsLink}><strong>Paste URL as link</strong></span></button>
                 </div>
-                <button type="button" onClick={handleClose}>
+                <button className="cursor-pointer p-1" type="button" onClick={handleClose}>
                     <CloseIcon className="red h-3 w-3"/>
                 </button>
             </div>
