@@ -139,7 +139,7 @@ const mockWebhookRequests = () => {
 };
 
 /**
- * @deprecated use emailMockReceiver.sentEmailCount(count) instead
+ * @deprecated use emailMockReceiver.assertSentEmailCount(count) instead
  * @param {Number} count number of emails sent
  */
 const sentEmailCount = (count) => {
@@ -149,7 +149,7 @@ const sentEmailCount = (count) => {
         });
     }
 
-    mocks.mockMailReceiver.sentEmailCount(count);
+    mocks.mockMailReceiver.assertSentEmailCount(count);
 };
 
 const sentEmail = (matchers) => {
