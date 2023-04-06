@@ -19,6 +19,8 @@ class StripeMocker {
     prices = [];
     products = [];
 
+    nockInterceptors = [];
+
     constructor(data = {}) {
         this.customers = data.customers ?? [];
         this.subscriptions = data.subscriptions ?? [];
@@ -80,6 +82,25 @@ class StripeMocker {
         return this.#getData(this.prices, id)[1];
     }
 
+    /**
+     *
+     * @param {object} data
+     * @param {string} [data.name]
+     * @param {string} data.currency
+     * @param {number} data.monthly_price
+     * @param {number} data.yearly_price
+     * @returns
+     */
+    async createTier({name, currency, monthly_price, yearly_price}) {
+        return await models.Product.add({
+            name: name ?? ('Tier ' + this.#generateRandomId()),
+            type: 'paid',
+            currency: currency.toUpperCase(),
+            monthly_price,
+            yearly_price
+        });
+    }
+
     async createTrialSubscription({customer, price, ...overrides}) {
         return await this.createSubscription({
             customer,
@@ -113,7 +134,7 @@ class StripeMocker {
         await DomainEvents.allSettled();
     }
 
-    async createSubscription({customer, price, ...overrides}) {
+    async createSubscription({customer, price, ...overrides}, options = {sendWebhook: true}) {
         const subscriptionId = `sub_${this.#generateRandomId()}`;
 
         const subscription = {
@@ -140,18 +161,20 @@ class StripeMocker {
         customer.subscriptions.data.push(subscription);
 
         // Announce
-        await this.sendWebhook({
-            type: 'checkout.session.completed',
-            data: {
-                object: {
-                    mode: 'subscription',
-                    customer: customer.id,
-                    metadata: {
-                        checkoutType: 'signup'
+        if (options.sendWebhook) {
+            await this.sendWebhook({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: customer.id,
+                        metadata: {
+                            checkoutType: 'signup'
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         return subscription;
     }
@@ -266,10 +289,21 @@ class StripeMocker {
         return [200, subscription];
     }
 
+    remove() {
+        for (const interceptor of this.nockInterceptors) {
+            nock.removeInterceptor(interceptor);
+        }
+        this.nockInterceptors = [];
+    }
+
     stub() {
-        nock('https://api.stripe.com')
+        this.remove();
+
+        let interceptor = nock('https://api.stripe.com')
             .persist()
-            .get(/v1\/.*/)
+            .get(/v1\/.*/);
+        this.nockInterceptors.push(interceptor);
+        interceptor
             .reply((uri) => {
                 const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
@@ -308,9 +342,11 @@ class StripeMocker {
                 return [500];
             });
 
-        nock('https://api.stripe.com')
+        interceptor = nock('https://api.stripe.com')
             .persist()
-            .post(/v1\/.*/)
+            .post(/v1\/.*/);
+        this.nockInterceptors.push(interceptor);
+        interceptor
             .reply((uri, body) => {
                 const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
 
@@ -345,9 +381,11 @@ class StripeMocker {
                 return [500];
             });
 
-        nock('https://api.stripe.com')
+        interceptor = nock('https://api.stripe.com')
             .persist()
-            .delete(/v1\/.*/)
+            .delete(/v1\/.*/);
+        this.nockInterceptors.push(interceptor);
+        interceptor
             .reply((uri) => {
                 const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
 
