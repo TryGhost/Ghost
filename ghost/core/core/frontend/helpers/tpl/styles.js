@@ -11,6 +11,10 @@ const contentHelper = `.gh-post-upgrade-cta-content,
     font-size: 16px;
 }
 
+.gh-post-upgrade-cta-visibility:empty {
+    display: none;
+}
+
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
     padding: 40px 4vw;
