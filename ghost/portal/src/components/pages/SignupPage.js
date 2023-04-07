@@ -199,9 +199,13 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     color: var(--grey4);
 }
 
-.gh-portal-signup-terms {
+.gh-portal-signup-terms-wrapper {
     width: 100%;
     max-width: 420px;
+    margin: -16px auto 36px;
+}
+
+.gh-portal-signup-terms-wrapper.free-only {
     margin: 16px auto -8px;
 }
 
@@ -228,9 +232,9 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     float: left;
     width: 18px;
     height: 18px;
-    margin: 4px 0 0;
-    background: var(--grey11);
-    border: 1px solid var(--grey11);
+    margin: 1px 0 0;
+    background: var(--white);
+    border: 1px solid var(--grey10);
     border-radius: 4px;
     transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
@@ -266,7 +270,6 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 .gh-portal-signup-terms.gh-portal-error .checkbox,
 .gh-portal-signup-terms.gh-portal-error label:hover input:not(:checked) + .checkbox {
     border: 1px solid var(--red);
-    background: var(--white);
     box-shadow: 0 0 0 3px rgb(240, 37, 37, .15);
 }
 
@@ -671,8 +674,19 @@ class SignupPage extends React.Component {
                         />
                     </div>
                     <div>
-                        {this.renderProducts()}
-                        {this.renderSignupTerms()}
+                        {(hasOnlyFree ?
+                            <>
+                                {this.renderProducts()}
+                                <div className='gh-portal-signup-terms-wrapper free-only'>
+                                    {this.renderSignupTerms()}
+                                </div>
+                            </> :
+                            <>
+                                <div className='gh-portal-signup-terms-wrapper'>
+                                    {this.renderSignupTerms()}
+                                </div>
+                                {this.renderProducts()}
+                            </>)}
 
                         {(hasOnlyFree ?
                             <div className={'gh-portal-btn-container' + (sticky ? ' sticky m24' : '')}>
