@@ -21,7 +21,7 @@ export default class Analytics extends Component {
     *exportPostsTask() {
         let exportUrl = ghostPaths().url.api('posts/export');
         let downloadParams = new URLSearchParams();
-        downloadParams.set('limit', 'all');
+        downloadParams.set('limit', 1000);
 
         yield this.utils.fetchAndDownloadFile(`${exportUrl}?${downloadParams.toString()}`);
 
