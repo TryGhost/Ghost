@@ -23,9 +23,9 @@
     "sinon": "15.0.3"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.22",
+    "@tryghost/debug": "0.1.24",
     "@tryghost/errors": "1.2.24",
-    "@tryghost/tpl": "0.1.22",
+    "@tryghost/tpl": "0.1.24",
     "lodash": "4.17.21"
   }
 }
