@@ -233,13 +233,15 @@ describe('Product card', async () => {
                             </div>
                         </div>
                         <div>
-                            <div data-kg="editor">
-                                <div
-                                    contenteditable="true"
-                                    spellcheck="true"
-                                    data-lexical-editor="true"
-                                    role="textbox">
-                                    <p dir="ltr"><span data-lexical-text="true">Description</span></p>
+                            <div>
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="true"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        role="textbox">
+                                        <p dir="ltr"><span data-lexical-text="true">Description</span></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
