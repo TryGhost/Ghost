@@ -43,7 +43,7 @@ export function MediaPlaceholder({
             className="h-full border border-transparent" {...props}
             data-testid={dataTestId}
         >
-            <div className={`relative flex h-full items-center justify-center border bg-grey-50 dark:bg-grey-900 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'} ${borderStyle === 'dashed' ? 'rounded border-dashed border-grey/40' : 'border-grey/20'}`}>
+            <div className={`relative flex h-full items-center justify-center border bg-grey-50 dark:bg-grey-950 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'} ${borderStyle === 'dashed' ? 'rounded border-dashed border-grey/40' : 'border-grey/20 dark:border-grey/10'}`}>
                 {isDraggedOver ?
                     <CardText text="Drop it like it's hot 🔥" /> :
                     <>

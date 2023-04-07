@@ -4,11 +4,11 @@
 
 @layer components {
   .kg-product-title * {
-    @apply text-xl font-bold text-black leading-normal dark:text-grey-50 opacity-100
+    @apply text-[22px] font-bold text-black leading-snug dark:text-grey-50 opacity-100 tracking-tight
   }
 
-  .kg-product-description span {
-    @apply text-[1.6rem] font-normal leading-snug text-grey-700 dark:text-grey-100 opacity-100
+  .kg-product-description p {
+    @apply text-[1.6rem] font-normal leading-snug text-grey-700 dark:text-grey-600 opacity-100
   }
 
     .kg-product-title, .kg-product-description {

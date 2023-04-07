@@ -10,8 +10,8 @@ export function RatingButton({rating, onRatingChange}) {
 
     const getStyles = (index) => {
         const styles = {
-            active: rating >= (index + 1) ? 'fill-grey-900' : 'fill-grey-200',
-            hovered: hoveredStarIndex >= index ? 'fill-grey-800' : ''
+            active: rating >= (index + 1) ? 'fill-grey-900 dark:fill-white' : 'fill-grey-200 dark:fill-grey-900',
+            hovered: hoveredStarIndex >= index ? 'opacity-70' : ''
         };
 
         return Object.values(styles).join(' ');
@@ -27,12 +27,12 @@ export function RatingButton({rating, onRatingChange}) {
                 [...Array(5).keys()].map((star, i) => (
                     <button
                         key={star}
-                        className={`flex h-7 w-5 items-center justify-center ${getStyles(i)}`}
+                        className={`flex h-7 w-5 cursor-pointer items-center justify-center ${getStyles(i)}`}
                         type="button"
                         onClick={() => onRatingChange(i + 1)}
                         onMouseOver={() => setHoveredStarIndex(i)}
                     >
-                        <StarIcon />
+                        <StarIcon className="w-4" />
                     </button>
                 ))
             }

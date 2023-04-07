@@ -36,7 +36,7 @@ export function ProductCard({
     const showButtonInEditMode = isButtonEnabled && isEditing;
     return (
         <>
-            <div className="not-kg-prose mx-auto my-4 flex w-full max-w-[550px] flex-col rounded border border-grey/40 p-4 font-sans">
+            <div className="not-kg-prose mx-auto my-4 flex w-full max-w-[550px] flex-col rounded border border-grey/40 p-5 font-sans dark:border-grey/20">
                 <ProductCardImage
                     imgDragHandler={imgDragHandler}
                     imgMimeTypes={imgMimeTypes}
@@ -56,10 +56,10 @@ export function ProductCard({
                                     focusNext={descriptionEditor}
                                     initialEditor={titleEditor}
                                     nodes='minimal'
-                                    placeholderClassName="text-xl font-bold leading-[1] text-black opacity-40"
+                                    placeholderClassName="text-[22px] font-bold leading-snug text-black opacity-40 dark:text-white tracking-tight"
                                     placeholderText="Product title"
                                     singleParagraph={true}
-                                    textClassName="kg-product-title"
+                                    textClassName="kg-product-title leading-snug text-[22px] dark:text-grey-100"
                                 />
                             </div>
                         )
@@ -72,12 +72,14 @@ export function ProductCard({
 
                 {
                     showEditor(descriptionEditor) && (
-                        <KoenigProductEditor
-                            initialEditor={descriptionEditor}
-                            placeholderClassName="text-[1.6rem] font-normal leading-snug text-grey-700 opacity-50"
-                            placeholderText="Description"
-                            textClassName="kg-product-description"
-                        />
+                        <div className="mt-2">
+                            <KoenigProductEditor
+                                initialEditor={descriptionEditor}
+                                placeholderClassName="text-[1.6rem] font-normal leading-snug text-grey-700 opacity-50"
+                                placeholderText="Description"
+                                textClassName="kg-product-description"
+                            />
+                        </div>
                     )
                 }
 

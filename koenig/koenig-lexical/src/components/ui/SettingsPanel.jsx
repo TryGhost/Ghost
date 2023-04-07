@@ -20,7 +20,7 @@ export function SettingsPanel({children, darkMode}) {
         // Using Portal to avoid such issue as some cards using transformation
         <div className={`${darkMode ? 'dark' : ''}`}>
             <div ref={ref}
-                className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-900"
+                className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-950"
                 data-testid="settings-panel"
             >
                 {children}
@@ -184,6 +184,6 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
 
 export function SettingsDivider() {
     return (
-        <hr className="-mx-6 mt-2 border-grey-200" />
+        <hr className="-mx-6 mt-2 border-grey-200 dark:border-white/5" />
     );
 }
