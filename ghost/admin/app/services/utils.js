@@ -1,4 +1,5 @@
 import Service from '@ember/service';
+import fetch from 'fetch';
 
 export default class UtilsService extends Service {
     downloadFile(url) {
@@ -12,6 +13,29 @@ export default class UtilsService extends Service {
         }
 
         iframe.setAttribute('src', url);
+    }
+
+    /**
+     * This method will fetch a file from the server and then download it, resolving
+     * once the initial fetch is complete, allowing it to be used with loading spinners.
+     *
+     * @param {string} url - The URL of the file to download
+     * @returns {Promise<void>}
+     */
+    async fetchAndDownloadFile(url) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+
+        const anchor = document.createElement('a');
+
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.download = /filename="(.*)"/.exec(response.headers.get('Content-Disposition'))[1];
+
+        document.body.append(anchor);
+
+        anchor.click();
+
+        document.body.removeChild(anchor);
     }
 
     /**

@@ -107,12 +107,10 @@
                 <div>
                     <h4 class="gh-expandable-title">Export post analytics</h4>
                     <p class="gh-expandable-description">
-                        Download a CSV file of all your post data for easy analysis in one place
+                        Download a CSV file of your last 1000 posts data for easy analysis in one place
                     </p>
                 </div>
-                <button type="button" class="gh-btn" {{on "click" this.exportData}}>
-                    <span>Export</span>
-                </button>
+                <GhTaskButton @buttonText="Export" @successText="Exported" @task={{this.exportPostsTask}} @class="gh-btn gh-btn-icon"/>
             </div>
         </div>
     </section>
