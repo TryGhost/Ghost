@@ -7,8 +7,12 @@
     @apply font-sans text-xl font-bold leading-snug text-black dark:text-grey-50 opacity-40
   }
 
-  .kg-toggle-header-text span {
-    @apply font-sans text-xl font-bold leading-snug text-black dark:text-grey-50 opacity-100
+  .kg-toggle-header-text span, .kg-toggle-header-text strong, .kg-toggle-header-text em {
+    @apply !font-sans text-xl !font-bold leading-snug text-black dark:text-grey-50 opacity-100
+  }
+
+  .kg-toggle-header-text strong {
+    @apply !font-extrabold
   }
 
   .kg-toggle-content-placeholder {
