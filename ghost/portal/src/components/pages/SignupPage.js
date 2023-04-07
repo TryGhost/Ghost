@@ -519,8 +519,15 @@ class SignupPage extends React.Component {
 
         const className = `gh-portal-signup-terms ${errorClassName}`;
 
+        const interceptAnchorClicks = (e) => {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+                window.open(e.target.href, '_blank');
+            }
+        };
+
         return (
-            <div className={className}>
+            <div className={className} onClick={interceptAnchorClicks}>
                 {signupTerms}
             </div>
         );
