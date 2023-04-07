@@ -1,10 +1,12 @@
 const nql = require('@tryghost/nql');
 const {BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const errors = require('@tryghost/errors');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
-    invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter'
+    invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
+    unsupportedBulkAction: 'Unsupported bulk action'
 };
 
 class PostsService {
@@ -58,8 +60,33 @@ class PostsService {
         return model;
     }
 
+    async bulkEdit(data, options) {
+        if (data.action === 'feature') {
+            return await this.#updatePosts({featured: true}, {filter: options.filter});
+        }
+        if (data.action === 'unfeature') {
+            return await this.#updatePosts({featured: false}, {filter: options.filter});
+        }
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.unsupportedBulkAction)
+        });
+    }
+
     async export(frame) {
         return await this.postsExporter.export(frame.options);
+    }
+
+    async #updatePosts(data, options) {
+        const postRows = await this.models.Post.getFilteredCollectionQuery({
+            filter: options.filter,
+            status: 'all'
+        }).select('posts.id');
+
+        const editIds = postRows.map(row => row.id);
+
+        return await this.models.Post.bulkEdit(editIds, 'posts', {
+            data
+        });
     }
 
     async getProductsFromVisibilityFilter(visibilityFilter) {

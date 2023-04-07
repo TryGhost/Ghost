@@ -30,7 +30,7 @@
         <div class="{{if this.feature.memberAttribution 'gh-list-sticky'}}">
             <ol class="pages-list gh-list {{unless this.postsInfinityModel "no-posts"}} {{if this.feature.memberAttribution 'feature-memberAttribution'}}">
                 {{#each this.postsInfinityModel as |page|}}
-                    <PostsList::ListItem
+                    <PostsList::ListItemOld
                         @post={{page}}
                         data-test-page-id={{page.id}}
                     />
