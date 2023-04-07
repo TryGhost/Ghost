@@ -140,7 +140,7 @@
                                     </div>
 
                                     {{#if (feature "makingItRain")}}
-                                        <GhFormGroup class="gh-stack-item mt5 mb5">
+                                        <GhFormGroup class="gh-stack-item mt5 mb5" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}}>
                                             <label class="modal-fullsettings-title">Notice on signup</label>
                                             <KoenigBasicHtmlInput
                                                 @name="footer"
@@ -148,7 +148,11 @@
                                                 @class="miw-100 form-text gh-members-emailsettings-footer-input"
                                                 @onChange={{action "setTermsHtml"}}
                                             />
-                                            <p>Select any text to add a link</p>
+                                            <GhErrorMessage @errors={{this.settings.errors}} @property="portalSignupTermsHtml" />
+                                            <p>
+                                                Recommended: <strong>{{this.maxTermsLength}}</strong> characters.
+                                                You've used {{gh-count-down-html-characters this.settings.portalSignupTermsHtml this.maxTermsLength}}
+                                            </p>
                                         </GhFormGroup>
 
                                         <GhFormGroup class="gh-members-subscribed-checkbox gh-portal-setting-first mb0 b--whitegrey space-l">
