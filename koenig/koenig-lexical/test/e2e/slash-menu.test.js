@@ -301,7 +301,9 @@ describe('Slash menu', async () => {
         it('uses query params', async function () {
             await focusEditor(page);
             await page.keyboard.type('/image https://example.com/image.jpg');
+            await expect(await page.locator('[data-kg-card-menu-item="Image"][data-kg-cardmenu-selected="true"]')).toBeVisible();
             await page.keyboard.press('Enter');
+            await expect(await page.locator('[data-kg-card="image"]')).toBeVisible();
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">

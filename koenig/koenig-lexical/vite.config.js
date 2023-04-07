@@ -29,8 +29,7 @@ export default (function viteConfig() {
                 '@tryghost/kg-clean-basic-html',
                 '@tryghost/kg-markdown-html-renderer',
                 '@tryghost/kg-simplemde'
-            ],
-            force: true
+            ]
         },
         build: {
             minify: true,
