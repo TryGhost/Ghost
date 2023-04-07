@@ -28,6 +28,7 @@ export default ModalComponent.extend({
     changedTiers: null,
     openSection: null,
     portalPreviewGuid: 'modal-portal-settings',
+    closeOnEnter: false,
 
     confirm() {},
 
