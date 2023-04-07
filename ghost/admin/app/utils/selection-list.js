@@ -13,6 +13,38 @@ export default class SelectionList {
     }
 
     /**
+     * Returns an NQL filter for all items, not the selection
+     */
+    get allFilter() {
+        return this.infinityModel.extraParams?.filter ?? '';
+    }
+
+    /**
+     * Returns an NQL filter for the current selection
+     */
+    get filter() {
+        if (this.inverted) {
+            if (this.allFilter) {
+                if (this.selectedIds.size === 0) {
+                    return this.allFilter;
+                }
+                return `(${this.allFilter})+id:-['${[...this.selectedIds].join('\',\'')}']`;
+            }
+            if (this.selectedIds.size === 0) {
+                // Select all
+                return '';
+            }
+            return `id:-['${[...this.selectedIds].join('\',\'')}']`;
+        }
+        if (this.selectedIds.size === 0) {
+            // Select nothing
+            return 'id:nothing';
+        }
+        // Only based on the ids
+        return `id:['${[...this.selectedIds].join('\',\'')}']`;
+    }
+
+    /**
      * Create an empty copy
      */
     cloneEmpty() {

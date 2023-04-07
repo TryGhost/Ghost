@@ -38,7 +38,7 @@
             <ol class="posts-list gh-list {{unless this.postsInfinityModel "no-posts"}} feature-memberAttribution">
 
                 {{#each this.postsInfinityModel as |post|}}
-                    <PostsList::ListItem
+                    <PostsList::ListItemOld
                         @post={{post}}
                         data-test-post-id={{post.id}}
                     />
