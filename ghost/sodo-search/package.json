@@ -79,7 +79,7 @@
     "autoprefixer": "10.4.14",
     "chalk": "4.1.2",
     "chokidar": "3.5.3",
-    "copy-webpack-plugin": "6.4.1",
+    "copy-webpack-plugin": "11.0.0",
     "eslint-plugin-ghost": "2.16.0",
     "minimist": "1.2.8",
     "nock": "13.3.0",
