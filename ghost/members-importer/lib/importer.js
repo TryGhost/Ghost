@@ -124,12 +124,16 @@ module.exports = class MembersCSVImporter {
             };
 
             try {
+                // If the member is created in the future, set created_at to now
+                // Members created in the future will not appear in admin members list
+                // Refs https://github.com/TryGhost/Team/issues/2793
+                const createdAt = moment(row.created_at).isAfter(moment()) ? moment().toDate() : row.created_at;
                 const memberValues = {
                     email: row.email,
                     name: row.name,
                     note: row.note,
                     subscribed: row.subscribed,
-                    created_at: row.created_at,
+                    created_at: createdAt,
                     labels: row.labels
                 };
                 const existingMember = await membersRepository.get({email: memberValues.email}, {
