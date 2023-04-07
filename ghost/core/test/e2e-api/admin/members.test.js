@@ -1,5 +1,6 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, regexes} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
+const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
 const assert = require('assert');
@@ -461,6 +462,7 @@ describe('Members API - member attribution', function () {
 
 describe('Members API', function () {
     let newsletters;
+    let emailMockReceiver;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -472,7 +474,7 @@ describe('Members API', function () {
 
     beforeEach(function () {
         mockManager.mockStripe();
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -825,6 +827,7 @@ describe('Members API', function () {
 
         await DomainEvents.allSettled();
         assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
+
         mockManager.assert.sentEmail({
             subject: 'Email needs verification'
         });
@@ -878,10 +881,17 @@ describe('Members API', function () {
 
         const newMember = body.members[0];
 
-        mockManager.assert.sentEmail({
-            subject: '🙌 Complete your sign up to Ghost\'s Test Site!',
-            to: 'member_getting_confirmation@test.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            }])
+            .matchMetadataSnapshot();
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
