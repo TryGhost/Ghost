@@ -5854,21 +5854,23 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-nodes@0.0.25", "@tryghost/kg-default-nodes@^0.0.25":
-  version "0.0.25"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.0.25.tgz#a13337ed89920ac2e51ff13086a4ab32e5b82f84"
-  integrity sha512-WAdUbaD2/lyI91sWEzd656IBtFPDf5HpEjCiA7eR6DqPLPVe8okAdRuu+wipii5xPjc0ejo0DTomp2xVEzmvRg==
+"@tryghost/kg-default-nodes@0.0.26", "@tryghost/kg-default-nodes@^0.0.26":
+  version "0.0.26"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.0.26.tgz#cf07f370751a3c02fc9662681b5038bbd74832fa"
+  integrity sha512-NutXDBrOGeeQjwO2U/Fg3Ojz1uTiDzfbbDciXt2z5NeuFIUoPpvfVdEv69a9wIJYMpGBBJfP+YMgOX37d7SB3w==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^3.0.9"
     "@tryghost/kg-markdown-html-renderer" "^6.0.6"
     html-minifier "^4.0.0"
     jsdom "^21.0.0"
     lexical "^0.9.0"
+    lodash "^4.17.21"
+    luxon "^3.3.0"
 
-"@tryghost/kg-lexical-html-renderer@0.1.21":
-  version "0.1.21"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.21.tgz#6dd30fdda8894ef2faa005664ba30492c24610ad"
-  integrity sha512-xwbyeihPm1o0VzAWyFlh65us1PDWlHOydoMViEy3R9ORChU20UXoRluHZerkb5bfz8vWkMz5D4ASSfW48mbJkg==
+"@tryghost/kg-lexical-html-renderer@0.1.22":
+  version "0.1.22"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.22.tgz#671af5a63666054ec4acfb04ce6f66b544fea5d6"
+  integrity sha512-F68hP3uUzAa5EqRWcOfmGlaURqSHdN/UBh3YQYi3qFW7Cl25WTkvmPh4zeD9IkdWL233lULH/zp8gUNp3LCjLA==
   dependencies:
     "@lexical/clipboard" "^0.9.0"
     "@lexical/code" "^0.9.0"
@@ -5876,7 +5878,7 @@
     "@lexical/link" "^0.9.0"
     "@lexical/list" "^0.9.0"
     "@lexical/rich-text" "^0.9.0"
-    "@tryghost/kg-default-nodes" "^0.0.25"
+    "@tryghost/kg-default-nodes" "^0.0.26"
     jsdom "^21.0.0"
     lexical "^0.9.0"
     prettier "^2.7.1"
@@ -21152,6 +21154,11 @@ luxon@^1.26.0:
   version "1.28.0"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.28.0.tgz#e7f96daad3938c06a62de0fb027115d251251fbf"
   integrity sha512-TfTiyvZhwBYM/7QdAVDh+7dBTBA29v4ik0Ce9zda3Mnf8on1S5KJI8P2jKFZ8+5C0jhmr0KwJEO/Wdpm0VeWJQ==
+
+luxon@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.3.0.tgz#d73ab5b5d2b49a461c47cedbc7e73309b4805b48"
+  integrity sha512-An0UCfG/rSiqtAIiBPO0Y9/zAnHUZxAMiCpTd5h2smgsj7GGmcenvrvww2cqNA8/4A5ZrD1gJpHN2mIHZQF+Mg==
 
 lz-string@^1.4.4:
   version "1.5.0"
