@@ -1,7 +1,8 @@
 const assert = require('assert');
 const sinon = require('sinon');
-const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers, regexes} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
+const {queryStringToken} = regexes;
 const models = require('../../../core/server/models');
 const logging = require('@tryghost/logging');
 
@@ -28,6 +29,7 @@ const newsletterSnapshotWithoutSortOrder = {
 
 describe('Newsletters API', function () {
     let agent;
+    let emailMockReceiver;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -36,7 +38,7 @@ describe('Newsletters API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -239,10 +241,17 @@ describe('Newsletters API', function () {
                 location: anyLocationFor('newsletters')
             });
 
-        mockManager.assert.sentEmail({
-            subject: 'Verify email address',
-            to: 'test@example.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchMetadataSnapshot()
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
     });
 
     it('Can add a newsletter - and subscribe existing members', async function () {
@@ -336,10 +345,17 @@ describe('Newsletters API', function () {
                 etag: anyEtag
             });
 
-        mockManager.assert.sentEmail({
-            subject: 'Verify email address',
-            to: 'updated@example.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchMetadataSnapshot()
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
     });
 
     it('Can verify property updates', async function () {
@@ -356,7 +372,20 @@ describe('Newsletters API', function () {
             })
             .expectStatus(200);
 
+        // @NOTE: need a way to return snapshot of sent email from email mock receiver
         const mail = mockManager.assert.sentEmail([]);
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchMetadataSnapshot()
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
+
         const $mailHtml = cheerio.load(mail.html);
 
         const verifyUrl = new URL($mailHtml('[data-test-verify-link]').attr('href'));
@@ -695,10 +724,11 @@ describe('Newsletters API', function () {
                 location: anyLocationFor('newsletters')
             });
 
-        mockManager.assert.sentEmail({
-            subject: 'Verify email address',
-            to: 'test@example.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchHTMLSnapshot()
+            .matchPlaintextSnapshot()
+            .matchMetadataSnapshot();
     });
 
     it(`Can't edit multiple newsletters to existing name`, async function () {

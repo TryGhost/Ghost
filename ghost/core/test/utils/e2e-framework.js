@@ -452,7 +452,8 @@ module.exports = {
         }
     },
     regexes: {
-        anyMajorMinorVersion: /v\d+\.\d+/gi
+        anyMajorMinorVersion: /v\d+\.\d+/gi,
+        queryStringToken: paramName => new RegExp(`${paramName}=(\\w|-)+`, 'g')
     },
     matchers: {
         anyBoolean: any(Boolean),
