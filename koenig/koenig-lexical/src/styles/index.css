@@ -1,4 +1,4 @@
-@import "./preflight.css";
+@import './preflight.css';
 
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
@@ -9,8 +9,9 @@
 @import './components/simplemde';
 @import './components/kg-toggle';
 @import './components/kg-product';
+@import './components/kg-email';
 
- /* Global Koenig content styles
+/* Global Koenig content styles
 /* -------------------------------------------------------------------- */
 
 /* TODO: will these clash with consuming apps? */

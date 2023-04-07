@@ -1,0 +1,94 @@
+import React from 'react';
+import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
+import populateNestedEditor from '../utils/populateNestedEditor';
+import {$canShowPlaceholderCurry} from '@lexical/text';
+import {$generateHtmlFromNodes} from '@lexical/html';
+import {BASIC_NODES, KoenigCardWrapper} from '../index.js';
+import {EmailNode as BaseEmailNode, INSERT_EMAIL_COMMAND} from '@tryghost/kg-default-nodes';
+import {ReactComponent as EmailCardIcon} from '../assets/icons/kg-card-type-email.svg';
+import {EmailNodeComponent} from './EmailNodeComponent';
+import {createEditor} from 'lexical';
+
+// re-export here so we don't need to import from multiple places throughout the app
+export {INSERT_EMAIL_COMMAND} from '@tryghost/kg-default-nodes';
+
+export class EmailNode extends BaseEmailNode {
+    static kgMenu = [{
+        label: 'Email content',
+        desc: 'Only visible when delivered by email',
+        Icon: EmailCardIcon,
+        insertCommand: INSERT_EMAIL_COMMAND,
+        matches: ['email content', 'only email']
+    }];
+
+    getIcon() {
+        return EmailCardIcon;
+    }
+
+    constructor(dataset = {}, key) {
+        super(dataset, key);
+
+        // create nested editor
+        this.__htmlEditor = dataset.htmlEditor || createEditor({nodes: BASIC_NODES});
+        if (!dataset.htmlEditor) {
+            const initialHtml = dataset.html ? dataset.html : '<p>Hey <code>{first_name, "there"},</code></p>';
+            populateNestedEditor({editor: this.__htmlEditor, initialHtml});
+        }
+    }
+
+    getDataset() {
+        const dataset = super.getDataset();
+
+        // client-side only data properties such as nested editors
+        const self = this.getLatest();
+        dataset.htmlEditor = self.__htmlEditor;
+
+        return dataset;
+    }
+
+    exportJSON() {
+        const json = super.exportJSON();
+
+        // convert nested editor instances back into HTML because their content may not
+        // be automatically updated when the nested editor changes
+        if (this.__htmlEditor) {
+            this.__htmlEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__htmlEditor, null);
+                const cleanedHtml = cleanBasicHtml(html);
+                json.text = cleanedHtml;
+            });
+        }
+
+        return json;
+    }
+
+    createDOM() {
+        return document.createElement('div');
+    }
+
+    decorate() {
+        return (
+            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
+                <EmailNodeComponent
+                    htmlEditor={this.__htmlEditor}
+                    nodeKey={this.getKey()}
+                />
+            </KoenigCardWrapper>
+        );
+    }
+
+    // override the default `isEmpty` check because we need to check the nested editors
+    // rather than the data properties themselves
+    isEmpty() {
+        const isHtmlEmpty = this.__htmlEditor.getEditorState().read($canShowPlaceholderCurry(false));
+        return isHtmlEmpty;
+    }
+}
+
+export const $createEmailNode = (dataset) => {
+    return new EmailNode(dataset);
+};
+
+export function $isEmailNode(node) {
+    return node instanceof EmailNode;
+}

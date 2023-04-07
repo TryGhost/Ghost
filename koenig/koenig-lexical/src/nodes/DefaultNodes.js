@@ -4,6 +4,7 @@ import {BookmarkNode} from './BookmarkNode';
 import {ButtonNode} from './ButtonNode';
 import {CalloutNode} from './CalloutNode';
 import {CodeBlockNode} from './CodeBlockNode';
+import {EmailNode} from './EmailNode';
 import {FileNode} from './FileNode';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
@@ -37,7 +38,8 @@ const DEFAULT_NODES = [
     ToggleNode,
     BookmarkNode,
     PaywallNode,
-    ProductNode
+    ProductNode,
+    EmailNode
 ];
 
 export default DEFAULT_NODES;

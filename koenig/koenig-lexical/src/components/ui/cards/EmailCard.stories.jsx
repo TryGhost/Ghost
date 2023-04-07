@@ -1,7 +1,10 @@
 import React from 'react';
-import {CardWrapper} from './../CardWrapper';
-import {EmailContentCard} from './EmailContentCard';
+import populateNestedEditor from '../../../utils/populateNestedEditor';
+import {BASIC_NODES} from '../../../index.js';
+import {CardWrapper} from '../CardWrapper';
+import {EmailCard} from './EmailCard';
 import {ReactComponent as EmailIndicatorIcon} from '../../../assets/icons/kg-indicator-email.svg';
+import {createEditor} from 'lexical';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -11,7 +14,7 @@ const displayOptions = {
 
 const story = {
     title: 'Primary cards/Email content card',
-    component: EmailContentCard,
+    component: EmailCard,
     subcomponent: {CardWrapper},
     argTypes: {
         display: {
@@ -30,26 +33,30 @@ const story = {
     },
     parameters: {
         status: {
-            type: 'uiBlocked'
+            type: 'uiReady'
         }
     }
 };
 export default story;
 
-const Template = ({display, ...args}) => (
-    <div className="kg-prose">
-        <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
-                <EmailContentCard {...display} {...args} />
-            </CardWrapper>
+const Template = ({display, html, ...args}) => {
+    const editor = createEditor({nodes: BASIC_NODES});
+    populateNestedEditor({editor, initialHtml: `<p>${html}</p>`});
+
+    return (
+        <div className="kg-prose">
+            <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
+                <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
+                    <EmailCard {...display} {...args} htmlEditor={editor} />
+                </CardWrapper>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 export const Default = Template.bind({});
 Default.args = {
     display: 'Editing',
-    value: 'Hey {first_name, "there"},',
-    placeholder: 'Email only text...'
+    html: `Hey <code>{first_name, "there"}</code>,`
 };
 

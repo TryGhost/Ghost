@@ -9,6 +9,7 @@ import {BookmarkPlugin} from '../plugins/BookmarkPlugin';
 import {ButtonPlugin} from '../plugins/ButtonPlugin';
 import {CalloutPlugin} from '../plugins/CalloutPlugin';
 import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
+import {EmailPlugin} from '../plugins/EmailPlugin';
 import {FilePlugin} from '../plugins/FilePlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PaywallPlugin} from '../plugins/PaywallPlugin';
@@ -42,6 +43,7 @@ export const AllDefaultPlugins = () => {
             <PaywallPlugin />
             <KoenigSelectorPlugin />
             <ProductPlugin />
+            <EmailPlugin />
         </>
     );
 };

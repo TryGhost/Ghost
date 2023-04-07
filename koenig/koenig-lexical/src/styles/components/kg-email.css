@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .kg-email-html span {
+        @apply py-3 font-serif text-xl font-normal leading-normal text-grey-900 dark:text-grey-100 opacity-100;
+    }
+}
