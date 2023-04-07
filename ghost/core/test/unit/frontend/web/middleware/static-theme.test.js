@@ -184,4 +184,28 @@ describe('staticTheme', function () {
             done();
         });
     });
+
+    it('should disallow path traversal', function (done) {
+        req.path = '/assets/built%2F..%2F..%2F/package.json';
+        req.method = 'GET';
+
+        staticTheme()(req, res, function next() {
+            activeThemeStub.called.should.be.false();
+            expressStaticStub.called.should.be.false();
+
+            done();
+        });
+    });
+
+    it('should not crash when malformatted URL sequence is passed', function (done) {
+        req.path = '/assets/built%2F..%2F..%2F%E0%A4%A/package.json';
+        req.method = 'GET';
+
+        staticTheme()(req, res, function next() {
+            activeThemeStub.called.should.be.false();
+            expressStaticStub.called.should.be.false();
+
+            done();
+        });
+    });
 });
