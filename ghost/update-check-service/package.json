@@ -23,10 +23,10 @@
     "uuid": "9.0.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.22",
+    "@tryghost/debug": "0.1.24",
     "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.1",
-    "@tryghost/tpl": "0.1.22",
+    "@tryghost/logging": "2.4.4",
+    "@tryghost/tpl": "0.1.24",
     "lodash": "4.17.21",
     "moment": "2.24.0"
   }

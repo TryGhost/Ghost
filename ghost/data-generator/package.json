@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "@faker-js/faker": "7.6.0",
-    "@tryghost/root-utils": "0.3.20",
-    "@tryghost/string": "0.2.3",
+    "@tryghost/root-utils": "0.3.22",
+    "@tryghost/string": "0.2.4",
     "probability-distributions": "0.9.1"
   }
 }
