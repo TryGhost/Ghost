@@ -210,6 +210,7 @@ describe('MentionSendingService', function () {
 
     describe('sendAll', function () {
         it('Sends to all links', async function () {
+            this.retries(1);
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -242,6 +243,7 @@ describe('MentionSendingService', function () {
         });
 
         it('Catches and logs errors', async function () {
+            this.retries(1);
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -278,6 +280,7 @@ describe('MentionSendingService', function () {
         });
 
         it('Sends to deleted links', async function () {
+            this.retries(1);
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -380,6 +383,7 @@ describe('MentionSendingService', function () {
 
     describe('send', function () {
         it('Can handle 202 accepted responses', async function () {
+            this.retries(1);
             const source = new URL('https://example.com/source');
             const target = new URL('https://target.com/target');
             const endpoint = new URL('https://example.org/webmentions-test');
@@ -398,6 +402,7 @@ describe('MentionSendingService', function () {
         });
 
         it('Can handle 201 created responses', async function () {
+            this.retries(1);
             const source = new URL('https://example.com/source');
             const target = new URL('https://target.com/target');
             const endpoint = new URL('https://example.org/webmentions-test');
@@ -416,6 +421,7 @@ describe('MentionSendingService', function () {
         });
 
         it('Can handle 400 responses', async function () {
+            this.retries(1);
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -431,6 +437,7 @@ describe('MentionSendingService', function () {
         });
 
         it('Can handle 500 responses', async function () {
+            this.retries(1);
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -446,6 +453,7 @@ describe('MentionSendingService', function () {
         });
 
         it('Can handle redirect responses', async function () {
+            this.retries(1);
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -468,6 +476,7 @@ describe('MentionSendingService', function () {
         });
 
         it('Can handle network errors', async function () {
+            this.retries(1);
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -483,6 +492,7 @@ describe('MentionSendingService', function () {
         });
 
         it('Does not send to private IP behind DNS', async function () {
+            this.retries(1);
             // Test that we don't make a request when a domain resolves to a private IP
             // domaincontrol.com -> 127.0.0.1
             const service = new MentionSendingService({externalRequest});

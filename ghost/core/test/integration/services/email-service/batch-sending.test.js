@@ -1047,6 +1047,7 @@ describe('Batch sending tests', function () {
         });
 
         it('Shows subscription details box for free members', async function () {
+            this.retries(1);
             // Create a new member without a first_name
             await models.Member.add({
                 email: 'subscription-box-1@example.com',

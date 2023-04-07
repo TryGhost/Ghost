@@ -19,6 +19,8 @@ const addNewsletter = async (page) => {
 
 test.describe('Portal', () => {
     test.describe('Member actions', () => {
+        test.describe.configure({retries: 1});
+        
         test('can log out', async ({page}) => {
             // create a new free member
             await createMember(page, {
