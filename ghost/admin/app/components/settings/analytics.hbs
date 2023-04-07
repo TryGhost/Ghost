@@ -110,9 +110,7 @@
                         Download a CSV file of all your post data for easy analysis in one place
                     </p>
                 </div>
-                <button type="button" class="gh-btn" {{on "click" this.exportData}}>
-                    <span>Export</span>
-                </button>
+                <GhTaskButton @buttonText="Export" @successText="Exported" @task={{this.exportPostsTask}} @class="gh-btn gh-btn-icon"/>
             </div>
         </div>
     </section>
