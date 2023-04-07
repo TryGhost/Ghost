@@ -315,10 +315,6 @@ export default class KoenigBasicHtmlInput extends Component {
             return;
         }
 
-        if (!range.isCollapsed) {
-            editor.performDelete();
-        }
-
         if (editor.post.isBlank) {
             editor._insertEmptyMarkupSectionAtCursor();
         }
@@ -335,6 +331,10 @@ export default class KoenigBasicHtmlInput extends Component {
                 editor.selectRange(range.tail);
                 return;
             }
+        }
+
+        if (!range.isCollapsed) {
+            editor.performDelete();
         }
 
         const position = editor.range.head;
