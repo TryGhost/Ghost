@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 
 export default class Analytics extends Component {
     @service settings;
@@ -16,13 +17,15 @@ export default class Analytics extends Component {
         this.settings.emailTrackOpens = !this.settings.emailTrackOpens;
     }
 
-    @action
-    exportData() {
+    @task
+    *exportPostsTask() {
         let exportUrl = ghostPaths().url.api('posts/export');
         let downloadParams = new URLSearchParams();
-        downloadParams.set('limit', 'all');
+        downloadParams.set('limit', 1000);
 
-        this.utils.downloadFile(`${exportUrl}?${downloadParams.toString()}`);
+        yield this.utils.fetchAndDownloadFile(`${exportUrl}?${downloadParams.toString()}`);
+
+        return true;
     }
 
     @action
