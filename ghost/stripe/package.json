@@ -23,10 +23,10 @@
     "sinon": "15.0.3"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.22",
+    "@tryghost/debug": "0.1.24",
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.1",
+    "@tryghost/logging": "2.4.4",
     "@tryghost/member-events": "0.0.0",
     "leaky-bucket": "2.2.0",
     "lodash": "4.17.21",
