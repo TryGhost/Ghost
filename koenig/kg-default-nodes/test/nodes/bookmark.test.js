@@ -152,6 +152,18 @@ describe('BookmarkNode', function () {
             element.outerHTML.should.prettifyTo(prettyExpectedHtml);
         })); 
 
+        it('renders email target', editorTest(function () {
+            const options = {
+                target: 'email'
+            };
+            const bookmarkNode = $createBookmarkNode(dataset);
+            const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
+            
+            element.should.not.containEql('<figure');
+            element.should.containEql('<!--[if vml]>');
+            element.should.containEql('<table class="kg-card kg-bookmark-card--outlook"');
+        }));
+
         it('renders nothing with a missing src', editorTest(function () {
             const bookmarkNode = $createBookmarkNode();
             const {element} = bookmarkNode.exportDOM(exportOptions);

@@ -10,7 +10,72 @@ export function renderBookmarkNodeToDOM(node, options = {}) {
         return document.createTextNode('');
     }
 
-    return frontendTemplate(node, document);
+    if (options.target === 'email') {
+        return emailTemplate(node);
+    } else {
+        return frontendTemplate(node, document);
+    }
+}
+
+function emailTemplate(node) {
+    const title = node.getTitle();
+    const publisher = node.getPublisher();
+    const author = node.getAuthor();
+    const icon = node.getIcon();
+    const description = node.getDescription();
+    const url = node.getUrl();
+
+    return (
+        `<!--[if vml]>
+            <table class="kg-card kg-bookmark-card--outlook" style="margin: 0; padding: 0; width: 100%; border: 1px solid #e5eff5; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; border-collapse: collapse; border-spacing: 0;" width="100%">
+                <tr>
+                    <td width="100%" style="padding: 20px;">
+                        <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
+                            <tr>
+                                <td class="kg-bookmark-title--outlook">
+                                    <a href="${url}" style="text-decoration: none; color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600;">
+                                        ${title}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="kg-bookmark-description--outlook">
+                                        <a href="${url}" style="text-decoration: none; margin-top: 12px; color: #738a94; font-size: 13px; line-height: 1.5em; font-weight: 400;">
+                                            ${description}
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="kg-bookmark-metadata--outlook" style="padding-top: 14px; color: #15212A; font-size: 13px; font-weight: 400; line-height: 1.5em;">
+                                    <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
+                                        <tr>
+                                            ${icon ? `
+                                                <td valign="middle" class="kg-bookmark-icon--outlook" style="padding-right: 8px; font-size: 0; line-height: 1.5em;">
+                                                    <a href="${url}" style="text-decoration: none; color: #15212A;">
+                                                        <img src="${icon}" width="22" height="22" alt=" ">
+                                                    </a>
+                                                </td>
+                                            ` : ''}
+                                            <td valign="middle" class="kg-bookmark-byline--outlook">
+                                                <a href="${url}" style="text-decoration: none; color: #15212A;">
+                                                    ${publisher}
+                                                    ${author ? `&nbsp;&#x2022;&nbsp;` : ''}
+                                                    ${author}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <div class="kg-bookmark-spacer--outlook" style="height: 1.5em;">&nbsp;</div>
+        <![endif]-->`
+    );
 }
 
 function frontendTemplate(node, document) {
