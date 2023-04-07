@@ -10,6 +10,4 @@ We appreciate your contribution!
 
 ---
 
-For fun, here's what Copilot analyzed from your PR:
-
 copilot:all
