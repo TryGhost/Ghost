@@ -5,7 +5,6 @@ describe('.well-known', function () {
     let agentGhostAPI;
 
     before(async function () {
-        mockManager.mockMail();
         agentGhostAPI = await agentProvider.getGhostAPIAgent();
     });
 
