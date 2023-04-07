@@ -18,6 +18,9 @@ function createBulkOperation(singular, multiple) {
                 await multiple(knex, table, chunkedData, options);
                 result.successful += chunkedData.length;
             } catch (errToIgnore) {
+                if (options.throwErrors) {
+                    throw errToIgnore;
+                }
                 for (const singularData of chunkedData) {
                     try {
                         await singular(knex, table, singularData, options);
@@ -54,7 +57,11 @@ async function editMultiple(knex, table, chunk, options) {
 
 async function delSingle(knex, table, id, options) {
     try {
-        await knex(table).where(options.column ?? 'id', id).del();
+        let k = knex(table);
+        if (options.transacting) {
+            k = k.transacting(options.transacting);
+        }
+        await k.where(options.column ?? 'id', id).del();
     } catch (err) {
         const importError = new errors.DataImportError({
             message: `Failed to remove entry from ${table}`,
@@ -67,7 +74,11 @@ async function delSingle(knex, table, id, options) {
 }
 
 async function delMultiple(knex, table, chunk, options) {
-    await knex(table).whereIn(options.column ?? 'id', chunk).del();
+    let k = knex(table);
+    if (options.transacting) {
+        k = k.transacting(options.transacting);
+    }
+    await k.whereIn(options.column ?? 'id', chunk).del();
 }
 
 const insert = createBulkOperation(insertSingle, insertMultiple);
@@ -85,23 +96,23 @@ module.exports = function (Bookshelf) {
             return insert(Bookshelf.knex, tableName, data);
         },
 
-        bulkEdit: function bulkEdit(data, tableName, options) {
+        bulkEdit: async function bulkEdit(data, tableName, options) {
             tableName = tableName || this.prototype.tableName;
 
-            return edit(Bookshelf.knex, tableName, data, options);
+            return await edit(Bookshelf.knex, tableName, data, options);
         },
 
         /**
-         * 
+         *
          * @param {string[]} data List of ids to delete
-         * @param {*} tableName 
-         * @param {Object} [options] 
+         * @param {*} tableName
+         * @param {Object} [options]
          * @param {string} [options.column] Delete the rows where this column equals the ids in `data` (defaults to 'id')
-         * @returns 
+         * @returns
          */
-        bulkDestroy: function bulkDestroy(data, tableName, options = {}) {
+        bulkDestroy: async function bulkDestroy(data, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
-            return del(Bookshelf.knex, tableName, data, options);
+            return await del(Bookshelf.knex, tableName, data, options);
         }
     });
 };
