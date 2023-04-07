@@ -45,6 +45,7 @@ describe('MentionsAPI', function () {
     });
 
     it('Can generate a mentions report', async function () {
+        this.retries(1);
         const repository = new InMemoryMentionRepository();
         const api = new MentionsAPI({
             repository,

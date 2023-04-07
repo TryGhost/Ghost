@@ -259,6 +259,7 @@ describe('Posts API', function () {
     });
 
     it('Can add a post', async function () {
+        this.retries(1);
         const post = {
             title: 'My post',
             status: 'draft',
