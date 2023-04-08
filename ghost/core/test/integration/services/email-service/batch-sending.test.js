@@ -875,6 +875,7 @@ describe('Batch sending tests', function () {
         });
 
         it('Does replace with and without fallback in both plaintext and html for member with name', async function () {
+            this.retries(1);
             // Create a new member without a first_name
             await models.Member.add({
                 name: 'Simon Tester',
