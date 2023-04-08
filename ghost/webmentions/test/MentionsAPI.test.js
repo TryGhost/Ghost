@@ -45,7 +45,7 @@ describe('MentionsAPI', function () {
     });
 
     it('Can generate a mentions report', async function () {
-        this.retries(1);
+        // this.retries(1);
         const repository = new InMemoryMentionRepository();
         const api = new MentionsAPI({
             repository,
@@ -64,7 +64,7 @@ describe('MentionsAPI', function () {
 
         const now = new Date();
 
-        const report = await api.getMentionReport(new Date(0), new Date());
+        const report = await api.getMentionReport(new Date(0), now);
 
         assert.deepEqual(report.startDate, new Date(0));
         assert.deepEqual(report.endDate, now);
