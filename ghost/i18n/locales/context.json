@@ -40,7 +40,6 @@
     "Not receiving emails?": "A link in portal to take members to an FAQ area about what to do if you're not receiving emails",
     "Now check your email!": "A confirmation message after logging in or signing up",
     "Please confirm your email address with this link:": "Descriptive text in signup emails, right before the button members click to confirm their address",
-    "Powered by Ghost": "Small attribution text to Ghost, displayed in the footer of some parts of portal/email UI",
     "Price": "A label to indicate price of a tier",
     "Re-enable emails": "A button for members to turn-back-on emails, if they have been previously disabled as a result of delivery failures",
     "Retry": "When something goes wrong, this link allows people to re-attempt the same action",
