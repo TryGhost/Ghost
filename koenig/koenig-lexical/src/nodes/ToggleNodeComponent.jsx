@@ -11,22 +11,6 @@ export function ToggleNodeComponent({nodeKey, headerEditor, contentEditor}) {
     const cardContext = React.useContext(CardContext);
     const {isEditing, isSelected} = cardContext;
 
-    const [isContentVisible, setContentVisible] = React.useState(false);
-
-    const toggleRef = React.useRef(null);
-
-    React.useEffect(() => {
-        if (toggleRef && toggleRef.current) {
-            toggleRef.current.click();
-        }
-    }, []);
-
-    const toggleContent = (event) => {
-        event?.preventDefault();
-        event?.stopPropagation();
-        setContentVisible(!isContentVisible);
-    };
-
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -45,10 +29,7 @@ export function ToggleNodeComponent({nodeKey, headerEditor, contentEditor}) {
                 contentPlaceholder={'Collapsible content'}
                 headerEditor={headerEditor}
                 headerPlaceholder={'Toggle header'}
-                isContentVisible={isContentVisible}
                 isEditing={isEditing}
-                toggleContent={toggleContent}
-                toggleRef={toggleRef}
             />
 
             <ActionToolbar
