@@ -6,14 +6,15 @@ export default class PoweredBy extends React.Component {
     static contextType = AppContext;
 
     render() {
-        const {t} = this.context;
+        // Note: please do not wrap "Powered by Ghost" in the translation function, as we don't
+        // want it to be translated
 
         return (
             <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' onClick={() => {
                 window.open('https://ghost.org', '_blank');
             }}>
                 <GhostLogo />
-                {t('Powered by Ghost')}
+                Powered by Ghost
             </a>
         );
     }
