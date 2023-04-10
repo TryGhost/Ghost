@@ -8,6 +8,7 @@ import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {tenorConfig} from './utils/tenorConfig';
 import {useLocation} from 'react-router-dom';
+import {useSnippets} from './utils/useSnippets';
 import {useState} from 'react';
 
 const cardConfig = {
@@ -30,6 +31,7 @@ function RestrictedContentDemo() {
     const titleRef = React.useRef(null);
     const containerRef = React.useRef(null);
     const paragraphs = query.get('paragraphs') || 1;
+    const {snippets, createSnippet, deleteSnippet} = useSnippets();
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -87,7 +89,7 @@ function RestrictedContentDemo() {
             className="koenig-lexical top"
         >
             <KoenigComposer
-                cardConfig={cardConfig}
+                cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet}}
                 fileUploader={{useFileUpload, fileTypes}}
                 initialEditorState={defaultContent}
             >

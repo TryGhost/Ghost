@@ -7,6 +7,7 @@ import {HtmlOutputPlugin, KoenigComposableEditor, KoenigComposer} from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {tenorConfig} from './utils/tenorConfig';
+import {useSnippets} from './utils/useSnippets';
 import {useState} from 'react';
 
 const cardConfig = {
@@ -22,6 +23,7 @@ function HtmlOutputDemo() {
     const [editorAPI, setEditorAPI] = useState(null);
     const titleRef = React.useRef(null);
     const containerRef = React.useRef(null);
+    const {snippets, createSnippet, deleteSnippet} = useSnippets();
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -81,7 +83,7 @@ function HtmlOutputDemo() {
                 className="koenig-lexical top"
             >
                 <KoenigComposer
-                    cardConfig={cardConfig}
+                    cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet}}
                     fileUploader={{useFileUpload, fileTypes}}
                     initialEditorState={defaultContent}
                 >

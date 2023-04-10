@@ -22,6 +22,7 @@ import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {tenorConfig} from './utils/tenorConfig';
 import {useLocation} from 'react-router-dom';
 import {useSearchParams} from 'react-router-dom';
+import {useSnippets} from './utils/useSnippets';
 import {useState} from 'react';
 
 const skipCollaborationInit =
@@ -93,6 +94,7 @@ function DemoApp({editorType, isMultiplayer}) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
+    const {snippets, createSnippet, deleteSnippet} = useSnippets();
 
     const darkMode = searchParams.get('darkMode') === 'true';
     const hideContent = searchParams.get('content') === 'false';
@@ -203,7 +205,7 @@ function DemoApp({editorType, isMultiplayer}) {
             className={`koenig-lexical top`}
         >
             <KoenigComposer
-                cardConfig={cardConfig}
+                cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet}}
                 darkMode={darkMode}
                 fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}
                 initialEditorState={isMultiplayer ? null : initialContent}
