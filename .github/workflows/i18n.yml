@@ -1,0 +1,21 @@
+name: i18n check
+on:
+  pull_request_target:
+    types: [opened]
+    paths:
+      - 'ghost/i18n/locales/**'
+jobs:
+  create-label:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'TryGhost'
+    name: Add i18n label
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ["i18n"]
+            })

@@ -20,12 +20,12 @@
   "devDependencies": {
     "c8": "7.13.0",
     "mocha": "10.2.0",
-    "sinon": "15.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.21",
-    "@tryghost/validator": "0.2.1",
-    "@tryghost/version": "0.1.20",
+    "@tryghost/errors": "1.2.24",
+    "@tryghost/validator": "0.2.4",
+    "@tryghost/version": "0.1.22",
     "got": "9.6.0"
   }
 }

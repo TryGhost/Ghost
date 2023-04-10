@@ -2,15 +2,24 @@ const i18next = require('i18next');
 
 const SUPPORTED_LOCALES = [
     'af',
+    'bg',
+    'ca',
     'cs',
     'de',
     'en',
+    'eo',
     'es',
     'fr',
     'hu',
+    'it',
     'mn',
     'nl',
-    'pl'
+    'pl',
+    'pt-br',
+    'sl',
+    'sv',
+    'tr',
+    'vi'
 ];
 
 /**

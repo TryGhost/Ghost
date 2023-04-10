@@ -21,12 +21,12 @@
     "c8": "7.13.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.21",
-    "@tryghost/tpl": "0.1.22",
-    "@tryghost/validator": "0.2.1",
+    "@tryghost/errors": "1.2.24",
+    "@tryghost/tpl": "0.1.24",
+    "@tryghost/validator": "0.2.4",
     "jsonwebtoken": "8.5.1"
   }
 }

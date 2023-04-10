@@ -19,19 +19,19 @@
   ],
   "devDependencies": {
     "c8": "7.13.0",
-    "html-validate": "7.13.3",
+    "html-validate": "7.15.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
-    "@tryghost/color-utils": "0.1.23",
+    "@tryghost/color-utils": "0.1.24",
     "@tryghost/email-events": "0.0.0",
-    "@tryghost/errors": "1.2.21",
+    "@tryghost/errors": "1.2.24",
     "@tryghost/html-to-plaintext": "0.0.0",
     "@tryghost/kg-default-cards": "6.0.5",
-    "@tryghost/logging": "2.4.1",
-    "@tryghost/tpl": "0.1.22",
+    "@tryghost/logging": "2.4.4",
+    "@tryghost/tpl": "0.1.24",
     "@tryghost/validator": "^0.2.0",
     "bson-objectid": "2.0.4",
     "cheerio": "0.22.0",

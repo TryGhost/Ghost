@@ -49,10 +49,10 @@ export default class EditNewsletterDesignForm extends Component {
     get backgroundPresetColors() {
         return [
             {
-                value: 'dark',
-                name: 'Black',
-                class: 'black',
-                style: ''
+                value: '#f0f0f0',
+                name: 'Lightgrey',
+                class: '',
+                style: 'background: #f0f0f0 !important;'
             },
             {
                 value: 'light',

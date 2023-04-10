@@ -11,7 +11,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
 import i18nLib from '@tryghost/i18n';
@@ -321,6 +321,10 @@ export default class App extends React.Component {
                 data.site.portal_button_icon = value;
             } else if (key === 'signupButtonText') {
                 data.site.portal_button_signup_text = value || '';
+            } else if (key === 'signupTermsHtml') {
+                data.site.portal_signup_terms_html = value || '';
+            } else if (key === 'signupCheckboxRequired') {
+                data.site.portal_signup_checkbox_required = JSON.parse(value);
             } else if (key === 'buttonStyle' && value) {
                 data.site.portal_button_style = value;
             } else if (key === 'monthlyPrice' && !isNaN(Number(value))) {
@@ -554,7 +558,7 @@ export default class App extends React.Component {
                 if (!_t || 'complete' === _t || 'loaded' === _t) {
                     try {
                         window.$FPROM.init(firstPromoterId, siteDomain);
-                        if (member) {
+                        if (isRecentMember({member})) {
                             const email = member.email;
                             const uid = member.uuid;
                             if (window.$FPROM) {

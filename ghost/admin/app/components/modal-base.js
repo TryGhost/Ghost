@@ -7,6 +7,7 @@ export default Component.extend({
     classNames: 'modal-content',
 
     _previousKeymasterScope: null,
+    closeOnEnter: true,
 
     // Allowed Actions
     closeModal: () => {},
@@ -38,9 +39,11 @@ export default Component.extend({
 
         this._previousKeymasterScope = key.getScope();
 
-        key('enter', 'modal', () => {
-            this.send('confirm');
-        });
+        if (this.closeOnEnter) {
+            key('enter', 'modal', () => {
+                this.send('confirm');
+            });
+        }
 
         key('escape', 'modal', (event) => {
             if (!event.target.dataset.preventEscapeCloseModal) {

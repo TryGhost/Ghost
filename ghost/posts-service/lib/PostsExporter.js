@@ -34,7 +34,7 @@ class PostsExporter {
      */
     async export({filter, order, limit}) {
         const posts = await this.#models.Post.findPage({
-            filter,
+            filter: filter ?? 'status:published,status:sent',
             order,
             limit,
             withRelated: [
@@ -80,6 +80,7 @@ class PostsExporter {
             const showEmailClickAnalytics = trackClicks && email && email.get('track_clicks');
 
             return {
+                id: post.get('id'),
                 title: post.get('title'),
                 url: this.#getPostUrl(post),
                 author: post.related('authors').map(author => author.get('name')).join(', '),

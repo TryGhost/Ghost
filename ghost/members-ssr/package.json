@@ -21,11 +21,11 @@
     "keypair": "1.0.4",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.22",
-    "@tryghost/errors": "1.2.21",
+    "@tryghost/debug": "0.1.24",
+    "@tryghost/errors": "1.2.24",
     "cookies": "0.8.0",
     "jsonwebtoken": "8.5.1"
   }

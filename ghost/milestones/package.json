@@ -20,10 +20,10 @@
   "devDependencies": {
     "c8": "7.13.0",
     "mocha": "10.2.0",
-    "sinon": "15.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.21",
+    "@tryghost/errors": "1.2.24",
     "bson-objectid": "2.0.4"
   }
 }

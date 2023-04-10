@@ -72,6 +72,10 @@
     transition: none;
 }
 
+.dropdown-menu li > button:disabled {
+    opacity: 0.4;
+}
+
 .dropdown-menu svg {
     margin-right: 10px;
     height: 14px;
@@ -313,4 +317,33 @@
     width: 14px;
     line-height: 1em;
     fill: none;
+}
+
+/**
+Post context menu
+*/
+
+.gh-context-menu-container {
+    visibility: hidden;
+}
+
+/* Disable user interaction with a div that covers the full view. We don't use a javascript based approach here, because you want to close a context menu even when you click a link on the page. With js, we cannot ignore or block that link click without complex event listeners. */
+.gh-context-menu-overlay {
+    position: fixed;
+    content: '';
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.gh-context-menu-container[data-open] {
+    visibility: visible;
+}
+
+.gh-context-menu {
+    position: fixed;
+    max-width: 200px;
+    z-index: 1001;
 }

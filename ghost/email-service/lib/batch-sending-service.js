@@ -146,7 +146,6 @@ class BatchSendingService {
 
         try {
             await this.sendEmail(email);
-
             await this.retryDb(async () => {
                 await email.save({
                     status: 'submitted',

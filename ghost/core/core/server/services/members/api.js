@@ -59,16 +59,16 @@ function createApiInstance(config) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return `📫 ${t(`Confirm your subscription to {{siteTitle}}`, {siteTitle})}`;
+                    return `📫 ${t(`Confirm your subscription to {{siteTitle}}`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'signup':
-                    return `🙌 ${t(`Complete your sign up to {{siteTitle}}!`, {siteTitle})}`;
+                    return `🙌 ${t(`Complete your sign up to {{siteTitle}}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'signup-paid':
-                    return `🙌 ${t(`Thank you for signing up to {{siteTitle}}!`, {siteTitle})}`;
+                    return `🙌 ${t(`Thank you for signing up to {{siteTitle}}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'updateEmail':
-                    return `📫 ${t(`Confirm your email update for {{siteTitle}}!`, {siteTitle})}`;
+                    return `📫 ${t(`Confirm your email update for {{siteTitle}}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'signin':
                 default:
-                    return `🔑 ${t(`Secure sign in link for {{siteTitle}}`, {siteTitle})}`;
+                    return `🔑 ${t(`Secure sign in link for {{siteTitle}}`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 }
             },
             getText(url, type, email) {
@@ -78,7 +78,7 @@ function createApiInstance(config) {
                     return `
                         ${t(`Hey there,`)}
 
-                        ${t('You\'re one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:', {siteTitle})}
+                        ${t('You\'re one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 
@@ -95,7 +95,7 @@ function createApiInstance(config) {
                     return `
                         ${t(`Hey there,`)}
 
-                        ${t('Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:', {siteTitle})}
+                        ${t('Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 
@@ -112,7 +112,7 @@ function createApiInstance(config) {
                     return `
                         ${t(`Hey there,`)}
 
-                        ${t('Thank you for subscribing to {{siteTitle}}. Tap the link below to be automatically signed in:', {siteTitle})}
+                        ${t('Thank you for subscribing to {{siteTitle}}. Tap the link below to be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 
@@ -123,7 +123,7 @@ function createApiInstance(config) {
                         ---
 
                         ${t('Sent to {{email}}', {email})}
-                        ${t('Thank you for subscribing to {{siteTitle}}!', {siteTitle})}
+                        ${t('Thank you for subscribing to {{siteTitle}}!', {siteTitle, interpolation: {escapeValue: false}})}
                         `;
                 case 'updateEmail':
                     return `
@@ -145,7 +145,7 @@ function createApiInstance(config) {
                     return `
                         ${t(`Hey there,`)}
 
-                        ${t('Welcome back! Use this link to securely sign in to your {{siteTitle}} account:', {siteTitle})}
+                        ${t('Welcome back! Use this link to securely sign in to your {{siteTitle}} account:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 

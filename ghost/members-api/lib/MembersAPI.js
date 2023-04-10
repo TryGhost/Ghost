@@ -7,7 +7,7 @@ const logging = require('@tryghost/logging');
 const PaymentsService = require('@tryghost/members-payments');
 
 const TokenService = require('./services/token');
-const GeolocationSerice = require('./services/geolocation');
+const GeolocationService = require('./services/geolocation');
 const MemberBREADService = require('./services/member-bread');
 const MemberRepository = require('./repositories/member');
 const EventRepository = require('./repositories/event');
@@ -142,7 +142,7 @@ module.exports = function MembersAPI({
         emailSuppressionList
     });
 
-    const geolocationService = new GeolocationSerice();
+    const geolocationService = new GeolocationService();
 
     const magicLinkService = new MagicLink({
         transporter,

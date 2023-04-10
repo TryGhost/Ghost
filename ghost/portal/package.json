@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.26.0",
+  "version": "2.28.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -27,7 +27,7 @@
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
     "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
-    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && yarn publish . --tag $npm_package_version",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
     "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
@@ -60,17 +60,17 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.21.3",
-    "@sentry/react": "7.44.2",
-    "@sentry/tracing": "7.44.2",
+    "@sentry/react": "7.47.0",
+    "@sentry/tracing": "7.47.0",
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
     "@vitejs/plugin-react": "3.1.0",
-    "@vitest/coverage-c8": "0.29.7",
-    "@vitest/ui": "0.29.7",
-    "concurrently": "7.6.0",
+    "@vitest/coverage-c8": "0.29.8",
+    "@vitest/ui": "0.29.8",
+    "concurrently": "8.0.1",
     "cross-fetch": "3.1.5",
-    "eslint": "8.36.0",
+    "eslint": "8.37.0",
     "eslint-config-react-app": "7.0.1",
     "jsdom": "21.1.1",
     "react": "17.0.2",
@@ -78,6 +78,6 @@
     "vite": "4.2.1",
     "vite-plugin-css-injected-by-js": "3.1.0",
     "vite-plugin-svgr": "2.4.0",
-    "vitest": "0.29.7"
+    "vitest": "0.29.8"
   }
 }

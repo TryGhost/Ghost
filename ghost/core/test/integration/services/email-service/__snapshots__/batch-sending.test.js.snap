@@ -66,10 +66,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -193,6 +189,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -384,10 +385,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -694,10 +695,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -821,6 +818,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -1012,10 +1014,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -1308,10 +1310,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -1435,6 +1433,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -1626,10 +1629,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -1922,10 +1925,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -2049,6 +2048,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -2240,10 +2244,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -2536,10 +2540,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -2663,6 +2663,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -2854,10 +2859,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -3098,10 +3103,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -3225,6 +3226,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -3416,10 +3422,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -4786,10 +4792,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -4913,6 +4915,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -5104,10 +5111,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -5145,7 +5152,7 @@ table.body figcaption a {
                                                             <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 13px; letter-spacing: 0.1px; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#ghost-comments\\" class=\\"comment-link\\" valign=\\"middle\\" style=\\"color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 13px; letter-spacing: 0.1px; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
-                                                                        &#x2022; <img src=\\"https://static.ghost.org/v5.0.0/images/comment-icon.png\\" border=\\"0\\" width=\\"16\\" height=\\"16\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 16px; height: 16px; margin-bottom: 1px; vertical-align: middle;\\">
+                                                                            &#x2022; <img src=\\"https://static.ghost.org/v5.0.0/images/comment-icon.png\\" border=\\"0\\" width=\\"16\\" height=\\"16\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 16px; height: 16px; margin-bottom: 1px; vertical-align: middle;\\">
                                                                     </a>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: rgba(0, 0, 0, 0.5); font-size: 13px; letter-spacing: 0.1px; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
@@ -5177,7 +5184,7 @@ table.body figcaption a {
 
                                 <tr>
                                     <td dir=\\"ltr\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12);\\" align=\\"center\\" bgcolor=\\"#ffffff\\" valign=\\"top\\">
-                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto;\\">
+                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto; max-width: 600px;\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #000000; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/1/?uuid=member-uuid\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
@@ -5500,10 +5507,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -5627,6 +5630,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -5818,10 +5826,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -5859,7 +5867,7 @@ table.body figcaption a {
                                                             <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 13px; letter-spacing: 0.1px; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/#ghost-comments\\" class=\\"comment-link\\" valign=\\"middle\\" style=\\"color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 13px; letter-spacing: 0.1px; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
-                                                                        &#x2022; <img src=\\"https://static.ghost.org/v5.0.0/images/comment-icon.png\\" border=\\"0\\" width=\\"16\\" height=\\"16\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 16px; height: 16px; margin-bottom: 1px; vertical-align: middle;\\">
+                                                                            &#x2022; <img src=\\"https://static.ghost.org/v5.0.0/images/comment-icon.png\\" border=\\"0\\" width=\\"16\\" height=\\"16\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 16px; height: 16px; margin-bottom: 1px; vertical-align: middle;\\">
                                                                     </a>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: rgba(0, 0, 0, 0.5); font-size: 13px; letter-spacing: 0.1px; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
@@ -5891,7 +5899,7 @@ table.body figcaption a {
 
                                 <tr>
                                     <td dir=\\"ltr\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12);\\" align=\\"center\\" bgcolor=\\"#ffffff\\" valign=\\"top\\">
-                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto;\\">
+                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto; max-width: 600px;\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #000000; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
@@ -6170,10 +6178,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -6297,6 +6301,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -6488,10 +6497,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -6562,7 +6571,7 @@ table.body figcaption a {
                                         <h3 class=\\"latest-posts-header\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 0; padding: 8px 0 16px; color: #000000; font-size: 14px; font-weight: 700; text-transform: uppercase;\\">Keep reading</h3>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -6580,7 +6589,7 @@ table.body figcaption a {
                                             </table>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -6598,7 +6607,7 @@ table.body figcaption a {
                                             </table>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -8094,10 +8103,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -8221,6 +8226,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -8412,10 +8422,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -8483,7 +8493,7 @@ table.body figcaption a {
 
 
                                 <tr>
-                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000;\\" valign=\\"top\\">
+                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000; max-width: 600px;\\" valign=\\"top\\">
                                         <h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; font-size: 14px; font-weight: 700; text-transform: uppercase; margin: 0 0 18px; color: #000000;\\">Subscription details</h3>
                                         <p style=\\"margin: 0 0 1.5em 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; margin-bottom: 16px; color: #000000;\\">
                                             <span>You are receiving this because you are a <strong style=\\"font-weight: 700;\\">paid subscriber</strong> to Ghost.</span> Your subscription has been canceled and will expire on date. You can resume your subscription via your account settings.
@@ -8763,10 +8773,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -8890,6 +8896,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -9081,10 +9092,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -9152,7 +9163,7 @@ table.body figcaption a {
 
 
                                 <tr>
-                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000;\\" valign=\\"top\\">
+                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000; max-width: 600px;\\" valign=\\"top\\">
                                         <h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; font-size: 14px; font-weight: 700; text-transform: uppercase; margin: 0 0 18px; color: #000000;\\">Subscription details</h3>
                                         <p style=\\"margin: 0 0 1.5em 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; margin-bottom: 16px; color: #000000;\\">
                                             <span>You are receiving this because you are a <strong style=\\"font-weight: 700;\\">complimentary subscriber</strong> to Ghost.</span> 
@@ -9432,10 +9443,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -9559,6 +9566,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -9750,10 +9762,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -9821,7 +9833,7 @@ table.body figcaption a {
 
 
                                 <tr>
-                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000;\\" valign=\\"top\\">
+                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000; max-width: 600px;\\" valign=\\"top\\">
                                         <h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; font-size: 14px; font-weight: 700; text-transform: uppercase; margin: 0 0 18px; color: #000000;\\">Subscription details</h3>
                                         <p style=\\"margin: 0 0 1.5em 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; margin-bottom: 16px; color: #000000;\\">
                                             <span>You are receiving this because you are a <strong style=\\"font-weight: 700;\\">free subscriber</strong> to Ghost.</span> 
@@ -10101,10 +10113,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -10228,6 +10236,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -10419,10 +10432,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -10490,7 +10503,7 @@ table.body figcaption a {
 
 
                                 <tr>
-                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000;\\" valign=\\"top\\">
+                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000; max-width: 600px;\\" valign=\\"top\\">
                                         <h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; font-size: 14px; font-weight: 700; text-transform: uppercase; margin: 0 0 18px; color: #000000;\\">Subscription details</h3>
                                         <p style=\\"margin: 0 0 1.5em 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; margin-bottom: 16px; color: #000000;\\">
                                             <span>You are receiving this because you are a <strong style=\\"font-weight: 700;\\">paid subscriber</strong> to Ghost.</span> Your subscription will renew on date.
@@ -10770,10 +10783,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -10897,6 +10906,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -11088,10 +11102,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -11159,7 +11173,7 @@ table.body figcaption a {
 
 
                                 <tr>
-                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000;\\" valign=\\"top\\">
+                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); color: #000000; max-width: 600px;\\" valign=\\"top\\">
                                         <h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; font-size: 14px; font-weight: 700; text-transform: uppercase; margin: 0 0 18px; color: #000000;\\">Subscription details</h3>
                                         <p style=\\"margin: 0 0 1.5em 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; margin-bottom: 16px; color: #000000;\\">
                                             <span>You are receiving this because you are a <strong style=\\"font-weight: 700;\\">trialing subscriber</strong> to Ghost.</span> Your free trial ends on date, at which time you will be charged the regular price. You can always cancel before then.
@@ -12075,10 +12089,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -12202,6 +12212,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -12393,10 +12408,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -12691,10 +12706,6 @@ Object {
   color: rgba(0, 0, 0, 0.5);
 }
 @media only screen and (max-width: 620px) {
-  body {
-    padding: 0;
-  }
-
   table.body {
     width: 100%;
     min-width: 100%;
@@ -12818,6 +12829,11 @@ table.body .footer a {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
+  }
+
+  table.feedback-buttons-mobile a,
+table.body .feedback-button-mobile-text {
+    text-decoration: none !important;
   }
 
   table.body .feedback-button-mobile-text {
@@ -13009,10 +13025,10 @@ table.body figcaption a {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; max-width: 600px; padding: 12px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; display: block; padding: 12px; max-width: 600px; background-color: #ffffff; color: #000000; margin: 0 auto;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"20\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 3px; border-spacing: 20px 0; width: 100%; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>

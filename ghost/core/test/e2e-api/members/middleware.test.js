@@ -8,6 +8,7 @@ let membersAgent;
 const memberMatcher = (newslettersCount) => {
     return {
         uuid: anyUuid,
+        created_at: anyISODateTime,
         newsletters: new Array(newslettersCount).fill(
             {
                 id: anyObjectId
