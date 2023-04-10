@@ -1,15 +1,15 @@
 const {JSDOM} = require('jsdom');
 const Prettier = require('prettier');
 const Renderer = require('../index');
-const {ImageNode} = require('@tryghost/kg-default-nodes');
+const {ImageNode, PaywallNode} = require('@tryghost/kg-default-nodes');
 
-const nodes = [ImageNode];
+const nodes = [ImageNode, PaywallNode];
 
 describe('Cards', function () {
     let lexicalState;
     let options;
 
-    beforeEach(async function () {
+    beforeEach(function () {
         lexicalState = {
             root: {
                 children: [],
@@ -52,6 +52,23 @@ describe('Cards', function () {
   <img src="/content/images/2022/11/koenig-lexical.jpg" alt="" loading="lazy" />
   <figcaption>This is a caption</figcaption>
 </figure>
+`;
+        output.should.equal(expected);
+    });
+
+    it('renders a paywall card', function () {
+        const paywallCard = {
+            type: 'paywall'
+        };
+
+        lexicalState.root.children.push(paywallCard);
+
+        const renderer = new Renderer({nodes});
+
+        const output = Prettier.format(renderer.render(JSON.stringify(lexicalState), options), {parser: 'html'});
+
+        const expected =
+`<!--members-only-->
 `;
         output.should.equal(expected);
     });

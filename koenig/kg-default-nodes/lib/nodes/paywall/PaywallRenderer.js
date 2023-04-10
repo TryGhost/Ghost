@@ -4,11 +4,9 @@ export function renderPaywallNodeToDOM(_, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
-    const span = document.createElement('span');
-    const paywall = document.createComment('members-only');
+    const div = document.createElement('div');
 
-    span.classList.add('gh-post-upgrade-cta-visibility');
-    span.appendChild(paywall);
+    div.innerHTML = '<!--members-only-->';
 
-    return span;
+    return div;
 }
