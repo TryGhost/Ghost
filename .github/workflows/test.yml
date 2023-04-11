@@ -265,7 +265,7 @@ jobs:
       # Report time taken to metrics service
       # Continue on error if previous TailScale step fails
       - uses: tryghost/action-trigger-metric@main
-        timeout-minutes: 1@
+        timeout-minutes: 1
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
         with:
