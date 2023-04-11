@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 export default class PostsContextMenu extends Component {
     @service ajax;
     @service ghostPaths;
+    @service session;
 
     get menu() {
         return this.args.menu;
