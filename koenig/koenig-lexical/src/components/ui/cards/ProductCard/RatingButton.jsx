@@ -19,7 +19,7 @@ export function RatingButton({rating, onRatingChange}) {
 
     return (
         <div
-            className="ml-auto flex transition-all duration-75"
+            className="not-kg-prose ml-auto flex transition-all duration-75"
             data-testid="product-stars"
             onMouseLeave={resetHoveredStarIndex}
         >

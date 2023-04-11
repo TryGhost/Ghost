@@ -27,7 +27,7 @@ export function ProductCardImage({
     };
 
     return (
-        <div className="group relative mb-4 w-full rounded">
+        <div className="not-kg-prose group relative mb-4 w-full rounded">
             {
                 showPlaceholder
                     ? (

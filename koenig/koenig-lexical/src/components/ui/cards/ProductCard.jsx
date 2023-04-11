@@ -36,7 +36,7 @@ export function ProductCard({
     const showButtonInEditMode = isButtonEnabled && isEditing;
     return (
         <>
-            <div className="not-kg-prose mx-auto my-4 flex w-full max-w-[550px] flex-col rounded border border-grey/40 p-5 font-sans dark:border-grey/20">
+            <div className="mx-auto my-4 flex w-full max-w-[550px] flex-col rounded border border-grey/40 p-5 font-sans dark:border-grey/20">
                 <ProductCardImage
                     imgDragHandler={imgDragHandler}
                     imgMimeTypes={imgMimeTypes}
@@ -47,7 +47,7 @@ export function ProductCard({
                     onRemoveImage={onRemoveImage}
                 />
 
-                <div className="flex items-start justify-between">
+                <div className="m-0 flex items-start justify-between">
                     {
                         showEditor(titleEditor) && (
                             <div className="mr-2 flex-1">
@@ -84,7 +84,7 @@ export function ProductCard({
                 }
 
                 {(showButtonInEditMode || showFilledButton) && (
-                    <div className={`mt-6 w-full ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} `}>
+                    <div className={`not-kg-prose mt-6 w-full ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} `}>
                         <Button dataTestId="product-button" href={buttonUrl} value={buttonText} width='full' />
                     </div>
                 )}

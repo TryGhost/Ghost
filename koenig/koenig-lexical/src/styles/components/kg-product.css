@@ -4,14 +4,29 @@
 
 @layer components {
   .kg-product-title * {
-    @apply text-[22px] font-bold text-black leading-snug dark:text-grey-50 opacity-100 tracking-tight
+    @apply text-[22px] font-bold text-black leading-snug dark:text-grey-50 opacity-100 tracking-tight font-sans
   }
 
-  .kg-product-description p {
-    @apply text-[1.6rem] font-normal leading-snug text-grey-700 dark:text-grey-600 opacity-100
+  .kg-product-description * {
+    @apply !text-[1.6rem] font-normal !leading-snug text-grey-700 dark:text-grey-600 opacity-100 !font-sans
   }
 
     .kg-product-title, .kg-product-description {
         @apply !whitespace-normal
+    }
+
+    .kg-product-description .kg-prose :where(
+        p + p,
+        ul + p,
+        ol + p
+    ) {
+        @apply my-0
+    }
+
+    .kg-product-description .kg-prose :where(
+      p + ul,
+      p + ol,
+    ) {
+        @apply my-2
     }
 }
