@@ -22,13 +22,10 @@ export default class PostsContextMenu extends Component {
     @action
     async deletePosts() {
         this.menu.close();
-        const confirmedDelete = await this.modals.open(DeletePostsModal, {
+        await this.modals.open(DeletePostsModal, {
             isSingle: this.selectionList.isSingle,
             confirm: this.deletePostsTask
         });
-        if (!confirmedDelete) {
-            return;
-        }
     }
 
     @task
