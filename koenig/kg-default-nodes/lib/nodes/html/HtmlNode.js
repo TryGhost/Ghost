@@ -1,6 +1,7 @@
 import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {renderHtmlNodeToDOM} from './HtmlRenderer';
+import {HtmlParser} from './HtmlParser';
 
 export const INSERT_HTML_COMMAND = createCommand();
 
@@ -46,6 +47,11 @@ export class HtmlNode extends KoenigDecoratorNode {
     constructor({html} = {}, key) {
         super(key);
         this.__html = html;
+    }
+
+    static importDOM() {
+        const parser = new HtmlParser(this);
+        return parser.DOMConversionMap;
     }
 
     exportDOM(options = {}) {

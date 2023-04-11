@@ -3,6 +3,7 @@ const {createHeadlessEditor} = require('@lexical/headless');
 const {JSDOM} = require('jsdom');
 const {$getRoot} = require('lexical');
 const {HtmlNode, $createHtmlNode, $isHtmlNode} = require('../../');
+const {$generateNodesFromDOM} = require('@lexical/html');
 
 const editorNodes = [HtmlNode];
 
@@ -96,6 +97,17 @@ describe('HtmlNode', function () {
             const {element} = htmlNode.exportDOM(exportOptions);
 
             element.innerHTML.should.equal('');
+        }));
+    });
+
+    describe('importDOM', function () {
+        it('parses a html node', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <span><!--kg-card-begin: html--><p>here's html</p><!--kg-card-end: html--></span>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+            nodes.length.should.equal(1);
+            nodes[0].should.be.instanceof(HtmlNode);
         }));
     });
 
