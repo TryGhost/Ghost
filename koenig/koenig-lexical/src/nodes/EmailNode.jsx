@@ -1,6 +1,6 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import populateNestedEditor from '../utils/populateNestedEditor';
+import generateEditorState from '../utils/generateEditorState';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper} from '../index.js';
@@ -13,6 +13,9 @@ import {createEditor} from 'lexical';
 export {INSERT_EMAIL_COMMAND} from '@tryghost/kg-default-nodes';
 
 export class EmailNode extends BaseEmailNode {
+    __htmlEditor;
+    __htmlEditorInitialState;
+
     static kgMenu = [{
         label: 'Email content',
         desc: 'Only visible when delivered by email',
@@ -30,9 +33,13 @@ export class EmailNode extends BaseEmailNode {
 
         // create nested editor
         this.__htmlEditor = dataset.htmlEditor || createEditor({nodes: BASIC_NODES});
-        if (!dataset.htmlEditor) {
+        this.__htmlEditorInitialState = dataset.htmlEditorInitialState;
+        if (!this.__htmlEditorInitialState) {
             const initialHtml = dataset.html ? dataset.html : '<p>Hey <code>{first_name, "there"},</code></p>';
-            populateNestedEditor({editor: this.__htmlEditor, initialHtml});
+            this.__htmlEditorInitialState = generateEditorState({
+                editor: createEditor({nodes: BASIC_NODES}),
+                initialHtml
+            });
         }
     }
 
@@ -42,6 +49,7 @@ export class EmailNode extends BaseEmailNode {
         // client-side only data properties such as nested editors
         const self = this.getLatest();
         dataset.htmlEditor = self.__htmlEditor;
+        dataset.htmlEditorInitialState = self.__htmlEditorInitialState;
 
         return dataset;
     }
@@ -71,6 +79,7 @@ export class EmailNode extends BaseEmailNode {
             <KoenigCardWrapper nodeKey={this.getKey()}>
                 <EmailNodeComponent
                     htmlEditor={this.__htmlEditor}
+                    htmlEditorInitialState={this.__htmlEditorInitialState}
                     nodeKey={this.getKey()}
                 />
             </KoenigCardWrapper>

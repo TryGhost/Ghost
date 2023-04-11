@@ -14,8 +14,6 @@ import {
     KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
     RestrictContentPlugin
 } from '../src';
-import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
-import {createWebsocketProvider} from './multiplayer';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
@@ -25,8 +23,10 @@ import {useSearchParams} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
 import {useState} from 'react';
 
-const skipCollaborationInit =
-    window.parent !== null && window.parent.frames.right === window;
+const url = new URL(window.location.href);
+const params = new URLSearchParams(url.search);
+const WEBSOCKET_ENDPOINT = params.get('multiplayerEndpoint') || 'ws://localhost:1234';
+const WEBSOCKET_ID = params.get('multiplayerId') || '0';
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders},
@@ -52,7 +52,7 @@ function getAllowedNodes({editorType}) {
     return undefined;
 }
 
-function DemoEditor({editorType, isMultiplayer, registerAPI, cursorDidExitAtTop, darkMode}) {
+function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
     if (editorType === 'basic') {
         return (
             <KoenigComposableEditor
@@ -79,13 +79,6 @@ function DemoEditor({editorType, isMultiplayer, registerAPI, cursorDidExitAtTop,
             darkMode={darkMode}
             registerAPI={registerAPI}
         >
-            {isMultiplayer ? (
-                <CollaborationPlugin
-                    id="main"
-                    providerFactory={createWebsocketProvider}
-                    shouldBootstrap={!skipCollaborationInit}
-                />
-            ) : null}
         </KoenigEditor>
     );
 }
@@ -104,8 +97,11 @@ function DemoApp({editorType, isMultiplayer}) {
     }, [editorType]);
 
     const initialContent = React.useMemo(() => {
+        if (isMultiplayer) {
+            return null;
+        }
         return hideContent ? undefined : defaultContent;
-    }, [hideContent, defaultContent]);
+    }, [isMultiplayer, hideContent, defaultContent]);
 
     const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
     const [editorAPI, setEditorAPI] = useState(null);
@@ -207,10 +203,12 @@ function DemoApp({editorType, isMultiplayer}) {
             <KoenigComposer
                 cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet}}
                 darkMode={darkMode}
+                enableMultiplayer={isMultiplayer}
                 fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}
-                initialEditorState={isMultiplayer ? null : initialContent}
+                initialEditorState={initialContent}
+                multiplayerDocId={`demo/${WEBSOCKET_ID}`}
+                multiplayerEndpoint={WEBSOCKET_ENDPOINT}
                 nodes={getAllowedNodes({editorType})}
-                websocketProviderFactory={createWebsocketProvider}
             >
                 <div className={`relative h-full grow ${darkMode ? 'dark' : ''}`}>
                     {
@@ -229,7 +227,6 @@ function DemoApp({editorType, isMultiplayer}) {
                                 cursorDidExitAtTop={focusTitle}
                                 darkMode={darkMode}
                                 editorType={editorType}
-                                isMultiplayer={isMultiplayer}
                                 registerAPI={setEditorAPI}
                             />
                         </div>

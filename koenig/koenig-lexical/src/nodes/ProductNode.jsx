@@ -1,6 +1,6 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import populateNestedEditor from '../utils/populateNestedEditor';
+import generateEditorState from '../utils/generateEditorState';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {ProductNode as BaseProductNode, INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
@@ -13,6 +13,11 @@ import {isEditorEmpty} from '../utils/isEditorEmpty';
 export {INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
 
 export class ProductNode extends BaseProductNode {
+    __titleEditor;
+    __titleEditorInitialState;
+    __descriptionEditor;
+    __descriptionEditorInitialState;
+
     static kgMenu = [{
         label: 'Product',
         desc: 'Add a product recommendation',
@@ -31,11 +36,17 @@ export class ProductNode extends BaseProductNode {
         // set up and populate nested editors from the serialized HTML
         this.__titleEditor = dataset.titleEditor || createEditor({nodes: MINIMAL_NODES});
         if (!dataset.titleEditor) {
-            populateNestedEditor({editor: this.__titleEditor, initialHtml: dataset.title});
+            this.__titleEditorInitialState = generateEditorState({
+                editor: createEditor({nodes: MINIMAL_NODES}),
+                initialHtml: dataset.title
+            });
         }
         this.__descriptionEditor = dataset.descriptionEditor || createEditor({nodes: BASIC_NODES});
         if (!dataset.descriptionEditor) {
-            populateNestedEditor({editor: this.__descriptionEditor, initialHtml: dataset.description});
+            this.__descriptionEditorInitialState = generateEditorState({
+                editor: createEditor({nodes: BASIC_NODES}),
+                initialHtml: dataset.description
+            });
         }
     }
 
@@ -80,6 +91,7 @@ export class ProductNode extends BaseProductNode {
                     buttonText={this.getButtonText()}
                     buttonUrl={this.getButtonUrl()}
                     descriptionEditor={this.__descriptionEditor}
+                    descriptionEditorInitialState={this.__descriptionEditorInitialState}
                     imgHeight={this.getImgHeight()}
                     imgSrc={this.getImgSrc()}
                     imgWidth={this.getImgWidth()}
@@ -88,6 +100,7 @@ export class ProductNode extends BaseProductNode {
                     nodeKey={this.getKey()}
                     starRating={this.getStarRating()}
                     titleEditor={this.__titleEditor}
+                    titleEditorInitialState={this.__titleEditorInitialState}
                 />
             </KoenigCardWrapper>
         );

@@ -73,11 +73,13 @@ const KoenigCalloutEditor = ({
     className,
     paragraphs = 1,
     placeholderText,
-    textEditor
+    textEditor,
+    textEditorInitialState
 }) => {
     return (
         <KoenigNestedComposer
             initialEditor={textEditor}
+            initialEditorState={textEditorInitialState}
             initialNodes={MINIMAL_NODES}
         >
             <KoenigComposableEditor

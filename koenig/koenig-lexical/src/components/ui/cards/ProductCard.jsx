@@ -25,7 +25,9 @@ export function ProductCard({
     imgUploader,
     onRemoveImage,
     titleEditor,
+    titleEditorInitialState,
     descriptionEditor,
+    descriptionEditorInitialState,
     onRatingChange
 }) {
     const showEditor = (editor) => {
@@ -55,6 +57,7 @@ export function ProductCard({
                                     autoFocus={true}
                                     focusNext={descriptionEditor}
                                     initialEditor={titleEditor}
+                                    initialEditorState={titleEditorInitialState}
                                     nodes='minimal'
                                     placeholderClassName="text-[22px] font-bold leading-snug text-black opacity-40 dark:text-white tracking-tight"
                                     placeholderText="Product title"
@@ -75,6 +78,7 @@ export function ProductCard({
                         <div className="mt-2">
                             <KoenigProductEditor
                                 initialEditor={descriptionEditor}
+                                initialEditorState={descriptionEditorInitialState}
                                 placeholderClassName="text-[1.6rem] font-normal leading-snug text-grey-700 opacity-50"
                                 placeholderText="Description"
                                 textClassName="kg-product-description"

@@ -74,6 +74,7 @@ export function CalloutCard({
     changeEmoji,
     emojiValue,
     textEditor,
+    textEditorInitialState,
     nodeKey,
     toggleEmojiPicker,
     showEmojiPicker
@@ -117,6 +118,7 @@ export function CalloutCard({
                     nodeKey={nodeKey}
                     placeholderText={'Callout text...'}
                     textEditor={textEditor}
+                    textEditorInitialState={textEditorInitialState}
                 />
             </div>
             {

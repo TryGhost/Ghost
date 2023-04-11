@@ -19,7 +19,9 @@ export function ProductNodeComponent({
     isRatingEnabled,
     starRating,
     titleEditor,
-    descriptionEditor
+    titleEditorInitialState,
+    descriptionEditor,
+    descriptionEditorInitialState
 }) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
@@ -118,6 +120,7 @@ export function ProductNodeComponent({
                 buttonText={buttonText}
                 buttonUrl={buttonUrl}
                 descriptionEditor={descriptionEditor}
+                descriptionEditorInitialState={descriptionEditorInitialState}
                 imgDragHandler={imgDragHandler}
                 imgHeight={imgHeight}
                 imgMimeTypes={imgMimeTypes}
@@ -129,6 +132,7 @@ export function ProductNodeComponent({
                 isRatingEnabled={isRatingEnabled}
                 rating={starRating}
                 titleEditor={titleEditor}
+                titleEditorInitialState={titleEditorInitialState}
                 onButtonTextChange={handleButtonTextChange}
                 onButtonToggle={handleButtonToggle}
                 onButtonUrlChange={handleButtonUrlChange}

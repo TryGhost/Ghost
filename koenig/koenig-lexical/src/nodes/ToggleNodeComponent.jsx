@@ -6,7 +6,7 @@ import {ToggleCard} from '../components/ui/cards/ToggleCard';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function ToggleNodeComponent({nodeKey, headerEditor, contentEditor}) {
+export function ToggleNodeComponent({nodeKey, headerEditor, headerEditorInitialState, contentEditor, contentEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
     const {isEditing, isSelected} = cardContext;
@@ -26,8 +26,10 @@ export function ToggleNodeComponent({nodeKey, headerEditor, contentEditor}) {
         <>
             <ToggleCard
                 contentEditor={contentEditor}
+                contentEditorInitialState={contentEditorInitialState}
                 contentPlaceholder={'Collapsible content'}
                 headerEditor={headerEditor}
+                headerEditorInitialState={headerEditorInitialState}
                 headerPlaceholder={'Toggle header'}
                 isEditing={isEditing}
             />

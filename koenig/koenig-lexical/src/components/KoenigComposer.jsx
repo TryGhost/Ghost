@@ -2,7 +2,10 @@ import DEFAULT_NODES from '../nodes/DefaultNodes';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import defaultTheme from '../themes/default';
+import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
+import {Doc} from 'yjs';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
+import {WebsocketProvider} from 'y-websocket';
 
 // Catch any errors that occur during Lexical updates and log them
 // or throw them as needed. If you don't throw them, Lexical will
@@ -23,7 +26,11 @@ const KoenigComposer = ({
     fileUploader = {},
     cardConfig = {},
     darkMode = false,
-    websocketProviderFactory,
+    enableMultiplayer = false,
+    multiplayerEndpoint,
+    multiplayerDebug = true,
+    multiplayerDocId,
+    multiplayerUsername,
     children
 }) => {
     const [selectedCardKey, setSelectedCardKey] = React.useState(null);
@@ -32,10 +39,10 @@ const KoenigComposer = ({
     const initialConfig = React.useMemo(() => {
         return Object.assign({}, defaultConfig, {
             nodes,
-            editorState: initialEditorState,
+            editorState: enableMultiplayer ? null : initialEditorState,
             onError
         });
-    }, [initialEditorState, nodes, onError]);
+    }, [enableMultiplayer, initialEditorState, nodes, onError]);
 
     const editorContainerRef = React.useRef(null);
 
@@ -45,6 +52,33 @@ const KoenigComposer = ({
             return;
         };
     }
+
+    const createWebsocketProvider = React.useCallback((id, yjsDocMap) => {
+        let doc = yjsDocMap.get(id);
+
+        if (doc === undefined) {
+            doc = new Doc();
+            yjsDocMap.set(id, doc);
+        } else {
+            doc.load();
+        }
+
+        const provider = new WebsocketProvider(
+            multiplayerEndpoint,
+            multiplayerDocId + '/' + id,
+            doc,
+            {connect: false}
+        );
+
+        if (multiplayerDebug) {
+            provider.on('status', (event) => {
+                // eslint-disable-next-line no-console
+                console.log(event.status, `id: ${multiplayerDocId}/${id}`); // logs "connected" or "disconnected"
+            });
+        }
+
+        return provider;
+    }, [multiplayerEndpoint, multiplayerDocId, multiplayerDebug]);
 
     return (
         <LexicalComposer initialConfig={initialConfig}>
@@ -57,8 +91,21 @@ const KoenigComposer = ({
                 setSelectedCardKey,
                 isEditingCard,
                 setIsEditingCard,
-                websocketProviderFactory
+                enableMultiplayer,
+                multiplayerEndpoint,
+                multiplayerDocId,
+                multiplayerUsername,
+                createWebsocketProvider
             }}>
+                {enableMultiplayer ? (
+                    <CollaborationPlugin
+                        id="main"
+                        initialEditorState={initialEditorState}
+                        providerFactory={createWebsocketProvider}
+                        shouldBootstrap={true}
+                        username={multiplayerUsername}
+                    />
+                ) : null}
                 {children}
             </KoenigComposerContext.Provider>
         </LexicalComposer>

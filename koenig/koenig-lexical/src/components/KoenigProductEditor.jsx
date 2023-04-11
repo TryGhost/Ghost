@@ -107,6 +107,7 @@ const Placeholder = ({text = 'Type here', className = ''}) => {
 
 const KoenigProductEditor = ({
     initialEditor,
+    initialEditorState,
     nodes = 'basic',
     placeholderText,
     textClassName,
@@ -121,6 +122,7 @@ const KoenigProductEditor = ({
     return (
         <KoenigNestedComposer
             initialEditor={initialEditor}
+            initialEditorState={initialEditorState}
             initialNodes={initialNodes}
         >
             <KoenigComposableEditor

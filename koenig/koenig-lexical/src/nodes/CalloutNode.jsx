@@ -3,7 +3,7 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import populateNestedEditor from '../utils/populateNestedEditor';
+import generateEditorState from '../utils/generateEditorState';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {$getNodeByKey, createEditor} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
@@ -18,7 +18,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_CALLOUT_COMMAND} from '@tryghost/kg-default-nodes';
 
-function CalloutNodeComponent({nodeKey, textEditor, hasEmoji, backgroundColor, emojiValue}) {
+function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, hasEmoji, backgroundColor, emojiValue}) {
     const [editor] = useLexicalComposerContext();
 
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
@@ -78,6 +78,7 @@ function CalloutNodeComponent({nodeKey, textEditor, hasEmoji, backgroundColor, e
                 setShowEmojiPicker={setShowEmojiPicker}
                 showEmojiPicker={showEmojiPicker}
                 textEditor={textEditor}
+                textEditorInitialState={textEditorInitialState}
                 toggleEmoji={toggleEmoji}
                 toggleEmojiPicker={toggleEmojiPicker}
             />
@@ -96,6 +97,9 @@ function CalloutNodeComponent({nodeKey, textEditor, hasEmoji, backgroundColor, e
 }
 
 export class CalloutNode extends BaseCalloutNode {
+    __textEditor;
+    __textEditorInitialState;
+
     static kgMenu = [{
         label: 'Callout',
         desc: 'Info boxes that stand out',
@@ -113,8 +117,12 @@ export class CalloutNode extends BaseCalloutNode {
 
         // set up and populate nested editor from the serialized HTML
         this.__textEditor = dataset.textEditor || createEditor({nodes: MINIMAL_NODES});
-        if (!dataset.textEditor) {
-            populateNestedEditor({editor: this.__textEditor, initialHtml: dataset.text});
+        this.__textEditorInitialState = dataset.textEditorInitialState;
+        if (!this.__textEditorInitialState) {
+            this.__textEditorInitialState = generateEditorState({
+                editor: createEditor({nodes: MINIMAL_NODES}),
+                initialHtml: dataset.text
+            });
         }
     }
 
@@ -144,6 +152,7 @@ export class CalloutNode extends BaseCalloutNode {
         // client-side only data properties such as nested editors
         const self = this.getLatest();
         dataset.textEditor = self.__textEditor;
+        dataset.textEditorInitialState = self.__textEditorInitialState;
 
         return dataset;
     }
@@ -161,6 +170,7 @@ export class CalloutNode extends BaseCalloutNode {
                     hasEmoji={this.__hasEmoji}
                     nodeKey={this.getKey()}
                     textEditor={this.__textEditor}
+                    textEditorInitialState={this.__textEditorInitialState}
                 />
             </KoenigCardWrapper>
         );

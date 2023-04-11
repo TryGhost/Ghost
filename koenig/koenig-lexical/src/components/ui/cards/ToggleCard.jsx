@@ -5,8 +5,10 @@ import {ReactComponent as ArrowDownIcon} from '../../../assets/icons/kg-toggle-a
 
 export function ToggleCard({
     contentEditor,
+    contentEditorInitialState,
     contentPlaceholder,
     headerEditor,
+    headerEditorInitialState,
     headerPlaceholder,
     isEditing
 }) {
@@ -19,6 +21,7 @@ export function ToggleCard({
                             autoFocus={true}
                             focusNext={contentEditor}
                             initialEditor={headerEditor}
+                            initialEditorState={headerEditorInitialState}
                             nodes='minimal'
                             placeholderClassName={'kg-toggle-header-placeholder'}
                             placeholderText={headerPlaceholder}
@@ -33,6 +36,7 @@ export function ToggleCard({
                 <div className={'mt-2 w-full'}>
                     <KoenigNestedEditor
                         initialEditor={contentEditor}
+                        initialEditorState={contentEditorInitialState}
                         placeholderClassName={'kg-toggle-content-placeholder'}
                         placeholderText={contentPlaceholder}
                         textClassName={'kg-toggle-content-text'}

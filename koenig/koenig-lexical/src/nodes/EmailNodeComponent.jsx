@@ -6,7 +6,7 @@ import {EmailCard} from '../components/ui/cards/EmailCard';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function EmailNodeComponent({nodeKey, htmlEditor}) {
+export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
     const {isEditing, isSelected} = cardContext;
@@ -25,6 +25,7 @@ export function EmailNodeComponent({nodeKey, htmlEditor}) {
         <>
             <EmailCard
                 htmlEditor={htmlEditor}
+                htmlEditorInitialState={htmlEditorInitialState}
                 isEditing={isEditing}
             />
 
