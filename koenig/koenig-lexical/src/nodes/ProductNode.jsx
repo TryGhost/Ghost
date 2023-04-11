@@ -37,9 +37,12 @@ export class ProductNode extends BaseProductNode {
         this.__titleEditor = dataset.titleEditor || createEditor({nodes: MINIMAL_NODES});
         this.__titleEditorInitialState = dataset.titleEditorInitialState;
         if (!this.__titleEditorInitialState) {
+            // wrap the header in a paragraph so it gets parsed correctly
+            // - we serialize with no wrapper so the renderer can decide how to wrap it
+            const initialHtml = dataset.title ? `<p>${dataset.title}</p>` : null;
             this.__titleEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml: dataset.title
+                initialHtml
             });
         }
         this.__descriptionEditor = dataset.descriptionEditor || createEditor({nodes: BASIC_NODES});
