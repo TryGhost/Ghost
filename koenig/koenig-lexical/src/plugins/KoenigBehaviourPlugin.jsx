@@ -134,8 +134,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
     React.useEffect(() => {
         return mergeRegister(
             editor.registerUpdateListener(({editorState, tags}) => {
-                // ignore updates triggered by other users
-                if (tags.has('collaboration')) {
+                // ignore updates triggered by other users or by card node exportJSON calls
+                if (tags.has('collaboration') || tags.has('card-export')) {
                     return;
                 }
 

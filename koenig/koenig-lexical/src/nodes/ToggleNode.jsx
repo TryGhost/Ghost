@@ -96,7 +96,7 @@ export class ToggleNode extends BaseToggleNode {
 
                 // reset the selection to avoid focus stealing and odd behaviour
                 $setSelection(currentSelection);
-            });
+            }, {discrete: true, tag: 'card-export'});
         }
         if (this.__contentEditor) {
             this.__contentEditor.getEditorState().read(() => {
