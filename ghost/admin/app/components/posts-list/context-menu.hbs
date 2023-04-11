@@ -11,18 +11,20 @@
             <span>Unpublish</span>
         </button>
     </li>
-    {{#if this.shouldFeatureSelection }}
-        <li>
-            <button class="mr2" type="button" {{on "click" this.featurePosts}}>
-                <span>Feature</span>
-            </button>
-        </li>
-    {{else}}
+    {{#if this.canFeatureSelection}}
+        {{#if this.shouldFeatureSelection }}
             <li>
-            <button class="mr2" type="button" {{on "click" this.unfeaturePosts}}>
-                <span>Unfeature</span>
-            </button>
-        </li>
+                <button class="mr2" type="button" {{on "click" this.featurePosts}}>
+                    <span>Feature</span>
+                </button>
+            </li>
+        {{else}}
+                <li>
+                <button class="mr2" type="button" {{on "click" this.unfeaturePosts}}>
+                    <span>Unfeature</span>
+                </button>
+            </li>
+        {{/if}}
     {{/if}}
     <li>
         <button class="mr2" type="button" disabled {{on "click" @menu.close}}>
