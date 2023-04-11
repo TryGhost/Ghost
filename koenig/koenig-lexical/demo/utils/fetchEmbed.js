@@ -9,7 +9,8 @@ export async function fetchEmbed(url, {type}) {
         if (type !== 'bookmark') {
             throw new Error('Only the bookmark type is supported for embeds.');
         }
-        
+
+        await delay(500);
         // let html = await (await fetch(url)).text();
 
         const testData = {
@@ -27,4 +28,10 @@ export async function fetchEmbed(url, {type}) {
     } catch (e) {
         // console.log(e);
     }
+}
+
+function delay(time) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, time);
+    });
 }

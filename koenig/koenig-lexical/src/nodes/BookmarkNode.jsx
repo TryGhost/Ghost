@@ -18,7 +18,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
+    const {isSelected, isEditing} = React.useContext(CardContext);
     const [urlInputValue, setUrlInputValue] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
@@ -85,15 +85,6 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
         });
         setLoading(false);
     }
-
-    React.useEffect(() => {
-        editor.focus();
-        if (!isEditing && isSelected) {
-            setEditing(true);
-        }
-        // only run on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     return (
         <>
