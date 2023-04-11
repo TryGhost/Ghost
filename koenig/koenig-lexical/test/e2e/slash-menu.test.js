@@ -153,10 +153,10 @@ describe('Slash menu', async () => {
             await focusEditor(page);
             await page.keyboard.type('/img');
 
-            const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect($$menuitems).toHaveLength(1);
+            const menuItems = page.locator('[data-kg-slash-menu] [role="menuitem"]');
+            await expect(menuItems).toHaveCount(1);
 
-            expect(await page.evaluate(el => el.innerText, $$menuitems[0])).toContain('Image');
+            await expect(menuItems.first()).toContainText('Image');
         });
 
         it('shows no menu with no matches', async function () {
@@ -172,9 +172,9 @@ describe('Slash menu', async () => {
             await focusEditor(page);
             await page.keyboard.type('/');
 
-            const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('true');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('false');
+            const menuItems = await page.locator('[data-kg-slash-menu] [role="menuitem"]');
+            await expect(menuItems.nth(0)).toHaveAttribute('data-kg-cardmenu-selected', 'true');
+            await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'false');
         });
 
         test('DOWN selects next item', async function () {
@@ -182,9 +182,9 @@ describe('Slash menu', async () => {
             await page.keyboard.type('/');
             await page.keyboard.press('ArrowDown');
 
-            const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('false');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('true');
+            const menuItems = await page.locator('[data-kg-slash-menu] [role="menuitem"]');
+            await expect(menuItems.nth(0)).toHaveAttribute('data-kg-cardmenu-selected', 'false');
+            await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'true');
         });
 
         test('RIGHT selects next item', async function () {
@@ -192,9 +192,9 @@ describe('Slash menu', async () => {
             await page.keyboard.type('/');
             await page.keyboard.press('ArrowRight');
 
-            const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('false');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('true');
+            const menuItems = await page.locator('[data-kg-slash-menu] [role="menuitem"]');
+            await expect(menuItems.nth(0)).toHaveAttribute('data-kg-cardmenu-selected', 'false');
+            await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'true');
         });
 
         test('UP selects previous item', async function () {
@@ -203,9 +203,9 @@ describe('Slash menu', async () => {
             await page.keyboard.press('ArrowDown');
             await page.keyboard.press('ArrowUp');
 
-            const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('true');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('false');
+            const menuItems = await page.locator('[data-kg-slash-menu] [role="menuitem"]');
+            await expect(menuItems.nth(0)).toHaveAttribute('data-kg-cardmenu-selected', 'true');
+            await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'false');
         });
 
         test('LEFT selects previous time', async function () {
@@ -214,9 +214,9 @@ describe('Slash menu', async () => {
             await page.keyboard.press('ArrowDown');
             await page.keyboard.press('ArrowLeft');
 
-            const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('true');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[1])).toEqual('false');
+            const menuItems = await page.locator('[data-kg-slash-menu] [role="menuitem"]');
+            await expect(menuItems.nth(0)).toHaveAttribute('data-kg-cardmenu-selected', 'true');
+            await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'false');
         });
 
         test('first item is selected after changing query', async function () {
@@ -225,8 +225,8 @@ describe('Slash menu', async () => {
             await page.keyboard.press('ArrowDown');
             await page.keyboard.type('hr');
 
-            const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
-            expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).toEqual('true');
+            const menuItems = await page.locator('[data-kg-slash-menu] [role="menuitem"]');
+            await expect(menuItems.nth(0)).toHaveAttribute('data-kg-cardmenu-selected', 'true');
         });
     });
 
