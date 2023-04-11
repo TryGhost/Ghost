@@ -68,7 +68,7 @@ export class EmailNode extends BaseEmailNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
+            <KoenigCardWrapper nodeKey={this.getKey()}>
                 <EmailNodeComponent
                     htmlEditor={this.__htmlEditor}
                     nodeKey={this.getKey()}

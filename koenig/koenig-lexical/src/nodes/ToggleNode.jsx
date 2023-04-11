@@ -90,7 +90,7 @@ export class ToggleNode extends BaseToggleNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
+            <KoenigCardWrapper nodeKey={this.getKey()}>
                 <ToggleNodeComponent
                     contentEditor={this.__contentEditor}
                     headerEditor={this.__headerEditor}

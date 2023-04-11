@@ -58,6 +58,7 @@ describe('Email card', async () => {
                             </div>
                         </div>
                     </div>
+                    <div></div>
                 </div>
             </div>
         </div>
