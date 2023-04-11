@@ -20330,7 +20330,7 @@ lexical@^0.9.0:
   resolved "https://registry.yarnpkg.com/lexical/-/lexical-0.9.0.tgz#9c67b624b19a521b2515721b65a12e7fdc806980"
   integrity sha512-UHMvjRVqrpBLJkCRytVxAvy3PftRnlhZIqKcY1Uiugf6KjzP0GQTwWhxxcltJJ0sZCjZcVYgiib+m08R5KXz0g==
 
-lib0@0.2.73, lib0@^0.2.42, lib0@^0.2.72:
+lib0@0.2.73, lib0@^0.2.42, lib0@^0.2.49:
   version "0.2.73"
   resolved "https://registry.yarnpkg.com/lib0/-/lib0-0.2.73.tgz#af7d7ce9ad523fa3e241d437cc3ab1862f9a1f29"
   integrity sha512-aJJIElCLWnHMcYZPtsM07QoSfHwpxCy4VUzBYGXFYEmh/h2QS5uZNbCCfL0CqnkOE30b7Tp9DVfjXag+3qzZjQ==
@@ -31225,12 +31225,12 @@ yeast@0.1.2:
   resolved "https://registry.yarnpkg.com/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
   integrity sha512-8HFIh676uyGYP6wP13R/j6OJ/1HwJ46snpvzE7aHAN3Ryqh2yX6Xox2B4CUmTwwOIzlG3Bs7ocsP5dZH/R1Qbg==
 
-yjs@13.5.52:
-  version "13.5.52"
-  resolved "https://registry.yarnpkg.com/yjs/-/yjs-13.5.52.tgz#aec0535e16d45ed4defd6489fffae2b17e30fdb3"
-  integrity sha512-wTajR70VeI6uztpUk4kMcXYHSRzuUlNyJPdBG9NII0EcFf27DwGduZEm3XbP7VSzlGx5n6uenBhOPX+YuPH/tA==
+yjs@13.5.50:
+  version "13.5.50"
+  resolved "https://registry.yarnpkg.com/yjs/-/yjs-13.5.50.tgz#ab0605c677922163c9fe49295d3fd47c04c8e0e9"
+  integrity sha512-Q2KVNfovwjtJV4Yxz+HaFYT6vTYBaFagOSpTL3jbPc7Sbv/My68fLTfPlYy9FmNO87pV8dMBd5XuVar+9WsAWg==
   dependencies:
-    lib0 "^0.2.72"
+    lib0 "^0.2.49"
 
 yocto-queue@^0.1.0:
   version "0.1.0"
