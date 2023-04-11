@@ -53,5 +53,9 @@ module.exports = {
                 }
             }
         };
+    },
+
+    bulkDestroy(bulkActionResult, _apiConfig, frame) {
+        frame.response = bulkActionResult;
     }
 };

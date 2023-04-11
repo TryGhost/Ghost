@@ -72,6 +72,75 @@ class PostsService {
         });
     }
 
+    async bulkDestroy(options) {
+        if (!options.transacting) {
+            return await this.models.Post.transaction(async (transacting) => {
+                return await this.bulkDestroy({
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        const postRows = await this.models.Post.getFilteredCollectionQuery({
+            filter: options.filter,
+            status: 'all'
+        }).leftJoin('emails', 'posts.id', 'emails.post_id').select('posts.id', 'emails.id as email_id');
+        const deleteIds = postRows.map(row => row.id);
+
+        // We also need to collect the email ids because the email relation doesn't have cascase, and we need to delete the related relations of the post
+        const deleteEmailIds = postRows.map(row => row.email_id).filter(id => !!id);
+
+        const postTablesToDelete = [
+            'posts_authors',
+            'posts_tags',
+            'posts_meta',
+            'mobiledoc_revisions',
+            'post_revisions',
+            'posts_products'
+        ];
+        const emailTablesToDelete = [
+            'email_recipients',
+            'email_recipient_failures',
+            'email_batches',
+            'email_spam_complaint_events'
+        ];
+
+        // Don't clear, but set relation to null
+        const emailTablesToSetNull = [
+            'suppressions'
+        ];
+
+        for (const table of postTablesToDelete) {
+            await this.models.Post.bulkDestroy(deleteIds, table, {
+                column: 'post_id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+        }
+
+        for (const table of emailTablesToDelete) {
+            await this.models.Post.bulkDestroy(deleteEmailIds, table, {
+                column: 'email_id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+        }
+
+        for (const table of emailTablesToSetNull) {
+            await this.models.Post.bulkEdit(deleteEmailIds, table, {
+                data: {email_id: null},
+                column: 'email_id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+        }
+
+        // Posts and emails
+        await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
+        return await this.models.Post.bulkDestroy(deleteIds, 'posts', {transacting: options.transacting, throwErrors: true});
+    }
+
     async export(frame) {
         return await this.postsExporter.export(frame.options);
     }
