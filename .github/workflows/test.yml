@@ -167,7 +167,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: unit-test-report
+          name: test-reports-${{ matrix.node }}
           path: ghost/core/reports/unit-test-report.json
 
       - uses: daniellockyer/action-slack-build@master
@@ -247,7 +247,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: unit-test-report
+          name: test-reports-${{ matrix.node }}
           path: |
             ghost/core/reports/regression-test-report.json
             ghost/core/reports/integration-test-report.json
@@ -265,7 +265,7 @@ jobs:
       # Report time taken to metrics service
       # Continue on error if previous TailScale step fails
       - uses: tryghost/action-trigger-metric@main
-        timeout-minutes: 1
+        timeout-minutes: 1@
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
         with:
