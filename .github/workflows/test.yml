@@ -167,7 +167,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: test-reports-${{ matrix.node }}
+          name: (test-reports-${{ matrix.node }})
           path: ghost/core/reports/unit-test-report.json
 
       - uses: daniellockyer/action-slack-build@master
@@ -247,7 +247,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: test-reports-${{ matrix.node }}
+          name: (test-reports-${{ matrix.node }})
           path: |
             ghost/core/reports/regression-test-report.json
             ghost/core/reports/integration-test-report.json
