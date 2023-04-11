@@ -234,6 +234,20 @@ module.exports = {
         }
     },
 
+    bulkDestroy: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'filter'
+        ],
+        permissions: {
+            method: 'destroy'
+        },
+        async query(frame) {
+            return await postsService.bulkDestroy(frame.options);
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {

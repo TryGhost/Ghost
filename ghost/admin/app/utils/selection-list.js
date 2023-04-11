@@ -71,6 +71,13 @@ export default class SelectionList {
         return this.selectedIds.size === 1 && !this.inverted;
     }
 
+    get count() {
+        if (!this.inverted) {
+            return this.selectedIds.size;
+        }
+        return Math.max((this.infinityModel.meta?.pagination?.total ?? 0) - this.selectedIds.size, 1);
+    }
+
     isSelected(id) {
         if (this.inverted) {
             return !this.selectedIds.has(id);
