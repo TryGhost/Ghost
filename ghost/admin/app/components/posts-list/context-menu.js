@@ -4,6 +4,7 @@ import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
 import nql from '@tryghost/nql';
 import tpl from '@tryghost/tpl';
+import AddPostTagsModal from './modals/add-tag';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -65,6 +66,14 @@ export default class PostsContextMenu extends Component {
     }
 
     @action
+    async addTagToPosts() {
+        await this.menu.openModal(AddPostTagsModal, {
+            selectionList: this.selectionList,
+            confirm: this.addTagToPostsTask
+        });
+    }
+
+    @action
     async deletePosts() {
         this.menu.openModal(DeletePostsModal, {
             selectionList: this.selectionList,
@@ -86,6 +95,20 @@ export default class PostsContextMenu extends Component {
             selectionList: this.selectionList,
             confirm: this.editPostsAccessTask
         });
+    }
+
+    @task
+    *addTagToPostsTask(tags) {
+        const updatedModels = this.selectionList.availableModels;
+
+        yield this.performBulkEdit('addTag', {tags: tags.map(tag => tag.id)});
+
+        // todo: Update the models on the client side
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
+
+        return true;
     }
 
     @task

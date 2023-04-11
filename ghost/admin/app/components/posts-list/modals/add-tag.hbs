@@ -1,0 +1,38 @@
+<div class="modal-content" data-test-modal="add-tags">
+    <header class="modal-header">
+        <h1>What tags you wanna add???</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            <GhTokenInput
+                @extra={{hash
+                    tokenComponent=(component "gh-token-input/tag-token")
+                }}
+                @onChange={{this.handleChange}}
+                @onCreate={{this.handleCreate}}
+                @options={{this.availableTags}}
+                @renderInPlace={{true}}
+                @selected={{this.selectedTags}}
+                @showCreateWhen={{this.shouldAllowCreate}}
+                @triggerId={{this.triggerId}}
+            />
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Cancel</span></button>
+
+         <GhTaskButton
+            @buttonText="Add"
+            @runningText="Adding"
+            @showSuccess={{false}}
+            @task={{@data.confirm}}
+            @taskArgs={{this.selectedTags}}
+            @class="gh-btn gh-btn-green gh-btn-icon"
+            data-test-button="confirm"
+        />
+
+    </div>
+</div>

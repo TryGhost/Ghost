@@ -94,9 +94,75 @@ class PostsService {
             }
             return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter});
         }
+        if (data.action === 'addTag') {
+            return await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter});
+        }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
         });
+    }
+
+    /**
+     * @param {object} data
+     * @param {string[]} data.tags - Array of tag ids to add to the post
+     * @param {object} options
+     * @param {string} options.filter - An NQL Filter
+     */
+    async #bulkAddTags(data, options) {
+        if (!options.transacting) {
+            return await this.models.Post.transaction(async (transacting) => {
+                return await this.#bulkAddTags(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        const postRows = await this.models.Post.getFilteredCollectionQuery({
+            filter: options.filter,
+            status: 'all'
+        }).select('posts.id');
+
+        const postTags = data.tags.reduce((postTags, tagId) => {
+            return postTags.concat(postRows.map((post) => {
+                return {
+                    id: (new ObjectId()).toHexString(),
+                    post_id: post.id,
+                    tag_id: tagId,
+                    sort_order: 0
+                };
+            }));
+        }, []);
+
+        await options.transacting('posts_tags').insert(postTags);
+
+        return true;
+    }
+
+    /**
+     * @param {object} data
+     * @param {string[]} data.tags - Array of tag ids to add to the post
+     * @param {object} options
+     * @param {string} options.filter - An NQL Filter
+     */
+    async #bulkRemoveTags(data, options) {
+        if (!options.transacting) {
+            return await this.models.Post.transaction(async (transacting) => {
+                return await this.#bulkRemoveTags(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        const postRows = await this.models.Post.getFilteredCollectionQuery({
+            filter: options.filter,
+            status: 'all'
+        }).select('posts.id');
+
+        await options.transacting('posts_tags').whereIn('post_id', postRows.map((post) => post.id)).whereIn('tag_id', data.tags).del();
+
+        return true;
     }
 
     async bulkDestroy(options) {
