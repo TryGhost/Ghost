@@ -24,6 +24,7 @@ export default class PostsContextMenu extends Component {
         this.menu.close();
         await this.modals.open(DeletePostsModal, {
             isSingle: this.selectionList.isSingle,
+            count: this.selectionList.count,
             confirm: this.deletePostsTask
         });
     }
