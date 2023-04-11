@@ -866,9 +866,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 PASTE_COMMAND,
                 (clipboard) => {
-                    // avoid Koenig behaviours when an inner element (e.g. a card input) has focus
-                    if (document.activeElement !== editor.getRootElement()) {
-                        return true;
+                    // avoid Koenig behaviours when an inner element (e.g. a card input) has focus and event wasn't triggered from nested editor
+                    if (document.activeElement !== editor.getRootElement() && !isNested) {
+                        return false;
                     }
 
                     const clipboardDataset = clipboard?.clipboardData?.getData('text');
