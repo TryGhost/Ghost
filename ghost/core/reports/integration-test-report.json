@@ -1,0 +1,1558 @@
+{
+  "stats": {
+    "suites": 24,
+    "tests": 110,
+    "passes": 110,
+    "pending": 0,
+    "failures": 0,
+    "start": "2023-04-11T05:52:30.350Z",
+    "end": "2023-04-11T05:52:48.456Z",
+    "duration": 18106
+  },
+  "tests": [
+    {
+      "title": "exports expected table data",
+      "fullTitle": "Exporter exports expected table data",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "disallows importing Legacy imports",
+      "fullTitle": "Importer Legacy disallows importing Legacy imports",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure amp field get's respected",
+      "fullTitle": "Importer 1.0 ensure amp field get's respected",
+      "duration": 29,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "invalid mobiledoc structure",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html invalid mobiledoc structure",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "mobiledoc is null, html field is set, convert html -> mobiledoc",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html mobiledoc is null, html field is set, convert html -> mobiledoc",
+      "duration": 278,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "mobiledoc and html is null",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html mobiledoc and html is null",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "mobiledoc is set and html is null",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html mobiledoc is set and html is null",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post has \"kg-card-markdown\" class",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html post has \"kg-card-markdown\" class",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import old Koenig Beta post format",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html import old Koenig Beta post format",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure return structure",
+      "fullTitle": "Importer Empty database (except of owner user), general tests ensure return structure",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cares about invalid dates and date formats",
+      "fullTitle": "Importer Empty database (except of owner user), general tests cares about invalid dates and date formats",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "warning that theme was not imported",
+      "fullTitle": "Importer Empty database (except of owner user), general tests warning that theme was not imported",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "removes duplicate users",
+      "fullTitle": "Importer Empty database (except of owner user), general tests removes duplicate users",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "removes duplicate posts",
+      "fullTitle": "Importer Empty database (except of owner user), general tests removes duplicate posts",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not treat posts without slug as duplicate",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does not treat posts without slug as duplicate",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can import user with missing allowed fields",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can import user with missing allowed fields",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "removes duplicate tags and updates associations",
+      "fullTitle": "Importer Empty database (except of owner user), general tests removes duplicate tags and updates associations",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "removes broken tags from post (not in db, not in file)",
+      "fullTitle": "Importer Empty database (except of owner user), general tests removes broken tags from post (not in db, not in file)",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "imports post status",
+      "fullTitle": "Importer Empty database (except of owner user), general tests imports post status",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure complex JSON get's fully imported",
+      "fullTitle": "Importer Empty database (except of owner user), general tests ensure complex JSON get's fully imported",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import owner, ensure original owner stays as is",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import owner, ensure original owner stays as is",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "imports comment_id correctly",
+      "fullTitle": "Importer Empty database (except of owner user), general tests imports comment_id correctly",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "handles validation errors nicely",
+      "fullTitle": "Importer Empty database (except of owner user), general tests handles validation errors nicely",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does import data with invalid user references",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does import data with invalid user references",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "invalid uuid",
+      "fullTitle": "Importer Empty database (except of owner user), general tests invalid uuid",
+      "duration": 26,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure post tag order is correct",
+      "fullTitle": "Importer Empty database (except of owner user), general tests ensure post tag order is correct",
+      "duration": 33,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import multiple users, tags, posts",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import multiple users, tags, posts",
+      "duration": 53,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle if user has multiple roles attached",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can handle if user has multiple roles attached",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle related tags with missing optional fields",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can handle related tags with missing optional fields",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle uppercase tags",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can handle uppercase tags",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does import settings: labs",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does import settings: labs",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not import unknown settings: labs",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does not import unknown settings: labs",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not import settings: slack_url",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does not import settings: slack_url",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not import settings: slack_url from slack object",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does not import settings: slack_url from slack object",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can import default_locale and active_timezone",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can import default_locale and active_timezone",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can import lang",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can import lang",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does import settings with string booleans",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does import settings with string booleans",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import comment_id",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import comment_id",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure authors are imported correctly",
+      "fullTitle": "Importer Empty database (except of owner user), general tests ensure authors are imported correctly",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import 1.0 Koenig post format",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import 1.0 Koenig post format",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import 2.0 Koenig post format",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import 2.0 Koenig post format",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import stripe plans with an \"amount\" of 0",
+      "fullTitle": "Importer Empty database (except of owner user), general tests Can import stripe plans with an \"amount\" of 0",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import multiple users, tags, posts",
+      "fullTitle": "Importer Existing database import multiple users, tags, posts",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should populate all fixtures correctly",
+      "fullTitle": "Database Migration (special functions) Fixtures Populate should populate all fixtures correctly",
+      "duration": 40,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can send a scheduled post email",
+      "fullTitle": "Batch sending tests Can send a scheduled post email",
+      "duration": 281,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Protects the email job from being run multiple times at the same time",
+      "fullTitle": "Batch sending tests Protects the email job from being run multiple times at the same time",
+      "duration": 237,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Doesn't include members created after the email in the batches",
+      "fullTitle": "Batch sending tests Doesn't include members created after the email in the batches",
+      "duration": 226,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch",
+      "duration": 167,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch when including free member only content",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch when including free member only content",
+      "duration": 163,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch when including paid member only content",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch when including paid member only content",
+      "duration": 160,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch when including paid member only content",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch when including paid member only content",
+      "duration": 156,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch when including free members only content with paywall",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch when including free members only content with paywall",
+      "duration": 152,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does not split recipient in free and paid batch if email is identical",
+      "fullTitle": "Batch sending tests Does not split recipient in free and paid batch if email is identical",
+      "duration": 108,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to paid members if recipient filter is applied",
+      "fullTitle": "Batch sending tests Only sends to paid members if recipient filter is applied",
+      "duration": 107,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to members with a specific label",
+      "fullTitle": "Batch sending tests Only sends to members with a specific label",
+      "duration": 108,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to members with a specific label and paid content",
+      "fullTitle": "Batch sending tests Only sends to members with a specific label and paid content",
+      "duration": 113,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to members with a specific label and paywall",
+      "fullTitle": "Batch sending tests Only sends to members with a specific label and paywall",
+      "duration": 118,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle OR filter in email recipient filter and split content",
+      "fullTitle": "Batch sending tests Can handle OR filter in email recipient filter and split content",
+      "duration": 157,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle OR filter in email recipient filter without split content",
+      "fullTitle": "Batch sending tests Can handle OR filter in email recipient filter without split content",
+      "duration": 107,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to paid members if recipient filter is applied in combination with free member only content",
+      "fullTitle": "Batch sending tests Only sends to paid members if recipient filter is applied in combination with free member only content",
+      "duration": 118,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits up in batches according to email provider batch size",
+      "fullTitle": "Batch sending tests Splits up in batches according to email provider batch size",
+      "duration": 186,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits up in batches according to email provider batch size with paid and free segments",
+      "fullTitle": "Batch sending tests Splits up in batches according to email provider batch size with paid and free segments",
+      "duration": 315,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "One failed batch marks the email as failed and allows for a retry",
+      "fullTitle": "Batch sending tests One failed batch marks the email as failed and allows for a retry",
+      "duration": 257,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot send an email if verification is required",
+      "fullTitle": "Batch sending tests Cannot send an email if verification is required",
+      "duration": 47,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Adds link tracking to all links in a post",
+      "fullTitle": "Batch sending tests Analytics Adds link tracking to all links in a post",
+      "duration": 162,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does not add outbound refs if disabled",
+      "fullTitle": "Batch sending tests Analytics Does not add outbound refs if disabled",
+      "duration": 111,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does add outbound refs if disabled but flag is disabled",
+      "fullTitle": "Batch sending tests Analytics Does add outbound refs if disabled but flag is disabled",
+      "duration": 104,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does not add link tracking if disabled",
+      "fullTitle": "Batch sending tests Analytics Does not add link tracking if disabled",
+      "duration": 95,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does replace with and without fallback in both plaintext and html for member without name",
+      "fullTitle": "Batch sending tests Replacements Does replace with and without fallback in both plaintext and html for member without name",
+      "duration": 140,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does replace with and without fallback in both plaintext and html for member with name",
+      "fullTitle": "Batch sending tests Replacements Does replace with and without fallback in both plaintext and html for member with name",
+      "duration": 126,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does not HTML escape feature_image_caption",
+      "fullTitle": "Batch sending tests HTML-content Does not HTML escape feature_image_caption",
+      "duration": 129,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Hides post title section if show_post_title_section is false",
+      "fullTitle": "Batch sending tests Newsletter settings Hides post title section if show_post_title_section is false",
+      "duration": 211,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows 3 comment buttons for published posts without feedback enabled",
+      "fullTitle": "Batch sending tests Newsletter settings Shows 3 comment buttons for published posts without feedback enabled",
+      "duration": 99,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows 3 comment buttons for published posts with feedback enabled",
+      "fullTitle": "Batch sending tests Newsletter settings Shows 3 comment buttons for published posts with feedback enabled",
+      "duration": 104,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Hides comments button for email only posts",
+      "fullTitle": "Batch sending tests Newsletter settings Hides comments button for email only posts",
+      "duration": 92,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Hides comments button if comments disabled",
+      "fullTitle": "Batch sending tests Newsletter settings Hides comments button if comments disabled",
+      "duration": 95,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Hides comments button if disabled in newsletter",
+      "fullTitle": "Batch sending tests Newsletter settings Hides comments button if disabled in newsletter",
+      "duration": 101,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for free members",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for free members",
+      "duration": 110,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for comped members",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for comped members",
+      "duration": 106,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for trialing member",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for trialing member",
+      "duration": 189,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for paid member",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for paid member",
+      "duration": 177,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for canceled paid member",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for canceled paid member",
+      "duration": 155,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows 3 latest posts",
+      "fullTitle": "Batch sending tests Newsletter settings Shows 3 latest posts",
+      "duration": 135,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle delivered events",
+      "fullTitle": "EmailEventStorage Can handle delivered events",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle delivered events without user variables",
+      "fullTitle": "EmailEventStorage Can handle delivered events without user variables",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle opened events",
+      "fullTitle": "EmailEventStorage Can handle opened events",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events",
+      "fullTitle": "EmailEventStorage Can handle permanent failure events",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events without message and description",
+      "fullTitle": "EmailEventStorage Can handle permanent failure events without message and description",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Ignores permanent failures if already failed",
+      "fullTitle": "EmailEventStorage Ignores permanent failures if already failed",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events for multiple recipients",
+      "fullTitle": "EmailEventStorage Can handle permanent failure events for multiple recipients",
+      "duration": 77,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle temporary failure events",
+      "fullTitle": "EmailEventStorage Can handle temporary failure events",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Correctly overwrites temporary failure event with other temporary one",
+      "fullTitle": "EmailEventStorage Correctly overwrites temporary failure event with other temporary one",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Correctly overwrites temporary failure event with other temporary one without message",
+      "fullTitle": "EmailEventStorage Correctly overwrites temporary failure event with other temporary one without message",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Correctly overwrites permanent failure event with other permanent one",
+      "fullTitle": "EmailEventStorage Correctly overwrites permanent failure event with other permanent one",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle complaint events",
+      "fullTitle": "EmailEventStorage Can handle complaint events",
+      "duration": 133,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle unsubscribe events",
+      "fullTitle": "EmailEventStorage Can handle unsubscribe events",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle unknown events",
+      "fullTitle": "EmailEventStorage Can handle unknown events",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Ignores invalid events",
+      "fullTitle": "EmailEventStorage Ignores invalid events",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "updateLastSeenAtWithoutKnownLastSeen",
+      "fullTitle": "Last Seen At Updater updateLastSeenAtWithoutKnownLastSeen",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events with an error code of 605",
+      "fullTitle": "MailgunEmailSuppressionList Can handle permanent failure events with an error code of 605",
+      "duration": 88,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events with an error code of 607",
+      "fullTitle": "MailgunEmailSuppressionList Can handle permanent failure events with an error code of 607",
+      "duration": 95,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events with an error code of 4xx",
+      "fullTitle": "MailgunEmailSuppressionList Can handle permanent failure events with an error code of 4xx",
+      "duration": 122,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events with an error code of 5xx",
+      "fullTitle": "MailgunEmailSuppressionList Can handle permanent failure events with an error code of 5xx",
+      "duration": 98,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle complaint events",
+      "fullTitle": "MailgunEmailSuppressionList Can handle complaint events",
+      "duration": 96,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Deletes tokens that are older than 24 hours",
+      "fullTitle": "Job: Clean tokens Deletes tokens that are older than 24 hours",
+      "duration": 277,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not modify core keys without fixing this test",
+      "fullTitle": "Settings should not modify core keys without fixing this test",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "getUrl",
+      "fullTitle": "Integration: services/url/UrlService functional: default routing set getUrl",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "getResource",
+      "fullTitle": "Integration: services/url/UrlService functional: default routing set getResource",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "getUrl",
+      "fullTitle": "Integration: services/url/UrlService functional: extended/modified routing set getUrl",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "getUrl",
+      "fullTitle": "Integration: services/url/UrlService functional: subdirectory getUrl",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    }
+  ],
+  "pending": [],
+  "failures": [],
+  "passes": [
+    {
+      "title": "exports expected table data",
+      "fullTitle": "Exporter exports expected table data",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "disallows importing Legacy imports",
+      "fullTitle": "Importer Legacy disallows importing Legacy imports",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure amp field get's respected",
+      "fullTitle": "Importer 1.0 ensure amp field get's respected",
+      "duration": 29,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "invalid mobiledoc structure",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html invalid mobiledoc structure",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "mobiledoc is null, html field is set, convert html -> mobiledoc",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html mobiledoc is null, html field is set, convert html -> mobiledoc",
+      "duration": 278,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "mobiledoc and html is null",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html mobiledoc and html is null",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "mobiledoc is set and html is null",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html mobiledoc is set and html is null",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post has \"kg-card-markdown\" class",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html post has \"kg-card-markdown\" class",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import old Koenig Beta post format",
+      "fullTitle": "Importer 1.0 migrate mobiledoc/html import old Koenig Beta post format",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure return structure",
+      "fullTitle": "Importer Empty database (except of owner user), general tests ensure return structure",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cares about invalid dates and date formats",
+      "fullTitle": "Importer Empty database (except of owner user), general tests cares about invalid dates and date formats",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "warning that theme was not imported",
+      "fullTitle": "Importer Empty database (except of owner user), general tests warning that theme was not imported",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "removes duplicate users",
+      "fullTitle": "Importer Empty database (except of owner user), general tests removes duplicate users",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "removes duplicate posts",
+      "fullTitle": "Importer Empty database (except of owner user), general tests removes duplicate posts",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not treat posts without slug as duplicate",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does not treat posts without slug as duplicate",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can import user with missing allowed fields",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can import user with missing allowed fields",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "removes duplicate tags and updates associations",
+      "fullTitle": "Importer Empty database (except of owner user), general tests removes duplicate tags and updates associations",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "removes broken tags from post (not in db, not in file)",
+      "fullTitle": "Importer Empty database (except of owner user), general tests removes broken tags from post (not in db, not in file)",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "imports post status",
+      "fullTitle": "Importer Empty database (except of owner user), general tests imports post status",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure complex JSON get's fully imported",
+      "fullTitle": "Importer Empty database (except of owner user), general tests ensure complex JSON get's fully imported",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import owner, ensure original owner stays as is",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import owner, ensure original owner stays as is",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "imports comment_id correctly",
+      "fullTitle": "Importer Empty database (except of owner user), general tests imports comment_id correctly",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "handles validation errors nicely",
+      "fullTitle": "Importer Empty database (except of owner user), general tests handles validation errors nicely",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does import data with invalid user references",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does import data with invalid user references",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "invalid uuid",
+      "fullTitle": "Importer Empty database (except of owner user), general tests invalid uuid",
+      "duration": 26,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure post tag order is correct",
+      "fullTitle": "Importer Empty database (except of owner user), general tests ensure post tag order is correct",
+      "duration": 33,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import multiple users, tags, posts",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import multiple users, tags, posts",
+      "duration": 53,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle if user has multiple roles attached",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can handle if user has multiple roles attached",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle related tags with missing optional fields",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can handle related tags with missing optional fields",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle uppercase tags",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can handle uppercase tags",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does import settings: labs",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does import settings: labs",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not import unknown settings: labs",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does not import unknown settings: labs",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not import settings: slack_url",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does not import settings: slack_url",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not import settings: slack_url from slack object",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does not import settings: slack_url from slack object",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can import default_locale and active_timezone",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can import default_locale and active_timezone",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can import lang",
+      "fullTitle": "Importer Empty database (except of owner user), general tests can import lang",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does import settings with string booleans",
+      "fullTitle": "Importer Empty database (except of owner user), general tests does import settings with string booleans",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import comment_id",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import comment_id",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure authors are imported correctly",
+      "fullTitle": "Importer Empty database (except of owner user), general tests ensure authors are imported correctly",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import 1.0 Koenig post format",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import 1.0 Koenig post format",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import 2.0 Koenig post format",
+      "fullTitle": "Importer Empty database (except of owner user), general tests import 2.0 Koenig post format",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import stripe plans with an \"amount\" of 0",
+      "fullTitle": "Importer Empty database (except of owner user), general tests Can import stripe plans with an \"amount\" of 0",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import multiple users, tags, posts",
+      "fullTitle": "Importer Existing database import multiple users, tags, posts",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should populate all fixtures correctly",
+      "fullTitle": "Database Migration (special functions) Fixtures Populate should populate all fixtures correctly",
+      "duration": 40,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can send a scheduled post email",
+      "fullTitle": "Batch sending tests Can send a scheduled post email",
+      "duration": 281,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Protects the email job from being run multiple times at the same time",
+      "fullTitle": "Batch sending tests Protects the email job from being run multiple times at the same time",
+      "duration": 237,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Doesn't include members created after the email in the batches",
+      "fullTitle": "Batch sending tests Doesn't include members created after the email in the batches",
+      "duration": 226,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch",
+      "duration": 167,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch when including free member only content",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch when including free member only content",
+      "duration": 163,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch when including paid member only content",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch when including paid member only content",
+      "duration": 160,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch when including paid member only content",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch when including paid member only content",
+      "duration": 156,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits recipients in free and paid batch when including free members only content with paywall",
+      "fullTitle": "Batch sending tests Splits recipients in free and paid batch when including free members only content with paywall",
+      "duration": 152,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does not split recipient in free and paid batch if email is identical",
+      "fullTitle": "Batch sending tests Does not split recipient in free and paid batch if email is identical",
+      "duration": 108,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to paid members if recipient filter is applied",
+      "fullTitle": "Batch sending tests Only sends to paid members if recipient filter is applied",
+      "duration": 107,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to members with a specific label",
+      "fullTitle": "Batch sending tests Only sends to members with a specific label",
+      "duration": 108,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to members with a specific label and paid content",
+      "fullTitle": "Batch sending tests Only sends to members with a specific label and paid content",
+      "duration": 113,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to members with a specific label and paywall",
+      "fullTitle": "Batch sending tests Only sends to members with a specific label and paywall",
+      "duration": 118,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle OR filter in email recipient filter and split content",
+      "fullTitle": "Batch sending tests Can handle OR filter in email recipient filter and split content",
+      "duration": 157,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle OR filter in email recipient filter without split content",
+      "fullTitle": "Batch sending tests Can handle OR filter in email recipient filter without split content",
+      "duration": 107,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Only sends to paid members if recipient filter is applied in combination with free member only content",
+      "fullTitle": "Batch sending tests Only sends to paid members if recipient filter is applied in combination with free member only content",
+      "duration": 118,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits up in batches according to email provider batch size",
+      "fullTitle": "Batch sending tests Splits up in batches according to email provider batch size",
+      "duration": 186,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Splits up in batches according to email provider batch size with paid and free segments",
+      "fullTitle": "Batch sending tests Splits up in batches according to email provider batch size with paid and free segments",
+      "duration": 315,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "One failed batch marks the email as failed and allows for a retry",
+      "fullTitle": "Batch sending tests One failed batch marks the email as failed and allows for a retry",
+      "duration": 257,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot send an email if verification is required",
+      "fullTitle": "Batch sending tests Cannot send an email if verification is required",
+      "duration": 47,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Adds link tracking to all links in a post",
+      "fullTitle": "Batch sending tests Analytics Adds link tracking to all links in a post",
+      "duration": 162,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does not add outbound refs if disabled",
+      "fullTitle": "Batch sending tests Analytics Does not add outbound refs if disabled",
+      "duration": 111,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does add outbound refs if disabled but flag is disabled",
+      "fullTitle": "Batch sending tests Analytics Does add outbound refs if disabled but flag is disabled",
+      "duration": 104,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does not add link tracking if disabled",
+      "fullTitle": "Batch sending tests Analytics Does not add link tracking if disabled",
+      "duration": 95,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does replace with and without fallback in both plaintext and html for member without name",
+      "fullTitle": "Batch sending tests Replacements Does replace with and without fallback in both plaintext and html for member without name",
+      "duration": 140,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does replace with and without fallback in both plaintext and html for member with name",
+      "fullTitle": "Batch sending tests Replacements Does replace with and without fallback in both plaintext and html for member with name",
+      "duration": 126,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Does not HTML escape feature_image_caption",
+      "fullTitle": "Batch sending tests HTML-content Does not HTML escape feature_image_caption",
+      "duration": 129,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Hides post title section if show_post_title_section is false",
+      "fullTitle": "Batch sending tests Newsletter settings Hides post title section if show_post_title_section is false",
+      "duration": 211,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows 3 comment buttons for published posts without feedback enabled",
+      "fullTitle": "Batch sending tests Newsletter settings Shows 3 comment buttons for published posts without feedback enabled",
+      "duration": 99,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows 3 comment buttons for published posts with feedback enabled",
+      "fullTitle": "Batch sending tests Newsletter settings Shows 3 comment buttons for published posts with feedback enabled",
+      "duration": 104,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Hides comments button for email only posts",
+      "fullTitle": "Batch sending tests Newsletter settings Hides comments button for email only posts",
+      "duration": 92,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Hides comments button if comments disabled",
+      "fullTitle": "Batch sending tests Newsletter settings Hides comments button if comments disabled",
+      "duration": 95,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Hides comments button if disabled in newsletter",
+      "fullTitle": "Batch sending tests Newsletter settings Hides comments button if disabled in newsletter",
+      "duration": 101,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for free members",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for free members",
+      "duration": 110,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for comped members",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for comped members",
+      "duration": 106,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for trialing member",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for trialing member",
+      "duration": 189,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for paid member",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for paid member",
+      "duration": 177,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows subscription details box for canceled paid member",
+      "fullTitle": "Batch sending tests Newsletter settings Shows subscription details box for canceled paid member",
+      "duration": 155,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Shows 3 latest posts",
+      "fullTitle": "Batch sending tests Newsletter settings Shows 3 latest posts",
+      "duration": 135,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle delivered events",
+      "fullTitle": "EmailEventStorage Can handle delivered events",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle delivered events without user variables",
+      "fullTitle": "EmailEventStorage Can handle delivered events without user variables",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle opened events",
+      "fullTitle": "EmailEventStorage Can handle opened events",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events",
+      "fullTitle": "EmailEventStorage Can handle permanent failure events",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events without message and description",
+      "fullTitle": "EmailEventStorage Can handle permanent failure events without message and description",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Ignores permanent failures if already failed",
+      "fullTitle": "EmailEventStorage Ignores permanent failures if already failed",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events for multiple recipients",
+      "fullTitle": "EmailEventStorage Can handle permanent failure events for multiple recipients",
+      "duration": 77,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle temporary failure events",
+      "fullTitle": "EmailEventStorage Can handle temporary failure events",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Correctly overwrites temporary failure event with other temporary one",
+      "fullTitle": "EmailEventStorage Correctly overwrites temporary failure event with other temporary one",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Correctly overwrites temporary failure event with other temporary one without message",
+      "fullTitle": "EmailEventStorage Correctly overwrites temporary failure event with other temporary one without message",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Correctly overwrites permanent failure event with other permanent one",
+      "fullTitle": "EmailEventStorage Correctly overwrites permanent failure event with other permanent one",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle complaint events",
+      "fullTitle": "EmailEventStorage Can handle complaint events",
+      "duration": 133,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle unsubscribe events",
+      "fullTitle": "EmailEventStorage Can handle unsubscribe events",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle unknown events",
+      "fullTitle": "EmailEventStorage Can handle unknown events",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Ignores invalid events",
+      "fullTitle": "EmailEventStorage Ignores invalid events",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "updateLastSeenAtWithoutKnownLastSeen",
+      "fullTitle": "Last Seen At Updater updateLastSeenAtWithoutKnownLastSeen",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events with an error code of 605",
+      "fullTitle": "MailgunEmailSuppressionList Can handle permanent failure events with an error code of 605",
+      "duration": 88,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events with an error code of 607",
+      "fullTitle": "MailgunEmailSuppressionList Can handle permanent failure events with an error code of 607",
+      "duration": 95,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events with an error code of 4xx",
+      "fullTitle": "MailgunEmailSuppressionList Can handle permanent failure events with an error code of 4xx",
+      "duration": 122,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle permanent failure events with an error code of 5xx",
+      "fullTitle": "MailgunEmailSuppressionList Can handle permanent failure events with an error code of 5xx",
+      "duration": 98,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can handle complaint events",
+      "fullTitle": "MailgunEmailSuppressionList Can handle complaint events",
+      "duration": 96,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Deletes tokens that are older than 24 hours",
+      "fullTitle": "Job: Clean tokens Deletes tokens that are older than 24 hours",
+      "duration": 277,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not modify core keys without fixing this test",
+      "fullTitle": "Settings should not modify core keys without fixing this test",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "getUrl",
+      "fullTitle": "Integration: services/url/UrlService functional: default routing set getUrl",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "getResource",
+      "fullTitle": "Integration: services/url/UrlService functional: default routing set getResource",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "getUrl",
+      "fullTitle": "Integration: services/url/UrlService functional: extended/modified routing set getUrl",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "getUrl",
+      "fullTitle": "Integration: services/url/UrlService functional: subdirectory getUrl",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    }
+  ]
+}

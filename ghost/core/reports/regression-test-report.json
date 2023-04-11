@@ -1,0 +1,5716 @@
+{
+  "stats": {
+    "suites": 154,
+    "tests": 407,
+    "passes": 407,
+    "pending": 0,
+    "failures": 0,
+    "start": "2023-04-11T05:52:50.617Z",
+    "end": "2023-04-11T05:53:59.490Z",
+    "duration": 68873
+  },
+  "tests": [
+    {
+      "title": "is setup? no",
+      "fullTitle": "Authentication API Blog setup is setup? no",
+      "duration": 190,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "complete setup",
+      "fullTitle": "Authentication API Blog setup complete setup",
+      "duration": 383,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "is setup? yes",
+      "fullTitle": "Authentication API Blog setup is setup? yes",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "complete setup again",
+      "fullTitle": "Authentication API Blog setup complete setup again",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update setup",
+      "fullTitle": "Authentication API Blog setup update setup",
+      "duration": 47,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "complete setup with default theme",
+      "fullTitle": "Authentication API Blog setup complete setup with default theme",
+      "duration": 322,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "check invite with invalid email",
+      "fullTitle": "Authentication API Invitation check invite with invalid email",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "check valid invite",
+      "fullTitle": "Authentication API Invitation check valid invite",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "check invalid invite",
+      "fullTitle": "Authentication API Invitation check invalid invite",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "try to accept without invite",
+      "fullTitle": "Authentication API Invitation try to accept without invite",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "try to accept with invite and existing email address",
+      "fullTitle": "Authentication API Invitation try to accept with invite and existing email address",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "try to accept with invite",
+      "fullTitle": "Authentication API Invitation try to accept with invite",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password",
+      "fullTitle": "Authentication API Password reset reset password",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password: invalid token",
+      "fullTitle": "Authentication API Password reset reset password: invalid token",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password: expired token",
+      "fullTitle": "Authentication API Password reset reset password: expired token",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password: unmatched token",
+      "fullTitle": "Authentication API Password reset reset password: unmatched token",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password: generate reset token",
+      "fullTitle": "Authentication API Password reset reset password: generate reset token",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset all passwords returns 204",
+      "fullTitle": "Authentication API Reset all passwords reset all passwords returns 204",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can export the database with more tables",
+      "fullTitle": "DB API can export the database with more tables",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can export & import",
+      "fullTitle": "DB API can export & import",
+      "duration": 230,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "fails when triggering an export from unknown filename ",
+      "fullTitle": "DB API fails when triggering an export from unknown filename ",
+      "duration": 35,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import should fail without file",
+      "fullTitle": "DB API import should fail without file",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import should fail with unsupported file",
+      "fullTitle": "DB API import should fail with unsupported file",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "export can be triggered by backup integration",
+      "fullTitle": "DB API export can be triggered by backup integration",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "export can not be triggered by integration other than backup",
+      "fullTitle": "DB API export can not be triggered by integration other than backup",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "export can be triggered by Admin authentication",
+      "fullTitle": "DB API export can be triggered by Admin authentication",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database exported from Ghost 2.x",
+      "fullTitle": "DB API Can import a JSON database exported from Ghost 2.x",
+      "duration": 249,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database exported from Ghost 3.x",
+      "fullTitle": "DB API Can import a JSON database exported from Ghost 3.x",
+      "duration": 213,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database exported from Ghost 4.x",
+      "fullTitle": "DB API Can import a JSON database exported from Ghost 4.x",
+      "duration": 242,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database with products",
+      "fullTitle": "DB API Can import a JSON database with products",
+      "duration": 87,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database with products for an existing product",
+      "fullTitle": "DB API (cleaned) Can import a JSON database with products for an existing product",
+      "duration": 44,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can create JWT token and verify it afterwards with public jwks",
+      "fullTitle": "Identities API As Owner Can create JWT token and verify it afterwards with public jwks",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot read",
+      "fullTitle": "Identities API As non-Owner Cannot read",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't import fail without file",
+      "fullTitle": "Images API Can't import fail without file",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't import with unsupported file",
+      "fullTitle": "Images API Can't import with unsupported file",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't upload incorrect extension",
+      "fullTitle": "Images API Can't upload incorrect extension",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't import if profile image is not square",
+      "fullTitle": "Images API Can't import if profile image is not square",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import CSV with minimum one field and labels",
+      "fullTitle": "Members Importer API Can import CSV with minimum one field and labels",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import CSV with mapped fields",
+      "fullTitle": "Members Importer API Can import CSV with mapped fields",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import CSV with labels and provide additional labels",
+      "fullTitle": "Members Importer API Can import CSV with labels and provide additional labels",
+      "duration": 43,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Runs imports with stripe_customer_id as background job",
+      "fullTitle": "Members Importer API Runs imports with stripe_customer_id as background job",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Fails to import member with invalid values",
+      "fullTitle": "Members Importer API Fails to import member with invalid values",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import members with host emailVerification limits",
+      "fullTitle": "Members Importer API Can import members with host emailVerification limits",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can still import members once email verification is required but does not send email",
+      "fullTitle": "Members Importer API Can still import members once email verification is required but does not send email",
+      "duration": 64,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import members with host emailVerification limits for large imports",
+      "fullTitle": "Members Importer API Can import members with host emailVerification limits for large imports",
+      "duration": 2262,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can read",
+      "fullTitle": "Members Sigin URL API As Owner Can read",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can read",
+      "fullTitle": "Members Sigin URL API As Admin Can read",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot read",
+      "fullTitle": "Members Sigin URL API As non-Owner and non-Admin Cannot read",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Add notification",
+      "fullTitle": "Notifications API As Editor Add notification",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Read notifications",
+      "fullTitle": "Notifications API As Editor Read notifications",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Add notification",
+      "fullTitle": "Notifications API As Author Add notification",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Read notifications",
+      "fullTitle": "Notifications API As Author Read notifications",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "notification is visible and dismissible by other user",
+      "fullTitle": "Notifications API Can view by multiple users notification is visible and dismissible by other user",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "accepts html source",
+      "fullTitle": "Pages API Edit accepts html source",
+      "duration": 299,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "fields & formats combined",
+      "fullTitle": "Posts API Browse fields & formats combined",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "combined fields, formats, include and non existing",
+      "fullTitle": "Posts API Browse combined fields, formats, include and non existing",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can filter by fields coming from posts_meta table non null meta_description",
+      "fullTitle": "Posts API Browse can filter by fields coming from posts_meta table non null meta_description",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can filter by fields coming from posts_meta table by value",
+      "fullTitle": "Posts API Browse can filter by fields coming from posts_meta table by value",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can order by fields coming from posts_meta table",
+      "fullTitle": "Posts API Browse can order by fields coming from posts_meta table",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can order by email open rate",
+      "fullTitle": "Posts API Browse can order by email open rate",
+      "duration": 84,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't retrieve non existent post",
+      "fullTitle": "Posts API Read can't retrieve non existent post",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "throws a 400 when a non-existing field is requested",
+      "fullTitle": "Posts API Read throws a 400 when a non-existing field is requested",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "adds default title when it is missing",
+      "fullTitle": "Posts API Add adds default title when it is missing",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - array of strings with new names",
+      "fullTitle": "Posts API Add can add with tags - array of strings with new names",
+      "duration": 42,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - array of strings with existing names",
+      "fullTitle": "Posts API Add can add with tags - array of strings with existing names",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - array of objects with existing slugs",
+      "fullTitle": "Posts API Add can add with tags - array of objects with existing slugs",
+      "duration": 29,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - array of objects with new slugs",
+      "fullTitle": "Posts API Add can add with tags - array of objects with new slugs",
+      "duration": 40,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - slug with spaces",
+      "fullTitle": "Posts API Add can add with tags - slug with spaces",
+      "duration": 54,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - slug with spaces not automated",
+      "fullTitle": "Posts API Add can add with tags - slug with spaces not automated",
+      "duration": 56,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - too long slug",
+      "fullTitle": "Posts API Add can add with tags - too long slug",
+      "duration": 53,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published_at = null",
+      "fullTitle": "Posts API Edit published_at = null",
+      "duration": 38,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "publishes a post with email_only and sends email to all",
+      "fullTitle": "Posts API Edit publishes a post with email_only and sends email to all",
+      "duration": 45,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "publishes a post while setting email_only flag sends an email to paid",
+      "fullTitle": "Posts API Edit publishes a post while setting email_only flag sends an email to paid",
+      "duration": 44,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "only send an email to paid subscribed members of the selected newsletter",
+      "fullTitle": "Posts API Edit only send an email to paid subscribed members of the selected newsletter",
+      "duration": 47,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "read-only value do not cause errors when edited",
+      "fullTitle": "Posts API Edit read-only value do not cause errors when edited",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "html to plaintext",
+      "fullTitle": "Posts API Edit html to plaintext",
+      "duration": 39,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "canonical_url",
+      "fullTitle": "Posts API Edit canonical_url",
+      "duration": 31,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update dates & x_by",
+      "fullTitle": "Posts API Edit update dates & x_by",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can change scheduled post",
+      "fullTitle": "Posts API Edit Can change scheduled post",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "trims title",
+      "fullTitle": "Posts API Edit trims title",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "strips invisible unicode from slug",
+      "fullTitle": "Posts API Edit strips invisible unicode from slug",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "accepts visibility parameter",
+      "fullTitle": "Posts API Edit accepts visibility parameter",
+      "duration": 29,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "changes to post_meta fields triggers a cache invalidation",
+      "fullTitle": "Posts API Edit changes to post_meta fields triggers a cache invalidation",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit post_meta field that has default value and no previously created posts_meta relation",
+      "fullTitle": "Posts API Edit can edit post_meta field that has default value and no previously created posts_meta relation",
+      "duration": 54,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "saving post with no modbiledoc content doesn\t trigger cache invalidation",
+      "fullTitle": "Posts API Edit saving post with no modbiledoc content doesn\t trigger cache invalidation",
+      "duration": 44,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "errors with invalid email segment",
+      "fullTitle": "Posts API Edit errors with invalid email segment",
+      "duration": 31,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "non existent post",
+      "fullTitle": "Posts API Destroy non existent post",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "no redirects file exists",
+      "fullTitle": "Redirects API Upload Ensure re-registering redirects works no redirects file exists",
+      "duration": 956,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "publishes posts",
+      "fullTitle": "Schedules API publish publishes posts",
+      "duration": 49,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "publishes page",
+      "fullTitle": "Schedules API publish publishes page",
+      "duration": 53,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "no access",
+      "fullTitle": "Schedules API publish no access",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should fail with invalid resource type",
+      "fullTitle": "Schedules API publish should fail with invalid resource type",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published_at is x seconds in past, but still in tolerance",
+      "fullTitle": "Schedules API publish published_at is x seconds in past, but still in tolerance",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "not found",
+      "fullTitle": "Schedules API publish not found",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "force publish",
+      "fullTitle": "Schedules API publish force publish",
+      "duration": 42,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit newly introduced locale setting",
+      "fullTitle": "Settings API As Owner Can edit newly introduced locale setting",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't edit permalinks",
+      "fullTitle": "Settings API As Owner Can't edit permalinks",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit only allowed labs keys",
+      "fullTitle": "Settings API As Owner Can edit only allowed labs keys",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't edit non existent setting",
+      "fullTitle": "Settings API As Owner Can't edit non existent setting",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Will transform \"1\"",
+      "fullTitle": "Settings API As Owner Will transform \"1\"",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit multiple setting along with a deprecated one from v4",
+      "fullTitle": "Settings API As Owner Can edit multiple setting along with a deprecated one from v4",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit a setting introduced in v4",
+      "fullTitle": "Settings API As Owner Can edit a setting introduced in v4",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit URLs without internal storage format leaking",
+      "fullTitle": "Settings API As Owner Can edit URLs without internal storage format leaking",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can only send array values for keys defined with array type",
+      "fullTitle": "Settings API As Owner Can only send array values for keys defined with array type",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot send an empty array",
+      "fullTitle": "Settings API As Owner Cannot send an empty array",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot edit notifications key through API",
+      "fullTitle": "Settings API As Owner Cannot edit notifications key through API",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not be able to edit settings",
+      "fullTitle": "Settings API As Editor should not be able to edit settings",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not be able to edit settings",
+      "fullTitle": "Settings API As Author should not be able to edit settings",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "allows editing settings that cannot be edited via HTTP",
+      "fullTitle": "Settings API edit via context internal allows editing settings that cannot be edited via HTTP",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can post slack test",
+      "fullTitle": "Slack API Can post slack test",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should update last seen for active users",
+      "fullTitle": "Update User Last Seen Should update last seen for active users",
+      "duration": 34,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should only update last seen after 1 hour",
+      "fullTitle": "Update User Last Seen Should only update last seen after 1 hour",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should always update last seen after login",
+      "fullTitle": "Update User Last Seen Should always update last seen after login",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should not update last seen for suspended users",
+      "fullTitle": "Update User Last Seen Should not update last seen for suspended users",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't retrieve non existent user by id",
+      "fullTitle": "User API As Owner Read can't retrieve non existent user by id",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't retrieve non existent user by slug",
+      "fullTitle": "User API As Owner Read can't retrieve non existent user by slug",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can change the other users password",
+      "fullTitle": "User API As Owner Edit can change the other users password",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[failure] Destroy unknown user id",
+      "fullTitle": "User API As Owner Destroy [failure] Destroy unknown user id",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Destroy known user and reassign post tags",
+      "fullTitle": "User API As Owner Destroy Destroy known user and reassign post tags",
+      "duration": 157,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit himself",
+      "fullTitle": "User API As Editor success cases can edit himself",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't edit the owner",
+      "fullTitle": "User API As Editor error cases can't edit the owner",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot transfer ownership to any other user",
+      "fullTitle": "User API As Editor error cases Cannot transfer ownership to any other user",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit himself",
+      "fullTitle": "User API As Author success cases can edit himself",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't edit the owner",
+      "fullTitle": "User API As Author error cases can't edit the owner",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can create a webhook using integration",
+      "fullTitle": "Webhooks API Can create a webhook using integration",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Fails validation for when integration_id is missing",
+      "fullTitle": "Webhooks API Fails validation for when integration_id is missing",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Fails validation for non-lowercase event name",
+      "fullTitle": "Webhooks API Fails validation for non-lowercase event name",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Fails validation when required fields are not present",
+      "fullTitle": "Webhooks API Fails validation when required fields are not present",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Integration cannot edit or delete other integration's webhook",
+      "fullTitle": "Webhooks API Integration cannot edit or delete other integration's webhook",
+      "duration": 39,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Integration editing non-existing webhook returns 404",
+      "fullTitle": "Webhooks API Integration editing non-existing webhook returns 404",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Integration deleting non-existing webhook returns 404",
+      "fullTitle": "Webhooks API Integration deleting non-existing webhook returns 404",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot edit webhooks using content api keys",
+      "fullTitle": "Webhooks API Cannot edit webhooks using content api keys",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can read authors with fields",
+      "fullTitle": "Authors Content API can read authors with fields",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse authors with slug filter, should order in slug order",
+      "fullTitle": "Authors Content API browse authors with slug filter, should order in slug order",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Returns a validation error when unsupported \"page\" filter is used",
+      "fullTitle": "api/endpoints/content/pages Returns a validation error when unsupported \"page\" filter is used",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse pages with slug filter, should order in slug order",
+      "fullTitle": "api/endpoints/content/pages browse pages with slug filter, should order in slug order",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't read post",
+      "fullTitle": "api/endpoints/content/pages can't read post",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts",
+      "fullTitle": "api/endpoints/content/posts browse posts",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with related authors/tags also returns primary_author/primary_tag",
+      "fullTitle": "api/endpoints/content/posts browse posts with related authors/tags also returns primary_author/primary_tag",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with unsupported \"page\" filter returns a request validation error",
+      "fullTitle": "api/endpoints/content/posts browse posts with unsupported \"page\" filter returns a request validation error",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with published and draft status, should not return drafts",
+      "fullTitle": "api/endpoints/content/posts browse posts with published and draft status, should not return drafts",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with slug filter, should order in slug order",
+      "fullTitle": "api/endpoints/content/posts browse posts with slug filter, should order in slug order",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with slug filter should order taking order parameter into account",
+      "fullTitle": "api/endpoints/content/posts browse posts with slug filter should order taking order parameter into account",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure origin header on redirect is not getting lost",
+      "fullTitle": "api/endpoints/content/posts ensure origin header on redirect is not getting lost",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't read page",
+      "fullTitle": "api/endpoints/content/posts can't read page",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can read post with fields",
+      "fullTitle": "api/endpoints/content/posts can read post with fields",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "public post fields are always visible",
+      "fullTitle": "api/endpoints/content/posts content gating public post fields are always visible",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot read members only post content",
+      "fullTitle": "api/endpoints/content/posts content gating cannot read members only post content",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot read paid only post content",
+      "fullTitle": "api/endpoints/content/posts content gating cannot read paid only post content",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot read members only post plaintext",
+      "fullTitle": "api/endpoints/content/posts content gating cannot read members only post plaintext",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can read \"free\" html and plaintext content of members post when using paywall card",
+      "fullTitle": "api/endpoints/content/posts content gating can read \"free\" html and plaintext content of members post when using paywall card",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot browse members only posts content",
+      "fullTitle": "api/endpoints/content/posts content gating cannot browse members only posts content",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can read tags with fields",
+      "fullTitle": "api/endpoints/content/tags Can read tags with fields",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can request all tags with count.posts field",
+      "fullTitle": "api/endpoints/content/tags Can request all tags with count.posts field",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Browse tags with slug filter, should order in slug order",
+      "fullTitle": "api/endpoints/content/tags Browse tags with slug filter, should order in slug order",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve post",
+      "duration": 81,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post not found",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases post not found",
+      "duration": 40,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve static page",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve static page",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve author",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve author",
+      "duration": 27,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve tag",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve tag",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve tag rss",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve tag rss",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve collection",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection: page 2",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve collection: page 2",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve theme asset",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve theme asset",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve amp",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases AMP enabled serve amp",
+      "duration": 157,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve amp",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases AMP disabled serve amp",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "url without slash",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: prettify url without slash",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirect /page/1/ to /",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: url redirects pagination redirect /page/1/ to /",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirect /feed/ to /rss/",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: url redirects rss redirect /feed/ to /rss/",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "blog is https, request is http",
+      "fullTitle": "Frontend behavior tests https site: http requests redirect to https protocol blog is https, request is http",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "blog is https, request is http, trailing slash exists already",
+      "fullTitle": "Frontend behavior tests https site: http requests redirect to https protocol blog is https, request is http, trailing slash exists already",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "blog is https, request is http",
+      "fullTitle": "Frontend behavior tests https site: http requests redirect to https assets blog is https, request is http",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "blog is https, request is http",
+      "fullTitle": "Frontend behavior tests https site: http requests redirect to https assets blog is https, request is http",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve static route",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve static route",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve rss",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve rss",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve post",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection: podcast with default template",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve collection: podcast with default template",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection: something with custom template",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve collection: something with custom template",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve route",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections no collections serve route",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections static permalink route serve post",
+      "duration": 42,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections static permalink route serve post",
+      "duration": 31,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve author",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections static permalink route serve author",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections static permalink route serve tag",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary author permalink serve post",
+      "duration": 46,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post without author",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary author permalink post without author",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "page",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary author permalink page",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary tag permalink serve post",
+      "duration": 43,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post without tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary tag permalink post without tag",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post without tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary tag permalink post without tag",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "page",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary tag permalink page",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /food/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve /food/",
+      "duration": 39,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve bacon tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve bacon tag",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /sport/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve /sport/",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve chorizo tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve chorizo tag",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve my-page",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve my-page",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates default template, no template serve collection",
+      "duration": 47,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve second collectiom",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates default template, no template serve second collectiom",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates two templates serve collection",
+      "duration": 46,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates home.hbs priority serve collection",
+      "duration": 45,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve second page collection: should use index.hbs",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates home.hbs priority serve second page collection: should use index.hbs",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 1",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 1",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 1: rss",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 1: rss",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 2",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 2",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 3",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 3",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 4",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 4",
+      "duration": 41,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 5",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 5",
+      "duration": 54,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 6",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 6",
+      "duration": 33,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve kitching-sink: redirect",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve kitching-sink: redirect",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve html-ipsum: redirect",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve html-ipsum: redirect",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve chorizo: no redirect",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve chorizo: no redirect",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve joe-bloggs",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve joe-bloggs",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /rss/",
+      "duration": 57,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /music/rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /music/rss/",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /cooking/rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /cooking/rss/",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /flat/rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /flat/rss/",
+      "duration": 36,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /podcast/rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /podcast/rss/",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /podcast/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /podcast/",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on configured url",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the front-end on configured url",
+      "duration": 49,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on localhost",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the front-end on localhost",
+      "duration": 32,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the admin",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the admin",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the admin on localhost",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the admin on localhost",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the api",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the api",
+      "duration": 52,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the api on localhost",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the api on localhost",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on configured url",
+      "fullTitle": "Integration - Web - vhosts separate admin host loads the front-end on configured url",
+      "duration": 35,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on localhost",
+      "fullTitle": "Integration - Web - vhosts separate admin host loads the front-end on localhost",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects /ghost/ on configured url",
+      "fullTitle": "Integration - Web - vhosts separate admin host redirects /ghost/ on configured url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "404s the api on configured url",
+      "fullTitle": "Integration - Web - vhosts separate admin host 404s the api on configured url",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "404s the api on localhost",
+      "fullTitle": "Integration - Web - vhosts separate admin host 404s the api on localhost",
+      "duration": 26,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the admin on configured admin url",
+      "fullTitle": "Integration - Web - vhosts separate admin host loads the admin on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the api on configured admin url",
+      "fullTitle": "Integration - Web - vhosts separate admin host loads the api on configured admin url",
+      "duration": 50,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects to the correct protocol on configured admin url",
+      "fullTitle": "Integration - Web - vhosts separate admin host redirects to the correct protocol on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "404s the front-end on configured admin url",
+      "fullTitle": "Integration - Web - vhosts separate admin host 404s the front-end on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not redirect /ghost/ on configured url",
+      "fullTitle": "Integration - Web - vhosts separate admin host w/ admin redirects disabled does not redirect /ghost/ on configured url",
+      "duration": 38,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on configured url (http)",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol loads the front-end on configured url (http)",
+      "duration": 49,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "404s the front-end on configured url (https)",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol 404s the front-end on configured url (https)",
+      "duration": 34,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on localhost",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol loads the front-end on localhost",
+      "duration": 34,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects /ghost/ on configured url",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects /ghost/ on configured url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects /ghost/ on localhost",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects /ghost/ on localhost",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects api to correct protocol on configured admin url",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects api to correct protocol on configured admin url",
+      "duration": 51,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the admin on configured admin url",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol loads the admin on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects the admin on localhost",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects the admin on localhost",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the api on configured admin url",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol loads the api on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects the api on localhost",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects the api on localhost",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "timezone changes from London to Los Angeles",
+      "fullTitle": "Models: listeners on timezone changed db has scheduled posts timezone changes from London to Los Angeles",
+      "duration": 534,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "timezone changes from Baghdad to UTC",
+      "fullTitle": "Models: listeners on timezone changed db has scheduled posts timezone changes from Baghdad to UTC",
+      "duration": 539,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "timezone changes from Amsterdam to Seoul",
+      "fullTitle": "Models: listeners on timezone changed db has scheduled posts timezone changes from Amsterdam to Seoul",
+      "duration": 536,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "no scheduled posts",
+      "fullTitle": "Models: listeners on timezone changed db has no scheduled posts no scheduled posts",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "nothing to delete",
+      "fullTitle": "Models: listeners on notifications changed nothing to delete",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "expect deletion",
+      "fullTitle": "Models: listeners on notifications changed expect deletion",
+      "duration": 104,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "formats values correctly on update",
+      "fullTitle": "Models: Base plugins: Overrides formatOnWrite formats values correctly on update",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "formats values correctly on insert",
+      "fullTitle": "Models: Base plugins: Overrides formatOnWrite formats values correctly on insert",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "is not called unnecessarily",
+      "fullTitle": "Models: Base plugins: Overrides formatOnWrite is not called unnecessarily",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Is correctly mapped to the stripe subscriptions",
+      "fullTitle": "MemberStripeCustomer Model subscriptions Is correctly mapped to the stripe subscriptions",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Is correctly mapped to the member",
+      "fullTitle": "MemberStripeCustomer Model member Is correctly mapped to the member",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cascades to members_stripe_customers_subscriptions",
+      "fullTitle": "MemberStripeCustomer Model destroy Cascades to members_stripe_customers_subscriptions",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "It is correctly mapped to all a members subscriptions, regardless of customer",
+      "fullTitle": "Member Model stripeSubscriptions It is correctly mapped to all a members subscriptions, regardless of customer",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Is correctly mapped to the stripe customers",
+      "fullTitle": "Member Model stripeCustomers Is correctly mapped to the stripe customers",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cascades to members_labels, members_stripe_customers & members_stripe_customers_subscriptions",
+      "fullTitle": "Member Model destroy Cascades to members_labels, members_stripe_customers & members_stripe_customers_subscriptions",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can use search query",
+      "fullTitle": "Member Model findAll can use search query",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Products can be added to members by the product array",
+      "fullTitle": "Member Model products Products can be added to members by the product array",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on products",
+      "fullTitle": "Member Model Filtering on products Should allow filtering on products",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on name",
+      "fullTitle": "Member Model Filtering Should allow filtering on name",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on email",
+      "fullTitle": "Member Model Filtering Should allow filtering on email",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on subscriptions",
+      "fullTitle": "Member Model Filtering Should allow filtering on subscriptions",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on offers redeemed",
+      "fullTitle": "Member Model Filtering Should allow filtering on offers redeemed",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can findPage, with various options",
+      "fullTitle": "Post Model Single author posts fetchOne/fetchAll/fetchPage findPage with more posts/tags can findPage, with various options",
+      "duration": 88,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can findPage for tag, with various options",
+      "fullTitle": "Post Model Single author posts fetchOne/fetchAll/fetchPage findPage with more posts/tags can findPage for tag, with various options",
+      "duration": 34,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[failure] multiple edits in one transaction",
+      "fullTitle": "Post Model Single author posts edit [failure] multiple edits in one transaction",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "multiple edits in one transaction",
+      "fullTitle": "Post Model Single author posts edit multiple edits in one transaction",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can change title",
+      "fullTitle": "Post Model Single author posts edit can change title",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[failure] custom excerpt soft limit reached",
+      "fullTitle": "Post Model Single author posts edit [failure] custom excerpt soft limit reached",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can publish draft post",
+      "fullTitle": "Post Model Single author posts edit can publish draft post",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can unpublish published post",
+      "fullTitle": "Post Model Single author posts edit can unpublish published post",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "draft -> scheduled without published_at update",
+      "fullTitle": "Post Model Single author posts edit draft -> scheduled without published_at update",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "draft -> scheduled: expect update of published_at",
+      "fullTitle": "Post Model Single author posts edit draft -> scheduled: expect update of published_at",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "scheduled -> draft: expect unschedule",
+      "fullTitle": "Post Model Single author posts edit scheduled -> draft: expect unschedule",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "scheduled -> scheduled with updated published_at",
+      "fullTitle": "Post Model Single author posts edit scheduled -> scheduled with updated published_at",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "scheduled -> scheduled with unchanged published_at",
+      "fullTitle": "Post Model Single author posts edit scheduled -> scheduled with unchanged published_at",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "scheduled -> scheduled with unchanged published_at (within the 2 minutes window)",
+      "fullTitle": "Post Model Single author posts edit scheduled -> scheduled with unchanged published_at (within the 2 minutes window)",
+      "duration": 3014,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published -> scheduled and expect update of published_at",
+      "fullTitle": "Post Model Single author posts edit published -> scheduled and expect update of published_at",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can convert draft post to page and back",
+      "fullTitle": "Post Model Single author posts edit can convert draft post to page and back",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can convert draft to schedule AND post to page and back",
+      "fullTitle": "Post Model Single author posts edit can convert draft to schedule AND post to page and back",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can convert published post to page and back",
+      "fullTitle": "Post Model Single author posts edit can convert published post to page and back",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can change type and status at the same time",
+      "fullTitle": "Post Model Single author posts edit can change type and status at the same time",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot override the published_by setting",
+      "fullTitle": "Post Model Single author posts edit cannot override the published_by setting",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add, defaults are all correct",
+      "fullTitle": "Post Model Single author posts add can add, defaults are all correct",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add, default visibility is taken from settings cache",
+      "fullTitle": "Post Model Single author posts add can add, default visibility is taken from settings cache",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add, with previous published_at date",
+      "fullTitle": "Post Model Single author posts add can add, with previous published_at date",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add draft post without published_at -> we expect no auto insert of published_at",
+      "fullTitle": "Post Model Single author posts add add draft post without published_at -> we expect no auto insert of published_at",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add multiple authors",
+      "fullTitle": "Post Model Single author posts add add multiple authors",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add draft post with published_at -> we expect published_at to exist",
+      "fullTitle": "Post Model Single author posts add add draft post with published_at -> we expect published_at to exist",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add scheduled post without published_at -> we expect an error",
+      "fullTitle": "Post Model Single author posts add add scheduled post without published_at -> we expect an error",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add scheduled post with published_at more than 2 minutes in the past -> we expect an error",
+      "fullTitle": "Post Model Single author posts add add scheduled post with published_at more than 2 minutes in the past -> we expect an error",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add scheduled post with published_at 1 minutes in past -> we expect success",
+      "fullTitle": "Post Model Single author posts add add scheduled post with published_at 1 minutes in past -> we expect success",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add scheduled post with published_at 10 minutes in future -> we expect success",
+      "fullTitle": "Post Model Single author posts add add scheduled post with published_at 10 minutes in future -> we expect success",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can generate a non conflicting slug",
+      "fullTitle": "Post Model Single author posts add can generate a non conflicting slug",
+      "duration": 101,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can generate slugs without duplicate hyphens",
+      "fullTitle": "Post Model Single author posts add can generate slugs without duplicate hyphens",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can generate a safe slug when a protected keyword is used",
+      "fullTitle": "Post Model Single author posts add can generate a safe slug when a protected keyword is used",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can generate slugs without non-ascii characters",
+      "fullTitle": "Post Model Single author posts add can generate slugs without non-ascii characters",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "detects duplicate slugs before saving",
+      "fullTitle": "Post Model Single author posts add detects duplicate slugs before saving",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "it stores urls as transform-ready and reads as absolute",
+      "fullTitle": "Post Model Single author posts add it stores urls as transform-ready and reads as absolute",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "stores lexical as transform-ready and reads as absolute",
+      "fullTitle": "Post Model Single author posts add stores lexical as transform-ready and reads as absolute",
+      "duration": 41,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published post",
+      "fullTitle": "Post Model Single author posts destroy published post",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "draft post",
+      "fullTitle": "Post Model Single author posts destroy draft post",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published page",
+      "fullTitle": "Post Model Single author posts destroy published page",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "draft page",
+      "fullTitle": "Post Model Single author posts destroy draft page",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post title, but updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post title, but updated_at is out of sync",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post tags and updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post tags and updated_at is out of sync",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post authors and updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post authors and updated_at is out of sync",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post tags and updated_at is NOT out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post tags and updated_at is NOT out of sync",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post with no changes, but updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post with no changes, but updated_at is out of sync",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post with old post title, but updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post with old post title, but updated_at is out of sync",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can create revisions",
+      "fullTitle": "Post Model mobiledoc versioning can create revisions",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "keeps only 10 last revisions in FIFO style",
+      "fullTitle": "Post Model mobiledoc versioning keeps only 10 last revisions in FIFO style",
+      "duration": 90,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "creates 2 revisions after first edit for previously unversioned post",
+      "fullTitle": "Post Model mobiledoc versioning creates 2 revisions after first edit for previously unversioned post",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can reassign multiple posts by author",
+      "fullTitle": "Post Model Multiauthor Posts can reassign multiple posts by author",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can reassign posts with mixed primary and secondary authors",
+      "fullTitle": "Post Model Multiauthor Posts can reassign posts with mixed primary and secondary authors",
+      "duration": 33,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should create the test data correctly",
+      "fullTitle": "Post Model Post tag handling edge cases should create the test data correctly",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit slug of existing tag",
+      "fullTitle": "Post Model Post tag handling edge cases can edit slug of existing tag",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't edit dates and authors of existing tag",
+      "fullTitle": "Post Model Post tag handling edge cases can't edit dates and authors of existing tag",
+      "duration": 1025,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can reorder existing, added and deleted tags",
+      "fullTitle": "Post Model Post tag handling edge cases can reorder existing, added and deleted tags",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add multiple tags with conflicting slugs",
+      "fullTitle": "Post Model Post tag handling edge cases can add multiple tags with conflicting slugs",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle lowercase/uppercase tags",
+      "fullTitle": "Post Model Post tag handling edge cases can handle lowercase/uppercase tags",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "populates all defaults",
+      "fullTitle": "Settings Model defaults populates all defaults",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "doesn't overwrite any existing settings",
+      "fullTitle": "Settings Model defaults doesn't overwrite any existing settings",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Is correctly mapped to the stripe customer",
+      "fullTitle": "StripeCustomerSubscription Model customer Is correctly mapped to the stripe customer",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add first",
+      "fullTitle": "User Model Registration can add first",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "shortens slug if possible",
+      "fullTitle": "User Model Registration shortens slug if possible",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not short slug if not possible",
+      "fullTitle": "User Model Registration does not short slug if not possible",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does NOT lowercase email",
+      "fullTitle": "User Model Registration does NOT lowercase email",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can find gravatar",
+      "fullTitle": "User Model Registration can find gravatar",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle no gravatar",
+      "fullTitle": "User Model Registration can handle no gravatar",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can find by email and is case insensitive",
+      "fullTitle": "User Model Registration can find by email and is case insensitive",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "sets last login time on successful login",
+      "fullTitle": "User Model Basic Operations sets last login time on successful login",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "converts fetched dateTime fields to Date objects",
+      "fullTitle": "User Model Basic Operations converts fetched dateTime fields to Date objects",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can findPage with limit all",
+      "fullTitle": "User Model Basic Operations can findPage with limit all",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can findOne by role name",
+      "fullTitle": "User Model Basic Operations can findOne by role name",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add active user",
+      "fullTitle": "User Model Basic Operations can add active user",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can NOT add active user with invalid email address",
+      "fullTitle": "User Model Basic Operations can NOT add active user with invalid email address",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit active user",
+      "fullTitle": "User Model Basic Operations can edit active user",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can NOT set an invalid email address",
+      "fullTitle": "User Model Basic Operations can NOT set an invalid email address",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can NOT set an already existing email address",
+      "fullTitle": "User Model Basic Operations can NOT set an already existing email address",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "wrong old password",
+      "fullTitle": "User Model Password change error wrong old password",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "too short password",
+      "fullTitle": "User Model Password change error too short password",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "very bad password",
+      "fullTitle": "User Model Password change error very bad password",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password matches users email adress",
+      "fullTitle": "User Model Password change error password matches users email adress",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password contains words \"ghost\" or \"password\"",
+      "fullTitle": "User Model Password change error password contains words \"ghost\" or \"password\"",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password matches blog URL",
+      "fullTitle": "User Model Password change error password matches blog URL",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password contains repeating chars",
+      "fullTitle": "User Model Password change error password contains repeating chars",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password contains repeating numbers",
+      "fullTitle": "User Model Password change error password contains repeating numbers",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "setup user",
+      "fullTitle": "User Model User setup setup user",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with html",
+      "fullTitle": "Dynamic Routing Collection Index should respond with html",
+      "duration": 57,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not have a third page",
+      "fullTitle": "Dynamic Routing Collection Index should not have a third page",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should render page with slug permalink",
+      "fullTitle": "Dynamic Routing Collection Entry should render page with slug permalink",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not render page with dated permalink",
+      "fullTitle": "Dynamic Routing Collection Entry should not render page with dated permalink",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should return HTML for valid route",
+      "fullTitle": "Dynamic Routing Tag should return HTML for valid route",
+      "duration": 39,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for /tag/ route",
+      "fullTitle": "Dynamic Routing Tag should 404 for /tag/ route",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown tag",
+      "fullTitle": "Dynamic Routing Tag should 404 for unknown tag",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown tag with invalid characters",
+      "fullTitle": "Dynamic Routing Tag should 404 for unknown tag with invalid characters",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Tag RSS should redirect without slash",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with xml",
+      "fullTitle": "Dynamic Routing Tag RSS should respond with xml",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Tag Edit should redirect without slash",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect to tag settings",
+      "fullTitle": "Dynamic Routing Tag Edit should redirect to tag settings",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for non-edit parameter",
+      "fullTitle": "Dynamic Routing Tag Edit should 404 for non-edit parameter",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Tag Edit with admin redirects disabled should redirect without slash",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not redirect to admin",
+      "fullTitle": "Dynamic Routing Tag Edit with admin redirects disabled should not redirect to admin",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for /author/ route",
+      "fullTitle": "Dynamic Routing Author should 404 for /author/ route",
+      "duration": 27,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown author",
+      "fullTitle": "Dynamic Routing Author should 404 for unknown author",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown author with invalid characters",
+      "fullTitle": "Dynamic Routing Author should 404 for unknown author with invalid characters",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[success] author is locked",
+      "fullTitle": "Dynamic Routing Author [success] author is locked",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[success] author is suspended",
+      "fullTitle": "Dynamic Routing Author [success] author is suspended",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[failure] ghost owner before blog setup",
+      "fullTitle": "Dynamic Routing Author [failure] ghost owner before blog setup",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[success] ghost owner after blog setup",
+      "fullTitle": "Dynamic Routing Author [success] ghost owner after blog setup",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Author RSS should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with xml",
+      "fullTitle": "Dynamic Routing Author RSS should respond with xml",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Author Edit should redirect without slash",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect to editor",
+      "fullTitle": "Dynamic Routing Author Edit should redirect to editor",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for something that isn't edit",
+      "fullTitle": "Dynamic Routing Author Edit should 404 for something that isn't edit",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Author Edit with admin redirects disabled should redirect without slash",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not redirect to admin",
+      "fullTitle": "Dynamic Routing Author Edit with admin redirects disabled should not redirect to admin",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Author Paged should redirect without slash",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with html",
+      "fullTitle": "Dynamic Routing Author Paged should respond with html",
+      "duration": 38,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect page 1",
+      "fullTitle": "Dynamic Routing Author Paged should redirect page 1",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 if page too high",
+      "fullTitle": "Dynamic Routing Author Paged should 404 if page too high",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 if page too low",
+      "fullTitle": "Dynamic Routing Author Paged should 404 if page too low",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 if index attempted with 0",
+      "fullTitle": "Dynamic Routing Author Paged RSS should 404 if index attempted with 0",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 if index attempted with 1",
+      "fullTitle": "Dynamic Routing Author Paged RSS should 404 if index attempted with 1",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for other pages",
+      "fullTitle": "Dynamic Routing Author Paged RSS should 404 for other pages",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown post with invalid characters",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Error should 404 for unknown post with invalid characters",
+      "duration": 32,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown frontend route",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Error should 404 for unknown frontend route",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for encoded char not 301 from uncapitalise",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Error should 404 for encoded char not 301 from uncapitalise",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Single post should redirect without slash",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) Single post should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Single post should redirect uppercase",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) Single post should redirect uppercase",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Single post should sanitize double slashes when redirecting uppercase",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) Single post should sanitize double slashes when redirecting uppercase",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "AMP post should redirect without slash",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) AMP post should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "AMP post should redirect uppercase",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) AMP post should redirect uppercase",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with html",
+      "fullTitle": "Frontend Routing Test with added posts Static page should respond with html",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Frontend Routing Test with added posts Static page should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect to editor for post resource",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit should redirect to editor for post resource",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect to editor for page resource",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit should redirect to editor for page resource",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for non-edit parameter",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit should 404 for non-edit parameter",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit with admin redirects disabled should redirect without slash",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not redirect to editor",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit with admin redirects disabled should not redirect to editor",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for amp parameter",
+      "fullTitle": "Frontend Routing Test with added posts Static page amp amp enabled should 404 for amp parameter",
+      "duration": 29,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 301 for amp parameter",
+      "fullTitle": "Frontend Routing Test with added posts Static page amp amp disabled should 301 for amp parameter",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should retrieve a blog post with ghost at the start of the url",
+      "fullTitle": "Frontend Routing Test with added posts Post with Ghost in the url should retrieve a blog post with ghost at the start of the url",
+      "duration": 38,
+      "currentRetry": 0,
+      "err": {}
+    }
+  ],
+  "pending": [],
+  "failures": [],
+  "passes": [
+    {
+      "title": "is setup? no",
+      "fullTitle": "Authentication API Blog setup is setup? no",
+      "duration": 190,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "complete setup",
+      "fullTitle": "Authentication API Blog setup complete setup",
+      "duration": 383,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "is setup? yes",
+      "fullTitle": "Authentication API Blog setup is setup? yes",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "complete setup again",
+      "fullTitle": "Authentication API Blog setup complete setup again",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update setup",
+      "fullTitle": "Authentication API Blog setup update setup",
+      "duration": 47,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "complete setup with default theme",
+      "fullTitle": "Authentication API Blog setup complete setup with default theme",
+      "duration": 322,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "check invite with invalid email",
+      "fullTitle": "Authentication API Invitation check invite with invalid email",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "check valid invite",
+      "fullTitle": "Authentication API Invitation check valid invite",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "check invalid invite",
+      "fullTitle": "Authentication API Invitation check invalid invite",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "try to accept without invite",
+      "fullTitle": "Authentication API Invitation try to accept without invite",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "try to accept with invite and existing email address",
+      "fullTitle": "Authentication API Invitation try to accept with invite and existing email address",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "try to accept with invite",
+      "fullTitle": "Authentication API Invitation try to accept with invite",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password",
+      "fullTitle": "Authentication API Password reset reset password",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password: invalid token",
+      "fullTitle": "Authentication API Password reset reset password: invalid token",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password: expired token",
+      "fullTitle": "Authentication API Password reset reset password: expired token",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password: unmatched token",
+      "fullTitle": "Authentication API Password reset reset password: unmatched token",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset password: generate reset token",
+      "fullTitle": "Authentication API Password reset reset password: generate reset token",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "reset all passwords returns 204",
+      "fullTitle": "Authentication API Reset all passwords reset all passwords returns 204",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can export the database with more tables",
+      "fullTitle": "DB API can export the database with more tables",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can export & import",
+      "fullTitle": "DB API can export & import",
+      "duration": 230,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "fails when triggering an export from unknown filename ",
+      "fullTitle": "DB API fails when triggering an export from unknown filename ",
+      "duration": 35,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import should fail without file",
+      "fullTitle": "DB API import should fail without file",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "import should fail with unsupported file",
+      "fullTitle": "DB API import should fail with unsupported file",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "export can be triggered by backup integration",
+      "fullTitle": "DB API export can be triggered by backup integration",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "export can not be triggered by integration other than backup",
+      "fullTitle": "DB API export can not be triggered by integration other than backup",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "export can be triggered by Admin authentication",
+      "fullTitle": "DB API export can be triggered by Admin authentication",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database exported from Ghost 2.x",
+      "fullTitle": "DB API Can import a JSON database exported from Ghost 2.x",
+      "duration": 249,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database exported from Ghost 3.x",
+      "fullTitle": "DB API Can import a JSON database exported from Ghost 3.x",
+      "duration": 213,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database exported from Ghost 4.x",
+      "fullTitle": "DB API Can import a JSON database exported from Ghost 4.x",
+      "duration": 242,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database with products",
+      "fullTitle": "DB API Can import a JSON database with products",
+      "duration": 87,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import a JSON database with products for an existing product",
+      "fullTitle": "DB API (cleaned) Can import a JSON database with products for an existing product",
+      "duration": 44,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can create JWT token and verify it afterwards with public jwks",
+      "fullTitle": "Identities API As Owner Can create JWT token and verify it afterwards with public jwks",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot read",
+      "fullTitle": "Identities API As non-Owner Cannot read",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't import fail without file",
+      "fullTitle": "Images API Can't import fail without file",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't import with unsupported file",
+      "fullTitle": "Images API Can't import with unsupported file",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't upload incorrect extension",
+      "fullTitle": "Images API Can't upload incorrect extension",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't import if profile image is not square",
+      "fullTitle": "Images API Can't import if profile image is not square",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import CSV with minimum one field and labels",
+      "fullTitle": "Members Importer API Can import CSV with minimum one field and labels",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import CSV with mapped fields",
+      "fullTitle": "Members Importer API Can import CSV with mapped fields",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import CSV with labels and provide additional labels",
+      "fullTitle": "Members Importer API Can import CSV with labels and provide additional labels",
+      "duration": 43,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Runs imports with stripe_customer_id as background job",
+      "fullTitle": "Members Importer API Runs imports with stripe_customer_id as background job",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Fails to import member with invalid values",
+      "fullTitle": "Members Importer API Fails to import member with invalid values",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import members with host emailVerification limits",
+      "fullTitle": "Members Importer API Can import members with host emailVerification limits",
+      "duration": 76,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can still import members once email verification is required but does not send email",
+      "fullTitle": "Members Importer API Can still import members once email verification is required but does not send email",
+      "duration": 64,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can import members with host emailVerification limits for large imports",
+      "fullTitle": "Members Importer API Can import members with host emailVerification limits for large imports",
+      "duration": 2262,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can read",
+      "fullTitle": "Members Sigin URL API As Owner Can read",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can read",
+      "fullTitle": "Members Sigin URL API As Admin Can read",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot read",
+      "fullTitle": "Members Sigin URL API As non-Owner and non-Admin Cannot read",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Add notification",
+      "fullTitle": "Notifications API As Editor Add notification",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Read notifications",
+      "fullTitle": "Notifications API As Editor Read notifications",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Add notification",
+      "fullTitle": "Notifications API As Author Add notification",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Read notifications",
+      "fullTitle": "Notifications API As Author Read notifications",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "notification is visible and dismissible by other user",
+      "fullTitle": "Notifications API Can view by multiple users notification is visible and dismissible by other user",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "accepts html source",
+      "fullTitle": "Pages API Edit accepts html source",
+      "duration": 299,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "fields & formats combined",
+      "fullTitle": "Posts API Browse fields & formats combined",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "combined fields, formats, include and non existing",
+      "fullTitle": "Posts API Browse combined fields, formats, include and non existing",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can filter by fields coming from posts_meta table non null meta_description",
+      "fullTitle": "Posts API Browse can filter by fields coming from posts_meta table non null meta_description",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can filter by fields coming from posts_meta table by value",
+      "fullTitle": "Posts API Browse can filter by fields coming from posts_meta table by value",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can order by fields coming from posts_meta table",
+      "fullTitle": "Posts API Browse can order by fields coming from posts_meta table",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can order by email open rate",
+      "fullTitle": "Posts API Browse can order by email open rate",
+      "duration": 84,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't retrieve non existent post",
+      "fullTitle": "Posts API Read can't retrieve non existent post",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "throws a 400 when a non-existing field is requested",
+      "fullTitle": "Posts API Read throws a 400 when a non-existing field is requested",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "adds default title when it is missing",
+      "fullTitle": "Posts API Add adds default title when it is missing",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - array of strings with new names",
+      "fullTitle": "Posts API Add can add with tags - array of strings with new names",
+      "duration": 42,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - array of strings with existing names",
+      "fullTitle": "Posts API Add can add with tags - array of strings with existing names",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - array of objects with existing slugs",
+      "fullTitle": "Posts API Add can add with tags - array of objects with existing slugs",
+      "duration": 29,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - array of objects with new slugs",
+      "fullTitle": "Posts API Add can add with tags - array of objects with new slugs",
+      "duration": 40,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - slug with spaces",
+      "fullTitle": "Posts API Add can add with tags - slug with spaces",
+      "duration": 54,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - slug with spaces not automated",
+      "fullTitle": "Posts API Add can add with tags - slug with spaces not automated",
+      "duration": 56,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add with tags - too long slug",
+      "fullTitle": "Posts API Add can add with tags - too long slug",
+      "duration": 53,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published_at = null",
+      "fullTitle": "Posts API Edit published_at = null",
+      "duration": 38,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "publishes a post with email_only and sends email to all",
+      "fullTitle": "Posts API Edit publishes a post with email_only and sends email to all",
+      "duration": 45,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "publishes a post while setting email_only flag sends an email to paid",
+      "fullTitle": "Posts API Edit publishes a post while setting email_only flag sends an email to paid",
+      "duration": 44,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "only send an email to paid subscribed members of the selected newsletter",
+      "fullTitle": "Posts API Edit only send an email to paid subscribed members of the selected newsletter",
+      "duration": 47,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "read-only value do not cause errors when edited",
+      "fullTitle": "Posts API Edit read-only value do not cause errors when edited",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "html to plaintext",
+      "fullTitle": "Posts API Edit html to plaintext",
+      "duration": 39,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "canonical_url",
+      "fullTitle": "Posts API Edit canonical_url",
+      "duration": 31,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update dates & x_by",
+      "fullTitle": "Posts API Edit update dates & x_by",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can change scheduled post",
+      "fullTitle": "Posts API Edit Can change scheduled post",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "trims title",
+      "fullTitle": "Posts API Edit trims title",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "strips invisible unicode from slug",
+      "fullTitle": "Posts API Edit strips invisible unicode from slug",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "accepts visibility parameter",
+      "fullTitle": "Posts API Edit accepts visibility parameter",
+      "duration": 29,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "changes to post_meta fields triggers a cache invalidation",
+      "fullTitle": "Posts API Edit changes to post_meta fields triggers a cache invalidation",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit post_meta field that has default value and no previously created posts_meta relation",
+      "fullTitle": "Posts API Edit can edit post_meta field that has default value and no previously created posts_meta relation",
+      "duration": 54,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "saving post with no modbiledoc content doesn\t trigger cache invalidation",
+      "fullTitle": "Posts API Edit saving post with no modbiledoc content doesn\t trigger cache invalidation",
+      "duration": 44,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "errors with invalid email segment",
+      "fullTitle": "Posts API Edit errors with invalid email segment",
+      "duration": 31,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "non existent post",
+      "fullTitle": "Posts API Destroy non existent post",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "no redirects file exists",
+      "fullTitle": "Redirects API Upload Ensure re-registering redirects works no redirects file exists",
+      "duration": 956,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "publishes posts",
+      "fullTitle": "Schedules API publish publishes posts",
+      "duration": 49,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "publishes page",
+      "fullTitle": "Schedules API publish publishes page",
+      "duration": 53,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "no access",
+      "fullTitle": "Schedules API publish no access",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should fail with invalid resource type",
+      "fullTitle": "Schedules API publish should fail with invalid resource type",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published_at is x seconds in past, but still in tolerance",
+      "fullTitle": "Schedules API publish published_at is x seconds in past, but still in tolerance",
+      "duration": 48,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "not found",
+      "fullTitle": "Schedules API publish not found",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "force publish",
+      "fullTitle": "Schedules API publish force publish",
+      "duration": 42,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit newly introduced locale setting",
+      "fullTitle": "Settings API As Owner Can edit newly introduced locale setting",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't edit permalinks",
+      "fullTitle": "Settings API As Owner Can't edit permalinks",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit only allowed labs keys",
+      "fullTitle": "Settings API As Owner Can edit only allowed labs keys",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can't edit non existent setting",
+      "fullTitle": "Settings API As Owner Can't edit non existent setting",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Will transform \"1\"",
+      "fullTitle": "Settings API As Owner Will transform \"1\"",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit multiple setting along with a deprecated one from v4",
+      "fullTitle": "Settings API As Owner Can edit multiple setting along with a deprecated one from v4",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit a setting introduced in v4",
+      "fullTitle": "Settings API As Owner Can edit a setting introduced in v4",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can edit URLs without internal storage format leaking",
+      "fullTitle": "Settings API As Owner Can edit URLs without internal storage format leaking",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can only send array values for keys defined with array type",
+      "fullTitle": "Settings API As Owner Can only send array values for keys defined with array type",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot send an empty array",
+      "fullTitle": "Settings API As Owner Cannot send an empty array",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot edit notifications key through API",
+      "fullTitle": "Settings API As Owner Cannot edit notifications key through API",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not be able to edit settings",
+      "fullTitle": "Settings API As Editor should not be able to edit settings",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not be able to edit settings",
+      "fullTitle": "Settings API As Author should not be able to edit settings",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "allows editing settings that cannot be edited via HTTP",
+      "fullTitle": "Settings API edit via context internal allows editing settings that cannot be edited via HTTP",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can post slack test",
+      "fullTitle": "Slack API Can post slack test",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should update last seen for active users",
+      "fullTitle": "Update User Last Seen Should update last seen for active users",
+      "duration": 34,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should only update last seen after 1 hour",
+      "fullTitle": "Update User Last Seen Should only update last seen after 1 hour",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should always update last seen after login",
+      "fullTitle": "Update User Last Seen Should always update last seen after login",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should not update last seen for suspended users",
+      "fullTitle": "Update User Last Seen Should not update last seen for suspended users",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't retrieve non existent user by id",
+      "fullTitle": "User API As Owner Read can't retrieve non existent user by id",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't retrieve non existent user by slug",
+      "fullTitle": "User API As Owner Read can't retrieve non existent user by slug",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can change the other users password",
+      "fullTitle": "User API As Owner Edit can change the other users password",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[failure] Destroy unknown user id",
+      "fullTitle": "User API As Owner Destroy [failure] Destroy unknown user id",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Destroy known user and reassign post tags",
+      "fullTitle": "User API As Owner Destroy Destroy known user and reassign post tags",
+      "duration": 157,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit himself",
+      "fullTitle": "User API As Editor success cases can edit himself",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't edit the owner",
+      "fullTitle": "User API As Editor error cases can't edit the owner",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot transfer ownership to any other user",
+      "fullTitle": "User API As Editor error cases Cannot transfer ownership to any other user",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit himself",
+      "fullTitle": "User API As Author success cases can edit himself",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't edit the owner",
+      "fullTitle": "User API As Author error cases can't edit the owner",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can create a webhook using integration",
+      "fullTitle": "Webhooks API Can create a webhook using integration",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Fails validation for when integration_id is missing",
+      "fullTitle": "Webhooks API Fails validation for when integration_id is missing",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Fails validation for non-lowercase event name",
+      "fullTitle": "Webhooks API Fails validation for non-lowercase event name",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Fails validation when required fields are not present",
+      "fullTitle": "Webhooks API Fails validation when required fields are not present",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Integration cannot edit or delete other integration's webhook",
+      "fullTitle": "Webhooks API Integration cannot edit or delete other integration's webhook",
+      "duration": 39,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Integration editing non-existing webhook returns 404",
+      "fullTitle": "Webhooks API Integration editing non-existing webhook returns 404",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Integration deleting non-existing webhook returns 404",
+      "fullTitle": "Webhooks API Integration deleting non-existing webhook returns 404",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cannot edit webhooks using content api keys",
+      "fullTitle": "Webhooks API Cannot edit webhooks using content api keys",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can read authors with fields",
+      "fullTitle": "Authors Content API can read authors with fields",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse authors with slug filter, should order in slug order",
+      "fullTitle": "Authors Content API browse authors with slug filter, should order in slug order",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Returns a validation error when unsupported \"page\" filter is used",
+      "fullTitle": "api/endpoints/content/pages Returns a validation error when unsupported \"page\" filter is used",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse pages with slug filter, should order in slug order",
+      "fullTitle": "api/endpoints/content/pages browse pages with slug filter, should order in slug order",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't read post",
+      "fullTitle": "api/endpoints/content/pages can't read post",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts",
+      "fullTitle": "api/endpoints/content/posts browse posts",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with related authors/tags also returns primary_author/primary_tag",
+      "fullTitle": "api/endpoints/content/posts browse posts with related authors/tags also returns primary_author/primary_tag",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with unsupported \"page\" filter returns a request validation error",
+      "fullTitle": "api/endpoints/content/posts browse posts with unsupported \"page\" filter returns a request validation error",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with published and draft status, should not return drafts",
+      "fullTitle": "api/endpoints/content/posts browse posts with published and draft status, should not return drafts",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with slug filter, should order in slug order",
+      "fullTitle": "api/endpoints/content/posts browse posts with slug filter, should order in slug order",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "browse posts with slug filter should order taking order parameter into account",
+      "fullTitle": "api/endpoints/content/posts browse posts with slug filter should order taking order parameter into account",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "ensure origin header on redirect is not getting lost",
+      "fullTitle": "api/endpoints/content/posts ensure origin header on redirect is not getting lost",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't read page",
+      "fullTitle": "api/endpoints/content/posts can't read page",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can read post with fields",
+      "fullTitle": "api/endpoints/content/posts can read post with fields",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "public post fields are always visible",
+      "fullTitle": "api/endpoints/content/posts content gating public post fields are always visible",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot read members only post content",
+      "fullTitle": "api/endpoints/content/posts content gating cannot read members only post content",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot read paid only post content",
+      "fullTitle": "api/endpoints/content/posts content gating cannot read paid only post content",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot read members only post plaintext",
+      "fullTitle": "api/endpoints/content/posts content gating cannot read members only post plaintext",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can read \"free\" html and plaintext content of members post when using paywall card",
+      "fullTitle": "api/endpoints/content/posts content gating can read \"free\" html and plaintext content of members post when using paywall card",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot browse members only posts content",
+      "fullTitle": "api/endpoints/content/posts content gating cannot browse members only posts content",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can read tags with fields",
+      "fullTitle": "api/endpoints/content/tags Can read tags with fields",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Can request all tags with count.posts field",
+      "fullTitle": "api/endpoints/content/tags Can request all tags with count.posts field",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Browse tags with slug filter, should order in slug order",
+      "fullTitle": "api/endpoints/content/tags Browse tags with slug filter, should order in slug order",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve post",
+      "duration": 81,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post not found",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases post not found",
+      "duration": 40,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve static page",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve static page",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve author",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve author",
+      "duration": 27,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve tag",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve tag",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve tag rss",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve tag rss",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve collection",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection: page 2",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve collection: page 2",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve theme asset",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases serve theme asset",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve amp",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases AMP enabled serve amp",
+      "duration": 157,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve amp",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: default cases AMP disabled serve amp",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "url without slash",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: prettify url without slash",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirect /page/1/ to /",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: url redirects pagination redirect /page/1/ to /",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirect /feed/ to /rss/",
+      "fullTitle": "Frontend behavior tests default routes.yaml behavior: url redirects rss redirect /feed/ to /rss/",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "blog is https, request is http",
+      "fullTitle": "Frontend behavior tests https site: http requests redirect to https protocol blog is https, request is http",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "blog is https, request is http, trailing slash exists already",
+      "fullTitle": "Frontend behavior tests https site: http requests redirect to https protocol blog is https, request is http, trailing slash exists already",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "blog is https, request is http",
+      "fullTitle": "Frontend behavior tests https site: http requests redirect to https assets blog is https, request is http",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "blog is https, request is http",
+      "fullTitle": "Frontend behavior tests https site: http requests redirect to https assets blog is https, request is http",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve static route",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve static route",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve rss",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve rss",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve post",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection: podcast with default template",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve collection: podcast with default template",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection: something with custom template",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections 2 collections serve collection: something with custom template",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve route",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections no collections serve route",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections static permalink route serve post",
+      "duration": 42,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections static permalink route serve post",
+      "duration": 31,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve author",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections static permalink route serve author",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections static permalink route serve tag",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary author permalink serve post",
+      "duration": 46,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post without author",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary author permalink post without author",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "page",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary author permalink page",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve post",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary tag permalink serve post",
+      "duration": 43,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post without tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary tag permalink post without tag",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "post without tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary tag permalink post without tag",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "page",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections primary tag permalink page",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /food/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve /food/",
+      "duration": 39,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve bacon tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve bacon tag",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /sport/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve /sport/",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve chorizo tag",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve chorizo tag",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve my-page",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: collections collection/routes with data key serve my-page",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates default template, no template serve collection",
+      "duration": 47,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve second collectiom",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates default template, no template serve second collectiom",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates two templates serve collection",
+      "duration": 46,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve collection",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates home.hbs priority serve collection",
+      "duration": 45,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve second page collection: should use index.hbs",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: templates home.hbs priority serve second page collection: should use index.hbs",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 1",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 1",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 1: rss",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 1: rss",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 2",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 2",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 3",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 3",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 4",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 4",
+      "duration": 41,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 5",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 5",
+      "duration": 54,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve channel 6",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve channel 6",
+      "duration": 33,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve kitching-sink: redirect",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve kitching-sink: redirect",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve html-ipsum: redirect",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve html-ipsum: redirect",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve chorizo: no redirect",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve chorizo: no redirect",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve joe-bloggs",
+      "fullTitle": "Frontend behavior tests extended routes.yaml: routes channels serve joe-bloggs",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /rss/",
+      "duration": 57,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /music/rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /music/rss/",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /cooking/rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /cooking/rss/",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /flat/rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /flat/rss/",
+      "duration": 36,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /podcast/rss/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /podcast/rss/",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "serve /podcast/",
+      "fullTitle": "Frontend behavior tests extended routes.yaml (5): rss override serve /podcast/",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on configured url",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the front-end on configured url",
+      "duration": 49,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on localhost",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the front-end on localhost",
+      "duration": 32,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the admin",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the admin",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the admin on localhost",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the admin on localhost",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the api",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the api",
+      "duration": 52,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the api on localhost",
+      "fullTitle": "Integration - Web - vhosts no separate admin loads the api on localhost",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on configured url",
+      "fullTitle": "Integration - Web - vhosts separate admin host loads the front-end on configured url",
+      "duration": 35,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on localhost",
+      "fullTitle": "Integration - Web - vhosts separate admin host loads the front-end on localhost",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects /ghost/ on configured url",
+      "fullTitle": "Integration - Web - vhosts separate admin host redirects /ghost/ on configured url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "404s the api on configured url",
+      "fullTitle": "Integration - Web - vhosts separate admin host 404s the api on configured url",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "404s the api on localhost",
+      "fullTitle": "Integration - Web - vhosts separate admin host 404s the api on localhost",
+      "duration": 26,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the admin on configured admin url",
+      "fullTitle": "Integration - Web - vhosts separate admin host loads the admin on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the api on configured admin url",
+      "fullTitle": "Integration - Web - vhosts separate admin host loads the api on configured admin url",
+      "duration": 50,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects to the correct protocol on configured admin url",
+      "fullTitle": "Integration - Web - vhosts separate admin host redirects to the correct protocol on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "404s the front-end on configured admin url",
+      "fullTitle": "Integration - Web - vhosts separate admin host 404s the front-end on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not redirect /ghost/ on configured url",
+      "fullTitle": "Integration - Web - vhosts separate admin host w/ admin redirects disabled does not redirect /ghost/ on configured url",
+      "duration": 38,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on configured url (http)",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol loads the front-end on configured url (http)",
+      "duration": 49,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "404s the front-end on configured url (https)",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol 404s the front-end on configured url (https)",
+      "duration": 34,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the front-end on localhost",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol loads the front-end on localhost",
+      "duration": 34,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects /ghost/ on configured url",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects /ghost/ on configured url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects /ghost/ on localhost",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects /ghost/ on localhost",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects api to correct protocol on configured admin url",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects api to correct protocol on configured admin url",
+      "duration": 51,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the admin on configured admin url",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol loads the admin on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects the admin on localhost",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects the admin on localhost",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "loads the api on configured admin url",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol loads the api on configured admin url",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "redirects the api on localhost",
+      "fullTitle": "Integration - Web - vhosts same host separate protocol redirects the api on localhost",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "timezone changes from London to Los Angeles",
+      "fullTitle": "Models: listeners on timezone changed db has scheduled posts timezone changes from London to Los Angeles",
+      "duration": 534,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "timezone changes from Baghdad to UTC",
+      "fullTitle": "Models: listeners on timezone changed db has scheduled posts timezone changes from Baghdad to UTC",
+      "duration": 539,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "timezone changes from Amsterdam to Seoul",
+      "fullTitle": "Models: listeners on timezone changed db has scheduled posts timezone changes from Amsterdam to Seoul",
+      "duration": 536,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "no scheduled posts",
+      "fullTitle": "Models: listeners on timezone changed db has no scheduled posts no scheduled posts",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "nothing to delete",
+      "fullTitle": "Models: listeners on notifications changed nothing to delete",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "expect deletion",
+      "fullTitle": "Models: listeners on notifications changed expect deletion",
+      "duration": 104,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "formats values correctly on update",
+      "fullTitle": "Models: Base plugins: Overrides formatOnWrite formats values correctly on update",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "formats values correctly on insert",
+      "fullTitle": "Models: Base plugins: Overrides formatOnWrite formats values correctly on insert",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "is not called unnecessarily",
+      "fullTitle": "Models: Base plugins: Overrides formatOnWrite is not called unnecessarily",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Is correctly mapped to the stripe subscriptions",
+      "fullTitle": "MemberStripeCustomer Model subscriptions Is correctly mapped to the stripe subscriptions",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Is correctly mapped to the member",
+      "fullTitle": "MemberStripeCustomer Model member Is correctly mapped to the member",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cascades to members_stripe_customers_subscriptions",
+      "fullTitle": "MemberStripeCustomer Model destroy Cascades to members_stripe_customers_subscriptions",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "It is correctly mapped to all a members subscriptions, regardless of customer",
+      "fullTitle": "Member Model stripeSubscriptions It is correctly mapped to all a members subscriptions, regardless of customer",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Is correctly mapped to the stripe customers",
+      "fullTitle": "Member Model stripeCustomers Is correctly mapped to the stripe customers",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Cascades to members_labels, members_stripe_customers & members_stripe_customers_subscriptions",
+      "fullTitle": "Member Model destroy Cascades to members_labels, members_stripe_customers & members_stripe_customers_subscriptions",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can use search query",
+      "fullTitle": "Member Model findAll can use search query",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Products can be added to members by the product array",
+      "fullTitle": "Member Model products Products can be added to members by the product array",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on products",
+      "fullTitle": "Member Model Filtering on products Should allow filtering on products",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on name",
+      "fullTitle": "Member Model Filtering Should allow filtering on name",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on email",
+      "fullTitle": "Member Model Filtering Should allow filtering on email",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on subscriptions",
+      "fullTitle": "Member Model Filtering Should allow filtering on subscriptions",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Should allow filtering on offers redeemed",
+      "fullTitle": "Member Model Filtering Should allow filtering on offers redeemed",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can findPage, with various options",
+      "fullTitle": "Post Model Single author posts fetchOne/fetchAll/fetchPage findPage with more posts/tags can findPage, with various options",
+      "duration": 88,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can findPage for tag, with various options",
+      "fullTitle": "Post Model Single author posts fetchOne/fetchAll/fetchPage findPage with more posts/tags can findPage for tag, with various options",
+      "duration": 34,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[failure] multiple edits in one transaction",
+      "fullTitle": "Post Model Single author posts edit [failure] multiple edits in one transaction",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "multiple edits in one transaction",
+      "fullTitle": "Post Model Single author posts edit multiple edits in one transaction",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can change title",
+      "fullTitle": "Post Model Single author posts edit can change title",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[failure] custom excerpt soft limit reached",
+      "fullTitle": "Post Model Single author posts edit [failure] custom excerpt soft limit reached",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can publish draft post",
+      "fullTitle": "Post Model Single author posts edit can publish draft post",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can unpublish published post",
+      "fullTitle": "Post Model Single author posts edit can unpublish published post",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "draft -> scheduled without published_at update",
+      "fullTitle": "Post Model Single author posts edit draft -> scheduled without published_at update",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "draft -> scheduled: expect update of published_at",
+      "fullTitle": "Post Model Single author posts edit draft -> scheduled: expect update of published_at",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "scheduled -> draft: expect unschedule",
+      "fullTitle": "Post Model Single author posts edit scheduled -> draft: expect unschedule",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "scheduled -> scheduled with updated published_at",
+      "fullTitle": "Post Model Single author posts edit scheduled -> scheduled with updated published_at",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "scheduled -> scheduled with unchanged published_at",
+      "fullTitle": "Post Model Single author posts edit scheduled -> scheduled with unchanged published_at",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "scheduled -> scheduled with unchanged published_at (within the 2 minutes window)",
+      "fullTitle": "Post Model Single author posts edit scheduled -> scheduled with unchanged published_at (within the 2 minutes window)",
+      "duration": 3014,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published -> scheduled and expect update of published_at",
+      "fullTitle": "Post Model Single author posts edit published -> scheduled and expect update of published_at",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can convert draft post to page and back",
+      "fullTitle": "Post Model Single author posts edit can convert draft post to page and back",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can convert draft to schedule AND post to page and back",
+      "fullTitle": "Post Model Single author posts edit can convert draft to schedule AND post to page and back",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can convert published post to page and back",
+      "fullTitle": "Post Model Single author posts edit can convert published post to page and back",
+      "duration": 14,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can change type and status at the same time",
+      "fullTitle": "Post Model Single author posts edit can change type and status at the same time",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "cannot override the published_by setting",
+      "fullTitle": "Post Model Single author posts edit cannot override the published_by setting",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add, defaults are all correct",
+      "fullTitle": "Post Model Single author posts add can add, defaults are all correct",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add, default visibility is taken from settings cache",
+      "fullTitle": "Post Model Single author posts add can add, default visibility is taken from settings cache",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add, with previous published_at date",
+      "fullTitle": "Post Model Single author posts add can add, with previous published_at date",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add draft post without published_at -> we expect no auto insert of published_at",
+      "fullTitle": "Post Model Single author posts add add draft post without published_at -> we expect no auto insert of published_at",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add multiple authors",
+      "fullTitle": "Post Model Single author posts add add multiple authors",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add draft post with published_at -> we expect published_at to exist",
+      "fullTitle": "Post Model Single author posts add add draft post with published_at -> we expect published_at to exist",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add scheduled post without published_at -> we expect an error",
+      "fullTitle": "Post Model Single author posts add add scheduled post without published_at -> we expect an error",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add scheduled post with published_at more than 2 minutes in the past -> we expect an error",
+      "fullTitle": "Post Model Single author posts add add scheduled post with published_at more than 2 minutes in the past -> we expect an error",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add scheduled post with published_at 1 minutes in past -> we expect success",
+      "fullTitle": "Post Model Single author posts add add scheduled post with published_at 1 minutes in past -> we expect success",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "add scheduled post with published_at 10 minutes in future -> we expect success",
+      "fullTitle": "Post Model Single author posts add add scheduled post with published_at 10 minutes in future -> we expect success",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can generate a non conflicting slug",
+      "fullTitle": "Post Model Single author posts add can generate a non conflicting slug",
+      "duration": 101,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can generate slugs without duplicate hyphens",
+      "fullTitle": "Post Model Single author posts add can generate slugs without duplicate hyphens",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can generate a safe slug when a protected keyword is used",
+      "fullTitle": "Post Model Single author posts add can generate a safe slug when a protected keyword is used",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can generate slugs without non-ascii characters",
+      "fullTitle": "Post Model Single author posts add can generate slugs without non-ascii characters",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "detects duplicate slugs before saving",
+      "fullTitle": "Post Model Single author posts add detects duplicate slugs before saving",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "it stores urls as transform-ready and reads as absolute",
+      "fullTitle": "Post Model Single author posts add it stores urls as transform-ready and reads as absolute",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "stores lexical as transform-ready and reads as absolute",
+      "fullTitle": "Post Model Single author posts add stores lexical as transform-ready and reads as absolute",
+      "duration": 41,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published post",
+      "fullTitle": "Post Model Single author posts destroy published post",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "draft post",
+      "fullTitle": "Post Model Single author posts destroy draft post",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "published page",
+      "fullTitle": "Post Model Single author posts destroy published page",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "draft page",
+      "fullTitle": "Post Model Single author posts destroy draft page",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post title, but updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post title, but updated_at is out of sync",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post tags and updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post tags and updated_at is out of sync",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post authors and updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post authors and updated_at is out of sync",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post tags and updated_at is NOT out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post tags and updated_at is NOT out of sync",
+      "duration": 10,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post with no changes, but updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post with no changes, but updated_at is out of sync",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "update post with old post title, but updated_at is out of sync",
+      "fullTitle": "Post Model Single author posts Collision Protection update post with old post title, but updated_at is out of sync",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can create revisions",
+      "fullTitle": "Post Model mobiledoc versioning can create revisions",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "keeps only 10 last revisions in FIFO style",
+      "fullTitle": "Post Model mobiledoc versioning keeps only 10 last revisions in FIFO style",
+      "duration": 90,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "creates 2 revisions after first edit for previously unversioned post",
+      "fullTitle": "Post Model mobiledoc versioning creates 2 revisions after first edit for previously unversioned post",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can reassign multiple posts by author",
+      "fullTitle": "Post Model Multiauthor Posts can reassign multiple posts by author",
+      "duration": 13,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can reassign posts with mixed primary and secondary authors",
+      "fullTitle": "Post Model Multiauthor Posts can reassign posts with mixed primary and secondary authors",
+      "duration": 33,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should create the test data correctly",
+      "fullTitle": "Post Model Post tag handling edge cases should create the test data correctly",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit slug of existing tag",
+      "fullTitle": "Post Model Post tag handling edge cases can edit slug of existing tag",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can't edit dates and authors of existing tag",
+      "fullTitle": "Post Model Post tag handling edge cases can't edit dates and authors of existing tag",
+      "duration": 1025,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can reorder existing, added and deleted tags",
+      "fullTitle": "Post Model Post tag handling edge cases can reorder existing, added and deleted tags",
+      "duration": 12,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add multiple tags with conflicting slugs",
+      "fullTitle": "Post Model Post tag handling edge cases can add multiple tags with conflicting slugs",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle lowercase/uppercase tags",
+      "fullTitle": "Post Model Post tag handling edge cases can handle lowercase/uppercase tags",
+      "duration": 11,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "populates all defaults",
+      "fullTitle": "Settings Model defaults populates all defaults",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "doesn't overwrite any existing settings",
+      "fullTitle": "Settings Model defaults doesn't overwrite any existing settings",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Is correctly mapped to the stripe customer",
+      "fullTitle": "StripeCustomerSubscription Model customer Is correctly mapped to the stripe customer",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add first",
+      "fullTitle": "User Model Registration can add first",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "shortens slug if possible",
+      "fullTitle": "User Model Registration shortens slug if possible",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does not short slug if not possible",
+      "fullTitle": "User Model Registration does not short slug if not possible",
+      "duration": 15,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "does NOT lowercase email",
+      "fullTitle": "User Model Registration does NOT lowercase email",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can find gravatar",
+      "fullTitle": "User Model Registration can find gravatar",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can handle no gravatar",
+      "fullTitle": "User Model Registration can handle no gravatar",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can find by email and is case insensitive",
+      "fullTitle": "User Model Registration can find by email and is case insensitive",
+      "duration": 6,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "sets last login time on successful login",
+      "fullTitle": "User Model Basic Operations sets last login time on successful login",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "converts fetched dateTime fields to Date objects",
+      "fullTitle": "User Model Basic Operations converts fetched dateTime fields to Date objects",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can findPage with limit all",
+      "fullTitle": "User Model Basic Operations can findPage with limit all",
+      "duration": 17,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can findOne by role name",
+      "fullTitle": "User Model Basic Operations can findOne by role name",
+      "duration": 16,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can add active user",
+      "fullTitle": "User Model Basic Operations can add active user",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can NOT add active user with invalid email address",
+      "fullTitle": "User Model Basic Operations can NOT add active user with invalid email address",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can edit active user",
+      "fullTitle": "User Model Basic Operations can edit active user",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can NOT set an invalid email address",
+      "fullTitle": "User Model Basic Operations can NOT set an invalid email address",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "can NOT set an already existing email address",
+      "fullTitle": "User Model Basic Operations can NOT set an already existing email address",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "wrong old password",
+      "fullTitle": "User Model Password change error wrong old password",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "too short password",
+      "fullTitle": "User Model Password change error too short password",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "very bad password",
+      "fullTitle": "User Model Password change error very bad password",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password matches users email adress",
+      "fullTitle": "User Model Password change error password matches users email adress",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password contains words \"ghost\" or \"password\"",
+      "fullTitle": "User Model Password change error password contains words \"ghost\" or \"password\"",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password matches blog URL",
+      "fullTitle": "User Model Password change error password matches blog URL",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password contains repeating chars",
+      "fullTitle": "User Model Password change error password contains repeating chars",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "password contains repeating numbers",
+      "fullTitle": "User Model Password change error password contains repeating numbers",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "setup user",
+      "fullTitle": "User Model User setup setup user",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with html",
+      "fullTitle": "Dynamic Routing Collection Index should respond with html",
+      "duration": 57,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not have a third page",
+      "fullTitle": "Dynamic Routing Collection Index should not have a third page",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should render page with slug permalink",
+      "fullTitle": "Dynamic Routing Collection Entry should render page with slug permalink",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not render page with dated permalink",
+      "fullTitle": "Dynamic Routing Collection Entry should not render page with dated permalink",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should return HTML for valid route",
+      "fullTitle": "Dynamic Routing Tag should return HTML for valid route",
+      "duration": 39,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for /tag/ route",
+      "fullTitle": "Dynamic Routing Tag should 404 for /tag/ route",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown tag",
+      "fullTitle": "Dynamic Routing Tag should 404 for unknown tag",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown tag with invalid characters",
+      "fullTitle": "Dynamic Routing Tag should 404 for unknown tag with invalid characters",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Tag RSS should redirect without slash",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with xml",
+      "fullTitle": "Dynamic Routing Tag RSS should respond with xml",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Tag Edit should redirect without slash",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect to tag settings",
+      "fullTitle": "Dynamic Routing Tag Edit should redirect to tag settings",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for non-edit parameter",
+      "fullTitle": "Dynamic Routing Tag Edit should 404 for non-edit parameter",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Tag Edit with admin redirects disabled should redirect without slash",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not redirect to admin",
+      "fullTitle": "Dynamic Routing Tag Edit with admin redirects disabled should not redirect to admin",
+      "duration": 28,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for /author/ route",
+      "fullTitle": "Dynamic Routing Author should 404 for /author/ route",
+      "duration": 27,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown author",
+      "fullTitle": "Dynamic Routing Author should 404 for unknown author",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown author with invalid characters",
+      "fullTitle": "Dynamic Routing Author should 404 for unknown author with invalid characters",
+      "duration": 23,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[success] author is locked",
+      "fullTitle": "Dynamic Routing Author [success] author is locked",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[success] author is suspended",
+      "fullTitle": "Dynamic Routing Author [success] author is suspended",
+      "duration": 18,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[failure] ghost owner before blog setup",
+      "fullTitle": "Dynamic Routing Author [failure] ghost owner before blog setup",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "[success] ghost owner after blog setup",
+      "fullTitle": "Dynamic Routing Author [success] ghost owner after blog setup",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Author RSS should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with xml",
+      "fullTitle": "Dynamic Routing Author RSS should respond with xml",
+      "duration": 9,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Author Edit should redirect without slash",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect to editor",
+      "fullTitle": "Dynamic Routing Author Edit should redirect to editor",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for something that isn't edit",
+      "fullTitle": "Dynamic Routing Author Edit should 404 for something that isn't edit",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Author Edit with admin redirects disabled should redirect without slash",
+      "duration": 5,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not redirect to admin",
+      "fullTitle": "Dynamic Routing Author Edit with admin redirects disabled should not redirect to admin",
+      "duration": 30,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Dynamic Routing Author Paged should redirect without slash",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with html",
+      "fullTitle": "Dynamic Routing Author Paged should respond with html",
+      "duration": 38,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect page 1",
+      "fullTitle": "Dynamic Routing Author Paged should redirect page 1",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 if page too high",
+      "fullTitle": "Dynamic Routing Author Paged should 404 if page too high",
+      "duration": 25,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 if page too low",
+      "fullTitle": "Dynamic Routing Author Paged should 404 if page too low",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 if index attempted with 0",
+      "fullTitle": "Dynamic Routing Author Paged RSS should 404 if index attempted with 0",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 if index attempted with 1",
+      "fullTitle": "Dynamic Routing Author Paged RSS should 404 if index attempted with 1",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for other pages",
+      "fullTitle": "Dynamic Routing Author Paged RSS should 404 for other pages",
+      "duration": 22,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown post with invalid characters",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Error should 404 for unknown post with invalid characters",
+      "duration": 32,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for unknown frontend route",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Error should 404 for unknown frontend route",
+      "duration": 20,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for encoded char not 301 from uncapitalise",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Error should 404 for encoded char not 301 from uncapitalise",
+      "duration": 21,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Single post should redirect without slash",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) Single post should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Single post should redirect uppercase",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) Single post should redirect uppercase",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Single post should sanitize double slashes when redirecting uppercase",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) Single post should sanitize double slashes when redirecting uppercase",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "AMP post should redirect without slash",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) AMP post should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "AMP post should redirect uppercase",
+      "fullTitle": "Frontend Routing Test with Initial Fixtures Default Redirects (clean URLS) AMP post should redirect uppercase",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should respond with html",
+      "fullTitle": "Frontend Routing Test with added posts Static page should respond with html",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Frontend Routing Test with added posts Static page should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit should redirect without slash",
+      "duration": 2,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect to editor for post resource",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit should redirect to editor for post resource",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect to editor for page resource",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit should redirect to editor for page resource",
+      "duration": 7,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for non-edit parameter",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit should 404 for non-edit parameter",
+      "duration": 19,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should redirect without slash",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit with admin redirects disabled should redirect without slash",
+      "duration": 3,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should not redirect to editor",
+      "fullTitle": "Frontend Routing Test with added posts Static page edit with admin redirects disabled should not redirect to editor",
+      "duration": 24,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 404 for amp parameter",
+      "fullTitle": "Frontend Routing Test with added posts Static page amp amp enabled should 404 for amp parameter",
+      "duration": 29,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should 301 for amp parameter",
+      "fullTitle": "Frontend Routing Test with added posts Static page amp amp disabled should 301 for amp parameter",
+      "duration": 4,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should retrieve a blog post with ghost at the start of the url",
+      "fullTitle": "Frontend Routing Test with added posts Post with Ghost in the url should retrieve a blog post with ghost at the start of the url",
+      "duration": 38,
+      "currentRetry": 0,
+      "err": {}
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+    "mochajsJsonFileReporterReporterOptions": {
+        "output": "./reports/unit-test-report.json"
+    },
+    "reporterEnabled": "spec, @mochajs/json-file-reporter"
+}

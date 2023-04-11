@@ -24,6 +24,10 @@ coverage_*
 # nyc test coverage
 .nyc_output
 
+# test reports
+reports/*
+!reports/.gitkeep
+
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 

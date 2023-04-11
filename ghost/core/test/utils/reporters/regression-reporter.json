@@ -1,0 +1,6 @@
+{
+    "mochajsJsonFileReporterReporterOptions": {
+        "output": "./reports/regression-test-report.json"
+    },
+    "reporterEnabled": "spec, @mochajs/json-file-reporter"
+}
