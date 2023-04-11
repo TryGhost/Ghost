@@ -42,6 +42,13 @@ export default class PostsContextMenu extends Component {
         return !firstPost.featured;
     }
 
+    get canFeatureSelection() {
+        if (!this.selectionList.isSingle) {
+            return true;
+        }
+        return this.selectionList.availableModels[0].get('status') !== 'sent';
+    }
+
     @action
     async featurePosts() {
         const updatedModels = this.selectionList.availableModels;
