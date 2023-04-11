@@ -6,6 +6,8 @@ export default class SelectionList {
     @tracked lastSelectedId = null;
     @tracked lastShiftSelectionGroup = new Set();
 
+    enabled = true;
+
     infinityModel;
 
     constructor(infinityModel) {

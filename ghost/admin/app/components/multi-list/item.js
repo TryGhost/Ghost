@@ -31,6 +31,9 @@ export default class ItemComponent extends Component {
 
     @action
     onClick(event) {
+        if (!this.selectionList.enabled) {
+            return;
+        }
         const shiftKey = event.shiftKey;
         const ctrlKey = event.ctrlKey || event.metaKey;
 
@@ -54,6 +57,9 @@ export default class ItemComponent extends Component {
 
     @action
     onContextMenu(event) {
+        if (!this.selectionList.enabled) {
+            return;
+        }
         let x = event.clientX;
         let y = event.clientY;
 
