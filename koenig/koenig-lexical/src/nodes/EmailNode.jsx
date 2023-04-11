@@ -6,6 +6,7 @@ import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper} from '../index.js';
 import {EmailNode as BaseEmailNode, INSERT_EMAIL_COMMAND} from '@tryghost/kg-default-nodes';
 import {ReactComponent as EmailCardIcon} from '../assets/icons/kg-card-type-email.svg';
+import {ReactComponent as EmailIndicatorIcon} from '../assets/icons/kg-indicator-email.svg';
 import {EmailNodeComponent} from './EmailNodeComponent';
 import {createEditor} from 'lexical';
 
@@ -35,7 +36,7 @@ export class EmailNode extends BaseEmailNode {
         this.__htmlEditor = dataset.htmlEditor || createEditor({nodes: BASIC_NODES});
         this.__htmlEditorInitialState = dataset.htmlEditorInitialState;
         if (!this.__htmlEditorInitialState) {
-            const initialHtml = dataset.html ? dataset.html : '<p>Hey <code>{first_name, "there"},</code></p>';
+            const initialHtml = dataset.html ? dataset.html : '<p>Hey <code>{first_name, "there"}</code>,</p>';
             this.__htmlEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: BASIC_NODES}),
                 initialHtml
@@ -76,7 +77,12 @@ export class EmailNode extends BaseEmailNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()}>
+            <KoenigCardWrapper
+                IndicatorIcon={EmailIndicatorIcon}
+                nodeKey={this.getKey()}
+                width={this.__cardWidth}
+                wrapperStyle="wide"
+            >
                 <EmailNodeComponent
                     htmlEditor={this.__htmlEditor}
                     htmlEditorInitialState={this.__htmlEditorInitialState}

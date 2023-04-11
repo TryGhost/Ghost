@@ -11,14 +11,14 @@ export function EmailCard({htmlEditor, htmlEditorInitialState, isEditing}) {
                 initialEditor={htmlEditor}
                 initialEditorState={htmlEditorInitialState}
                 nodes='basic'
-                textClassName='kg-email-html'
+                textClassName='kg-email-html whitespace-normal'
             />
 
             {isEditing &&
-                <div className="mt-0 flex items-center justify-center bg-grey-100 p-2 font-sans text-sm font-normal leading-8 text-grey-600">
+                <div className="-mx-3 mt-3 flex items-center justify-center bg-grey-100 p-2 font-sans text-sm font-normal leading-none text-grey-600">
                     Only visible when delivered by email, this card will not be published on your site.
                     <a href="https://ghost.org/help/email-newsletters/#email-cards" rel="noopener noreferrer" target="_blank">
-                        <HelpIcon className="ml-1 mt-[1px] stroke-[1.2px] text-grey-600" />
+                        <HelpIcon className="ml-1 mt-[1px] h-4 w-4 stroke-[1.2px] text-grey-600" />
                     </a>
                 </div>
             }
