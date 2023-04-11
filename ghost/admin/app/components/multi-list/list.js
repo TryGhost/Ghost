@@ -24,7 +24,7 @@ export default class ListComponent extends Component {
 
     willDestroy() {
         super.willDestroy(...arguments);
-        window.removeEventListener('keydown', this.onKeyDow, {passive: true});
+        window.removeEventListener('keydown', this.onKeyDown, {passive: true});
         window.removeEventListener('keyup', this.onKeyUp, {passive: true});
         window.removeEventListener('click', this.onWindowClicked, {passive: true});
         window.removeEventListener('blur', this.onWindowBlur, {passive: true});

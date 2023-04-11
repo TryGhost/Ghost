@@ -79,7 +79,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     }
 
     // trigger a background load of all tags and authors for use in filter dropdowns
-    setupController(controller) {
+    setupController(controller, model) {
         super.setupController(...arguments);
 
         if (!controller._hasLoadedTags) {
@@ -92,6 +92,11 @@ export default class PostsRoute extends AuthenticatedRoute {
             this.store.query('user', {limit: 'all'}).then(() => {
                 controller._hasLoadedAuthors = true;
             });
+        }
+
+        if (controller.selectionList) {
+            controller.selectionList.infinityModel = model;
+            controller.selectionList.clearSelection();
         }
     }
 
