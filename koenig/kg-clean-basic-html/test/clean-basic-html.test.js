@@ -49,4 +49,18 @@ describe('cleanBasicHtml', function () {
 
         result.should.equal('<strong> Test&nbsp;</strong>');
     });
+
+    it('can extract first element content', function () {
+        const html = '<p><span>Headline</span> <em>italic</em></p>';
+        const result = cleanBasicHtml(html, {...options, firstChildInnerContent: true});
+
+        result.should.equal('<span>Headline</span> <em>italic</em>');
+    });
+
+    it('return empty string if firstChildInnerContent option enabled and there is no first child element ', function () {
+        const html = '';
+        const result = cleanBasicHtml(html, {...options, firstChildInnerContent: true});
+
+        result.should.equal('');
+    });
 });

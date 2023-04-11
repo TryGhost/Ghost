@@ -52,7 +52,11 @@ export default function cleanBasicHtml(html = '', _options = {}) {
             }
         });
 
-        cleanHtml = doc.body.innerHTML.trim();
+        if (options.firstChildInnerContent && doc.body.firstElementChild) {
+            cleanHtml = doc.body.firstElementChild.innerHTML.trim();
+        } else {
+            cleanHtml = doc.body.innerHTML.trim();
+        }
     }
 
     return cleanHtml;

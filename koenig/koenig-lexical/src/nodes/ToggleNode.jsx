@@ -3,11 +3,11 @@ import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import generateEditorState from '../utils/generateEditorState';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {$getRoot, $getSelection, $setSelection, createEditor} from 'lexical';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {ToggleNode as BaseToggleNode, INSERT_TOGGLE_COMMAND} from '@tryghost/kg-default-nodes';
 import {ReactComponent as ToggleCardIcon} from '../assets/icons/kg-card-type-toggle.svg';
 import {ToggleNodeComponent} from './ToggleNodeComponent';
+import {createEditor} from 'lexical';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_TOGGLE_COMMAND} from '@tryghost/kg-default-nodes';
@@ -80,23 +80,11 @@ export class ToggleNode extends BaseToggleNode {
         // convert nested editor instances back into HTML because their content may not
         // be automatically updated when the nested editor changes
         if (this.__headerEditor) {
-            this.__headerEditor.update(() => {
-                // for the header we don't want any wrapper element in the serialized data,
-                // just the first element's contents
-                const currentSelection = $getSelection();
-                const firstChildSelection = $getRoot().getFirstChild()?.select();
-
-                if (firstChildSelection) {
-                    const html = $generateHtmlFromNodes(this.__headerEditor, firstChildSelection);
-                    const cleanedHtml = cleanBasicHtml(html);
-                    json.header = cleanedHtml;
-                } else {
-                    json.header = '';
-                }
-
-                // reset the selection to avoid focus stealing and odd behaviour
-                $setSelection(currentSelection);
-            }, {discrete: true, tag: 'card-export'});
+            this.__headerEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__headerEditor, null);
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
+                json.header = cleanedHtml;
+            });
         }
         if (this.__contentEditor) {
             this.__contentEditor.getEditorState().read(() => {
