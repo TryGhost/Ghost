@@ -95,6 +95,9 @@ export default class PostsRoute extends AuthenticatedRoute {
         }
 
         if (controller.selectionList) {
+            if (this.session.user.isAuthorOrContributor) {
+                controller.selectionList.enabled = false;
+            }
             controller.selectionList.infinityModel = model;
             controller.selectionList.clearSelection();
         }
