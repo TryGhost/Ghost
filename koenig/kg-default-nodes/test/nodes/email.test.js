@@ -156,5 +156,141 @@ describe('EmailNode', function () {
 
             element.should.be.empty();
         }));
+
+        it('wraps {foo} in %%', editorTest(function () {
+            const payload = {
+                html: '<p>Hey {foo}</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p>Hey %%{foo}%%</p>
+            `);
+        }));
+
+        it('wraps {foo, "default"} in %%', editorTest(function () {
+            const payload = {
+                html: '<p>Hey {foo, "default"}</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p>Hey %%{foo, "default"}%%</p>
+            `);
+        }));
+
+        it('wraps {foo,  "default"} in %% (extra spaces)', editorTest(function () {
+            const payload = {
+                html: '<p>Hey {foo,  "default"}</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p>Hey %%{foo,  "default"}%%</p>
+            `);
+        }));
+
+        it('wraps {foo "default"} in %% (missing comma)', editorTest(function () {
+            const payload = {
+                html: '<p>Hey {foo "default"}</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p>Hey %%{foo "default"}%%</p>
+            `);
+        }));
+
+        it('wraps {foo  "default"} in %% (extra space, missing comma)', editorTest(function () {
+            const payload = {
+                html: '<p>Hey {foo  "default"}</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p>Hey %%{foo  "default"}%%</p>
+            `);
+        }));
+
+        it('does not wrap {invalid } in %% (invalid space at the end)', editorTest(function () {
+            const payload = {
+                html: '<p>Hey {foo}, you are {invalid }</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p>Hey %%{foo}%%, you are {invalid }</p>
+            `);
+        }));
+
+        it('does not wrap { invalid} in %% (invalid space at the beginning)', editorTest(function () {
+            const payload = {
+                html: '<p>Hey {foo}, you are { invalid}</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p>Hey %%{foo}%%, you are { invalid}</p>
+            `);
+        }));
+
+        it('does not wrap {foo invalid} in %% (two words, missing quotes)', editorTest(function () {
+            const payload = {
+                html: '<p>Hey {foo invalid}</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p>Hey {foo invalid}</p>
+            `);
+        }));
     });
 });
