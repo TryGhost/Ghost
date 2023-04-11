@@ -35,14 +35,16 @@ export class ProductNode extends BaseProductNode {
 
         // set up and populate nested editors from the serialized HTML
         this.__titleEditor = dataset.titleEditor || createEditor({nodes: MINIMAL_NODES});
-        if (!dataset.titleEditor) {
+        this.__titleEditorInitialState = dataset.titleEditorInitialState;
+        if (!this.__titleEditorInitialState) {
             this.__titleEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: MINIMAL_NODES}),
                 initialHtml: dataset.title
             });
         }
         this.__descriptionEditor = dataset.descriptionEditor || createEditor({nodes: BASIC_NODES});
-        if (!dataset.descriptionEditor) {
+        this.__descriptionEditorInitialState = dataset.descriptionEditorInitialState;
+        if (!this.__descriptionEditorInitialState) {
             this.__descriptionEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: BASIC_NODES}),
                 initialHtml: dataset.description
@@ -56,7 +58,9 @@ export class ProductNode extends BaseProductNode {
         // client-side only data properties such as nested editors
         const self = this.getLatest();
         dataset.titleEditor = self.__titleEditor;
+        dataset.titleEditorInitialState = self.__titleEditorInitialState;
         dataset.descriptionEditor = self.__descriptionEditor;
+        dataset.descriptionEditorInitialState = self.__descriptionEditorInitialState;
 
         return dataset;
     }
@@ -90,6 +94,7 @@ export class ProductNode extends BaseProductNode {
                 <ProductNodeComponent
                     buttonText={this.getButtonText()}
                     buttonUrl={this.getButtonUrl()}
+                    description={this.getDescription()}
                     descriptionEditor={this.__descriptionEditor}
                     descriptionEditorInitialState={this.__descriptionEditorInitialState}
                     imgHeight={this.getImgHeight()}
@@ -99,6 +104,7 @@ export class ProductNode extends BaseProductNode {
                     isRatingEnabled={this.getIsRatingEnabled()}
                     nodeKey={this.getKey()}
                     starRating={this.getStarRating()}
+                    title={this.getTitle()}
                     titleEditor={this.__titleEditor}
                     titleEditorInitialState={this.__titleEditorInitialState}
                 />

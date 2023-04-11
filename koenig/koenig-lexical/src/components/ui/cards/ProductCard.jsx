@@ -24,16 +24,14 @@ export function ProductCard({
     imgMimeTypes,
     imgUploader,
     onRemoveImage,
+    title,
     titleEditor,
     titleEditorInitialState,
+    description,
     descriptionEditor,
     descriptionEditorInitialState,
     onRatingChange
 }) {
-    const showEditor = (editor) => {
-        return isEditing || !isEditorEmpty(editor);
-    };
-
     const showFilledButton = !!buttonUrl && !!buttonText && isButtonEnabled;
     const showButtonInEditMode = isButtonEnabled && isEditing;
     return (
@@ -51,7 +49,7 @@ export function ProductCard({
 
                 <div className="m-0 flex items-start justify-between">
                     {
-                        showEditor(titleEditor) && (
+                        (isEditing || !!title || !isEditorEmpty(titleEditor)) && (
                             <div className="mr-2 flex-1">
                                 <KoenigProductEditor
                                     autoFocus={true}
@@ -74,7 +72,7 @@ export function ProductCard({
                 </div>
 
                 {
-                    showEditor(descriptionEditor) && (
+                    (isEditing || !!description || !isEditorEmpty(descriptionEditor)) && (
                         <div className="mt-2">
                             <KoenigProductEditor
                                 initialEditor={descriptionEditor}
