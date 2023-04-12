@@ -39,20 +39,36 @@ function createBulkOperation(singular, multiple) {
     };
 }
 
-async function insertSingle(knex, table, record) {
-    await knex(table).insert(record);
+async function insertSingle(knex, table, record, options) {
+    let k = knex(table);
+    if (options.transacting) {
+        k = k.transacting(options.transacting);
+    }
+    await k.insert(record);
 }
 
-async function insertMultiple(knex, table, chunk) {
-    await knex(table).insert(chunk);
+async function insertMultiple(knex, table, chunk, options) {
+    let k = knex(table);
+    if (options.transacting) {
+        k = k.transacting(options.transacting);
+    }
+    await k.insert(chunk);
 }
 
 async function editSingle(knex, table, id, options) {
-    await knex(table).where('id', id).update(options.data);
+    let k = knex(table);
+    if (options.transacting) {
+        k = k.transacting(options.transacting);
+    }
+    await k.where('id', id).update(options.data);
 }
 
 async function editMultiple(knex, table, chunk, options) {
-    await knex(table).whereIn('id', chunk).update(options.data);
+    let k = knex(table);
+    if (options.transacting) {
+        k = k.transacting(options.transacting);
+    }
+    await k.whereIn('id', chunk).update(options.data);
 }
 
 async function delSingle(knex, table, id, options) {
@@ -90,13 +106,13 @@ const del = createBulkOperation(delSingle, delMultiple);
  */
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({}, {
-        bulkAdd: function bulkAdd(data, tableName) {
+        bulkAdd: function bulkAdd(data, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
 
-            return insert(Bookshelf.knex, tableName, data);
+            return insert(Bookshelf.knex, tableName, data, options);
         },
 
-        bulkEdit: async function bulkEdit(data, tableName, options) {
+        bulkEdit: async function bulkEdit(data, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
 
             return await edit(Bookshelf.knex, tableName, data, options);

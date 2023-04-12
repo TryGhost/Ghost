@@ -1,9 +1,12 @@
 <ul class="gh-posts-context-menu dropdown-menu dropdown-triangle-top-left">
-    <li>
-        <button class="mr2" type="button" disabled {{on "click" @menu.close}}>
-            <span>Unpublish</span>
-        </button>
-    </li>
+
+    {{#if this.canUnpublishSelection}}
+        <li>
+            <button class="mr2" type="button" {{on "click" this.unpublishPosts}}>
+                <span>Unpublish</span>
+            </button>
+        </li>
+    {{/if}}
     {{#if this.canFeatureSelection}}
         {{#if this.shouldFeatureSelection }}
             <li>
@@ -25,7 +28,7 @@
         </button>
     </li>
     <li>
-        <button class="mr2" type="button" disabled {{on "click" @menu.close}}>
+        <button class="mr2" type="button" {{on "click" this.editPostsAccess}}>
             <span>Post access...</span>
         </button>
     </li>

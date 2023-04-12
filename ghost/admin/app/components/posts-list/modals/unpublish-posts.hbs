@@ -1,13 +1,12 @@
-<div class="modal-content" data-test-modal="delete-posts">
+<div class="modal-content" data-test-modal="unpublish-posts">
     <header class="modal-header">
-        <h1>Are you sure you want to delete {{if @data.selectionList.isSingle 'this post' (concat @data.selectionList.count ' posts')}}?</h1>
+        <h1>Are you sure you want to unpublish {{if @data.selectionList.isSingle 'this post' (concat @data.selectionList.count ' posts')}}?</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
         <p>
-            You're about to delete <strong>{{if @data.selectionList.isSingle (concat '"' @data.selectionList.first.title '"') (concat @data.selectionList.count ' posts')}}</strong>.
-            This is permanent! We warned you, k?
+            You're about to unpublish <strong>{{if @data.selectionList.isSingle (concat '"' @data.selectionList.first.title '"') (concat @data.selectionList.count ' posts')}}</strong>.
         </p>
     </div>
 
@@ -15,8 +14,8 @@
         <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Cancel</span></button>
 
          <GhTaskButton
-            @buttonText="Delete"
-            @runningText="Deleting"
+            @buttonText="Unpublish"
+            @runningText="Unpublishing"
             @showSuccess={{false}}
             @task={{@data.confirm}}
             @taskArgs={{@close}}
