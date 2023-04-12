@@ -13,8 +13,11 @@ export function ButtonCard({
     handleAlignmentChange,
     handleButtonTextChange,
     handleButtonUrlChange,
+    handleButtonUrlFocus,
     handleOptionClick,
-    isEditing
+    isEditing,
+    suggestedUrls,
+    suggestedUrlVisibility
 }) {
     const buttonGroupChildren = [
         {
@@ -29,12 +32,6 @@ export function ButtonCard({
             Icon: CenterAlignIcon,
             dataTestId: 'button-align-center'
         }
-    ];
-
-    // TODO: this will need to be provided by the digesting code
-    const testListOptions = [
-        {value: 'Homepage', caption: window.location.origin + '/'},
-        {value: 'Free signup', caption: window.location.origin + '/#/portal/signup/free'}
     ];
 
     return (
@@ -64,10 +61,12 @@ export function ButtonCard({
                         handleOptionClick={handleOptionClick}
                         label='Button URL'
                         list='suggestedUrls'
-                        listOptions={testListOptions}
+                        listOptions={suggestedUrls}
+                        listVisibility={suggestedUrlVisibility}
                         placeholder='https://yoursite.com/#/portal/signup/'
                         value={buttonUrl}
                         onChange={handleButtonUrlChange}
+                        onFocus={handleButtonUrlFocus}
                     />
                 </SettingsPanel>    
             )}
@@ -76,7 +75,16 @@ export function ButtonCard({
 }
 
 ButtonCard.propTypes = {
+    alignment: PropTypes.string,
     buttonText: PropTypes.string,
     buttonPlaceholder: PropTypes.string, 
-    buttonUrl: PropTypes.string
+    buttonUrl: PropTypes.string,
+    handleAlignmentChange: PropTypes.func,
+    handleButtonTextChange: PropTypes.func,
+    handleButtonUrlChange: PropTypes.func,
+    handleButtonUrlFocus: PropTypes.func,
+    handleOptionClick: PropTypes.func,
+    isEditing: PropTypes.bool,
+    suggestedUrls: PropTypes.array,
+    suggestedUrlVisibility: PropTypes.bool
 };

@@ -17,6 +17,15 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+    
+    // TODO: this will need to be provided by the digesting code
+    const testListOptions = [
+        {value: 'Homepage', caption: window.location.origin + '/'},
+        {value: 'Free signup', caption: window.location.origin + '/#/portal/signup/free'}
+    ];
+
+    const [suggestedUrlVisibility, setSuggestedUrlVisibility] = React.useState(false);
+    const [filteredSuggestedUrls, setFilteredSuggestedUrls] = React.useState(testListOptions);
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -35,7 +44,18 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setButtonUrl(event.target.value);
+            if (buttonUrl && event.target.value) {
+                setFilteredSuggestedUrls(testListOptions.filter((url) => {
+                    return url.value.includes(event.target.value);
+                }));
+            } else {
+                setFilteredSuggestedUrls(testListOptions);
+            }
         });
+    };
+
+    const handleButtonUrlFocus = () => {
+        setSuggestedUrlVisibility(true);
     };
 
     const handleAlignmentChange = (value) => {
@@ -45,10 +65,13 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
         });
     };
 
-    const handleOptionClick = (value) => {
+    const handleOptionClick = (event,value) => {
+        event.stopPropagation(); // prevents loss of focus on card/settings panel
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setButtonUrl(value);
+            setFilteredSuggestedUrls(testListOptions);
+            setSuggestedUrlVisibility(false);
         });
     };
 
@@ -62,8 +85,11 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
                 handleAlignmentChange={handleAlignmentChange}
                 handleButtonTextChange={handleButtonTextChange}
                 handleButtonUrlChange={handleButtonUrlChange}
+                handleButtonUrlFocus={handleButtonUrlFocus}
                 handleOptionClick={handleOptionClick}
                 isEditing={isEditing}
+                suggestedUrls={filteredSuggestedUrls}
+                suggestedUrlVisibility={suggestedUrlVisibility}
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"

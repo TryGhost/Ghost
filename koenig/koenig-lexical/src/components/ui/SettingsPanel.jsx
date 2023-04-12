@@ -57,11 +57,11 @@ export function InputSetting({label, description, onChange, value, placeholder, 
     );
 }
 
-export function InputListSetting({dataTestId, label, description, onChange, value, placeholder, list, listOptions, handleOptionClick}) {
+export function InputListSetting({dataTestId, description, label, list, listOptions, listVisibility, onChange, onFocus, placeholder, value, handleOptionClick}) {
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
-            <Input dataTestId={dataTestId} handleOptionClick={handleOptionClick} list={list} listOptions={listOptions} placeholder={placeholder} value={value} onChange={onChange} />
+            <Input dataTestId={dataTestId} handleOptionClick={handleOptionClick} list={list} listOptions={listOptions} listVisibility={listVisibility} placeholder={placeholder} value={value} onChange={onChange} onFocus={onFocus} />
             {description &&
                     <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }
