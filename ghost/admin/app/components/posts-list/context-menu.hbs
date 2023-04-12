@@ -3,7 +3,7 @@
     {{#if this.canUnpublishSelection}}
         <li>
             <button class="mr2" type="button" {{on "click" this.unpublishPosts}}>
-                <span>Unpublish</span>
+                <span>{{svg-jar "undo"}}Unpublish</span>
             </button>
         </li>
     {{/if}}
@@ -11,31 +11,31 @@
         {{#if this.shouldFeatureSelection }}
             <li>
                 <button class="mr2" type="button" {{on "click" this.featurePosts}}>
-                    <span>Feature</span>
+                    <span>{{svg-jar "star" class="mb1"}}Feature</span>
                 </button>
             </li>
         {{else}}
                 <li>
                 <button class="mr2" type="button" {{on "click" this.unfeaturePosts}}>
-                    <span>Unfeature</span>
+                    <span>{{svg-jar "star" class="mb1"}}Unfeature</span>
                 </button>
             </li>
         {{/if}}
     {{/if}}
     <li>
         <button class="mr2" type="button" disabled {{on "click" @menu.close}}>
-            <span>Add tag...</span>
+            <span>{{svg-jar "tag"}}Add a tag</span>
         </button>
     </li>
     <li>
         <button class="mr2" type="button" {{on "click" this.editPostsAccess}}>
-            <span>Post access...</span>
+            <span>{{svg-jar "lock"}}Change access</span>
         </button>
     </li>
     {{#if this.session.user.isAdmin}}
         <li>
             <button class="mr2" type="button" {{on "click" this.deletePosts}}>
-                <span>Delete</span>
+                <span class="red">{{svg-jar "trash"}}Delete</span>
             </button>
         </li>
     {{/if}}

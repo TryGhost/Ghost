@@ -1,6 +1,6 @@
 <div class="modal-content" data-test-modal="delete-posts">
     <header class="modal-header">
-        <h1>Are you sure you want to delete {{if @data.selectionList.isSingle 'this post' (concat @data.selectionList.count ' posts')}}?</h1>
+        <h1>Are you sure you want to delete {{if @data.selectionList.isSingle 'this post' 'these posts'}}?</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 

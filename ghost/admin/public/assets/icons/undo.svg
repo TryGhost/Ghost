@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <title>undo</title>
+    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12.833 7.286 9.5 4.143 12.833 1M2.034 12.786a8.894 8.894 0 0 0 .281 3.143M4.34 7.511a9.351 9.351 0 0 0-1.366 1.997m1.39 10.152a9.925 9.925 0 0 0 2.556 2.035"/>
+    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.167 22.968c.274.02.555.032.833.032 2.652 0 5.196-.993 7.071-2.762C20.946 18.47 22 16.072 22 13.572c0-2.501-1.054-4.9-2.929-6.668C17.196 5.136 14.652 4.143 12 4.143H9.5"/>
+</svg>
