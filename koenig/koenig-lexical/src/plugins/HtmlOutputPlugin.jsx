@@ -54,7 +54,13 @@ export const HtmlOutputPlugin = ({html = '', setHtml}) => {
     const onChange = React.useCallback(() => {
         editor.update(() => {
             const htmlString = $generateHtmlFromNodes(editor, null);
-            setHtml?.(htmlString);
+            // htmlString will be an empty paragraph with line break if a caption is set and removed
+            const captionText = new DOMParser().parseFromString(htmlString, 'text/html').documentElement.textContent;
+            if (captionText) {
+                setHtml?.(htmlString);
+            } else {
+                setHtml('');
+            }
         });
     }, [editor, setHtml]);
 
