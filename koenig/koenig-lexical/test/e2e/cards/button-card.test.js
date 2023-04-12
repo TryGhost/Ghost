@@ -128,5 +128,25 @@ describe('Button Card', async () => {
         await expect(buttonLink).toHaveAttribute('href','https://someblog.com/somepost');
     });
 
-    // TODO: test suggested urls
+    // NOTE: an improvement would be to pass in suggested url options, but the construction now doesn't make that straightforward
+    test.only('suggested urls display', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'button'});
+
+        const buttonTextInput = await page.getByTestId('button-input-url');
+        await expect(buttonTextInput).toHaveValue('');
+
+        // this is dependent on the test values inserted in the node
+        await page.getByTestId('button-input-url').fill('Ho');
+        // this is too fast, need to try two inputs or add a delay before checking the suggested options
+        await page.getByTestId('button-input-url').fill('me');
+        await expect(await page.getByTestId('button-input-url-listOption-Homepage')).toHaveText('Homepage');
+        await page.getByTestId('button-input-url-listOption').click();
+
+        // need to make this any string value because we don't want to hardcode the window.location value
+        const anyString = new RegExp(`.*`);
+        await expect(buttonTextInput).toHaveValue(anyString);
+        const buttonLink = await page.getByTestId('button-card-btn');
+        await expect(buttonLink).toHaveAttribute('href',anyString);
+    });
 });

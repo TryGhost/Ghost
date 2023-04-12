@@ -15,9 +15,9 @@ export function Input({dataTestId, list, listOptions, listVisibility, handleOpti
                 />
                 {list && listOptions && listVisibility && <ul className="absolute mt-[-1px] max-h-[30vh] w-full overflow-y-auto rounded-b border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900">
                     {listOptions.map((item) => {
-                        return <li key={item.value} className="cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-black" onClick={event => handleOptionClick(event,item.caption)}>
-                            <span className="block text-sm font-semibold leading-tight text-black dark:text-white">{item.value}</span>
-                            <span className="block overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-tight text-grey-700 dark:text-grey-600">
+                        return <li key={item.value} className="cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-black" data-testid={`${dataTestId}-listOption`} onClick={event => handleOptionClick(event,item.caption)}>
+                            <span className="block text-sm font-semibold leading-tight text-black dark:text-white" data-testid={`${dataTestId}-listOption-${item.value}`}>{item.value}</span>
+                            <span className="block overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-tight text-grey-700 dark:text-grey-600" data-testid={`${dataTestId}-listOption-${item.caption}`}>
                                 {item.caption}
                             </span>
                         </li>;
