@@ -38,6 +38,7 @@
 
         <KoenigLexicalEditor
             @lexical={{@body}}
+            @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
             @registerAPI={{this.registerEditorAPI}}
             @cursorDidExitAtTop={{this.focusTitle}}

@@ -509,6 +509,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             //  NOTE: changes in this labs setting requires server reboot since we don't re-init services after changes a labs flag
             const websockets = require('./server/services/websockets');
             await websockets.init(ghostServer);
+
+            const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
+            await lexicalMultiplayer.init(ghostServer);
+            await lexicalMultiplayer.enable();
         }
 
         await initServices({config});
