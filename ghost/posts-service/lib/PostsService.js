@@ -104,7 +104,8 @@ class PostsService {
 
         const postRows = await this.models.Post.getFilteredCollectionQuery({
             filter: options.filter,
-            status: 'all'
+            status: 'all',
+            transacting: options.transacting
         }).leftJoin('emails', 'posts.id', 'emails.post_id').select('posts.id', 'emails.id as email_id');
         const deleteIds = postRows.map(row => row.id);
 
@@ -177,7 +178,8 @@ class PostsService {
 
         const postRows = await this.models.Post.getFilteredCollectionQuery({
             filter: options.filter,
-            status: 'all'
+            status: 'all',
+            transacting: options.transacting
         }).select('posts.id');
 
         const editIds = postRows.map(row => row.id);
