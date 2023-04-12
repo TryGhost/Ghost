@@ -100,8 +100,8 @@ class PostsService {
             'posts_products'
         ];
         const emailTablesToDelete = [
-            'email_recipients',
             'email_recipient_failures',
+            'email_recipients',
             'email_batches',
             'email_spam_complaint_events'
         ];
