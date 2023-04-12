@@ -6085,10 +6085,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.76":
-  version "0.2.76"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.76.tgz#1dc3d5be5c4e356480fc82d0a1d5838a795fe1d8"
-  integrity sha512-7HkGE+bWsKORhMw5kE1Tjp4WxWA3JZ1RVZ6FVWDmje2MD5WrbUrP1RBJ9dWneTCpO4DvQJDWx7AQkYBrYgc+uA==
+"@tryghost/timezone-data@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.3.0.tgz#5b0940a370a22a0fa3bdf506850dabbc6af574fa"
+  integrity sha512-3vdaEugCY7cTOlo8TuEYTXnXJa1CeNKJ34EU9uJPxWfUsd0BwaSN0hNcXLHhKxnPQnnJkSjradkXSvTfUsYZiA==
 
 "@tryghost/tpl@0.1.24", "@tryghost/tpl@^0.1.24":
   version "0.1.24"
