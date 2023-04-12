@@ -67,6 +67,10 @@ export default class SelectionList {
         return arr;
     }
 
+    get first() {
+        return this.availableModels[0];
+    }
+
     get isSingle() {
         return this.selectedIds.size === 1 && !this.inverted;
     }

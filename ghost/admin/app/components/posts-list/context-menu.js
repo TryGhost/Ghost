@@ -27,8 +27,7 @@ export default class PostsContextMenu extends Component {
     async deletePosts() {
         this.menu.close();
         await this.modals.open(DeletePostsModal, {
-            isSingle: this.selectionList.isSingle,
-            count: this.selectionList.count,
+            selectionList: this.selectionList,
             confirm: this.deletePostsTask
         });
     }
@@ -37,8 +36,7 @@ export default class PostsContextMenu extends Component {
     async unpublishPosts() {
         this.menu.close();
         await this.modals.open(UnpublishPostsModal, {
-            isSingle: this.selectionList.isSingle,
-            count: this.selectionList.count,
+            selectionList: this.selectionList,
             confirm: this.unpublishPostsTask
         });
     }
@@ -47,8 +45,7 @@ export default class PostsContextMenu extends Component {
     async editPostsAccess() {
         this.menu.close();
         await this.modals.open(EditPostsAccessModal, {
-            isSingle: this.selectionList.isSingle,
-            count: this.selectionList.count,
+            selectionList: this.selectionList,
             confirm: this.editPostsAccessTask
         });
     }
