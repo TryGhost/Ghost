@@ -2,9 +2,12 @@ const nql = require('@tryghost/nql');
 const {BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const ObjectId = require('bson-objectid').default;
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
+    invalidVisibility: 'Invalid visibility value.',
+    invalidTiers: 'Invalid tiers value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action'
 };
@@ -66,6 +69,23 @@ class PostsService {
         }
         if (data.action === 'unfeature') {
             return await this.#updatePosts({featured: false}, {filter: options.filter});
+        }
+        if (data.action === 'access') {
+            if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.invalidVisibility)
+                });
+            }
+            let tiers = undefined;
+            if (data.meta.visibility === 'tiers') {
+                if (!Array.isArray(data.meta.tiers)) {
+                    throw new errors.IncorrectUsageError({
+                        message: tpl(messages.invalidTiers)
+                    });
+                }
+                tiers = data.meta.tiers;
+            }
+            return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter});
         }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
@@ -146,6 +166,15 @@ class PostsService {
     }
 
     async #updatePosts(data, options) {
+        if (!options.transacting) {
+            return await this.models.Post.transaction(async (transacting) => {
+                return await this.#updatePosts(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
         const postRows = await this.models.Post.getFilteredCollectionQuery({
             filter: options.filter,
             status: 'all'
@@ -153,9 +182,48 @@ class PostsService {
 
         const editIds = postRows.map(row => row.id);
 
-        return await this.models.Post.bulkEdit(editIds, 'posts', {
-            data
+        let tiers = undefined;
+        if (data.tiers) {
+            tiers = data.tiers;
+            delete data.tiers;
+        }
+
+        const result = await this.models.Post.bulkEdit(editIds, 'posts', {
+            data,
+            transacting: options.transacting,
+            throwErrors: true
         });
+
+        // Update tiers
+        if (tiers) {
+            // First delete all
+            await this.models.Post.bulkDestroy(editIds, 'posts_products', {
+                column: 'post_id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+
+            // Then add again
+            const toInsert = [];
+            for (const postId of editIds) {
+                for (const [index, tier] of tiers.entries()) {
+                    if (typeof tier.id === 'string') {
+                        toInsert.push({
+                            id: ObjectId().toHexString(),
+                            post_id: postId,
+                            product_id: tier.id,
+                            sort_order: index
+                        });
+                    }
+                }
+            }
+            await this.models.Post.bulkAdd(toInsert, 'posts_products', {
+                transacting: options.transacting,
+                throwErrors: true
+            });
+        }
+
+        return result;
     }
 
     async getProductsFromVisibilityFilter(visibilityFilter) {
