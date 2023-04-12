@@ -466,6 +466,27 @@ describe('Email Event Storage', function () {
         assert(update.firstCall.args[0].newsletters.length === 0);
     });
 
+    it('Handles unsubscribe with a non-existent member', async function () {
+        const event = EmailUnsubscribedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            timestamp: new Date(0)
+        });
+
+        const error = new Error('Member not found');
+        const update = sinon.stub().throws(error);
+
+        const eventHandler = new EmailEventStorage({
+            membersRepository: {
+                update
+            }
+        });
+        await eventHandler.handleUnsubscribed(event);
+        assert(update.calledOnce);
+        assert(update.firstCall.args[0].newsletters.length === 0);
+    });
+
     it('Handles complaints', async function () {
         const event = SpamComplaintEvent.create({
             email: 'example@example.com',
