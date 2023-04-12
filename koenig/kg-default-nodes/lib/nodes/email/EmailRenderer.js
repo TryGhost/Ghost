@@ -31,8 +31,8 @@ export function renderEmailNodeToDOM(node, options = {}) {
     }
 
     const cleanedHtml = wrapReplacementStrings(removeSpaces(html));
-    const element = document.createElement('div');
-    element.innerHTML = cleanedHtml;
+    const div = document.createElement('div');
+    div.innerHTML = cleanedHtml;
 
-    return element.firstElementChild;
+    return div;
 }
