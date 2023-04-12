@@ -17,8 +17,14 @@ export const RestrictContentPlugin = ({paragraphs}) => {
     React.useEffect(() => {
         return mergeRegister(
             editor.registerNodeTransform(RootNode, (rootNode) => {
-                const selection = $getSelection();
+                // even if this node transform is registered on a nested editor it will
+                // still be triggered for root node changes in other editors so we need
+                // to make sure we're only operating on the root node for this editor
+                if (!editor._updating) {
+                    return;
+                }
 
+                const selection = $getSelection();
                 if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
                     return;
                 }

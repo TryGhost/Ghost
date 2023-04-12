@@ -911,7 +911,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 }
             })
         );
-    });
+    }, [editor]);
 
     return null;
 }
