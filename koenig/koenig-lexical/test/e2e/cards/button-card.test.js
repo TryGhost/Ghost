@@ -129,7 +129,7 @@ describe('Button Card', async () => {
     });
 
     // NOTE: an improvement would be to pass in suggested url options, but the construction now doesn't make that straightforward
-    test.only('suggested urls display', async function () {
+    test('suggested urls display', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 
