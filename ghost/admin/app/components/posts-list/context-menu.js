@@ -164,18 +164,22 @@ export default class PostsContextMenu extends Component {
     }
 
     get shouldFeatureSelection() {
-        const firstPost = this.selectionList.availableModels[0];
-        if (!firstPost) {
-            return true;
+        let featuredCount = 0;
+        for (const m of this.selectionList.availableModels) {
+            if (m.featured) {
+                featuredCount += 1;
+            }
         }
-        return !firstPost.featured;
+        return featuredCount <= this.selectionList.availableModels.length / 2;
     }
 
     get canFeatureSelection() {
-        if (!this.selectionList.isSingle) {
-            return true;
+        for (const m of this.selectionList.availableModels) {
+            if (m.get('status') !== 'sent') {
+                return true;
+            }
         }
-        return this.selectionList.availableModels[0]?.get('status') !== 'sent';
+        return false;
     }
 
     get canUnpublishSelection() {
