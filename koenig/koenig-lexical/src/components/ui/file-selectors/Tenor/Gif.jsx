@@ -19,7 +19,7 @@ export function Gif({gif, onClick, highlightedGif = {}}) {
     return (
         <button
             ref={gifRef}
-            className="border-2 border-transparent focus:border-green-600"
+            className="cursor-pointer border-2 border-transparent focus:border-green-600"
             data-tenor-index={gif.index}
             type="button"
             onClick={handleClick}

@@ -293,17 +293,17 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
     return (
         <div
             ref={selectorRef}
-            className="flex h-[540px] flex-col rounded border border-grey-200 bg-grey-50"
+            className="flex h-[540px] flex-col rounded border border-grey-200 bg-grey-50 dark:border-none dark:bg-grey-900"
             data-testid="tenor-selector"
             // prevent click handle in the editor while selector is active
             onClick={e => e.stopPropagation()}
         >
             <header className="p-6">
                 <div className="relative w-full">
-                    <SearchIcon className="absolute top-1/2 left-4 h-4 w-4 -translate-y-2 text-grey-700" />
+                    <SearchIcon className="absolute top-1/2 left-4 h-4 w-4 -translate-y-2 text-grey-500 dark:text-grey-800" />
                     <input
                         ref={searchRef}
-                        className="h-10 w-full rounded-full border border-grey-300 pr-8 pl-10 font-sans text-md font-normal text-black focus:border-grey-400 focus-visible:outline-none"
+                        className="h-10 w-full rounded-full border border-grey-300 pr-8 pl-10 font-sans text-md font-normal text-black focus:border-green focus:shadow-insetgreen dark:border-grey-800 dark:bg-grey-950 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green"
                         placeholder="Search Tenor for GIFs"
                         autoFocus
                         onChange={handleSearch}
@@ -312,7 +312,7 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
             </header>
 
             <div className="relative h-full overflow-hidden">
-                <div className="h-full overflow-auto" onScroll={handleScroll}>
+                <div className="h-full overflow-auto px-6" onScroll={handleScroll}>
                     {
                         !error && !isSearchInProgress && (
                             <div className="flex gap-4">
