@@ -8,6 +8,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {AudioCard} from '../components/ui/cards/AudioCard';
 import {ReactComponent as AudioCardIcon} from '../assets/icons/kg-card-type-audio.svg';
 import {AudioNode as BaseAudioNode, INSERT_AUDIO_COMMAND} from '@tryghost/kg-default-nodes';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {audioUploadHandler} from '../utils/audioUploadHandler';
 import {openFileSelection} from '../utils/openFileSelection';
@@ -24,6 +25,7 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
     const audioFileInputRef = React.useRef();
     const thumbnailFileInputRef = React.useRef();
     const cardContext = React.useContext(CardContext);
+    const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const audioUploader = fileUploader.useFileUpload('audio');
     const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
@@ -127,12 +129,24 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
             />
             <ActionToolbar
                 data-kg-card-toolbar="audio"
-                isVisible={src && isSelected && !isEditing}
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="audio"
+                isVisible={src && isSelected && !isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
+                    <ToolbarMenuItem
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
                 </ToolbarMenu>
             </ActionToolbar>
         </>

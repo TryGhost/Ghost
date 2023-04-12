@@ -5,6 +5,7 @@ import useDragAndDrop from '../hooks/useDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {FileCard} from '../components/ui/cards/FileCard';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {fileUploadHandler} from '../utils/fileUploadHandler';
 import {openFileSelection} from '../utils/openFileSelection';
@@ -28,6 +29,7 @@ function FileNodeComponent({
     const {fileUploader} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
+    const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const uploader = fileUploader.useFileUpload('file');
     const fileDragHandler = useDragAndDrop({handleDrop: handleFileDrop});
@@ -146,12 +148,24 @@ function FileNodeComponent({
             />
             <ActionToolbar
                 data-kg-card-toolbar="file-upload"
-                isVisible={isSelected && isPopulated && !isEditing}
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="file-upload"
+                isVisible={isSelected && isPopulated && !isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-file-upload-card" icon="edit" isActive={false} label="Edit" onClick={enableEditing} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
+                    <ToolbarMenuItem
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
                 </ToolbarMenu>
             </ActionToolbar>
         </>

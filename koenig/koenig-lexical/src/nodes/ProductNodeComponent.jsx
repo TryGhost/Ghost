@@ -5,6 +5,7 @@ import useDragAndDrop from '../hooks/useDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {ProductCard} from '../components/ui/cards/ProductCard';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -32,6 +33,7 @@ export function ProductNodeComponent({
     const imgDragHandler = useDragAndDrop({handleDrop: handleImgDrop, disabled: !isEditing});
     const imgUploader = fileUploader.useFileUpload('image');
     const [imgPreview, setImgPreview] = React.useState('');
+    const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     React.useEffect(() => {
         titleEditor.setEditable(isEditing);
@@ -148,12 +150,24 @@ export function ProductNodeComponent({
 
             <ActionToolbar
                 data-kg-card-toolbar="product"
-                isVisible={isSelected && !isEditing}
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="product"
+                isVisible={isSelected && !isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-product-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
+                    <ToolbarMenuItem
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
                 </ToolbarMenu>
             </ActionToolbar>
         </>

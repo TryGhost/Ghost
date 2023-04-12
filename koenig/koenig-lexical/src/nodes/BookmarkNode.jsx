@@ -8,6 +8,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {BookmarkNode as BaseBookmarkNode, INSERT_BOOKMARK_COMMAND} from '@tryghost/kg-default-nodes';
 import {BookmarkCard} from '../components/ui/cards/BookmarkCard';
 import {ReactComponent as BookmarkCardIcon} from '../assets/icons/kg-card-type-bookmark.svg';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -22,6 +23,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
     const [urlInputValue, setUrlInputValue] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
+    const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const setCaption = (value) => {
         editor.update(() => {
@@ -111,10 +113,22 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
             />
             <ActionToolbar
                 data-kg-card-toolbar="bookmark"
-                isVisible={title && isSelected && !isEditing}
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="bookmark"
+                isVisible={title && isSelected && !isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
+                    <ToolbarMenuItem
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
                 </ToolbarMenu>
             </ActionToolbar>
         </>

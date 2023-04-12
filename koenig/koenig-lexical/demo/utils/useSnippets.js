@@ -15,7 +15,12 @@ export const useSnippets = () => {
 
     function createSnippet(name, value) {
         const updatedSnippets = [...snippets];
-        updatedSnippets.push({name, value});
+        const snippetIndexForReplace = snippets.findIndex(item => item.name === name);
+        if (snippetIndexForReplace === -1) {
+            updatedSnippets.push({name, value});
+        } else {
+            updatedSnippets[snippetIndexForReplace].value = value;
+        }
 
         setSnippets(updatedSnippets);
         updateSnippetsInStorage(updatedSnippets);

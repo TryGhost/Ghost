@@ -32,7 +32,11 @@ export const TOOLBAR_ICONS = {
     snippet: SnippetIcon
 };
 
-export function ToolbarMenu({children, ...props}) {
+export function ToolbarMenu({children, hide, ...props}) {
+    if (hide) {
+        return null;
+    }
+
     return (
         <ul className="relative m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent after:border-t-black" {...props}>
             {children}

@@ -5,6 +5,7 @@ import extractVideoMetadata from '../utils/extractVideoMetadata';
 import useDragAndDrop from '../hooks/useDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {VideoCard} from '../components/ui/cards/VideoCard';
 import {openFileSelection} from '../utils/openFileSelection';
@@ -33,6 +34,7 @@ export function VideoNodeComponent({
     const videoDragHandler = useDragAndDrop({handleDrop: handleVideoDrop});
     const thumbnailDragHandler = useDragAndDrop({handleDrop: handleThumbnailDrop});
     const [metadataExtractionErrors, setMetadataExtractionErrors] = useState([]);
+    const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
 
     const videoMimeTypes = fileUploader.fileTypes.video?.mimeTypes || ['video/*'];
 
@@ -217,12 +219,24 @@ export function VideoNodeComponent({
             />
             <ActionToolbar
                 data-kg-card-toolbar="video"
-                isVisible={isCardPopulated && cardContext.isSelected && !cardContext.isEditing}
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="video"
+                isVisible={isCardPopulated && cardContext.isSelected && !cardContext.isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-video-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
+                    <ToolbarMenuItem
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
                 </ToolbarMenu>
             </ActionToolbar>
         </>

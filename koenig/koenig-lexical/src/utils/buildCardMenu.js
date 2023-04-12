@@ -1,3 +1,6 @@
+import {INSERT_SNIPPET_COMMAND} from '../plugins/KoenigSnippetPlugin';
+import {ReactComponent as SnippetCardIcon} from '../assets/icons/kg-card-type-snippet.svg';
+
 export function buildCardMenu(nodes, {query, config} = {}) {
     const menu = new Map();
 
@@ -33,5 +36,26 @@ export function buildCardMenu(nodes, {query, config} = {}) {
         }
     }
 
+    config?.snippets?.forEach((item) => {
+        const snippetMenuItem = buildSnippetMenuItem(item, config);
+        addMenuItem(snippetMenuItem);
+    });
+
     return {menu, maxItemIndex};
+}
+
+function buildSnippetMenuItem(data, config) {
+    const name = data.name.toLowerCase();
+    const snippet = {
+        type: 'snippet',
+        label: data.name,
+        Icon: SnippetCardIcon,
+        section: 'Snippets',
+        matches: [name],
+        insertCommand: INSERT_SNIPPET_COMMAND,
+        insertParams: data,
+        onRemove: () => config.deleteSnippet(data.name)
+    };
+
+    return snippet;
 }

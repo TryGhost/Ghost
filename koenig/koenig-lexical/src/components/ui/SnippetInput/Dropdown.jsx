@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Dropdown = ({snippets, onReplaceSnippet, onCreateSnippet, value}) => {
+export const Dropdown = ({snippets, onCreateSnippet, value}) => {
     return (
         <ul className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white py-1 shadow">
             <li className="mb-2 block px-4 pt-3">
@@ -11,7 +11,7 @@ export const Dropdown = ({snippets, onReplaceSnippet, onCreateSnippet, value}) =
                 >Create &quot;{value}&ldquo;</button>
             </li>
 
-            {!!snippets.length && <DropdownSection list={snippets} onClick={onReplaceSnippet} />}
+            {!!snippets.length && <DropdownSection list={snippets} onClick={onCreateSnippet} />}
         </ul>
     );
 };

@@ -27,6 +27,7 @@ import {
     $wrapNodes
 } from '@lexical/selection';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {
     ToolbarMenu,
     ToolbarMenuItem,
@@ -54,10 +55,23 @@ const blockTypeToBlockName = {
     aside: 'Aside'
 };
 
-function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, isItalic}) {
+const toolbarItemTypes = {
+    snippet: 'snippet'
+};
+
+function FloatingFormatToolbar({
+    isText,
+    editor,
+    anchorElem,
+    blockType,
+    isBold,
+    isItalic,
+    toolbarItemType,
+    setToolbarItemType,
+    setIsText
+}) {
     const [stickyToolbar, setStickyToolbar] = React.useState(false);
     const toolbarRef = React.useRef(null);
-    // const [isVisible, setIsVisible] = React.useState(false);
 
     let hideHeading = false;
     if (!editor.hasNodes([HeadingNode])){
@@ -67,6 +81,11 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
     let hideQuotes = false;
     if (!editor.hasNodes([QuoteNode])){
         hideQuotes = true;
+    }
+
+    let hideSnippets = false;
+    if (editor._parentEditor) {
+        hideSnippets = true;
     }
 
     const formatParagraph = () => {
@@ -210,9 +229,22 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
         );
     }, [editor, updateFloatingToolbar]);
 
+    const handleSnippetItemClick = () => {
+        setToolbarItemType(toolbarItemTypes.snippet);
+    };
+
+    const handleSnippetClose = () => {
+        setToolbarItemType(null);
+        setIsText(false);
+    };
+
+    const isSnippetVisible = toolbarItemTypes.snippet === toolbarItemType;
+
     return (
         <div ref={toolbarRef} className="not-kg-prose fixed" style={{opacity: 0}} data-kg-floating-toolbar>
-            <ToolbarMenu>
+            {isSnippetVisible && <SnippetActionToolbar onClose={handleSnippetClose}/>}
+
+            <ToolbarMenu hide={isSnippetVisible}>
                 <ToolbarMenuItem data-kg-toolbar-button="bold" icon="bold" isActive={isBold} label="Format text as bold" onClick={() => {
                     setStickyToolbar(true);
                     editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
@@ -234,6 +266,15 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
                     (formatQuote());
                     setStickyToolbar(true);
                 }} />
+
+                <ToolbarMenuSeparator hide={hideSnippets} />
+                <ToolbarMenuItem
+                    hide={hideSnippets}
+                    icon="snippet"
+                    isActive={false}
+                    label="Snippet"
+                    onClick={handleSnippetItemClick}
+                />
             </ToolbarMenu>
         </div>
     );
@@ -244,6 +285,7 @@ function useFloatingFormatToolbar(editor, anchorElem) {
     const [isBold, setIsBold] = React.useState(false);
     const [isItalic, setIsItalic] = React.useState(false);
     const [blockType, setBlockType] = React.useState('paragraph');
+    const [toolbarItemType, setToolbarItemType] = React.useState(null);
 
     const updatePopup = React.useCallback(() => {
         editor.getEditorState().read(() => {
@@ -261,7 +303,7 @@ function useFloatingFormatToolbar(editor, anchorElem) {
                     !$isRangeSelection(selection) ||
                     rootElement === null ||
                     !rootElement.contains(nativeSelection.anchorNode)
-                )
+                ) && !toolbarItemType
             ) {
                 setIsText(false);
                 return;
@@ -306,7 +348,7 @@ function useFloatingFormatToolbar(editor, anchorElem) {
                 setIsText(false);
             }
         });
-    }, [editor]);
+    }, [editor, toolbarItemType]);
 
     useEffect(() => {
         document.addEventListener('selectionchange', updatePopup);
@@ -334,6 +376,9 @@ function useFloatingFormatToolbar(editor, anchorElem) {
                 isBold={isBold}
                 isItalic={isItalic}
                 isText={isText}
+                setIsText={setIsText}
+                setToolbarItemType={setToolbarItemType}
+                toolbarItemType={toolbarItemType}
             />
         </Portal>
     );

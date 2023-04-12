@@ -7,6 +7,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ImageCard} from '../components/ui/cards/ImageCard';
 import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {LinkInput} from '../components/ui/LinkInput';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {isGif} from '../utils/isGif';
@@ -20,6 +21,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
     const {isSelected, cardWidth, setCardWidth, setCaptionHasFocus, captionHasFocus} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
+    const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const imageUploader = fileUploader.useFileUpload('image');
     const imageDragHandler = useDragAndDrop({handleDrop: handleImageDrop});
@@ -152,7 +154,14 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
 
             <ActionToolbar
                 data-kg-card-toolbar="image"
-                isVisible={src && isSelected && !showLink && !captionHasFocus}
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="image"
+                isVisible={src && isSelected && !showLink && !captionHasFocus && !showSnippetToolbar}
             >
                 <ImageUploadForm
                     fileInputRef={toolbarFileInputRef}
@@ -193,7 +202,12 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
                         onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})}
                     />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
+                    <ToolbarMenuItem
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
                 </ToolbarMenu>
             </ActionToolbar>
         </>

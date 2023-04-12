@@ -11,6 +11,7 @@ import {CalloutPlugin} from '../plugins/CalloutPlugin';
 import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
 import {EmailPlugin} from '../plugins/EmailPlugin';
 import {FilePlugin} from '../plugins/FilePlugin';
+import {KoenigSnippetPlugin} from '../plugins/KoenigSnippetPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PaywallPlugin} from '../plugins/PaywallPlugin';
 import {ProductPlugin} from '../plugins/ProductPlugin';
@@ -44,6 +45,9 @@ export const AllDefaultPlugins = () => {
             <KoenigSelectorPlugin />
             <ProductPlugin />
             <EmailPlugin />
+
+            {/* Snippet Plugins */}
+            <KoenigSnippetPlugin />
         </>
     );
 };

@@ -249,7 +249,11 @@ function usePlusCardMenu(editor) {
         return (
             <div ref={containerRef} className="absolute" style={style} data-kg-plus-container>
                 {isShowingButton && <PlusButton onClick={openMenu} />}
-                {isShowingMenu && <PlusMenu><CardMenu insert={insert} menu={cardMenu.menu} /></PlusMenu>}
+                {isShowingMenu && (
+                    <PlusMenu>
+                        <CardMenu closeMenu={closeMenu} insert={insert} menu={cardMenu.menu} />
+                    </PlusMenu>
+                )}
             </div>
         );
     } else {

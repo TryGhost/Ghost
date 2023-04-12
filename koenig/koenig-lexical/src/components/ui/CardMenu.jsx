@@ -1,4 +1,5 @@
 import React from 'react';
+import {ReactComponent as TrashCardIcon} from '../../assets/icons/kg-trash.svg';
 
 export const CardMenuSection = ({label, children, ...props}) => {
     return (
@@ -40,28 +41,38 @@ export const CardMenuItem = ({label, desc, isSelected, onClick, Icon, ...props})
     );
 };
 
-export const CardSnippetItem = ({label, isSelected, Icon, ...props}) => {
+export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, ...props}) => {
+    const handleSnippetRemove = (event) => {
+        event.stopPropagation(); // prevent snippet insertion
+        onRemove();
+        closeMenu();
+    };
+
     return (
         <li role="presentation">
-            <button
-                className={`flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100 ${isSelected ? 'bg-grey-100' : ''}`}
+            <div
+                className={`flex w-full cursor-pointer flex-row items-center justify-between border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100 ${isSelected ? 'bg-grey-100' : ''}`}
                 data-kg-cardmenu-selected={isSelected}
                 role="menuitem"
-                type="button"
                 {...props}
             >
-                <div className="flex items-center">
-                    <Icon className="h-7 w-7" />
+                <div className="flex flex-row items-center">
+                    <div className="flex items-center">
+                        <Icon className="h-7 w-7" />
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="m-0 ml-4 truncate text-[1.3rem] leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
+                    </div>
                 </div>
-                <div className="flex flex-col">
-                    <div className="m-0 ml-4 truncate text-[1.3rem] font-medium leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
-                </div>
-            </button>
+                <button className="cursor-pointer" title="Remove snippet" type="button" onClick={handleSnippetRemove}>
+                    <TrashCardIcon className="h-4 w-4" />
+                </button>
+            </div>
         </li>
     );
 };
 
-export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex}) => {
+export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex, closeMenu}) => {
     // build up the children arrays from the passed in menu Map
     const CardMenuSections = [];
 
@@ -93,11 +104,13 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
                 CardMenuItems.push(
                     <CardSnippetItem
                         key={itemIndex}
+                        closeMenu={closeMenu}
                         data-kg-cardmenu-idx={itemIndex}
                         Icon={item.Icon}
                         isSelected={isSelected}
                         label={item.label}
                         onClick={onClick}
+                        onRemove={item.onRemove}
                     />
                 );
             }

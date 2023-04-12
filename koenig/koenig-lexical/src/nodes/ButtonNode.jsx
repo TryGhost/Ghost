@@ -6,6 +6,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {ButtonNode as BaseButtonNode, INSERT_BUTTON_COMMAND} from '@tryghost/kg-default-nodes';
 import {ButtonCard} from '../components/ui/cards/ButtonCard';
 import {ReactComponent as ButtonCardIcon} from '../assets/icons/kg-card-type-button.svg';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -15,6 +16,7 @@ export {INSERT_BUTTON_COMMAND} from '@tryghost/kg-default-nodes';
 function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
+    const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -52,7 +54,7 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
 
     return (
         <>
-            <ButtonCard 
+            <ButtonCard
                 alignment={alignment}
                 buttonPlaceholder={`Add button text`}
                 buttonText={buttonText}
@@ -65,12 +67,24 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="button"
                 isVisible={isSelected && !isEditing}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-button-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator />
-                    <ToolbarMenuItem icon="snippet" isActive={false} label="Snippet" />
+                    <ToolbarMenuItem
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
                 </ToolbarMenu>
             </ActionToolbar>
         </>
