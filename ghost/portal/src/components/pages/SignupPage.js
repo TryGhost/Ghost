@@ -206,7 +206,11 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 }
 
 .gh-portal-signup-terms-wrapper.free-only {
-    margin: 16px auto -8px;
+    margin: 0 auto;
+}
+
+.gh-portal-products + .gh-portal-signup-terms-wrapper.free-only {
+    margin: 20px auto 0;
 }
 
 .gh-portal-signup-terms label {
