@@ -214,7 +214,8 @@ class SettingsBREADService {
         const {filteredSettings: refilteredSettings, emailsToVerify} = await this.prepSettingsForEmailVerification(filteredSettings, getSetting);
 
         const modelArray = await this.SettingsModel.edit(refilteredSettings, options).then((result) => {
-            // TODO: is there a better place for this?
+            // TODO: temporary fix for starting/stopping lexicalMultiplayer service when labs flag is changed
+            //       this should be removed along with the flag, or set up in a more generic way
             const labsSetting = result.find(setting => setting.get('key') === 'labs');
             if (labsSetting) {
                 const lexicalMultiplayer = require('../lexical-multiplayer');
