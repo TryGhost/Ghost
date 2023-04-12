@@ -116,6 +116,14 @@ const FrameStyles = `
     padding: 24px 0 24px;
 }
 
+.gh-portal-signup-terms-wrapper + .gh-portal-btn-container {
+    margin: 16px 0 0;
+}
+
+.gh-portal-signup-terms-wrapper + .gh-portal-btn-container.sticky.m24 {
+    padding: 16px 0 24px;
+}
+
 .gh-portal-btn-container .gh-portal-btn {
     margin: 0;
 }
