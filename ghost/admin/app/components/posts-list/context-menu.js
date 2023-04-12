@@ -1,9 +1,9 @@
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
+import EditPostsAccessModal from './modals/edit-posts-access';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
-import EditPostsAccessModal from './modals/edit-posts-access';
 
 export default class PostsContextMenu extends Component {
     @service ajax;

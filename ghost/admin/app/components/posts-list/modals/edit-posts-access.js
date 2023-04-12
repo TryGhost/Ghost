@@ -47,7 +47,7 @@ export default class EditPostsAccessModal extends Component {
             }
             throw e;
         }
-        yield this.args.data.confirm.perform(this.args.close, {
+        return yield this.args.data.confirm.perform(this.args.close, {
             visibility: this.post.visibility,
             tiers: this.post.tiers
         });

@@ -14,7 +14,7 @@
             <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" class="nt3" data-test-visibility-segment-select>
                 <GhPostSettingsMenu::VisibilitySegmentSelect
                     @tiers={{this.post.tiers}}
-                    @onChange={{action "setVisibility"}}
+                    @onChange={{this.setVisibility}}
                     @renderInPlace={{true}}
                     @hideOptionsWhenAllSelected={{true}}
                 />
@@ -27,7 +27,7 @@
     <div class="modal-footer">
         <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Cancel</span></button>
 
-         <GhTaskButton
+        <GhTaskButton
             @buttonText="Save"
             @runningText="Saving"
             @showSuccess={{false}}
@@ -35,6 +35,5 @@
             @class="gh-btn gh-btn-icon gh-btn-black"
             data-test-button="confirm"
         />
-
     </div>
 </div>
