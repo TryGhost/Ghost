@@ -1,4 +1,3 @@
-import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$createLinkNode} from '@lexical/link';
 import {
