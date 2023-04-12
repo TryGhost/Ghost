@@ -1,3 +1,14 @@
+/**
+ * Removes any <code> wrappers around replacement strings {foo}
+ * Example input:  <code><span>{foo}</span></code>
+ * Example output:       <span>{foo}</span>
+ * @param {string} html
+ * @returns {string}
+ */
+function removeCodeWrappers(html) {
+    return html.replace(/<code>((.*?){.*?}(.*?))<\/code>/gi, '$1');
+}
+
 /* global DOMParser, window */
 export default function cleanBasicHtml(html = '', _options = {}) {
     const defaults = {};
@@ -21,6 +32,10 @@ export default function cleanBasicHtml(html = '', _options = {}) {
     if (!options.allowBr || cleanHtml === '<br>') {
         cleanHtml = cleanHtml
             .replace(/<br\s?\/?>/g, ' ');
+    }
+
+    if (options.removeCodeWrappers) {
+        cleanHtml = removeCodeWrappers(cleanHtml);
     }
 
     cleanHtml = cleanHtml

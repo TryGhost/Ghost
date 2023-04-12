@@ -157,6 +157,40 @@ describe('EmailNode', function () {
             element.should.be.empty();
         }));
 
+        it('removes any extra consecutives whitespaces', editorTest(function () {
+            const payload = {
+                html: '<p><span>Hey    you</span></p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p><span>Hey you</span></p>
+            `);
+        }));
+
+        it('removes any linebreaks', editorTest(function () {
+            const payload = {
+                html: '<p>\n<span>Hey \nyou</span>\n</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <p><span>Hey you</span></p>
+            `);
+        }));
+
         it('wraps {foo} in %%', editorTest(function () {
             const payload = {
                 html: '<p>Hey {foo}</p>'
@@ -290,57 +324,6 @@ describe('EmailNode', function () {
 
             element.outerHTML.should.prettifyTo(html`
                 <p>Hey {foo invalid}</p>
-            `);
-        }));
-
-        it('removes any <code> wrapper around the replacement strings', editorTest(function () {
-            const payload = {
-                html: '<p><span>Hey </span><code><span>{first_name, \"there\"}</span></code><span>, how are you?</span></p>'
-            };
-
-            const options = {
-                target: 'email',
-                postUrl: 'https://example.com/my-post'
-            };
-            const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
-
-            element.outerHTML.should.prettifyTo(html`
-                <p><span>Hey </span><span>%%{first_name, \"there\"}%%</span><span>, how are you?</span></p>
-            `);
-        }));
-
-        it('removes any extra consecutives whitespaces', editorTest(function () {
-            const payload = {
-                html: '<p><span>Hey    you</span></p>'
-            };
-
-            const options = {
-                target: 'email',
-                postUrl: 'https://example.com/my-post'
-            };
-            const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
-
-            element.outerHTML.should.prettifyTo(html`
-                <p><span>Hey you</span></p>
-            `);
-        }));
-
-        it('removes any linebreaks', editorTest(function () {
-            const payload = {
-                html: '<p>\n<span>Hey \nyou</span>\n</p>'
-            };
-
-            const options = {
-                target: 'email',
-                postUrl: 'https://example.com/my-post'
-            };
-            const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
-
-            element.outerHTML.should.prettifyTo(html`
-                <p><span>Hey you</span></p>
             `);
         }));
     });
