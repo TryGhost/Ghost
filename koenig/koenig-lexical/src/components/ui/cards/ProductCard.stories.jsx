@@ -83,7 +83,7 @@ Uploading.args = {
     buttonUrl: 'https://ghost.org/',
     rating: 5,
     imgMimeTypes: ['image/*'],
-    imgSrc: '',
+    imgSrc: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     imgUploader: {
         isLoading: true
     }
