@@ -89,7 +89,7 @@
     --yellow-l2: color-mod(var(--yellow) l(+10%));
     --yellow-l1: color-mod(var(--yellow) l(+5%));
     --yellow-d1: color-mod(var(--yellow) l(-5%));
-    --yellow-d2: color-mod(var(--yellow) l(-10%));
+    --yellow-d2: color-mod(var(--yellow) l(-7%));
     --yellow-d3: color-mod(var(--yellow) l(-13%));
 
     --red-l3: color-mod(var(--red) l(+15%));

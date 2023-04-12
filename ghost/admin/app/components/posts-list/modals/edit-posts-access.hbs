@@ -6,7 +6,6 @@
 
     <div class="modal-body">
         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
-            <label for="visibility-input">{{capitalize this.post.displayName}} access</label>
             <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
         </GhFormGroup>
 
