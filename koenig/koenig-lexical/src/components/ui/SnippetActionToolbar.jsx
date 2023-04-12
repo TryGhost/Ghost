@@ -3,12 +3,13 @@ import React from 'react';
 import {$createNodeSelection, $getSelection, $setSelection} from 'lexical';
 import {$generateJSONFromSelectedNodes} from '@lexical/clipboard';
 import {SnippetInput} from './SnippetInput';
+import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function SnippetActionToolbar({onClose}) {
     const {cardConfig: {snippets, createSnippet}} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
-    const {selectedCardKey} = React.useContext(KoenigComposerContext);
+    const {selectedCardKey} = useKoenigSelectedCardContext();
     const [value, setValue] = React.useState('');
 
     const handleChange = (event) => {

@@ -1,4 +1,3 @@
-import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {
     $createNodeSelection,
@@ -10,12 +9,13 @@ import {
 } from 'lexical';
 import {BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor, KoenigNestedComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 import {mergeRegister} from '@lexical/utils';
+import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
 // TODO: extract shared behaviour into a `KoenigNestedEditorPlugin` component
 function ProductEditorPlugin({autoFocus, focusNext}) {
     const [editor] = useLexicalComposerContext();
-    const {selectedCardKey} = React.useContext(KoenigComposerContext);
+    const {selectedCardKey} = useKoenigSelectedCardContext();
 
     // using state here because this component can get re-rendered after the
     // editor's editable state changes so we need to re-focus on re-render

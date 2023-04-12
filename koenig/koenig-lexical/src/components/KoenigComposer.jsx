@@ -4,6 +4,7 @@ import React from 'react';
 import defaultTheme from '../themes/default';
 import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
 import {Doc} from 'yjs';
+import {KoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {WebsocketProvider} from 'y-websocket';
 
@@ -33,9 +34,6 @@ const KoenigComposer = ({
     multiplayerUsername,
     children
 }) => {
-    const [selectedCardKey, setSelectedCardKey] = React.useState(null);
-    const [isEditingCard, setIsEditingCard] = React.useState(false);
-
     const initialConfig = React.useMemo(() => {
         return Object.assign({}, defaultConfig, {
             nodes,
@@ -87,26 +85,24 @@ const KoenigComposer = ({
                 editorContainerRef,
                 cardConfig,
                 darkMode,
-                selectedCardKey,
-                setSelectedCardKey,
-                isEditingCard,
-                setIsEditingCard,
                 enableMultiplayer,
                 multiplayerEndpoint,
                 multiplayerDocId,
                 multiplayerUsername,
                 createWebsocketProvider
             }}>
-                {enableMultiplayer ? (
-                    <CollaborationPlugin
-                        id="main"
-                        initialEditorState={initialEditorState}
-                        providerFactory={createWebsocketProvider}
-                        shouldBootstrap={true}
-                        username={multiplayerUsername}
-                    />
-                ) : null}
-                {children}
+                <KoenigSelectedCardContext>
+                    {enableMultiplayer ? (
+                        <CollaborationPlugin
+                            id="main"
+                            initialEditorState={initialEditorState}
+                            providerFactory={createWebsocketProvider}
+                            shouldBootstrap={true}
+                            username={multiplayerUsername}
+                        />
+                    ) : null}
+                    {children}
+                </KoenigSelectedCardContext>
             </KoenigComposerContext.Provider>
         </LexicalComposer>
     );
