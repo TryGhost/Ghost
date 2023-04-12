@@ -63,7 +63,14 @@ class PostsService {
         return model;
     }
 
+    #mergeFilters(...filters) {
+        return filters.filter(filter => filter).map(f => `(${f})`).join('+');
+    }
+
     async bulkEdit(data, options) {
+        if (data.action === 'unpublish') {
+            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:[published,sent]', options.filter)});
+        }
         if (data.action === 'feature') {
             return await this.#updatePosts({featured: true}, {filter: options.filter});
         }

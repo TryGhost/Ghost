@@ -1,6 +1,8 @@
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
+import UnpublishPostsModal from './modals/unpublish-posts';
+import nql from '@tryghost/nql';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -32,6 +34,16 @@ export default class PostsContextMenu extends Component {
     }
 
     @action
+    async unpublishPosts() {
+        this.menu.close();
+        await this.modals.open(UnpublishPostsModal, {
+            isSingle: this.selectionList.isSingle,
+            count: this.selectionList.count,
+            confirm: this.unpublishPostsTask
+        });
+    }
+
+    @action
     async editPostsAccess() {
         this.menu.close();
         await this.modals.open(EditPostsAccessModal, {
@@ -57,6 +69,50 @@ export default class PostsContextMenu extends Component {
     }
 
     @task
+    *unpublishPostsTask(close) {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('unpublish');
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            if (post.status === 'published' || post.status === 'sent') {
+                // We need to do it this way to prevent marking the model as dirty
+                this.store.push({
+                    data: {
+                        id: post.id,
+                        type: 'post',
+                        attributes: {
+                            status: 'draft'
+                        }
+                    }
+                });
+            }
+        }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
+
+        close();
+
+        return true;
+    }
+
+    updateFilteredPosts() {
+        const updatedModels = this.selectionList.availableModels;
+        const filter = this.selectionList.allFilter;
+        const filterNql = nql(filter);
+
+        const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
+            if (!updatedModels.find(u => u.id === model.id)) {
+                return true;
+            }
+            return filterNql.queryJSON(model);
+        });
+        // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
+        this.infinity.replace(this.selectionList.infinityModel, remainingModels);
+    }
+
+    @task
     *editPostsAccessTask(close, {visibility, tiers}) {
         const updatedModels = this.selectionList.availableModels;
         yield this.performBulkEdit('access', {visibility, tiers});
@@ -79,6 +135,9 @@ export default class PostsContextMenu extends Component {
                 }
             });
         }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
 
         close();
 
@@ -116,7 +175,16 @@ export default class PostsContextMenu extends Component {
         if (!this.selectionList.isSingle) {
             return true;
         }
-        return this.selectionList.availableModels[0].get('status') !== 'sent';
+        return this.selectionList.availableModels[0]?.get('status') !== 'sent';
+    }
+
+    get canUnpublishSelection() {
+        for (const m of this.selectionList.availableModels) {
+            if (['published', 'sent'].includes(m.status)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @action
@@ -137,6 +205,9 @@ export default class PostsContextMenu extends Component {
                 }
             });
         }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
 
         // Close the menu
         this.menu.close();
@@ -160,6 +231,9 @@ export default class PostsContextMenu extends Component {
                 }
             });
         }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
 
         // Close the menu
         this.menu.close();
