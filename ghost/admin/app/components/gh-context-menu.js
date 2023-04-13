@@ -22,7 +22,7 @@ export default class GhContextMenu extends Component {
      * modal: modal open
      * loading: performing an action
      */
-    state = states[0];
+    state = 'default';
 
     #originalConfirm = null;
     #modal = null;
