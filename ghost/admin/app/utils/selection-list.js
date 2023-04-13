@@ -10,8 +10,18 @@ export default class SelectionList {
 
     infinityModel;
 
+    #frozen = false;
+
     constructor(infinityModel) {
         this.infinityModel = infinityModel ?? {content: []};
+    }
+
+    freeze() {
+        this.#frozen = true;
+    }
+
+    unfreeze() {
+        this.#frozen = false;
     }
 
     /**
@@ -90,6 +100,9 @@ export default class SelectionList {
     }
 
     toggleItem(id) {
+        if (this.#frozen) {
+            return;
+        }
         this.lastShiftSelectionGroup = new Set();
 
         if (this.selectedIds.has(id)) {
@@ -123,6 +136,9 @@ export default class SelectionList {
      * Select all items between the last selection or the first one if none
      */
     shiftItem(id) {
+        if (this.#frozen) {
+            return;
+        }
         // Unselect last selected items
         for (const item of this.lastShiftSelectionGroup) {
             if (this.inverted) {
@@ -181,12 +197,18 @@ export default class SelectionList {
     }
 
     selectAll() {
+        if (this.#frozen) {
+            return;
+        }
         this.selectedIds = new Set();
         this.inverted = !this.inverted;
         this.lastSelectedId = null;
     }
 
     clearSelection() {
+        if (this.#frozen) {
+            return;
+        }
         this.selectedIds = new Set();
         this.inverted = false;
         this.lastSelectedId = null;
