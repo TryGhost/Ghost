@@ -46,7 +46,7 @@ export default function EmailReceivingPage() {
 
                 <h4>{t('Check with your mail provider')}</h4>
 
-                <p>{t('If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from {{email}}', {email:`<strong>${defaultNewsletterSenderEmail}</strong>`})}</p>
+                <p>If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from <strong>{defaultNewsletterSenderEmail}</strong></p>
 
                 <h4>{t('Get in touch for help')}</h4>
 
