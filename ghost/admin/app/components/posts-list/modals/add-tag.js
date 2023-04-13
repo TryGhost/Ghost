@@ -1,7 +1,10 @@
 import Component from '@glimmer/component';
+import DS from 'ember-data'; // eslint-disable-line
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
+const {Errors} = DS;
 
 export default class AddTag extends Component {
     @service store;
@@ -11,8 +14,15 @@ export default class AddTag extends Component {
     @tracked
         selectedTags = [];
 
+    @tracked
+        errors = Errors.create();
+
     get availableTags() {
         return this.#availableTags || [];
+    }
+
+    get hasValidated() {
+        return ['tags'];
     }
 
     constructor() {
@@ -39,6 +49,16 @@ export default class AddTag extends Component {
             }
         });
         this.selectedTags = newTags;
+    }
+
+    @task
+    *confirm() {
+        if (this.selectedTags.length === 0) {
+            this.errors.add('tags', 'Select at least one tag');
+            return;
+        }
+        this.errors.clear();
+        yield this.args.data.confirm.perform(this.selectedTags);
     }
 
     @action
