@@ -160,7 +160,7 @@ class PostsService {
             status: 'all'
         }).select('posts.id');
 
-        await options.transacting('posts_tags').whereIn('post_id', postRows.map((post) => post.id)).whereIn('tag_id', data.tags).del();
+        await options.transacting('posts_tags').whereIn('post_id', postRows.map(post => post.id)).whereIn('tag_id', data.tags).del();
 
         return true;
     }
