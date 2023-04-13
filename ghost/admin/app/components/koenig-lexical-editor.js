@@ -358,7 +358,7 @@ export default class KoenigLexicalEditor extends Component {
         // - figure out how to re-render the component when its props change
         // - figure out some other mechanism for handling posts that don't really exist yet with multiplayer
         const enableMultiplayer = this.feature.lexicalMultiplayer && !cardConfig.post.isNew;
-        const multiplayerWsProtocol = window.location.protocol === 'https:' ? `wss: ` : `ws:`;
+        const multiplayerWsProtocol = window.location.protocol === 'https:' ? `wss:` : `ws:`;
         const multiplayerEndpoint = multiplayerWsProtocol + window.location.host + this.ghostPaths.url.api('posts', 'multiplayer');
         const multiplayerDocId = cardConfig.post.id;
         const multiplayerUsername = this.session.user.name;
