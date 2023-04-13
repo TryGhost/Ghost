@@ -169,7 +169,7 @@ export default class PostsContextMenu extends Component {
 
         // Update the models on the client side
         for (const post of updatedModels) {
-            if (post.status === 'published' || post.status === 'sent') {
+            if (post.status === 'published') {
                 // We need to do it this way to prevent marking the model as dirty
                 this.store.push({
                     data: {
@@ -329,7 +329,7 @@ export default class PostsContextMenu extends Component {
 
     get canUnpublishSelection() {
         for (const m of this.selectionList.availableModels) {
-            if (['published', 'sent'].includes(m.status)) {
+            if (m.status === 'published') {
                 return true;
             }
         }
