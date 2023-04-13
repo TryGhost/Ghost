@@ -217,7 +217,7 @@ module.exports = {
             data: {
                 action: {
                     required: true,
-                    values: ['feature', 'unfeature']
+                    values: ['feature', 'unfeature', 'addTag']
                 }
             },
             options: {

@@ -23,7 +23,7 @@
         {{/if}}
     {{/if}}
     <li>
-        <button class="mr2" type="button" disabled {{on "click" @menu.close}}>
+        <button class="mr2" type="button" {{on "click" this.addTagToPosts}}>
             <span>{{svg-jar "tag"}}Add a tag</span>
         </button>
     </li>
