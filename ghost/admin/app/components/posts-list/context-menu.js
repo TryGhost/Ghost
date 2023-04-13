@@ -3,9 +3,33 @@ import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
 import nql from '@tryghost/nql';
+import tpl from '@tryghost/tpl';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+
+const messages = {
+    deleted: {
+        single: 'Post deleted successfully',
+        multiple: '{count} posts deleted successfully'
+    },
+    unpublished: {
+        single: 'Post successfully reverted to a draft',
+        multiple: '{count} posts successfully reverted to drafts'
+    },
+    featured: {
+        single: 'Post featured successfully',
+        multiple: '{count} posts featured successfully'
+    },
+    unfeatured: {
+        single: 'Post unfeatured successfully',
+        multiple: '{count} posts unfeatured successfully'
+    },
+    accessUpdated: {
+        single: 'Post access successfully updated',
+        multiple: 'Post access successfully updated for {count} posts'
+    }
+};
 
 export default class PostsContextMenu extends Component {
     @service ajax;
@@ -14,6 +38,7 @@ export default class PostsContextMenu extends Component {
     @service infinity;
     @service modals;
     @service store;
+    @service notifications;
 
     get menu() {
         return this.args.menu;
@@ -21,6 +46,13 @@ export default class PostsContextMenu extends Component {
 
     get selectionList() {
         return this.menu.selectionList;
+    }
+
+    #getToastMessage(type) {
+        if (this.selectionList.isSingle) {
+            return tpl(messages[type].single);
+        }
+        return tpl(messages[type].multiple, {count: this.selectionList.count});
     }
 
     @action
@@ -54,6 +86,8 @@ export default class PostsContextMenu extends Component {
     *deletePostsTask(close) {
         const deletedModels = this.selectionList.availableModels;
         yield this.performBulkDestroy();
+        this.notifications.showNotification(this.#getToastMessage('deleted'), {type: 'success'});
+
         const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
             return !deletedModels.includes(model);
         });
@@ -69,6 +103,7 @@ export default class PostsContextMenu extends Component {
     *unpublishPostsTask(close) {
         const updatedModels = this.selectionList.availableModels;
         yield this.performBulkEdit('unpublish');
+        this.notifications.showNotification(this.#getToastMessage('unpublished'), {type: 'success'});
 
         // Update the models on the client side
         for (const post of updatedModels) {
@@ -113,6 +148,7 @@ export default class PostsContextMenu extends Component {
     *editPostsAccessTask(close, {visibility, tiers}) {
         const updatedModels = this.selectionList.availableModels;
         yield this.performBulkEdit('access', {visibility, tiers});
+        this.notifications.showNotification(this.#getToastMessage('accessUpdated'), {type: 'success'});
 
         // Update the models on the client side
         for (const post of updatedModels) {
@@ -193,6 +229,8 @@ export default class PostsContextMenu extends Component {
         const updatedModels = this.selectionList.availableModels;
         await this.performBulkEdit('feature');
 
+        this.notifications.showNotification(this.#getToastMessage('featured'), {type: 'success'});
+
         // Update the models on the client side
         for (const post of updatedModels) {
             // We need to do it this way to prevent marking the model as dirty
@@ -218,6 +256,8 @@ export default class PostsContextMenu extends Component {
     async unfeaturePosts() {
         const updatedModels = this.selectionList.availableModels;
         await this.performBulkEdit('unfeature');
+
+        this.notifications.showNotification(this.#getToastMessage('unfeatured'), {type: 'success'});
 
         // Update the models on the client side
         for (const post of updatedModels) {
