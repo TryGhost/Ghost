@@ -1,4 +1,6 @@
 import React from 'react';
+import {ReactComponent as PlusIcon} from '../../../assets/icons/plus.svg';
+import {ReactComponent as ReplaceIcon} from '../../../assets/icons/kg-sync.svg';
 
 export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive, onKeyDown, activeMenuItem}) => {
     const buttonRef = React.useRef(null);
@@ -17,13 +19,17 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
             tabIndex={0}
             onKeyDown={onKeyDown}
         >
-            <li className="mb-2 block px-4 pt-3">
+
+            <li className="mb-0 block">
                 <button
-                    ref={buttonRef}
-                    className="cursor-pointer focus:bg-green-400"
+                    className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100"
                     type="button"
+                    ref={buttonRef}
                     onClick={onCreateSnippet}
-                >Create &quot;{value}&ldquo;</button>
+                >
+                    <span>Create &quot;{value}&ldquo;</span>
+                    <PlusIcon className="h-3 w-3 stroke-green stroke-[3px]" />
+                </button>
             </li>
 
             {!!snippets.length && (
@@ -40,7 +46,7 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
 const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
     return (
         <li role="separator">
-            <span className="mb-2 block px-4 pt-3 uppercase text-grey">Replace existing</span>
+            <span className="tracking-loose block border-t border-grey-200 px-3 pt-3 pb-2 text-xs font-medium uppercase text-grey">Replace existing</span>
             <ul role="menu">
                 {
                     list.map((item, index) => (
@@ -70,11 +76,14 @@ const DropdownItem = ({onClick, children, active, index}) => {
         <li>
             <button
                 ref={buttonRef}
-                className="cursor-pointer py-2 px-4 focus:bg-green-400"
+                className="flex w-full cursor-pointer items-center justify-between py-2 px-3 text-left text-sm hover:bg-grey-100"
                 type="button"
                 onClick={onClick}
             >
-                {children}
+                <span>{children}</span>
+                <div className="h-5 w-5 fill-grey-900">
+                    <ReplaceIcon className="h-4 w-4 fill-grey-900" />
+                </div>
             </button>
         </li>
     );
