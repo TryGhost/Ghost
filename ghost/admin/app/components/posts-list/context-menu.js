@@ -184,8 +184,8 @@ export default class PostsContextMenu extends Component {
 
         this.notifications.showNotification(this.#getToastMessage('featured'), {type: 'success'});
 
-         // Update the models on the client side
-         for (const post of updatedModels) {
+        // Update the models on the client side
+        for (const post of updatedModels) {
             // We need to do it this way to prevent marking the model as dirty
             this.store.push({
                 data: {
