@@ -11,26 +11,21 @@ export default function generateEditorState({editor, initialHtml}) {
 
             const nodes = $generateNodesFromDOM(editor, dom);
 
-            let isEmpty = true;
-            nodes.forEach((n) => {
-                // There are few recent issues related to $generateNodesFromDOM
-                // https://github.com/facebook/lexical/issues/2807
-                // https://github.com/facebook/lexical/issues/3677
-                // As a temporary fix, checking node content to remove additional spaces and br
-                if (n.getTextContent().trim()) {
-                    isEmpty = false;
-                }
-            });
+            // There are few recent issues related to $generateNodesFromDOM
+            // https://github.com/facebook/lexical/issues/2807
+            // https://github.com/facebook/lexical/issues/3677
+            // As a temporary fix, checking node content to remove additional spaces and br
+            const filteredNodes = nodes.filter(n => n.getTextContent().trim());
 
             // Select the root
             $getRoot().select();
 
-            if (isEmpty) {
+            if (filteredNodes.length === 0) {
                 $getRoot().clear();
             }
 
             // Insert them at a selection.
-            $insertNodes(nodes);
+            $insertNodes(filteredNodes);
         }, {discrete: true});
     } else {
         // for empty initial values, create a paragraph because a completely empty
