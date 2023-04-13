@@ -134,6 +134,14 @@ export const OfferPageStyles = ({site}) => {
 .gh-portal-cancel {
     white-space: nowrap;
 }
+
+.gh-portal-offer .gh-portal-signup-terms-wrapper {
+    margin: 8px auto 16px;
+}
+
+.gh-portal-offer .gh-portal-signup-terms.gh-portal-error {
+    margin: 0;
+}
     `;
 };
 
@@ -361,9 +369,6 @@ export default class OfferPage extends React.Component {
                         onChange={(e, field) => this.handleInputChange(e, field)}
                         onKeyDown={e => this.onKeyDown(e)}
                     />
-                    <div className='gh-portal-signup-terms-wrapper free-only'>
-                        {this.renderSignupTerms()}
-                    </div>
                 </div>
             </section>
         );
@@ -606,8 +611,11 @@ export default class OfferPage extends React.Component {
                             {(benefits.length ? this.renderBenefits({product}) : '')}
                         </div>
                     </div>
-
+                    
                     <div className='gh-portal-btn-container sticky m32'>
+                        <div className='gh-portal-signup-terms-wrapper'>
+                            {this.renderSignupTerms()}
+                        </div>
                         {this.renderSubmitButton()}
                     </div>
                     {this.renderLoginMessage()}
