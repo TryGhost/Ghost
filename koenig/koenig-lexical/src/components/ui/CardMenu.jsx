@@ -1,5 +1,5 @@
 import React from 'react';
-import {ReactComponent as TrashCardIcon} from '../../assets/icons/kg-trash.svg';
+import {ReactComponent as TrashCardIcon} from '../../assets/icons/kg-trash-outline.svg';
 
 export const CardMenuSection = ({label, children, ...props}) => {
     return (
@@ -51,21 +51,17 @@ export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, .
     return (
         <li role="presentation">
             <div
-                className={`flex w-full cursor-pointer flex-row items-center justify-between border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100 ${isSelected ? 'bg-grey-100' : ''}`}
+                className={`kg-cardmenu-card-hover group flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100 ${isSelected ? 'bg-grey-100' : ''}`}
                 data-kg-cardmenu-selected={isSelected}
                 role="menuitem"
                 {...props}
             >
-                <div className="flex flex-row items-center">
-                    <div className="flex items-center">
-                        <Icon className="h-7 w-7" />
-                    </div>
-                    <div className="flex flex-col">
-                        <div className="m-0 ml-4 truncate text-[1.3rem] leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
-                    </div>
+                <div className="flex items-center">
+                    <Icon className="h-7 w-7" />
                 </div>
-                <button className="cursor-pointer" title="Remove snippet" type="button" onClick={handleSnippetRemove}>
-                    <TrashCardIcon className="h-4 w-4" />
+                <div className="m-0 ml-4 truncate text-[1.3rem] font-normal leading-[1.6rem] text-grey-900">{label}</div>
+                <button className="ml-auto hidden cursor-pointer rounded p-[4px] hover:bg-grey-200 group-hover:block" title="Remove snippet" type="button" onClick={handleSnippetRemove}>
+                    <TrashCardIcon className="h-4 w-4 stroke-red text-red" />
                 </button>
             </div>
         </li>

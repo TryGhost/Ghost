@@ -97,3 +97,9 @@ em-emoji-picker {
     background: var(--grey-900);
     border: none;
   }
+
+/* Menu */
+
+.kg-cardmenu-card-hover:hover svg [data-selector=bg] {
+    fill: #fff;
+}
