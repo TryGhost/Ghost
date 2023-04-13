@@ -91,12 +91,27 @@ export default class SelectionList {
 
     toggleItem(id) {
         this.lastShiftSelectionGroup = new Set();
-        this.lastSelectedId = id;
 
         if (this.selectedIds.has(id)) {
             this.selectedIds.delete(id);
+
+            if (!this.inverted) {
+                if (this.lastSelectedId === id) {
+                    this.lastSelectedId = null;
+                }
+            } else {
+                // Shift behaviour in inverted mode needs a review
+                this.lastSelectedId = id;
+            }
         } else {
             this.selectedIds.add(id);
+
+            if (!this.inverted) {
+                this.lastSelectedId = id;
+            } else {
+                // Shift behaviour in inverted mode needs a review
+                this.lastSelectedId = id;
+            }
         }
 
         // Force update
@@ -168,10 +183,12 @@ export default class SelectionList {
     selectAll() {
         this.selectedIds = new Set();
         this.inverted = !this.inverted;
+        this.lastSelectedId = null;
     }
 
     clearSelection() {
         this.selectedIds = new Set();
         this.inverted = false;
+        this.lastSelectedId = null;
     }
 }
