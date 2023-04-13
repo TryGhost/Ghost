@@ -1,5 +1,6 @@
-import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
-import {assertHTML, assertPosition, assertSelection, focusEditor, html, initialize, startApp} from '../utils/e2e';
+import {afterAll, beforeAll, beforeEach, describe, it} from 'vitest';
+import {assertHTML, assertPosition, assertSelection, focusEditor, html, initialize, insertCard, startApp} from '../utils/e2e';
+import {expect} from '@playwright/test';
 
 describe('Plus button', async () => {
     let app;
@@ -188,6 +189,17 @@ describe('Plus button', async () => {
             await pHandle2.hover();
 
             await assertPosition(page, '[data-kg-plus-button]', {y: pHandle3Box.y}, {threshold: 5});
+        });
+
+        it('does not appear over an empty paragraph in a card', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'callout'});
+
+            await expect(page.locator('[data-kg-plus-button]')).not.toBeVisible();
+
+            await page.locator('[data-kg-card="callout"] [data-lexical-editor] p').hover();
+
+            await expect(page.locator('[data-kg-plus-button]')).not.toBeVisible();
         });
     });
 

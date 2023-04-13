@@ -173,7 +173,7 @@ function usePlusCardMenu(editor) {
         //   - https://github.com/bustle/mobiledoc-kit/blob/cdd126009cb809e80ff1d0c202198310aaa1ad1a/src/js/utils/selection-utils.ts#L39-L90
         const hoveredElem = document.elementFromPoint(pageX, pageY);
 
-        if (rootElement.contains(hoveredElem)) {
+        if (rootElement.contains(hoveredElem) && !hoveredElem.closest('[data-kg-card]')) {
             if (hoveredElem?.tagName === 'P' && hoveredElem.textContent === '') {
                 // place cursor next to the hovered paragraph
                 setTopPosition(getTopPosition(hoveredElem));
