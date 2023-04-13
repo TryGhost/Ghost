@@ -36,7 +36,6 @@ export default class PostsContextMenu extends Component {
     @service ghostPaths;
     @service session;
     @service infinity;
-    @service modals;
     @service store;
     @service notifications;
 
@@ -56,9 +55,18 @@ export default class PostsContextMenu extends Component {
     }
 
     @action
+    async featurePosts() {
+        this.menu.performTask(this.featurePostsTask);
+    }
+
+    @action
+    async unfeaturePosts() {
+        this.menu.performTask(this.unfeaturePostsTask);
+    }
+
+    @action
     async deletePosts() {
-        this.menu.close();
-        await this.modals.open(DeletePostsModal, {
+        this.menu.openModal(DeletePostsModal, {
             selectionList: this.selectionList,
             confirm: this.deletePostsTask
         });
@@ -66,8 +74,7 @@ export default class PostsContextMenu extends Component {
 
     @action
     async unpublishPosts() {
-        this.menu.close();
-        await this.modals.open(UnpublishPostsModal, {
+        await this.menu.openModal(UnpublishPostsModal, {
             selectionList: this.selectionList,
             confirm: this.unpublishPostsTask
         });
@@ -75,15 +82,14 @@ export default class PostsContextMenu extends Component {
 
     @action
     async editPostsAccess() {
-        this.menu.close();
-        await this.modals.open(EditPostsAccessModal, {
+        this.menu.openModal(EditPostsAccessModal, {
             selectionList: this.selectionList,
             confirm: this.editPostsAccessTask
         });
     }
 
     @task
-    *deletePostsTask(close) {
+    *deletePostsTask() {
         const deletedModels = this.selectionList.availableModels;
         yield this.performBulkDestroy();
         this.notifications.showNotification(this.#getToastMessage('deleted'), {type: 'success'});
@@ -94,13 +100,11 @@ export default class PostsContextMenu extends Component {
         // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
         this.infinity.replace(this.selectionList.infinityModel, remainingModels);
         this.selectionList.clearSelection();
-        close();
-
         return true;
     }
 
     @task
-    *unpublishPostsTask(close) {
+    *unpublishPostsTask() {
         const updatedModels = this.selectionList.availableModels;
         yield this.performBulkEdit('unpublish');
         this.notifications.showNotification(this.#getToastMessage('unpublished'), {type: 'success'});
@@ -123,8 +127,6 @@ export default class PostsContextMenu extends Component {
 
         // Remove posts that no longer match the filter
         this.updateFilteredPosts();
-
-        close();
 
         return true;
     }
@@ -173,6 +175,58 @@ export default class PostsContextMenu extends Component {
         this.updateFilteredPosts();
 
         close();
+    }
+
+    @task
+    *featurePostsTask() {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('feature');
+
+        this.notifications.showNotification(this.#getToastMessage('featured'), {type: 'success'});
+
+         // Update the models on the client side
+         for (const post of updatedModels) {
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    attributes: {
+                        featured: true
+                    }
+                }
+            });
+        }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
+
+        return true;
+    }
+
+    @task
+    *unfeaturePostsTask() {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('unfeature');
+
+        this.notifications.showNotification(this.#getToastMessage('unfeatured'), {type: 'success'});
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    attributes: {
+                        featured: false
+                    }
+                }
+            });
+        }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
 
         return true;
     }
@@ -222,61 +276,5 @@ export default class PostsContextMenu extends Component {
             }
         }
         return false;
-    }
-
-    @action
-    async featurePosts() {
-        const updatedModels = this.selectionList.availableModels;
-        await this.performBulkEdit('feature');
-
-        this.notifications.showNotification(this.#getToastMessage('featured'), {type: 'success'});
-
-        // Update the models on the client side
-        for (const post of updatedModels) {
-            // We need to do it this way to prevent marking the model as dirty
-            this.store.push({
-                data: {
-                    id: post.id,
-                    type: 'post',
-                    attributes: {
-                        featured: true
-                    }
-                }
-            });
-        }
-
-        // Remove posts that no longer match the filter
-        this.updateFilteredPosts();
-
-        // Close the menu
-        this.menu.close();
-    }
-
-    @action
-    async unfeaturePosts() {
-        const updatedModels = this.selectionList.availableModels;
-        await this.performBulkEdit('unfeature');
-
-        this.notifications.showNotification(this.#getToastMessage('unfeatured'), {type: 'success'});
-
-        // Update the models on the client side
-        for (const post of updatedModels) {
-            // We need to do it this way to prevent marking the model as dirty
-            this.store.push({
-                data: {
-                    id: post.id,
-                    type: 'post',
-                    attributes: {
-                        featured: false
-                    }
-                }
-            });
-        }
-
-        // Remove posts that no longer match the filter
-        this.updateFilteredPosts();
-
-        // Close the menu
-        this.menu.close();
     }
 }
