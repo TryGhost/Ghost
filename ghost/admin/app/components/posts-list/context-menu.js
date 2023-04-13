@@ -43,6 +43,7 @@ export default class PostsContextMenu extends Component {
     @service infinity;
     @service store;
     @service notifications;
+    @service membersUtils;
 
     get menu() {
         return this.args.menu;
