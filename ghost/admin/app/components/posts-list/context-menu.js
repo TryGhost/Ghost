@@ -105,9 +105,48 @@ export default class PostsContextMenu extends Component {
     *addTagToPostsTask(tags) {
         const updatedModels = this.selectionList.availableModels;
 
-        yield this.performBulkEdit('addTag', {tags: tags.map(tag => tag.id)});
-
+        yield this.performBulkEdit('addTag', {
+            tags: tags.map((t) => {
+                return {
+                    id: t.id,
+                    name: t.name,
+                    slug: t.slug
+                };
+            })
+        });
         this.notifications.showNotification(this.#getToastMessage('tagsAdded'), {type: 'success'});
+
+        const serializedTags = tags.toArray().map((t) => {
+            return {
+                ...t.serialize({includeId: true}),
+                type: 'tag'
+            };
+        });
+
+        // Destroy unsaved new tags (otherwise we could select them again)
+        this.store.peekAll('tag').forEach((tag) => {
+            if (tag.isNew) {
+                tag.destroyRecord();
+            }
+        });
+
+        // For new tags, attach the id to it, so we can link the new tag to the post
+        let allTags = null;
+
+        for (const tag of serializedTags) {
+            if (!tag.id) {
+                if (!allTags) {
+                    // Update tags on the client side (we could have created new tags)
+                    yield this.store.query('tag', {limit: 'all'});
+                    allTags = this.store.peekAll('tag').toArray();
+                }
+                const createdTag = allTags.find(t => t.name === tag.name && t.id);
+                if (createdTag) {
+                    tag.id = createdTag.id;
+                    tag.slug = createdTag.slug;
+                }
+            }
+        }
 
         // Update the models on the client side
         for (const post of updatedModels) {
@@ -117,12 +156,9 @@ export default class PostsContextMenu extends Component {
                     type: 'tag'
                 };
             });
-            for (const tag of tags) {
+            for (const tag of serializedTags) {
                 if (!newTags.find(t => t.id === tag.id)) {
-                    newTags.push({
-                        ...tag.serialize({includeId: true}),
-                        type: 'tag'
-                    });
+                    newTags.push(tag);
                 }
             }
 

@@ -22,6 +22,13 @@ export default class AddTag extends Component {
         // store and be updated when the above query returns
         this.store.query('tag', {limit: 'all'});
         this.#availableTags = this.store.peekAll('tag');
+
+        // Destroy unsaved new tags (otherwise we could select them again -> create them again)
+        this.#availableTags.forEach((tag) => {
+            if (tag.isNew) {
+                tag.destroyRecord();
+            }
+        });
     }
 
     @action
@@ -58,11 +65,8 @@ export default class AddTag extends Component {
     }
 
     @action
-    shouldAllowCreate() {
-        return false;
-
-        // This is not supported by the backend yet
-        // return !this.#findTagByName(nameInput.trim(), this.#availableTags);
+    shouldAllowCreate(nameInput) {
+        return !this.#findTagByName(nameInput.trim(), this.#availableTags);
     }
 
     #findTagByName(name, tags) {
