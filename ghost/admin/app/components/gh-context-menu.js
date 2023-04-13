@@ -5,13 +5,6 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-const states = [
-    'default', // default state
-    'open', // menu open
-    'modal', // modal open
-    'loading' // performing an action
-];
-
 export default class GhContextMenu extends Component {
     @service dropdown;
     @service modals;
@@ -21,6 +14,14 @@ export default class GhContextMenu extends Component {
     @tracked top = 0;
     @tracked selectionList = new SelectionList();
 
+    /**
+     * The current state of the context menu
+     * @type {'default'|'open'|'modal'|'loading'}
+     * default: default state
+     * open: menu open
+     * modal: modal open
+     * loading: performing an action
+     */
     state = states[0];
 
     #originalConfirm = null;
