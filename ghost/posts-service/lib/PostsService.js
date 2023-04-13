@@ -123,8 +123,8 @@ class PostsService {
             status: 'all'
         }).select('posts.id');
 
-        const postTags = data.tags.reduce((postTags, tagId) => {
-            return postTags.concat(postRows.map((post) => {
+        const postTags = data.tags.reduce((pt, tagId) => {
+            return pt.concat(postRows.map((post) => {
                 return {
                     id: (new ObjectId()).toHexString(),
                     post_id: post.id,
