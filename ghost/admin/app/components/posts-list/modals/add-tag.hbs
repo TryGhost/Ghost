@@ -1,10 +1,10 @@
 <div class="modal-content" data-test-modal="add-tags">
     <header class="modal-header">
-        <h1>What tags do you want to add?</h1>
+        <h1>Which tags do you want to add?</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
-    <div class="modal-body">
+    <div class="modal-body mb9">
         <p>
             <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="tags">
                 <GhTokenInput
@@ -18,7 +18,7 @@
                     @selected={{this.selectedTags}}
                     @showCreateWhen={{this.shouldAllowCreate}}
                     @triggerId={{this.triggerId}}
-                    @placeholder="Select one or more tags"
+                    @placeholder="Select one or multiple tags"
                 />
                 <GhErrorMessage @errors={{this.errors}} @property="tags" />
             </GhFormGroup>
@@ -33,7 +33,7 @@
             @runningText="Adding"
             @showSuccess={{false}}
             @task={{this.confirm}}
-            @class="gh-btn gh-btn-green gh-btn-icon"
+            @class="gh-btn gh-btn-primary gh-btn-icon"
             data-test-button="confirm"
         />
 
