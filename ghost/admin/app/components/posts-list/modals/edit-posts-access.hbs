@@ -4,7 +4,7 @@
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
-    <div class="modal-body">
+    <div class="modal-body mb9">
         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
             <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
         </GhFormGroup>
