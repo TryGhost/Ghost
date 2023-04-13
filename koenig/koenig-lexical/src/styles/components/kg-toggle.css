@@ -30,19 +30,4 @@
   .kg-toggle-header-text, .kg-toggle-content-text {
     @apply !whitespace-normal
   }
-
-  .kg-toggle-content-text .kg-prose :where(
-        p + p,
-        ul + p,
-        ol + p
-    ) {
-        @apply my-0
-    }
-
-    .kg-toggle-content-text .kg-prose :where(
-      p + ul,
-      p + ol,
-    ) {
-        @apply my-2
-    }
 }
