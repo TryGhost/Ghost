@@ -146,7 +146,8 @@ class PostsService {
 
         const postRows = await this.models.Post.getFilteredCollectionQuery({
             filter: options.filter,
-            status: 'all'
+            status: 'all',
+            transacting: options.transacting
         }).select('posts.id');
 
         const postTags = data.tags.reduce((pt, tag) => {
@@ -183,7 +184,8 @@ class PostsService {
 
         const postRows = await this.models.Post.getFilteredCollectionQuery({
             filter: options.filter,
-            status: 'all'
+            status: 'all',
+            transacting: options.transacting
         }).select('posts.id');
 
         await options.transacting('posts_tags').whereIn('post_id', postRows.map(post => post.id)).whereIn('tag_id', data.tags).del();
