@@ -146,7 +146,18 @@ export default class OfferPage extends React.Component {
             name: context?.member?.name || '',
             email: context?.member?.email || '',
             plan: 'free',
-            showNewsletterSelection: false
+            showNewsletterSelection: false,
+            termsCheckboxChecked: false
+        };
+    }
+
+    getFormErrors(state) {
+        const checkboxRequired = this.context.site.portal_signup_checkbox_required;
+        const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
+
+        return {
+            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            checkbox: checkboxError
         };
     }
 
@@ -198,6 +209,55 @@ export default class OfferPage extends React.Component {
         return fields;
     }
 
+    renderSignupTerms() {
+        const {site} = this.context;
+        if (site.portal_signup_terms_html === null || site.portal_signup_terms_html === '') {
+            return null;
+        }
+
+        const handleCheckboxChange = (e) => {
+            this.setState({
+                termsCheckboxChecked: e.target.checked
+            });
+        };
+
+        const termsText = (
+            <div className="gh-portal-signup-terms-content"
+                dangerouslySetInnerHTML={{__html: site.portal_signup_terms_html}}
+            ></div>
+        );
+
+        const signupTerms = site.portal_signup_checkbox_required ? (
+            <label>
+                <input
+                    type="checkbox"
+                    checked={!!this.state.termsCheckboxChecked}
+                    required={true}
+                    onChange={handleCheckboxChange}
+                />
+                <span class="checkbox"></span>
+                {termsText}
+            </label>
+        ) : termsText;
+
+        const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
+
+        const className = `gh-portal-signup-terms ${errorClassName}`;
+
+        const interceptAnchorClicks = (e) => {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+                window.open(e.target.href, '_blank');
+            }
+        };
+
+        return (
+            <div className={className} onClick={interceptAnchorClicks}>
+                {signupTerms}
+            </div>
+        );
+    }
+
     onKeyDown(e) {
         // Handles submit on Enter press
         if (e.keyCode === 13){
@@ -215,7 +275,7 @@ export default class OfferPage extends React.Component {
         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
         this.setState((state) => {
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
+                errors: this.getFormErrors(state)
             };
         }, () => {
             const {onAction} = this.context;
@@ -301,6 +361,9 @@ export default class OfferPage extends React.Component {
                         onChange={(e, field) => this.handleInputChange(e, field)}
                         onKeyDown={e => this.onKeyDown(e)}
                     />
+                    <div className='gh-portal-signup-terms-wrapper free-only'>
+                        {this.renderSignupTerms()}
+                    </div>
                 </div>
             </section>
         );
