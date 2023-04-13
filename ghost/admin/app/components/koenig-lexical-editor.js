@@ -125,6 +125,8 @@ const KoenigEditor = (props) => {
 export default class KoenigLexicalEditor extends Component {
     @service ajax;
     @service feature;
+    @service ghostPaths;
+    @service session;
 
     @inject config;
 
@@ -145,7 +147,7 @@ export default class KoenigLexicalEditor extends Component {
     }
 
     ReactComponent = () => {
-        const cardConfig = {
+        const defaultCardConfig = {
             unsplash: {
                 defaultHeaders: {
                     Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
@@ -157,6 +159,7 @@ export default class KoenigLexicalEditor extends Component {
             },
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null
         };
+        const cardConfig = Object.assign({}, defaultCardConfig, this.args.cardConfig);
 
         const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
@@ -350,21 +353,35 @@ export default class KoenigLexicalEditor extends Component {
             return {progress, isLoading, upload, errors, filesNumber};
         };
 
+        // TODO: react component isn't re-rendered when its props are changed meaning we don't transition
+        // to enabling multiplayer when a new post is saved and it gets an ID we can use for a YJS doc
+        // - figure out how to re-render the component when its props change
+        // - figure out some other mechanism for handling posts that don't really exist yet with multiplayer
+        const enableMultiplayer = this.feature.lexicalMultiplayer && !cardConfig.post.isNew;
+        const multiplayerWsProtocol = window.location.protocol === 'https:' ? `wss: ` : `ws:`;
+        const multiplayerEndpoint = multiplayerWsProtocol + window.location.host + this.ghostPaths.url.api('posts', 'multiplayer');
+        const multiplayerDocId = cardConfig.post.id;
+        const multiplayerUsername = this.session.user.name;
+
         return (
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
                             cardConfig={cardConfig}
-                            initialEditorState={this.args.lexical}
-                            onError={this.onError}
+                            enableMultiplayer={enableMultiplayer}
                             fileUploader={{useFileUpload, fileTypes}}
+                            initialEditorState={this.args.lexical}
+                            multiplayerUsername={multiplayerUsername}
+                            multiplayerDocId={multiplayerDocId}
+                            multiplayerEndpoint={multiplayerEndpoint}
+                            onError={this.onError}
                         >
                             <KoenigEditor
-                                onChange={this.args.onChange}
-                                registerAPI={this.args.registerAPI}
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
                                 darkMode={this.feature.nightShift}
+                                onChange={this.args.onChange}
+                                registerAPI={this.args.registerAPI}
                             />
                         </KoenigComposer>
                     </Suspense>
