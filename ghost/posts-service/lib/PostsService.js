@@ -69,7 +69,7 @@ class PostsService {
 
     async bulkEdit(data, options) {
         if (data.action === 'unpublish') {
-            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:[published,sent]', options.filter)});
+            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter)});
         }
         if (data.action === 'feature') {
             return await this.#updatePosts({featured: true}, {filter: options.filter});
