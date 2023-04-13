@@ -159,6 +159,11 @@
 
 .gh-badge.locked {
     background: none;
+    color: var(--midgrey);
+}
+
+.gh-badge.locked svg path {
+    fill: none;
 }
 
 /* User invitation modal

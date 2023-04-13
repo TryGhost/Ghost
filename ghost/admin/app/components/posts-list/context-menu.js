@@ -1,5 +1,8 @@
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
+import EditPostsAccessModal from './modals/edit-posts-access';
+import UnpublishPostsModal from './modals/unpublish-posts';
+import nql from '@tryghost/nql';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -10,6 +13,7 @@ export default class PostsContextMenu extends Component {
     @service session;
     @service infinity;
     @service modals;
+    @service store;
 
     get menu() {
         return this.args.menu;
@@ -23,9 +27,26 @@ export default class PostsContextMenu extends Component {
     async deletePosts() {
         this.menu.close();
         await this.modals.open(DeletePostsModal, {
-            isSingle: this.selectionList.isSingle,
-            count: this.selectionList.count,
+            selectionList: this.selectionList,
             confirm: this.deletePostsTask
+        });
+    }
+
+    @action
+    async unpublishPosts() {
+        this.menu.close();
+        await this.modals.open(UnpublishPostsModal, {
+            selectionList: this.selectionList,
+            confirm: this.unpublishPostsTask
+        });
+    }
+
+    @action
+    async editPostsAccess() {
+        this.menu.close();
+        await this.modals.open(EditPostsAccessModal, {
+            selectionList: this.selectionList,
+            confirm: this.editPostsAccessTask
         });
     }
 
@@ -39,6 +60,82 @@ export default class PostsContextMenu extends Component {
         // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
         this.infinity.replace(this.selectionList.infinityModel, remainingModels);
         this.selectionList.clearSelection();
+        close();
+
+        return true;
+    }
+
+    @task
+    *unpublishPostsTask(close) {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('unpublish');
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            if (post.status === 'published' || post.status === 'sent') {
+                // We need to do it this way to prevent marking the model as dirty
+                this.store.push({
+                    data: {
+                        id: post.id,
+                        type: 'post',
+                        attributes: {
+                            status: 'draft'
+                        }
+                    }
+                });
+            }
+        }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
+
+        close();
+
+        return true;
+    }
+
+    updateFilteredPosts() {
+        const updatedModels = this.selectionList.availableModels;
+        const filter = this.selectionList.allFilter;
+        const filterNql = nql(filter);
+
+        const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
+            if (!updatedModels.find(u => u.id === model.id)) {
+                return true;
+            }
+            return filterNql.queryJSON(model);
+        });
+        // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
+        this.infinity.replace(this.selectionList.infinityModel, remainingModels);
+    }
+
+    @task
+    *editPostsAccessTask(close, {visibility, tiers}) {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('access', {visibility, tiers});
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    attributes: {
+                        visibility
+                    },
+                    relationships: {
+                        links: {
+                            data: tiers
+                        }
+                    }
+                }
+            });
+        }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
+
         close();
 
         return true;
@@ -64,18 +161,31 @@ export default class PostsContextMenu extends Component {
     }
 
     get shouldFeatureSelection() {
-        const firstPost = this.selectionList.availableModels[0];
-        if (!firstPost) {
-            return true;
+        let featuredCount = 0;
+        for (const m of this.selectionList.availableModels) {
+            if (m.featured) {
+                featuredCount += 1;
+            }
         }
-        return !firstPost.featured;
+        return featuredCount <= this.selectionList.availableModels.length / 2;
     }
 
     get canFeatureSelection() {
-        if (!this.selectionList.isSingle) {
-            return true;
+        for (const m of this.selectionList.availableModels) {
+            if (m.get('status') !== 'sent') {
+                return true;
+            }
         }
-        return this.selectionList.availableModels[0].get('status') !== 'sent';
+        return false;
+    }
+
+    get canUnpublishSelection() {
+        for (const m of this.selectionList.availableModels) {
+            if (['published', 'sent'].includes(m.status)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @action
@@ -85,8 +195,20 @@ export default class PostsContextMenu extends Component {
 
         // Update the models on the client side
         for (const post of updatedModels) {
-            post.set('featured', true);
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    attributes: {
+                        featured: true
+                    }
+                }
+            });
         }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
 
         // Close the menu
         this.menu.close();
@@ -99,8 +221,20 @@ export default class PostsContextMenu extends Component {
 
         // Update the models on the client side
         for (const post of updatedModels) {
-            post.set('featured', false);
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    attributes: {
+                        featured: false
+                    }
+                }
+            });
         }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
 
         // Close the menu
         this.menu.close();
