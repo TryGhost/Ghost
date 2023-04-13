@@ -6,19 +6,22 @@
 
     <div class="modal-body">
         <p>
-            <GhTokenInput
-                @extra={{hash
-                    tokenComponent=(component "gh-token-input/tag-token")
-                }}
-                @onChange={{this.handleChange}}
-                @onCreate={{this.handleCreate}}
-                @options={{this.availableTags}}
-                @renderInPlace={{true}}
-                @selected={{this.selectedTags}}
-                @showCreateWhen={{this.shouldAllowCreate}}
-                @triggerId={{this.triggerId}}
-                @placeholder="Select one or more tags"
-            />
+            <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="tags">
+                <GhTokenInput
+                    @extra={{hash
+                        tokenComponent=(component "gh-token-input/tag-token")
+                    }}
+                    @onChange={{this.handleChange}}
+                    @onCreate={{this.handleCreate}}
+                    @options={{this.availableTags}}
+                    @renderInPlace={{true}}
+                    @selected={{this.selectedTags}}
+                    @showCreateWhen={{this.shouldAllowCreate}}
+                    @triggerId={{this.triggerId}}
+                    @placeholder="Select one or more tags"
+                />
+                <GhErrorMessage @errors={{this.errors}} @property="tags" />
+            </GhFormGroup>
         </p>
     </div>
 
@@ -29,8 +32,7 @@
             @buttonText="Add"
             @runningText="Adding"
             @showSuccess={{false}}
-            @task={{@data.confirm}}
-            @taskArgs={{this.selectedTags}}
+            @task={{this.confirm}}
             @class="gh-btn gh-btn-green gh-btn-icon"
             data-test-button="confirm"
         />
