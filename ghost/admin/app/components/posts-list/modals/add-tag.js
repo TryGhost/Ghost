@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
-import {inject as service} from '@ember/service';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class AddTag extends Component {
@@ -9,7 +9,7 @@ export default class AddTag extends Component {
     #availableTags = null;
 
     @tracked
-    selectedTags = [];
+        selectedTags = [];
 
     get availableTags() {
         return this.#availableTags || [];
@@ -58,9 +58,11 @@ export default class AddTag extends Component {
     }
 
     @action
-    shouldAllowCreate(nameInput) {
+    shouldAllowCreate() {
         return false;
-        return !this.#findTagByName(nameInput.trim(), this.#availableTags);
+
+        // This is not supported by the backend yet
+        // return !this.#findTagByName(nameInput.trim(), this.#availableTags);
     }
 
     #findTagByName(name, tags) {

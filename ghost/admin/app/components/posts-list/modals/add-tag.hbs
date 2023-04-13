@@ -1,6 +1,6 @@
 <div class="modal-content" data-test-modal="add-tags">
     <header class="modal-header">
-        <h1>What tags you wanna add???</h1>
+        <h1>What tags do you want to add?</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
@@ -17,6 +17,7 @@
                 @selected={{this.selectedTags}}
                 @showCreateWhen={{this.shouldAllowCreate}}
                 @triggerId={{this.triggerId}}
+                @placeholder="Select one or more tags"
             />
         </p>
     </div>

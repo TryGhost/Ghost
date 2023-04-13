@@ -1,10 +1,10 @@
+import AddPostTagsModal from './modals/add-tag';
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
 import nql from '@tryghost/nql';
 import tpl from '@tryghost/tpl';
-import AddPostTagsModal from './modals/add-tag';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -29,6 +29,10 @@ const messages = {
     accessUpdated: {
         single: 'Post access successfully updated',
         multiple: 'Post access successfully updated for {count} posts'
+    },
+    tagsAdded: {
+        single: 'Tags added successfully',
+        multiple: 'Tags added successfully to {count} posts'
     }
 };
 
@@ -103,7 +107,38 @@ export default class PostsContextMenu extends Component {
 
         yield this.performBulkEdit('addTag', {tags: tags.map(tag => tag.id)});
 
-        // todo: Update the models on the client side
+        this.notifications.showNotification(this.#getToastMessage('tagsAdded'), {type: 'success'});
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            const newTags = post.tags.toArray().map((t) => {
+                return {
+                    ...t.serialize({includeId: true}),
+                    type: 'tag'
+                };
+            });
+            for (const tag of tags) {
+                if (!newTags.find(t => t.id === tag.id)) {
+                    newTags.push({
+                        ...tag.serialize({includeId: true}),
+                        type: 'tag'
+                    });
+                }
+            }
+
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    relationships: {
+                        tags: {
+                            data: newTags
+                        }
+                    }
+                }
+            });
+        }
 
         // Remove posts that no longer match the filter
         this.updateFilteredPosts();
