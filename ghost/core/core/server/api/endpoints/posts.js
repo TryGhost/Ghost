@@ -205,7 +205,9 @@ module.exports = {
 
     bulkEdit: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'filter'
         ],
@@ -235,7 +237,9 @@ module.exports = {
 
     bulkDestroy: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'filter'
         ],
