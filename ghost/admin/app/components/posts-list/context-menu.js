@@ -34,6 +34,10 @@ const messages = {
     tagsAdded: {
         single: 'Tags added successfully',
         multiple: 'Tags added successfully to {count} posts'
+    },
+    tagAdded: {
+        single: 'Tag added successfully',
+        multiple: 'Tag added successfully to {count} posts'
     }
 };
 
@@ -116,7 +120,11 @@ export default class PostsContextMenu extends Component {
                 };
             })
         });
-        this.notifications.showNotification(this.#getToastMessage('tagsAdded'), {type: 'success'});
+        if (tags.length > 1) {
+            this.notifications.showNotification(this.#getToastMessage('tagsAdded'), {type: 'success'});
+        } else {
+            this.notifications.showNotification(this.#getToastMessage('tagAdded'), {type: 'success'});
+        }
 
         const serializedTags = tags.toArray().map((t) => {
             return {
