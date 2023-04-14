@@ -216,8 +216,7 @@ module.exports = {
         validation: {
             data: {
                 action: {
-                    required: true,
-                    values: ['feature', 'unfeature', 'addTag']
+                    required: true
                 }
             },
             options: {
