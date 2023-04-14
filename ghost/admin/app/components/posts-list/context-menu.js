@@ -4,10 +4,19 @@ import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
 import nql from '@tryghost/nql';
-import tpl from '@tryghost/tpl';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+
+/**
+ * @tryghost/tpl doesn't work in admin yet (Safari)
+ */
+function tpl(str, data) {
+    for (const key in data) {
+        str = str.replace(new RegExp(`{${key}}`, 'g'), data[key]);
+    }
+    return str;
+}
 
 const messages = {
     deleted: {
@@ -55,7 +64,7 @@ export default class PostsContextMenu extends Component {
 
     #getToastMessage(type) {
         if (this.selectionList.isSingle) {
-            return tpl(messages[type].single);
+            return messages[type].single;
         }
         return tpl(messages[type].multiple, {count: this.selectionList.count});
     }
