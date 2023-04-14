@@ -15,9 +15,18 @@ module.exports = {
         options: [
             'limit',
             'order',
-            'page'
+            'page',
+            'formats',
+            'filter'
         ],
         permissions: true,
+        validation: {
+            options: {
+                formats: {
+                    values: models.Snippet.allowedFormats
+                }
+            }
+        },
         query(frame) {
             return models.Snippet.findPage(frame.options);
         }
@@ -25,6 +34,9 @@ module.exports = {
 
     read: {
         headers: {},
+        options: [
+            'formats'
+        ],
         data: [
             'id'
         ],
@@ -46,6 +58,9 @@ module.exports = {
     add: {
         statusCode: 201,
         headers: {},
+        options: [
+            'formats'
+        ],
         permissions: true,
         query(frame) {
             return models.Snippet.add(frame.data.snippets[0], frame.options)
@@ -62,7 +77,8 @@ module.exports = {
     edit: {
         headers: {},
         options: [
-            'id'
+            'id',
+            'formats'
         ],
         validation: {
             options: {
