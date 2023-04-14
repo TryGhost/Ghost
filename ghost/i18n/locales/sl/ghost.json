@@ -11,7 +11,7 @@
     "Secure sign in link for {{siteTitle}}": "Varna povezava za prijavo na {{siteTitle}}",
     "See you soon!": "Se vidimo kmalu!",
     "Sent to {{email}}": "Poslano na {{email}}",
-    "Sign in to {{siteTitle}}": "Prijavite se v {{siteTitle}}",
+    "Sign in to {{siteTitle}}": "Prijava v {{siteTitle}}",
     "Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:": "Kliknite spodnjo povezavo, da dokončate postopek prijave na {{siteTitle}} in se samodejno prijavite:",
     "Thank you for signing up to {{siteTitle}}!": "Hvala za prijavo na {{siteTitle}}!",
     "Thank you for subscribing to {{siteTitle}}!": "Hvala, ker ste se naročili na {{siteTitle}}!",
@@ -19,7 +19,7 @@
     "This email address will not be used.": "Ta e-poštni naslov ne bo uporabljen.",
     "Welcome back to {{siteTitle}}!": "Dobrodošli nazaj na {{siteTitle}}!",
     "Welcome back! Use this link to securely sign in to your {{siteTitle}} account:": "Dobrodošli nazaj! S to povezavo se varno prijavite v svoj {{siteTitle}} račun:",
-    "You can also copy & paste this URL into your browser:": "Ta URL lahko tudi kopirate in prilepite v brskalnik:",
+    "You can also copy & paste this URL into your browser:": "To povezavo lahko tudi kopirate in prilepite v brskalnik:",
     "You will not be signed up, and no account will be created for you.": "Ne boste vpisani in za vas ne bo ustvarjen račun.",
     "You will not be subscribed.": "Ne boste naročeni.",
     "You're one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:": "Le en klik vas loči od tega, da se naročite na {{siteTitle}} - potrdite svoj e-poštni naslov s to povezavo:"

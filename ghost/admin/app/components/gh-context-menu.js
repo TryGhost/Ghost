@@ -12,7 +12,10 @@ export default class GhContextMenu extends Component {
     @tracked isOpen = false;
     @tracked left = 0;
     @tracked top = 0;
+    @tracked yPlacement = 'bottom';
+    @tracked xPlacement = 'right';
     @tracked selectionList = new SelectionList();
+    element = null;
 
     /**
      * The current state of the context menu
@@ -33,8 +36,8 @@ export default class GhContextMenu extends Component {
             return;
         case 'default':
             this.isOpen = false;
-            this.selectionList.unfreeze();
             this.#closeModal();
+            this.selectionList.unfreeze();
             this.state = state;
             return;
         case 'open':
@@ -73,8 +76,13 @@ export default class GhContextMenu extends Component {
         return `left: ${this.left}px; top: ${this.top}px;`;
     }
 
+    get class() {
+        return `gh-placement-${this.yPlacement} gh-placement-${this.xPlacement}`;
+    }
+
     @action
-    setup() {
+    setup(element) {
+        this.element = element;
         const dropdownService = this.dropdown;
         dropdownService.on('close', this, this.close);
         dropdownService.on('toggle', this, this.toggle);
@@ -82,6 +90,7 @@ export default class GhContextMenu extends Component {
 
     willDestroy() {
         super.willDestroy(...arguments);
+        this.element = null;
         const dropdownService = this.dropdown;
         dropdownService.off('close', this, this.close);
         dropdownService.off('toggle', this, this.toggle);
@@ -119,9 +128,40 @@ export default class GhContextMenu extends Component {
                 this.selectionList = options.selectionList;
             }
 
+            this.calculatePlacement();
             this.open();
         } else {
             this.close();
+        }
+    }
+
+    get listElement() {
+        return this.element?.firstElementChild?.firstElementChild;
+    }
+
+    calculatePlacement() {
+        if (!this.element || !this.listElement) {
+            return;
+        }
+
+        const windowHeight = window.innerHeight;
+        const windowWidth = window.innerWidth;
+        const menuHeight = this.listElement.offsetHeight;
+        const menuWidth = this.listElement.offsetWidth;
+        const padding = 10;
+
+        // Do we have enough place to place the menu below?
+        if (this.top + menuHeight + padding < windowHeight) {
+            this.yPlacement = 'bottom';
+        } else {
+            this.yPlacement = 'top';
+        }
+
+        // Do we have enough place to place the menu to the right?
+        if (this.left + menuWidth + padding < windowWidth) {
+            this.xPlacement = 'right';
+        } else {
+            this.xPlacement = 'left';
         }
     }
 
@@ -147,7 +187,11 @@ export default class GhContextMenu extends Component {
 
         this.#modal = this.modals.open(Modal, data);
         this.#modal.then(() => {
-            this.setState('default');
+            // We need to delay a little bit for the click event to be processed
+            // Since the click event is bubbling back to window, where it will trigger a list deselect
+            setTimeout(() => {
+                this.setState('default');
+            }, 10);
         });
     }
 

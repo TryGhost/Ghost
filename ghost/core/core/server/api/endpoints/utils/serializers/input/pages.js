@@ -189,5 +189,13 @@ module.exports = {
 
         defaultFormat(frame);
         defaultRelations(frame);
+    },
+
+    bulkEdit(apiConfig, frame) {
+        forcePageFilter(frame);
+    },
+
+    bulkDestroy(apiConfig, frame) {
+        forcePageFilter(frame);
     }
 };

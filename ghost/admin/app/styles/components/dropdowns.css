@@ -351,11 +351,23 @@ Post context menu
 .gh-posts-context-menu {
     max-width: 160px !important;
     border-radius: var(--border-radius);
-    box-shadow: 
+    box-shadow:
     0 0 2.3px rgba(0, 0, 0, 0.028),
     0 3.8px 7.8px rgba(0, 0, 0, 0.042),
     0 17px 35px -7px rgba(0, 0, 0, 0.11)
     ;
+}
+
+.gh-placement-top .gh-posts-context-menu {
+    transform: translateY(-100%);
+}
+
+.gh-placement-left .gh-posts-context-menu {
+    transform: translateX(-100%);
+}
+
+.gh-placement-top.gh-placement-left .gh-posts-context-menu {
+    transform: translate(-100%, -100%);
 }
 
 .gh-posts-context-menu li > button {

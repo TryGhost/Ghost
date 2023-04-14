@@ -16,6 +16,9 @@ const TYPES = [{
     name: 'Published posts',
     value: 'published'
 }, {
+    name: 'Email only posts',
+    value: 'sent'
+}, {
     name: 'Scheduled posts',
     value: 'scheduled'
 }, {

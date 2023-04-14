@@ -12,6 +12,11 @@ export default class SelectionList {
 
     #frozen = false;
 
+    /**
+     * When doing right click on an item, we temporarily select it, but want to clear it as soon as we close the context menu.
+     */
+    #clearOnNextUnfreeze = false;
+
     constructor(infinityModel) {
         this.infinityModel = infinityModel ?? {content: []};
     }
@@ -22,6 +27,14 @@ export default class SelectionList {
 
     unfreeze() {
         this.#frozen = false;
+        if (this.#clearOnNextUnfreeze) {
+            this.clearSelection();
+            this.#clearOnNextUnfreeze = false;
+        }
+    }
+
+    clearOnNextUnfreeze() {
+        this.#clearOnNextUnfreeze = true;
     }
 
     /**
@@ -132,6 +145,16 @@ export default class SelectionList {
         this.selectedIds = this.selectedIds;
     }
 
+    clearUnavailableItems() {
+        const newSelection = new Set();
+        for (const item of this.infinityModel.content) {
+            if (this.selectedIds.has(item.id)) {
+                newSelection.add(item.id);
+            }
+        }
+        this.selectedIds = newSelection;
+    }
+
     /**
      * Select all items between the last selection or the first one if none
      */
@@ -139,6 +162,12 @@ export default class SelectionList {
         if (this.#frozen) {
             return;
         }
+        if (this.lastSelectedId === null) {
+            // Do a normal toggle
+            this.toggleItem(id);
+            return;
+        }
+
         // Unselect last selected items
         for (const item of this.lastShiftSelectionGroup) {
             if (this.inverted) {
@@ -151,10 +180,6 @@ export default class SelectionList {
 
         // todo
         let running = false;
-
-        if (this.lastSelectedId === null) {
-            running = true;
-        }
 
         for (const item of this.infinityModel.content) {
             // Exlusing the last selected item
@@ -205,8 +230,8 @@ export default class SelectionList {
         this.lastSelectedId = null;
     }
 
-    clearSelection() {
-        if (this.#frozen) {
+    clearSelection(options = {}) {
+        if (this.#frozen && !options.force) {
             return;
         }
         this.selectedIds = new Set();

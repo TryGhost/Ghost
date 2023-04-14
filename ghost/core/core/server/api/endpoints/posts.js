@@ -205,7 +205,9 @@ module.exports = {
 
     bulkEdit: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'filter'
         ],
@@ -216,8 +218,7 @@ module.exports = {
         validation: {
             data: {
                 action: {
-                    required: true,
-                    values: ['feature', 'unfeature', 'addTag']
+                    required: true
                 }
             },
             options: {
@@ -236,7 +237,9 @@ module.exports = {
 
     bulkDestroy: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'filter'
         ],
