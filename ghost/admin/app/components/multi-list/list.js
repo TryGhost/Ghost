@@ -44,6 +44,11 @@ export default class ListComponent extends Component {
         if (!event.metaKey && !event.ctrlKey) {
             this.selectionList.clearSelection();
         }
+
+        // Update the status (in case we didn't receive an keyup event)
+        this.shiftPressed = !!event.shiftKey;
+        this.metaPressed = !!event.metaKey;
+        this.ctrlPressed = !!event.ctrlKey;
     }
 
     @action
