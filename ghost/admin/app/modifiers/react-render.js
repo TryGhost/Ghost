@@ -16,15 +16,11 @@ export default class ReactRenderModifier extends Modifier {
     }
 
     modify(element, [reactComponent], {props}) {
-        if (!this.didSetup) {
-            if (!this.root) {
-                this.root = createRoot(element);
-            }
-
-            this.root.render(React.createElement(reactComponent, {...props}));
-
-            this.didSetup = true;
+        if (!this.root) {
+            this.root = createRoot(element);
         }
+
+        this.root.render(React.createElement(reactComponent, {...props}));
     }
 
     cleanup = () => {

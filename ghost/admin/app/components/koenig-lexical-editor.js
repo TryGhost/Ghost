@@ -146,7 +146,7 @@ export default class KoenigLexicalEditor extends Component {
         // don't rethrow, Lexical will attempt to gracefully recover
     }
 
-    ReactComponent = () => {
+    ReactComponent = (props) => {
         const defaultCardConfig = {
             unsplash: {
                 defaultHeaders: {
@@ -159,7 +159,7 @@ export default class KoenigLexicalEditor extends Component {
             },
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null
         };
-        const cardConfig = Object.assign({}, defaultCardConfig, this.args.cardConfig);
+        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig);
 
         const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
