@@ -876,6 +876,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: false},
+        lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
