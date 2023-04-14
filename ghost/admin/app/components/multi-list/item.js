@@ -86,6 +86,7 @@ export default class ItemComponent extends Component {
         } else {
             this.selectionList.clearSelection();
             this.selectionList.toggleItem(this.id);
+            this.selectionList.clearOnNextUnfreeze();
             this.dropdown.toggleDropdown('context-menu', this, {left: x, top: y, selectionList: this.selectionList});
         }
 
