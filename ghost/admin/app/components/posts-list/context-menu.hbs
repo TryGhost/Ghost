@@ -23,15 +23,17 @@
         {{/if}}
     {{/if}}
     <li>
-        <button class="mr2" type="button" disabled {{on "click" @menu.close}}>
+        <button class="mr2" type="button" {{on "click" this.addTagToPosts}}>
             <span>{{svg-jar "tag"}}Add a tag</span>
         </button>
     </li>
-    <li>
-        <button class="mr2" type="button" {{on "click" this.editPostsAccess}}>
-            <span>{{svg-jar "lock"}}Change access</span>
-        </button>
-    </li>
+    {{#if this.membersUtils.isMembersEnabled}}
+        <li>
+            <button class="mr2" type="button" {{on "click" this.editPostsAccess}}>
+                <span>{{svg-jar "lock"}}Change access</span>
+            </button>
+        </li>
+    {{/if}}
     {{#if this.session.user.isAdmin}}
         <li>
             <button class="mr2" type="button" {{on "click" this.deletePosts}}>

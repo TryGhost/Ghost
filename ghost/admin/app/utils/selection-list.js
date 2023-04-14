@@ -10,8 +10,18 @@ export default class SelectionList {
 
     infinityModel;
 
+    #frozen = false;
+
     constructor(infinityModel) {
         this.infinityModel = infinityModel ?? {content: []};
+    }
+
+    freeze() {
+        this.#frozen = true;
+    }
+
+    unfreeze() {
+        this.#frozen = false;
     }
 
     /**
@@ -90,13 +100,31 @@ export default class SelectionList {
     }
 
     toggleItem(id) {
+        if (this.#frozen) {
+            return;
+        }
         this.lastShiftSelectionGroup = new Set();
-        this.lastSelectedId = id;
 
         if (this.selectedIds.has(id)) {
             this.selectedIds.delete(id);
+
+            if (!this.inverted) {
+                if (this.lastSelectedId === id) {
+                    this.lastSelectedId = null;
+                }
+            } else {
+                // Shift behaviour in inverted mode needs a review
+                this.lastSelectedId = id;
+            }
         } else {
             this.selectedIds.add(id);
+
+            if (!this.inverted) {
+                this.lastSelectedId = id;
+            } else {
+                // Shift behaviour in inverted mode needs a review
+                this.lastSelectedId = id;
+            }
         }
 
         // Force update
@@ -108,6 +136,9 @@ export default class SelectionList {
      * Select all items between the last selection or the first one if none
      */
     shiftItem(id) {
+        if (this.#frozen) {
+            return;
+        }
         // Unselect last selected items
         for (const item of this.lastShiftSelectionGroup) {
             if (this.inverted) {
@@ -166,12 +197,20 @@ export default class SelectionList {
     }
 
     selectAll() {
+        if (this.#frozen) {
+            return;
+        }
         this.selectedIds = new Set();
         this.inverted = !this.inverted;
+        this.lastSelectedId = null;
     }
 
     clearSelection() {
+        if (this.#frozen) {
+            return;
+        }
         this.selectedIds = new Set();
         this.inverted = false;
+        this.lastSelectedId = null;
     }
 }

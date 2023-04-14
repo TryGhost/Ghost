@@ -1,19 +1,49 @@
+import AddPostTagsModal from './modals/add-tag';
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
 import nql from '@tryghost/nql';
+import tpl from '@tryghost/tpl';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+
+const messages = {
+    deleted: {
+        single: 'Post deleted successfully',
+        multiple: '{count} posts deleted successfully'
+    },
+    unpublished: {
+        single: 'Post successfully reverted to a draft',
+        multiple: '{count} posts successfully reverted to drafts'
+    },
+    featured: {
+        single: 'Post featured successfully',
+        multiple: '{count} posts featured successfully'
+    },
+    unfeatured: {
+        single: 'Post unfeatured successfully',
+        multiple: '{count} posts unfeatured successfully'
+    },
+    accessUpdated: {
+        single: 'Post access successfully updated',
+        multiple: 'Post access successfully updated for {count} posts'
+    },
+    tagsAdded: {
+        single: 'Tags added successfully',
+        multiple: 'Tags added successfully to {count} posts'
+    }
+};
 
 export default class PostsContextMenu extends Component {
     @service ajax;
     @service ghostPaths;
     @service session;
     @service infinity;
-    @service modals;
     @service store;
+    @service notifications;
+    @service membersUtils;
 
     get menu() {
         return this.args.menu;
@@ -23,10 +53,34 @@ export default class PostsContextMenu extends Component {
         return this.menu.selectionList;
     }
 
+    #getToastMessage(type) {
+        if (this.selectionList.isSingle) {
+            return tpl(messages[type].single);
+        }
+        return tpl(messages[type].multiple, {count: this.selectionList.count});
+    }
+
+    @action
+    async featurePosts() {
+        this.menu.performTask(this.featurePostsTask);
+    }
+
+    @action
+    async unfeaturePosts() {
+        this.menu.performTask(this.unfeaturePostsTask);
+    }
+
+    @action
+    async addTagToPosts() {
+        await this.menu.openModal(AddPostTagsModal, {
+            selectionList: this.selectionList,
+            confirm: this.addTagToPostsTask
+        });
+    }
+
     @action
     async deletePosts() {
-        this.menu.close();
-        await this.modals.open(DeletePostsModal, {
+        this.menu.openModal(DeletePostsModal, {
             selectionList: this.selectionList,
             confirm: this.deletePostsTask
         });
@@ -34,8 +88,7 @@ export default class PostsContextMenu extends Component {
 
     @action
     async unpublishPosts() {
-        this.menu.close();
-        await this.modals.open(UnpublishPostsModal, {
+        await this.menu.openModal(UnpublishPostsModal, {
             selectionList: this.selectionList,
             confirm: this.unpublishPostsTask
         });
@@ -43,36 +96,117 @@ export default class PostsContextMenu extends Component {
 
     @action
     async editPostsAccess() {
-        this.menu.close();
-        await this.modals.open(EditPostsAccessModal, {
+        this.menu.openModal(EditPostsAccessModal, {
             selectionList: this.selectionList,
             confirm: this.editPostsAccessTask
         });
     }
 
     @task
-    *deletePostsTask(close) {
+    *addTagToPostsTask(tags) {
+        const updatedModels = this.selectionList.availableModels;
+
+        yield this.performBulkEdit('addTag', {
+            tags: tags.map((t) => {
+                return {
+                    id: t.id,
+                    name: t.name,
+                    slug: t.slug
+                };
+            })
+        });
+        this.notifications.showNotification(this.#getToastMessage('tagsAdded'), {type: 'success'});
+
+        const serializedTags = tags.toArray().map((t) => {
+            return {
+                ...t.serialize({includeId: true}),
+                type: 'tag'
+            };
+        });
+
+        // Destroy unsaved new tags (otherwise we could select them again)
+        this.store.peekAll('tag').forEach((tag) => {
+            if (tag.isNew) {
+                tag.destroyRecord();
+            }
+        });
+
+        // For new tags, attach the id to it, so we can link the new tag to the post
+        let allTags = null;
+
+        for (const tag of serializedTags) {
+            if (!tag.id) {
+                if (!allTags) {
+                    // Update tags on the client side (we could have created new tags)
+                    yield this.store.query('tag', {limit: 'all'});
+                    allTags = this.store.peekAll('tag').toArray();
+                }
+                const createdTag = allTags.find(t => t.name === tag.name && t.id);
+                if (createdTag) {
+                    tag.id = createdTag.id;
+                    tag.slug = createdTag.slug;
+                }
+            }
+        }
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            const newTags = post.tags.toArray().map((t) => {
+                return {
+                    ...t.serialize({includeId: true}),
+                    type: 'tag'
+                };
+            });
+            for (const tag of serializedTags) {
+                if (!newTags.find(t => t.id === tag.id)) {
+                    newTags.push(tag);
+                }
+            }
+
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    relationships: {
+                        tags: {
+                            data: newTags
+                        }
+                    }
+                }
+            });
+        }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
+
+        return true;
+    }
+
+    @task
+    *deletePostsTask() {
         const deletedModels = this.selectionList.availableModels;
         yield this.performBulkDestroy();
+        this.notifications.showNotification(this.#getToastMessage('deleted'), {type: 'success'});
+
         const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
             return !deletedModels.includes(model);
         });
         // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
         this.infinity.replace(this.selectionList.infinityModel, remainingModels);
         this.selectionList.clearSelection();
-        close();
-
         return true;
     }
 
     @task
-    *unpublishPostsTask(close) {
+    *unpublishPostsTask() {
         const updatedModels = this.selectionList.availableModels;
         yield this.performBulkEdit('unpublish');
+        this.notifications.showNotification(this.#getToastMessage('unpublished'), {type: 'success'});
 
         // Update the models on the client side
         for (const post of updatedModels) {
-            if (post.status === 'published' || post.status === 'sent') {
+            if (post.status === 'published') {
                 // We need to do it this way to prevent marking the model as dirty
                 this.store.push({
                     data: {
@@ -88,8 +222,6 @@ export default class PostsContextMenu extends Component {
 
         // Remove posts that no longer match the filter
         this.updateFilteredPosts();
-
-        close();
 
         return true;
     }
@@ -113,6 +245,7 @@ export default class PostsContextMenu extends Component {
     *editPostsAccessTask(close, {visibility, tiers}) {
         const updatedModels = this.selectionList.availableModels;
         yield this.performBulkEdit('access', {visibility, tiers});
+        this.notifications.showNotification(this.#getToastMessage('accessUpdated'), {type: 'success'});
 
         // Update the models on the client side
         for (const post of updatedModels) {
@@ -137,6 +270,58 @@ export default class PostsContextMenu extends Component {
         this.updateFilteredPosts();
 
         close();
+    }
+
+    @task
+    *featurePostsTask() {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('feature');
+
+        this.notifications.showNotification(this.#getToastMessage('featured'), {type: 'success'});
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    attributes: {
+                        featured: true
+                    }
+                }
+            });
+        }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
+
+        return true;
+    }
+
+    @task
+    *unfeaturePostsTask() {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('unfeature');
+
+        this.notifications.showNotification(this.#getToastMessage('unfeatured'), {type: 'success'});
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            // We need to do it this way to prevent marking the model as dirty
+            this.store.push({
+                data: {
+                    id: post.id,
+                    type: 'post',
+                    attributes: {
+                        featured: false
+                    }
+                }
+            });
+        }
+
+        // Remove posts that no longer match the filter
+        this.updateFilteredPosts();
 
         return true;
     }
@@ -181,62 +366,10 @@ export default class PostsContextMenu extends Component {
 
     get canUnpublishSelection() {
         for (const m of this.selectionList.availableModels) {
-            if (['published', 'sent'].includes(m.status)) {
+            if (m.status === 'published') {
                 return true;
             }
         }
         return false;
-    }
-
-    @action
-    async featurePosts() {
-        const updatedModels = this.selectionList.availableModels;
-        await this.performBulkEdit('feature');
-
-        // Update the models on the client side
-        for (const post of updatedModels) {
-            // We need to do it this way to prevent marking the model as dirty
-            this.store.push({
-                data: {
-                    id: post.id,
-                    type: 'post',
-                    attributes: {
-                        featured: true
-                    }
-                }
-            });
-        }
-
-        // Remove posts that no longer match the filter
-        this.updateFilteredPosts();
-
-        // Close the menu
-        this.menu.close();
-    }
-
-    @action
-    async unfeaturePosts() {
-        const updatedModels = this.selectionList.availableModels;
-        await this.performBulkEdit('unfeature');
-
-        // Update the models on the client side
-        for (const post of updatedModels) {
-            // We need to do it this way to prevent marking the model as dirty
-            this.store.push({
-                data: {
-                    id: post.id,
-                    type: 'post',
-                    attributes: {
-                        featured: false
-                    }
-                }
-            });
-        }
-
-        // Remove posts that no longer match the filter
-        this.updateFilteredPosts();
-
-        // Close the menu
-        this.menu.close();
     }
 }
