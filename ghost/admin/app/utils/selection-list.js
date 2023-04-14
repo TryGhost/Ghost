@@ -12,6 +12,11 @@ export default class SelectionList {
 
     #frozen = false;
 
+    /**
+     * When doing right click on an item, we temporarily select it, but want to clear it as soon as we close the context menu.
+     */
+    #clearOnNextUnfreeze = false;
+
     constructor(infinityModel) {
         this.infinityModel = infinityModel ?? {content: []};
     }
@@ -22,6 +27,14 @@ export default class SelectionList {
 
     unfreeze() {
         this.#frozen = false;
+        if (this.#clearOnNextUnfreeze) {
+            this.clearSelection();
+            this.#clearOnNextUnfreeze = false;
+        }
+    }
+
+    clearOnNextUnfreeze() {
+        this.#clearOnNextUnfreeze = true;
     }
 
     /**
