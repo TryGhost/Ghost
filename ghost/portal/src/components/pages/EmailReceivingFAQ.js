@@ -26,7 +26,7 @@ export default function EmailReceivingPage() {
             <div class="gh-longform">
                 <h3>{t('Help! I\'m not receiving emails')}</h3>
 
-                <p>{t("If you're not receiving the email newsletter you've subscribed to, here are few things to check.")}</p>
+                <p>{t('If you\'re not receiving the email newsletter you\'ve subscribed to, here are few things to check.')}</p>
 
                 <h4>{t('Verify your email address is correct')}</h4>
 
