@@ -27,14 +27,6 @@ const messages = {
         single: 'Post successfully reverted to a draft',
         multiple: '{count} posts successfully reverted to drafts'
     },
-    featured: {
-        single: 'Post featured successfully',
-        multiple: '{count} posts featured successfully'
-    },
-    unfeatured: {
-        single: 'Post unfeatured successfully',
-        multiple: '{count} posts unfeatured successfully'
-    },
     accessUpdated: {
         single: 'Post access successfully updated',
         multiple: 'Post access successfully updated for {count} posts'
@@ -286,8 +278,6 @@ export default class PostsContextMenu extends Component {
         const updatedModels = this.selectionList.availableModels;
         yield this.performBulkEdit('feature');
 
-        this.notifications.showNotification(this.#getToastMessage('featured'), {type: 'success'});
-
         // Update the models on the client side
         for (const post of updatedModels) {
             // We need to do it this way to prevent marking the model as dirty
@@ -312,8 +302,6 @@ export default class PostsContextMenu extends Component {
     *unfeaturePostsTask() {
         const updatedModels = this.selectionList.availableModels;
         yield this.performBulkEdit('unfeature');
-
-        this.notifications.showNotification(this.#getToastMessage('unfeatured'), {type: 'success'});
 
         // Update the models on the client side
         for (const post of updatedModels) {
