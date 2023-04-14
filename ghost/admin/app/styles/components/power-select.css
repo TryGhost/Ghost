@@ -218,7 +218,7 @@
 
 .ember-power-select-multiple-option {
     margin: 2px!important;
-    padding: 1px 6px 2px;
+    padding: 1px 0 2px 6px;
     border-radius: 3px;
     font-size: 0.93em;
     font-weight: 500;
@@ -245,8 +245,9 @@
 .ember-power-select-multiple-remove-btn {
     flex: 1;
     display: flex;
-    width: 20px;
+    width: 22px;
     height: 100%;
+    margin-top: 1px;
     line-height: 0;
     padding: 0;
     justify-content: center;
