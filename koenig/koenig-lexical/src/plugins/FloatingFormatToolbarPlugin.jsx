@@ -24,7 +24,9 @@ import {
     ListNode
 } from '@lexical/list';
 import {
-    $wrapNodes
+    $wrapNodes,
+    createDOMRange,
+    createRectsFromDOMRange
 } from '@lexical/selection';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
@@ -33,7 +35,6 @@ import {
     ToolbarMenuItem,
     ToolbarMenuSeparator
 } from '../components/ui/ToolbarMenu';
-import {getDOMRangeRect} from '../utils/getDOMRangeRect';
 import {getScrollParent} from '../utils/getScrollParent';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {setFloatingElemPosition} from '../utils/setFloatingElemPosition';
@@ -130,26 +131,20 @@ function FloatingFormatToolbar({
 
     const updateFloatingToolbar = React.useCallback(() => {
         const toolbarElement = toolbarRef.current;
+        const selection = $getSelection();
 
-        if (!toolbarElement) {
+        if (!toolbarElement || !$isRangeSelection(selection)) {
             return;
         }
 
-        const selection = $getSelection();
-        const nativeSelection = window.getSelection();
-        const rootElement = editor.getRootElement();
+        const anchor = selection.anchor;
+        const focus = selection.focus;
+        const selectionRange = createDOMRange(editor, anchor.getNode(), selection.anchor.offset, focus.getNode(), selection.focus.offset);
+        const selectionRects = createRectsFromDOMRange(editor, selectionRange);
+        const rangeRect = selectionRects[0];
 
-        if (
-            selection !== null &&
-            nativeSelection !== null &&
-            !nativeSelection.isCollapsed &&
-            rootElement !== null &&
-            rootElement.contains(nativeSelection.anchorNode)
-        ) {
-            const rangeRect = getDOMRangeRect(nativeSelection, rootElement);
-            if (!stickyToolbar) {
-                setFloatingElemPosition(rangeRect, toolbarElement, anchorElem);
-            }
+        if (rangeRect && !stickyToolbar) {
+            setFloatingElemPosition(rangeRect, toolbarElement, anchorElem);
         }
     }, [editor, anchorElem, stickyToolbar]);
 
