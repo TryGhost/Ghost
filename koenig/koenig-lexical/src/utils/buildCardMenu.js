@@ -54,7 +54,7 @@ function buildSnippetMenuItem(data, config) {
         matches: [name],
         insertCommand: INSERT_SNIPPET_COMMAND,
         insertParams: data,
-        onRemove: () => config.deleteSnippet(data.name)
+        onRemove: () => config.deleteSnippet(data)
     };
 
     return snippet;

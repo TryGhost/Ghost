@@ -22,7 +22,7 @@ describe('useSnippets', () => {
         expect(getSnippetsFromStorage()).toEqual([{name: 'snapshot1', value: 'snapshot1 text'}]);
 
         act(() => {
-            result.current.deleteSnippet('snapshot1');
+            result.current.deleteSnippet({name: 'snapshot1', value: 'snapshot1 text'});
         });
         expect(result.current.snippets).toEqual([]);
         expect(getSnippetsFromStorage()).toEqual([]);

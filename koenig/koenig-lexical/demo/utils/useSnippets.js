@@ -26,8 +26,8 @@ export const useSnippets = () => {
         updateSnippetsInStorage(updatedSnippets);
     }
 
-    function deleteSnippet(name) {
-        const updatedSnippets = snippets.filter(item => item.name !== name);
+    function deleteSnippet(snippet) {
+        const updatedSnippets = snippets.filter(item => item.name !== snippet.name);
         setSnippets(updatedSnippets);
         updateSnippetsInStorage(updatedSnippets);
     }
