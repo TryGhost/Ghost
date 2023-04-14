@@ -145,6 +145,16 @@ export default class SelectionList {
         this.selectedIds = this.selectedIds;
     }
 
+    clearUnavailableItems() {
+        const newSelection = new Set();
+        for (const item of this.infinityModel.content) {
+            if (this.selectedIds.has(item.id)) {
+                newSelection.add(item.id);
+            }
+        }
+        this.selectedIds = newSelection;
+    }
+
     /**
      * Select all items between the last selection or the first one if none
      */
@@ -220,8 +230,8 @@ export default class SelectionList {
         this.lastSelectedId = null;
     }
 
-    clearSelection() {
-        if (this.#frozen) {
+    clearSelection(options = {}) {
+        if (this.#frozen && !options.force) {
             return;
         }
         this.selectedIds = new Set();

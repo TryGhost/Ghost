@@ -42,6 +42,8 @@ module.exports = function apiRoutes() {
 
     // ## Pages
     router.get('/pages', mw.authAdminApi, http(api.pages.browse));
+    router.del('/pages', mw.authAdminApi, http(api.pages.bulkDestroy));
+    router.put('/pages/bulk', mw.authAdminApi, http(api.pages.bulkEdit));
     router.post('/pages', mw.authAdminApi, http(api.pages.add));
     router.get('/pages/:id', mw.authAdminApi, http(api.pages.read));
     router.get('/pages/slug/:slug', mw.authAdminApi, http(api.pages.read));

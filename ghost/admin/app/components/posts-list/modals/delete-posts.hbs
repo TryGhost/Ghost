@@ -1,12 +1,12 @@
 <div class="modal-content" data-test-modal="delete-posts">
     <header class="modal-header">
-        <h1>Are you sure you want to delete {{if @data.selectionList.isSingle 'this post' 'these posts'}}?</h1>
+        <h1>Are you sure you want to delete {{if @data.selectionList.isSingle (concat 'this ' @data.type) (concat 'these ' @data.type 's')}}?</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body mb9">
         <p>
-            You're about to delete <strong>{{if @data.selectionList.isSingle (concat '"' @data.selectionList.first.title '"') (concat @data.selectionList.count ' posts')}}</strong>.
+            You're about to delete <strong>{{if @data.selectionList.isSingle (concat '"' @data.selectionList.first.title '"') (concat @data.selectionList.count ' ' @data.type 's')}}</strong>.
             This is permanent! We warned you, k?
         </p>
     </div>

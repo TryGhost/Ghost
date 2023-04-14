@@ -6,6 +6,8 @@
                 data-test-post-id={{post.id}}
             />
         </list.item>
+    {{else}}
+        {{yield}}
     {{/each}}
 </MultiList::List>
 

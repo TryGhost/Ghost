@@ -33,5 +33,25 @@ module.exports = {
         frame.response = {
             pages: [page]
         };
+    },
+
+    bulkEdit(bulkActionResult, _apiConfig, frame) {
+        frame.response = {
+            bulk: {
+                action: frame.data.action,
+                meta: {
+                    stats: {
+                        successful: bulkActionResult.successful,
+                        unsuccessful: bulkActionResult.unsuccessful
+                    },
+                    errors: bulkActionResult.errors,
+                    unsuccessfulData: bulkActionResult.unsuccessfulData
+                }
+            }
+        };
+    },
+
+    bulkDestroy(bulkActionResult, _apiConfig, frame) {
+        frame.response = bulkActionResult;
     }
 };

@@ -58,7 +58,7 @@ export default class AddTag extends Component {
             return;
         }
         this.errors.clear();
-        yield this.args.data.confirm.perform(this.selectedTags);
+        return yield this.args.data.confirm.perform(this.selectedTags);
     }
 
     @action

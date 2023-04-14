@@ -5,6 +5,7 @@ import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
+import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -20,24 +21,24 @@ function tpl(str, data) {
 
 const messages = {
     deleted: {
-        single: 'Post deleted successfully',
-        multiple: '{count} posts deleted successfully'
+        single: '{Type} deleted successfully',
+        multiple: '{count} {type}s deleted successfully'
     },
     unpublished: {
-        single: 'Post successfully reverted to a draft',
-        multiple: '{count} posts successfully reverted to drafts'
+        single: '{Type} successfully reverted to a draft',
+        multiple: '{count} {type}s successfully reverted to drafts'
     },
     accessUpdated: {
-        single: 'Post access successfully updated',
-        multiple: 'Post access successfully updated for {count} posts'
+        single: '{Type} access successfully updated',
+        multiple: '{Type} access successfully updated for {count} {type}s'
     },
     tagsAdded: {
         single: 'Tags added successfully',
-        multiple: 'Tags added successfully to {count} posts'
+        multiple: 'Tags added successfully to {count} {type}s'
     },
     tagAdded: {
         single: 'Tag added successfully',
-        multiple: 'Tag added successfully to {count} posts'
+        multiple: 'Tag added successfully to {count} {type}s'
     }
 };
 
@@ -58,11 +59,15 @@ export default class PostsContextMenu extends Component {
         return this.menu.selectionList;
     }
 
+    get type() {
+        return this.selectionList.first?.displayName === 'page' ? 'page' : 'post';
+    }
+
     #getToastMessage(type) {
         if (this.selectionList.isSingle) {
-            return messages[type].single;
+            return tpl(messages[type].single, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
         }
-        return tpl(messages[type].multiple, {count: this.selectionList.count});
+        return tpl(messages[type].multiple, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
     }
 
     @action
@@ -78,6 +83,7 @@ export default class PostsContextMenu extends Component {
     @action
     async addTagToPosts() {
         await this.menu.openModal(AddPostTagsModal, {
+            type: this.type,
             selectionList: this.selectionList,
             confirm: this.addTagToPostsTask
         });
@@ -86,6 +92,7 @@ export default class PostsContextMenu extends Component {
     @action
     async deletePosts() {
         this.menu.openModal(DeletePostsModal, {
+            type: this.type,
             selectionList: this.selectionList,
             confirm: this.deletePostsTask
         });
@@ -94,6 +101,7 @@ export default class PostsContextMenu extends Component {
     @action
     async unpublishPosts() {
         await this.menu.openModal(UnpublishPostsModal, {
+            type: this.type,
             selectionList: this.selectionList,
             confirm: this.unpublishPostsTask
         });
@@ -102,6 +110,7 @@ export default class PostsContextMenu extends Component {
     @action
     async editPostsAccess() {
         this.menu.openModal(EditPostsAccessModal, {
+            type: this.type,
             selectionList: this.selectionList,
             confirm: this.editPostsAccessTask
         });
@@ -176,7 +185,7 @@ export default class PostsContextMenu extends Component {
             this.store.push({
                 data: {
                     id: post.id,
-                    type: 'post',
+                    type: this.type,
                     relationships: {
                         tags: {
                             data: newTags
@@ -203,7 +212,7 @@ export default class PostsContextMenu extends Component {
         });
         // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
         this.infinity.replace(this.selectionList.infinityModel, remainingModels);
-        this.selectionList.clearSelection();
+        this.selectionList.clearSelection({force: true});
         return true;
     }
 
@@ -220,7 +229,7 @@ export default class PostsContextMenu extends Component {
                 this.store.push({
                     data: {
                         id: post.id,
-                        type: 'post',
+                        type: this.type,
                         attributes: {
                             status: 'draft'
                         }
@@ -248,6 +257,8 @@ export default class PostsContextMenu extends Component {
         });
         // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
         this.infinity.replace(this.selectionList.infinityModel, remainingModels);
+
+        this.selectionList.clearUnavailableItems();
     }
 
     @task
@@ -262,7 +273,7 @@ export default class PostsContextMenu extends Component {
             this.store.push({
                 data: {
                     id: post.id,
-                    type: 'post',
+                    type: this.type,
                     attributes: {
                         visibility
                     },
@@ -292,7 +303,7 @@ export default class PostsContextMenu extends Component {
             this.store.push({
                 data: {
                     id: post.id,
-                    type: 'post',
+                    type: this.type,
                     attributes: {
                         featured: true
                     }
@@ -317,7 +328,7 @@ export default class PostsContextMenu extends Component {
             this.store.push({
                 data: {
                     id: post.id,
-                    type: 'post',
+                    type: this.type,
                     attributes: {
                         featured: false
                     }
@@ -333,13 +344,13 @@ export default class PostsContextMenu extends Component {
 
     async performBulkDestroy() {
         const filter = this.selectionList.filter;
-        let bulkUpdateUrl = this.ghostPaths.url.api(`posts`) + `?filter=${encodeURIComponent(filter)}`;
+        let bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts' : 'pages') + `?filter=${encodeURIComponent(filter)}`;
         return await this.ajax.delete(bulkUpdateUrl);
     }
 
     async performBulkEdit(_action, meta = {}) {
         const filter = this.selectionList.filter;
-        let bulkUpdateUrl = this.ghostPaths.url.api(`posts/bulk`) + `?filter=${encodeURIComponent(filter)}`;
+        let bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts/bulk' : 'pages/bulk') + `?filter=${encodeURIComponent(filter)}`;
         return await this.ajax.put(bulkUpdateUrl, {
             data: {
                 bulk: {
