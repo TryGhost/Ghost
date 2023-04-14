@@ -189,6 +189,7 @@
 
 .gh-posts-list-item-group[data-selected] {
     background: linear-gradient(300deg, var(--whitegrey-l1) 75%, var(--white) 100%) !important;
+    user-select: none;
 }
 
 .gh-posts-list-item-group .gh-posts-list-item:hover .gh-list-data {

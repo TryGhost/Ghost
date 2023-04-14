@@ -4,13 +4,11 @@ import {inject as service} from '@ember/service';
 
 function clearTextSelection() {
     if (window.getSelection) {
-        if (window.getSelection().empty) { // Chrome
+        if (window.getSelection().empty) {
             window.getSelection().empty();
-        } else if (window.getSelection().removeAllRanges) { // Firefox
+        } else if (window.getSelection().removeAllRanges) {
             window.getSelection().removeAllRanges();
         }
-    } else if (document.selection) { // IE?
-        document.selection.empty();
     }
 }
 
@@ -29,8 +27,11 @@ export default class ItemComponent extends Component {
         return this.selectionList.isSelected(this.id);
     }
 
+    /**
+     * We use the mouse down event because it allows us to cancel any text selection using preventDefault
+     */
     @action
-    onClick(event) {
+    onMouseDown(event) {
         if (!this.selectionList.enabled) {
             return;
         }
@@ -56,6 +57,23 @@ export default class ItemComponent extends Component {
     }
 
     @action
+    onClick(event) {
+        if (!this.selectionList.enabled) {
+            return;
+        }
+        const shiftKey = event.shiftKey;
+        const ctrlKey = event.ctrlKey || event.metaKey;
+
+        if (!ctrlKey && !shiftKey) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        clearTextSelection();
+    }
+
+    @action
     onContextMenu(event) {
         if (!this.selectionList.enabled) {
             return;
@@ -66,9 +84,9 @@ export default class ItemComponent extends Component {
         if (this.isSelected) {
             this.dropdown.toggleDropdown('context-menu', this, {left: x, top: y, selectionList: this.selectionList});
         } else {
-            const selectionList = this.selectionList.cloneEmpty();
-            selectionList.toggleItem(this.id);
-            this.dropdown.toggleDropdown('context-menu', this, {left: x, top: y, selectionList});
+            this.selectionList.clearSelection();
+            this.selectionList.toggleItem(this.id);
+            this.dropdown.toggleDropdown('context-menu', this, {left: x, top: y, selectionList: this.selectionList});
         }
 
         event.preventDefault();
