@@ -6,7 +6,7 @@ export const Input = ({value, onChange, onClear, onKeyDown}) => {
         <div className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black py-0 font-sans text-md font-medium after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent after:border-t-black">
             <input
                 autoFocus={true}
-                className="mb-[1px] h-auto w-full rounded bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40"
+                className={`mb-[1px] h-auto w-full rounded bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40 ${value ? '' : 'border border-green'}`}
                 placeholder="Snippet name"
                 value={value}
                 onChange={onChange}
