@@ -139,6 +139,12 @@ export default class SelectionList {
         if (this.#frozen) {
             return;
         }
+        if (this.lastSelectedId === null) {
+            // Do a normal toggle
+            this.toggleItem(id);
+            return;
+        }
+
         // Unselect last selected items
         for (const item of this.lastShiftSelectionGroup) {
             if (this.inverted) {
@@ -151,10 +157,6 @@ export default class SelectionList {
 
         // todo
         let running = false;
-
-        if (this.lastSelectedId === null) {
-            running = true;
-        }
 
         for (const item of this.infinityModel.content) {
             // Exlusing the last selected item
