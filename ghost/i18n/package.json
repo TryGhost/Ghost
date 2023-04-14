@@ -7,8 +7,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-    "test": "yarn test:unit && yarn translate",
+    "test:unit:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "yarn test:unit:base && yarn translate",
+    "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
