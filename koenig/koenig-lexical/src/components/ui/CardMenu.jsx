@@ -3,8 +3,8 @@ import {ReactComponent as TrashCardIcon} from '../../assets/icons/kg-trash.svg';
 
 export const CardMenuSection = ({label, children, ...props}) => {
     return (
-        <li className="flex shrink-0 flex-col justify-center text-[1.1rem] font-semibold uppercase tracking-wide text-grey" role="separator" {...props}>
-            <span className="mb-2 block px-4 pt-3" style={{minWidth: 'calc(100% - 3.2rem)'}}>{label}</span>
+        <li className="flex shrink-0 flex-col justify-center text-[1.1rem] font-semibold tracking-wide text-grey" role="separator" {...props}>
+            <span className="mb-2 block px-4 pt-3 uppercase" style={{minWidth: 'calc(100% - 3.2rem)'}}>{label}</span>
             <ul role="menu">
                 {children}
             </ul>
