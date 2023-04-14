@@ -1,6 +1,6 @@
 <div class="modal-content" data-test-modal="edit-posts-access" {{did-insert this.setup}}>
     <header class="modal-header">
-        <h1>Change post access {{unless @data.selectionList.isSingle (concat 'for ' @data.selectionList.count ' posts')}}</h1>
+        <h1>Change {{concat @data.type}} access {{unless @data.selectionList.isSingle (concat 'for ' @data.selectionList.count ' ' @data.type 's')}}</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
