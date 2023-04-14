@@ -23,7 +23,7 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
             <li className="mb-0 block">
                 <button
                     ref={buttonRef}
-                    className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100"
+                    className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100 focus:bg-grey-100"
                     type="button"
                     onClick={onCreateSnippet}
                 >
@@ -76,7 +76,7 @@ const DropdownItem = ({onClick, children, active, index}) => {
         <li>
             <button
                 ref={buttonRef}
-                className="flex w-full cursor-pointer items-center justify-between py-2 px-3 text-left text-sm hover:bg-grey-100"
+                className="flex w-full cursor-pointer items-center justify-between py-2 px-3 text-left text-sm hover:bg-grey-100 focus:bg-grey-100"
                 type="button"
                 onClick={onClick}
             >
