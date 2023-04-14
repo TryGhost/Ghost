@@ -22,9 +22,9 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
 
             <li className="mb-0 block">
                 <button
+                    ref={buttonRef}
                     className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100"
                     type="button"
-                    ref={buttonRef}
                     onClick={onCreateSnippet}
                 >
                     <span>Create &quot;{value}&ldquo;</span>
