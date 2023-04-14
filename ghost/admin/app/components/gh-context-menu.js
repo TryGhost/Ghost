@@ -33,8 +33,8 @@ export default class GhContextMenu extends Component {
             return;
         case 'default':
             this.isOpen = false;
-            this.selectionList.unfreeze();
             this.#closeModal();
+            this.selectionList.unfreeze();
             this.state = state;
             return;
         case 'open':
@@ -147,7 +147,11 @@ export default class GhContextMenu extends Component {
 
         this.#modal = this.modals.open(Modal, data);
         this.#modal.then(() => {
-            this.setState('default');
+            // We need to delay a little bit for the click event to be processed
+            // Since the click event is bubbling back to window, where it will trigger a list deselect
+            setTimeout(() => {
+                this.setState('default');
+            }, 10);
         });
     }
 
