@@ -16,6 +16,7 @@ const SUPPORTED_LOCALES = [
     'nl',
     'pl',
     'pt-br',
+    'si',
     'sl',
     'sv',
     'tr',
