@@ -864,8 +864,8 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        if (model.hasChanged('lexical') && !model.get('mobiledoc') && !options.importing && !options.migrating) {
-            if (!labs.isSet('postsHistory')) {
+        if (!labs.isSet('postHistory')) {
+            if (model.hasChanged('lexical') && !model.get('mobiledoc') && !options.importing && !options.migrating) {
                 ops.push(function updateRevisions() {
                     return ghostBookshelf.model('PostRevision')
                         .findAll(Object.assign({
@@ -895,7 +895,9 @@ Post = ghostBookshelf.Model.extend({
                             }
                         });
                 });
-            } else {
+            }
+        } else {
+            if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
                 const postRevisions = new PostRevisions({
                     config: {
                         max_revisions: POST_REVISIONS_COUNT
@@ -911,17 +913,17 @@ Post = ghostBookshelf.Model.extend({
                     const revisions = revisionModels.toJSON();
                     const previous = {
                         id: model.id,
-                        lexical: model.previous('lexical')
+                        lexical: model.previous('lexical'),
+                        html: model.previous('html')
                     };
                     const current = {
                         id: model.id,
-                        lexical: model.get('lexical')
+                        lexical: model.get('lexical'),
+                        html: model.get('html')
                     };
 
-                    model.set(
-                        'post_revisions',
-                        postRevisions.getRevisions(previous, current, revisions)
-                    );
+                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions);
+                    model.set('post_revisions', newRevisions);
                 });
             }
         }
