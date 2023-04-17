@@ -1,6 +1,6 @@
 const should = require('should');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
+const {anyArray, anyContentVersion, anyNumber, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const escapeRegExp = require('lodash/escapeRegExp');
 
@@ -8,6 +8,13 @@ const tierSnapshot = {
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
+};
+
+const revisionSnapshot = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    created_at_ts: anyNumber,
+    post_id: anyObjectId
 };
 
 const matchPostShallowIncludes = {
@@ -20,6 +27,17 @@ const matchPostShallowIncludes = {
     tags: anyArray,
     primary_tag: anyObject,
     tiers: Array(2).fill(tierSnapshot),
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    published_at: anyISODateTime
+};
+
+const matchPostRevisionsIncludes = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    comment_id: anyString,
+    url: anyString,
+    post_revisions: [revisionSnapshot],
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     published_at: anyISODateTime
@@ -117,6 +135,51 @@ describe('Posts API', function () {
             })
             .matchBodySnapshot({
                 posts: new Array(2).fill(matchPostShallowIncludes)
+            });
+    });
+
+    it('Can read with post_revisions included', async function () {
+        const lexical = createLexical('Testing post creation with lexical');
+
+        const post = {
+            title: 'Post Revisions Test',
+            mobiledoc: null,
+            lexical
+        };
+
+        const {body} = await agent
+            .post('/posts/?formats=mobiledoc,lexical,html')
+            .body({posts: [post]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('posts')
+            });
+
+        const [postResponse] = body.posts;
+
+        // post revision is created
+        const postRevisions = await models.PostRevision
+            .where('post_id', postResponse.id)
+            .orderBy('created_at_ts', 'desc')
+            .fetchAll();
+
+        postRevisions.length.should.equal(1);
+        postRevisions.at(0).get('lexical').should.equal(lexical);
+
+        // post revision is included in response
+        await agent.get(`posts/${postResponse.id}/?include=post_revisions`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({ 
+                posts: [Object.assign(matchPostRevisionsIncludes, {published_at: null})]
             });
     });
 
