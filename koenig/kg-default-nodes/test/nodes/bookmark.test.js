@@ -159,8 +159,9 @@ describe('BookmarkNode', function () {
             const bookmarkNode = $createBookmarkNode(dataset);
             const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
             
-            element.should.not.containEql('<figure');
-            element.should.containEql('<!--[if vml]>');
+            element.should.containEql('<!--[if !mso !vml]-->');
+            element.should.containEql('<figure class="kg-card kg-bookmark-card');
+            element.should.containEql('<!--[if vml]-->');
             element.should.containEql('<table class="kg-card kg-bookmark-card--outlook"');
         }));
 

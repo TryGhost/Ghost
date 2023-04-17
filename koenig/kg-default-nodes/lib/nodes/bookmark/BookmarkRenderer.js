@@ -1,5 +1,4 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-// TODO: email template?
 
 export function renderBookmarkNodeToDOM(node, options = {}) {
     addCreateDocumentOption(options);
@@ -24,9 +23,30 @@ function emailTemplate(node) {
     const icon = node.getIcon();
     const description = node.getDescription();
     const url = node.getUrl();
+    const thumbnail = node.getThumbnail();
+    const caption = node.getCaption();
 
     return (
-        `<!--[if vml]>
+        `
+        <!--[if !mso !vml]-->
+            <figure class="kg-card kg-bookmark-card ${caption ? `kg-card-hascaption` : ''}">
+                <a class="kg-bookmark-container" href="${url}">
+                    <div class="kg-bookmark-content">
+                        <div class="kg-bookmark-title">${title}</div>
+                        <div class="kg-bookmark-description">${description}</div>
+                        <div class="kg-bookmark-metadata">
+                            ${icon ? `<img class="kg-bookmark-icon" src="${icon}" alt="">` : ''}
+                            ${publisher ? `<span class="kg-bookmark-publisher" src="${publisher}">${publisher}</span>` : ''}
+                            ${author ? `<span class="kg-bookmark-author" src="${author}">${author}</span>` : ''}
+                        </div>
+                    </div>
+                    ${thumbnail ? `<div class="kg-bookmark-thumbnail" style="background-image: url('${thumbnail}')">
+                        <img src="${thumbnail}" alt=""></div>` : ''}
+                </a>
+                ${caption ? `<figcaption>${caption}</figcaption>` : ''}
+            </figure>
+        <!--[endif]-->
+        <!--[if vml]-->
             <table class="kg-card kg-bookmark-card--outlook" style="margin: 0; padding: 0; width: 100%; border: 1px solid #e5eff5; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; border-collapse: collapse; border-spacing: 0;" width="100%">
                 <tr>
                     <td width="100%" style="padding: 20px;">
@@ -74,7 +94,7 @@ function emailTemplate(node) {
                 </tr>
             </table>
             <div class="kg-bookmark-spacer--outlook" style="height: 1.5em;">&nbsp;</div>
-        <![endif]-->`
+        <!--[endif]-->`
     );
 }
 
