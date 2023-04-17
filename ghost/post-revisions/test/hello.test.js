@@ -93,7 +93,7 @@ describe('PostRevisions', function () {
             assert.deepEqual(actual, expected);
         });
 
-        it('returns two revisions when there are no existing revisions', async function () {
+        it('returns one revisions when there are no existing revisions', async function () {
             const postRevisions = new PostRevisions({config});
 
             const actual = await postRevisions.getRevisions({
@@ -106,9 +106,8 @@ describe('PostRevisions', function () {
                 html: 'current'
             }, []);
 
-            assert.equal(actual.length, 2);
-            assert.equal(actual[0].lexical, 'previous');
-            assert.equal(actual[1].lexical, 'current');
+            assert.equal(actual.length, 1);
+            assert.equal(actual[0].lexical, 'current');
         });
 
         it('limits the number of revisions to the max_revisions count', async function () {
