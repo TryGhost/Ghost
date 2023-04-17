@@ -57,7 +57,7 @@ class PostRevisions {
             ];
         }
 
-        return [...revisions, currentRevision].slice(-this.config.max_revisions);
+        return [currentRevision, ...revisions].slice(0, this.config.max_revisions);
     }
 
     /**
