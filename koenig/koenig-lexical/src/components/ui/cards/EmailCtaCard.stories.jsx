@@ -1,7 +1,10 @@
 import React from 'react';
+import populateNestedEditor from '../../../utils/populateNestedEditor.js';
+import {BASIC_NODES} from '../../../index.js';
 import {CardWrapper} from './../CardWrapper';
 import {EmailCtaCard} from './EmailCtaCard';
 import {ReactComponent as EmailIndicatorIcon} from '../../../assets/icons/kg-indicator-email.svg';
+import {createEditor} from 'lexical';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -26,7 +29,7 @@ const story = {
                 },
                 defaultValue: displayOptions.Default
             }
-        }    
+        }
     },
     parameters: {
         status: {
@@ -36,34 +39,38 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
-    <div>
-        <div className="kg-prose">
-            <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
-                    <EmailCtaCard {...display} {...args} />
-                </CardWrapper>
+const Template = ({display, value, ...args}) => {
+    const htmlEditor = createEditor({nodes: BASIC_NODES});
+    populateNestedEditor({editor: htmlEditor, initialHtml: `<p>${value}</p>`});
+    return (
+        <div>
+            <div className="kg-prose">
+                <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
+                    <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
+                        <EmailCtaCard {...display} {...args} htmlEditor={htmlEditor} />
+                    </CardWrapper>
+                </div>
+            </div>
+            <div className="kg-prose dark bg-black px-4 py-8">
+                <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
+                    <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
+                        <EmailCtaCard {...display} {...args} htmlEditor={htmlEditor} />
+                    </CardWrapper>
+                </div>
             </div>
         </div>
-        <div className="kg-prose dark bg-black px-4 py-8">
-            <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
-                    <EmailCtaCard {...display} {...args} />
-                </CardWrapper>
-            </div>
-        </div>
-    </div>
-);
+    );
+};
 
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    visibility: 'Free members',
+    segment: 'status:free',
     alignment: 'left',
-    separators: true,
+    showDividers: true,
     value: '',
     placeholder: 'Email only text... (optional)',
-    button: true,
+    showButton: true,
     buttonText: '',
     buttonUrl: ''
 };
@@ -71,12 +78,12 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
-    visibility: 'Free members',
+    segment: 'status:free',
     alignment: 'center',
-    separators: true,
     value: 'Want to get access to premium content?',
     placeholder: 'Email only text... (optional)',
-    button: true,
+    showButton: false,
+    showDividers: true,
     buttonText: 'Upgrade',
     buttonUrl: 'https://ghost.org/'
 };

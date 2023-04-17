@@ -23,6 +23,6 @@ export const Default = Template.bind({});
 Default.args = {
     label: 'Visibility',
     description: 'Visible for this audience when delivered by email. This card is not published on your site.',
-    trigger: 'Free members',
-    menu: ['Free members', 'Paid members']
+    value: 'status:free',
+    menu: [{label: 'Free members', name: 'status:free'}, {label: 'Paid members', name: 'status:-free'}]
 };

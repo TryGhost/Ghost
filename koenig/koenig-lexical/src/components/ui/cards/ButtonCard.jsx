@@ -68,7 +68,7 @@ export function ButtonCard({
                         onChange={handleButtonUrlChange}
                         onFocus={handleButtonUrlFocus}
                     />
-                </SettingsPanel>    
+                </SettingsPanel>
             )}
         </>
     );

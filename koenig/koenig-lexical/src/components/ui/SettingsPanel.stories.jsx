@@ -80,8 +80,8 @@ EmailCtaCard.args = {
         <DropdownSetting
             description='Visible for this audience when delivered by email. This card is not published on your site.'
             label='Visibility'
-            menu={['Free members', 'Paid members']}
-            trigger='Free members'
+            menu={[{label: 'Free members', name: 'status:free'}, {label: 'Paid members', name: 'status:-free'}]}
+            value='status:free'
         />,
         <SettingsDivider />,
         <ButtonGroupSetting buttons={alignmentButtonGroup} label='Content alignment' />,

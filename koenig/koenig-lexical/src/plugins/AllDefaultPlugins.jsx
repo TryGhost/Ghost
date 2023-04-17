@@ -9,6 +9,7 @@ import {BookmarkPlugin} from '../plugins/BookmarkPlugin';
 import {ButtonPlugin} from '../plugins/ButtonPlugin';
 import {CalloutPlugin} from '../plugins/CalloutPlugin';
 import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
+import {EmailCtaPlugin} from '../plugins/EmailCtaPlugin';
 import {EmailPlugin} from '../plugins/EmailPlugin';
 import {FilePlugin} from '../plugins/FilePlugin';
 import {KoenigSnippetPlugin} from '../plugins/KoenigSnippetPlugin';
@@ -44,6 +45,7 @@ export const AllDefaultPlugins = () => {
             <PaywallPlugin />
             <KoenigSelectorPlugin />
             <ProductPlugin />
+            <EmailCtaPlugin />
             <EmailPlugin />
 
             {/* Snippet Plugins */}

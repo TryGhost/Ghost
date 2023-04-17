@@ -1,24 +1,5 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-
-/**
- * Removes consecutive whitespaces and newlines
- * @param {string} html
- * @returns {string}
- */
-function removeSpaces(html) {
-    return html.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-/**
- * Wraps replacement strings with %%
- * This helps to prevent conflicts between code samples and our replacement strings
- * Example: {foo} -> %%{foo}%%
- * @param {string} html
- * @returns {string}
- */
-function wrapReplacementStrings(html) {
-    return html.replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, '%%$&%%');
-}
+import {removeSpaces, wrapReplacementStrings} from '../../utils/replacement-strings';
 
 export function renderEmailNodeToDOM(node, options = {}) {
     addCreateDocumentOption(options);
