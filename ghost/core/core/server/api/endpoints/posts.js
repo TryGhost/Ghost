@@ -105,7 +105,7 @@ module.exports = {
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: [...allowedIncludes, 'post_revisions']
                 },
                 formats: {
                     values: models.Post.allowedFormats
