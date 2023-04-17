@@ -51,6 +51,10 @@
                         {{#unless this.post.isNew}}
                             <Editor::PublishButtons @publishManagement={{publishManagement}} />
 
+                            {{#if (feature 'postHistory')}}
+                                {{svg-jar "clock" class="w4 ml3"}}
+                            {{/if}}
+
                             {{#unless this.showSettingsMenu}}
                                 <div class="settings-menu-toggle-spacer"></div>
                             {{/unless}}
