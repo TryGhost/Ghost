@@ -1,18 +1,18 @@
 import KoenigCaptionEditor from '../KoenigCaptionEditor';
 import React from 'react';
+import {$canShowPlaceholderCurry} from '@lexical/text';
 import {TextInput} from './TextInput';
 
-function CaptionInput({value, placeholder, onChange, readOnly, dataTestId}) {
+function CaptionInput({captionEditor, captionEditorInitialState, placeholder, dataTestId}) {
     return (
         <div
-            className={`m-0 w-full px-9 text-center ${readOnly ? 'pointer-events-none' : ''}`}
+            className={`m-0 w-full px-9 text-center`}
             data-testid={dataTestId}
         >
             <KoenigCaptionEditor
-                html={value}
+                captionEditor={captionEditor}
+                captionEditorInitialState={captionEditorInitialState}
                 placeholderText={placeholder}
-                readOnly={readOnly}
-                setHtml={onChange}
             />
         </div>
     );
@@ -49,9 +49,9 @@ export function CardCaptionEditor({
     altText,
     altTextPlaceholder,
     setAltText,
-    caption,
+    captionEditor,
+    captionEditorInitialState,
     captionPlaceholder,
-    setCaption,
     isSelected,
     readOnly,
     dataTestId
@@ -70,14 +70,16 @@ export function CardCaptionEditor({
         }
     }, [isSelected, setIsEditingAlt]);
 
-    if (isSelected || caption) {
-        return (
+    const isCaptionEmpty = captionEditor.getEditorState().read($canShowPlaceholderCurry(false));
+
+    return (
+        ((isSelected || !isCaptionEmpty) &&
             <figcaption className="flex min-h-[40px] w-full p-2">
                 {isEditingAlt
                     ? <AltTextInput dataTestId={dataTestId} placeholder={altTextPlaceholder} readOnly={readOnly} value={altText} onChange={setAltText} />
-                    : <CaptionInput dataTestId={dataTestId} placeholder={captionPlaceholder} readOnly={readOnly} value={caption} onChange={setCaption}/> }
+                    : <CaptionInput captionEditor={captionEditor} captionEditorInitialState={captionEditorInitialState} dataTestId={dataTestId} placeholder={captionPlaceholder} /> }
                 {setAltText && <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />}
             </figcaption>
-        );
-    }
+        )
+    );
 }

@@ -133,6 +133,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     );
 }
 
+// TODO: update caption use/handling
 export function CodeBlock({caption, code, language}) {
     if (caption && caption.length > 0) {
         return (
@@ -165,7 +166,7 @@ export function CodeBlock({caption, code, language}) {
     }
 }
 
-export function CodeBlockCard({caption, code, isEditing, isSelected, language, updateCode, updateLanguage, setCaption}) {
+export function CodeBlockCard({captionEditor, captionEditorInitialState, code, isEditing, isSelected, language, updateCode, updateLanguage, setCaption}) {
     if (isEditing) {
         return (
             <CodeEditor
@@ -178,24 +179,34 @@ export function CodeBlockCard({caption, code, isEditing, isSelected, language, u
     } else {
         return (
             <>
-                <CodeBlock caption={caption} code={code} language={language} />
+                {/* <CodeBlock caption={caption} code={code} language={language} /> */}
+                <CodeBlock code={code} language={language} />
                 <CardCaptionEditor
-                    caption={caption || ''}
+                    captionEditor={captionEditor}
+                    captionEditorInitialState={captionEditorInitialState}
                     captionPlaceholder="Type caption for code block (optional)"
                     isSelected={isSelected}
-                    setCaption={setCaption}
                 />
             </>
         );
     }
 }
 
+CodeEditor.propTypes = {
+    code: PropTypes.string,
+    language: PropTypes.string,
+    updateCode: PropTypes.func,
+    updateLanguage: PropTypes.func
+};
+
 CodeBlock.propTypes = {
-    code: PropTypes.string
+    code: PropTypes.string,
+    language: PropTypes.string
 };
 
 CodeBlockCard.propTypes = {
     code: PropTypes.string,
     language: PropTypes.string,
-    caption: PropTypes.string
+    captionEditor: PropTypes.object,
+    captionEditorInitialState: PropTypes.string
 };

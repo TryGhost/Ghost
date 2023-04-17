@@ -1,6 +1,9 @@
 import React from 'react';
+import populateNestedEditor from '../../../utils/populateNestedEditor';
 import {CardWrapper} from './../CardWrapper';
+import {MINIMAL_NODES} from '../../../index.js';
 import {VideoCard} from './VideoCard';
+import {createEditor} from 'lexical';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -39,15 +42,20 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
-    <div className="kg-prose">
-        <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper {...display} {...args}>
-                <VideoCard {...display} {...args} />
-            </CardWrapper>
+const Template = ({display, caption, ...args}) => {
+    const captionEditor = createEditor({nodes: MINIMAL_NODES});
+    populateNestedEditor({editor: captionEditor, initialHtml: `<p>${caption}</p>`});
+
+    return (
+        <div className="kg-prose">
+            <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
+                <CardWrapper {...display} {...args}>
+                    <VideoCard {...display} {...args} captionEditor={captionEditor} />
+                </CardWrapper>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 export const Empty = Template.bind({});
 Empty.args = {

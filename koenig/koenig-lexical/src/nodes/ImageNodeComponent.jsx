@@ -14,11 +14,11 @@ import {isGif} from '../utils/isGif';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption, triggerFileDialog, previewSrc, href}) {
+export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionEditor, captionEditorInitialState, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();
     const [showLink, setShowLink] = React.useState(false);
     const {fileUploader} = React.useContext(KoenigComposerContext);
-    const {isSelected, cardWidth, setCardWidth, setCaptionHasFocus, captionHasFocus} = React.useContext(CardContext);
+    const {isSelected, cardWidth, setCardWidth} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -49,13 +49,6 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
         });
 
         return await imageUploadHandler(files, nodeKey, editor, imageUploader.upload);
-    };
-
-    const setCaption = (newCaption) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setCaption(newCaption);
-        });
     };
 
     const setHref = (newHref) => {
@@ -124,7 +117,8 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
         <>
             <ImageCard
                 altText={altText}
-                caption={caption}
+                captionEditor={captionEditor}
+                captionEditorInitialState={captionEditorInitialState}
                 cardWidth={cardWidth}
                 fileInputRef={fileInputRef}
                 imageDragHandler={imageDragHandler}
@@ -132,15 +126,13 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
                 isSelected={isSelected}
                 previewSrc={previewSrc}
                 setAltText={setAltText}
-                setCaption={setCaption}
-                setCaptionHasFocus={setCaptionHasFocus}
                 src={src}
                 onFileChange={onFileChange}
             />
 
             <ActionToolbar
                 data-kg-card-toolbar="image"
-                isVisible={showLink && !captionHasFocus}
+                isVisible={showLink}
             >
                 <LinkInput
                     cancel={cancelLinkAndReselect}
@@ -161,7 +153,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, caption,
 
             <ActionToolbar
                 data-kg-card-toolbar="image"
-                isVisible={src && isSelected && !showLink && !captionHasFocus && !showSnippetToolbar}
+                isVisible={src && isSelected && !showLink && !showSnippetToolbar}
             >
                 <ImageUploadForm
                     fileInputRef={toolbarFileInputRef}

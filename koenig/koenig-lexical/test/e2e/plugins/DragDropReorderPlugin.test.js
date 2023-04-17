@@ -52,7 +52,8 @@ describe('Drag Drop Reorder Plugin', async function () {
         `, {ignoreCardContents: true});
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
-        const paragraphBBox = await page.locator('p').boundingBox();
+        // :not(figure p) avoids the p element that is the nested editor for the image card caption
+        const paragraphBBox = await page.locator('p:not(figure p)').boundingBox();
 
         await dragMouse(page, imageBBox, paragraphBBox, 'start', 'start', true, 100, 100);
 
@@ -152,7 +153,8 @@ describe('Drag Drop Reorder Plugin', async function () {
         `, {ignoreCardContents: true});
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
-        const paragraphBBox = await page.locator('p').boundingBox();
+        // :not(figure p) avoids the p element that is the nested editor for the image card caption
+        const paragraphBBox = await page.locator('p:not(figure p)').boundingBox();
         const toBBox = {
             x: paragraphBBox.x,
             y: paragraphBBox.y + paragraphBBox.height + 45,
@@ -206,10 +208,11 @@ describe('Drag Drop Reorder Plugin', async function () {
         `, {ignoreCardContents: true});
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
-        const paragraphBBox = await page.locator('p').boundingBox();
+        // :not(figure p) avoids the p element that is the nested editor for the image card caption
+        const paragraphBBox = await page.locator('p:not(figure p)').boundingBox();
         const toBBox = {
             x: paragraphBBox.x,
-            y: paragraphBBox.y + paragraphBBox.height + 45,
+            y: paragraphBBox.y + paragraphBBox.height + 35,
             width: paragraphBBox.width,
             height: paragraphBBox.height
         };

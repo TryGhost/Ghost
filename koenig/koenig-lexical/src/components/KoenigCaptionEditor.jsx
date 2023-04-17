@@ -1,7 +1,7 @@
 import CardContext from '../context/CardContext.jsx';
 import React, {useCallback, useContext} from 'react';
 import {$createParagraphNode, $getNodeByKey, $setSelection, BLUR_COMMAND, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
-import {HtmlOutputPlugin, KoenigComposableEditor, KoenigComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
+import {KoenigComposableEditor, KoenigNestedComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -86,23 +86,23 @@ function CaptionPlugin({parentEditor}) {
     return null;
 }
 
-const KoenigCaptionEditor = ({paragraphs = 1, html, setHtml, placeholderText, readOnly, className = 'koenig-lexical-caption'}) => {
+const KoenigCaptionEditor = ({paragraphs = 1, captionEditor, captionEditorInitialState, placeholderText, className = 'koenig-lexical-caption'}) => {
     const [parentEditor] = useLexicalComposerContext();
     return (
-        <KoenigComposer
-            nodes={MINIMAL_NODES}
+        <KoenigNestedComposer
+            initialEditor={captionEditor}
+            initialEditorState={captionEditorInitialState}
+            initialNodes={MINIMAL_NODES}
         >
             <KoenigComposableEditor
                 className={className}
                 markdownTransformers={MINIMAL_TRANSFORMERS}
                 placeholder={<Placeholder text={placeholderText} />}
-                readOnly={readOnly}
             >
                 <CaptionPlugin parentEditor={parentEditor} />
                 <RestrictContentPlugin paragraphs={paragraphs} />
-                <HtmlOutputPlugin html={html} setHtml={setHtml} />
             </KoenigComposableEditor>
-        </KoenigComposer>
+        </KoenigNestedComposer>
     );
 };
 

@@ -18,8 +18,8 @@ export function BookmarkCard({
     description,
     icon,
     publisher,
-    caption,
-    setCaption,
+    captionEditor,
+    captionEditorInitialState,
     isSelected,
     isLoading,
     urlError
@@ -44,11 +44,11 @@ export function BookmarkCard({
                     }
                 </div>
                 <CardCaptionEditor
-                    caption={caption || ''}
+                    captionEditor={captionEditor}
+                    captionEditorInitialState={captionEditorInitialState}
                     captionPlaceholder="Type caption for bookmark (optional)"
                     dataTestId="bookmark-caption"
                     isSelected={isSelected}
-                    setCaption={setCaption}
                 />
                 <div className="absolute inset-0 z-50 mt-0"></div>
             </>
@@ -77,14 +77,23 @@ export function BookmarkIcon({src}) {
 }
 
 BookmarkCard.propTypes = {
+    author: PropTypes.string,
+    handleClose: PropTypes.func,
+    handlePasteAsLink: PropTypes.func,
+    handleRetry: PropTypes.func,
     handleUrlChange: PropTypes.func,
     handleUrlInput: PropTypes.func,
     url: PropTypes.string,
     urlInputValue: PropTypes.string,
     urlPlaceholder: PropTypes.string,
+    thumbnail: PropTypes.string,
     title: PropTypes.string,
     description: PropTypes.string,
     icon: PropTypes.string,
     publisher: PropTypes.string,
-    thumbnail: PropTypes.string
+    captionEditor: PropTypes.object,
+    captionEditorInitialState: PropTypes.string,
+    isSelected: PropTypes.bool,
+    isLoading: PropTypes.bool,
+    urlError: PropTypes.bool
 };

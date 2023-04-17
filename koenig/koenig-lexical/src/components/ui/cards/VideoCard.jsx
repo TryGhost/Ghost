@@ -168,8 +168,8 @@ const VideoHolder = ({
 };
 
 export function VideoCard({
-    caption,
-    onCaptionChange,
+    captionEditor,
+    captionEditorInitialState,
     isSelected,
     isEditing,
     ...props
@@ -179,12 +179,11 @@ export function VideoCard({
             <figure>
                 <VideoHolder {...props} isEditing={isEditing} />
                 <CardCaptionEditor
-                    caption={caption || ''}
+                    captionEditor={captionEditor}
                     captionPlaceholder="Type caption for video (optional)"
                     dataTestId="video-card-caption"
                     isSelected={isSelected}
                     readOnly={!isEditing}
-                    setCaption={onCaptionChange}
                 />
             </figure>
         </>
@@ -192,5 +191,8 @@ export function VideoCard({
 }
 
 VideoCard.propTypes = {
-    caption: PropTypes.string
+    captionEditor: PropTypes.object,
+    captionEditorInitialState: PropTypes.string,
+    isSelected: PropTypes.bool,
+    isEditing: PropTypes.bool
 };

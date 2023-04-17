@@ -92,8 +92,8 @@ export function ImageCard({
     isSelected,
     src,
     onFileChange,
-    caption,
-    setCaption,
+    captionEditor,
+    captionEditorInitialState,
     altText,
     setAltText,
     setFigureRef,
@@ -131,24 +131,41 @@ export function ImageCard({
                 <CardCaptionEditor
                     altText={altText || ''}
                     altTextPlaceholder="Type alt text for image (optional)"
-                    caption={caption || ''}
+                    captionEditor={captionEditor}
+                    captionEditorInitialState={captionEditorInitialState}
                     captionPlaceholder="Type caption for image (optional)"
                     dataTestId="image-caption-editor"
                     isSelected={isSelected}
                     readOnly={!isSelected}
                     setAltText={setAltText}
-                    setCaption={setCaption}
                 />
             </figure>
         </>
     );
 }
 
-ImageCard.propTypes = {
-    caption: PropTypes.string,
-    altText: PropTypes.string,
-    setCaption: PropTypes.func,
+ImageHolder.propTypes = {
     src: PropTypes.string,
-    isDraggedOver: PropTypes.bool,
-    previewSrc: PropTypes.string
+    altText: PropTypes.string,
+    previewSrc: PropTypes.string,
+    imageUploader: PropTypes.object,
+    onFileChange: PropTypes.func,
+    setFileInputRef: PropTypes.func,
+    imageDragHandler: PropTypes.object
+};
+
+ImageCard.propTypes = {
+    isSelected: PropTypes.bool,
+    src: PropTypes.string,
+    onFileChange: PropTypes.func,
+    captionEditor: PropTypes.object,
+    captionEditorInitialState: PropTypes.string,
+    altText: PropTypes.string,
+    setAltText: PropTypes.func,
+    setFigureRef: PropTypes.func,
+    fileInputRef: PropTypes.object,
+    cardWidth: PropTypes.string,
+    previewSrc: PropTypes.string,
+    imageUploader: PropTypes.object,
+    imageDragHandler: PropTypes.object
 };
