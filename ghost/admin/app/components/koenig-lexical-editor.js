@@ -147,6 +147,17 @@ export default class KoenigLexicalEditor extends Component {
     }
 
     ReactComponent = (props) => {
+        const fetchEmbed = async (url) => {    
+            let oembedEndpoint = this.ghostPaths.url.api('oembed');
+            let response = await this.ajax.request(oembedEndpoint, {
+                data: {url, type: 'bookmark'}
+            });
+            if (!response.metadata) {
+                throw 'No metadata returned';
+            }
+            return response;
+        };
+
         const defaultCardConfig = {
             unsplash: {
                 defaultHeaders: {
@@ -157,7 +168,8 @@ export default class KoenigLexicalEditor extends Component {
                     'X-Unsplash-Cache': true
                 }
             },
-            tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null
+            tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
+            fetchEmbed: fetchEmbed
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig);
 
