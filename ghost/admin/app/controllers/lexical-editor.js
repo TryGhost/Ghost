@@ -170,9 +170,15 @@ export default class LexicalEditorController extends Controller {
 
     @computed('_snippets.@each.{name,isNew}')
     get snippets() {
-        return this._snippets
+        const snippets = this._snippets
             .reject(snippet => snippet.get('isNew'))
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .filter(item => item.lexical !== null);
+        return snippets.map((item) => {
+            item.value = item.lexical;
+
+            return item;
+        });
     }
 
     @computed('session.user.{isAdmin,isEditor}')
@@ -343,7 +349,8 @@ export default class LexicalEditorController extends Controller {
 
     @action
     saveSnippet(snippet) {
-        let snippetRecord = this.store.createRecord('snippet', snippet);
+        const snippetData = {name: snippet.name, lexical: snippet.value, mobiledoc: '{}'};
+        let snippetRecord = this.store.createRecord('snippet', snippetData);
         return snippetRecord.save().then(() => {
             this.notifications.closeAlerts('snippet.save');
             this.notifications.showNotification(
@@ -361,6 +368,18 @@ export default class LexicalEditorController extends Controller {
             snippetRecord.rollbackAttributes();
             throw error;
         });
+    }
+
+    @action
+    async createSnippet(data) {
+        const snippetNameLC = data.name.trim().toLowerCase();
+        const existingSnippet = this.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
+
+        if (existingSnippet) {
+            await this.confirmUpdateSnippet(existingSnippet, {lexical: data.value, mobiledoc: '{}'});
+        } else {
+            await this.saveSnippet(data);
+        }
     }
 
     @action

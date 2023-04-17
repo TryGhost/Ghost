@@ -7,10 +7,15 @@ export default class UpdateSnippetModal extends Component {
 
     @task({drop: true})
     *updateSnippetTask() {
-        const {snippet, updatedProperties: {mobiledoc}} = this.args.data;
+        const {snippet, updatedProperties: {mobiledoc, lexical}} = this.args.data;
 
         try {
-            snippet.mobiledoc = mobiledoc;
+            if (mobiledoc) {
+                snippet.mobiledoc = mobiledoc;
+            }
+            if (lexical) {
+                snippet.lexical = lexical;
+            }
 
             yield snippet.save();
 
