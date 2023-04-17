@@ -24,17 +24,17 @@ export function EmailCtaCard({isEditing, visibility, alignment, separators, valu
     return (
         <>
             <div className="pb-6">
-                <div className="pt-1 pb-7 font-sans text-xs font-semibold uppercase leading-8 tracking-tight text-grey">
+                <div className="pt-1 pb-7 font-sans text-xs font-semibold uppercase leading-8 tracking-tight text-grey dark:text-grey-800">
                     {visibility}
                 </div>
-                {separators && <hr className="-mt-4 mb-12 block border-t-grey-300" />}
-                <input className={`w-full font-serif text-xl text-grey-900 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } placeholder={placeholder} value={value} />
+                {separators && <hr className="-mt-4 mb-12 block border-t-grey-300 dark:border-t-grey-900" />}
+                <input className={`w-full bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200 dark:placeholder:text-grey-800 ${alignment === 'left' ? 'text-left' : 'text-center'} ` } placeholder={placeholder} value={value} />
                 { (button && (isEditing || (buttonText && buttonUrl))) && 
                 <div className={`mt-6 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }>
                     <Button placeholder="Add button text" value={buttonText} />
                 </div>    
                 }
-                {separators && <hr className="mt-12 mb-0 block border-t-grey-300" />}
+                {separators && <hr className="mt-12 mb-0 block border-t-grey-300 dark:border-t-grey-900" />}
 
             </div>
 

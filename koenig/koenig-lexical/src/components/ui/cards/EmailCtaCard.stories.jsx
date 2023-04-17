@@ -37,11 +37,20 @@ const story = {
 export default story;
 
 const Template = ({display, ...args}) => (
-    <div className="kg-prose">
-        <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
-                <EmailCtaCard {...display} {...args} />
-            </CardWrapper>
+    <div>
+        <div className="kg-prose">
+            <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
+                <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
+                    <EmailCtaCard {...display} {...args} />
+                </CardWrapper>
+            </div>
+        </div>
+        <div className="kg-prose dark bg-black px-4 py-8">
+            <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
+                <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
+                    <EmailCtaCard {...display} {...args} />
+                </CardWrapper>
+            </div>
         </div>
     </div>
 );

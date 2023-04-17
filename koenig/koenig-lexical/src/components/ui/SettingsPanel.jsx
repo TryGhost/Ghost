@@ -72,7 +72,7 @@ export function InputListSetting({dataTestId, description, label, list, listOpti
 export function DropdownSetting({label, description, trigger, menu}) {
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
-            <div className="font-bold text-grey-900">{label}</div>
+            <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
             <Dropdown
                 menu={menu}
                 trigger={trigger}
