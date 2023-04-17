@@ -207,7 +207,7 @@
     "probe-image-size": "7.2.3",
     "rss": "1.2.2",
     "sanitize-html": "2.10.0",
-    "semver": "7.4.0",
+    "semver": "7.5.0",
     "socket.io": "4.6.1",
     "stoppable": "1.1.0",
     "uuid": "9.0.0",
