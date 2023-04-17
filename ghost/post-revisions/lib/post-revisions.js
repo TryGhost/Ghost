@@ -2,6 +2,7 @@
  * @typedef {object} PostLike
  * @property {string} id
  * @property {string} lexical
+ * @property {string} html
  */
 
 /**
@@ -34,7 +35,7 @@ class PostRevisions {
         if (revisions.length === 0) {
             return true;
         }
-        return previous.lexical !== current.lexical;
+        return previous.html !== current.html;
     }
 
     /**
