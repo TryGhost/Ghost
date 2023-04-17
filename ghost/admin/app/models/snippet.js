@@ -6,6 +6,7 @@ export default Model.extend(ValidationEngine, {
 
     name: attr('string'),
     mobiledoc: attr('json-string'),
+    lexical: attr('json-string'),
     createdAtUTC: attr('moment-utc'),
     updatedAtUTC: attr('moment-utc')
 });
