@@ -5557,10 +5557,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/adapter-base-cache/-/adapter-base-cache-0.1.5.tgz#66021c4e3e92bc623c82728ab50ca497ac41f7ae"
   integrity sha512-ZAG7Qzn0RioU6yde67T9cneRtoD1ZxGcjwH81DdbL8ZqiPi66bmPw5TVOiEiFnny2XSDsPuUgc4/PxFO/RfV0g==
 
-"@tryghost/admin-api-schema@4.2.3":
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.2.3.tgz#fb6216f0c6ed103a32925d4ab2fa7582bb4a000d"
-  integrity sha512-3UmabEJd+fUZv3cSkpQ9Zo17DZpDVuVvG+9Mh0H+zZBmsw7FuTAlb5KzG4T3pFVv6X2/xrf5PMQBfTt+jGR6+g==
+"@tryghost/admin-api-schema@4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.3.0.tgz#f3ecc16d9ab7e2a1c25e600f4663738e5e6a63db"
+  integrity sha512-LyS3OnpRjuM89JNGxJAH3t9eFGPVS1CGEpDREHnD6SNn6J9iyYH3hmS8KOfZ87RXmwhF5qOODgaapZ/uMyRMtg==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     ajv "^6.12.6"

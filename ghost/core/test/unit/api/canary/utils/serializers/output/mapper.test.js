@@ -177,6 +177,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 id: snippet.id,
                 name: snippet.name,
                 mobiledoc: snippet.mobiledoc,
+                lexical: snippet.lexical,
                 created_at: snippet.created_at,
                 updated_at: snippet.updated_at,
                 created_by: snippet.created_by,
