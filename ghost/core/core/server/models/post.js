@@ -914,12 +914,16 @@ Post = ghostBookshelf.Model.extend({
                     const previous = {
                         id: model.id,
                         lexical: model.previous('lexical'),
-                        html: model.previous('html')
+                        html: model.previous('html'),
+                        created_by: model.previous('created_by'),
+                        title: model.previous('title')
                     };
                     const current = {
                         id: model.id,
                         lexical: model.get('lexical'),
-                        html: model.get('html')
+                        html: model.get('html'),
+                        created_by: model.get('created_by'),
+                        title: model.get('title')
                     };
 
                     const newRevisions = await postRevisions.getRevisions(previous, current, revisions);

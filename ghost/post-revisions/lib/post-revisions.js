@@ -3,6 +3,8 @@
  * @property {string} id
  * @property {string} lexical
  * @property {string} html
+ * @property {number} created_by
+ * @property {number} title
  */
 
 /**
@@ -10,6 +12,8 @@
  * @property {string} post_id
  * @property {string} lexical
  * @property {number} created_at_ts
+ * @property {number} created_by
+ * @property {number} title
  */
 
 class PostRevisions {
@@ -35,7 +39,7 @@ class PostRevisions {
         if (revisions.length === 0) {
             return true;
         }
-        return previous.html !== current.html;
+        return previous.html !== current.html || previous.title !== current.title;
     }
 
     /**
@@ -68,7 +72,9 @@ class PostRevisions {
         return {
             post_id: input.id,
             lexical: input.lexical,
-            created_at_ts: Date.now() - offset
+            created_at_ts: Date.now() - offset,
+            created_by: input.created_by,
+            title: input.title
         };
     }
 }

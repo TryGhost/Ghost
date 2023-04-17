@@ -695,7 +695,7 @@ Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"Testing post creation with lexical\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
           "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "title": null,
+          "title": "Post Revisions Test",
         },
       ],
       "published_at": null,
