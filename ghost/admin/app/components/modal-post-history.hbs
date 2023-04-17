@@ -14,19 +14,8 @@
         </div>
     </div>
     <div class="gh-post-history-main">
-       <KoenigLexicalEditor
-            @lexical={{this.previous}}
-            {{!-- @cardConfig={{@cardOptions}}
-            @onChange={{@onBodyChange}}
-            @registerAPI={{this.registerEditorAPI}}
-            @cursorDidExitAtTop={{this.focusTitle}} --}}
-        />
-        <KoenigLexicalEditor
-            @lexical={{this.current}}
-            {{!-- @cardConfig={{@cardOptions}}
-            @onChange={{@onBodyChange}}
-            @registerAPI={{this.registerEditorAPI}}
-            @cursorDidExitAtTop={{this.focusTitle}} --}}
-        />
+          <div>
+              {{{this.postDiff}}}
+          </div>
     </div>
 </div>
