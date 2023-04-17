@@ -1,18 +1,19 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
-<div class="modal-body gh-ps-modal-body modal-fullsettings modal-fullsettings-body ">
-    <div class="flex pa0 flex-grow-1 gh-post-history">
-        <div class=" modal-fullsettings-sidebar-labs">
-            <h2 class="modal-fullsettings-heading-labs">Post History</h2>
+<div class="gh-post-history">
+    <div class="modal-fullsettings-sidebar-labs">
+        <div class="modal-fullsettings-sidebar-header">
+            <h2 class="modal-fullsettings-heading-labs">Post history</h2>
             <button
-                class="gh-btn mr3" type="button" {{action "closeModal"}}
+                type="button" {{action "closeModal"}}
+                class="gh-btn-icon"
                 {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
                 {{on "mousedown" (optional this.noop)}}
             >
-                        <span>Exit</span>
+                        {{svg-jar "close"}}
             </button>
         </div>
-        <div class="gh-post-history-main">
+    </div>
+    <div class="gh-post-history-main">
 
-        </div>
     </div>
 </div>
