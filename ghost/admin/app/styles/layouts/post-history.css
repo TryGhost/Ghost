@@ -1,0 +1,32 @@
+.gh-post-history {
+    height: 100%;
+}
+
+.fullscreen-modal-post-history .modal-content {
+    padding: 0;
+}
+
+.gh-post-history .modal-fullsettings-sidebar-labs {
+    height: 100%;
+    border-right: 1px solid var(--whitegrey-d1);
+}
+
+.modal-fullsettings-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px;
+    border-bottom: 1px solid var(--whitegrey-d1);
+}
+
+.modal-fullsettings-sidebar-header h2 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.75rem;
+    line-height: 1.375;
+    font-weight: 600;
+}
+
+.modal-fullsettings-sidebar-header .gh-btn-icon svg {
+    margin: 0;
+}

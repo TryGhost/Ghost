@@ -632,6 +632,12 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     position: relative;
 }
 
+.gh-editor-post-status svg {
+    width: 18px;
+    height: 18px;
+    margin-left: 1rem;
+}
+
 @media (max-width: 720px) {
     .gh-editor-post-status .newsletter-failed {
         display: none;
