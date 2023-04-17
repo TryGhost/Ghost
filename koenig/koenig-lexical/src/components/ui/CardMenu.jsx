@@ -60,9 +60,13 @@ export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, .
                     <Icon className="h-7 w-7" />
                 </div>
                 <div className="m-0 ml-4 truncate text-[1.3rem] font-normal leading-[1.6rem] text-grey-900">{label}</div>
-                <button className="ml-auto hidden cursor-pointer rounded p-[4px] hover:bg-grey-200 group-hover:block" title="Remove snippet" type="button" onClick={handleSnippetRemove}>
-                    <TrashCardIcon className="h-4 w-4 stroke-red text-red" />
-                </button>
+                {
+                    !!onRemove && (
+                        <button className="ml-auto cursor-pointer rounded p-[4px] hover:bg-grey-200 group-hover:block" title="Remove snippet" type="button" onClick={handleSnippetRemove}>
+                            <TrashCardIcon className="h-4 w-4 stroke-red text-red" />
+                        </button>
+                    )
+                }
             </div>
         </li>
     );

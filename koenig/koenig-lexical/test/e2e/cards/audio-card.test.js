@@ -1,7 +1,7 @@
 import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Audio card', async () => {
@@ -349,6 +349,26 @@ describe('Audio card', async () => {
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});
+    });
+
+    test('can add snippet', async function () {
+        await focusEditor(page);
+        await uploadAudio(page);
+
+        // Check that audio file was uploaded
+        await expect(await page.getByTestId('audio-caption')).toBeVisible();
+        expect(await page.getByTestId('audio-caption').inputValue()).toEqual('Audio sample');
+
+        // create snippet
+        await page.keyboard.press('Escape');
+        await createSnippet(page);
+
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="audio"]')).toHaveCount(2);
     });
 });
 

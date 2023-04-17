@@ -1,6 +1,15 @@
 import path from 'path';
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, assertRootChildren, focusEditor, html, initialize, isMac, startApp} from '../../utils/e2e';
+import {
+    assertHTML,
+    assertRootChildren,
+    createSnippet,
+    focusEditor,
+    html,
+    initialize, insertCard,
+    isMac,
+    startApp
+} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Markdown card', async () => {
@@ -604,5 +613,26 @@ describe('Markdown card', async () => {
                 version: 1
             }
         ]));
+    });
+
+    test('can add snippet', async function () {
+        await focusEditor(page);
+        // insert new card
+        await insertCard(page, {cardName: 'markdown'});
+
+        // fill card
+        await expect(await page.locator('[data-kg-card="markdown"]')).toBeVisible();
+        await page.keyboard.type('snippet');
+        await page.keyboard.press('Escape');
+
+        // create snippet
+        await createSnippet(page);
+
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="markdown"]')).toHaveCount(2);
     });
 });

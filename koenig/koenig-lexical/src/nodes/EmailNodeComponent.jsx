@@ -1,4 +1,5 @@
 import CardContext from '../context/CardContext';
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
@@ -10,6 +11,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const {isEditing, isSelected} = cardContext;
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
@@ -44,8 +46,10 @@ export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"

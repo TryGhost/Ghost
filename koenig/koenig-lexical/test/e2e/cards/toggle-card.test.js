@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 async function insertToggleCard(page) {
@@ -245,5 +245,24 @@ describe('Toggle card', async () => {
 
         const toggleCard = page.locator('[data-kg-card="toggle"]');
         await expect(toggleCard).not.toBeVisible();
+    });
+
+    it('can add snippet', async function () {
+        await focusEditor(page);
+        await insertToggleCard(page);
+
+        // Add some content to avoid auto-removal
+        await page.keyboard.type('Header');
+
+        // create snippet
+        await page.keyboard.press('Escape');
+        await createSnippet(page);
+
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="toggle"]')).toHaveCount(2);
     });
 });

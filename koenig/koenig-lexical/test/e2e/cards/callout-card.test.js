@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, insertCard, isMac, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac, startApp} from '../../utils/e2e';
 import {calloutColorPicker} from '../../../src/components/ui/cards/CalloutCard';
 import {expect} from '@playwright/test';
 
@@ -289,6 +289,23 @@ describe('Callout Card', async () => {
                 </div>
                 <p><br /></p>
             `, {ignoreCardContents: true});
+        });
+
+        test('can add snippet', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'callout'});
+            await page.keyboard.type('testing nesting');
+
+            // create snippet
+            await page.keyboard.press('Escape');
+            await createSnippet(page);
+
+            // can insert card from snippet
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('/snippet');
+            await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+            await page.keyboard.press('Enter');
+            await expect(await page.locator('[data-kg-card="callout"]')).toHaveCount(2);
         });
     });
 });

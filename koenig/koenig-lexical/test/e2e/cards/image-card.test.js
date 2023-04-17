@@ -1,7 +1,7 @@
 import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, pasteText, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, pasteText, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Image card', async () => {
@@ -752,7 +752,38 @@ describe('Image card', async () => {
 
         await expect(await page.getByTestId('tenor-selector-error')).toBeVisible();
     });
+
+    test('can add snippet', async function () {
+        // insert image
+        await insertImage(page);
+
+        // create snippet
+        await page.keyboard.press('Escape');
+        await createSnippet(page);
+
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="image"]')).toHaveCount(2);
+    });
 });
+
+async function insertImage(page) {
+    const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+    await focusEditor(page);
+    await page.keyboard.type('image! ');
+
+    const [fileChooser] = await Promise.all([
+        page.waitForEvent('filechooser'),
+        await page.click('button[name="placeholder-button"]')
+    ]);
+    await fileChooser.setFiles([filePath]);
+
+    await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+}
 
 function tenorTestData() {
     return (

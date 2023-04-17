@@ -17,7 +17,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionEditor, captionEditorInitialState, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();
     const [showLink, setShowLink] = React.useState(false);
-    const {fileUploader} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, cardWidth, setCardWidth} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
@@ -193,8 +193,10 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                         label="Replace"
                         onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})}
                     />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"

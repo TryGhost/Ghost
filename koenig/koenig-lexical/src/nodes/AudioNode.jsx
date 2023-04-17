@@ -20,7 +20,7 @@ export {INSERT_AUDIO_COMMAND} from '@tryghost/kg-default-nodes';
 
 function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, duration, triggerFileDialog}) {
     const [editor] = useLexicalComposerContext();
-    const {fileUploader} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const audioFileInputRef = React.useRef();
     const thumbnailFileInputRef = React.useRef();
@@ -140,8 +140,10 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"

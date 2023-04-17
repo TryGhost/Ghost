@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Button Card', async () => {
@@ -148,5 +148,23 @@ describe('Button Card', async () => {
         await expect(buttonTextInput).toHaveValue(anyString);
         const buttonLink = await page.getByTestId('button-card-btn');
         await expect(buttonLink).toHaveAttribute('href',anyString);
+    });
+
+    test('can add snippet', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'button'});
+
+        await page.getByTestId('button-input-text').fill('test');
+
+        // create snippet
+        await page.keyboard.press('Escape');
+        await createSnippet(page);
+
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="button"]')).toHaveCount(2);
     });
 });

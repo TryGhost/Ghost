@@ -1,7 +1,7 @@
 import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Video card', async () => {
@@ -346,6 +346,25 @@ describe('Video card', async () => {
             </div>
             <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
         `, {ignoreCardContents: true});
+    });
+
+    it('can add snippet', async function () {
+        await focusEditor(page);
+
+        // Upload video
+        await uploadVideo(page);
+        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+
+        // create snippet
+        await page.keyboard.press('Escape');
+        await createSnippet(page);
+
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="video"]')).toHaveCount(2);
     });
 });
 

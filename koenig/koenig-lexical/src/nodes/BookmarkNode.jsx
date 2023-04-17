@@ -114,10 +114,12 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
 
             <ActionToolbar
                 data-kg-card-toolbar="bookmark"
-                isVisible={title && isSelected && !isEditing && !showSnippetToolbar}
+                isVisible={title && isSelected && !isEditing && !showSnippetToolbar && cardConfig.createSnippet}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"

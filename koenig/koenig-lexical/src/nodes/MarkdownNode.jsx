@@ -59,8 +59,10 @@ function MarkdownNodeComponent({nodeKey, markdown}) {
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"

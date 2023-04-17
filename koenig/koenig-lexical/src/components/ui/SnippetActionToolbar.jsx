@@ -1,7 +1,8 @@
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
 import React from 'react';
-import {$createNodeSelection, $getSelection, $setSelection} from 'lexical';
+import {$createNodeSelection, $getSelection} from 'lexical';
 import {$generateJSONFromSelectedNodes} from '@lexical/clipboard';
+import {SELECT_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin.jsx';
 import {SnippetInput} from './SnippetInput';
 import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -21,15 +22,15 @@ export function SnippetActionToolbar({onClose}) {
             if (selectedCardKey) {
                 const nodeSelection = $createNodeSelection();
                 nodeSelection.add(selectedCardKey);
-                $setSelection(nodeSelection);
 
                 const nodeJson = $generateJSONFromSelectedNodes(editor, nodeSelection);
-                createSnippet(value, JSON.stringify(nodeJson));
+                createSnippet({name: value, value: JSON.stringify(nodeJson)});
+                editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
             } else {
                 const selection = $getSelection();
 
                 const nodeJson = $generateJSONFromSelectedNodes(editor, selection);
-                createSnippet(value, JSON.stringify(nodeJson));
+                createSnippet({name: value, value: JSON.stringify(nodeJson)});
             }
 
             onClose?.();

@@ -24,7 +24,7 @@ export function VideoNodeComponent({
     initialFile
 }) {
     const [editor] = useLexicalComposerContext();
-    const {fileUploader} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const cardContext = React.useContext(CardContext);
     const videoFileInputRef = React.useRef();
     const [previewThumbnail, setPreviewThumbnail] = useState('');
@@ -224,8 +224,10 @@ export function VideoNodeComponent({
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-video-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"

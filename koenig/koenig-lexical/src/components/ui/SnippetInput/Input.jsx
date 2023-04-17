@@ -7,6 +7,7 @@ export const Input = ({value, onChange, onClear, onKeyDown}) => {
             <input
                 autoFocus={true}
                 className={`mb-[1px] h-auto w-full border bg-white py-1 pl-3 pr-9 font-normal leading-loose text-grey-900 selection:bg-grey/40 ${value ? 'rounded-t rounded-b-none border-grey-300' : 'rounded border-green'}`}
+                data-testid="snippet-name"
                 placeholder="Snippet name"
                 value={value}
                 onChange={onChange}

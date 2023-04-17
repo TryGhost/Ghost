@@ -29,7 +29,7 @@
 /* Dark mode */
 .koenig-lexical > .dark, .koenig-lexical.dark, .dark .koenig-lexical {
     background-color: var(--black);
-    
+
     > * {
         color: var(--grey-300);
     }
@@ -102,4 +102,9 @@ em-emoji-picker {
 
 .kg-cardmenu-card-hover:hover svg [data-selector=bg] {
     fill: #fff;
+}
+
+/* tailwind `hidden` class conflicts with ghost styles */
+.kg-cardmenu-card-hover button {
+    display: none;
 }

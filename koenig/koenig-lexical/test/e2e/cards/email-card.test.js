@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 async function insertEmailCard(page) {
@@ -161,5 +161,21 @@ describe('Email card', async () => {
 
         const emailCard = page.locator('[data-kg-card="email"] ul > li:first-child');
         await expect(emailCard).toHaveText('List item 1');
+    });
+
+    it('can add snippet', async function () {
+        await focusEditor(page);
+        await insertEmailCard(page);
+
+        // create snippet
+        await page.keyboard.press('Escape');
+        await createSnippet(page);
+
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="email"]')).toHaveCount(2);
     });
 });

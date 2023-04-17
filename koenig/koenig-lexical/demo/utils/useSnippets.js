@@ -13,7 +13,7 @@ function updateSnippetsInStorage(snippetsArr = []) {
 export const useSnippets = () => {
     const [snippets, setSnippets] = useState(getSnippetsFromStorage());
 
-    function createSnippet(name, value) {
+    function createSnippet({name, value}) {
         const updatedSnippets = [...snippets];
         const snippetIndexForReplace = snippets.findIndex(item => item.name === name);
         if (snippetIndexForReplace === -1) {

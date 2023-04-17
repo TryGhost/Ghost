@@ -1,5 +1,5 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Bookmark card', async () => {
@@ -186,5 +186,26 @@ describe('Bookmark card', async () => {
 
             await assertHTML(page, html`<p><br /></p>`);
         });
+    });
+
+    test('can add snippet', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'bookmark'});
+
+        const urlInput = await page.getByTestId('bookmark-url');
+        await urlInput.fill('https://ghost.org/');
+        await urlInput.press('Tab');
+        await expect(await page.getByTestId('bookmark-description')).toBeVisible();
+
+        // create snippet
+        await page.keyboard.press('Escape');
+        await createSnippet(page);
+
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="bookmark"]')).toHaveCount(2);
     });
 });

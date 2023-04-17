@@ -1,5 +1,6 @@
 import CardContext from '../context/CardContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
@@ -23,6 +24,7 @@ function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, hasE
     const [editor] = useLexicalComposerContext();
 
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
@@ -97,8 +99,10 @@ function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, hasE
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-callout-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"

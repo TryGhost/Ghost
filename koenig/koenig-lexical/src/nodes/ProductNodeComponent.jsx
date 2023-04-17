@@ -28,7 +28,7 @@ export function ProductNodeComponent({
 }) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
-    const {fileUploader} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const imgMimeTypes = fileUploader.fileTypes.image?.mimeTypes || ['image/*'];
     const imgDragHandler = useDragAndDrop({handleDrop: handleImgDrop, disabled: !isEditing});
     const imgUploader = fileUploader.useFileUpload('image');
@@ -161,8 +161,10 @@ export function ProductNodeComponent({
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-product-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"

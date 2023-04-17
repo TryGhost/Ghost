@@ -1,5 +1,6 @@
 import CardContext from '../context/CardContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
@@ -16,8 +17,9 @@ export {INSERT_BUTTON_COMMAND} from '@tryghost/kg-default-nodes';
 function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-    
+
     // TODO: this will need to be provided by the digesting code
     const testListOptions = [
         {value: 'Homepage', caption: window.location.origin + '/'},
@@ -104,8 +106,10 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-button-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
-                    <ToolbarMenuSeparator />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
                         label="Snippet"
