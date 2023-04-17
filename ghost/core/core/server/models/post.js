@@ -1004,9 +1004,8 @@ Post = ghostBookshelf.Model.extend({
 
         attrs = this.formatsToJSON(attrs, options);
 
-        // CASE: never expose the revisions
+        // CASE: never expose the mobiledoc revisions
         delete attrs.mobiledoc_revisions;
-        delete attrs.post_revisions;
 
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
