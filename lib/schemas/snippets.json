@@ -17,6 +17,11 @@
           "type": "string",
           "format": "json-string",
           "maxLength": 1000000000
+        },
+        "lexical": {
+          "type": ["string", "null"],
+          "format": "json-string",
+          "maxLength": 1000000000
         }
       }
     }
