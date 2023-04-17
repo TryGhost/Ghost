@@ -52,7 +52,9 @@
                             <Editor::PublishButtons @publishManagement={{publishManagement}} />
 
                             {{#if (feature 'postHistory')}}
-                                {{svg-jar "clock" class="w4 ml3"}}
+                                <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
+                                    {{svg-jar "clock" class="w4 ml3"}}
+                                </button>
                             {{/if}}
 
                             {{#unless this.showSettingsMenu}}
@@ -129,6 +131,15 @@
         <GhFullscreenModal @modal="re-authenticate"
             @close={{this.toggleReAuthenticateModal}}
             @modifier="action wide" />
+    {{/if}}
+
+    {{#if (feature 'postHistory')}}
+        {{#if this.showPostHistory}}
+            <GhFullscreenModal
+                @modal="post-history"
+                @close={{this.closePostHistory}}
+                @modifier="full-overlay post-history" />
+        {{/if}}
     {{/if}}
 {{/if}}
 
