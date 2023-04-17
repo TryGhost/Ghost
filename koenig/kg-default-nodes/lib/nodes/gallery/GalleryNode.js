@@ -3,8 +3,7 @@ import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {GalleryParser} from './GalleryParser';
 import {renderGalleryNodeToDOM} from './GalleryRenderer';
 
-export const INSERT_IMAGE_COMMAND = createCommand();
-export const UPLOAD_IMAGE_COMMAND = createCommand();
+export const INSERT_GALLERY_COMMAND = createCommand();
 
 export class GalleryNode extends KoenigDecoratorNode {
     // payload properties
