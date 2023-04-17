@@ -23,6 +23,7 @@ import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_TITLE = '(Untitled)';
 
@@ -115,6 +116,7 @@ export default class LexicalEditorController extends Controller {
 
     shouldFocusTitle = false;
     showSettingsMenu = false;
+    @tracked showPostHistory = false;
 
     /**
      * Flag used to determine if we should return to the analytics page or to the posts/pages overview
@@ -395,6 +397,16 @@ export default class LexicalEditorController extends Controller {
         await this.modals.open(DeleteSnippetModal, {
             snippet
         });
+    }
+
+    @action
+    openPostHistory() {
+        this.showPostHistory = true;
+    }
+
+    @action
+    closePostHistory() {
+        this.showPostHistory = false;
     }
 
     /* Public tasks ----------------------------------------------------------*/
