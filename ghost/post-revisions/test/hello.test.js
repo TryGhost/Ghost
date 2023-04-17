@@ -25,14 +25,16 @@ describe('PostRevisions', function () {
             assert.equal(actual, expected);
         });
 
-        it('should return false if the current and previous lexical values are the same', function () {
+        it('should return false if the current and previous html values are the same', function () {
             const postRevisions = new PostRevisions({config});
 
             const expected = false;
             const actual = postRevisions.shouldGenerateRevision({
-                lexical: 'blah'
+                lexical: 'previous',
+                html: 'blah'
             }, {
-                lexical: 'blah'
+                lexical: 'current',
+                html: 'blah'
             }, [{
                 lexical: 'blah'
             }]);
@@ -40,14 +42,16 @@ describe('PostRevisions', function () {
             assert.equal(actual, expected);
         });
 
-        it('should return true if the current and previous lexical values are different', function () {
+        it('should return true if the current and previous html values are different', function () {
             const postRevisions = new PostRevisions({config});
 
             const expected = true;
             const actual = postRevisions.shouldGenerateRevision({
-                lexical: 'blah'
+                lexical: 'blah',
+                html: 'blah'
             }, {
-                lexical: 'blah2'
+                lexical: 'blah',
+                html: 'blah2'
             }, [{
                 lexical: 'blah'
             }]);
@@ -77,9 +81,11 @@ describe('PostRevisions', function () {
                 lexical: 'revision'
             }];
             const actual = await postRevisions.getRevisions({
-                lexical: 'blah'
+                lexical: 'blah',
+                html: 'blah'
             }, {
-                lexical: 'blah'
+                lexical: 'blah',
+                html: 'blah'
             }, [{
                 lexical: 'revision'
             }]);
@@ -92,10 +98,12 @@ describe('PostRevisions', function () {
 
             const actual = await postRevisions.getRevisions({
                 id: '1',
-                lexical: 'previous'
+                lexical: 'previous',
+                html: 'previous'
             }, {
                 id: '1',
-                lexical: 'current'
+                lexical: 'current',
+                html: 'current'
             }, []);
 
             assert.equal(actual.length, 2);
@@ -112,18 +120,22 @@ describe('PostRevisions', function () {
 
             const revisions = await postRevisions.getRevisions({
                 id: '1',
-                lexical: 'previous'
+                lexical: 'previous',
+                html: 'previous'
             }, {
                 id: '1',
-                lexical: 'current'
+                lexical: 'current',
+                html: 'current'
             }, []);
 
             const actual = await postRevisions.getRevisions({
                 id: '1',
-                lexical: 'old'
+                lexical: 'old',
+                html: 'old'
             }, {
                 id: '1',
-                lexical: 'new'
+                lexical: 'new',
+                html: 'new'
             }, revisions);
 
             assert.equal(actual.length, 2);
