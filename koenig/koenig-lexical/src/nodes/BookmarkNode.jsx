@@ -60,10 +60,10 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
 
     async function fetchMetadata(href) {
         setLoading(true);
-        let testData;
+        let response;
         try {
             // set the test data return values in fetchEmbed.js
-            testData = await cardConfig.fetchEmbed(href, {type: 'bookmark'});
+            response = await cardConfig.fetchEmbed(href);
         } catch (e) {
             setLoading(false);
             setUrlError(true);
@@ -71,13 +71,13 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
         }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setUrl(testData.url);
-            node.setAuthor(testData.author);
-            node.setIcon(testData.icon);
-            node.setTitle(testData.title);
-            node.setDescription(testData.description);
-            node.setPublisher(testData.publisher);
-            node.setThumbnail(testData.thumbnail);
+            node.setUrl(response.url);
+            node.setAuthor(response.metadata.author);
+            node.setIcon(response.metadata.icon);
+            node.setTitle(response.metadata.title);
+            node.setDescription(response.metadata.description);
+            node.setPublisher(response.metadata.publisher);
+            node.setThumbnail(response.metadata.thumbnail);
         });
         setLoading(false);
     }
