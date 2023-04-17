@@ -43,6 +43,11 @@
                                         @openUpdateFlow={{publishManagement.openUpdateFlow}}
                                     />
                                 </span>
+                                {{#if (feature 'postHistory')}}
+                                    <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history" class="gh-btn-text">
+                                        {{svg-jar "history"}}
+                                    </button>
+                                {{/if}}
                             </div>
                         {{/if}}
                     </div>
@@ -50,13 +55,6 @@
                     <section class="flex items-center pe-auto h-100">
                         {{#unless this.post.isNew}}
                             <Editor::PublishButtons @publishManagement={{publishManagement}} />
-
-                            {{#if (feature 'postHistory')}}
-                                <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
-                                    {{svg-jar "clock" class="w4 ml3"}}
-                                </button>
-                            {{/if}}
-
                             {{#unless this.showSettingsMenu}}
                                 <div class="settings-menu-toggle-spacer"></div>
                             {{/unless}}
@@ -138,7 +136,7 @@
             <GhFullscreenModal
                 @modal="post-history"
                 @close={{this.closePostHistory}}
-                @modifier="full-overlay post-history" />
+                @modifier="total-overlay post-history" />
         {{/if}}
     {{/if}}
 {{/if}}
