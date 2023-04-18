@@ -1,23 +1,32 @@
 .pintura-editor {
-    --font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif;
+    --font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif !important;
+}
+
+.PinturaModal {
+    padding: 32px !important;
+    background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.PinturaRoot {
+    border-radius: 9px !important;
 }
 
 .PinturaRoot > .PinturaNav .PinturaButton:only-of-type {
-    padding: 0 14px;
-    height: 34px;
-    font-size: 2rem;
-    font-weight: 500;
-    color: var(--white);
-    background-color: var(--black);
-    border-radius: 3px;
-    -webkit-font-smoothing: subpixel-antialiased;
+    padding: 0 14px !important;
+    height: 34px !important;
+    font-size: 2rem !important;
+    font-weight: 500 !important;
+    color: var(--white) !important;
+    background-color: var(--black) !important;
+    border-radius: 3px !important;
+    -webkit-font-smoothing: subpixel-antialiased !important;
 }
 
-.PinturaRoot > .PinturaNav .PinturaButton .PinturaButtonInner {
-    height: auto;
+.PinturaRoot > .PinturaNav .PinturaButtonExport .PinturaButtonInner {
+    height: auto !important;
 }
 
 .PinturaRoot .PinturaButtonExport:hover {
-    color: var(--black);
-    background-color: var(--white);
+    color: var(--black) !important;
+    background-color: var(--white) !important;
 }
