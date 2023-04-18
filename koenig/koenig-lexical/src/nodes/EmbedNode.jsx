@@ -63,7 +63,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
         let response;
         try {
             // set the test data return values in fetchEmbed.js
-            response = await cardConfig.fetchEmbed(href);
+            response = await cardConfig.fetchEmbed(href, {type: 'embed'});
         } catch (e) {
             setLoading(false);
             setUrlError(true);
@@ -71,7 +71,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
         }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setUrl(response.url);
+            node.setUrl(href);
             node.setEmbedType(response.type);
             node.setHtml(response.html);
             node.setMetadata(response.metadata);

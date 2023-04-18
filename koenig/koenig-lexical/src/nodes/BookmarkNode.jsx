@@ -63,7 +63,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
         let response;
         try {
             // set the test data return values in fetchEmbed.js
-            response = await cardConfig.fetchEmbed(href);
+            response = await cardConfig.fetchEmbed(href, {type: 'bookmark'});
         } catch (e) {
             setLoading(false);
             setUrlError(true);
