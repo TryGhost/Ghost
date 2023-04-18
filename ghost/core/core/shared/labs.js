@@ -40,7 +40,8 @@ const ALPHA_FEATURES = [
     'websockets',
     'stripeAutomaticTax',
     'makingItRain',
-    'postHistory'
+    'postHistory',
+    'announcementBar'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
