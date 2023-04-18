@@ -23,7 +23,6 @@
                     class="back settings-menu-header-action" 
                     data-test-button="close-psm-subview" 
                     type="button" {{action "closeModal"}}
-                    {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
                     {{on "mousedown" (optional this.noop)}}
                 >   
                     {{svg-jar "arrow-left"}}
@@ -33,7 +32,7 @@
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">
-                    {{#each this.post.postRevisions as |revision|}}
+                    {{#each this.revisionList as |revision|}}
                     <li class="nav-list-item">
                         <button type="button">
                             <div class="flex items-center">
