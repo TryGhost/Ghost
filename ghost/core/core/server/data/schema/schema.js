@@ -403,7 +403,7 @@ module.exports = {
         lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         created_at_ts: {type: 'bigInteger', nullable: false},
         created_at: {type: 'dateTime', nullable: false},
-        author_id: {type: 'string', maxlength: 24, nullable: true},
+        author_id: {type: 'string', maxlength: 24, nullable: true, references: 'users.id', cascadeDelete: false},
         title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 255}}}
     },
     members: {
