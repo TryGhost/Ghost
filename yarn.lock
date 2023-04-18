@@ -5818,12 +5818,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.6.tgz#82ba6f887b27ee44eb21942deb9a6cbe3ea1f226"
   integrity sha512-BLiRBL1BnicBGEJkuCtR3qdmlWaZ0YB7u9S+9sX4V/E9ikB40hAphS5sIf/l+j7LyyTygMhjIP0PBb64bVdGxA==
 
-"@tryghost/kg-clean-basic-html@3.0.12", "@tryghost/kg-clean-basic-html@^3.0.12":
+"@tryghost/kg-clean-basic-html@3.0.12":
   version "3.0.12"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.12.tgz#1fa91fee8a2927751b000d1b41c0b3fa4e691f2e"
   integrity sha512-b57msTHdd3kGpTLL2kXIFJmTWfinW7CYH+EZuZLG0xAx/QMWkVUtD7LuJFEAC1tw+ugHW/wQODR0tfyg3EbUUA==
 
-"@tryghost/kg-clean-basic-html@^3.0.13":
+"@tryghost/kg-clean-basic-html@^3.0.12", "@tryghost/kg-clean-basic-html@^3.0.13":
   version "3.0.13"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.13.tgz#5cf1700ae3ceef3698d3be74975768a13e51061b"
   integrity sha512-x+dq93q5v0cLU5sWe4byOI7CYAG8n+7lkqgb6+DowDjmLVAgrtnu6OiFugMS6DS5EUxDOhHdZN8IxPyiLYmJ6A==
@@ -30199,10 +30199,10 @@ vite-plugin-svgr@2.4.0:
     "@rollup/pluginutils" "^5.0.2"
     "@svgr/core" "^6.5.1"
 
-vite@4.2.1, "vite@^3.0.0 || ^4.0.0":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-4.2.1.tgz#6c2eb337b0dfd80a9ded5922163b94949d7fc254"
-  integrity sha512-7MKhqdy0ISo4wnvwtqZkjke6XN4taqQ2TBaTccLIpOKv7Vp2h4Y+NpmWCnGDeSvvn45KxvWgGyb0MkHvY1vgbg==
+vite@4.2.2, "vite@^3.0.0 || ^4.0.0":
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-4.2.2.tgz#014c30e5163844f6e96d7fe18fbb702236516dc6"
+  integrity sha512-PcNtT5HeDxb3QaSqFYkEum8f5sCVe0R3WK20qxgIvNBZPXU/Obxs/+ubBMeE7nLWeCo2LDzv+8hRYSlcaSehig==
   dependencies:
     esbuild "^0.17.5"
     postcss "^8.4.21"
