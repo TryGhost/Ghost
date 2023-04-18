@@ -127,7 +127,6 @@ export function EmailCtaCard({
                             />
                             <InputListSetting
                                 label='Button URL'
-                                list="buttonUrlSuggestions"
                                 listOptions={suggestedUrls}
                                 placeholder='https://yoursite.com/#/portal/signup/'
                                 value={buttonUrl}

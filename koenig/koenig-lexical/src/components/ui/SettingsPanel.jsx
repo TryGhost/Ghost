@@ -7,6 +7,7 @@ import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
 import {Dropdown} from './Dropdown';
 import {IconButton} from './IconButton';
 import {Input} from './Input';
+import {InputList} from './InputList';
 import {MediaPlaceholder} from './MediaPlaceholder';
 import {ProgressBar} from './ProgressBar';
 import {Toggle} from './Toggle';
@@ -62,36 +63,13 @@ export function InputSetting({label, description, onChange, value, placeholder, 
  * @param {object} options
  * @param {(value: string) => void} options.onChange Does not pass an event, only the value
  * @param {{value: string, label: string}[]} options.listOptions
- * @param {string} options.list
  * @returns
  */
-export function InputListSetting({dataTestId, description, label, list, listOptions, onChange, placeholder, value}) {
-    const [inputFocused, setInputFocused] = React.useState(false);
-
-    const onFocus = () => {
-        setInputFocused(true);
-    };
-
-    const onBlur = () => {
-        setInputFocused(false);
-    };
-
-    // We use the capture phase of the mouse down event, otherwise the list option will be removed when blurring the input
-    // before calling the click event
-    const handleOptionMouseDown = (event, v) => {
-        // Prevent losing focus when clicking an option
-        event.preventDefault();
-        onChange(v);
-    };
-
-    const onInputChange = (event) => {
-        onChange(event.target.value);
-    };
-
+export function InputListSetting({dataTestId, description, label, listOptions, onChange, placeholder, value}) {
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
-            <Input dataTestId={dataTestId} handleOptionMouseDown={handleOptionMouseDown} list={list} listOptions={listOptions} listVisibility={inputFocused} placeholder={placeholder} value={value} onBlur={onBlur} onChange={onInputChange} onFocus={onFocus} />
+            <InputList dataTestId={dataTestId} listOptions={listOptions} placeholder={placeholder} value={value} onChange={onChange} />
             {description &&
                     <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }

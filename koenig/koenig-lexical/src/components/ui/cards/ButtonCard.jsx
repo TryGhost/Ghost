@@ -58,7 +58,6 @@ export function ButtonCard({
                         dataTestId="button-input-url"
                         handleOptionClick={handleOptionClick}
                         label='Button URL'
-                        list='suggestedUrls'
                         listOptions={suggestedUrls}
                         placeholder='https://yoursite.com/#/portal/signup/'
                         value={buttonUrl}
