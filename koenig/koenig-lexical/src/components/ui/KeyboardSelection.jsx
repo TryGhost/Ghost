@@ -8,8 +8,9 @@ import React from 'react';
  * @param {T[]} [options.items]
  * @param {(T, selected) => import('react').ReactElement} [options.getItem]
  */
-export function KeyboardSelection({items, getItem, onSelect}) {
-    const [selectedIndex, setSelectedIndex] = React.useState(0);
+export function KeyboardSelection({items, getItem, onSelect, defaultSelected}) {
+    const defaultIndex = items.findIndex(item => item === defaultSelected);
+    const [selectedIndex, setSelectedIndex] = React.useState(defaultIndex === -1 ? 0 : defaultIndex);
 
     const handleKeydown = React.useCallback((event) => {
         if (event.key === 'ArrowDown') {
