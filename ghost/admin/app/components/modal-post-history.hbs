@@ -7,9 +7,11 @@
             Loading...
         {{/if}}
         <div class="gh-post-history-hidden-lexical previous">
+            <div class="gh-editor-title">{{this.previousTitle}}</div>
             <KoenigLexicalEditor @lexical={{this.previousLexical}} @cardConfig={{this.cardConfig}} />
         </div>
         <div class="gh-post-history-hidden-lexical current">
+            <div class="gh-editor-title">{{this.currentTitle}}</div>
             <KoenigLexicalEditor @lexical={{this.currentLexical}} @cardConfig={{this.cardConfig}}/>
         </div>
     </div>
