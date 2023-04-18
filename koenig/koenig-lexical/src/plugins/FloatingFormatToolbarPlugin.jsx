@@ -237,7 +237,7 @@ function FloatingFormatToolbar({
     const isSnippetVisible = toolbarItemTypes.snippet === toolbarItemType;
 
     return (
-        <div ref={toolbarRef} className="not-kg-prose fixed" style={{opacity: 0}} data-kg-floating-toolbar>
+        <div ref={toolbarRef} className="not-kg-prose fixed z-[10000]" style={{opacity: 0}} data-kg-floating-toolbar>
             {isSnippetVisible && <SnippetActionToolbar onClose={handleSnippetClose}/>}
 
             <ToolbarMenu hide={isSnippetVisible}>
