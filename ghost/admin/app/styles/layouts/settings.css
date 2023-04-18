@@ -3703,6 +3703,10 @@ p.theme-validation-details {
     line-height: 1.5em !important;
 }
 
+.gh-announcement-editor .koenig-lexical p {
+    height: 108px;
+}
+
 .gh-announcement-editor .koenig-lexical a {
     display: inline;
     padding: 0;
