@@ -21,9 +21,11 @@ class PostRevisions {
      * @param {object} deps
      * @param {object} deps.config
      * @param {number} deps.config.max_revisions
+     * @param {object} deps.model
      */
     constructor(deps) {
         this.config = deps.config;
+        this.model = deps.model;
     }
 
     /**
@@ -76,6 +78,39 @@ class PostRevisions {
             author_id: input.author_id,
             title: input.title
         };
+    }
+
+    /**
+     * @param {string} authorId
+     * @param {object} options
+     * @param {object} options.transacting
+     */
+    async removeAuthorFromRevisions(authorId, options) {
+        const revisions = await this.model.findAll({
+            filter: `author_id:${authorId}`,
+            columns: ['id'],
+            transacting: options.transacting
+        });
+
+        const revisionIds = revisions.toJSON()
+            .reduce((acc, value) => {
+                acc.push(value.id);
+
+                return acc;
+            }, []);
+
+        if (revisionIds.length === 0) {
+            return;
+        }
+
+        await this.model.bulkEdit(revisionIds, 'post_revisions', {
+            data: {
+                author_id: null
+            },
+            column: 'id',
+            transacting: options.transacting,
+            throwErrors: true
+        });
     }
 }
 

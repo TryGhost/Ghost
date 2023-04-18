@@ -1,4 +1,5 @@
 const assert = require('assert');
+const sinon = require('sinon');
 const PostRevisions = require('../');
 
 const config = {
@@ -163,6 +164,76 @@ describe('PostRevisions', function () {
             }, revisions);
 
             assert.equal(actual.length, 2);
+        });
+    });
+
+    describe('removeAuthor', function () {
+        it('removes the provided author from post revisions', async function () {
+            const authorId = 'abc123';
+            const options = {
+                transacting: {}
+            };
+            const revisions = [
+                {
+                    id: 'revision123',
+                    post_id: 'post123',
+                    author_id: 'author123'
+                },
+                {
+                    id: 'revision456',
+                    post_id: 'post123',
+                    author_id: 'author123'
+                },
+                {
+                    id: 'revision789',
+                    post_id: 'post123',
+                    author_id: 'author456'
+                }
+            ];
+            const modelStub = {
+                findAll: sinon.stub().resolves({
+                    toJSON: () => revisions
+                }),
+                bulkEdit: sinon.stub().resolves()
+            };
+            const postRevisions = new PostRevisions({
+                model: modelStub
+            });
+
+            await postRevisions.removeAuthorFromRevisions(authorId, options);
+
+            assert.equal(modelStub.bulkEdit.calledOnce, true);
+
+            const bulkEditArgs = modelStub.bulkEdit.getCall(0).args;
+
+            assert.deepEqual(bulkEditArgs[0], ['revision123', 'revision456', 'revision789']);
+            assert.equal(bulkEditArgs[1], 'post_revisions');
+            assert.deepEqual(bulkEditArgs[2], {
+                data: {
+                    author_id: null
+                },
+                column: 'id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+        });
+
+        it('does nothing if there are no post revisions by the provided author', async function () {
+            const modelStub = {
+                findAll: sinon.stub().resolves({
+                    toJSON: () => []
+                }),
+                bulkEdit: sinon.stub().resolves()
+            };
+            const postRevisions = new PostRevisions({
+                model: modelStub
+            });
+
+            await postRevisions.removeAuthorFromRevisions('abc123', {
+                transacting: {}
+            });
+
+            assert.equal(modelStub.bulkEdit.calledOnce, false);
         });
     });
 });
