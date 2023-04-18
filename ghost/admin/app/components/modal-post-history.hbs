@@ -6,21 +6,12 @@
         {{else}}
             Loading...
         {{/if}}
-          <div class="gh-post-history-hidden-lexical previous">
-            <KoenigLexicalEditor
-                @hasLoaded={this.hasLoaded}
-                @lexical={{this.previousLexical}}
-                @cardConfig={{this.cardConfig}}
-            />
-          </div>
-          <div class="gh-post-history-hidden-lexical current">
-
-            <KoenigLexicalEditor
-                @lexical={{this.currentLexical}}
-                @cardConfig={{this.cardConfig}}
-            />
-
-          </div>
+        <div class="gh-post-history-hidden-lexical previous">
+            <KoenigLexicalEditor @lexical={{this.previousLexical}} @cardConfig={{this.cardConfig}} />
+        </div>
+        <div class="gh-post-history-hidden-lexical current">
+            <KoenigLexicalEditor @lexical={{this.currentLexical}} @cardConfig={{this.cardConfig}}/>
+        </div>
     </div>
     <div class="settings-menu-container">
         <div class="settings-menu settings-menu-pane settings-menu-pane-main">
