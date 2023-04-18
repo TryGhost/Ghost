@@ -1,4 +1,5 @@
 import React from 'react';
+import {DropdownContainer} from './DropdownContainer';
 
 /**
  *
@@ -21,7 +22,7 @@ export function Input({dataTestId, list, listOptions, listVisibility, handleOpti
                     onChange={onChange}
                     onFocus={onFocus}
                 />
-                {list && listOptions && !!listOptions.length && listVisibility && <ul className="absolute mt-[-1px] max-h-[30vh] w-full overflow-y-auto rounded-b border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900">
+                {list && listOptions && !!listOptions.length && listVisibility && <DropdownContainer>
                     {listOptions.map((item) => {
                         return <li key={item.value} className="cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-black" data-testid={`${dataTestId}-listOption`} onMouseDownCapture={event => handleOptionMouseDown(event, item.value)}>
                             <span className="block text-sm font-semibold leading-tight text-black dark:text-white" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
@@ -30,7 +31,7 @@ export function Input({dataTestId, list, listOptions, listVisibility, handleOpti
                             </span>
                         </li>;
                     })}
-                </ul>
+                </DropdownContainer>
                 }
             </div>
         </>
