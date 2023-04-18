@@ -43,11 +43,6 @@
                                         @openUpdateFlow={{publishManagement.openUpdateFlow}}
                                     />
                                 </span>
-                                {{#if (feature 'postHistory')}}
-                                    <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history" class="gh-btn-text">
-                                        {{svg-jar "history"}}
-                                    </button>
-                                {{/if}}
                             </div>
                         {{/if}}
                     </div>
@@ -129,15 +124,6 @@
         <GhFullscreenModal @modal="re-authenticate"
             @close={{this.toggleReAuthenticateModal}}
             @modifier="action wide" />
-    {{/if}}
-
-    {{#if (feature 'postHistory')}}
-        {{#if this.showPostHistory}}
-            <GhFullscreenModal
-                @modal="post-history"
-                @close={{this.closePostHistory}}
-                @modifier="total-overlay post-history" />
-        {{/if}}
     {{/if}}
 {{/if}}
 
