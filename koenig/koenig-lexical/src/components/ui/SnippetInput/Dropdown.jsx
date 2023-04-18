@@ -15,7 +15,7 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
 
     return (
         <ul
-            className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white py-1 shadow"
+            className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white shadow"
             tabIndex={0}
             onKeyDown={onKeyDown}
         >
@@ -73,7 +73,7 @@ const DropdownItem = ({onClick, children, active, index}) => {
     }, [active, index]);
 
     return (
-        <li>
+        <li className="mb-1">
             <button
                 ref={buttonRef}
                 className="flex w-full cursor-pointer items-center justify-between py-2 px-3 text-left text-sm hover:bg-grey-100 focus:bg-grey-100"
