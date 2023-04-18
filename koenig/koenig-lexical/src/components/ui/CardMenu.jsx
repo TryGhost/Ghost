@@ -49,7 +49,7 @@ export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, .
     };
 
     return (
-        <li role="presentation" className="mb-0">
+        <li className="mb-0" role="presentation">
             <div
                 className={`kg-cardmenu-card-hover group flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100 ${isSelected ? 'bg-grey-100' : ''}`}
                 data-kg-cardmenu-selected={isSelected}
