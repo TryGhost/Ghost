@@ -5,5 +5,5 @@ export default class PostRevisionModel extends Model {
   @attr('string') lexical;
   @attr('string') title;
   @attr('moment-utc') createdAt;
-  @belongsTo('user') authorId;
+  @belongsTo('user') author;
 }
