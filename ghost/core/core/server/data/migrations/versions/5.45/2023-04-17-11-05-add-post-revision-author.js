@@ -6,7 +6,8 @@ module.exports = combineNonTransactionalMigrations(
         maxlength: 2000,
         nullable: true,
         references: 'users.id',
-        cascadeDelete: false
+        cascadeDelete: false,
+        constraintName: 'post_revs_author_id_foreign'
     }),
     createAddColumnMigration('post_revisions', 'title', {
         type: 'string',
