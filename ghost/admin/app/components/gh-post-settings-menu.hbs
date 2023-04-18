@@ -147,12 +147,6 @@
                     </section>
 
                     <ul class="nav-list">
-                        <li class="nav-list-item">
-                            <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
-                                <span>{{svg-jar "brackets"}} Code injection</span>
-                            </button>
-                            {{svg-jar "arrow-right" class="arrow-right"}}
-                        </li>
                         {{#if (feature 'postHistory')}}
                             <li class="nav-list-item">
                                 <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
@@ -161,6 +155,12 @@
                                 {{svg-jar "arrow-right" class="arrow-right"}}
                             </li>
                         {{/if}}
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
+                                <span>{{svg-jar "brackets"}} Code injection</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
                         <li class="nav-list-item">
                             <button type="button" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
                                 <span>{{svg-jar "google-icon"}} Meta data</span>
@@ -195,7 +195,7 @@
                         </div>
 
                         <div class="settings-menu-content">
-                            <form {{action "discardEnter" on="submit"}} aria-label="Meta data settings">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Meta data settings">
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaTitle">
                                     <label for="meta-title">Meta title</label>
                                     <GhTextInput
@@ -269,7 +269,7 @@
 
                         <div class="settings-menu-content">
 
-                            <form {{action "discardEnter" on="submit"}} aria-label="Twitter card settings">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Twitter card settings">
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.twitterImage}}
                                     @text="Add Twitter image"
@@ -336,7 +336,7 @@
                         </div>
 
                         <div class="settings-menu-content">
-                            <form {{action "discardEnter" on="submit"}} aria-label="Facebook card settings">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Facebook card settings">
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.ogImage}}
                                     @text="Add Facebook image"
@@ -404,7 +404,7 @@
                         </div>
 
                         <div class="settings-menu-content settings-menu-content-codeinjection">
-                            <form {{action "discardEnter" on="submit"}} aria-label="Code injection settings">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Code injection settings">
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="codeinjectionHead">
                                     <label for="codeinjection-head">{{capitalize this.post.displayName}} header <code>\{{ghost_head}}</code></label>
                                     <GhCmEditor @value={{this.codeinjectionHeadScratch}}
