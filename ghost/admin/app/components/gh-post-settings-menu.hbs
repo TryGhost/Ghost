@@ -148,12 +148,14 @@
 
                     <ul class="nav-list">
                         {{#if (feature 'postHistory')}}
-                            <li class="nav-list-item">
-                                <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
-                                    <span>{{svg-jar "history" class="history"}} Post history</span>
-                                </button>
-                                {{svg-jar "arrow-right" class="arrow-right"}}
-                            </li>
+                            {{#if this.post.lexical}}
+                                <li class="nav-list-item">
+                                    <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
+                                        <span>{{svg-jar "history" class="history"}} Post history</span>
+                                    </button>
+                                    {{svg-jar "arrow-right" class="arrow-right"}}
+                                </li>
+                            {{/if}}
                         {{/if}}
                         <li class="nav-list-item">
                             <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
