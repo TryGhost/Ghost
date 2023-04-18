@@ -67,6 +67,7 @@ function FloatingFormatToolbar({
     blockType,
     isBold,
     isItalic,
+    isSnippetsEnabled,
     toolbarItemType,
     setToolbarItemType,
     setIsText
@@ -84,7 +85,7 @@ function FloatingFormatToolbar({
         hideQuotes = true;
     }
 
-    let hideSnippets = false;
+    let hideSnippets = !isSnippetsEnabled;
     if (editor._parentEditor) {
         hideSnippets = true;
     }
@@ -275,7 +276,7 @@ function FloatingFormatToolbar({
     );
 }
 
-function useFloatingFormatToolbar(editor, anchorElem) {
+function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
     const [isText, setIsText] = React.useState(false);
     const [isBold, setIsBold] = React.useState(false);
     const [isItalic, setIsItalic] = React.useState(false);
@@ -370,6 +371,7 @@ function useFloatingFormatToolbar(editor, anchorElem) {
                 editor={editor}
                 isBold={isBold}
                 isItalic={isItalic}
+                isSnippetsEnabled={isSnippetsEnabled}
                 isText={isText}
                 setIsText={setIsText}
                 setToolbarItemType={setToolbarItemType}
@@ -379,7 +381,7 @@ function useFloatingFormatToolbar(editor, anchorElem) {
     );
 }
 
-export default function FloatingFormatToolbarPlugin({anchorElem = document.body}) {
+export default function FloatingFormatToolbarPlugin({anchorElem = document.body, isSnippetsEnabled}) {
     const [editor] = useLexicalComposerContext();
-    return useFloatingFormatToolbar(editor, anchorElem);
+    return useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled);
 }
