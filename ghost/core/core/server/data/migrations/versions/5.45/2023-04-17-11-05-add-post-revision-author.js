@@ -1,7 +1,7 @@
 const {combineNonTransactionalMigrations,createAddColumnMigration} = require('../../utils');
 
 module.exports = combineNonTransactionalMigrations(
-    createAddColumnMigration('post_revisions', 'created_by', {
+    createAddColumnMigration('post_revisions', 'author_id', {
         type: 'string',
         maxlength: 2000,
         nullable: true
