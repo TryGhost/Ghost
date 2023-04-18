@@ -147,14 +147,11 @@ export default class KoenigLexicalEditor extends Component {
     }
 
     ReactComponent = (props) => {
-        const fetchEmbed = async (url) => {    
+        const fetchEmbed = async (url, {type}) => {    
             let oembedEndpoint = this.ghostPaths.url.api('oembed');
             let response = await this.ajax.request(oembedEndpoint, {
-                data: {url, type: 'bookmark'}
+                data: {url, type}
             });
-            if (!response.metadata) {
-                throw 'No metadata returned';
-            }
             return response;
         };
 
