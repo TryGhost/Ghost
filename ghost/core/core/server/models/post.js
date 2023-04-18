@@ -343,6 +343,11 @@ Post = ghostBookshelf.Model.extend({
                 tableName: 'posts_meta',
                 type: 'oneToOne',
                 joinFrom: 'post_id'
+            },
+            post_revisions: {
+                tableName: 'post_revisions',
+                type: 'oneToMany',
+                joinFrom: 'post_id'
             }
         };
     },
@@ -1183,7 +1188,7 @@ Post = ghostBookshelf.Model.extend({
      */
     defaultRelations: function defaultRelations(methodName, options) {
         if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
-            options.withRelated = _.union(['authors', 'tags'], options.withRelated || []);
+            options.withRelated = _.union(['authors', 'tags', 'post_revisions'], options.withRelated || []);
         }
 
         const META_ATTRIBUTES = _.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id');

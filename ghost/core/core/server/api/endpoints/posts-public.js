@@ -3,7 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const postsPublicService = require('../../services/posts-public');
 
-const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];
+const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment', 'post_revisions'];
 
 const messages = {
     postNotFound: 'Post not found.'

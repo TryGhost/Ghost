@@ -15,7 +15,8 @@ const allowedIncludes = [
     'count.clicks',
     'sentiment',
     'count.positive_feedback',
-    'count.negative_feedback'
+    'count.negative_feedback',
+    'post_revisions'
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
@@ -105,7 +106,7 @@ module.exports = {
         validation: {
             options: {
                 include: {
-                    values: [...allowedIncludes, 'post_revisions']
+                    values: allowedIncludes
                 },
                 formats: {
                     values: models.Post.allowedFormats
