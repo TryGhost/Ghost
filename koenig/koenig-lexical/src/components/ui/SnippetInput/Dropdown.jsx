@@ -15,7 +15,7 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
 
     return (
         <ul
-            className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white shadow"
+            className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white shadow dark:border-grey-900 dark:bg-grey-950"
             tabIndex={0}
             onKeyDown={onKeyDown}
         >
@@ -23,7 +23,7 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
             <li className="mb-0 block">
                 <button
                     ref={buttonRef}
-                    className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100 focus:bg-grey-100"
+                    className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100 focus:bg-grey-100 dark:hover:bg-black dark:focus:bg-black"
                     type="button"
                     onClick={onCreateSnippet}
                 >
@@ -46,7 +46,7 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
 const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
     return (
         <li role="separator">
-            <span className="tracking-loose block border-t border-grey-200 px-3 pt-3 pb-2 text-xs font-medium uppercase text-grey">Replace existing</span>
+            <span className="tracking-loose block border-t border-grey-200 px-3 pt-3 pb-2 text-xs font-medium uppercase text-grey dark:border-grey-900 dark:text-grey-800">Replace existing</span>
             <ul role="menu">
                 {
                     list.map((item, index) => (
@@ -76,13 +76,13 @@ const DropdownItem = ({onClick, children, active, index}) => {
         <li className="mb-1">
             <button
                 ref={buttonRef}
-                className="flex w-full cursor-pointer items-center justify-between py-2 px-3 text-left text-sm hover:bg-grey-100 focus:bg-grey-100"
+                className="flex w-full cursor-pointer items-center justify-between py-2 px-3 text-left text-sm hover:bg-grey-100 focus:bg-grey-100 dark:hover:bg-black dark:focus:bg-black"
                 type="button"
                 onClick={onClick}
             >
                 <span>{children}</span>
                 <div className="h-5 w-5 fill-grey-900">
-                    <ReplaceIcon className="h-4 w-4 fill-grey-900" />
+                    <ReplaceIcon className="h-4 w-4 fill-grey-900 dark:fill-grey-600" />
                 </div>
             </button>
         </li>
