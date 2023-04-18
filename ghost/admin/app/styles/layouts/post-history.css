@@ -1,4 +1,5 @@
 .gh-post-history {
+    display: flex;
     height: 100%;
 }
 
@@ -15,7 +16,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 32px;
+    padding: 3.2rem;
     border-bottom: 1px solid var(--whitegrey-d1);
 }
 
@@ -29,4 +30,14 @@
 
 .modal-fullsettings-sidebar-header .gh-btn-icon svg {
     margin: 0;
+}
+
+.gh-post-history-main {
+    width: 100%;
+    max-width: 740px;
+    margin: 16rem auto 0;
+}
+
+.gh-post-history-main .koenig-lexical del {
+    color: var(--red) !important;
 }
