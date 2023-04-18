@@ -1,3 +1,4 @@
+// TODO: Switch to mocked API. Currently uses real Unsplash API so the asserted test data isn't stable
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {expect} from '@playwright/test';
 import {focusEditor, initialize, startApp} from '../../utils/e2e';
@@ -18,7 +19,7 @@ describe('Modals', async () => {
         await initialize({page});
     });
 
-    test('can open selector', async () => {
+    test.skip('can open selector', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -26,7 +27,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
     });
 
-    test('renders (empty) image card under container', async () => {
+    test.skip('renders (empty) image card under container', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -35,7 +36,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-card="image"]')).toBeVisible();
     });
 
-    test('can close selector', async () => {
+    test.skip('can close selector', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -45,7 +46,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-modal="unsplash"]')).not.toBeVisible();
     });
 
-    test('empty image card removed when closing model', async () => {
+    test.skip('empty image card removed when closing model', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -56,7 +57,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-card="image"]')).not.toBeVisible();
     });
 
-    test('renders unsplash gallery', async () => {
+    test.skip('renders unsplash gallery', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -66,7 +67,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
     });
 
-    test('can select / zoom image', async () => {
+    test.skip('can select / zoom image', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -79,7 +80,7 @@ describe('Modals', async () => {
         expect(await page.$('[data-kg-unsplash-zoomed]')).not.toBeNull();
     });
 
-    test('can download image', async () => {
+    test.skip('can download image', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -96,7 +97,7 @@ describe('Modals', async () => {
         expect(download.suggestedFilename()).toContain('unsplash.jpg');
     });
 
-    test('can click like button, opens in new tab', async () => {
+    test.skip('can click like button, opens in new tab', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -114,7 +115,7 @@ describe('Modals', async () => {
         expect(newPage.url()).toContain('unsplash.com');
     });
 
-    test('can search for photos', async () => {
+    test.skip('can search for photos', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -134,7 +135,7 @@ describe('Modals', async () => {
         expect(altTexts.some(alt => alt.includes(searchTerm))).toBe(true);
     });
 
-    test('closes a zoomed image when searching', async () => {
+    test.skip('closes a zoomed image when searching', async () => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
