@@ -1089,3 +1089,11 @@ figure {
     transform: translateX(0); /* used for dynamic positioning with js */
     padding-right: 8px; /* extra padding used for dynamic positioning with js */
 }
+
+.gh-announcement-editor {
+    width: 100%;
+}
+
+.gh-announcement-editor div {
+    width: 100%;
+}

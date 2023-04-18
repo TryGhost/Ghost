@@ -17,5 +17,8 @@
                 <CustomThemeSettings::Image @setting={{setting}} @index={{index}} @onChange={{@updatePreview}} />
             {{/if}}
         {{/each}}
+        {{#if (feature 'announcementBar')}}
+            <CustomThemeSettings::Announcement @onChange={{@updatePreview}} />
+        {{/if}}
     </form>
 </div>
