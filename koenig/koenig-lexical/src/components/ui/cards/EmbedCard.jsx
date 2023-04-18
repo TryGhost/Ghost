@@ -8,7 +8,7 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
     if (html) {
         return (
             <div>
-                <HtmlDisplay html={html} />
+                <EmbedIframe html={html} />
                 <CardCaptionEditor
                     captionEditor={captionEditor}
                     captionEditorInitialState={captionEditorInitialState}
@@ -36,8 +36,8 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
     );
 }
 
-function HtmlDisplay({html}) {
-    return <div dangerouslySetInnerHTML={{__html: html}} className="whitespace-normal"></div>;
+function EmbedIframe({html}) {
+    return <iframe srcDoc={html} className="w-full h-full"></iframe>;
 }
 
 EmbedCard.propTypes = {

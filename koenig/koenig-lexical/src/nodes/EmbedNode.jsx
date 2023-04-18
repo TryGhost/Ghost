@@ -74,7 +74,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
             node.setUrl(href);
             node.setEmbedType(response.type);
             node.setHtml(response.html);
-            node.setMetadata(response.metadata);
+            node.setMetadata(response);
         });
         setLoading(false);
     }
