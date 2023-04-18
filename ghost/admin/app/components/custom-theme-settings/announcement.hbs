@@ -1,9 +1,14 @@
 <div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
-    <div class="gh-announcement-editor">
-        <KoenigLexicalEditorInput
-            @placeholderText="Enter text"
-            @html={{'<p><span>check</span> <a href="https://ghost.org/changelog/markdown/" dir="ltr"><span data-lexical-text="true">ghost.org/changelog/markdown/</span></a></p>'}}
-            @onChangeHtml={{this.onChangeHtml}}
-        />
+    <div class="flex-grow-1">
+        <label class="gh-setting-title gh-theme-setting-title" for={{this.selectId}}>
+            Announcement
+        </label>
+        <div class="gh-announcement-editor">
+            <KoenigLexicalEditorInput
+                @placeholderText="Enter text"
+                @html={{'<p><span>check</span> <a href="https://ghost.org/changelog/markdown/" dir="ltr"><span data-lexical-text="true">ghost.org/changelog/markdown/</span></a></p>'}}
+                @onChangeHtml={{this.onChangeHtml}}
+            />
+        </div>
     </div>
 </div>
