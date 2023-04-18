@@ -74,6 +74,7 @@ export default class FeatureService extends Service {
     @feature('migrateApp') migrateApp;
     @feature('i18n') i18n;
     @feature('postHistory') postHistory;
+    @feature('announcementBar') announcementBar;
 
     _user = null;
 

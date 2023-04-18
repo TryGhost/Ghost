@@ -308,6 +308,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -524,6 +525,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -740,6 +742,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -955,6 +958,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1170,6 +1174,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1386,6 +1391,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1646,6 +1652,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1846,6 +1853,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -2061,6 +2069,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Array [],
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
