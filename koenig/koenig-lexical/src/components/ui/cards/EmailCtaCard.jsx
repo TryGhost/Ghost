@@ -2,7 +2,7 @@ import KoenigProductEditor from '../../KoenigProductEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
-import {ButtonGroupSetting, DropdownSetting, InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {ButtonGroupSetting, DropdownSetting, InputListSetting, InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 
@@ -18,7 +18,11 @@ export function EmailCtaCard({
     showDividers,
     showButton,
     toggleDividers,
-    updateAlignment
+    updateAlignment,
+    updateShowButton,
+    updateButtonText,
+    updateButtonUrl,
+    suggestedUrls
 }) {
     const alignmentOpts = [
         {
@@ -111,7 +115,7 @@ export function EmailCtaCard({
                     <ToggleSetting
                         isChecked={showButton}
                         label='Button'
-                        onChange={() => {}}
+                        onChange={updateShowButton}
                     />
                     {showButton && (
                         <>
@@ -119,13 +123,15 @@ export function EmailCtaCard({
                                 label='Button text'
                                 placeholder='Add button text'
                                 value={buttonText}
-                                onChange={() => {}}
+                                onChange={updateButtonText}
                             />
-                            <InputSetting
+                            <InputListSetting
                                 label='Button URL'
+                                list="buttonUrlSuggestions"
+                                listOptions={suggestedUrls}
                                 placeholder='https://yoursite.com/#/portal/signup/'
                                 value={buttonUrl}
-                                onChange={() => {}}
+                                onChange={updateButtonUrl}
                             />
                         </>
                     )}
@@ -144,7 +150,12 @@ EmailCtaCard.propTypes = {
     segment: PropTypes.oneOf(['status:free', 'status:-free']),
     showButton: PropTypes.bool,
     showDividers: PropTypes.bool,
-    updateAlignment: PropTypes.func
+    updateAlignment: PropTypes.func,
+    updateButtonText: PropTypes.func,
+    updateButtonUrl: PropTypes.func,
+    updateShowButton: PropTypes.func,
+    toggleDividers: PropTypes.func,
+    suggestedUrls: PropTypes.array
 };
 
 EmailCtaCard.defaultProps = {
@@ -154,5 +165,6 @@ EmailCtaCard.defaultProps = {
     isEditing: false,
     segment: 'status:free',
     showButton: true,
-    showDividers: true
+    showDividers: true,
+    suggestedUrls: []
 };

@@ -7,17 +7,15 @@ import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-le
 
 export function ButtonCard({
     alignment,
-    buttonText, 
-    buttonPlaceholder, 
-    buttonUrl, 
+    buttonText,
+    buttonPlaceholder,
+    buttonUrl,
     handleAlignmentChange,
     handleButtonTextChange,
     handleButtonUrlChange,
-    handleButtonUrlFocus,
     handleOptionClick,
     isEditing,
-    suggestedUrls,
-    suggestedUrlVisibility
+    suggestedUrls
 }) {
     const buttonGroupChildren = [
         {
@@ -62,11 +60,9 @@ export function ButtonCard({
                         label='Button URL'
                         list='suggestedUrls'
                         listOptions={suggestedUrls}
-                        listVisibility={suggestedUrlVisibility}
                         placeholder='https://yoursite.com/#/portal/signup/'
                         value={buttonUrl}
                         onChange={handleButtonUrlChange}
-                        onFocus={handleButtonUrlFocus}
                     />
                 </SettingsPanel>
             )}
@@ -77,7 +73,7 @@ export function ButtonCard({
 ButtonCard.propTypes = {
     alignment: PropTypes.string,
     buttonText: PropTypes.string,
-    buttonPlaceholder: PropTypes.string, 
+    buttonPlaceholder: PropTypes.string,
     buttonUrl: PropTypes.string,
     handleAlignmentChange: PropTypes.func,
     handleButtonTextChange: PropTypes.func,

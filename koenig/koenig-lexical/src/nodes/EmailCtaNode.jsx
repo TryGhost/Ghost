@@ -85,10 +85,13 @@ export class EmailCtaNode extends BaseEmailCtaNode {
             >
                 <EmailCtaNodeComponent
                     alignment={this.getAlignment()}
+                    buttonText={this.getButtonText()}
+                    buttonUrl={this.getButtonUrl()}
                     htmlEditor={this.__htmlEditor}
                     htmlEditorInitialState={this.__htmlEditorInitialState}
                     nodeKey={this.getKey()}
                     segment={this.__segment}
+                    showButton={this.getShowButton()}
                     showDividers={this.getShowDividers()}
                 />
             </KoenigCardWrapper>

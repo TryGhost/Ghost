@@ -1,4 +1,5 @@
 import CardContext from '../context/CardContext';
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
@@ -14,12 +15,31 @@ export function EmailCtaNodeComponent({
     htmlEditor,
     htmlEditorInitialState,
     segment,
-    showDividers
+    showDividers,
+    showButton,
+    buttonText,
+    buttonUrl
 }) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const {isEditing, isSelected} = cardContext;
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+    const [listOptions, setListOptions] = React.useState([]);
+
+    React.useEffect(() => {
+        if (cardConfig.fetchAutocompleteLinks) {
+            cardConfig.fetchAutocompleteLinks().then((links) => {
+                setListOptions(links.map((link) => {
+                    return {value: link.value, label: link.label};
+                }));
+            });
+        }
+    }, [cardConfig]);
+
+    const suggestedUrls = listOptions.filter((u) => {
+        return u.label.toLocaleLowerCase().includes(buttonUrl.toLocaleLowerCase());
+    });
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -52,18 +72,46 @@ export function EmailCtaNodeComponent({
         });
     };
 
+    const updateShowButton = (event) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setShowButton(event.target.checked);
+        });
+    };
+
+    const updateButtonText = (event) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setButtonText(event.target.value);
+        });
+    };
+
+    const updateButtonUrl = (val) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setButtonUrl(val);
+        });
+    };
+
     return (
         <>
             <EmailCtaCard
                 alignment={alignment}
+                buttonText={buttonText}
+                buttonUrl={buttonUrl}
                 handleSegmentChange={handleSegmentChange}
                 htmlEditor={htmlEditor}
                 htmlEditorInitialState={htmlEditorInitialState}
                 isEditing={isEditing}
                 segment={segment}
+                showButton={showButton}
                 showDividers={showDividers}
+                suggestedUrls={suggestedUrls}
                 toggleDividers={toggleDividers}
                 updateAlignment={updateAlignment}
+                updateButtonText={updateButtonText}
+                updateButtonUrl={updateButtonUrl}
+                updateShowButton={updateShowButton}
             />
 
             <ActionToolbar

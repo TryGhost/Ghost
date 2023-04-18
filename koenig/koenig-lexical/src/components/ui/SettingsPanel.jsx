@@ -57,11 +57,41 @@ export function InputSetting({label, description, onChange, value, placeholder, 
     );
 }
 
-export function InputListSetting({dataTestId, description, label, list, listOptions, listVisibility, onChange, onFocus, placeholder, value, handleOptionClick}) {
+/**
+ * A text input with autocomplete suggestions.
+ * @param {object} options
+ * @param {(value: string) => void} options.onChange Does not pass an event, only the value
+ * @param {{value: string, label: string}[]} options.listOptions
+ * @param {string} options.list
+ * @returns
+ */
+export function InputListSetting({dataTestId, description, label, list, listOptions, onChange, placeholder, value}) {
+    const [inputFocused, setInputFocused] = React.useState(false);
+
+    const onFocus = () => {
+        setInputFocused(true);
+    };
+
+    const onBlur = () => {
+        setInputFocused(false);
+    };
+
+    // We use the capture phase of the mouse down event, otherwise the list option will be removed when blurring the input
+    // before calling the click event
+    const handleOptionMouseDown = (event, v) => {
+        // Prevent losing focus when clicking an option
+        event.preventDefault();
+        onChange(v);
+    };
+
+    const onInputChange = (event) => {
+        onChange(event.target.value);
+    };
+
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
-            <Input dataTestId={dataTestId} handleOptionClick={handleOptionClick} list={list} listOptions={listOptions} listVisibility={listVisibility} placeholder={placeholder} value={value} onChange={onChange} onFocus={onFocus} />
+            <Input dataTestId={dataTestId} handleOptionMouseDown={handleOptionMouseDown} list={list} listOptions={listOptions} listVisibility={inputFocused} placeholder={placeholder} value={value} onBlur={onBlur} onChange={onInputChange} onFocus={onFocus} />
             {description &&
                     <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }

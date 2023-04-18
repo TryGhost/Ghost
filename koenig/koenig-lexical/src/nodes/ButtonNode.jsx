@@ -25,16 +25,14 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
         if (cardConfig.fetchAutocompleteLinks) {
             cardConfig.fetchAutocompleteLinks().then((links) => {
                 setListOptions(links.map((link) => {
-                    return {value: link.label, caption: link.value};
+                    return {value: link.value, label: link.label};
                 }));
             });
         }
     }, [cardConfig]);
 
-    const [suggestedUrlVisibility, setSuggestedUrlVisibility] = React.useState(false);
-
     const filteredSuggestedUrls = listOptions.filter((u) => {
-        return u.value.toLocaleLowerCase().includes(buttonUrl.toLocaleLowerCase());
+        return u.label.toLocaleLowerCase().includes(buttonUrl.toLocaleLowerCase());
     });
 
     const handleToolbarEdit = (event) => {
@@ -50,30 +48,17 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
         });
     };
 
-    const handleButtonUrlChange = (event) => {
+    const handleButtonUrlChange = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonUrl(event.target.value);
+            node.setButtonUrl(val);
         });
-    };
-
-    const handleButtonUrlFocus = () => {
-        setSuggestedUrlVisibility(true);
     };
 
     const handleAlignmentChange = (value) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setAlignment(value);
-        });
-    };
-
-    const handleOptionClick = (event,value) => {
-        event.stopPropagation(); // prevents loss of focus on card/settings panel
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setButtonUrl(value);
-            setSuggestedUrlVisibility(false);
         });
     };
 
@@ -87,11 +72,8 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
                 handleAlignmentChange={handleAlignmentChange}
                 handleButtonTextChange={handleButtonTextChange}
                 handleButtonUrlChange={handleButtonUrlChange}
-                handleButtonUrlFocus={handleButtonUrlFocus}
-                handleOptionClick={handleOptionClick}
                 isEditing={isEditing}
                 suggestedUrls={filteredSuggestedUrls}
-                suggestedUrlVisibility={suggestedUrlVisibility}
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"

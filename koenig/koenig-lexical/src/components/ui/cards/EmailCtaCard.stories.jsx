@@ -72,7 +72,8 @@ Empty.args = {
     placeholder: 'Email only text... (optional)',
     showButton: true,
     buttonText: '',
-    buttonUrl: ''
+    buttonUrl: '',
+    suggestedUrls: []
 };
 
 export const Populated = Template.bind({});
@@ -85,6 +86,7 @@ Populated.args = {
     showButton: false,
     showDividers: true,
     buttonText: 'Upgrade',
-    buttonUrl: 'https://ghost.org/'
+    buttonUrl: 'https://ghost.org/',
+    suggestedUrls: [{label: 'Homepage', value: 'https://localhost.org/'}]
 };
 
