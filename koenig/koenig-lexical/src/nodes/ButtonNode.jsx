@@ -19,15 +19,23 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+    const [listOptions, setListOptions] = React.useState([]);
 
-    // TODO: this will need to be provided by the digesting code
-    const testListOptions = [
-        {value: 'Homepage', caption: window.location.origin + '/'},
-        {value: 'Free signup', caption: window.location.origin + '/#/portal/signup/free'}
-    ];
+    React.useEffect(() => {
+        if (cardConfig.fetchAutocompleteLinks) {
+            cardConfig.fetchAutocompleteLinks().then((links) => {
+                setListOptions(links.map((link) => {
+                    return {value: link.label, caption: link.value};
+                }));
+            });
+        }
+    }, [cardConfig]);
 
     const [suggestedUrlVisibility, setSuggestedUrlVisibility] = React.useState(false);
-    const [filteredSuggestedUrls, setFilteredSuggestedUrls] = React.useState(testListOptions);
+
+    const filteredSuggestedUrls = listOptions.filter((u) => {
+        return u.value.toLocaleLowerCase().includes(buttonUrl.toLocaleLowerCase());
+    });
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -46,13 +54,6 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setButtonUrl(event.target.value);
-            if (buttonUrl && event.target.value) {
-                setFilteredSuggestedUrls(testListOptions.filter((url) => {
-                    return url.value.includes(event.target.value);
-                }));
-            } else {
-                setFilteredSuggestedUrls(testListOptions);
-            }
         });
     };
 
@@ -72,7 +73,6 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setButtonUrl(value);
-            setFilteredSuggestedUrls(testListOptions);
             setSuggestedUrlVisibility(false);
         });
     };
