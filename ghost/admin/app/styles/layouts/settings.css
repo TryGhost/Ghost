@@ -3703,7 +3703,8 @@ p.theme-validation-details {
     line-height: 1.5em !important;
 }
 
-.gh-announcement-editor .koenig-lexical p {
+.gh-announcement-editor .koenig-lexical p,
+.gh-announcement-editor .koenig-lexical .kg-prose {
     height: 108px;
 }
 
