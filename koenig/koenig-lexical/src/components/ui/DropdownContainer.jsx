@@ -10,10 +10,10 @@ export function DropdownContainer({children}) {
 
     const [placement, setPlacement] = React.useState('bottom');
 
-    let placementClasses = 'mt-[-1px]';
+    let placementClasses = 'mt-[-1px] rounded-b';
 
     if (placement === 'top') {
-        placementClasses = 'top-0 -translate-y-full';
+        placementClasses = 'top-0 -translate-y-full rounded-t';
     }
 
     const updatePlacement = () => {
@@ -53,7 +53,7 @@ export function DropdownContainer({children}) {
     }, []);
 
     return (
-        <ul ref={divRef} className={`absolute  ${placementClasses} max-h-[30vh] w-full overflow-y-auto rounded-b border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900`}>
+        <ul ref={divRef} className={`absolute ${placementClasses} max-h-[30vh] w-full overflow-y-auto border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900`}>
             {children}
         </ul>
     );
