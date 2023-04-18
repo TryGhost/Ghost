@@ -908,6 +908,7 @@ Post = ghostBookshelf.Model.extend({
                         max_revisions: POST_REVISIONS_COUNT
                     }
                 });
+                const authorId = this.contextUser(options);
                 ops.push(async function updateRevisions() {
                     const revisionModels = await ghostBookshelf.model('PostRevision')
                         .findAll(Object.assign({
@@ -919,12 +920,16 @@ Post = ghostBookshelf.Model.extend({
                     const previous = {
                         id: model.id,
                         lexical: model.previous('lexical'),
-                        html: model.previous('html')
+                        html: model.previous('html'),
+                        author_id: model.previous('updated_by'),
+                        title: model.previous('title')
                     };
                     const current = {
                         id: model.id,
                         lexical: model.get('lexical'),
-                        html: model.get('html')
+                        html: model.get('html'),
+                        author_id: authorId,
+                        title: model.get('title')
                     };
 
                     const newRevisions = await postRevisions.getRevisions(previous, current, revisions);

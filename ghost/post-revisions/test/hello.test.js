@@ -58,6 +58,25 @@ describe('PostRevisions', function () {
 
             assert.equal(actual, expected);
         });
+
+        it('should return true if the current and previous title values are different', function () {
+            const postRevisions = new PostRevisions({config});
+
+            const expected = true;
+            const actual = postRevisions.shouldGenerateRevision({
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah'
+            }, {
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah2'
+            }, [{
+                lexical: 'blah'
+            }]);
+
+            assert.equal(actual, expected);
+        });
     });
 
     describe('getRevisions', function () {
@@ -93,21 +112,27 @@ describe('PostRevisions', function () {
             assert.deepEqual(actual, expected);
         });
 
-        it('returns one revisions when there are no existing revisions', async function () {
+        it('returns one revision when there are no existing revisions', async function () {
             const postRevisions = new PostRevisions({config});
 
             const actual = await postRevisions.getRevisions({
                 id: '1',
                 lexical: 'previous',
-                html: 'previous'
+                html: 'previous',
+                author_id: '123',
+                title: 'foo bar baz'
             }, {
                 id: '1',
                 lexical: 'current',
-                html: 'current'
+                html: 'current',
+                author_id: '123',
+                title: 'foo bar baz'
             }, []);
 
             assert.equal(actual.length, 1);
             assert.equal(actual[0].lexical, 'current');
+            assert.equal(actual[0].author_id, '123');
+            assert.equal(actual[0].title, 'foo bar baz');
         });
 
         it('limits the number of revisions to the max_revisions count', async function () {
