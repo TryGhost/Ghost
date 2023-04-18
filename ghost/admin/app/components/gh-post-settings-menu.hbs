@@ -443,6 +443,7 @@
             {{#if this.showPostHistory}}
                 <GhFullscreenModal
                     @modal="post-history"
+                    @model={{this.post}}
                     @close={{this.closePostHistory}}
                     @modifier="total-overlay post-history" />
             {{/if}}
