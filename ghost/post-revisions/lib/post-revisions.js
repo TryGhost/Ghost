@@ -3,8 +3,8 @@
  * @property {string} id
  * @property {string} lexical
  * @property {string} html
- * @property {number} author_id
- * @property {number} title
+ * @property {string} author_id
+ * @property {string} title
  */
 
 /**
@@ -12,8 +12,8 @@
  * @property {string} post_id
  * @property {string} lexical
  * @property {number} created_at_ts
- * @property {number} author_id
- * @property {number} title
+ * @property {string} author_id
+ * @property {string} title
  */
 
 class PostRevisions {
