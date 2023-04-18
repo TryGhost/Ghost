@@ -133,7 +133,7 @@ export default class KoenigLexicalEditorInput extends Component {
                                 singleParagraph={true}
                                 className="koenig-lexical-editor-input"
                                 placeholderText={props.placeholderText}
-                                placeholderClassName=""
+                                placeholderClassName="koenig-lexical-editor-input-placeholder"
                             >
                                 <HtmlOutputPlugin html={props.html} setHtml={props.onChangeHtml} />
                             </KoenigComposableEditor>
