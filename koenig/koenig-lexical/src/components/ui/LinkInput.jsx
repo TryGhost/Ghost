@@ -53,6 +53,7 @@ export function LinkInput({href, update, cancel}) {
             <input
                 ref={inputRef}
                 className="mb-[1px] h-auto w-full rounded bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40"
+                data-testid="link-input"
                 placeholder="Enter url"
                 value={_href}
                 onInput={(e) => {
@@ -67,13 +68,18 @@ export function LinkInput({href, update, cancel}) {
                     }
                 }}
             />
-            <button aria-label="Close" className="absolute right-3 cursor-pointer" type="button" onClick={(e) => {
-                e.stopPropagation();
-                setHref('');
-                inputRef.current.focus();
-            }}>
-                <CloseIcon className="h-3 w-3 stroke-2 text-grey" />
-            </button>
+
+            {
+                !!_href && (
+                    <button aria-label="Close" className="absolute right-3 cursor-pointer" type="button" onClick={(e) => {
+                        e.stopPropagation();
+                        setHref('');
+                        inputRef.current.focus();
+                    }}>
+                        <CloseIcon className="h-3 w-3 stroke-2 text-grey" />
+                    </button>
+                )
+            }
         </div>
     );
 }

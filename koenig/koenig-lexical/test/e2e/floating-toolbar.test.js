@@ -188,5 +188,47 @@ describe('Floating format toolbar', async () => {
             await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">quote text</span></p>`);
             expect(await page.$eval(buttonSelector, e => e.dataset.kgActive)).toEqual('false');
         });
+
+        it('can create link', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('link');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">link</span>
+                </p>
+            `);
+
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.up('Shift');
+
+            const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="link"] button`;
+            await page.click(buttonSelector);
+            await page.waitForSelector('[data-testid="link-input"]');
+            await page.getByTestId('link-input').fill('https://ghost.org/');
+            await page.keyboard.press('Enter');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <a href="https://ghost.org/" rel="noopener" dir="ltr">
+                       <span data-lexical-text="true">link</span>
+                    </a>
+                </p>
+            `);
+
+            await page.keyboard.press('Shift');
+            await page.click(buttonSelector);
+            await page.waitForSelector('[data-testid="link-input"]');
+            await page.getByTestId('link-input').fill('');
+            await page.keyboard.press('Enter');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">link</span></p>
+            `);
+        });
     });
 });

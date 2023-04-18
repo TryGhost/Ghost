@@ -11,6 +11,7 @@ import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
+import {LinkPlugin} from '@lexical/react/LexicalLinkPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {RestrictContentPlugin} from '../index.js';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
@@ -87,6 +88,7 @@ const KoenigComposableEditor = ({
                 ErrorBoundary={KoenigErrorBoundary}
                 placeholder={placeholder || <EditorPlaceholder className={placeholderClassName} text={placeholderText} />}
             />
+            <LinkPlugin />
             <OnChangePlugin ignoreSelectionChange={true} onChange={_onChange} />
             {!isCollabActive && <HistoryPlugin externalHistoryState={historyState} />} {/* adds undo/redo, in multiplayer that's handled by yjs */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} isNested={isNested} />
