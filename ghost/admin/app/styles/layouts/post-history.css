@@ -1,0 +1,74 @@
+/* Modal */
+
+.gh-post-history {
+    display: flex;
+    height: 100%;
+}
+
+.fullscreen-modal-post-history .modal-content {
+    padding: 0;
+}
+
+/* Sidebar */
+
+.nav-list-item .gh-post-history-version {
+    margin-bottom: 2px;
+}
+
+.nav-list-item .gh-post-history-version-meta {
+    color: var(--midgrey);
+    font-weight: 400;
+}
+
+.nav-list-item .gh-post-history-version-current {
+    margin-left: 1rem;
+    padding: 0 4px;
+    background: var(--lightgrey-l2);
+    color: var(--darkgrey);
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: inherit;
+    text-transform: uppercase;
+    letter-spacing: .2px;
+    border-radius: var(--border-radius);
+}
+
+.nav-list-item .gh-post-history-version-wordcount {
+    color: var(--green-d1);
+    margin-left: auto;
+}
+
+.nav-list-item .gh-post-history-version-wordcount .subtracted {
+    color: var(--red-d1);
+    margin-left: .8rem;
+}
+
+
+/* Main content */
+
+.gh-post-history-main {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: auto;
+}
+
+.gh-post-history .gh-editor-title {
+    height: initial;
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+    color: rgba(21, 23, 26, 0.4);
+}
+
+.gh-post-history-main .koenig-lexical p {
+    color: rgba(21, 23, 26, 0.4);
+}
+
+.gh-post-history-main .koenig-lexical del {
+    color: var(--red) !important;
+}
+
+.gh-post-history-hidden-lexical {
+    display: none;
+}

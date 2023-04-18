@@ -1,0 +1,14 @@
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+    <div class="flex-grow-1">
+        <label class="gh-setting-title gh-theme-setting-title" for={{this.selectId}}>
+            Announcement
+        </label>
+        <div class="gh-announcement-editor">
+            <KoenigLexicalEditorInput
+                @placeholderText="Breaking news, a big story, a special offer, or any other message"
+                @html={{'<p></p>'}}
+                @onChangeHtml={{this.onChangeHtml}}
+            />
+        </div>
+    </div>
+</div>

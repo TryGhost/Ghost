@@ -22,7 +22,8 @@ const matchPostShallowIncludes = {
     tiers: Array(2).fill(tierSnapshot),
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
-    published_at: anyISODateTime
+    published_at: anyISODateTime,
+    post_revisions: anyArray
 };
 
 function testCleanedSnapshot(text, ignoreReplacements) {

@@ -305,6 +305,33 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Post history</h4>
+                            <p class="gh-expandable-description">
+                                Enables post history revision within the editor
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="postHistory" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Announcement bar</h4>
+                            <p class="gh-expandable-description">
+                                Allows publishers to set a banner at the top of their site
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="announcementBar" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}

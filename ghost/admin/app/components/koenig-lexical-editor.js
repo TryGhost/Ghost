@@ -5,6 +5,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 
 export const fileTypes = {
     image: {
@@ -127,8 +128,10 @@ export default class KoenigLexicalEditor extends Component {
     @service feature;
     @service ghostPaths;
     @service session;
+    @service store;
 
     @inject config;
+    offers = null;
 
     @action
     onError(error) {
@@ -146,7 +149,41 @@ export default class KoenigLexicalEditor extends Component {
         // don't rethrow, Lexical will attempt to gracefully recover
     }
 
+    @task({restartable: true})
+    *fetchOffersTask() {
+        if (this.offers) {
+            return this.offers;
+        }
+        this.offers = yield this.store.query('offer', {limit: 'all', filter: 'status:active'});
+        return this.offers;
+    }
+
     ReactComponent = (props) => {
+        const fetchEmbed = async (url, {type}) => {
+            let oembedEndpoint = this.ghostPaths.url.api('oembed');
+            let response = await this.ajax.request(oembedEndpoint, {
+                data: {url, type}
+            });
+            return response;
+        };
+
+        const fetchAutocompleteLinks = async () => {
+            const offers = await this.fetchOffersTask.perform();
+
+            const defaults = [
+                {label: 'Homepage', value: window.location.origin + '/'},
+                {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
+            ];
+
+            const offersLinks = offers.toArray().map((offer) => {
+                return {
+                    label: `Offer - ${offer.name}`,
+                    value: this.config.getSiteUrl(offer.code)
+                };
+            });
+            return [...defaults, ...offersLinks];
+        };
+
         const defaultCardConfig = {
             unsplash: {
                 defaultHeaders: {
@@ -157,7 +194,9 @@ export default class KoenigLexicalEditor extends Component {
                     'X-Unsplash-Cache': true
                 }
             },
-            tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null
+            tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
+            fetchEmbed: fetchEmbed,
+            fetchAutocompleteLinks
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig);
 

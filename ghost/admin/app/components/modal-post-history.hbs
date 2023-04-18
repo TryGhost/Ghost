@@ -1,0 +1,53 @@
+{{!-- template-lint-disable no-invalid-interactive --}}
+<div class="gh-post-history">
+    <div class="gh-post-history-main">
+        {{#if this.diffHtml}}
+            {{{this.diffHtml}}}
+        {{else}}
+            Loading...
+        {{/if}}
+        <div class="gh-post-history-hidden-lexical previous">
+            <div class="gh-editor-title">{{this.previousTitle}}</div>
+            <KoenigLexicalEditor @lexical={{this.previousLexical}} @cardConfig={{this.cardConfig}} />
+        </div>
+        <div class="gh-post-history-hidden-lexical current">
+            <div class="gh-editor-title">{{this.currentTitle}}</div>
+            <KoenigLexicalEditor @lexical={{this.currentLexical}} @cardConfig={{this.cardConfig}}/>
+        </div>
+    </div>
+    <div class="settings-menu-container">
+        <div class="settings-menu settings-menu-pane settings-menu-pane-main">
+            <div class="settings-menu-header subview">
+                <button 
+                    aria-label="Close meta data panel" 
+                    class="back settings-menu-header-action" 
+                    data-test-button="close-psm-subview" 
+                    type="button" {{action "closeModal"}}
+                    {{on "mousedown" (optional this.noop)}}
+                >   
+                    {{svg-jar "arrow-left"}}
+                    <span class="hidden">Back</span>
+                </button>
+                <h4>Post history</h4>
+            </div>
+            <div class="settings-menu-content">
+                <ul class="nav-list">
+                    {{#each this.revisionList as |revision|}}
+                    <li class="nav-list-item">
+                        <button type="button">
+                            <div class="flex items-center">
+                                <span class="gh-post-history-version">{{moment-from-now revision.createdAt}}</span>
+                                <span class="gh-post-history-version-wordcount">
+                                    <span class="added">+275</span>
+                                    <span class="subtracted">-73</span>
+                                </span>
+                            </div>                           
+                            <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
+                        </button>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

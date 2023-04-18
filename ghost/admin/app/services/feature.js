@@ -73,6 +73,8 @@ export default class FeatureService extends Service {
     @feature('makingItRain') makingItRain;
     @feature('migrateApp') migrateApp;
     @feature('i18n') i18n;
+    @feature('postHistory') postHistory;
+    @feature('announcementBar') announcementBar;
 
     _user = null;
 
