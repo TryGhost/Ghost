@@ -62,13 +62,11 @@ export default class KoenigImageEditor extends Component {
                     'redact'
                 ]
             });
-            // editor.show();
-            editor.on('load', () => {
-                // handle image load
-            });
+
             editor.on('loaderror', () => {
-                // log error
+                // TODO: log error message
             });
+
             editor.on('process', (result) => {
                 // save edited image
                 this.args.saveImage(result.dest);
