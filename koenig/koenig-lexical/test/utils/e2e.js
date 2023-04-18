@@ -335,7 +335,6 @@ export async function insertCard(page, {cardName}) {
 
 export async function createSnippet(page) {
     await page.waitForSelector('[data-testid="create-snippet"]');
-    await playwright.expect(await page.getByTestId('create-snippet')).toBeVisible();
     await page.getByTestId('create-snippet').click();
     await page.getByTestId('snippet-name').fill('snippet');
     await page.keyboard.press('Enter');
