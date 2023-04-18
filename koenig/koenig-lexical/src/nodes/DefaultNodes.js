@@ -6,6 +6,7 @@ import {CalloutNode} from './CalloutNode';
 import {CodeBlockNode} from './CodeBlockNode';
 import {EmailCtaNode} from './EmailCtaNode';
 import {EmailNode} from './EmailNode';
+import {EmbedNode} from './EmbedNode';
 import {FileNode} from './FileNode';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
@@ -41,7 +42,8 @@ const DEFAULT_NODES = [
     PaywallNode,
     ProductNode,
     EmailNode,
-    EmailCtaNode
+    EmailCtaNode,
+    EmbedNode
 ];
 
 export default DEFAULT_NODES;

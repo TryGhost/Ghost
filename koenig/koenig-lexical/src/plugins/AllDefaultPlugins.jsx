@@ -11,6 +11,7 @@ import {CalloutPlugin} from '../plugins/CalloutPlugin';
 import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
 import {EmailCtaPlugin} from '../plugins/EmailCtaPlugin';
 import {EmailPlugin} from '../plugins/EmailPlugin';
+import {EmbedPlugin} from '../plugins/EmbedPlugin';
 import {FilePlugin} from '../plugins/FilePlugin';
 import {KoenigSnippetPlugin} from '../plugins/KoenigSnippetPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
@@ -47,6 +48,7 @@ export const AllDefaultPlugins = () => {
             <ProductPlugin />
             <EmailCtaPlugin />
             <EmailPlugin />
+            <EmbedPlugin />
 
             {/* Snippet Plugins */}
             <KoenigSnippetPlugin />

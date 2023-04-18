@@ -9,6 +9,8 @@ export async function fetchEmbed(url) {
 
         const testData = {
             url: 'https://www.ghost.org/',
+            // html used for embed
+            html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"></iframe>',
             metadata: {
                 icon: 'https://www.ghost.org/favicon.ico',
                 title: 'Ghost: The Creator Economy Platform',
