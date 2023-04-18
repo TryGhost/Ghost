@@ -8,11 +8,17 @@ import {$createParagraphNode, $createTextNode, $getNodeByKey, createEditor} from
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {EmbedNode as BaseEmbedNode, INSERT_EMBED_COMMAND} from '@tryghost/kg-default-nodes';
+import {ReactComponent as CodePenIcon} from '../assets/icons/kg-card-type-codepen.svg';
 import {EmbedCard} from '../components/ui/cards/EmbedCard';
 import {ReactComponent as EmbedCardIcon} from '../assets/icons/kg-card-type-other.svg';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
+import {ReactComponent as SoundCloudIcon} from '../assets/icons/kg-card-type-soundcloud.svg';
+import {ReactComponent as SpotifyIcon} from '../assets/icons/kg-card-type-spotify.svg';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
+import {ReactComponent as TwitterIcon} from '../assets/icons/kg-card-type-twitter.svg';
+import {ReactComponent as VimeoIcon} from '../assets/icons/kg-card-type-vimeo.svg';
+import {ReactComponent as YouTubeIcon} from '../assets/icons/kg-card-type-youtube.svg';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 // re-export here so we don't need to import from multiple places throughout the app
@@ -129,11 +135,66 @@ export class EmbedNode extends BaseEmbedNode {
     __captionEditorInitialState;
 
     static kgMenu = [{
-        label: 'Embed',
+        section: 'Embed',
+        label: 'Other...',
         desc: 'Embed a link as a visual embed',
         Icon: EmbedCardIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         matches: ['embed']
+    },
+    {
+        section: 'Embed',
+        label: 'Twitter',
+        desc: '/twitter [tweet url]',
+        Icon: TwitterIcon,
+        insertCommand: INSERT_EMBED_COMMAND,
+        params: ['url'],
+        matches: ['twitter']
+    },
+    {
+        section: 'Embed',
+        label: 'YouTube',
+        desc: '/youtube [video url]',
+        Icon: YouTubeIcon,
+        insertCommand: INSERT_EMBED_COMMAND,
+        params: ['url'],
+        matches: ['youtube']
+    },
+    {
+        section: 'Embed',
+        label: 'Vimeo',
+        desc: '/vimeo [video url]',
+        Icon: VimeoIcon,
+        insertCommand: INSERT_EMBED_COMMAND,
+        params: ['url'],
+        matches: ['vimeo']
+    },
+    {
+        section: 'Embed',
+        label: 'CodePen',
+        desc: '/codepen [pen url]',
+        Icon: CodePenIcon,
+        insertCommand: INSERT_EMBED_COMMAND,
+        params: ['url'],
+        matches: ['codepen']
+    },
+    {
+        section: 'Embed',
+        label: 'Spotify',
+        desc: '/spotify [track or playlist url]',
+        Icon: SpotifyIcon,
+        insertCommand: INSERT_EMBED_COMMAND,
+        params: ['url'],
+        matches: ['spotify']
+    },
+    {
+        section: 'Embed',
+        label: 'SoundCloud',
+        desc: '/soundcloud [track or playlist url]',
+        Icon: SoundCloudIcon,
+        insertCommand: INSERT_EMBED_COMMAND,
+        params: ['url'],
+        matches: ['soundcloud']
     }];
 
     getIcon() {
