@@ -53,7 +53,6 @@ class PostRevisions {
 
         if (revisions.length === 0) {
             return [
-                this.convertPostLikeToRevision(previous, 1),
                 currentRevision
             ];
         }
