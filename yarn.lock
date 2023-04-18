@@ -5859,10 +5859,10 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-nodes@0.0.31", "@tryghost/kg-default-nodes@^0.0.31":
-  version "0.0.31"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.0.31.tgz#ab80e65d7d4eb2a3062072215e04469b0128f3b1"
-  integrity sha512-9ndJ0gb2nb4qJ8DXYKMC9eWTqNhxxymA+dfxiI0dJhAeYAMs8rrX11yXnteauWjfIX7JyElYXjA2xzIGKUs/XA==
+"@tryghost/kg-default-nodes@0.0.32", "@tryghost/kg-default-nodes@^0.0.32":
+  version "0.0.32"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.0.32.tgz#9357e35bb1b79f9d1d092a0514631f9d61750ff2"
+  integrity sha512-/1TZ8d61vliIUfgIfaDWQxJfBBHlDwRpc7rc8i+Q50KJvkqR2ruxxSdSQbpPwtA4wwj1amjLkaSBpuMX3z3PIA==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^3.0.13"
     "@tryghost/kg-markdown-html-renderer" "^6.0.6"
@@ -5872,10 +5872,10 @@
     lodash "^4.17.21"
     luxon "^3.3.0"
 
-"@tryghost/kg-lexical-html-renderer@0.1.27":
-  version "0.1.27"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.27.tgz#ef3adb6bbfd62d30bcba170edcee4834e8fbd26d"
-  integrity sha512-Wr67j0SPCe7opvg3Kujv+xKZT6RsmKfuFuP0ypgwqZW/1YVzpq1O2hCDF202V6RNbMnGSQqSnHlSEDyfVacnWA==
+"@tryghost/kg-lexical-html-renderer@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.28.tgz#fc95579eea3f8b89c34233b74992eb7e448a2cf8"
+  integrity sha512-6rMH65am9HC1L64B2+zw2p8z84icsdDKHoUG1unQwLqMu7Z6w5XmmWCw0teGij2qfO8H0LR/k7gSgInpQJvYUw==
   dependencies:
     "@lexical/clipboard" "^0.9.0"
     "@lexical/code" "^0.9.0"
@@ -5883,7 +5883,7 @@
     "@lexical/link" "^0.9.0"
     "@lexical/list" "^0.9.0"
     "@lexical/rich-text" "^0.9.0"
-    "@tryghost/kg-default-nodes" "^0.0.31"
+    "@tryghost/kg-default-nodes" "^0.0.32"
     jsdom "^21.0.0"
     lexical "^0.9.0"
     prettier "^2.7.1"
@@ -22590,6 +22590,11 @@ node-gyp@^9.0.0, node-gyp@^9.3.0:
     semver "^7.3.5"
     tar "^6.1.2"
     which "^2.0.2"
+
+node-htmldiff@^0.9.4:
+  version "0.9.4"
+  resolved "https://registry.yarnpkg.com/node-htmldiff/-/node-htmldiff-0.9.4.tgz#d8fec52fbe736780afff28d2c8476ec106520887"
+  integrity sha512-Nvnv0bcehOFsH/TD+bi4ls3iWTRQiytqII5+I1iBUypO+GFMYLcyBJfS2U3DMRSIYzfZHysaYLYoCXx6Q148Hg==
 
 node-int64@^0.4.0:
   version "0.4.0"
