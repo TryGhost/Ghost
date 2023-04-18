@@ -1,8 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
+import {ReactComponent as DeleteIcon} from '../../../assets/icons/kg-trash.svg';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
+// import {IconButton} from '../IconButton';
 
 function GalleryRow({index, images, deleteImage}) {
     const GalleryImages = images.map((image, idx) => {
@@ -56,10 +58,12 @@ function GalleryImage({image, deleteImage, position}) {
                 width={image.width}
             />
 
-            <div className={`pointer-events-none invisible absolute inset-0 group-hover:visible ${overlayClasses.join(' ')}`}>
+            <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:visible group-hover:opacity-100 ${overlayClasses.join(' ')}`}>
                 <div className="flex flex-row-reverse">
+                    {/* Could be swapped for IconButton, but for some reason it's not working */}
+                    {/* <IconButton Icon={DeleteIcon} onClick={deleteImage(image)} /> */}
                     <button className="bg-white-90 pointer-events-auto rounded-lg px-3" type="button" onClick={() => deleteImage(image)}>
-                        🗑️
+                        <DeleteIcon className="h-4 w-4"/>
                     </button>
                 </div>
             </div>
