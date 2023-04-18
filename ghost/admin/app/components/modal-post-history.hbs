@@ -1,16 +1,25 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div class="gh-post-history">
     <div class="gh-post-history-main">
-          <div class="gh-koenig-editor-pane flex flex-column mih-100">
-            <div class="gh-editor-feature-image-container">
-                <div class="gh-editor-feature-image-dropzone"></div>
-                <div class="flex flex-row items-center invisible">
-                    <button type="button" class="gh-editor-feature-image-add-button">{{svg-jar "plus"}}<span>Add feature image</span></button>
-                    <button type="button" class="gh-editor-feature-image-unsplash">{{svg-jar "unsplash"}}</button>
-                </div>
-            </div>
-            <div class="gh-editor-title ember-text-area gh-input ember-view">Old-school excess, star power and spectacle: Royal Opera’s Tosca reviewed</div>
-            {{{this.postDiff}}}
+        {{#if this.diffHtml}}
+            {{{this.diffHtml}}}
+        {{else}}
+            Loading...
+        {{/if}}
+          <div class="gh-post-history-hidden-lexical previous">
+            <KoenigLexicalEditor
+                @hasLoaded={this.hasLoaded}
+                @lexical={{this.previousLexical}}
+                @cardConfig={{this.cardConfig}}
+            />
+          </div>
+          <div class="gh-post-history-hidden-lexical current">
+
+            <KoenigLexicalEditor
+                @lexical={{this.currentLexical}}
+                @cardConfig={{this.cardConfig}}
+            />
+
           </div>
     </div>
     <div class="settings-menu-container">
