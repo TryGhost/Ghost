@@ -13,6 +13,7 @@ import {EmailCtaPlugin} from '../plugins/EmailCtaPlugin';
 import {EmailPlugin} from '../plugins/EmailPlugin';
 import {EmbedPlugin} from '../plugins/EmbedPlugin';
 import {FilePlugin} from '../plugins/FilePlugin';
+import {GalleryPlugin} from '../plugins/GalleryPlugin';
 import {KoenigSnippetPlugin} from '../plugins/KoenigSnippetPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PaywallPlugin} from '../plugins/PaywallPlugin';
@@ -34,6 +35,7 @@ export const AllDefaultPlugins = () => {
             {/* Card Plugins */}
             <AudioPlugin />
             <ImagePlugin />
+            <GalleryPlugin />
             <VideoPlugin />
             <MarkdownPlugin />
             <HorizontalRulePlugin />

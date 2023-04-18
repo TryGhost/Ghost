@@ -8,6 +8,7 @@ import {EmailCtaNode} from './EmailCtaNode';
 import {EmailNode} from './EmailNode';
 import {EmbedNode} from './EmbedNode';
 import {FileNode} from './FileNode';
+import {GalleryNode} from './GalleryNode';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
 import {HtmlNode} from './HtmlNode';
@@ -43,7 +44,8 @@ const DEFAULT_NODES = [
     ProductNode,
     EmailNode,
     EmailCtaNode,
-    EmbedNode
+    EmbedNode,
+    GalleryNode
 ];
 
 export default DEFAULT_NODES;
