@@ -26,9 +26,8 @@ export default class KoenigImageEditor extends Component {
 
             importScriptPromise.then(() => {
                 this.scriptLoaded = true;
-            }).catch((err) => {
+            }).catch(() => {
                 // log script loading failure
-                console.log('Failed to load image editor script', err);
             });
         }
 
