@@ -60,9 +60,9 @@ export function EmailCtaCard({
                     initialEditor={htmlEditor}
                     initialEditorState={htmlEditorInitialState}
                     nodes='basic'
-                    placeholderClassName={`w-full bg-transparent font-serif text-xl text-grey-500 dark:text-grey-800 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }
+                    placeholderClassName={`w-full bg-transparent whitespace-normal font-serif text-xl text-grey-500 dark:text-grey-800 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }
                     placeholderText="Email only text... (optional)"
-                    textClassName={`w-full bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }
+                    textClassName={`w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }
                 />
 
                 {/* Button */}
