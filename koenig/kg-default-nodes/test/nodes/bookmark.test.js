@@ -159,10 +159,10 @@ describe('BookmarkNode', function () {
             const bookmarkNode = $createBookmarkNode(dataset);
             const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
             
-            element.should.containEql('<!--[if !mso !vml]-->');
-            element.should.containEql('<figure class="kg-card kg-bookmark-card');
-            element.should.containEql('<!--[if vml]-->');
-            element.should.containEql('<table class="kg-card kg-bookmark-card--outlook"');
+            element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
+            element.innerHTML.should.containEql('<figure class="kg-card kg-bookmark-card');
+            element.innerHTML.should.containEql('<!--[if vml]-->');
+            element.innerHTML.should.containEql('<table class="kg-card kg-bookmark-card--outlook"');
         }));
 
         it('renders nothing with a missing src', editorTest(function () {

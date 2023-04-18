@@ -10,13 +10,13 @@ export function renderBookmarkNodeToDOM(node, options = {}) {
     }
 
     if (options.target === 'email') {
-        return emailTemplate(node);
+        return emailTemplate(node, document);
     } else {
         return frontendTemplate(node, document);
     }
 }
 
-function emailTemplate(node) {
+function emailTemplate(node, document) {
     const title = node.getTitle();
     const publisher = node.getPublisher();
     const author = node.getAuthor();
@@ -26,7 +26,9 @@ function emailTemplate(node) {
     const thumbnail = node.getThumbnail();
     const caption = node.getCaption();
 
-    return (
+    const div = document.createElement('div');
+
+    const html = 
         `
         <!--[if !mso !vml]-->
             <figure class="kg-card kg-bookmark-card ${caption ? `kg-card-hascaption` : ''}">
@@ -94,8 +96,10 @@ function emailTemplate(node) {
                 </tr>
             </table>
             <div class="kg-bookmark-spacer--outlook" style="height: 1.5em;">&nbsp;</div>
-        <!--[endif]-->`
-    );
+        <!--[endif]-->`;
+
+    div.innerHTML = html;
+    return div;
 }
 
 function frontendTemplate(node, document) {
