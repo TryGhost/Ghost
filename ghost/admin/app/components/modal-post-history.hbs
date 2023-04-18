@@ -33,72 +33,22 @@
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">
+                    {{#each this.post.postRevisions as |revision|}}
                     <li class="nav-list-item">
                         <button type="button">
                             <div class="flex items-center">
-                                <span class="gh-post-history-version">17 April 2023, 10:34</span>
-                                <span class="gh-post-history-version-current">Current</span>
-                                <span class="gh-post-history-version-wordcount">
-                                    <span class="added">+275</span>
-                                    <span class="subtracted">-73</span>
-                                </span>
-                            </div>
-                            <span class="gh-post-history-version-meta">Jamie Larson</span>
-                        </button>
-                    </li>
-                    <li class="nav-list-item">
-                        <button type="button">
-                            <div class="flex items-center">
-                                <span class="gh-post-history-version">17 April 2023, 10:34</span>
-                                <span class="gh-post-history-version-wordcount">
-                                    <span class="added">+275</span>
-                                    <span class="subtracted">-73</span>
-                                </span>
-                            </div>
-                            <span class="gh-post-history-version-meta">Jamie Larson</span>
-                        </button>
-                    </li>
-                    <li class="nav-list-item">
-                        <button type="button">
-                            <div class="flex items-center">
-                                <span class="gh-post-history-version">17 April 2023, 10:34</span>
-                                <span class="gh-post-history-version-wordcount">
-                                    <span class="added">+275</span>
-                                    <span class="subtracted">-73</span>
-                                </span>
-                            </div>                            
-                            <span class="gh-post-history-version-meta">Jamie Larson</span>
-                        </button>
-                    </li>
-                    <li class="nav-list-item">
-                        <button type="button">
-                            <div class="flex items-center">
-                                <span class="gh-post-history-version">17 April 2023, 10:34</span>
-                                <span class="gh-post-history-version-wordcount">
-                                    <span class="added">+275</span>
-                                    <span class="subtracted">-73</span>
-                                </span>
-                            </div>                            
-                            <span class="gh-post-history-version-meta">Jamie Larson</span>
-                        </button>
-                    </li>
-                    <li class="nav-list-item">
-                        <button type="button">
-                            <div class="flex items-center">
-                                <span class="gh-post-history-version">17 April 2023, 10:34</span>
+                                <span class="gh-post-history-version">{{moment-from-now revision.createdAt}}</span>
                                 <span class="gh-post-history-version-wordcount">
                                     <span class="added">+275</span>
                                     <span class="subtracted">-73</span>
                                 </span>
                             </div>                           
-                            <span class="gh-post-history-version-meta">Jamie Larson</span>
+                            <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
                         </button>
                     </li>
+                    {{/each}}
                 </ul>
             </div>
-            {{!-- {{#each this.post.postRevisions as |revision|}}
-                <div>{{revision.lexical}}</div>
-            {{/each}} --}}
         </div>
     </div>
 </div>
