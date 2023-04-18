@@ -1,17 +1,9 @@
-import Ember from 'ember';
-import Model, {attr} from '@ember-data/model';
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import {inject} from 'ghost-admin/decorators/inject';
+import Model, {attr, belongsTo} from '@ember-data/model';
 
-// ember-cli-shims doesn't export these so we must get them manually
-const {Comparable} = Ember;
-
-export default Model.extend(Comparable, ValidationEngine, {
-    config: inject(),
-
-    displayName: 'post_revision',
-    validationType: 'post_revision',
-
-    lexical: attr('string'),
-    title: attr('string')
-});
+export default class PostRevisionModel extends Model {
+  @belongsTo('post') post;
+  @attr('string') lexical;
+  @attr('string') title;
+  @attr('moment-utc') createdAt;
+  @belongsTo('user') author;
+}
