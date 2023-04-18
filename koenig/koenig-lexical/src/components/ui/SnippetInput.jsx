@@ -8,6 +8,7 @@ export function SnippetInput({
     onChange,
     onCreateSnippet,
     onClose,
+    darkMode,
     snippets = []
 }) {
     const snippetRef = useRef(null);
@@ -91,6 +92,7 @@ export function SnippetInput({
     return (
         <div
             ref={snippetRef}
+            className={`${darkMode ? 'dark' : ''}`}
             onClick={e => e.stopPropagation()} // prevents card from losing selected state
         >
             <form onSubmit={handleSubmit}>
