@@ -68,3 +68,7 @@
 .gh-post-history-main .koenig-lexical del {
     color: var(--red) !important;
 }
+
+.gh-post-history-hidden-lexical {
+    display: none;
+}
