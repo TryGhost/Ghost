@@ -3684,3 +3684,27 @@ p.theme-validation-details {
     margin-left: 8px;
     background: var(--whitegrey);
 }
+
+/* Announcement bar */
+
+.gh-announcement-editor {
+    height: 120px;
+    padding: 6px 12px 6px 12px;
+    border: 1px solid var(--whitegrey-d1);
+    background: var(--white);
+    border-radius: 4px;
+    word-break: break-word;
+}
+
+.gh-announcement-editor .koenig-lexical *,
+.gh-announcement-editor .koenig-lexical-editor-input-placeholder {
+    font-family: var(--font-family) !important;
+    font-size: 1.4rem !important;
+    line-height: 1.5em !important;
+}
+
+.gh-announcement-editor .koenig-lexical a {
+    display: inline;
+    padding: 0;
+    height: auto;
+}
