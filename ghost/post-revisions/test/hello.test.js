@@ -119,19 +119,19 @@ describe('PostRevisions', function () {
                 id: '1',
                 lexical: 'previous',
                 html: 'previous',
-                created_by: '123',
+                author_id: '123',
                 title: 'foo bar baz'
             }, {
                 id: '1',
                 lexical: 'current',
                 html: 'current',
-                created_by: '123',
+                author_id: '123',
                 title: 'foo bar baz'
             }, []);
 
             assert.equal(actual.length, 1);
             assert.equal(actual[0].lexical, 'current');
-            assert.equal(actual[0].created_by, '123');
+            assert.equal(actual[0].author_id, '123');
             assert.equal(actual[0].title, 'foo bar baz');
         });
 
