@@ -85,7 +85,7 @@ function PopulatedVideoCard({
                             onClick={onCardWidthChange}
                         />
                         <ToggleSetting
-                            dataTestID="loop-video"
+                            dataTestId="loop-video"
                             description='Autoplay your video on a loop without sound.'
                             isChecked={isLoopChecked}
                             label='Loop'
@@ -94,7 +94,7 @@ function PopulatedVideoCard({
                         {!isLoopChecked && (
                             <ThumbnailSetting
                                 alt='Custom thumbnail'
-                                dataTestID="custom-thumbnail-replace"
+                                dataTestId="custom-thumbnail-replace"
                                 errors={customThumbnailUploader.errors}
                                 icon='file'
                                 isDraggedOver={thumbnailDragHandler.isDraggedOver}

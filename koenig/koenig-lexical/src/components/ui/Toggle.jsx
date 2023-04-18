@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-export function Toggle({isChecked, onChange, dataTestID}) {
+export function Toggle({isChecked, onChange, dataTestId}) {
     return (
-        <label className="relative inline-block h-5 w-[34px] outline-none" data-testid={dataTestID} id={dataTestID}>
+        <label className="relative inline-block h-5 w-[34px] outline-none" data-testid={dataTestId} id={dataTestId}>
             <input
                 checked={isChecked}
                 className="peer absolute hidden"

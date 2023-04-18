@@ -95,14 +95,14 @@ export function ProductCard({
             {isEditing && (
                 <SettingsPanel>
                     <ToggleSetting
-                        dataTestID="product-rating-toggle"
+                        dataTestId="product-rating-toggle"
                         isChecked={isRatingEnabled}
                         label='Rating'
                         onChange={onRatingToggle}
                     />
                     <SettingsDivider />
                     <ToggleSetting
-                        dataTestID="product-button-toggle"
+                        dataTestId="product-button-toggle"
                         isChecked={isButtonEnabled}
                         label='Button'
                         onChange={onButtonToggle}

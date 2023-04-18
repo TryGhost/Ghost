@@ -28,12 +28,14 @@ export function EmailCtaCard({
         {
             label: 'Left',
             name: 'left',
-            Icon: LeftAlignIcon
+            Icon: LeftAlignIcon,
+            dataTestId: 'left-align'
         },
         {
             label: 'Center',
             name: 'center',
-            Icon: CenterAlignIcon
+            Icon: CenterAlignIcon,
+            dataTestId: 'center-align'
         }
     ];
 
@@ -56,7 +58,7 @@ export function EmailCtaCard({
                 </div>
 
                 {/* Top divider */}
-                {showDividers && <hr className="-mt-4 mb-12 block border-t-grey-300 dark:border-t-grey-900" />}
+                {showDividers && <hr className="-mt-4 mb-12 block border-t-grey-300 dark:border-t-grey-900" data-testid="top-divider" />}
 
                 {/* HTML content */}
                 <KoenigProductEditor
@@ -72,12 +74,12 @@ export function EmailCtaCard({
                 {/* Button */}
                 { (showButton && (isEditing || (buttonText && buttonUrl))) &&
                     <div className={`mt-6 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }>
-                        <Button placeholder="Add button text" value={buttonText} />
+                        <Button dataTestId="cta-button" placeholder="Add button text" value={buttonText}/>
                     </div>
                 }
 
                 {/* Bottom divider */}
-                {showDividers && <hr className="mt-12 mb-0 block border-t-grey-300 dark:border-t-grey-900" />}
+                {showDividers && <hr className="mt-12 mb-0 block border-t-grey-300 dark:border-t-grey-900" data-testid="bottom-divider" />}
 
                 {/* Read-only overlay */}
                 {!isEditing && <div className="absolute top-0 z-10 m-0 h-full w-full cursor-default p-0"></div>}
@@ -105,6 +107,7 @@ export function EmailCtaCard({
 
                     {/* Dividers settings */}
                     <ToggleSetting
+                        dataTestId="dividers-settings"
                         isChecked={showDividers}
                         label='Separators'
                         onChange={toggleDividers}
@@ -113,6 +116,7 @@ export function EmailCtaCard({
 
                     {/* Button settings */}
                     <ToggleSetting
+                        dataTestId="button-settings"
                         isChecked={showButton}
                         label='Button'
                         onChange={updateShowButton}
@@ -120,12 +124,14 @@ export function EmailCtaCard({
                     {showButton && (
                         <>
                             <InputSetting
+                                dataTestId="button-text"
                                 label='Button text'
                                 placeholder='Add button text'
                                 value={buttonText}
                                 onChange={updateButtonText}
                             />
                             <InputListSetting
+                                dataTestId="button-url"
                                 label='Button URL'
                                 listOptions={suggestedUrls}
                                 placeholder='https://yoursite.com/#/portal/signup/'

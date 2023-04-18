@@ -115,7 +115,7 @@ function AudioThumbnail({
                 <img alt="Audio thumbnail" className="h-full w-full rounded-sm object-cover transition ease-in" data-testid="audio-thumbnail" src={src} />
                 {isEditing && (
                     <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
-                        <IconButton dataTestID='remove-thumbnail' Icon={DeleteIcon} onClick={removeThumbnail} />
+                        <IconButton dataTestId='remove-thumbnail' Icon={DeleteIcon} onClick={removeThumbnail} />
                     </div>
                 )}
             </div>

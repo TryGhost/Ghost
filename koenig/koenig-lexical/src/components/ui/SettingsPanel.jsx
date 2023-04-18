@@ -30,7 +30,7 @@ export function SettingsPanel({children, darkMode}) {
     );
 }
 
-export function ToggleSetting({label, description, isChecked, onChange, dataTestID}) {
+export function ToggleSetting({label, description, isChecked, onChange, dataTestId}) {
     return (
         <div className="mt-2 flex min-h-[3rem] w-full items-center justify-between text-[1.3rem] first:mt-0">
             <div>
@@ -40,7 +40,7 @@ export function ToggleSetting({label, description, isChecked, onChange, dataTest
                 }
             </div>
             <div className="flex shrink-0 pl-2">
-                <Toggle dataTestID={dataTestID} isChecked={isChecked} onChange={onChange} />
+                <Toggle dataTestId={dataTestId} isChecked={isChecked} onChange={onChange} />
             </div>
         </div>
     );
@@ -93,7 +93,7 @@ export function DropdownSetting({label, description, value, menu, onChange}) {
     );
 }
 
-export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
+export function ButtonGroupSetting({label, onClick, selectedName, buttons, dataTestId}) {
     return (
         <div className="mt-2 flex w-full items-center justify-between text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
@@ -105,9 +105,9 @@ export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
     );
 }
 
-export function ColorPickerSetting({label, onClick, selectedName, buttons, layout, dataTestID}) {
+export function ColorPickerSetting({label, onClick, selectedName, buttons, layout, dataTestId}) {
     return (
-        <div className={`mt-2 flex w-full text-[1.3rem] first:mt-0 ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`} data-testid={dataTestID}>
+        <div className={`mt-2 flex w-full text-[1.3rem] first:mt-0 ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`} data-testid={dataTestId}>
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
 
             <div className={`shrink-0 ${layout === 'stacked' ? '-mx-1 pt-1' : 'pl-2'}`}>
@@ -117,7 +117,7 @@ export function ColorPickerSetting({label, onClick, selectedName, buttons, layou
     );
 }
 
-export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, dataTestID, errors = [], progress, onRemoveCustomThumbnail, icon, desc = '', size, mimeTypes}) {
+export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, dataTestId, errors = [], progress, onRemoveCustomThumbnail, icon, desc = '', size, mimeTypes}) {
     const fileInputRef = React.useRef(null);
 
     const onFileInputRef = (element) => {
@@ -173,7 +173,7 @@ export function ThumbnailSetting({label, onFileChange, isDraggedOver, placeholde
 
                     {!isLoading && (
                         <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
-                            <IconButton dataTestID={dataTestID} Icon={DeleteIcon} onClick={onRemove} />
+                            <IconButton dataTestId={dataTestId} Icon={DeleteIcon} onClick={onRemove} />
                         </div>
                     )}
 

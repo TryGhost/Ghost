@@ -127,14 +127,14 @@ export function CalloutCard({
                         darkMode={darkMode}
                     >
                         <ToggleSetting
-                            dataTestID='emoji-toggle'
+                            dataTestId='emoji-toggle'
                             isChecked={emoji}
                             label='Emoji'
                             onChange={toggleEmoji}
                         />
                         <ColorPickerSetting
                             buttons={calloutColorPicker}
-                            dataTestID='callout-color-picker'
+                            dataTestId='callout-color-picker'
                             label='Background color'
                             layout='stacked'
                             selectedName={color}

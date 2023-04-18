@@ -213,6 +213,73 @@ describe('Email card', async () => {
         });
     });
 
+    describe('settings panel', async () => {
+        it('renders a settings panel', async function () {
+            await focusEditor(page);
+            await insertEmailCard(page);
+
+            await expect(await page.getByTestId('settings-panel')).toBeVisible();
+        });
+
+        it('allows to center content', async function () {
+            await focusEditor(page);
+            await insertEmailCard(page);
+
+            // Click on center align button
+            const leftAlignButton = await page.getByTestId('center-align');
+            leftAlignButton.click();
+
+            // Check that the content is centered
+            const content = page.locator('[data-kg-card="email-cta"] > div > div.koenig-lexical');
+            await expect(content).toHaveClass(/text-center/);
+        });
+
+        it('allows to hide/show dividers', async function () {
+            await focusEditor(page);
+            await insertEmailCard(page);
+
+            // Dividers are enabled by default
+            const dividersSettings = await page.getByTestId('dividers-settings');
+            await expect(dividersSettings).toBeVisible();
+            await expect(await page.locator('[data-testid="dividers-settings"] input').isChecked()).toBeTruthy();
+
+            // Check that the dividers are rendered
+            const topDivider = await page.getByTestId('top-divider');
+            const bottomDivider = await page.getByTestId('bottom-divider');
+            await expect(topDivider).toBeVisible();
+            await expect(bottomDivider).toBeVisible();
+
+            // Disable dividers
+            await dividersSettings.setChecked(false);
+
+            // Check that the dividers are now hidden
+            await expect(topDivider).toBeHidden();
+            await expect(bottomDivider).toBeHidden();
+        });
+
+        it('allows to show/hide a button', async function () {
+            await focusEditor(page);
+            await insertEmailCard(page);
+
+            // Button is disabled by default
+            const buttonSettings = await page.getByTestId('button-settings');
+            await expect(buttonSettings).toBeVisible();
+            await expect(await page.locator('[data-testid="button-settings"] input').isChecked()).toBeFalsy();
+
+            // Check that the button is hidden by default
+            const button = await page.getByTestId('cta-button');
+            await expect(button).toBeHidden();
+
+            // Enable button and add text / url
+            await buttonSettings.check();
+            await page.getByTestId('button-text').fill('Subscribe');
+            await page.getByTestId('button-url').fill('https://example.com');
+
+            // Check that the button is now visible
+            await expect(button).toBeVisible();
+        });
+    });
+
     it('renders the email CTA card node with a settings panel from slash command', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
@@ -261,7 +328,7 @@ describe('Email card', async () => {
                                 <div>Separators</div>
                             </div>
                             <div>
-                                <label>
+                                <label id="dividers-settings">
                                   <input type="checkbox" checked="" />
                                   <div></div>
                                 </label>
@@ -273,7 +340,7 @@ describe('Email card', async () => {
                                 <div>Button</div>
                             </div>
                             <div>
-                                <label>
+                                <label id="button-settings">
                                   <input type="checkbox" />
                                   <div></div>
                                 </label>

@@ -62,7 +62,7 @@ export function ProductCardImage({
                                     <>
                                         <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
                                         <div className="absolute top-5 right-5 flex opacity-0 transition-all group-hover:opacity-100">
-                                            <IconButton dataTestID="replace-product-image" Icon={DeleteIcon} onClick={onRemove} />
+                                            <IconButton dataTestId="replace-product-image" Icon={DeleteIcon} onClick={onRemove} />
                                         </div>
                                     </>
                                 )
