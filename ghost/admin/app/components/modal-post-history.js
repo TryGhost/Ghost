@@ -84,4 +84,7 @@ export default ModalComponent.extend({
             post: this.model
         };
     }
+    // get reversedPosts() {
+    //     return this.post.toArray().reverse();
+    // }
 });
