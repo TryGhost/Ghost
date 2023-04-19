@@ -11,6 +11,38 @@
 
 /* Sidebar */
 
+.gh-post-history .settings-menu-header-wrapper {
+    position: fixed;
+    width: 100%;
+    max-width: 420px;
+    z-index: 3;
+    background: var(--white);
+    box-shadow: rgba(0, 0, 0, 0.04) 0px 0px 0px 1px, rgba(0, 0, 0, 0.15) 0px 12px 16px -16px;
+}
+
+.gh-post-history .settings-menu-header.subview {
+    position: relative;
+    max-width: 420px;
+}
+
+.settings-menu-header-wrapper .nav-list {
+    margin: 0;
+}
+
+.nav-list-item.compare-versions:hover {
+    background: var(--white);
+}
+
+.gh-post-history .settings-menu-header-wrapper .gh-toggle-featured {
+    position: relative;
+    width: 34px;
+    height: 20px;
+}
+
+.gh-post-history .settings-menu-content {
+    padding: 144px 0 0;
+}
+
 .gh-post-history .nav-list-item.active {
     background: var(--whitegrey-l2);
 }

@@ -33,25 +33,25 @@
     </div>
     <div class="settings-menu-container">
         <div class="settings-menu settings-menu-pane settings-menu-pane-main">
-            <div class="settings-menu-header subview">
-                <button 
-                    aria-label="Close meta data panel" 
-                    class="back settings-menu-header-action" 
-                    data-test-button="close-psm-subview" 
-                    type="button" {{action "closeModal"}}
-                    {{on "mousedown" (optional this.noop)}}
-                >   
-                    {{svg-jar "arrow-left"}}
-                    <span class="hidden">Back</span>
-                </button>
-                <h4>Post history</h4>
-            </div>
-            <div class="settings-menu-content">
+            <div class="settings-menu-header-wrapper">
+                <div class="settings-menu-header subview">
+                    <button 
+                        aria-label="Close meta data panel" 
+                        class="back settings-menu-header-action" 
+                        data-test-button="close-psm-subview" 
+                        type="button" {{action "closeModal"}}
+                        {{on "mousedown" (optional this.noop)}}
+                    >   
+                        {{svg-jar "arrow-left"}}
+                        <span class="hidden">Back</span>
+                    </button>
+                    <h4>Post history</h4>
+                </div>
                 <ul class="nav-list">
-                    <li class="nav-list-item">
+                    <li class="nav-list-item compare-versions">
                         <div class="for-switch x-small">
                             <label class="switch">
-                                <span>Show changes to previous version</span>
+                                <span>Compare with previous version</span>
                                 <span class="gh-toggle-featured">
                                     <input {{on "click" (fn this.toggleDifferences '')}} type="checkbox" checked={{this.showDifferences}}>
                                     <span class="input-toggle-component"></span>
@@ -59,6 +59,10 @@
                             </label>
                         </div>
                     </li>
+                </ul>
+            </div>
+            <div class="settings-menu-content">
+                <ul class="nav-list">
                     {{#each this.revisionList as |revision index|}}
                     <li class="nav-list-item {{if revision.selected "selected" ""}}">
                         <button type="button" {{action "handleClick" index}}>
