@@ -7,7 +7,7 @@ import {UrlInput} from '../UrlInput';
 export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}) {
     if (html) {
         return (
-            <div>
+            <>
                 <EmbedIframe dataTestId="embed-iframe" html={html} />
                 <CardCaptionEditor
                     captionEditor={captionEditor}
@@ -17,7 +17,7 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
                     isSelected={isSelected}
                 />
                 <div className="absolute inset-0 z-50 mt-0"></div>
-            </div>
+            </>
         );
     }
     return (
@@ -37,7 +37,7 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
 }
 
 function EmbedIframe({dataTestId, html}) {
-    return <iframe className="h-full w-full" data-testid={dataTestId} srcDoc={html}></iframe>;
+    return <iframe className="bn miw-100" data-testid={dataTestId} srcDoc={html} title="embed-card-iframe"></iframe>;
 }
 
 EmbedCard.propTypes = {

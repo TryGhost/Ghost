@@ -24,7 +24,6 @@ function renderTemplate(node, document, options) {
     const isVideoWithThumbnail = node.getEmbedType() === 'video' && metadata && metadata.thumbnail_url;
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-embed-card');
-    const container = document.createElement('div');
 
     if (isEmail && isVideoWithThumbnail) {
         const emailTemplateMaxWidth = 600;
@@ -54,13 +53,11 @@ function renderTemplate(node, document, options) {
                 <v:oval fill="t" strokecolor="white" strokeweight="4px" style="position:absolute;left:${Math.round((emailTemplateMaxWidth / 2) - 39)};top:${Math.round((spacerHeight / 2) - 39)};width:78;height:78"><v:fill color="black" opacity="30%" /></v:oval>
                 <v:shape coordsize="24,32" path="m,l,32,24,16,xe" fillcolor="white" stroked="f" style="position:absolute;left:${Math.round((emailTemplateMaxWidth / 2) - 11)};top:${Math.round((spacerHeight / 2) - 17)};width:30;height:34;" />
             </v:group>
-            <![endif]-->
+            <![endif]-->cd ../
         `;
-        container.innerHTML = html.trim();
-        figure.appendChild(container);
+        figure.innerHTML = html.trim();
     } else {
-        container.innerHTML = node.getHtml();
-        figure.appendChild(container);
+        figure.innerHTML = node.getHtml();
     }
     
     const caption = node.getCaption();
