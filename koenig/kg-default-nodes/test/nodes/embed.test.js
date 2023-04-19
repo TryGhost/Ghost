@@ -130,7 +130,7 @@ describe('EmbedNode', function () {
 
             const expectedHtml = `
                 <figure class="kg-card kg-embed-card kg-card-hascaption">
-                    <div>${dataset.html}</div>
+                    ${dataset.html}
                     <figcaption>caption text</figcaption>
                 </figure>
             `;
