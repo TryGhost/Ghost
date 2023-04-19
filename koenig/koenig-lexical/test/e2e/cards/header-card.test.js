@@ -10,7 +10,7 @@ async function createHeaderCard({page}) {
     await page.waitForSelector('[data-kg-card="header"]');
 }
 
-describe.only('Header card', async () => {
+describe('Header card', async () => {
     let app;
     let page;
 
