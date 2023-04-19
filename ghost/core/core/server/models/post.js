@@ -1193,7 +1193,7 @@ Post = ghostBookshelf.Model.extend({
      */
     defaultRelations: function defaultRelations(methodName, options) {
         if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
-            options.withRelated = _.union(['authors', 'tags', 'post_revisions'], options.withRelated || []);
+            options.withRelated = _.union(['authors', 'tags', 'post_revisions', 'post_revisions.author'], options.withRelated || []);
         }
 
         const META_ATTRIBUTES = _.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id');
