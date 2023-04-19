@@ -110,7 +110,7 @@
                         </GhFormGroup>
 
                         {{#unless this.session.user.isAuthorOrContributor}}
-                            <GhFormGroup class="for-select" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
+                            <GhFormGroup class="for-select mb8" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
                                 <label for="author-list">Authors</label>
                                 <GhPsmAuthorsInput @selectedAuthors={{this.post.authors}} @updateAuthors={{action "changeAuthors"}} @triggerId="author-list" />
                                 <GhErrorMessage @errors={{this.post.errors}} @property="authors" data-test-error="authors" />
@@ -120,42 +120,42 @@
                         <GhPsmTemplateSelect
                             @post={{this.post}}
                             @onTemplateSelect={{action (mut this.post.customTemplate)}} />
-
-                        <div class="settings-menu-post-actions">
-                            {{#unless this.session.user.isAuthorOrContributor}}
-                                <div class="form-group for-checkbox">
-                                    <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
-                                        <input
-                                            type="checkbox"
-                                            checked={{this.post.featured}}
-                                            class="gh-input post-settings-featured"
-                                            onclick={{action (mut this.post.featured) value="target.checked"}}
-                                            data-test-checkbox="featured"
-                                        >
-                                        <span class="input-toggle-component"></span>
-                                        <p>Feature this {{this.post.displayName}}</p>
-                                    </label>
-                                </div>
-                            {{/unless}}
-
-                            {{#unless this.post.isNew}}
-                                <button type="button" class="settings-menu-delete-button" {{action "deletePostInternal"}}>
-                                    <span>{{svg-jar "trash"}} Delete {{this.post.displayName}}</span>
-                                </button>
-                            {{/unless}}
-                        </div>
                     </section>
 
                     <ul class="nav-list">
-                        {{#if (feature 'postHistory')}}
-                            {{#if this.post.lexical}}
-                                <li class="nav-list-item">
-                                    <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
-                                        <span>{{svg-jar "history" class="history"}} Post history</span>
-                                    </button>
-                                    {{svg-jar "arrow-right" class="arrow-right"}}
-                                </li>
-                            {{/if}}
+                        {{#unless this.session.user.isAuthorOrContributor}}
+                            <li class="nav-list-item">
+                                <div class="for-switch x-small">
+                                    <label class="switch" for="featured" {{action "toggleFeatured" bubbles="false"}}>
+                                        <span>
+                                            {{#if this.post.featured}}
+                                                {{svg-jar "star-fill" class="feature"}}
+                                            {{else}}
+                                                {{svg-jar "star" class="feature"}}
+                                            {{/if}}
+                                            Feature this {{this.post.displayName}}
+                                        </span>
+                                        <span class="gh-toggle-featured">
+                                            <input
+                                                type="checkbox"
+                                                checked={{this.post.featured}}
+                                                class="gh-input post-settings-featured"
+                                                onclick={{action (mut this.post.featured) value="target.checked"}}
+                                                data-test-checkbox="featured"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </li>
+                        {{/unless}}
+                        {{#if (and (feature 'postHistory') this.post.lexical)}}
+                            <li class="nav-list-item">
+                                <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
+                                    <span>{{svg-jar "history" class="history"}} Post history</span>
+                                </button>
+                                {{svg-jar "arrow-right" class="arrow-right"}}
+                            </li>
                         {{/if}}
                         <li class="nav-list-item">
                             <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
@@ -183,6 +183,13 @@
                         </li>
                     </ul>
                 </form>
+                {{#unless this.post.isNew}}
+                    <div class="settings-menu-delete-button">
+                        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon gh-btn-fullwidth" {{action "deletePostInternal"}}>
+                            <span>{{svg-jar "trash"}} Delete {{this.post.displayName}}</span>
+                        </button>
+                    </div>
+                {{/unless}}
             </div>{{! .settings-menu-content }}
         </div>{{! .post-settings-menu }}
 

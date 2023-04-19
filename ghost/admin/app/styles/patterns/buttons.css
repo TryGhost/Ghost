@@ -373,6 +373,10 @@ svg.gh-btn-icon-right {
     color: var(--green);
 }
 
+.gh-btn-fullwidth {
+    width: 100%;
+}
+
 
 /*
 /* Button Variations
