@@ -117,6 +117,33 @@
     transform: rotate(90deg) !important;
 }
 
+/* Toolbar */
+
+.PinturaUtilHeader {
+    padding-bottom: 4px !important;
+}
+
+.PinturaToolbar .PinturaToolbarInner > * {
+    margin: 0 4px !important;
+}
+
+.PinturaToolbar .PinturaButton:hover {
+    color: var(--green-d1) !important;
+    box-shadow: none !important;
+}
+
+.PinturaToolbar .PinturaButton[title="Rotate left"] svg {
+    margin-top: -2px !important;
+}
+
+.PinturaToolbar .PinturaButton[title="Flip horizontal"] svg {
+    margin-top: -3px !important;
+}
+
+.PinturaButton svg + .PinturaButtonLabel {
+    margin-left: 4px !important;
+}
+
 /* Tab list */
 
 .PinturaUtilFooter .PinturaControlList [role=tab] button {
