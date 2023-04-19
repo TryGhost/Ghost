@@ -1,10 +1,7 @@
-// import createDataTransfer from '../../utils/createDataTransfer';
-// import path from 'path';
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-// import {expect} from '@playwright/test';
 
-describe('File card', async () => {
+describe.only('Header card', async () => {
     let app;
     let page;
 
@@ -31,8 +28,8 @@ describe('File card', async () => {
                         buttonEnabled: false,
                         buttonUrl: '',
                         buttonText: '',
-                        header: '<p dir="ltr"><span>hello world</span></p>',
-                        subheader: '<p dir="ltr"><span>hello sub</span></p>',
+                        header: '<span>hello world</span>',
+                        subheader: '<span>hello sub</span>',
                         backgroundImageStyle: 'bg-image',
                         backgroundImageSrc: 'blob:http://localhost:5173/fa0956a8-5fb4-4732-9368-18f9d6d8d25a'
                     }],
@@ -48,13 +45,37 @@ describe('File card', async () => {
             editor.setEditorState(editorState);
         });
 
-        // page.pause();
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="header">
+            <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="header">
+                <div>
+                    <div>
+                        <div data-kg="editor">
+                        <div
+                            contenteditable="false"
+                            spellcheck="true"
+                            data-lexical-editor="true"
+                            aria-autocomplete="none">
+                            <p dir="ltr"><span data-lexical-text="true">hello world</span></p>
+                        </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div data-kg="editor">
+                        <div
+                            contenteditable="false"
+                            spellcheck="true"
+                            data-lexical-editor="true"
+                            aria-autocomplete="none">
+                            <p dir="ltr"><span data-lexical-text="true">hello sub</span></p>
+                        </div>
+                        </div>
+                    </div>
+                    <div></div>
                 </div>
             </div>
-        `, {ignoreCardContents: true});
+            </div>
+        `, {});
     });
 
     test('renders header card node', async function () {
@@ -96,31 +117,32 @@ describe('File card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    // test('can edit sub header', async function () {
-    //     await focusEditor(page);
-    //     await page.keyboard.type('/header');
-    //     await page.waitForSelector('[data-kg-card-menu-item="Header"][data-kg-cardmenu-selected="true"]');
-    //     await page.keyboard.press('Enter');
-    //     await page.waitForSelector('[data-kg-card="header"]');
+    test('can edit sub header', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('/header');
+        await page.waitForSelector('[data-kg-card-menu-item="Header"][data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await page.waitForSelector('[data-kg-card="header"]');
 
-    //     await page.keyboard.type('Hello world');
+        await page.keyboard.type('Hello world');
 
-    //     await page.keyboard.press('Enter');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('Hello subheader');
 
-    //     await assertHTML(page, html`
-    //         <div data-lexical-decorator="true" contenteditable="false">
-    //             <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="header">
-    //                 <div data-kg-card-input="header">
-    //                     <p><span>Hello world</span></p>
-    //                 </div>
-    //                 <div data-kg-card-input="subheader">
-    //                     <p><span>Hello subheader</span></p>
-    //                 </div>
-    //             </div>
-    //         </div>
-    //         <p><br /></p>
-    //     `, {ignoreCardContents: true});
-    // });
+        await assertHTML(page, html`
+             <div data-lexical-decorator="true" contenteditable="false">
+                 <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="header">
+                     <div data-kg-card-input="header">
+                         <p><span>Hello world</span></p>
+                     </div>
+                     <div data-kg-card-input="subheader">
+                         <p><span>Hello subheader</span></p>
+                     </div>
+                 </div>
+             </div>
+             <p><br /></p>
+         `, {ignoreCardContents: true});
+    });
 
     test('can toggle button on', async function () {
         await focusEditor(page);
