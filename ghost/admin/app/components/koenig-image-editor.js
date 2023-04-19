@@ -7,6 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class KoenigImageEditor extends Component {
     @service ajax;
     @service feature;
+    @service settings;
     @service ghostPaths;
     @tracked scriptLoaded = false;
     @tracked cssLoaded = false;
@@ -17,11 +18,16 @@ export default class KoenigImageEditor extends Component {
         return this.scriptLoaded && this.cssLoaded;
     }
 
+    get pinturaJsUrl() {
+        return this.config.pintura?.js || this.settings.pinturaJsUrl;
+    }
+
     getImageEditorJSUrl() {
-        if (!this.config.pintura?.js) {
+        let importUrl = this.pinturaJsUrl;
+
+        if (!importUrl) {
             return null;
         }
-        let importUrl = this.config.pintura.js;
 
         // load the script from admin root if relative
         if (importUrl.startsWith('/')) {
@@ -112,8 +118,15 @@ export default class KoenigImageEditor extends Component {
 
     @action
     async handleClick() {
-        if (window.pintura) {
-            const imageSrc = `${this.args.imageSrc}?v=${Date.now()}`;
+        if (this.isEditorEnabled && this.args.imageSrc) {
+            // add a timestamp to the image src to bypass cache
+            // avoids cors issues with cached images
+            const imageUrl = new URL(this.args.imageSrc);
+            if (!imageUrl.searchParams.has('v')) {
+                imageUrl.searchParams.set('v', Date.now());
+            }
+
+            const imageSrc = imageUrl.href;
             const editor = window.pintura.openDefaultEditor({
                 src: imageSrc,
                 util: 'crop',

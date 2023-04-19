@@ -65,7 +65,10 @@ const EDITABLE_SETTINGS = [
     'outbound_link_tagging',
     'announcement_content',
     'announcement_background',
-    'announcement_visibility'
+    'announcement_visibility',
+    'pintura',
+    'pintura_js_url',
+    'pintura_css_url'
 ];
 
 module.exports = {
