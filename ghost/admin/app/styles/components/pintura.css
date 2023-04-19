@@ -116,3 +116,24 @@
 .PinturaRectManipulator[data-shape~=circle][data-direction=br]::after {
     transform: rotate(90deg) !important;
 }
+
+/* Tab list */
+
+.PinturaUtilFooter .PinturaControlList [role=tab] button {
+    padding: 0 10px !important;
+}
+
+.PinturaUtilFooter .PinturaControlList [role=tab][aria-selected=true] button {
+    color: var(--green-d1) !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+.PinturaUtilFooter .PinturaControlList .PinturaControlListOption label:hover,
+.PinturaUtilFooter .PinturaControlList [role=tab] button:hover {
+    box-shadow: none !important;
+}
+
+.PinturaUtilFooter .PinturaControlList [role=tab] button span {
+    font-weight: 500 !important;
+}
