@@ -82,7 +82,7 @@ function PopulatedGalleryCard({images, deleteImage}) {
     };
 
     images.forEach((image, idx) => {
-        let row = image.row;
+        let row = image.row || 0;
 
         // start a new display row if necessary
         if (maxImagesInRow(idx)) {
