@@ -1,9 +1,5 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div class="gh-post-history">
-    {{!-- <div class="read-only-banner">
-        <span>You are viewing a revision from <strong>17 April 2023, 10:34</strong>.</span>
-        <a href="#">Roll back to this version &rarr;</a>
-    </div> --}}
     <div class="gh-post-history-main">
         <div class="gh-koenig-editor-pane flex flex-column mih-100">
             <div class="gh-editor-feature-image-container">
@@ -43,21 +39,33 @@
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">
+                    {{!-- <li class="nav-list-item">
+                        <div class="for-switch x-small">
+                            <label class="switch">
+                                <span>Show changes to previous version</span>
+                                <span class="gh-toggle-featured">
+                                    <input type="checkbox">
+                                    <span class="input-toggle-component"></span>
+                                </span>
+                            </label>
+                        </div>
+                    </li> --}}
                     {{#each this.revisionList as |revision index|}}
                     <li class="nav-list-item {{if revision.selected "selected" ""}}">
                         <button type="button" {{action "handleClick" index}}>
                             <div class="flex items-center">
                                 <span class="gh-post-history-version">{{capitalize-first-letter (moment-from-now revision.createdAt)}}</span>
-                                {{!-- <span class="gh-post-history-version-wordcount">
-                                    <span class="added">+275</span>
-                                    <span class="subtracted">-73</span>
-                                </span> --}}
-                                {{!-- <button class="gh-btn gh-btn-text gh-post-history-version-restore">
-                                    <span>Restore</span>
-                                </button> --}}
-                            </div>                           
+                                {{#if revision.latest}}
+                                    <span class="gh-post-history-version-current">Latest</span>
+                                {{/if}}
+                            </div> 
                             <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
                         </button>
+                        {{#if revision.selected}}
+                            <button type="button" class="gh-post-history-version-restore">
+                                <span>Restore</span>
+                            </button>
+                        {{/if}}
                     </li>
                     {{/each}}
                 </ul>
