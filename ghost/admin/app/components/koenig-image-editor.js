@@ -22,6 +22,10 @@ export default class KoenigImageEditor extends Component {
         return this.config.pintura?.js || this.settings.pinturaJsUrl;
     }
 
+    get pinturaCSSUrl() {
+        return this.config.pintura?.css || this.settings.pinturaCssUrl;
+    }
+
     getImageEditorJSUrl() {
         let importUrl = this.pinturaJsUrl;
 
@@ -37,10 +41,11 @@ export default class KoenigImageEditor extends Component {
     }
 
     getImageEditorCSSUrl() {
-        if (!this.config.pintura?.css) {
+        let cssImportUrl = this.pinturaCSSUrl;
+
+        if (!cssImportUrl) {
             return null;
         }
-        let cssImportUrl = this.config.pintura.css;
 
         // load the css from admin root if relative
         if (cssImportUrl.startsWith('/')) {

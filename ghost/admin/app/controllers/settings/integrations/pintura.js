@@ -7,16 +7,25 @@ import {tracked} from '@glimmer/tracking';
 
 const JS_EXTENSION = ['js'];
 const JS_MIME_TYPE = ['application/javascript'];
+const CSS_EXTENSION = ['css'];
+const CSS_MIME_TYPE = ['text/css'];
 export default class PinturaController extends Controller {
     @service notifications;
     @service settings;
-    @tracked routesSuccess;
-    @tracked routesFailure;
+    @service utils;
+    @tracked jsSuccess;
+    @tracked jsFailure;
+    @tracked cssSuccess;
+    @tracked cssFailure;
 
     constructor() {
         super(...arguments);
         this.jsExtension = JS_EXTENSION;
         this.jsMimeType = JS_MIME_TYPE;
+        this.jsAccept = [...this.jsMimeType, ...Array.from(this.jsExtension, extension => '.' + extension)];
+        this.cssExtension = CSS_EXTENSION;
+        this.cssMimeType = CSS_MIME_TYPE;
+        this.cssAccept = [...this.cssMimeType, ...Array.from(this.cssExtension, extension => '.' + extension)];
     }
 
     /**
@@ -32,34 +41,29 @@ export default class PinturaController extends Controller {
     }
 
     @action
-    async fileUploadStarted() {
-        this.routesSuccess = null;
-        this.routesFailure = null;
-    }
+    async fileUploadCompleted(fileType, [uploadedFile]) {
+        let successKey = `${fileType}Success`;
+        let failureKey = `${fileType}Failure`;
 
-    @action
-    async fileUploadCompleted([uploadedFile]) {
         if (!uploadedFile || !uploadedFile.url && !uploadedFile.fileName) {
-            this.routesSuccess = false;
-            this.routesFailure = true;
+            this[successKey] = false;
+            this[failureKey] = true;
             return; // upload failed
         }
-        this.routesSuccess = true;
-        this.routesFailure = false;
+        this[successKey] = true;
+        this[failureKey] = false;
 
         window.setTimeout(() => {
-            this.routesSuccess = null;
-            this.routesFailure = null;
+            this[successKey] = null;
+            this[failureKey] = null;
         }, config.environment === 'test' ? 100 : 5000);
 
         // Save the uploaded file url to the settings
-        this.settings.pinturaJsUrl = uploadedFile.url;
-    }
-
-    @action
-    fileUploadFailed() {
-        this.routesSuccess = null;
-        this.routesFailure = null;
+        if (fileType === 'js') {
+            this.settings.pinturaJsUrl = uploadedFile.url;
+        } else if (fileType === 'css') {
+            this.settings.pinturaCssUrl = uploadedFile.url;
+        }
     }
 
     @action
