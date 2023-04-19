@@ -7,7 +7,9 @@ const tpl = require('@tryghost/tpl');
 const messages = {
     invalidEmailReceived: 'Please send a valid email',
     invalidEmailValueReceived: 'Please enter a valid email address.',
-    invalidEmailTypeReceived: 'Invalid email type received'
+    invalidEmailTypeReceived: 'Invalid email type received',
+    invalidAnnouncementVisibilityValueReceived: 'Please enter a valid announcement visibility value',
+    invalidAnnouncementBackgroundValueReceived: 'Please enter a valid announcement background value'
 };
 
 module.exports = {
@@ -58,6 +60,30 @@ module.exports = {
                         property: setting.key
                     });
                     errors.push(typeError);
+                }
+            }
+
+            if (setting.key === 'announcement_visibility') {
+                const visibilityValue = setting.value;
+
+                if (!['public', 'visitors', 'members', 'paid'].includes(visibilityValue)) {
+                    const visibilityError = new ValidationError({
+                        message: tpl(messages.invalidAnnouncementVisibilityValueReceived),
+                        property: setting.key
+                    });
+                    errors.push(visibilityError);
+                }
+            }
+
+            if (setting.key === 'announcement_background') {
+                const announcementBackgroundValue = setting.value;
+
+                if (!['accent', 'dark', 'light'].includes(announcementBackgroundValue)) {
+                    const visibilityError = new ValidationError({
+                        message: tpl(messages.invalidAnnouncementBackgroundValueReceived),
+                        property: setting.key
+                    });
+                    errors.push(visibilityError);
                 }
             }
         });
