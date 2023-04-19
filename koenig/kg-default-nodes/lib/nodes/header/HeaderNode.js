@@ -65,7 +65,7 @@ export class HeaderNode extends KoenigDecoratorNode {
         backgroundImageSrc} = {}, key) {
         super(key);
         this.__size = size || 'small';
-        this.__style = style || 'image';
+        this.__style = style || 'dark';
         this.__buttonEnabled = buttonEnabled || false;
         this.__buttonUrl = buttonUrl || '';
         this.__buttonText = buttonText || '';
