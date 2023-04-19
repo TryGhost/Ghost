@@ -16,7 +16,8 @@ const allowedIncludes = [
     'sentiment',
     'count.positive_feedback',
     'count.negative_feedback',
-    'post_revisions'
+    'post_revisions',
+    'post_revisions.author'
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
