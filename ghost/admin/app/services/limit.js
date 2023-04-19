@@ -93,7 +93,7 @@ export default class LimitsService extends Service {
     }
 
     async getMembersCount() {
-        const members = await this.store.query('member', {limit: 'all'});
+        const members = await this.store.query('member', {limit: 1});
         const total = members.meta.pagination.total;
 
         return total;
