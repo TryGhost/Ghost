@@ -32,8 +32,8 @@ export function renderHeaderNodeToDOM(node, options = {}) {
         headerSlug: slugify(node.getHeader()),
         subheader: node.getSubheader(),
         subheaderSlug: slugify(node.getSubheader()),
-        hasHeader: node.getHasHeader(),
-        hasSubheader: node.getHasSubheader(),
+        hasHeader: !!node.getHeader(),
+        hasSubheader: !!node.getSubheader() && !!node.getSubheader().replace(/(<br>)+$/g).trim(),
         backgroundImageStyle: node.getStyle() === 'image' ? `background-image: url(${node.getBackgroundImageSrc()})` : '',
         backgroundImageSrc: node.getBackgroundImageSrc()
     };

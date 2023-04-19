@@ -19,7 +19,7 @@ describe('File card', async () => {
     beforeEach(async () => {
         await initialize({page});
     });
-    
+
     test('can import serialized header card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
@@ -33,8 +33,6 @@ describe('File card', async () => {
                         buttonText: '',
                         header: '<p dir="ltr"><span>hello world</span></p>',
                         subheader: '<p dir="ltr"><span>hello sub</span></p>',
-                        hasHeader: false,
-                        hasSubheader: false,
                         backgroundImageStyle: 'bg-image',
                         backgroundImageSrc: 'blob:http://localhost:5173/fa0956a8-5fb4-4732-9368-18f9d6d8d25a'
                     }],

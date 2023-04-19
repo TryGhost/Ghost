@@ -34,9 +34,7 @@ describe('HeaderNode', function () {
             size: 'small',
             style: 'image',
             subheader: 'hello',
-            backgroundImageStyle: 'cover',
-            hasHeader: true,
-            hasSubheader: true
+            backgroundImageStyle: 'cover'
         };
 
         exportOptions = {
@@ -130,8 +128,25 @@ describe('HeaderNode', function () {
                 header: 'hello world',
                 size: 'small',
                 style: 'dark',
-                subheader: 'hello sub world',
-                hasHeader: true
+                subheader: 'hello sub world'
+            };
+            const node = $createHeaderNode(payload);
+
+            const {element} = node.exportDOM(exportOptions);
+            const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2><h3 class="kg-header-card-subheader" id="hello-sub-world">hello sub world</h3></div>`;
+            element.outerHTML.should.equal(expectedElement);
+        }));
+
+        it('renders without subheader', editorTest(function () {
+            let payload = {
+                backgroundImageSrc: '',
+                buttonEnabled: false,
+                buttonText: 'The button',
+                buttonUrl: 'https://example.com/',
+                header: 'hello world',
+                size: 'small',
+                style: 'dark',
+                subheader: ''
             };
             const node = $createHeaderNode(payload);
 
@@ -160,8 +175,6 @@ describe('HeaderNode', function () {
             node.getButtonEnabled().should.be.true;
             node.getButtonUrl().should.equal('https://example.com');
             node.getButtonText().should.equal('Button');
-            node.getHasHeader().should.be.true;
-            node.getHasSubheader().should.be.true;
         }));
     });
 });

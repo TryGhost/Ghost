@@ -4,7 +4,6 @@ import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {HeaderCard} from '../components/ui/cards/HeaderCard';
 import {backgroundImageUploadHandler} from '../utils/imageUploadHandler';
-import {isEditorEmpty} from '../utils/isEditorEmpty';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function HeaderNodeComponent(props) {
@@ -78,7 +77,7 @@ function HeaderNodeComponent(props) {
             node.setButtonEnabled(event.target.checked);
         });
     };
-    
+
     const handleButtonText = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -140,7 +139,6 @@ function HeaderNodeComponent(props) {
             handleColorSelector={handleColorSelector}
             handleEditorFocus={handleEditorFocus}
             handleSizeSelector={handleSizeSelector}
-            header={isEditorEmpty(props.headerTextEditor)}
             headerTextEditor={props.headerTextEditor}
             headerTextEditorInitialState={props.headerTextEditorInitialState}
             headingPlaceholder={props.headingPlaceholder}
@@ -148,7 +146,6 @@ function HeaderNodeComponent(props) {
             nodeKey={nodeKey}
             openFilePicker={openFilePicker}
             size={props.size}
-            subHeader={isEditorEmpty(props.subHeaderTextEditor)}
             subHeaderTextEditor={props.subHeaderTextEditor}
             subHeaderTextEditorInitialState={props.subHeaderTextEditorInitialState}
             subHeadingPlaceholder={props.subHeadingPlaceholder}
