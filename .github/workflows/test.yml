@@ -359,4 +359,5 @@ jobs:
     needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
+    secrets: inherit
     uses: tryghost/actions/.github/workflows/canary.yml@main
