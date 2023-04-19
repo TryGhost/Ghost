@@ -8,11 +8,11 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
     if (html) {
         return (
             <div>
-                <EmbedIframe html={html} />
+                <EmbedIframe dataTestId="embed-iframe" html={html} />
                 <CardCaptionEditor
                     captionEditor={captionEditor}
                     captionEditorInitialState={captionEditorInitialState}
-                    captionPlaceholder="Type caption for embedded (optional)"
+                    captionPlaceholder="Type caption for embed (optional)"
                     dataTestId="embed-caption"
                     isSelected={isSelected}
                 />
@@ -36,8 +36,8 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
     );
 }
 
-function EmbedIframe({html}) {
-    return <iframe className="h-full w-full" srcDoc={html}></iframe>;
+function EmbedIframe({dataTestId, html}) {
+    return <iframe data-testid={dataTestId} className="h-full w-full" srcDoc={html}></iframe>;
 }
 
 EmbedCard.propTypes = {
