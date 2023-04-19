@@ -5,7 +5,7 @@
 @layer components {
    /* Header card – Header */
   .kg-header-header-placeholder {
-    @apply whitespace-normal tracking-tight absolute text-center w-full top-0 left-0 z-10 pointer-events-none cursor-text leading-tight font-bold
+    @apply !truncate opacity-50 whitespace-normal tracking-tight text-center w-full leading-tight font-bold
   }
 
   .kg-header-header-text strong {
@@ -26,7 +26,7 @@
 
   /* Header card – Subheader */
   .kg-header-subheader-placeholder {
-    @apply w-full whitespace-normal text-center leading-tight absolute top-0 left-0 z-10 pointer-events-none cursor-text font-normal
+    @apply !truncate opacity-50 w-full whitespace-normal text-center leading-tight font-normal
   }
 
   .kg-header-subheader-text {
