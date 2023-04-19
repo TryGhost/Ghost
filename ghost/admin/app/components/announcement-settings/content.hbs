@@ -6,8 +6,8 @@
         <div class="gh-announcement-editor">
             <KoenigLexicalEditorInput
                 @placeholderText="Breaking news, a big story, a special offer, or any other message"
-                @html={{'<p></p>'}}
-                @onChangeHtml={{this.onChangeHtml}}
+                @html={{this.content}}
+                @onChangeHtml={{this.setContent}}
             />
         </div>
     </div>
