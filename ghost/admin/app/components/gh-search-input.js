@@ -150,7 +150,8 @@ export default class GhSearchInputComponent extends Component {
 
     _loadSearchable(searchable, content) {
         let url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
-        let query = {fields: searchable.fields, limit: 'all'};
+        let maxSearchableLimit = '10000';
+        let query = {fields: searchable.fields, limit: maxSearchableLimit};
 
         return this.ajax.request(url, {data: query}).then((response) => {
             const items = response[pluralize(searchable.model)].map(item => ({
