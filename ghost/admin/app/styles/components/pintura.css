@@ -67,3 +67,52 @@
     font-weight: 600 !important;
     text-align: left !important;
 }
+
+/* Cropping */
+
+.PinturaRectManipulator[data-shape~=circle] {
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+.PinturaRectManipulator:not([data-shape=edge])::after {
+    inset: 0 !important;
+    border-radius: 0 !important;
+    content: "" !important;
+    border-style: solid !important;
+    border-width: 4px 4px 0 0 !important;
+    display: inline-block !important;
+    height: 16px !important;
+    position: relative !important;
+    transform: rotate(-90deg) !important;
+    width: 16px !important;
+    border-color: rgba(0,0,0,1) !important;
+}
+
+.PinturaRectManipulator[data-shape~=circle][data-direction=tr] {
+    left: -16px !important;
+}
+
+.PinturaRectManipulator[data-shape~=circle][data-direction=tr]::after {
+    transform: rotate(0) !important;
+}
+
+.PinturaRectManipulator[data-shape~=circle][data-direction=bl] {
+    top: -16px !important;
+}
+
+.PinturaRectManipulator[data-shape~=circle][data-direction=bl]::after {
+    transform: rotate(180deg) !important;
+}
+
+.PinturaRectManipulator[data-shape~=circle][data-direction=br] {
+    top: -16px !important;
+    left: -16px !important;
+}
+
+.PinturaRectManipulator[data-shape~=circle][data-direction=br]::after {
+    transform: rotate(90deg) !important;
+}
