@@ -1,6 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import diff from 'node-htmldiff';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
 
 function checkFinishedRendering(element, done) {
     let last = element.innerHTML;
@@ -19,8 +19,9 @@ function checkFinishedRendering(element, done) {
 }
 
 export default ModalComponent.extend({
+    selectedHTML: null,
     diffHtml: null,
-
+    showDifferences: true,
     selectedRevisionIndex: 0,
 
     selectedRevision: computed('selectedRevisionIndex', 'revisionList.[]', function () {
@@ -77,7 +78,15 @@ export default ModalComponent.extend({
         registerComparisonEditorApi(api) {
             this.comparisonEditor = api;
         }
+
+        // toggleDifferences() {
+        //     this.toggleProperty('showDifferences');
+        // }
     },
+
+    toggleDifferences: action(function () {
+        this.toggleProperty('showDifferences');
+    }),
 
     get cardConfig() {
         return {
@@ -103,6 +112,7 @@ export default ModalComponent.extend({
         let updateIfBothDone = () => {
             if (previousDone && currentDone) {
                 this.set('diffHtml', diff(previous.innerHTML, current.innerHTML));
+                this.set('selectedHTML', current.innerHTML);
             }
         };
 
