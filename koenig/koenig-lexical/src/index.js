@@ -16,6 +16,7 @@ import ExternalControlPlugin from './plugins/ExternalControlPlugin';
 import FilePlugin from './plugins/FilePlugin';
 import FloatingFormatToolbarPlugin from './plugins/FloatingFormatToolbarPlugin';
 import GalleryPlugin from './plugins/GalleryPlugin';
+import HeaderPlugin from './plugins/HeaderPlugin';
 import HorizontalRulePlugin from './plugins/HorizontalRulePlugin';
 import HtmlOutputPlugin from './plugins/HtmlOutputPlugin';
 import ImagePlugin from './plugins/ImagePlugin';
@@ -76,6 +77,7 @@ export {
     RestrictContentPlugin,
     SlashCardMenuPlugin,
     TogglePlugin,
+    HeaderPlugin,
     VideoPlugin,
 
     AllDefaultPlugins,

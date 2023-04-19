@@ -1,6 +1,7 @@
 import React from 'react';
 import {CardWrapper} from './../CardWrapper';
 import {HeaderCard} from './HeaderCard';
+import {createEditor} from 'lexical';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -35,15 +36,22 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
-    <div className="kg-prose">
+const Template = ({display, ...args}) => {
+    const headerTextEditor = createEditor();
+    const subHeaderTextEditor = createEditor();
+    return (<div className="kg-prose">
         <div className="mx-auto my-8 w-full min-w-[initial]">
             <CardWrapper {...display} {...args}>
-                <HeaderCard {...display} {...args} />
+                <HeaderCard
+                    {...display} 
+                    {...args} 
+                    headerTextEditor={headerTextEditor}
+                    subHeaderTextEditor={subHeaderTextEditor}
+                />
             </CardWrapper>
         </div>
-    </div>
-);
+    </div>);
+};
 
 export const Empty = Template.bind({});
 Empty.args = {

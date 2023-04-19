@@ -37,7 +37,7 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
 }
 
 function EmbedIframe({dataTestId, html}) {
-    return <iframe data-testid={dataTestId} className="h-full w-full" srcDoc={html}></iframe>;
+    return <iframe className="h-full w-full" data-testid={dataTestId} srcDoc={html}></iframe>;
 }
 
 EmbedCard.propTypes = {

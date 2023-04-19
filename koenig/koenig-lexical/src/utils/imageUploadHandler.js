@@ -33,3 +33,14 @@ export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
 
     return;
 };
+
+export const backgroundImageUploadHandler = async (files, upload) => {
+    if (!files) {
+        return;
+    }
+    const result = await upload(files);
+    const imageSrc = result?.[0].url;
+    return {
+        imageSrc
+    };
+};

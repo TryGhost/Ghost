@@ -33,6 +33,7 @@ const KoenigComposableEditor = ({
     className = '',
     readOnly = false,
     isDragEnabled = true,
+    disableKoenigStyles = false,
     isSnippetsEnabled = true
 }) => {
     const {historyState} = useSharedHistoryContext();
@@ -78,7 +79,7 @@ const KoenigComposableEditor = ({
     };
 
     return (
-        <div ref={onWrapperRef} className={`koenig-lexical ${darkMode ? 'dark' : ''} ${className}`}>
+        <div ref={onWrapperRef} className={`${disableKoenigStyles ? '' : 'koenig-lexical'} ${darkMode ? 'dark' : ''} ${className}`}>
             <RichTextPlugin
                 contentEditable={
                     <div ref={onContentEditableRef} data-kg="editor">

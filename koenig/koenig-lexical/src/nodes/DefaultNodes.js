@@ -9,6 +9,7 @@ import {EmailNode} from './EmailNode';
 import {EmbedNode} from './EmbedNode';
 import {FileNode} from './FileNode';
 import {GalleryNode} from './GalleryNode';
+import {HeaderNode} from './HeaderNode';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
 import {HtmlNode} from './HtmlNode';
@@ -39,6 +40,7 @@ const DEFAULT_NODES = [
     FileNode,
     ButtonNode,
     ToggleNode,
+    HeaderNode,
     BookmarkNode,
     PaywallNode,
     ProductNode,
