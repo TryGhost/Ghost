@@ -87,6 +87,20 @@ function getSearchHelper(frontendKey) {
     return helper;
 }
 
+function getAnnouncementBarHelper(frontendKey) {
+    const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
+    const {scriptUrl} = getFrontendAppConfig('announcementBar');
+    const attrs = {
+        key: frontendKey,
+        'announcement-bar': adminUrl,
+        api: urlUtils.urlFor('api', {type: 'content'}, true)
+    };
+    const dataAttrs = getDataAttributes(attrs);
+    let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+
+    return helper;
+}
+
 function getWebmentionDiscoveryLink() {
     try {
         const siteUrl = urlUtils.getSiteUrl();
@@ -230,6 +244,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey));
             head.push(getSearchHelper(frontendKey));
+            head.push(getAnnouncementBarHelper(frontendKey));
             try {
                 head.push(getWebmentionDiscoveryLink());
             } catch (err) {
