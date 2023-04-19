@@ -228,6 +228,10 @@ export class HeaderNode extends KoenigDecoratorNode {
     decorate(){
         return '';
     }
+
+    isEmpty() {
+        return !this.header && !this.subheader && (!this.__buttonEnabled || (!this.__buttonText && !this.__buttonUrl)) && !this.__backgroundImageSrc;
+    }
 }
 
 export function $isHeaderNode(node) {
