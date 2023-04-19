@@ -180,9 +180,9 @@ describe('Header card', async () => {
                                 <span></span>
                             </button>
                             </li>
-                            <button type="button">
+                            <li type="button">
                             <span><svg></svg></span>
-                            </button>
+                            </li>
                         </ul>
                         </div>
                     </div>
@@ -291,9 +291,9 @@ describe('Header card', async () => {
                                     <span></span>
                                 </button>
                                 </li>
-                                <button type="button">
+                                <li type="button">
                                 <span><svg></svg></span>
-                                </button>
+                                </li>
                             </ul>
                             </div>
                         </div>
@@ -403,9 +403,9 @@ describe('Header card', async () => {
                           <span></span>
                         </button>
                       </li>
-                      <button type="button">
+                      <li type="button">
                         <span><svg></svg></span>
-                      </button>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -529,9 +529,9 @@ describe('Header card', async () => {
                           <span></span>
                         </button>
                       </li>
-                      <button type="button">
+                      <li type="button">
                         <span><svg></svg></span>
-                      </button>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -647,9 +647,9 @@ describe('Header card', async () => {
                           <span></span>
                         </button>
                       </li>
-                      <button type="button">
+                      <li type="button">
                         <span><svg></svg></span>
-                      </button>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -776,9 +776,9 @@ describe('Header card', async () => {
                                 <span></span>
                             </button>
                             </li>
-                            <button type="button">
+                            <li type="button">
                             <span><svg></svg></span>
-                            </button>
+                            </li>
                         </ul>
                         </div>
                     </div>
