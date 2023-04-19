@@ -61,7 +61,7 @@
                             </div> 
                             <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
                         </button>
-                        {{#if revision.selected}}
+                        {{#if (and revision.selected (not revision.latest))}}
                             <button type="button" class="gh-post-history-version-restore">
                                 <span>Restore</span>
                             </button>
