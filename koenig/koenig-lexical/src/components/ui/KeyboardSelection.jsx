@@ -13,30 +13,36 @@ export function KeyboardSelection({items, getItem, onSelect, defaultSelected}) {
     const [selectedIndex, setSelectedIndex] = React.useState(defaultIndex === -1 ? 0 : defaultIndex);
 
     const handleKeydown = React.useCallback((event) => {
+        event.preventDefault();
+
         if (event.key === 'ArrowDown') {
-            event.preventDefault();
+            // The stop propagation is required for Safari
+            event.stopPropagation();
             setSelectedIndex((i) => {
                 return Math.min(i + 1, items.length - 1);
             });
         }
         if (event.key === 'ArrowUp') {
-            event.preventDefault();
+            // The stop propagation is required for Safari
+            event.stopPropagation();
             setSelectedIndex((i) => {
                 return Math.max(i - 1, 0);
             });
         }
         if (event.key === 'Enter') {
-            event.preventDefault();
+            // The stop propagation is required for Safari
+            event.stopPropagation();
             onSelect(items[selectedIndex]);
         }
-    }, [items, selectedIndex, onSelect, setSelectedIndex]);
+    }, [items, selectedIndex, onSelect]);
 
     React.useEffect(() => {
-        window.addEventListener('keydown', handleKeydown);
+        // The capture phase is required for Safari
+        window.addEventListener('keydown', handleKeydown, {capture: true});
         return () => {
-            window.removeEventListener('keydown', handleKeydown);
+            window.removeEventListener('keydown', handleKeydown, {capture: true});
         };
-    });
+    }, [handleKeydown]);
 
     return (
         <>
