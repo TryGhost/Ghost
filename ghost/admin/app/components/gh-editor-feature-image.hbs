@@ -39,7 +39,13 @@
             </span>
             <div class="gh-editor-feature-image">
                 <img src={{@image}}>
-                <button type="button" class="image-delete" title="Delete image" {{on "click" @clearImage}}>
+                {{#if (feature 'imageEditor')}}
+                    <KoenigImageEditor
+                        @imageSrc={{@image}}
+                        @saveImage={{fn this.saveImage uploader.setFiles}}
+                    />
+                {{/if}}
+                <button type="button" class="image-action image-delete" title="Delete image" {{on "click" @clearImage}}>
                     {{svg-jar "trash"}}
                 </button>
             </div>

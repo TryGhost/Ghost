@@ -86,4 +86,10 @@ export default class GhEditorFeatureImageComponent extends Component {
 
         setFiles(event.dataTransfer.files);
     }
+
+    @action
+    saveImage(setFiles, imageFile) {
+        this.canDrop = false;
+        setFiles([imageFile]);
+    }
 }

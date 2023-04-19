@@ -75,6 +75,7 @@ export default class FeatureService extends Service {
     @feature('i18n') i18n;
     @feature('postHistory') postHistory;
     @feature('announcementBar') announcementBar;
+    @feature('imageEditor') imageEditor;
 
     _user = null;
 

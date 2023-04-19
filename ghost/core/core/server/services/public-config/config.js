@@ -19,7 +19,8 @@ module.exports = function getConfigProperties() {
         emailAnalytics: config.get('emailAnalytics'),
         hostSettings: config.get('hostSettings'),
         tenor: config.get('tenor'),
-        editor: config.get('editor')
+        editor: config.get('editor'),
+        pintura: config.get('pintura')
     };
 
     const billingUrl = config.get('hostSettings:billing:enabled') ? config.get('hostSettings:billing:url') : '';
