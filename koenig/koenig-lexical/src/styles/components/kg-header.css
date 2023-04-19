@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+   /* Header card – Header */
+  .kg-header-header-placeholder {
+    @apply whitespace-normal tracking-tight absolute text-center w-full top-0 left-0 z-10 pointer-events-none cursor-text leading-tight font-bold
+  }
+
+  .kg-header-header-text strong {
+    @apply !font-extrabold
+  }
+
+  .kg-header-header-text {
+    @apply relative z-50 w-full whitespace-normal text-center font-bold leading-tight tracking-tight
+  }
+
+  .kg-header-header-text {
+    @apply !whitespace-normal
+  }
+
+  .kg-header-header-text a {
+    @apply underline underline-offset-8
+  }
+
+  /* Header card – Subheader */
+  .kg-header-subheader-placeholder {
+    @apply w-full whitespace-normal text-center leading-tight absolute top-0 left-0 z-10 pointer-events-none cursor-text font-normal
+  }
+
+  .kg-header-subheader-text {
+    @apply relative w-full whitespace-normal text-center font-medium leading-tight
+  }
+
+  .kg-header-subheader-text {
+    @apply !whitespace-normal
+  }
+
+  .kg-header-subheader-text a {
+    @apply underline underline-offset-4
+  }
+}

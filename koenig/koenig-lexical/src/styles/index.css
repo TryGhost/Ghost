@@ -10,6 +10,7 @@
 @import './components/kg-toggle';
 @import './components/kg-product';
 @import './components/kg-email';
+@import './components/kg-header';
 
 /* Global Koenig content styles
 /* -------------------------------------------------------------------- */

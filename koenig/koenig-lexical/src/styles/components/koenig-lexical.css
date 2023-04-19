@@ -98,18 +98,6 @@ em-emoji-picker {
     border: none;
   }
 
-  /* Header card */
-  /*.kg-header-card-heading-small p, .kg-header-card-subheading-small p {
-    padding-left: calc(50% - 285px);
-  }
-
-  .kg-header-card-heading-small.kg-header-editor-placeholder, .kg-header-card-subheading-small.kg-header-editor-placeholder {
-    padding-left: calc(50% - 285px);
-    position: absolute !important;
-    top: 0;
-    left: 0;
-  }*/
-
 /* Menu */
 .kg-cardmenu-card-hover:hover svg [data-selector=bg] {
     fill: #fff;

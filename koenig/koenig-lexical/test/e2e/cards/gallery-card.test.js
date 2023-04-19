@@ -1,7 +1,6 @@
 import path from 'path';
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {assertHTML, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
 
 describe('Gallery card', async () => {
     let app;
