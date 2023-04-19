@@ -39,5 +39,7 @@ module.exports = {
     portal_plans: 'portal_plans',
     portal_name: 'portal_name',
     portal_button: 'portal_button',
-    comments_enabled: 'comments_enabled'
+    comments_enabled: 'comments_enabled',
+    announcement: 'announcement_content',
+    announcement_background: 'announcement_background'
 };
