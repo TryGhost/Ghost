@@ -1,7 +1,7 @@
 function setupGhostApi({apiUrl, apiKey}) {
-    function contentEndpointFor({resource, params = ''}) {
+    function contentEndpointFor({resource, keys, params = ''}) {
         if (apiUrl && apiKey) {
-            return `${apiUrl.replace(/\/$/, '')}/${resource}/?key=${apiKey}&limit=all${params}`;
+            return `${apiUrl.replace(/\/$/, '')}/${resource}/?key=${apiKey}&keys=${keys.join(',')}${params}`;
         }
         return '';
     }
@@ -19,7 +19,10 @@ function setupGhostApi({apiUrl, apiKey}) {
 
     api.site = {
         settings() {
-            const url = contentEndpointFor({resource: 'settings'});
+            const url = contentEndpointFor({
+                resource: 'settings',
+                keys: ['announcement', 'announcement_background']
+            });
             return makeRequest({
                 url,
                 method: 'GET',
