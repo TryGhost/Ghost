@@ -30,11 +30,11 @@ function FileUploading({progress}) {
     );
 }
 
-function ImagePicker({onFileChange, 
-    backgroundImageSrc, 
-    handleClearBackgroundImage, 
-    fileInputRef, 
-    backgroundImagePreview, 
+function ImagePicker({onFileChange,
+    backgroundImageSrc,
+    handleClearBackgroundImage,
+    fileInputRef,
+    backgroundImagePreview,
     openFilePicker,
     isUploading,
     progress}) {
@@ -60,7 +60,7 @@ function ImagePicker({onFileChange,
                         <div className="relative">
                             <div className="flex w-full items-center justify-center">
                                 {
-                                    backgroundImageSrc ? 
+                                    backgroundImageSrc ?
                                         <>
                                             <div className="group relative mb-4 w-full rounded">
                                                 <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100">
@@ -73,7 +73,7 @@ function ImagePicker({onFileChange,
                                                 <img alt='backgroundHeaderImage' src={backgroundImageSrc} />
                                             </div>
                                         </>
-                                        :                                          
+                                        :
                                         <button className="group flex h-[120px] w-full cursor-pointer flex-col items-center justify-center rounded-sm border border-dashed border-grey-300 bg-grey-50 dark:border-grey-800 dark:bg-grey-900" type="button" onClick={openFilePicker}>
                                             <FileUploadIcon className="h-5 w-5 fill-grey-700 stroke-[3px] transition-all ease-linear group-hover:scale-105" />
                                             <span className="px-1 text-[1.35rem] font-medium text-grey-700">Click to upload background image</span>
@@ -89,16 +89,16 @@ function ImagePicker({onFileChange,
     );
 }
 
-export function HeaderCard({isEditing, 
-    size, 
+export function HeaderCard({isEditing,
+    size,
     backgroundColor,
     headingPlaceholder,
-    subHeadingPlaceholder, 
-    button, 
-    buttonText, 
-    buttonPlaceholder, 
-    buttonUrl, 
-    nodeKey, 
+    subHeadingPlaceholder,
+    button,
+    buttonText,
+    buttonPlaceholder,
+    buttonUrl,
+    nodeKey,
     handleColorSelector,
     handleSizeSelector,
     handleButtonText,
@@ -162,7 +162,7 @@ export function HeaderCard({isEditing,
 
     return (
         <>
-            <div className={`not-kg-prose flex flex-col items-center justify-center text-center font-sans ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[backgroundColor]} `} 
+            <div className={`not-kg-prose flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[backgroundColor]} `}
                 style={backgroundImageSrc && backgroundImageStyle === 'bg-image' ? {
                     backgroundImage: `url(${backgroundImageSrc})`,
                     backgroundSize: 'cover',
@@ -171,27 +171,27 @@ export function HeaderCard({isEditing,
                 } : null}>
                 <KoenigHeaderEditor
                     autoFocus={focusOn === 'header'}
-                    className={`relative z-50 w-full whitespace-normal text-left ${(header) ? 'bg-red' : 'bg-blue'} pl-[calc(50%_-_285px)] font-extrabold leading-tight tracking-tight ${(size === 'small') ? 'kg-header-card-heading-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                    className={`relative z-50 w-full whitespace-normal text-center font-extrabold leading-tight tracking-tight ${(size === 'small') ? 'kg-header-card-heading-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
                     handleEditorFocus={handleEditorFocus}
                     isSubheader={false}
                     nodeKey={nodeKey}
                     placeholderText={headingPlaceholder}
-                    placeholderTextClassName={`whitespace-normal tracking-tight absolute top-0 left-0 z-1 pointer-events-none cursor-text font-extrabold leading-tight ${(size === 'small') ? 'text-6xl kg-header-card-heading-small' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                    placeholderTextClassName={`whitespace-normal tracking-tight absolute text-center w-full top-0 left-0 z-1 pointer-events-none cursor-text font-extrabold leading-tight ${(size === 'small') ? 'text-6xl kg-header-card-heading-small' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
                     textEditor={headerTextEditor}
                     textEditorInitialState={headerTextEditorInitialState}
                 />
                 <KoenigHeaderEditor
                     autoFocus={focusOn === 'subheader'}
-                    className={`relative w-full whitespace-normal ${(subHeader) ? 'bg-red' : 'bg-blue'} text-left font-medium leading-tight ${(size === 'small') ? 'kg-header-card-subheading-small mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-[2.7rem]' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                    className={`relative w-full whitespace-normal text-center font-medium leading-tight ${(size === 'small') ? 'kg-header-card-subheading-small mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-[2.7rem]' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
                     handleEditorFocus={handleEditorFocus}
                     isSubheader={true}
                     nodeKey={nodeKey}
                     placeholderText={subHeadingPlaceholder}
-                    placeholderTextClassName={`w-full whitespace-medium leading-tight absolute top-0 left-0 z-1 pointer-events-none cursor-text font-normal kg-header-card-subheading-small`}
+                    placeholderTextClassName={`w-full whitespace-medium text-center leading-tight absolute top-0 left-0 z-1 pointer-events-none cursor-text font-normal kg-header-card-subheading-small`}
                     textEditor={subHeaderTextEditor}
                     textEditorInitialState={subHeaderTextEditorInitialState}
                 />
-                { (button) && 
+                { (button) &&
                 <div className={`${(size === 'S') ? 'mt-6' : (size === 'M') ? 'mt-8' : 'mt-10'}`}>
                     {((button && (backgroundColor === 'light')) && <Button placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
                 </div>
@@ -245,7 +245,7 @@ export function HeaderCard({isEditing,
                             />
                         </>
                     )}
-                </SettingsPanel>    
+                </SettingsPanel>
             )}
         </>
     );

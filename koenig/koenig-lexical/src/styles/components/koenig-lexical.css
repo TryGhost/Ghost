@@ -99,7 +99,7 @@ em-emoji-picker {
   }
 
   /* Header card */
-  .kg-header-card-heading-small p, .kg-header-card-subheading-small p {
+  /*.kg-header-card-heading-small p, .kg-header-card-subheading-small p {
     padding-left: calc(50% - 285px);
   }
 
@@ -108,7 +108,7 @@ em-emoji-picker {
     position: absolute !important;
     top: 0;
     left: 0;
-  }
+  }*/
 
 /* Menu */
 .kg-cardmenu-card-hover:hover svg [data-selector=bg] {
