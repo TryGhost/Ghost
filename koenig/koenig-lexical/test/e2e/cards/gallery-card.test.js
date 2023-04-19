@@ -271,6 +271,22 @@ describe('Gallery card', async () => {
         await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(3);
     });
 
-    it.todo('limits uploads to 9 images');
-    it.todo('limits drops to 9 images');
+    it('limits uploads to 9 images', async function () {
+        const filePaths = Array.from(Array(10).keys()).map(n => path.relative(process.cwd(), __dirname + `/../fixtures/large-image-${n}.png`));
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'gallery'});
+        await page.click('[name="placeholder-button"]');
+
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles(filePaths);
+
+        await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(9);
+        await expect(page.getByTestId('gallery-error')).toContainText('9 images');
+
+        await page.getByTestId('clear-gallery-error').click();
+
+        await expect(page.getByTestId('gallery-error')).not.toBeVisible();
+    });
 });

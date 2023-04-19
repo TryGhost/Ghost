@@ -179,7 +179,7 @@ export function GalleryCard({
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60" data-testid="gallery-error">
                         <span className="center sans-serif f7 block bg-red px-2 font-bold text-white">
                             {errorMessage}.
-                            <button className="ml-2 cursor-pointer underline" type="button" onClick={clearErrorMessage}>
+                            <button className="ml-2 cursor-pointer underline" data-testid="clear-gallery-error" type="button" onClick={clearErrorMessage}>
                                 Dismiss
                             </button>
                         </span>
