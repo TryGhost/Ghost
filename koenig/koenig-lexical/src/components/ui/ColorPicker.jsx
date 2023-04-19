@@ -16,12 +16,12 @@ export function ColorPicker({buttons = [], selectedName, onClick}) {
                             onClick={onClick}
                         />
                         :
-                        <li key='background-image' className={`flex h-[3rem] w-[3rem] cursor-pointer items-center justify-center rounded-full border-2 ${selectedName === name ? 'border-green' : 'border-transparent'}`} type="button" onClick={() => onClick(name)}>
+                        <li key='background-image' className={`flex h-[3rem] w-[3rem] cursor-pointer items-center justify-center rounded-full border-2 ${selectedName === name ? 'border-green' : 'border-transparent'}`} data-testid="background-image-color-button" type="button" onClick={() => onClick(name)}>
                             <span className="border-1 flex h-6 w-6 items-center justify-center rounded-full border border-black/5">
                                 <PlusIcon className="h-3 w-3 stroke-grey-700 stroke-2 dark:stroke-grey-500 dark:group-hover:stroke-grey-100" />
                             </span>
                         </li>
-                        
+
                 ))}
             </ul>
         </div>
