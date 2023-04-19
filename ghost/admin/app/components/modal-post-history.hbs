@@ -54,7 +54,7 @@
                     <li class="nav-list-item {{if revision.selected "selected" ""}}">
                         <button type="button" {{action "handleClick" index}}>
                             <div class="flex items-center">
-                                <span class="gh-post-history-version">{{capitalize-first-letter (moment-from-now revision.createdAt)}}</span>
+                                <span class="gh-post-history-version">{{gh-format-post-time revision.createdAt format="D MMM YYYY, HH:mm"}}{{this.timezone}}</span>
                                 {{#if revision.latest}}
                                     <span class="gh-post-history-version-current">Latest</span>
                                 {{/if}}
