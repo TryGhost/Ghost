@@ -48,7 +48,7 @@ function emailTemplate(node, document) {
                 ${caption ? `<figcaption>${caption}</figcaption>` : ''}
             </figure>
         <!--[endif]-->
-        <!--[if vml]-->
+        <!--[if vml]>
             <table class="kg-card kg-bookmark-card--outlook" style="margin: 0; padding: 0; width: 100%; border: 1px solid #e5eff5; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; border-collapse: collapse; border-spacing: 0;" width="100%">
                 <tr>
                     <td width="100%" style="padding: 20px;">
@@ -96,7 +96,7 @@ function emailTemplate(node, document) {
                 </tr>
             </table>
             <div class="kg-bookmark-spacer--outlook" style="height: 1.5em;">&nbsp;</div>
-        <!--[endif]-->`;
+        <![endif]-->`;
 
     div.innerHTML = html;
     return div;

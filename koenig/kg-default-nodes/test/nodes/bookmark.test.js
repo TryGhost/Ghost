@@ -161,7 +161,7 @@ describe('BookmarkNode', function () {
             
             element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
             element.innerHTML.should.containEql('<figure class="kg-card kg-bookmark-card');
-            element.innerHTML.should.containEql('<!--[if vml]-->');
+            element.innerHTML.should.containEql('<!--[if vml]>');
             element.innerHTML.should.containEql('<table class="kg-card kg-bookmark-card--outlook"');
         }));
 
