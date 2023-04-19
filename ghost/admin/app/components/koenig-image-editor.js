@@ -7,14 +7,56 @@ import {tracked} from '@glimmer/tracking';
 export default class KoenigImageEditor extends Component {
     @service ajax;
     @service feature;
-    @tracked scriptLoaded = !!window.pintura;
+    @service ghostPaths;
+    @tracked scriptLoaded = false;
+    @tracked cssLoaded = false;
 
     @inject config;
 
-    constructor() {
-        super(...arguments);
-        if (this.config.pintura?.js && !window.pintura) {
-            const url = new URL(this.config.pintura.js);
+    get isEditorEnabled() {
+        return this.scriptLoaded && this.cssLoaded;
+    }
+
+    getImageEditorJSUrl() {
+        if (!this.config.pintura?.js) {
+            return null;
+        }
+        let importUrl = this.config.pintura.js;
+
+        // load the script from admin root if relative
+        if (importUrl.startsWith('/')) {
+            importUrl = window.location.origin + this.ghostPaths.adminRoot.replace(/\/$/, '') + importUrl;
+        }
+        return importUrl;
+    }
+
+    getImageEditorCSSUrl() {
+        if (!this.config.pintura?.css) {
+            return null;
+        }
+        let cssImportUrl = this.config.pintura.css;
+
+        // load the css from admin root if relative
+        if (cssImportUrl.startsWith('/')) {
+            cssImportUrl = window.location.origin + this.ghostPaths.adminRoot.replace(/\/$/, '') + cssImportUrl;
+        }
+        return cssImportUrl;
+    }
+
+    loadImageEditorJavascript() {
+        const jsUrl = this.getImageEditorJSUrl();
+
+        if (!jsUrl) {
+            return;
+        }
+
+        if (window.pintura) {
+            this.scriptLoaded = true;
+            return;
+        }
+
+        try {
+            const url = new URL(jsUrl);
 
             let importScriptPromise;
 
@@ -29,24 +71,43 @@ export default class KoenigImageEditor extends Component {
             }).catch(() => {
                 // log script loading failure
             });
+        } catch (e) {
+            // Log script loading error
+        }
+    }
+
+    loadImageEditorCSS() {
+        let cssUrl = this.getImageEditorCSSUrl();
+        if (!cssUrl) {
+            return;
         }
 
-        if (this.config.pintura?.css) {
+        try {
             // Check if the CSS file is already present in the document's head
-            let cssLink = document.querySelector(`link[href="${this.config.pintura.css}"]`);
+            let cssLink = document.querySelector(`link[href="${cssUrl}"]`);
             if (cssLink) {
                 this.cssLoaded = true;
             } else {
                 let link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
-                link.href = this.config.pintura.css;
+                link.href = cssUrl;
                 link.onload = () => {
                     this.cssLoaded = true;
                 };
                 document.head.appendChild(link);
             }
+        } catch (e) {
+            // Log css loading error
         }
+    }
+
+    constructor() {
+        super(...arguments);
+
+        // Load the image editor script and css if not already loaded
+        this.loadImageEditorJavascript();
+        this.loadImageEditorCSS();
     }
 
     @action
