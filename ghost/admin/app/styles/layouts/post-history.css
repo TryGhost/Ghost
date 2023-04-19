@@ -15,17 +15,15 @@
     background: var(--whitegrey-l2);
 }
 
-.nav-list-item .gh-post-history-version {
-    margin-bottom: 2px;
-}
-
 .nav-list-item .gh-post-history-version-meta {
+    margin-top: 4px;
     color: var(--midgrey);
+    font-size: 1.35rem;
     font-weight: 400;
 }
 
 .nav-list-item .gh-post-history-version-current {
-    margin-left: 1rem;
+    margin-left: .8rem;
     padding: 0 4px;
     background: var(--lightgrey-l2);
     color: var(--darkgrey);
