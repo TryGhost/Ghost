@@ -1,3 +1,66 @@
 .gh-announcement-bar {
-    background: red;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    font-size: 1.5rem;
+}
+
+.gh-announcement-bar a {
+    color: inherit !important;
+}
+
+.gh-announcement-bar.light {
+    background-color: #fff;
+    color: #15171a;
+    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.1);
+}
+
+.gh-announcement-bar.accent {
+    background-color: var(--ghost-accent-color);
+    color: #fff;
+}
+
+.gh-announcement-bar.dark {
+    background-color: #15171a;
+    color: #fff;
+}
+
+.gh-announcement-bar a {
+    color: #fff;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.gh-announcement-bar.light a {
+    color: var(--ghost-accent-color) !important;
+}
+
+.gh-announcement-bar button {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -16px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+}
+
+.gh-announcement-bar.light button {
+    color: #888;
+}
+
+.gh-announcement-bar svg {
+    width: 16px;
+    height: 16px;
 }
