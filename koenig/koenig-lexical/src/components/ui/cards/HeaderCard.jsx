@@ -93,13 +93,13 @@ function ImagePicker({onFileChange,
 export function HeaderCard({isEditing,
     size,
     backgroundColor,
-    headingPlaceholder,
-    subHeadingPlaceholder,
+    headerPlaceholder,
+    subheaderPlaceholder,
+    subheader,
     button,
     buttonText,
     buttonPlaceholder,
     buttonUrl,
-    nodeKey,
     handleColorSelector,
     handleSizeSelector,
     handleButtonText,
@@ -111,13 +111,12 @@ export function HeaderCard({isEditing,
     fileInputRef,
     openFilePicker,
     backgroundImageStyle,
+    header,
     headerTextEditor,
-    subHeaderTextEditor,
+    subheaderTextEditor,
     fileUploader,
-    focusOn = 'header',
     headerTextEditorInitialState,
-    subHeaderTextEditorInitialState,
-    handleEditorFocus,
+    subheaderTextEditorInitialState,
     handleButtonToggle}) {
     const buttonGroupChildren = [
         {
@@ -169,44 +168,49 @@ export function HeaderCard({isEditing,
                     backgroundColor: 'bg-grey-950'
                 } : null}>
 
+                {/* Header */}
                 {
-                    (isEditing || !isEditorEmpty(headerTextEditor)) && (
+                    (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
                         <KoenigProductEditor
                             autoFocus={true}
                             disableKoenigStyles={true}
-                            focusNext={subHeaderTextEditor}
+                            focusNext={subheaderTextEditor}
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
-                            nodeKey={nodeKey}
                             nodes="minimal"
                             placeholderClassName={`kg-header-header-placeholder ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
-                            placeholderText={headingPlaceholder}
+                            placeholderText={headerPlaceholder}
                             singleParagraph={true}
                             textClassName={`kg-header-header-text ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
                         />
                     )
                 }
+
+                {/* Subheader */}
                 {
-                    (isEditing || !isEditorEmpty(subHeaderTextEditor)) && (
+                    (isEditing || !!subheader || !isEditorEmpty(subheaderTextEditor)) && (
                         <KoenigProductEditor
                             disableKoenigStyles={true}
-                            initialEditor={subHeaderTextEditor}
-                            initialEditorState={subHeaderTextEditorInitialState}
-                            nodeKey={nodeKey}
+                            initialEditor={subheaderTextEditor}
+                            initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
                             placeholderClassName={`kg-header-subheader-placeholder ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
-                            placeholderText={subHeadingPlaceholder}
+                            placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
                             textClassName={`kg-header-subheader-text ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
                         />
                     )
                 }
 
+                {/* Button */}
                 { (button) &&
-                <div className={`${(size === 'S') ? 'mt-6' : (size === 'M') ? 'mt-8' : 'mt-10'}`}>
-                    {((button && (backgroundColor === 'light')) && <Button placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
-                </div>
+                    <div className={`${(size === 'S') ? 'mt-6' : (size === 'M') ? 'mt-8' : 'mt-10'}`}>
+                        {((button && (backgroundColor === 'light')) && <Button placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
+                    </div>
                 }
+
+                {/* Read-only overlay */}
+                {!isEditing && <div className="absolute top-0 z-10 m-0 h-full w-full cursor-default p-0"></div>}
             </div>
 
             {isEditing && (
@@ -265,9 +269,9 @@ HeaderCard.propTypes = {
     size: PropTypes.oneOf(['small', 'medium', 'large']),
     backgroundColor: PropTypes.oneOf(['dark', 'light', 'accent', 'bg-image']),
     heading: PropTypes.string,
-    headingPlaceholder: PropTypes.string,
-    subHeading: PropTypes.string,
-    subHeadingPlaceholder: PropTypes.string,
+    headerPlaceholder: PropTypes.string,
+    subheader: PropTypes.string,
+    subheaderPlaceholder: PropTypes.string,
     button: PropTypes.bool,
     buttonText: PropTypes.string,
     buttonPlaceholder: PropTypes.string

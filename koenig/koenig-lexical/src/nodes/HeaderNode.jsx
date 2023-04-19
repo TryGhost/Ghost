@@ -14,9 +14,9 @@ export {INSERT_HEADER_COMMAND} from '@tryghost/kg-default-nodes';
 
 export class HeaderNode extends BaseHeaderNode {
     __headerTextEditor;
-    __subHeaderTextEditor;
+    __subheaderTextEditor;
     __headerTextEditorInitialState;
-    __subHeaderTextEditorInitialState;
+    __subheaderTextEditorInitialState;
 
     static kgMenu = {
         label: 'Header',
@@ -36,18 +36,24 @@ export class HeaderNode extends BaseHeaderNode {
         this.__headerTextEditor = dataset.headerTextEditor || createEditor({nodes: MINIMAL_NODES});
         this.__headerTextEditorInitialState = dataset.headerTextEditorInitialState;
         if (!this.__headerTextEditorInitialState) {
+            // wrap the header in a paragraph so it gets parsed correctly
+            // - we serialize with no wrapper so the renderer can decide how to wrap it
+            const initialHtml = dataset.header ? `<p>${dataset.header}</p>` : null;
             this.__headerTextEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml: dataset.header
+                initialHtml
             });
         }
 
-        this.__subHeaderTextEditor = dataset.subHeaderTextEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__subHeaderTextEditorInitialState = dataset.subHeaderTextEditorInitialState;
-        if (!this.__subHeaderTextEditorInitialState) {
-            this.__subHeaderTextEditorInitialState = generateEditorState({
+        this.__subheaderTextEditor = dataset.subheaderTextEditor || createEditor({nodes: MINIMAL_NODES});
+        this.__subheaderTextEditorInitialState = dataset.subheaderTextEditorInitialState;
+        if (!this.__subheaderTextEditorInitialState) {
+            // wrap the header in a paragraph so it gets parsed correctly
+            // - we serialize with no wrapper so the renderer can decide how to wrap it
+            const initialHtml = dataset.subheader ? `<p>${dataset.subheader}</p>` : null;
+            this.__subheaderTextEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml: dataset.subheader
+                initialHtml
             });
         }
     }
@@ -63,9 +69,9 @@ export class HeaderNode extends BaseHeaderNode {
             });
         }
 
-        if (this.__subHeaderTextEditor) {
-            this.__subHeaderTextEditor.getEditorState().read(() => {
-                const html = $generateHtmlFromNodes(this.__subHeaderTextEditor, null);
+        if (this.__subheaderTextEditor) {
+            this.__subheaderTextEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__subheaderTextEditor, null);
                 const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
                 json.subheader = cleanedHtml;
             });
@@ -84,7 +90,7 @@ export class HeaderNode extends BaseHeaderNode {
         // client-side only data properties such as nested editors
         const self = this.getLatest();
         dataset.headerTextEditor = self.__headerTextEditor;
-        dataset.subHeaderTextEditor = self.__subHeaderTextEditor;
+        dataset.subheaderTextEditor = self.__subheaderTextEditor;
         return dataset;
     }
 
@@ -100,15 +106,15 @@ export class HeaderNode extends BaseHeaderNode {
                     buttonText={this.getButtonText()}
                     buttonUrl={this.getButtonUrl()}
                     header={this.getHeader()}
+                    headerPlaceholder={'Enter heading text'}
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
-                    headingPlaceholder={'Enter heading text'}
                     nodeKey={this.getKey()}
                     size={this.getSize()}
-                    subHeader={this.getSubheader()}
-                    subHeaderTextEditor={this.__subHeaderTextEditor}
-                    subHeaderTextEditorInitialState={this.__subHeaderTextEditorInitialState}
-                    subHeadingPlaceholder={'Enter subheading text'}
+                    subheader={this.getSubheader()}
+                    subheaderPlaceholder={'Enter subheading text'}
+                    subheaderTextEditor={this.__subheaderTextEditor}
+                    subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
                 />
             </KoenigCardWrapper>
         );
@@ -118,7 +124,7 @@ export class HeaderNode extends BaseHeaderNode {
     // rather than the data properties themselves
     isEmpty() {
         const isHtmlEmpty = this.__headerTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
-        const isSubHtmlEmpty = this.__subHeaderTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
+        const isSubHtmlEmpty = this.__subheaderTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
         return isHtmlEmpty && isSubHtmlEmpty && (!this.__buttonEnabled || (!this.__buttonText && !this.__buttonUrl)) && !this.__backgroundImageSrc;
     }
 }

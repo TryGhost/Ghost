@@ -38,15 +38,15 @@ export default story;
 
 const Template = ({display, ...args}) => {
     const headerTextEditor = createEditor();
-    const subHeaderTextEditor = createEditor();
+    const subheaderTextEditor = createEditor();
     return (<div className="kg-prose">
         <div className="mx-auto my-8 w-full min-w-[initial]">
             <CardWrapper {...display} {...args}>
                 <HeaderCard
-                    {...display} 
-                    {...args} 
+                    {...display}
+                    {...args}
                     headerTextEditor={headerTextEditor}
-                    subHeaderTextEditor={subHeaderTextEditor}
+                    subheaderTextEditor={subheaderTextEditor}
                 />
             </CardWrapper>
         </div>
@@ -59,9 +59,9 @@ Empty.args = {
     size: 'S',
     backgroundColor: 'dark',
     heading: '',
-    headingPlaceholder: 'Enter heading text',
-    subHeading: '',
-    subHeadingPlaceholder: 'Enter subheading text',
+    headerPlaceholder: 'Enter heading text',
+    subheader: '',
+    subheaderPlaceholder: 'Enter subheading text',
     button: false,
     buttonText: '',
     buttonPlaceholder: 'Add button text',
@@ -74,9 +74,9 @@ Populated.args = {
     size: 'S',
     backgroundColor: 'dark',
     heading: 'This is a heading',
-    headingPlaceholder: 'Enter heading text',
-    subHeading: 'And here is some subheading text.',
-    subHeadingPlaceholder: 'Enter subheading text',
+    headerPlaceholder: 'Enter heading text',
+    subheader: 'And here is some subheading text.',
+    subheaderPlaceholder: 'Enter subheading text',
     button: false,
     buttonText: 'Subscribe',
     buttonPlaceholder: 'Add button text',

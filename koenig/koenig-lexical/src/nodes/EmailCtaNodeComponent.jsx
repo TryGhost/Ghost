@@ -25,21 +25,6 @@ export function EmailCtaNodeComponent({
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {isEditing, isSelected} = cardContext;
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-    const [listOptions, setListOptions] = React.useState([]);
-
-    React.useEffect(() => {
-        if (cardConfig.fetchAutocompleteLinks) {
-            cardConfig.fetchAutocompleteLinks().then((links) => {
-                setListOptions(links.map((link) => {
-                    return {value: link.value, label: link.label};
-                }));
-            });
-        }
-    }, [cardConfig]);
-
-    const suggestedUrls = listOptions.filter((u) => {
-        return u.label.toLocaleLowerCase().includes(buttonUrl.toLocaleLowerCase());
-    });
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -106,7 +91,6 @@ export function EmailCtaNodeComponent({
                 segment={segment}
                 showButton={showButton}
                 showDividers={showDividers}
-                suggestedUrls={suggestedUrls}
                 toggleDividers={toggleDividers}
                 updateAlignment={updateAlignment}
                 updateButtonText={updateButtonText}

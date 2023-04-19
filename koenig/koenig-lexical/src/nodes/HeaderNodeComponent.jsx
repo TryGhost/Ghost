@@ -2,16 +2,26 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {HeaderCard} from '../components/ui/cards/HeaderCard';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {backgroundImageUploadHandler} from '../utils/imageUploadHandler';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-function HeaderNodeComponent(props) {
-    const {nodeKey} = props;
+function HeaderNodeComponent({nodeKey, header, subheader, headerTextEditor, subheaderTextEditor, ...props}) {
     const [editor] = useLexicalComposerContext();
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const {fileUploader} = React.useContext(KoenigComposerContext);
-
     const {isEditing, setEditing, isSelected} = React.useContext(CardContext);
+    const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
+    };
 
     const imageUploader = fileUploader.useFileUpload('image');
 
@@ -99,59 +109,68 @@ function HeaderNodeComponent(props) {
         });
     };
 
-    const [focusOn, setFocusOn] = React.useState('header');
-
-    const handleEditorFocus = () => {
-        if (focusOn === 'header') {
-            setFocusOn('subheader');
-        }
-
-        if (focusOn === 'subheader') {
-            setFocusOn('header');
-        }
-    };
-
     React.useEffect(() => {
-        // on initial render make sure editing is true
-        if (isSelected && !isEditing) {
-            setEditing(true);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSelected]);
-
+        headerTextEditor.setEditable(isEditing);
+        subheaderTextEditor.setEditable(isEditing);
+    }, [isEditing, headerTextEditor, subheaderTextEditor]);
     return (
-        <HeaderCard
-            backgroundColor={props.backgroundColor}
-            backgroundImagePreview={backgroundImagePreview}
-            backgroundImageSrc={props.backgroundImageSrc}
-            backgroundImageStyle={props.backgroundImageStyle}
-            button={props.button}
-            buttonPlaceholder={props.buttonPlaceholder}
-            buttonText={props.buttonText}
-            buttonUrl={props.buttonUrl}
-            fileInputRef={fileInputRef}
-            fileUploader={imageUploader}
-            focusOn={focusOn}
-            handleButtonText={handleButtonText}
-            handleButtonToggle={handleButtonToggle}
-            handleButtonUrl={handleButtonUrl}
-            handleClearBackgroundImage={handleClearBackgroundImage}
-            handleColorSelector={handleColorSelector}
-            handleEditorFocus={handleEditorFocus}
-            handleSizeSelector={handleSizeSelector}
-            headerTextEditor={props.headerTextEditor}
-            headerTextEditorInitialState={props.headerTextEditorInitialState}
-            headingPlaceholder={props.headingPlaceholder}
-            isEditing={isEditing}
-            nodeKey={nodeKey}
-            openFilePicker={openFilePicker}
-            size={props.size}
-            subHeaderTextEditor={props.subHeaderTextEditor}
-            subHeaderTextEditorInitialState={props.subHeaderTextEditorInitialState}
-            subHeadingPlaceholder={props.subHeadingPlaceholder}
-            toggleBackgroundImagePreview={toggleBackgroundImagePreview}
-            onFileChange={onFileChange}
-        />
+        <>
+            <HeaderCard
+                backgroundColor={props.backgroundColor}
+                backgroundImagePreview={backgroundImagePreview}
+                backgroundImageSrc={props.backgroundImageSrc}
+                backgroundImageStyle={props.backgroundImageStyle}
+                button={props.button}
+                buttonPlaceholder={props.buttonPlaceholder}
+                buttonText={props.buttonText}
+                buttonUrl={props.buttonUrl}
+                fileInputRef={fileInputRef}
+                fileUploader={imageUploader}
+                handleButtonText={handleButtonText}
+                handleButtonToggle={handleButtonToggle}
+                handleButtonUrl={handleButtonUrl}
+                handleClearBackgroundImage={handleClearBackgroundImage}
+                handleColorSelector={handleColorSelector}
+                handleSizeSelector={handleSizeSelector}
+                header={header}
+                headerPlaceholder={props.headerPlaceholder}
+                headerTextEditor={headerTextEditor}
+                headerTextEditorInitialState={props.headerTextEditorInitialState}
+                isEditing={isEditing}
+                openFilePicker={openFilePicker}
+                size={props.size}
+                subheader={subheader}
+                subheaderPlaceholder={props.subheaderPlaceholder}
+                subheaderTextEditor={subheaderTextEditor}
+                subheaderTextEditorInitialState={props.subheaderTextEditorInitialState}
+                toggleBackgroundImagePreview={toggleBackgroundImagePreview}
+                onFileChange={onFileChange}
+            />
+            <ActionToolbar
+                data-kg-card-toolbar="header"
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="header"
+                isVisible={isSelected && !isEditing && !showSnippetToolbar}
+            >
+                <ToolbarMenu>
+                    <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
+                    <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
+                </ToolbarMenu>
+            </ActionToolbar>
+        </>
     );
 }
 

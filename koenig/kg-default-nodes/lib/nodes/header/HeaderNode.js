@@ -4,6 +4,7 @@ import {HeaderParser} from './HeaderParser';
 import {createCommand} from 'lexical';
 
 export const INSERT_HEADER_COMMAND = createCommand();
+const NODE_TYPE = 'header';
 
 export class HeaderNode extends KoenigDecoratorNode {
     // header payload properties
@@ -19,7 +20,7 @@ export class HeaderNode extends KoenigDecoratorNode {
     __backgroundImageSrc;
 
     static getType() {
-        return 'header';
+        return NODE_TYPE;
     }
 
     static clone(node) {
@@ -92,16 +93,17 @@ export class HeaderNode extends KoenigDecoratorNode {
 
     exportJSON() {
         const dataset = {
-            type: 'header',
-            size: this.__size,
-            style: this.__style,
-            buttonEnabled: this.__buttonEnabled,
-            buttonUrl: this.__buttonUrl,
-            buttonText: this.__buttonText,
-            header: this.__header,
-            subheader: this.__subheader,
-            backgroundImageStyle: this.__backgroundImageStyle,
-            backgroundImageSrc: this.__backgroundImageSrc
+            type: NODE_TYPE,
+            version: 1,
+            size: this.getSize(),
+            style: this.getStyle(),
+            buttonEnabled: this.getButtonEnabled(),
+            buttonUrl: this.getButtonUrl(),
+            buttonText: this.getButtonText(),
+            header: this.getHeader(),
+            subheader: this.getSubheader(),
+            backgroundImageStyle: this.getBackgroundImageStyle(),
+            backgroundImageSrc: this.getBackgroundImageSrc()
         };
         return dataset;
     }
@@ -116,10 +118,9 @@ export class HeaderNode extends KoenigDecoratorNode {
         return {element};
     }
 
-    // c8 ignore start
+    /* c8 ignore start */
     createDOM() {
-        const element = document.createElement('div');
-        return element;
+        return document.createElement('div');
     }
 
     updateDOM() {
@@ -224,20 +225,21 @@ export class HeaderNode extends KoenigDecoratorNode {
         return true;
     }
 
-    // c8 ignore stop
-    decorate(){
-        return '';
-    }
-
     isEmpty() {
         return !this.header && !this.subheader && (!this.__buttonEnabled || (!this.__buttonText && !this.__buttonUrl)) && !this.__backgroundImageSrc;
     }
-}
 
-export function $isHeaderNode(node) {
-    return node instanceof HeaderNode;
+    // should be overridden
+    /* c8 ignore next 3 */
+    decorate() {
+        return '';
+    }
 }
 
 export const $createHeaderNode = (dataset) => {
     return new HeaderNode(dataset);
 };
+
+export function $isHeaderNode(node) {
+    return node instanceof HeaderNode;
+}
