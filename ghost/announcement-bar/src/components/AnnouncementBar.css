@@ -1,7 +1,5 @@
 .gh-announcement-bar {
-    top: 0;
-    right: 0;
-    left: 0;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,6 +59,6 @@
 }
 
 .gh-announcement-bar svg {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
 }
