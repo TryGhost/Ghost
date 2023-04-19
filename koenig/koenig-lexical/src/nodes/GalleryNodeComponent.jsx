@@ -1,5 +1,6 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import useDragAndDrop from '../hooks/useDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {GalleryCard} from '../components/ui/cards/GalleryCard';
@@ -38,6 +39,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
     });
 
     const imageUploader = fileUploader.useFileUpload('image');
+    const imageFilesDropper = useDragAndDrop({handleDrop: handleImageFilesDrop});
 
     const isSelected = selectedCardKey === nodeKey;
 
@@ -122,6 +124,10 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         return await handleImageUploads(files);
     };
 
+    async function handleImageFilesDrop(files) {
+        await handleImageUploads(files);
+    }
+
     const clearErrorMessage = () => {
         setErrorMessage(null);
     };
@@ -135,6 +141,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
                 deleteImage={deleteImage}
                 errorMessage={errorMessage}
                 fileInputRef={fileInputRef}
+                filesDropper={imageFilesDropper}
                 imageMimeTypes={fileUploader.fileTypes.image.mimeTypes}
                 images={images}
                 isSelected={isSelected}

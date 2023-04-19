@@ -1,5 +1,6 @@
+import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {afterAll, beforeAll, beforeEach, describe, it} from 'vitest';
 import {assertHTML, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
 
 describe('Gallery card', async () => {
@@ -18,7 +19,7 @@ describe('Gallery card', async () => {
         await initialize({page});
     });
 
-    test('can import serialized gallery card nodes', async function () {
+    it('can import serialized gallery card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -61,49 +62,51 @@ describe('Gallery card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="gallery">
                     <figure>
-                        <div data-gallery="true">
-                            <div data-row="0">
-                                <div data-image="true">
-                                    <img
-                                        alt="Alt 1"
-                                        height="2160"
-                                        src="/content/images/2023/04/retreat-1.jpg"
-                                        width="3840" />
+                        <div>
+                            <div data-gallery="true">
+                                <div data-row="0">
                                     <div>
+                                        <img
+                                            alt="Alt 1"
+                                            height="2160"
+                                            src="/content/images/2023/04/retreat-1.jpg"
+                                            width="3840" />
                                         <div>
-                                            <button type="button"><svg></svg></button>
+                                            <div>
+                                                <button type="button"><svg></svg></button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div data-image="true">
-                                    <img
-                                        alt="Alt 2"
-                                        height="2160"
-                                        src="/content/images/2023/04/retreat-2.jpg"
-                                        width="3840" />
                                     <div>
+                                        <img
+                                            alt="Alt 2"
+                                            height="2160"
+                                            src="/content/images/2023/04/retreat-2.jpg"
+                                            width="3840" />
                                         <div>
-                                            <button type="button"><svg></svg></button>
+                                            <div>
+                                                <button type="button"><svg></svg></button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            <form>
+                                <input
+                                    accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
+                                    hidden=""
+                                    multiple=""
+                                    name="image-input"
+                                    type="file" />
+                            </form>
                         </div>
-                        <form>
-                            <input
-                                accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
-                                hidden=""
-                                multiple=""
-                                name="image-input"
-                                type="file" />
-                        </form>
                     </figure>
                 </div>
             </div>
         `);
     });
 
-    test('can insert gallery card', async function () {
+    it('can insert gallery card', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'gallery'});
 
@@ -113,20 +116,22 @@ describe('Gallery card', async () => {
                     <figure>
                         <div>
                             <div>
-                                <button name="placeholder-button" type="button">
-                                    <svg></svg>
-                                    <p>Click to select up to 9 images</p>
-                                </button>
+                                <div>
+                                    <button name="placeholder-button" type="button">
+                                        <svg></svg>
+                                        <p>Click to select up to 9 images</p>
+                                    </button>
+                                </div>
                             </div>
+                            <form>
+                                <input
+                                    accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
+                                    hidden=""
+                                    multiple=""
+                                    name="image-input"
+                                    type="file" />
+                            </form>
                         </div>
-                        <form>
-                            <input
-                                accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
-                                hidden=""
-                                multiple=""
-                                name="image-input"
-                                type="file" />
-                        </form>
                         <figcaption>
                             <div>
                                 <div>
@@ -163,29 +168,31 @@ describe('Gallery card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="gallery">
                     <figure>
-                        <div data-gallery="true">
-                            <div data-row="0">
-                                <div data-image="true">
-                                    <img
-                                        height="248"
-                                        src="blob:..."
-                                        width="248" />
+                        <div>
+                            <div data-gallery="true">
+                                <div data-row="0">
                                     <div>
+                                        <img
+                                            height="248"
+                                            src="blob:..."
+                                            width="248" />
                                         <div>
-                                            <button type="button"><svg></svg></button>
+                                            <div>
+                                                <button type="button"><svg></svg></button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            <form>
+                                <input
+                                    accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
+                                    hidden=""
+                                    multiple=""
+                                    name="image-input"
+                                    type="file" />
+                            </form>
                         </div>
-                        <form>
-                            <input
-                                accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
-                                hidden=""
-                                multiple=""
-                                name="image-input"
-                                type="file" />
-                        </form>
                         <figcaption>
                             <div>
                                 <div>
@@ -204,4 +211,65 @@ describe('Gallery card', async () => {
             <p><br /></p>
         `);
     });
+
+    it('can drop images when empty', async function () {
+        const firstImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
+        const secondImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'gallery'});
+
+        // create and dispatch a file drag over
+        const dataTransfer = await createDataTransfer(page, [
+            {filePath: firstImagePath, fileName: 'large-image.jpg', fileType: 'image/jpeg'},
+            {filePath: secondImagePath, fileName: 'large-image.png', fileType: 'image/png'}
+        ]);
+        await page.getByTestId('gallery-container').dispatchEvent('dragover', {dataTransfer});
+
+        // dragover text should be visible
+        await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+
+        // drop files
+        await page.getByTestId('gallery-container').dispatchEvent('drop', {dataTransfer});
+
+        // check images were uploaded
+        await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(2);
+    });
+
+    it('can drop images when populated', async function () {
+        const prePopulatedImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        const firstImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
+        const secondImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'gallery'});
+
+        await page.click('[name="placeholder-button"]');
+
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([prePopulatedImagePath]);
+
+        await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(1);
+
+        // create and dispatch a file drag over
+        const dataTransfer = await createDataTransfer(page, [
+            {filePath: firstImagePath, fileName: 'first-dropped.jpg', fileType: 'image/jpeg'},
+            {filePath: secondImagePath, fileName: 'second-dropped.png', fileType: 'image/png'}
+        ]);
+        await page.getByTestId('gallery-container').dispatchEvent('dragover', {dataTransfer});
+
+        // dragover text should be visible
+        await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+
+        // drop files
+        await page.getByTestId('gallery-container').dispatchEvent('drop', {dataTransfer});
+
+        // check images were uploaded
+        await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(3);
+    });
+
+    it.todo('limits uploads to 9 images');
+    it.todo('limits drops to 9 images');
 });

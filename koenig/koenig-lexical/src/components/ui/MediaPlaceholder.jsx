@@ -33,6 +33,7 @@ export function MediaPlaceholder({
     placeholderRef,
     dataTestId = 'media-placeholder',
     errorDataTestId = 'media-placeholder-errors',
+    multiple = false,
     ...props
 }) {
     const Icon = PLACEHOLDER_ICONS[icon];
@@ -45,7 +46,7 @@ export function MediaPlaceholder({
         >
             <div className={`relative flex h-full items-center justify-center border bg-grey-50 dark:bg-grey-950 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'} ${borderStyle === 'dashed' ? 'rounded border-dashed border-grey/40' : 'border-grey/20 dark:border-grey/10'}`}>
                 {isDraggedOver ?
-                    <CardText text="Drop it like it's hot 🔥" /> :
+                    <CardText text={`Drop ${multiple ? '\'em' : 'it'} like it's hot 🔥`} /> :
                     <>
                         <button className={`group flex cursor-pointer select-none items-center justify-center ${size === 'xsmall' ? 'p-4' : 'flex-col p-20'}`} name="placeholder-button" type="button" onClick={filePicker}>
                             {(size === 'xsmall' && errors.length > 0) ||

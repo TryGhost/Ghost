@@ -47,8 +47,8 @@ function GalleryImage({image, deleteImage, position}) {
     return (
         <div
             className={`group relative ${classes.join(' ')}`}
+            data-testid="gallery-image"
             style={style}
-            data-image
         >
             <img
                 alt={image.alt}
@@ -71,7 +71,7 @@ function GalleryImage({image, deleteImage, position}) {
     );
 }
 
-function PopulatedGalleryCard({images, deleteImage}) {
+function PopulatedGalleryCard({filesDropper, images, deleteImage}) {
     const rows = [];
     const noOfImages = images.length;
 
@@ -108,12 +108,14 @@ function PopulatedGalleryCard({images, deleteImage}) {
     );
 }
 
-function EmptyGalleryCard({openFilePicker}) {
+function EmptyGalleryCard({filesDropper, openFilePicker}) {
     return (
         <MediaPlaceholder
             desc="Click to select up to 9 images"
             filePicker={openFilePicker}
             icon='gallery'
+            isDraggedOver={filesDropper.isDraggedOver}
+            multiple={true}
             size='large'
         />
     );
@@ -131,12 +133,23 @@ function UploadOverlay({progress}) {
     );
 }
 
+function FileDragOverlay() {
+    return (
+        <div className="bg-black-60 pointer-events-none absolute inset-0 flex items-center bg-black/60" data-kg-card-drag-text>
+            <span className="sans-serif fw7 f7 block w-full text-center font-bold text-white">
+                Drop to add up to 9 images
+            </span>
+        </div>
+    );
+}
+
 export function GalleryCard({
     captionEditor,
     captionEditorInitialState,
-    deleteImage,
-    errorMessage,
     clearErrorMessage,
+    deleteImage,
+    filesDropper,
+    errorMessage,
     fileInputRef,
     imageMimeTypes = [],
     images = [],
@@ -149,37 +162,41 @@ export function GalleryCard({
     };
 
     const {isLoading, progress} = uploader;
+    const {isDraggedOver} = filesDropper;
 
     return (
         <figure className="not-kg-prose">
-            {images.length
-                ? <PopulatedGalleryCard deleteImage={deleteImage} images={images} />
-                : <EmptyGalleryCard openFilePicker={openFilePicker} />
-            }
+            <div ref={filesDropper.setRef} className="relative" data-testid="gallery-container">
+                {images.length
+                    ? <PopulatedGalleryCard deleteImage={deleteImage} filesDropper={filesDropper} images={images} />
+                    : <EmptyGalleryCard filesDropper={filesDropper} openFilePicker={openFilePicker} />
+                }
 
-            {isLoading && <UploadOverlay progress={progress} />}
+                {isLoading ? <UploadOverlay progress={progress} /> : null}
+                {images.length && isDraggedOver ? <FileDragOverlay /> : null}
 
-            {errorMessage && (
-                <div className="bg-black-60 absolute inset-0 flex min-w-full items-center" data-testid="gallery-error">
-                    <span className="db center sans-serif fw7 f7 pl2 pr2 white bg-red">
-                        {errorMessage}.
-                        <button className="underline" type="button" onClick={clearErrorMessage}>
+                {errorMessage && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60" data-testid="gallery-error">
+                        <span className="center sans-serif f7 block bg-red px-2 font-bold text-white">
+                            {errorMessage}.
+                            <button className="ml-2 cursor-pointer underline" type="button" onClick={clearErrorMessage}>
                                 Dismiss
-                        </button>
-                    </span>
-                </div>
-            )}
+                            </button>
+                        </span>
+                    </div>
+                )}
 
-            <form onChange={onFileChange}>
-                <input
-                    ref={fileInputRef}
-                    accept={imageMimeTypes.join(',')}
-                    hidden={true}
-                    multiple={true}
-                    name="image-input"
-                    type='file'
-                />
-            </form>
+                <form onChange={onFileChange}>
+                    <input
+                        ref={fileInputRef}
+                        accept={imageMimeTypes.join(',')}
+                        hidden={true}
+                        multiple={true}
+                        name="image-input"
+                        type='file'
+                    />
+                </form>
+            </div>
 
             <CardCaptionEditor
                 captionEditor={captionEditor}
