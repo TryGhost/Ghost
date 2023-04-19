@@ -10,7 +10,25 @@ import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/
 import {backgroundImageUploadHandler} from '../utils/imageUploadHandler';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-function HeaderNodeComponent({nodeKey, header, subheader, headerTextEditor, subheaderTextEditor, ...props}) {
+function HeaderNodeComponent({
+    nodeKey,
+    backgroundImageSrc,
+    button,
+    subheaderTextEditorInitialState,
+    buttonPlaceholder,
+    subheaderPlaceholder,
+    buttonText,
+    buttonUrl,
+    backgroundImageStyle,
+    backgroundColor,
+    headerTextEditorInitialState,
+    headerPlaceholder,
+    header,
+    subheader,
+    headerTextEditor,
+    subheaderTextEditor,
+    size
+}) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {fileUploader} = React.useContext(KoenigComposerContext);
@@ -55,15 +73,15 @@ function HeaderNodeComponent({nodeKey, header, subheader, headerTextEditor, subh
     };
 
     React.useEffect(() => {
-        if (props.backgroundImageSrc !== '') {
+        if (backgroundImageSrc !== '') {
             setBackgroundImagePreview(true);
         }
-    }, [props.backgroundImageSrc]);
+    }, [backgroundImageSrc]);
 
     const handleColorSelector = (color) => {
         color === 'bg-image' ? setBackgroundImagePreview(true) : setBackgroundImagePreview(false);
 
-        if (color === 'bg-image' && props.backgroundImageSrc === ''){
+        if (color === 'bg-image' && backgroundImageSrc === ''){
             openFilePicker();
         }
         editor.update(() => {
@@ -72,10 +90,10 @@ function HeaderNodeComponent({nodeKey, header, subheader, headerTextEditor, subh
         });
     };
 
-    const handleSizeSelector = (size) => {
+    const handleSizeSelector = (s) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setSize(size);
+            node.setSize(s);
         });
     };
 
@@ -116,14 +134,14 @@ function HeaderNodeComponent({nodeKey, header, subheader, headerTextEditor, subh
     return (
         <>
             <HeaderCard
-                backgroundColor={props.backgroundColor}
+                backgroundColor={backgroundColor}
                 backgroundImagePreview={backgroundImagePreview}
-                backgroundImageSrc={props.backgroundImageSrc}
-                backgroundImageStyle={props.backgroundImageStyle}
-                button={props.button}
-                buttonPlaceholder={props.buttonPlaceholder}
-                buttonText={props.buttonText}
-                buttonUrl={props.buttonUrl}
+                backgroundImageSrc={backgroundImageSrc}
+                backgroundImageStyle={backgroundImageStyle}
+                button={button}
+                buttonPlaceholder={buttonPlaceholder}
+                buttonText={buttonText}
+                buttonUrl={buttonUrl}
                 fileInputRef={fileInputRef}
                 fileUploader={imageUploader}
                 handleButtonText={handleButtonText}
@@ -133,16 +151,16 @@ function HeaderNodeComponent({nodeKey, header, subheader, headerTextEditor, subh
                 handleColorSelector={handleColorSelector}
                 handleSizeSelector={handleSizeSelector}
                 header={header}
-                headerPlaceholder={props.headerPlaceholder}
+                headerPlaceholder={headerPlaceholder}
                 headerTextEditor={headerTextEditor}
-                headerTextEditorInitialState={props.headerTextEditorInitialState}
+                headerTextEditorInitialState={headerTextEditorInitialState}
                 isEditing={isEditing}
                 openFilePicker={openFilePicker}
-                size={props.size}
+                size={size}
                 subheader={subheader}
-                subheaderPlaceholder={props.subheaderPlaceholder}
+                subheaderPlaceholder={subheaderPlaceholder}
                 subheaderTextEditor={subheaderTextEditor}
-                subheaderTextEditorInitialState={props.subheaderTextEditorInitialState}
+                subheaderTextEditorInitialState={subheaderTextEditorInitialState}
                 toggleBackgroundImagePreview={toggleBackgroundImagePreview}
                 onFileChange={onFileChange}
             />
