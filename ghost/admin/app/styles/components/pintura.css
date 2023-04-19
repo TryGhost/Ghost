@@ -11,6 +11,10 @@
     border-radius: 9px !important;
 }
 
+.PinturaRoot[data-env~=landscape][data-env~=has-navigation] > .PinturaMain {
+    grid-column: 1 / -1 !important;
+}
+
 .PinturaRoot[data-env~=landscape] > .PinturaNavTools {
     padding: 24px 24px 0 !important;
 }
@@ -33,6 +37,18 @@
 .PinturaRoot .PinturaButtonExport:hover {
     color: var(--black) !important;
     background-color: var(--white) !important;
+}
+
+.PinturaNavGroup {
+    margin-left: 0 !important;
+}
+
+.PinturaUtilMain {
+    padding-right: 0 !important;
+}
+
+.PinturaUtilFooter {
+    padding-right: 0 !important;
 }
 
 
