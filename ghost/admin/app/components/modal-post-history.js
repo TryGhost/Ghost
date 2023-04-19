@@ -1,5 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import diff from 'node-htmldiff';
+import {computed} from '@ember/object';
 
 function checkFinishedRendering(element, done) {
     let last = element.innerHTML;
@@ -20,6 +21,24 @@ function checkFinishedRendering(element, done) {
 export default ModalComponent.extend({
     diffHtml: null,
 
+    selectedRevisionIndex: 0,
+
+    selectedRevision: computed('selectedRevisionIndex', 'revisionList.[]', function () {
+        return this.revisionList[this.selectedRevisionIndex];
+    }),
+
+    comparisonRevision: computed('selectedRevisionIndex', 'revisionList.[]', function () {
+        return this.revisionList[this.selectedRevisionIndex + 1] || this.selectedRevision;
+    }),
+
+    previousTitle: computed('comparisonRevision.title', 'post.title', function () {
+        return this.comparisonRevision.title || this.post.get('title');
+    }),
+
+    currentTitle: computed('selectedRevision.title', 'post.title', function () {
+        return this.selectedRevision.title || this.post.get('title');
+    }),
+
     init() {
         this._super(...arguments);
         this.post = this.model;
@@ -27,6 +46,53 @@ export default ModalComponent.extend({
 
     didInsertElement() {
         this._super(...arguments);
+        this.updateDiff();
+    },
+
+    actions: {
+        handleClick(index) {
+            this.set('selectedRevisionIndex', index);
+            this.updateDiff();
+        },
+
+        registerSelectedEditorApi(api) {
+            this.selectedEditor = api;
+        },
+
+        registerComparisonEditorApi(api) {
+            this.comparisonEditor = api;
+        }
+    },
+
+    get cardConfig() {
+        return {
+            post: this.model
+        };
+    },
+
+    get revisionList() {
+        return this.post.get('postRevisions').toArray().reverse().map((revision, index) => {
+            return {
+                lexical: revision.get('lexical'),
+                selected: index === this.selectedRevisionIndex,
+                createdAt: revision.get('createdAt'),
+                title: revision.get('title'),
+                author: {
+                    name: revision.get('author.name')
+                }
+            };
+        });
+    },
+
+    updateDiff() {
+        if (this.comparisonEditor && this.selectedEditor) {
+            let comparisonState = this.comparisonEditor.editorInstance.parseEditorState(this.comparisonRevision.lexical);
+            let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
+
+            this.comparisonEditor.editorInstance.setEditorState(comparisonState);
+            this.selectedEditor.editorInstance.setEditorState(selectedState);
+        }
+
         let previous = document.querySelector('.gh-post-history-hidden-lexical.previous');
         let current = document.querySelector('.gh-post-history-hidden-lexical.current');
 
@@ -54,41 +120,5 @@ export default ModalComponent.extend({
             currentDone = true;
             updateIfBothDone();
         });
-    },
-
-    get selectedRevision() {
-        let revisions = this.post.get('postRevisions').toArray();
-        // Revisions are in chronological order, and the last revision is the
-        // the current post, so the second to last is the previous revision
-        return revisions[revisions.length - 2];
-    },
-
-    get previousLexical() {
-        return this.selectedRevision.get('lexical');
-    },
-
-    get currentLexical() {
-        return this.post.get('lexical');
-    },
-
-    get previousTitle() {
-        return this.selectedRevision.get('title') || this.post.get('title');
-    },
-
-    get currentTitle() {
-        return this.post.get('title');
-    },
-
-    get cardConfig() {
-        return {
-            post: this.model
-        };
-    },
-
-    get revisionList() {
-        return this.post.get('postRevisions').toArray().reverse();
     }
-    // get reversedPosts() {
-    //     return this.post.toArray().reverse();
-    // }
 });
