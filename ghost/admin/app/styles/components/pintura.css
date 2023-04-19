@@ -34,3 +34,36 @@
     color: var(--black) !important;
     background-color: var(--white) !important;
 }
+
+
+/* Main nav */
+
+.PinturaRoot[data-env~=landscape] > .PinturaNavMain {
+    left: 24px !important;
+}
+
+.PinturaRoot > .PinturaNavMain .PinturaTabList [aria-selected=true] {
+    color: var(--green-d1) !important;
+}
+
+.PinturaRoot[data-env~=landscape] > .PinturaNavMain button {
+    flex-direction: row !important;
+    gap: 8px !important;
+    width: 120px !important;
+    height: 32px !important;
+    box-shadow: none !important;
+    background: none !important;
+    backdrop-filter: none !important;
+}
+
+.PinturaRoot[data-env~=landscape] > .PinturaNavMain button svg {
+    width: 24px !important;
+    margin-top: 0 !important;
+}
+
+.PinturaRoot[data-env~=landscape] > .PinturaNavMain button span {
+    margin-top: 0 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+}
