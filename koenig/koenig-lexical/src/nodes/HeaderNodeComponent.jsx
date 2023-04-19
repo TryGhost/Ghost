@@ -79,13 +79,14 @@ function HeaderNodeComponent({
     }, [backgroundImageSrc]);
 
     const handleColorSelector = (color) => {
-        color === 'bg-image' ? setBackgroundImagePreview(true) : setBackgroundImagePreview(false);
+        color === 'image' ? setBackgroundImagePreview(true) : setBackgroundImagePreview(false);
 
-        if (color === 'bg-image' && backgroundImageSrc === ''){
+        if (color === 'image' && backgroundImageSrc === ''){
             openFilePicker();
         }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            node.setStyle(color);
             node.setBackgroundImageStyle(color);
         });
     };

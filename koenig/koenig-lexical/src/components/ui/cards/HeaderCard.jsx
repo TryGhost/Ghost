@@ -12,7 +12,7 @@ export const HEADER_COLORS = {
     dark: 'bg-black',
     light: 'bg-grey-100',
     accent: 'bg-pink',
-    'bg-image': 'bg-grey-300 dark:bg-grey-950 bg-gradient-to-t from-black/0 via-black/5 to-black/30'
+    image: 'bg-grey-300 dark:bg-grey-950 bg-gradient-to-t from-black/0 via-black/5 to-black/30'
 };
 
 function FileUploading({progress}) {
@@ -151,7 +151,7 @@ export function HeaderCard({isEditing,
         },
         {
             label: 'Background Image', // technically not a color, but it could have some styles associated with it when a background image is added.
-            name: 'bg-image',
+            name: 'image',
             color: 'grey-50'
         }
     ];
@@ -161,7 +161,7 @@ export function HeaderCard({isEditing,
     return (
         <>
             <div className={`not-kg-prose flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[backgroundColor]} `}
-                style={backgroundImageSrc && backgroundImageStyle === 'bg-image' ? {
+                style={backgroundImageSrc && backgroundImageStyle === 'image' ? {
                     backgroundImage: `url(${backgroundImageSrc})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
@@ -270,7 +270,7 @@ export function HeaderCard({isEditing,
 
 HeaderCard.propTypes = {
     size: PropTypes.oneOf(['small', 'medium', 'large']),
-    backgroundColor: PropTypes.oneOf(['dark', 'light', 'accent', 'bg-image']),
+    backgroundColor: PropTypes.oneOf(['dark', 'light', 'accent', 'image']),
     heading: PropTypes.string,
     headerPlaceholder: PropTypes.string,
     subheader: PropTypes.string,
