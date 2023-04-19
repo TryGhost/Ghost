@@ -43,7 +43,7 @@ export function Dropdown({value, menu, onChange}) {
 
     const getItem = (item, selected) => {
         return (
-            <Item key={item.value} item={item} selected={selected} onChange={handleSelect}/>
+            <Item key={item.name} item={item} selected={selected} onChange={handleSelect}/>
         );
     };
 
