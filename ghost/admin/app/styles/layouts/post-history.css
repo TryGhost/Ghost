@@ -11,6 +11,10 @@
 
 /* Sidebar */
 
+.gh-post-history .nav-list-item.active {
+    background: var(--whitegrey-l2);
+}
+
 .nav-list-item .gh-post-history-version {
     margin-bottom: 2px;
 }
@@ -33,16 +37,19 @@
     border-radius: var(--border-radius);
 }
 
-.nav-list-item .gh-post-history-version-wordcount {
-    color: var(--green-d1);
-    margin-left: auto;
+.nav-list-item .gh-post-history-version-restore {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: inherit;
+    padding: 0;
 }
 
-.nav-list-item .gh-post-history-version-wordcount .subtracted {
-    color: var(--red-d1);
-    margin-left: .8rem;
+.nav-list-item .gh-post-history-version-restore span {
+    color: var(--red);
+    font-size: 1.35rem;
+    font-weight: 500;
 }
-
 
 /* Main content */
 
@@ -61,12 +68,27 @@
     color: rgba(21, 23, 26, 0.4);
 }
 
+.gh-post-history-main .koenig-lexical h1,
+.gh-post-history-main .koenig-lexical h2,
+.gh-post-history-main .koenig-lexical h3,
+.gh-post-history-main .koenig-lexical h4,
+.gh-post-history-main .koenig-lexical h5,
 .gh-post-history-main .koenig-lexical p {
     color: rgba(21, 23, 26, 0.4);
 }
 
+.gh-post-history-main .koenig-lexical a:not(.gh-post-history-main .koenig-lexical del a):not(.gh-post-history-main .koenig-lexical ins a) {
+    opacity: .4;
+}
+
 .gh-post-history-main .koenig-lexical del {
-    color: var(--red) !important;
+    color: var(--red-d1) !important;
+}
+
+.gh-post-history-main .koenig-lexical ins {
+    color: var(--black) !important;
+    text-decoration: none !important;
+    background-color: rgba(48, 207, 67, 0.15) !important;
 }
 
 .gh-post-history-hidden-lexical {

@@ -1,18 +1,25 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div class="gh-post-history">
     <div class="gh-post-history-main">
-        {{#if this.diffHtml}}
-            {{{this.diffHtml}}}
-        {{else}}
-            Loading...
-        {{/if}}
-        <div class="gh-post-history-hidden-lexical previous">
-            <div class="gh-editor-title">{{this.previousTitle}}</div>
-            <KoenigLexicalEditor @lexical={{this.previousLexical}} @cardConfig={{this.cardConfig}} />
-        </div>
-        <div class="gh-post-history-hidden-lexical current">
-            <div class="gh-editor-title">{{this.currentTitle}}</div>
-            <KoenigLexicalEditor @lexical={{this.currentLexical}} @cardConfig={{this.cardConfig}}/>
+        <div class="gh-koenig-editor-pane flex flex-column mih-100">
+            <div class="gh-editor-feature-image-container">
+                <div class="gh-editor-feature-image-dropzone"></div>
+                <div class="flex flex-row items-center invisible">
+                    <button type="button" class="gh-editor-feature-image-add-button">{{svg-jar "plus"}}<span>Add feature image</span></button>
+                    <button type="button" class="gh-editor-feature-image-unsplash">{{svg-jar "unsplash"}}</button>
+                </div>
+            </div>
+            {{#if this.diffHtml}}
+                {{{this.diffHtml}}}
+            {{/if}}
+            <div class="gh-post-history-hidden-lexical previous">
+                <div class="gh-editor-title">{{this.previousTitle}}</div>
+                <KoenigLexicalEditor @lexical={{this.comparisonRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerComparisonEditorApi"}}/>
+            </div>
+            <div class="gh-post-history-hidden-lexical current">
+                <div class="gh-editor-title">{{this.currentTitle}}</div>
+                <KoenigLexicalEditor @lexical={{this.selectedRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerSelectedEditorApi"}}/>
+            </div>
         </div>
     </div>
     <div class="settings-menu-container">
@@ -32,18 +39,33 @@
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">
-                    {{#each this.revisionList as |revision|}}
-                    <li class="nav-list-item">
-                        <button type="button">
-                            <div class="flex items-center">
-                                <span class="gh-post-history-version">{{moment-from-now revision.createdAt}}</span>
-                                <span class="gh-post-history-version-wordcount">
-                                    <span class="added">+275</span>
-                                    <span class="subtracted">-73</span>
+                    {{!-- <li class="nav-list-item">
+                        <div class="for-switch x-small">
+                            <label class="switch">
+                                <span>Show changes to previous version</span>
+                                <span class="gh-toggle-featured">
+                                    <input type="checkbox">
+                                    <span class="input-toggle-component"></span>
                                 </span>
-                            </div>                           
+                            </label>
+                        </div>
+                    </li> --}}
+                    {{#each this.revisionList as |revision index|}}
+                    <li class="nav-list-item {{if revision.selected "selected" ""}}">
+                        <button type="button" {{action "handleClick" index}}>
+                            <div class="flex items-center">
+                                <span class="gh-post-history-version">{{capitalize-first-letter (moment-from-now revision.createdAt)}}</span>
+                                {{#if revision.latest}}
+                                    <span class="gh-post-history-version-current">Latest</span>
+                                {{/if}}
+                            </div> 
                             <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
                         </button>
+                        {{#if revision.selected}}
+                            <button type="button" class="gh-post-history-version-restore">
+                                <span>Restore</span>
+                            </button>
+                        {{/if}}
                     </li>
                     {{/each}}
                 </ul>
