@@ -38,8 +38,10 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
         setUrlInputValue(event.target.value);
     };
 
-    const handleUrlInput = async (event) => {
-        fetchMetadata(event.target.value);
+    const handleUrlSubmit = async (event) => {
+        if (event.key === 'Enter') {
+            fetchMetadata(event.target.value);
+        }
     };
 
     const handleRetry = async () => {
@@ -94,7 +96,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
                 handlePasteAsLink={handlePasteAsLink}
                 handleRetry={handleRetry}
                 handleUrlChange={handleUrlChange}
-                handleUrlInput={handleUrlInput}
+                handleUrlSubmit={handleUrlSubmit}
                 html={html}
                 isLoading={loading}
                 isSelected={isSelected}

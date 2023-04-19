@@ -4,7 +4,7 @@ import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {UrlInput} from '../UrlInput';
 
-export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlInput, handleRetry, handlePasteAsLink, handleClose}) {
+export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}) {
     if (html) {
         return (
             <div>
@@ -27,7 +27,7 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
             handlePasteAsLink={handlePasteAsLink}
             handleRetry={handleRetry}
             handleUrlChange={handleUrlChange}
-            handleUrlInput={handleUrlInput}
+            handleUrlSubmit={handleUrlSubmit}
             hasError={urlError}
             isLoading={isLoading}
             placeholder={urlPlaceholder}

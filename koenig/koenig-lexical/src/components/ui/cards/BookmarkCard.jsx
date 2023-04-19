@@ -9,7 +9,7 @@ export function BookmarkCard({
     handlePasteAsLink,
     handleRetry,
     handleUrlChange,
-    handleUrlInput,
+    handleUrlSubmit,
     url,
     urlInputValue,
     urlPlaceholder,
@@ -61,7 +61,7 @@ export function BookmarkCard({
             handlePasteAsLink={handlePasteAsLink}
             handleRetry={handleRetry}
             handleUrlChange={handleUrlChange}
-            handleUrlInput={handleUrlInput}
+            handleUrlSubmit={handleUrlSubmit}
             hasError={urlError}
             isLoading={isLoading}
             placeholder={urlPlaceholder}
@@ -82,7 +82,7 @@ BookmarkCard.propTypes = {
     handlePasteAsLink: PropTypes.func,
     handleRetry: PropTypes.func,
     handleUrlChange: PropTypes.func,
-    handleUrlInput: PropTypes.func,
+    handleUrlSubmit: PropTypes.func,
     url: PropTypes.string,
     urlInputValue: PropTypes.string,
     urlPlaceholder: PropTypes.string,
