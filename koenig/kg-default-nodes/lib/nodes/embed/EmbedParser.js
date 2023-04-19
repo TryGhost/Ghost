@@ -1,4 +1,3 @@
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {readCaptionFromElement} from '../../utils/read-caption-from-element.js';
 
 // TODO: add NFT card parser
@@ -47,11 +46,14 @@ export class EmbedParser {
                                     return null;
                                 }
 
-                                const payload = {
-                                    url: url,
-                                    html: domNode.innerHTML
-                                };
+                                let payload = {url: url};
+
+                                // append caption, remove element from blockquote
                                 payload.caption = readCaptionFromElement(domNode);
+                                let figcaption = domNode.querySelector('figcaption');
+                                figcaption?.remove();
+
+                                payload.html = domNode.innerHTML;
 
                                 const node = new self.NodeClass(payload);
                                 return {node};
@@ -72,62 +74,6 @@ export class EmbedParser {
                                 return null;
                             }
 
-                            const node = new self.NodeClass(payload);
-                            return {node};
-                        },
-                        priority: 1
-                    };
-                }
-                return null;
-            },
-            div: (nodeElem) => {
-                if (nodeElem.nodeType === 1 && nodeElem.tagName === 'DIV' && nodeElem.className.match(/graf--mixtapeEmbed/)) {
-                    return {
-                        conversion(domNode) {
-                            // Grab the relevant elements - Anchor wraps most of the data
-                            const anchorElement = domNode.querySelector('.markup--mixtapeEmbed-anchor');
-                            const titleElement = anchorElement.querySelector('.markup--mixtapeEmbed-strong');
-                            const descElement = anchorElement.querySelector('.markup--mixtapeEmbed-em');
-                            // Image is a top level field inside it's own a tag
-                            const imgElement = domNode.querySelector('.mixtapeImage');
-
-                            // Grab individual values from the elements
-                            const url = anchorElement.href;
-                            let title = '';
-                            let description = '';
-
-                            if (titleElement && titleElement.innerHTML) {
-                                title = cleanBasicHtml(titleElement.innerHTML);
-                                // Cleanup anchor so we can see what's left now that we've processed title
-                                anchorElement.removeChild(titleElement);
-                            }
-                    
-                            if (descElement && descElement.innerHTML) {
-                                description = cleanBasicHtml(descElement.innerHTML);
-                                // Cleanup anchor so we can see what's left now that we've processed description
-                                anchorElement.removeChild(descElement);
-                            }
-
-                            // // Format our preferred structure.
-                            let metadata = {
-                                url,
-                                title,
-                                description
-                            };
-
-                            // Publisher is the remaining text in the anchor, once title & desc are removed
-                            let publisher = cleanBasicHtml(anchorElement.innerHTML);
-                            if (publisher) {
-                                metadata.publisher = publisher;
-                            }
-
-                            // Image is optional,
-                            // The element usually still exists with an additional has.mixtapeImage--empty class and has no background image
-                            if (imgElement && imgElement.style['background-image']) {
-                                metadata.thumbnail = imgElement.style['background-image'].match(/url\(([^)]*?)\)/)[1];
-                            }
-
-                            let payload = {url, metadata};
                             const node = new self.NodeClass(payload);
                             return {node};
                         },
