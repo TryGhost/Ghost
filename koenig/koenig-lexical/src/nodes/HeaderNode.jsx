@@ -102,7 +102,7 @@ export class HeaderNode extends BaseHeaderNode {
                     backgroundImageSrc={this.getBackgroundImageSrc()}
                     backgroundImageStyle={this.getBackgroundImageStyle()}
                     button={this.getButtonEnabled()}
-                    buttonPlaceholder={'Your button text'}
+                    buttonPlaceholder={'Add button text'}
                     buttonText={this.getButtonText()}
                     buttonUrl={this.getButtonUrl()}
                     header={this.getHeader()}

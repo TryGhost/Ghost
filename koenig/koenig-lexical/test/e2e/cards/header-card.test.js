@@ -144,12 +144,77 @@ describe.only('Header card', async () => {
          `, {ignoreCardContents: true});
     });
 
-    test('can toggle button on', async function () {
+    test('can add and remove button', async function () {
         await focusEditor(page);
         await page.keyboard.type('/header');
         await page.waitForSelector('[data-kg-card-menu-item="Header"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await page.waitForSelector('[data-kg-card="header"]');
+
+        // click on the toggle with data-testid="header-button-toggle"
+        await page.click('[data-testid="header-button-toggle"]');
+
+        // check button is visible
+        await assertHTML(page, html`
+             <div data-lexical-decorator="true" contenteditable="false">
+                 <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="header">
+                     <div data-kg-card-input="header">
+                     </div>
+                     <div data-kg-card-input="subheader">
+                     </div>
+                     <div>
+                        <button>
+                            <span>Add button text</span>
+                        </button>
+                    </div>
+                 </div>
+             </div>
+             <p><br /></p>
+         `, {ignoreCardContents: true});
+
+        // Enter some text for the button in data-testid="header-button-text"
+        await page.click('[data-testid="header-button-text"]');
+        await page.keyboard.type('Click me');
+
+        // Enter some url for the button in data-testid="header-button-url"
+        await page.click('[data-testid="header-button-url"]');
+        await page.keyboard.type('https://example.com');
+
+        // check button is visible, and not an <a> tag (so not clickable)
+        await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="header">
+                        <div data-kg-card-input="header">
+                        </div>
+                        <div data-kg-card-input="subheader">
+                        </div>
+                        <div>
+                            <button>
+                                <button>
+                                    <span>Click me</span>
+                                </button>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardContents: true});
+
+        // Can toggle button off again
+        await page.click('[data-testid="header-button-toggle"]');
+
+        // check button is not visible
+        await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="header">
+                        <div data-kg-card-input="header">
+                        </div>
+                        <div data-kg-card-input="subheader">
+                        </div>
+                    </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardContents: true});
     });
 });
 

@@ -239,6 +239,7 @@ export function HeaderCard({isEditing,
                     />
                     <SettingsDivider />
                     <ToggleSetting
+                        dataTestId='header-button-toggle'
                         isChecked={button}
                         label='Button'
                         onChange={handleButtonToggle}
@@ -246,6 +247,7 @@ export function HeaderCard({isEditing,
                     {button && (
                         <>
                             <InputSetting
+                                dataTestId='header-button-text'
                                 label='Button text'
                                 placeholder='Add button text'
                                 value={buttonText}
@@ -253,6 +255,7 @@ export function HeaderCard({isEditing,
 
                             />
                             <InputUrlSetting
+                                dataTestId='header-button-url'
                                 label='Button URL'
                                 value={buttonUrl}
                                 onChange={handleButtonUrl}
