@@ -1,18 +1,29 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div class="gh-post-history">
+    {{!-- <div class="read-only-banner">
+        <span>You are viewing a revision from <strong>17 April 2023, 10:34</strong>.</span>
+        <a href="#">Roll back to this version &rarr;</a>
+    </div> --}}
     <div class="gh-post-history-main">
-        {{#if this.diffHtml}}
-            {{{this.diffHtml}}}
-        {{else}}
-            Loading...
-        {{/if}}
-        <div class="gh-post-history-hidden-lexical previous">
-            <div class="gh-editor-title">{{this.previousTitle}}</div>
-            <KoenigLexicalEditor @lexical={{this.previousLexical}} @cardConfig={{this.cardConfig}} />
-        </div>
-        <div class="gh-post-history-hidden-lexical current">
-            <div class="gh-editor-title">{{this.currentTitle}}</div>
-            <KoenigLexicalEditor @lexical={{this.currentLexical}} @cardConfig={{this.cardConfig}}/>
+        <div class="gh-koenig-editor-pane flex flex-column mih-100">
+            <div class="gh-editor-feature-image-container">
+                <div class="gh-editor-feature-image-dropzone"></div>
+                <div class="flex flex-row items-center invisible">
+                    <button type="button" class="gh-editor-feature-image-add-button">{{svg-jar "plus"}}<span>Add feature image</span></button>
+                    <button type="button" class="gh-editor-feature-image-unsplash">{{svg-jar "unsplash"}}</button>
+                </div>
+            </div>
+            {{#if this.diffHtml}}
+                {{{this.diffHtml}}}
+            {{/if}}
+            <div class="gh-post-history-hidden-lexical previous">
+                <div class="gh-editor-title">{{this.previousTitle}}</div>
+                <KoenigLexicalEditor @lexical={{this.previousLexical}} @cardConfig={{this.cardConfig}} />
+            </div>
+            <div class="gh-post-history-hidden-lexical current">
+                <div class="gh-editor-title">{{this.currentTitle}}</div>
+                <KoenigLexicalEditor @lexical={{this.currentLexical}} @cardConfig={{this.cardConfig}}/>
+            </div>
         </div>
     </div>
     <div class="settings-menu-container">
@@ -36,11 +47,14 @@
                     <li class="nav-list-item">
                         <button type="button">
                             <div class="flex items-center">
-                                <span class="gh-post-history-version">{{moment-from-now revision.createdAt}}</span>
-                                <span class="gh-post-history-version-wordcount">
+                                <span class="gh-post-history-version">{{capitalize-first-letter (moment-from-now revision.createdAt)}}</span>
+                                {{!-- <span class="gh-post-history-version-wordcount">
                                     <span class="added">+275</span>
                                     <span class="subtracted">-73</span>
-                                </span>
+                                </span> --}}
+                                {{!-- <button class="gh-btn gh-btn-text gh-post-history-version-restore">
+                                    <span>Restore</span>
+                                </button> --}}
                             </div>                           
                             <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
                         </button>
