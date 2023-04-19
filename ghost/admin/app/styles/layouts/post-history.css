@@ -37,27 +37,19 @@
     border-radius: var(--border-radius);
 }
 
-/* .nav-list-item .gh-post-history-version-wordcount {
-    color: var(--green-d1);
-    margin-left: auto;
-}
-
-.nav-list-item .gh-post-history-version-wordcount .subtracted {
-    color: var(--red-d1);
-    margin-left: .8rem;
-} */
-
 .nav-list-item .gh-post-history-version-restore {
-    margin-left: auto;
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: inherit;
     padding: 0;
 }
 
 .nav-list-item .gh-post-history-version-restore span {
     color: var(--red);
     font-size: 1.35rem;
-    font-weight: 400;
+    font-weight: 500;
 }
-
 
 /* Main content */
 
@@ -67,32 +59,6 @@
     height: 100vh;
     overflow: auto;
 }
-
-/* .gh-post-history .read-only-banner {
-    position: absolute;
-    top: 20px;
-    left: 0;
-    right: 420px;
-    z-index: 999;
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 788px;
-    margin: 0 auto;
-    padding: 16px 24px;
-    background: var(--white);
-    border: 1px solid var(--whitegrey-d1);
-    color: var(--black);
-    font-weight: 500;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-m);
-}
-
-.gh-post-history .read-only-banner a {
-    margin-left: auto;
-    color: var(--black);
-    text-decoration: underline;
-} */
 
 .gh-post-history .gh-editor-title {
     height: initial;
