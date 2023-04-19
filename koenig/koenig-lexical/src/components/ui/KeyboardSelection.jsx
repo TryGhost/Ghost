@@ -13,10 +13,9 @@ export function KeyboardSelection({items, getItem, onSelect, defaultSelected}) {
     const [selectedIndex, setSelectedIndex] = React.useState(defaultIndex === -1 ? 0 : defaultIndex);
 
     const handleKeydown = React.useCallback((event) => {
-        event.preventDefault();
-
         if (event.key === 'ArrowDown') {
             // The stop propagation is required for Safari
+            event.preventDefault();
             event.stopPropagation();
             setSelectedIndex((i) => {
                 return Math.min(i + 1, items.length - 1);
@@ -24,6 +23,7 @@ export function KeyboardSelection({items, getItem, onSelect, defaultSelected}) {
         }
         if (event.key === 'ArrowUp') {
             // The stop propagation is required for Safari
+            event.preventDefault();
             event.stopPropagation();
             setSelectedIndex((i) => {
                 return Math.max(i - 1, 0);
@@ -31,6 +31,7 @@ export function KeyboardSelection({items, getItem, onSelect, defaultSelected}) {
         }
         if (event.key === 'Enter') {
             // The stop propagation is required for Safari
+            event.preventDefault();
             event.stopPropagation();
             onSelect(items[selectedIndex]);
         }

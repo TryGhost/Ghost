@@ -2,7 +2,7 @@ import KoenigHeaderEditor from '../../KoenigHeaderEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
-import {ButtonGroupSetting, ColorPickerSetting, InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {ButtonGroupSetting, ColorPickerSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as FileUploadIcon} from '../../../assets/icons/kg-upload-fill.svg';
 import {ProgressBar} from '../ProgressBar';
 import {ReactComponent as TrashIcon} from '../../../assets/icons/kg-trash.svg';
@@ -235,9 +235,8 @@ export function HeaderCard({isEditing,
                                 onChange={handleButtonText}
 
                             />
-                            <InputSetting
+                            <InputUrlSetting
                                 label='Button URL'
-                                placeholder='Add URL'
                                 value={buttonUrl}
                                 onChange={handleButtonUrl}
                             />

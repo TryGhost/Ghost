@@ -85,10 +85,10 @@ function HeaderNodeComponent(props) {
         });
     };
 
-    const handleButtonUrl = (event) => {
+    const handleButtonUrl = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonUrl(event.target.value);
+            node.setButtonUrl(val);
         });
     };
 

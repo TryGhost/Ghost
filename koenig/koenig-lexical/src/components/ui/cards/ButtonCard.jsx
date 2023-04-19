@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
-import {ButtonGroupSetting, InputListSetting, InputSetting, SettingsPanel} from '../SettingsPanel';
+import {ButtonGroupSetting, InputSetting, InputUrlSetting, SettingsPanel} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 
@@ -13,9 +13,7 @@ export function ButtonCard({
     handleAlignmentChange,
     handleButtonTextChange,
     handleButtonUrlChange,
-    handleOptionClick,
-    isEditing,
-    suggestedUrls
+    isEditing
 }) {
     const buttonGroupChildren = [
         {
@@ -54,12 +52,9 @@ export function ButtonCard({
                         value={buttonText}
                         onChange={handleButtonTextChange}
                     />
-                    <InputListSetting
+                    <InputUrlSetting
                         dataTestId="button-input-url"
-                        handleOptionClick={handleOptionClick}
                         label='Button URL'
-                        listOptions={suggestedUrls}
-                        placeholder='https://yoursite.com/#/portal/signup/'
                         value={buttonUrl}
                         onChange={handleButtonUrlChange}
                     />

@@ -2,7 +2,7 @@ import KoenigProductEditor from '../../KoenigProductEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
-import {InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ProductCardImage} from './ProductCard/ProductCardImage';
 import {RatingButton} from './ProductCard/RatingButton';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
@@ -116,10 +116,9 @@ export function ProductCard({
                                 value={buttonText}
                                 onChange={onButtonTextChange}
                             />
-                            <InputSetting
+                            <InputUrlSetting
                                 dataTestId="product-button-url-input"
                                 label='Button URL'
-                                placeholder='https://yoursite.com/#/portal/signup/'
                                 value={buttonUrl}
                                 onChange={onButtonUrlChange}
                             />

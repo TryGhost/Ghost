@@ -1,4 +1,5 @@
 import ImageUploadForm from './ImageUploadForm';
+import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
 import React from 'react';
 import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
 import {ButtonGroup} from './ButtonGroup';
@@ -55,6 +56,39 @@ export function InputSetting({label, description, onChange, value, placeholder, 
                 <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }
         </div>
+    );
+}
+
+/**
+ * Enter a link with autocompletion
+ */
+export function InputUrlSetting({dataTestId, label, value, onChange}) {
+    const {cardConfig} = React.useContext(KoenigComposerContext);
+    const [listOptions, setListOptions] = React.useState([]);
+
+    React.useEffect(() => {
+        if (cardConfig.fetchAutocompleteLinks) {
+            cardConfig.fetchAutocompleteLinks().then((links) => {
+                setListOptions(links.map((link) => {
+                    return {value: link.value, label: link.label};
+                }));
+            });
+        }
+    }, [cardConfig]);
+
+    const filteredSuggestedUrls = listOptions.filter((u) => {
+        return u.label.toLocaleLowerCase().includes(value.toLocaleLowerCase());
+    });
+
+    return (
+        <InputListSetting
+            dataTestId={dataTestId}
+            label={label}
+            listOptions={filteredSuggestedUrls}
+            placeholder='https://yoursite.com/#/portal/signup/'
+            value={value}
+            onChange={onChange}
+        />
     );
 }
 

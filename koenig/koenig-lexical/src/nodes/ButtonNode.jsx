@@ -19,21 +19,6 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-    const [listOptions, setListOptions] = React.useState([]);
-
-    React.useEffect(() => {
-        if (cardConfig.fetchAutocompleteLinks) {
-            cardConfig.fetchAutocompleteLinks().then((links) => {
-                setListOptions(links.map((link) => {
-                    return {value: link.value, label: link.label};
-                }));
-            });
-        }
-    }, [cardConfig]);
-
-    const filteredSuggestedUrls = listOptions.filter((u) => {
-        return u.label.toLocaleLowerCase().includes(buttonUrl.toLocaleLowerCase());
-    });
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -73,7 +58,6 @@ function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
                 handleButtonTextChange={handleButtonTextChange}
                 handleButtonUrlChange={handleButtonUrlChange}
                 isEditing={isEditing}
-                suggestedUrls={filteredSuggestedUrls}
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"

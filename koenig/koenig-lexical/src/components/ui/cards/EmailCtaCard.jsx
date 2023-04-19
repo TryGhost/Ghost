@@ -2,7 +2,7 @@ import KoenigProductEditor from '../../KoenigProductEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
-import {ButtonGroupSetting, DropdownSetting, InputListSetting, InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {ButtonGroupSetting, DropdownSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 
@@ -21,8 +21,7 @@ export function EmailCtaCard({
     updateAlignment,
     updateShowButton,
     updateButtonText,
-    updateButtonUrl,
-    suggestedUrls
+    updateButtonUrl
 }) {
     const alignmentOpts = [
         {
@@ -130,11 +129,9 @@ export function EmailCtaCard({
                                 value={buttonText}
                                 onChange={updateButtonText}
                             />
-                            <InputListSetting
+                            <InputUrlSetting
                                 dataTestId="button-url"
                                 label='Button URL'
-                                listOptions={suggestedUrls}
-                                placeholder='https://yoursite.com/#/portal/signup/'
                                 value={buttonUrl}
                                 onChange={updateButtonUrl}
                             />

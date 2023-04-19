@@ -91,10 +91,10 @@ export function ProductNodeComponent({
         });
     };
 
-    const handleButtonUrlChange = (event) => {
+    const handleButtonUrlChange = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonUrl(event.target.value);
+            node.setButtonUrl(val);
         });
     };
 
