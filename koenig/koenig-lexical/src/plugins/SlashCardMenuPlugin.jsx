@@ -301,7 +301,7 @@ function useSlashCardMenu(editor) {
 
     if (isShowingMenu) {
         return (
-            <div ref={containerRef} className="absolute -left-2 mt-2" style={{top: `${topPosition}px`}} data-kg-slash-container>
+            <div ref={containerRef} className="absolute -left-2 z-50 mt-2" style={{top: `${topPosition}px`}} data-kg-slash-container>
                 <SlashMenu>
                     <CardMenu
                         closeMenu={closeMenu}

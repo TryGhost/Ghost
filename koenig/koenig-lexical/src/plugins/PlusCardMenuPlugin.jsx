@@ -247,7 +247,7 @@ function usePlusCardMenu(editor) {
 
     if (isShowingButton) {
         return (
-            <div ref={containerRef} className="absolute" style={style} data-kg-plus-container>
+            <div ref={containerRef} className="absolute z-50" style={style} data-kg-plus-container>
                 {isShowingButton && <PlusButton onClick={openMenu} />}
                 {isShowingMenu && (
                     <PlusMenu>
