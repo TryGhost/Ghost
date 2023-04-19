@@ -11,6 +11,10 @@
     border-radius: 9px !important;
 }
 
+.PinturaRoot[data-env~=landscape] > .PinturaNavTools {
+    padding: 24px 24px 0 !important;
+}
+
 .PinturaRoot > .PinturaNav .PinturaButton:only-of-type {
     padding: 0 14px !important;
     height: 34px !important;

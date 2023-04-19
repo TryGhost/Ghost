@@ -60,7 +60,10 @@ export default class KoenigImageEditor extends Component {
                     'filter',
                     'finetune',
                     'redact'
-                ]
+                ],
+                locale: {
+                    labelButtonExport: 'Save and close'
+                }
             });
 
             editor.on('loaderror', () => {
