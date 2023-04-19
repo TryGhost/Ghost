@@ -1,0 +1,18 @@
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+    <div class="flex-grow-1">
+        <label class="gh-setting-title gh-theme-setting-title" for="announcement-visibility">
+            Announcement visibility
+        </label>
+
+        <span class="gh-select">
+            <select class="ember-select" name="announcement-visibility" id="announcement-visibility" {{on "change" this.setVisibility}}>
+                {{#each this.options as |settingOption|}}
+                    <option value={{settingOption.value}} selected={{eq settingOption.value this.background}}>
+                        {{settingOption.label}}
+                    </option>
+                {{/each}}
+            </select>
+            {{svg-jar "arrow-down-small"}}
+        </span>
+    </div>
+</div>

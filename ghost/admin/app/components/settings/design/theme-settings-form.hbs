@@ -18,7 +18,9 @@
             {{/if}}
         {{/each}}
         {{#if (feature 'announcementBar')}}
-            <CustomThemeSettings::Announcement @onChange={{@updatePreview}} />
+            <AnnouncementSettings::Content @onChange={{@updatePreview}} />
+            <AnnouncementSettings::Background @onChange={{@updatePreview}} />
+            <AnnouncementSettings::Visibility @onChange={{@updatePreview}} />
         {{/if}}
     </form>
 </div>
