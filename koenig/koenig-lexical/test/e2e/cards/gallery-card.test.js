@@ -1,5 +1,7 @@
-import {afterAll, beforeAll, beforeEach, describe, it} from 'vitest';
-import {assertHTML, html, initialize, startApp} from '../../utils/e2e';
+import path from 'path';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {assertHTML, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 describe('Gallery card', async () => {
     let app;
@@ -17,7 +19,7 @@ describe('Gallery card', async () => {
         await initialize({page});
     });
 
-    it('can import serialized gallery card nodes', async function () {
+    test('can import serialized gallery card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -99,6 +101,108 @@ describe('Gallery card', async () => {
                     </figure>
                 </div>
             </div>
-        `, {ignoreCardContents: false});
+        `);
+    });
+
+    test('can insert gallery card', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'gallery'});
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="gallery">
+                    <figure>
+                        <div>
+                            <div>
+                                <button name="placeholder-button" type="button">
+                                    <svg></svg>
+                                    <p>Click to select up to 9 images</p>
+                                </button>
+                            </div>
+                        </div>
+                        <form>
+                            <input
+                                accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
+                                hidden=""
+                                multiple=""
+                                name="image-input"
+                                type="file" />
+                        </form>
+                        <figcaption>
+                            <div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                                            <p><br /></p>
+                                        </div>
+                                    </div>
+                                    <div>Type caption for gallery (optional)</div>
+                                </div>
+                            </div>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+            <p><br /></p>
+        `);
+    });
+
+    it('can upload images', async function () {
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
+
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'gallery'});
+        await page.click('[name="placeholder-button"]');
+
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+
+        await page.waitForSelector('[data-gallery="true"]');
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="gallery">
+                    <figure>
+                        <div data-gallery="true">
+                            <div data-row="0">
+                                <div data-image="true">
+                                    <img
+                                        height="248"
+                                        src="blob:..."
+                                        width="248" />
+                                    <div>
+                                        <div>
+                                            <button type="button"><svg></svg></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <form>
+                            <input
+                                accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
+                                hidden=""
+                                multiple=""
+                                name="image-input"
+                                type="file" />
+                        </form>
+                        <figcaption>
+                            <div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                                            <p><br /></p>
+                                        </div>
+                                    </div>
+                                    <div>Type caption for gallery (optional)</div>
+                                </div>
+                            </div>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+            <p><br /></p>
+        `);
     });
 });

@@ -140,8 +140,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
                 isSelected={isSelected}
                 uploader={imageUploader}
                 onFileChange={onFileChange}
-            >
-            </GalleryCard>
+            />
 
             <ActionToolbar
                 data-kg-card-toolbar="image"
