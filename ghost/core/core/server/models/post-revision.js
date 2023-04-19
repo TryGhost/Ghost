@@ -4,8 +4,6 @@ const _ = require('lodash');
 const PostRevision = ghostBookshelf.Model.extend({
     tableName: 'post_revisions',
 
-    relationships: ['author'],
-
     author() {
         return this.belongsTo('User', 'author_id');
     },
