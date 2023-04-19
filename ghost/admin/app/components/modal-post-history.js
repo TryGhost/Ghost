@@ -1,5 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
-import diff from 'node-htmldiff';
+import diff from '../utils/htmldiff';
 
 function checkFinishedRendering(element, done) {
     let last = element.innerHTML;
@@ -88,7 +88,4 @@ export default ModalComponent.extend({
     get revisionList() {
         return this.post.get('postRevisions').toArray().reverse();
     }
-    // get reversedPosts() {
-    //     return this.post.toArray().reverse();
-    // }
 });
