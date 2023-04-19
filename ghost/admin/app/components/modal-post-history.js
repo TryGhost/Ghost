@@ -39,6 +39,21 @@ export default ModalComponent.extend({
         return this.selectedRevision.title || this.post.get('title');
     }),
 
+    revisionList: computed('post.postRevisions.[]', 'selectedRevisionIndex', function () {
+        return this.post.get('postRevisions').toArray().reverse().map((revision, index) => {
+            return {
+                lexical: revision.get('lexical'),
+                selected: index === this.selectedRevisionIndex,
+                latest: index === 0,
+                createdAt: revision.get('createdAt'),
+                title: revision.get('title'),
+                author: {
+                    name: revision.get('author.name')
+                }
+            };
+        });
+    }),
+
     init() {
         this._super(...arguments);
         this.post = this.model;
@@ -68,20 +83,6 @@ export default ModalComponent.extend({
         return {
             post: this.model
         };
-    },
-
-    get revisionList() {
-        return this.post.get('postRevisions').toArray().reverse().map((revision, index) => {
-            return {
-                lexical: revision.get('lexical'),
-                selected: index === this.selectedRevisionIndex,
-                createdAt: revision.get('createdAt'),
-                title: revision.get('title'),
-                author: {
-                    name: revision.get('author.name')
-                }
-            };
-        });
     },
 
     updateDiff() {
