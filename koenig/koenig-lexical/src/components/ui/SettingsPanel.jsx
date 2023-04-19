@@ -52,7 +52,7 @@ export function InputSetting({label, description, onChange, value, placeholder, 
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
             <Input dataTestId={dataTestId} placeholder={placeholder} value={value} onChange={onChange} />
             {description &&
-                    <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
+                <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }
         </div>
     );
