@@ -18,11 +18,11 @@
             {{/if}}
             <div class="gh-post-history-hidden-lexical previous">
                 <div class="gh-editor-title">{{this.previousTitle}}</div>
-                <KoenigLexicalEditor @lexical={{this.previousLexical}} @cardConfig={{this.cardConfig}} />
+                <KoenigLexicalEditor @lexical={{this.comparisonRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerComparisonEditorApi"}}/>
             </div>
             <div class="gh-post-history-hidden-lexical current">
                 <div class="gh-editor-title">{{this.currentTitle}}</div>
-                <KoenigLexicalEditor @lexical={{this.currentLexical}} @cardConfig={{this.cardConfig}}/>
+                <KoenigLexicalEditor @lexical={{this.selectedRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerSelectedEditorApi"}}/>
             </div>
         </div>
     </div>
@@ -43,9 +43,9 @@
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">
-                    {{#each this.revisionList as |revision|}}
-                    <li class="nav-list-item">
-                        <button type="button">
+                    {{#each this.revisionList as |revision index|}}
+                    <li class="nav-list-item {{if revision.selected "selected" ""}}">
+                        <button type="button" {{action "handleClick" index}}>
                             <div class="flex items-center">
                                 <span class="gh-post-history-version">{{capitalize-first-letter (moment-from-now revision.createdAt)}}</span>
                                 {{!-- <span class="gh-post-history-version-wordcount">
