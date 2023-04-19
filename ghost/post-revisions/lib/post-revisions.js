@@ -93,11 +93,7 @@ class PostRevisions {
         });
 
         const revisionIds = revisions.toJSON()
-            .reduce((acc, value) => {
-                acc.push(value.id);
-
-                return acc;
-            }, []);
+            .map(({id}) => id);
 
         if (revisionIds.length === 0) {
             return;
