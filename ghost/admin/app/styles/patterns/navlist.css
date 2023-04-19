@@ -18,6 +18,10 @@
     cursor: pointer;
 }
 
+.nav-list-item.selected {
+    background: var(--whitegrey-l2);
+}
+
 .nav-list-item:first-of-type {
     border-top: 1px solid var(--whitegrey-d1);
 }
