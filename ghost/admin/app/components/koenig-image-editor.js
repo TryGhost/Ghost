@@ -113,8 +113,9 @@ export default class KoenigImageEditor extends Component {
     @action
     async handleClick() {
         if (window.pintura) {
+            const imageSrc = `${this.args.imageSrc}?v=${Date.now()}`;
             const editor = window.pintura.openDefaultEditor({
-                src: this.args.imageSrc,
+                src: imageSrc,
                 util: 'crop',
                 utils: [
                     'crop',
