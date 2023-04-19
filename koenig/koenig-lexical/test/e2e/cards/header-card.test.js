@@ -99,7 +99,7 @@ describe('Header card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test.only('can edit header', async function () {
+    test('can edit header', async function () {
         await createHeaderCard({page});
 
         // await page.click('[data-kg-card="header"] [data-kg-card-input="header"]');
