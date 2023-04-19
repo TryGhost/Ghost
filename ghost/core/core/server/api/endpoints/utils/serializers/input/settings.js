@@ -62,7 +62,10 @@ const EDITABLE_SETTINGS = [
     'editor_default_email_recipients_filter',
     'labs',
     'comments_enabled',
-    'outbound_link_tagging'
+    'outbound_link_tagging',
+    'announcement_content',
+    'announcement_background',
+    'announcement_visibility'
 ];
 
 module.exports = {
