@@ -10,8 +10,17 @@
                 </div>
             </div>
             {{#if this.diffHtml}}
+                {{#if this.showDifferences}}
                 {{{this.diffHtml}}}
+                {{/if}}
             {{/if}}
+
+            {{#unless this.showDifferences}}
+                {{#if this.selectedHTML}}
+                {{{this.selectedHTML}}}
+                {{/if}}
+            {{/unless}}
+
             <div class="gh-post-history-hidden-lexical previous">
                 <div class="gh-editor-title">{{this.previousTitle}}</div>
                 <KoenigLexicalEditor @lexical={{this.comparisonRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerComparisonEditorApi"}}/>
@@ -39,17 +48,17 @@
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">
-                    {{!-- <li class="nav-list-item">
+                    <li class="nav-list-item">
                         <div class="for-switch x-small">
                             <label class="switch">
                                 <span>Show changes to previous version</span>
                                 <span class="gh-toggle-featured">
-                                    <input type="checkbox">
+                                    <input {{on "click" (fn this.toggleDifferences '')}} type="checkbox" checked={{this.showDifferences}}>
                                     <span class="input-toggle-component"></span>
                                 </span>
                             </label>
                         </div>
-                    </li> --}}
+                    </li>
                     {{#each this.revisionList as |revision index|}}
                     <li class="nav-list-item {{if revision.selected "selected" ""}}">
                         <button type="button" {{action "handleClick" index}}>
