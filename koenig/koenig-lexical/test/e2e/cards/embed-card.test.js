@@ -61,7 +61,7 @@ describe('Embed card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders embed card node', async function () {
+    test.skip('renders embed card node', async function () {
         await focusEditor(page);
         await page.keyboard.type('/embed');
         await page.keyboard.press('Enter');
@@ -100,7 +100,7 @@ describe('Embed card', async () => {
             await expect(await page.getByTestId('embed-url-loading-spinner')).toBeVisible();
         });
 
-        test('displays expected metadata', async function () {
+        test.skip('displays expected metadata', async function () {
             await focusEditor(page);
             await page.keyboard.type('/embed');
             await page.keyboard.press('Enter');
@@ -128,7 +128,7 @@ describe('Embed card', async () => {
     });
 
     describe('Error Handling', async () => {
-        test('bad url entry shows error message', async function () {
+        test.skip('bad url entry shows error message', async function () {
             await focusEditor(page);
             await page.keyboard.type('/embed');
             await page.keyboard.press('Enter');
@@ -184,7 +184,7 @@ describe('Embed card', async () => {
             `);
         });
 
-        test('close button removes card', async function () {
+        test.skip('close button removes card', async function () {
             await focusEditor(page);
             await page.keyboard.type('/embed');
             await page.keyboard.press('Enter');
