@@ -57,7 +57,7 @@ export class HeaderNode extends BaseHeaderNode {
         if (this.__headerTextEditor) {
             this.__headerTextEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__headerTextEditor, null);
-                const cleanedHtml = cleanBasicHtml(html);
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
                 json.header = cleanedHtml;
             });
         }
@@ -65,7 +65,7 @@ export class HeaderNode extends BaseHeaderNode {
         if (this.__subHeaderTextEditor) {
             this.__subHeaderTextEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__subHeaderTextEditor, null);
-                const cleanedHtml = cleanBasicHtml(html);
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
                 json.subheader = cleanedHtml;
             });
         }

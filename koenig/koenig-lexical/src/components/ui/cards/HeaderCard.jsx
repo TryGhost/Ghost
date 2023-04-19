@@ -1,4 +1,4 @@
-import KoenigHeaderEditor from '../../KoenigHeaderEditor';
+import KoenigProductEditor from '../../KoenigProductEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
@@ -6,6 +6,7 @@ import {ButtonGroupSetting, ColorPickerSetting, InputSetting, InputUrlSetting, S
 import {ReactComponent as FileUploadIcon} from '../../../assets/icons/kg-upload-fill.svg';
 import {ProgressBar} from '../ProgressBar';
 import {ReactComponent as TrashIcon} from '../../../assets/icons/kg-trash.svg';
+import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 export const HEADER_COLORS = {
     dark: 'bg-black',
@@ -167,28 +168,40 @@ export function HeaderCard({isEditing,
                     backgroundPosition: 'center center',
                     backgroundColor: 'bg-grey-950'
                 } : null}>
-                <KoenigHeaderEditor
-                    autoFocus={focusOn === 'header'}
-                    className={`relative z-50 w-full whitespace-normal text-center font-extrabold leading-tight tracking-tight ${(size === 'small') ? 'kg-header-card-heading-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
-                    handleEditorFocus={handleEditorFocus}
-                    isSubheader={false}
-                    nodeKey={nodeKey}
-                    placeholderText={headingPlaceholder}
-                    placeholderTextClassName={`whitespace-normal tracking-tight absolute text-center w-full top-0 left-0 z-1 pointer-events-none cursor-text font-extrabold leading-tight ${(size === 'small') ? 'text-6xl kg-header-card-heading-small' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
-                    textEditor={headerTextEditor}
-                    textEditorInitialState={headerTextEditorInitialState}
-                />
-                <KoenigHeaderEditor
-                    autoFocus={focusOn === 'subheader'}
-                    className={`relative w-full whitespace-normal text-center font-medium leading-tight ${(size === 'small') ? 'kg-header-card-subheading-small mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-[2.7rem]' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
-                    handleEditorFocus={handleEditorFocus}
-                    isSubheader={true}
-                    nodeKey={nodeKey}
-                    placeholderText={subHeadingPlaceholder}
-                    placeholderTextClassName={`w-full whitespace-medium text-center leading-tight absolute top-0 left-0 z-1 pointer-events-none cursor-text font-normal kg-header-card-subheading-small`}
-                    textEditor={subHeaderTextEditor}
-                    textEditorInitialState={subHeaderTextEditorInitialState}
-                />
+
+                {
+                    (isEditing || !isEditorEmpty(headerTextEditor)) && (
+                        <KoenigProductEditor
+                            autoFocus={true}
+                            disableKoenigStyles={true}
+                            focusNext={subHeaderTextEditor}
+                            initialEditor={headerTextEditor}
+                            initialEditorState={headerTextEditorInitialState}
+                            nodeKey={nodeKey}
+                            nodes="minimal"
+                            placeholderClassName={`opacity-50 whitespace-normal tracking-tight absolute text-center w-full top-0 left-0 z-1 pointer-events-none cursor-text font-extrabold leading-tight ${(size === 'small') ? 'text-6xl kg-header-card-heading-small' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                            placeholderText={headingPlaceholder}
+                            singleParagraph={true}
+                            textClassName={`relative z-50 w-full whitespace-normal text-center font-extrabold leading-tight tracking-tight ${(size === 'small') ? 'kg-header-card-heading-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                        />
+                    )
+                }
+                {
+                    (isEditing || !isEditorEmpty(subHeaderTextEditor)) && (
+                        <KoenigProductEditor
+                            disableKoenigStyles={true}
+                            initialEditor={subHeaderTextEditor}
+                            initialEditorState={subHeaderTextEditorInitialState}
+                            nodeKey={nodeKey}
+                            nodes="minimal"
+                            placeholderClassName={`opacity-50 w-full whitespace-medium text-center leading-tight absolute top-0 left-0 z-1 pointer-events-none cursor-text font-normal kg-header-card-subheading-small`}
+                            placeholderText={subHeadingPlaceholder}
+                            singleParagraph={true}
+                            textClassName={`relative w-full whitespace-normal text-center font-medium leading-tight ${(size === 'small') ? 'kg-header-card-subheading-small mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-[2.7rem]' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                        />
+                    )
+                }
+
                 { (button) &&
                 <div className={`${(size === 'S') ? 'mt-6' : (size === 'M') ? 'mt-8' : 'mt-10'}`}>
                     {((button && (backgroundColor === 'light')) && <Button placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' placeholder={buttonPlaceholder} size={size} value={buttonText} />)}

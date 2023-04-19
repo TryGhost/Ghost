@@ -114,7 +114,8 @@ const KoenigProductEditor = ({
     placeholderClassName,
     autoFocus = false,
     focusNext,
-    singleParagraph = false
+    singleParagraph = false,
+    disableKoenigStyles = false
 }) => {
     const initialNodes = nodes === 'minimal' ? MINIMAL_NODES : BASIC_NODES;
     const markdownTransformers = nodes === 'minimal' ? MINIMAL_TRANSFORMERS : BASIC_TRANSFORMERS;
@@ -127,6 +128,7 @@ const KoenigProductEditor = ({
         >
             <KoenigComposableEditor
                 className={textClassName}
+                disableKoenigStyles={disableKoenigStyles}
                 markdownTransformers={markdownTransformers}
                 placeholder={<Placeholder className={placeholderClassName} text={placeholderText} />}
             >

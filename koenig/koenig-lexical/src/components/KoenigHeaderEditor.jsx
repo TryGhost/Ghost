@@ -82,9 +82,9 @@ function HeaderEditorPlugin({autoFocus, handleEditorFocus, isSubheader}) {
 }
 
 const KoenigHeaderEditor = ({
-    paragraphs = 1, 
-    placeholderText, 
-    className, 
+    paragraphs = 1,
+    placeholderText,
+    className,
     textEditor,
     autoFocus = false,
     isSubheader = false,
@@ -105,8 +105,8 @@ const KoenigHeaderEditor = ({
                 placeholder={<Placeholder className={placeholderTextClassName} text={placeholderText} />}
             >
                 <HeaderEditorPlugin
-                    autoFocus={autoFocus} 
-                    handleEditorFocus={handleEditorFocus} 
+                    autoFocus={autoFocus}
+                    handleEditorFocus={handleEditorFocus}
                     isSubheader={isSubheader}
                 />
                 <RestrictContentPlugin paragraphs={paragraphs} />
