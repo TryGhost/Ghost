@@ -22,6 +22,10 @@ export default class PinturaController extends Controller {
     @tracked cssSuccess;
     @tracked cssFailure;
 
+    get showUploadSettings() {
+        return this.settings.pintura && !this.config.pintura;
+    }
+
     constructor() {
         super(...arguments);
         this.jsExtension = JS_EXTENSION;
@@ -71,8 +75,8 @@ export default class PinturaController extends Controller {
     }
 
     @action
-    update(value) {
-        this.settings.pintura = value;
+    update(event) {
+        this.settings.pintura = event.target.checked;
     }
 
     @action
