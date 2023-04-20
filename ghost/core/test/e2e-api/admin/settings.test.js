@@ -113,6 +113,10 @@ describe('Settings API', function () {
                     value: '<p>Great news coming soon!</p>'
                 },
                 {
+                    key: 'announcement_visibility',
+                    value: JSON.stringify(['visitors', 'free_members'])
+                },
+                {
                     key: 'navigation',
                     value: JSON.stringify([{
                         label: 'label1'
@@ -315,7 +319,7 @@ describe('Settings API', function () {
             const settingsToChange = [
                 {
                     key: 'announcement_visibility',
-                    value: 'invalid value'
+                    value: JSON.stringify(['invalid value'])
                 }
             ];
 

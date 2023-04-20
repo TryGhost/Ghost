@@ -9,12 +9,6 @@ module.exports = combineTransactionalMigrations(
         group: 'announcement'
     }),
     addSetting({
-        key: 'announcement_visibility',
-        value: 'public',
-        type: 'string',
-        group: 'announcement'
-    }),
-    addSetting({
         key: 'announcement_background',
         value: 'dark',
         type: 'string',

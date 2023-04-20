@@ -498,14 +498,8 @@
             "flags": "PUBLIC"
         },
         "announcement_visibility": {
-            "defaultValue": "public",
-            "type": "string",
-            "isIn": [[
-                "public",
-                "visitors",
-                "members",
-                "paid"
-            ]]
+            "defaultValue": "[]",
+            "type": "array"
         },
         "announcement_background": {
             "defaultValue": "dark",
