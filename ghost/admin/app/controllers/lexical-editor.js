@@ -309,6 +309,11 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    registerEditorAPI(API) {
+        this.editorAPI = API;
+    }
+
+    @action
     clearFeatureImage() {
         this.post.set('featureImage', null);
         this.post.set('featureImageAlt', null);
