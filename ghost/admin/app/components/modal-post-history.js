@@ -1,4 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
+import RestoreRevisionModal from '../components/modals/restore-revision';
 import diff from 'node-htmldiff';
 import {action, computed} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -20,7 +21,7 @@ function checkFinishedRendering(element, done) {
 }
 
 export default ModalComponent.extend({
-    notifications: service(),
+    modals: service(),
     selectedHTML: null,
     diffHtml: null,
     showDifferences: true,
@@ -61,6 +62,7 @@ export default ModalComponent.extend({
         this._super(...arguments);
         this.post = this.model.post;
         this.editorAPI = this.model.editorAPI;
+        this.toggleSettingsMenu = this.model.toggleSettingsMenu;
     },
 
     didInsertElement() {
@@ -93,23 +95,22 @@ export default ModalComponent.extend({
     restoreRevision: action(function (index){
         const revision = this.revisionList[index];
 
-        // Persist model
-        this.post.lexical = revision.lexical;
-        this.post.title = revision.title;
-        this.post.save();
+        this.modals.open(RestoreRevisionModal, {
+            post: this.post,
+            revision,
+            updateTitle: () => {
+                this.set('post.titleScratch', revision.title);
+            },
+            updateEditor: () => {
+                const state = this.editorAPI.editorInstance.parseEditorState(revision.lexical);
 
-        // @TODO: error handling
-
-        // Update editor title
-        this.set('post.titleScratch', this.post.title);
-
-        // Update editor content
-        const state = this.editorAPI.editorInstance.parseEditorState(this.post.lexical);
-        this.editorAPI.editorInstance.setEditorState(state);
-
-        // Close modal
-        this.closeModal();
-        this.notifications.showNotification('Revision successfully restored.', {type: 'success'});
+                this.editorAPI.editorInstance.setEditorState(state);
+            },
+            closePostHistoryModal: () => {
+                this.closeModal();
+                this.toggleSettingsMenu();
+            }
+        });
     }),
 
     toggleDifferences: action(function () {
