@@ -406,11 +406,12 @@ export default class LexicalEditorController extends Controller {
 
     // separate task for autosave so that it doesn't override a manual save
     @dropTask
-    *autosaveTask() {
+    *autosaveTask(options) {
         if (!this.get('saveTask.isRunning')) {
             return yield this.saveTask.perform({
                 silent: true,
-                backgroundSave: true
+                backgroundSave: true,
+                ...options
             });
         }
     }
@@ -422,6 +423,7 @@ export default class LexicalEditorController extends Controller {
         let prevStatus = this.get('post.status');
         let isNew = this.get('post.isNew');
         let status;
+        const adapterOptions = {};
 
         this.cancelAutosave();
 
@@ -452,10 +454,15 @@ export default class LexicalEditorController extends Controller {
         // new publishing flow sets the post status manually on publish
         this.set('post.status', status);
 
+        const explicitSave = !options.backgroundSave;
+        const leavingEditor = options.leavingEditor;
+        if (explicitSave || leavingEditor) {
+            adapterOptions.saveRevision = 1;
+        }
         yield this.beforeSaveTask.perform(options);
 
         try {
-            let post = yield this._savePostTask.perform(options);
+            let post = yield this._savePostTask.perform({...options, adapterOptions});
 
             post.set('statusScratch', null);
 
@@ -851,7 +858,8 @@ export default class LexicalEditorController extends Controller {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
 
-                await this.autosaveTask.perform();
+                // If leaving the editor, always save a revision
+                await this.autosaveTask.perform({leavingEditor: true});
                 return transition.retry();
             }
 

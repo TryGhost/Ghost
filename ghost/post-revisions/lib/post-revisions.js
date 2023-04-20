@@ -32,26 +32,39 @@ class PostRevisions {
      * @param {PostLike} previous
      * @param {PostLike} current
      * @param {Revision[]} revisions
+     * @param {object} options
      * @returns {boolean}
      */
-    shouldGenerateRevision(previous, current, revisions) {
+    shouldGenerateRevision(previous, current, revisions, options) {
         if (!previous) {
             return false;
         }
+        // If there's no revisions for this post, we should always save a revision
         if (revisions.length === 0) {
             return true;
         }
-        return previous.html !== current.html || previous.title !== current.title;
+        // If the user has explicitly requested a revision (cmd+s), we should always save a revision
+        if (options.forceRevision) {
+            return true;
+        }
+
+        const htmlHasChanged = previous.html !== current.html;
+        const titleHasChanged = previous.title !== current.title;
+        const forceRevision = options.forceRevision;
+        if ((htmlHasChanged || titleHasChanged) && forceRevision) {
+            return true;
+        }
     }
 
     /**
      * @param {PostLike} previous
      * @param {PostLike} current
      * @param {Revision[]} revisions
+     * @param {object} options
      * @returns {Promise<Revision[]>}
      */
-    async getRevisions(previous, current, revisions) {
-        if (!this.shouldGenerateRevision(previous, current, revisions)) {
+    async getRevisions(previous, current, revisions, options) {
+        if (!this.shouldGenerateRevision(previous, current, revisions, options)) {
             return revisions;
         }
 

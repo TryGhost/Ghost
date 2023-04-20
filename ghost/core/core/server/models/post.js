@@ -932,7 +932,12 @@ Post = ghostBookshelf.Model.extend({
                         title: model.get('title')
                     };
 
-                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions);
+                    // CASE: Always save a new revision when a post is published or 'updated'
+                    if (newStatus === 'published') {
+                        options.save_revision = true;
+                    }
+
+                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions, {forceRevision: options.save_revision});
                     model.set('post_revisions', newRevisions);
                 });
             }
@@ -1170,7 +1175,7 @@ Post = ghostBookshelf.Model.extend({
             findPage: ['status'],
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision']
         };
 
         // The post model additionally supports having a formats option
