@@ -94,6 +94,46 @@ export default ModalComponent.extend({
         };
     },
 
+    calculateHTMLDiff(previousHTML, currentHTML) {
+        const result = diff(previousHTML, currentHTML);
+        const div = document.createElement('div');
+        div.innerHTML = result;
+        const cards = div.querySelectorAll('div[data-kg-card]');
+        for (const card of cards) {
+            const hasChanges = !!card.querySelectorAll('del').length || !!card.querySelectorAll('ins').length;
+            if (hasChanges) {
+                const delCard = card.cloneNode(true);
+                const insCard = card.cloneNode(true);
+
+                const ins = document.createElement('ins');
+                const del = document.createElement('del');
+
+                delCard.querySelectorAll('ins').forEach((el) => {
+                    el.remove();
+                });
+                insCard.querySelectorAll('del').forEach((el) => {
+                    el.remove();
+                });
+                delCard.querySelectorAll('del').forEach((el) => {
+                    el.parentNode.appendChild(el.firstChild);
+                    el.remove();
+                });
+                insCard.querySelectorAll('ins').forEach((el) => {
+                    el.parentNode.appendChild(el.firstChild);
+                    el.remove();
+                });
+
+                ins.appendChild(insCard);
+                del.appendChild(delCard);
+
+                card.parentNode.appendChild(del);
+                card.parentNode.appendChild(ins);
+                card.remove();
+            }
+        }
+        return div.innerHTML;
+    },
+
     updateDiff() {
         if (this.comparisonEditor && this.selectedEditor) {
             let comparisonState = this.comparisonEditor.editorInstance.parseEditorState(this.comparisonRevision.lexical);
@@ -111,7 +151,7 @@ export default ModalComponent.extend({
 
         let updateIfBothDone = () => {
             if (previousDone && currentDone) {
-                this.set('diffHtml', diff(previous.innerHTML, current.innerHTML));
+                this.set('diffHtml', this.calculateHTMLDiff(previous.innerHTML, current.innerHTML));
                 this.set('selectedHTML', current.innerHTML);
             }
         };
