@@ -103,6 +103,11 @@ export default [
     setting('firstpromoter', 'firstpromoter', false),
     setting('firstpromoter', 'firstpromoter_id', null),
 
+    // PINTURA
+    setting('pintura', 'pintura', false),
+    setting('pintura', 'pintura_js_url', null),
+    setting('pintura', 'pintura_css_url', null),
+
     // LABS
     setting('labs', 'labs', JSON.stringify({
         // Keep the GA flags that are not yet cleaned up in frontend code here

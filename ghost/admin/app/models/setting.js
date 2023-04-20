@@ -91,6 +91,12 @@ export default Model.extend(ValidationEngine, {
     editorDefaultEmailRecipients: attr('string'),
     editorDefaultEmailRecipientsFilter: attr('members-segment-string'),
     emailVerificationRequired: attr('boolean'),
+    /**
+     * Pintura settings
+     */
+    pintura: attr('boolean'),
+    pinturaJsUrl: attr('string'),
+    pinturaCssUrl: attr('string'),
 
     // HACK - not a real model attribute but a workaround for Ember Data not
     //        exposing meta from save responses

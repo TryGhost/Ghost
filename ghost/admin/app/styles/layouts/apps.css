@@ -616,3 +616,30 @@
 .apps-card-app-orb.rot-3 {
     transform: rotate(270deg);
 }
+
+/* Pintura integration
+/* ---------------------------------------------------------- */
+.gh-pintura-banner.gh-main-section-content {
+    display: grid;
+    grid-template-columns: 4fr 3fr;
+    padding: 0;
+    font-size: 1.5rem;
+}
+
+.gh-pintura-banner-content {
+    padding: 24px;
+}
+
+.gh-pintura-banner-content p {
+    margin-top: 0.8em;
+    margin-bottom: 0;
+}
+
+.gh-pintura-banner-content .gh-btn {
+    margin-top: 1.2em;
+    background-color: var(--black) !important;
+}
+
+.gh-pintura-banner-image {
+    border-radius: 0 3px 3px 0;
+}
