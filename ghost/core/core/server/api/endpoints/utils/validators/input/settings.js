@@ -22,7 +22,8 @@ module.exports = {
             const arrayTypeSettings = [
                 'notifications',
                 'navigation',
-                'secondary_navigation'
+                'secondary_navigation',
+                'announcement_visibility'
             ];
 
             const emailTypeSettings = [
@@ -64,14 +65,26 @@ module.exports = {
             }
 
             if (setting.key === 'announcement_visibility') {
-                const visibilityValue = setting.value;
+                // NOTE: safe to parse because of array validation up top
+                const visibilityValues = JSON.parse(setting.value);
 
-                if (!['public', 'visitors', 'members', 'paid'].includes(visibilityValue)) {
-                    const visibilityError = new ValidationError({
-                        message: tpl(messages.invalidAnnouncementVisibilityValueReceived),
-                        property: setting.key
+                // NOTE: combination of 'free_members' & 'paid_members' makes just a 'members' filter
+                const validVisibilityValues = [
+                    'visitors', // Logged out visitors
+                    'free_members', // Free members
+                    'paid_members' // Paid members
+                ];
+
+                if (visibilityValues.length) {
+                    visibilityValues.forEach((visibilityValue) => {
+                        if (!validVisibilityValues.includes(visibilityValue)) {
+                            const visibilityError = new ValidationError({
+                                message: tpl(messages.invalidAnnouncementVisibilityValueReceived),
+                                property: setting.key
+                            });
+                            errors.push(visibilityError);
+                        }
                     });
-                    errors.push(visibilityError);
                 }
             }
 
