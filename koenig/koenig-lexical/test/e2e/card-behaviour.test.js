@@ -516,7 +516,10 @@ describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('--- ');
             // three lines of text - paste it because keyboard.type is slow for long text
-            await pasteText(page, 'Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.');
+            const text = 'Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.';
+            await pasteText(page, text);
+
+            await expect(await page.getByText(text)).toBeVisible();
 
             // place cursor at beginning of third line
             const pHandle = await page.$('[data-lexical-editor] > p');
