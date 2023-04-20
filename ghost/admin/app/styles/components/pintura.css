@@ -1,15 +1,17 @@
 .pintura-editor {
+    --color-background: 0, 0, 0 !important;
+    --color-foreground: 255, 255, 255 !important;
     --font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif !important;
 }
 
-.PinturaModal {
+/* .PinturaModal {
     padding: 32px !important;
-    background-color: rgba(0, 0, 0, 0.6) !important;
+    background-color: rgba(0, 0, 0, 0.3) !important;
 }
 
 .PinturaRoot {
     border-radius: 9px !important;
-}
+} */
 
 .PinturaRoot[data-env~=landscape][data-env~=has-navigation] > .PinturaMain {
     grid-column: 1 / -1 !important;
@@ -24,8 +26,8 @@
     height: 34px !important;
     font-size: 2rem !important;
     font-weight: 500 !important;
-    color: var(--white) !important;
-    background-color: var(--black) !important;
+    color: var(--black) !important;
+    background-color: var(--white) !important;
     border-radius: 3px !important;
     -webkit-font-smoothing: subpixel-antialiased !important;
 }
@@ -37,7 +39,28 @@
 .PinturaRoot .PinturaButtonExport:hover {
     color: var(--black) !important;
     background-color: var(--white) !important;
+    opacity: 0.95 !important;
 }
+
+/* .PinturaRoot .PinturaNavSet {
+    box-shadow: none !important;
+}
+
+.PinturaRoot .PinturaNavSet > :not(:only-child) {
+    border: 0 !important;
+}
+
+.PinturaRoot .PinturaNavSet > button[title="Close"] {
+    margin-left: -4px !important;
+}
+
+.PinturaRoot > .PinturaNav .PinturaButton svg {
+    width: 20px !important;
+}
+
+.PinturaRoot > .PinturaNav .PinturaButton:not(.PinturaButtonExport):hover {
+    background: none !important;
+} */
 
 .PinturaNavGroup {
     margin-left: 0 !important;
@@ -54,12 +77,12 @@
 
 /* Main nav */
 
-.PinturaRoot[data-env~=landscape] > .PinturaNavMain {
+/* .PinturaRoot[data-env~=landscape] > .PinturaNavMain {
     left: 24px !important;
 }
 
 .PinturaRoot > .PinturaNavMain .PinturaTabList [aria-selected=true] {
-    color: var(--green-d1) !important;
+    color: var(--green) !important;
 }
 
 .PinturaRoot[data-env~=landscape] > .PinturaNavMain button {
@@ -82,7 +105,7 @@
     font-size: 13px !important;
     font-weight: 600 !important;
     text-align: left !important;
-}
+} */
 
 /* Cropping */
 
@@ -105,7 +128,7 @@
     position: relative !important;
     transform: rotate(-90deg) !important;
     width: 16px !important;
-    border-color: rgba(0,0,0,1) !important;
+    border-color: rgba(255, 255, 255, 1) !important;
 }
 
 .PinturaRectManipulator[data-shape~=circle][data-direction=tr] {
@@ -135,7 +158,7 @@
 
 /* Toolbar */
 
-.PinturaUtilHeader {
+/* .PinturaUtilHeader {
     padding-bottom: 4px !important;
 }
 
@@ -144,7 +167,7 @@
 }
 
 .PinturaToolbar .PinturaButton:hover {
-    color: var(--green-d1) !important;
+    color: var(--green) !important;
     box-shadow: none !important;
 }
 
@@ -158,16 +181,16 @@
 
 .PinturaButton svg + .PinturaButtonLabel {
     margin-left: 4px !important;
-}
+} */
 
 /* Tab list */
 
-.PinturaUtilFooter .PinturaControlList [role=tab] button {
+/* .PinturaUtilFooter .PinturaControlList [role=tab] button {
     padding: 0 10px !important;
 }
 
 .PinturaUtilFooter .PinturaControlList [role=tab][aria-selected=true] button {
-    color: var(--green-d1) !important;
+    color: var(--green) !important;
     background: none !important;
     box-shadow: none !important;
 }
@@ -179,4 +202,4 @@
 
 .PinturaUtilFooter .PinturaControlList [role=tab] button span {
     font-weight: 500 !important;
-}
+} */
