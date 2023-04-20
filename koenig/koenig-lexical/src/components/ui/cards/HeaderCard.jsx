@@ -92,7 +92,6 @@ function ImagePicker({onFileChange,
 
 export function HeaderCard({isEditing,
     size,
-    backgroundColor,
     headerPlaceholder,
     subheaderPlaceholder,
     subheader,
@@ -110,7 +109,7 @@ export function HeaderCard({isEditing,
     backgroundImagePreview,
     fileInputRef,
     openFilePicker,
-    backgroundImageStyle,
+    style,
     header,
     headerTextEditor,
     subheaderTextEditor,
@@ -137,22 +136,22 @@ export function HeaderCard({isEditing,
         {
             label: 'Dark',
             name: 'dark',
-            color: 'black'
+            color: 'bg-black'
         },
         {
             label: 'Light',
             name: 'light',
-            color: 'grey-50'
+            color: 'bg-grey-50'
         },
         {
             label: 'Accent',
             name: 'accent',
-            color: 'pink'
+            color: 'bg-pink'
         },
         {
             label: 'Background Image', // technically not a color, but it could have some styles associated with it when a background image is added.
             name: 'image',
-            color: 'grey-50'
+            color: 'bg-grey-50'
         }
     ];
 
@@ -160,8 +159,8 @@ export function HeaderCard({isEditing,
 
     return (
         <>
-            <div className={`not-kg-prose flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[backgroundColor]} `}
-                style={backgroundImageSrc && backgroundImageStyle === 'image' ? {
+            <div className={`not-kg-prose flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[style]} `}
+                style={backgroundImageSrc && style === 'image' ? {
                     backgroundImage: `url(${backgroundImageSrc})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
@@ -178,10 +177,10 @@ export function HeaderCard({isEditing,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`kg-header-header-placeholder ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                            placeholderClassName={`kg-header-header-placeholder ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-header-text ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                            textClassName={`kg-header-header-text ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                         />
                     )
                 }
@@ -194,10 +193,10 @@ export function HeaderCard({isEditing,
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`kg-header-subheader-placeholder ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                            placeholderClassName={`kg-header-subheader-placeholder ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-subheader-text ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(backgroundColor === 'light') ? 'text-black' : 'text-white'}`}
+                            textClassName={`kg-header-subheader-text ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                         />
                     )
                 }
@@ -205,7 +204,7 @@ export function HeaderCard({isEditing,
                 {/* Button */}
                 { (button) &&
                     <div className={`${(size === 'S') ? 'mt-6' : (size === 'M') ? 'mt-8' : 'mt-10'}`}>
-                        {((button && (backgroundColor === 'light')) && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
+                        {((button && (style === 'light')) && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
                     </div>
                 }
 
@@ -224,7 +223,7 @@ export function HeaderCard({isEditing,
                     <ColorPickerSetting
                         buttons={colorPickerChildren}
                         label='Style'
-                        selectedName={backgroundColor}
+                        selectedName={style}
                         onClick={handleColorSelector}
                     />
                     <ImagePicker
@@ -270,7 +269,7 @@ export function HeaderCard({isEditing,
 
 HeaderCard.propTypes = {
     size: PropTypes.oneOf(['small', 'medium', 'large']),
-    backgroundColor: PropTypes.oneOf(['dark', 'light', 'accent', 'image']),
+    style: PropTypes.oneOf(['dark', 'light', 'accent', 'image']),
     heading: PropTypes.string,
     headerPlaceholder: PropTypes.string,
     subheader: PropTypes.string,

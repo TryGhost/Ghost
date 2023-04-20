@@ -40,7 +40,6 @@ describe('Header card', async () => {
                         buttonText: '',
                         header: '<span>hello world</span>',
                         subheader: '<span>hello sub</span>',
-                        backgroundImageStyle: 'image',
                         backgroundImageSrc: 'blob:http://localhost:5173/fa0956a8-5fb4-4732-9368-18f9d6d8d25a'
                     }],
                     direction: null,

@@ -8,7 +8,6 @@ const NODE_TYPE = 'header';
 
 export class HeaderNode extends KoenigDecoratorNode {
     // header payload properties
-
     __size;
     __style;
     __buttonEnabled;
@@ -16,7 +15,6 @@ export class HeaderNode extends KoenigDecoratorNode {
     __buttonText;
     __header;
     __subheader;
-    __backgroundImageStyle;
     __backgroundImageSrc;
 
     static getType() {
@@ -49,7 +47,6 @@ export class HeaderNode extends KoenigDecoratorNode {
             buttonText: self.__buttonText,
             header: self.__header,
             subheader: self.__subheader,
-            backgroundImageStyle: self.__backgroundImageStyle,
             backgroundImageSrc: self.__backgroundImageSrc
         };
     }
@@ -61,7 +58,6 @@ export class HeaderNode extends KoenigDecoratorNode {
         buttonText,
         header,
         subheader,
-        backgroundImageStyle,
         backgroundImageSrc} = {}, key) {
         super(key);
         this.__size = size || 'small';
@@ -71,12 +67,11 @@ export class HeaderNode extends KoenigDecoratorNode {
         this.__buttonText = buttonText || '';
         this.__header = header || '';
         this.__subheader = subheader || '';
-        this.__backgroundImageStyle = backgroundImageStyle || 'dark';
         this.__backgroundImageSrc = backgroundImageSrc || '';
     }
 
     static importJSON(serializedNode) {
-        const {size, style, buttonEnabled, buttonUrl, buttonText, header, subheader, backgroundImageStyle, backgroundImageSrc} = serializedNode;
+        const {size, style, buttonEnabled, buttonUrl, buttonText, header, subheader, backgroundImageSrc} = serializedNode;
         const node = new this({
             size,
             style,
@@ -85,7 +80,6 @@ export class HeaderNode extends KoenigDecoratorNode {
             buttonText,
             header,
             subheader,
-            backgroundImageStyle,
             backgroundImageSrc
         });
         return node;
@@ -102,7 +96,6 @@ export class HeaderNode extends KoenigDecoratorNode {
             buttonText: this.getButtonText(),
             header: this.getHeader(),
             subheader: this.getSubheader(),
-            backgroundImageStyle: this.getBackgroundImageStyle(),
             backgroundImageSrc: this.getBackgroundImageSrc()
         };
         return dataset;
@@ -199,16 +192,6 @@ export class HeaderNode extends KoenigDecoratorNode {
     setSubheader(subheader) {
         const writable = this.getWritable();
         writable.__subheader = subheader;
-    }
-
-    getBackgroundImageStyle() {
-        const self = this.getLatest();
-        return self.__backgroundImageStyle;
-    }
-
-    setBackgroundImageStyle(backgroundImageStyle) {
-        const writable = this.getWritable();
-        writable.__backgroundImageStyle = backgroundImageStyle;
     }
 
     getBackgroundImageSrc() {

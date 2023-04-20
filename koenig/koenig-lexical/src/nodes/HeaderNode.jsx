@@ -98,9 +98,7 @@ export class HeaderNode extends BaseHeaderNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={'full'}>
                 <HeaderNodeComponent
-                    backgroundColor={this.getBackgroundImageStyle()}
                     backgroundImageSrc={this.getBackgroundImageSrc()}
-                    backgroundImageStyle={this.getBackgroundImageStyle()}
                     button={this.getButtonEnabled()}
                     buttonPlaceholder={'Add button text'}
                     buttonText={this.getButtonText()}
@@ -111,6 +109,7 @@ export class HeaderNode extends BaseHeaderNode {
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
                     nodeKey={this.getKey()}
                     size={this.getSize()}
+                    style={this.getStyle()}
                     subheader={this.getSubheader()}
                     subheaderPlaceholder={'Enter subheading text'}
                     subheaderTextEditor={this.__subheaderTextEditor}

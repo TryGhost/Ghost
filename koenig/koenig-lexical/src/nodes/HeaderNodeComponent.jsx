@@ -19,8 +19,7 @@ function HeaderNodeComponent({
     subheaderPlaceholder,
     buttonText,
     buttonUrl,
-    backgroundImageStyle,
-    backgroundColor,
+    style,
     headerTextEditorInitialState,
     headerPlaceholder,
     header,
@@ -87,7 +86,6 @@ function HeaderNodeComponent({
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setStyle(color);
-            node.setBackgroundImageStyle(color);
         });
     };
 
@@ -135,10 +133,8 @@ function HeaderNodeComponent({
     return (
         <>
             <HeaderCard
-                backgroundColor={backgroundColor}
                 backgroundImagePreview={backgroundImagePreview}
                 backgroundImageSrc={backgroundImageSrc}
-                backgroundImageStyle={backgroundImageStyle}
                 button={button}
                 buttonPlaceholder={buttonPlaceholder}
                 buttonText={buttonText}
@@ -158,6 +154,7 @@ function HeaderNodeComponent({
                 isEditing={isEditing}
                 openFilePicker={openFilePicker}
                 size={size}
+                style={style}
                 subheader={subheader}
                 subheaderPlaceholder={subheaderPlaceholder}
                 subheaderTextEditor={subheaderTextEditor}

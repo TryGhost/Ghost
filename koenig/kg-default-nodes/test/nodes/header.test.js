@@ -33,8 +33,7 @@ describe('HeaderNode', function () {
             header: 'This is the header card',
             size: 'small',
             style: 'image',
-            subheader: 'hello',
-            backgroundImageStyle: 'cover'
+            subheader: 'hello'
         };
 
         exportOptions = {

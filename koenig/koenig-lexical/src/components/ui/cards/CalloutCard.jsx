@@ -20,47 +20,47 @@ export const calloutColorPicker = [
     {
         label: 'Grey',
         name: 'grey',
-        colorClass: 'bg-grey/10 dark:border-white/10'
+        color: 'bg-grey/10 dark:border-white/10'
     },
     {
         label: 'White',
         name: 'white',
-        colorClass: 'bg-transparent dark:border-white/10'
+        color: 'bg-transparent dark:border-white/10'
     },
     {
         label: 'Blue',
         name: 'blue',
-        colorClass: 'bg-blue/10 dark:border-white/10'
+        color: 'bg-blue/10 dark:border-white/10'
     },
     {
         label: 'Green',
         name: 'green',
-        colorClass: 'bg-green/10 dark:border-white/10'
+        color: 'bg-green/10 dark:border-white/10'
     },
     {
         label: 'Yellow',
         name: 'yellow',
-        colorClass: 'bg-yellow/10 dark:border-white/10'
+        color: 'bg-yellow/10 dark:border-white/10'
     },
     {
         label: 'Red',
         name: 'red',
-        colorClass: 'bg-red/10 dark:border-white/10'
+        color: 'bg-red/10 dark:border-white/10'
     },
     {
         label: 'Pink',
         name: 'pink',
-        colorClass: 'bg-pink/10 dark:border-white/10'
+        color: 'bg-pink/10 dark:border-white/10'
     },
     {
         label: 'Purple',
         name: 'purple',
-        colorClass: 'bg-purple/10 dark:border-white/10'
+        color: 'bg-purple/10 dark:border-white/10'
     },
     {
         label: 'Accent',
         name: 'accent',
-        colorClass: 'bg-pink' //todo - this should be the theme colour
+        color: 'bg-pink' //todo - this should be the theme colour
     }
 ];
 

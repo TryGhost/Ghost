@@ -19,7 +19,6 @@ export class HeaderParser {
                             const size = div.classList.contains('kg-size-large') ? 'large' : 'small';
                             const style = div.classList.contains('kg-style-image') ? 'image' : 'text';
                             const backgroundImageSrc = div.getAttribute('data-kg-background-image');
-                            const backgroundImageStyle = div.getAttribute('style');
                             const hasHeader = !!headerElement;
                             const header = hasHeader ? headerElement.textContent : '';
                             const headerSlug = hasHeader ? headerElement.getAttribute('id') : '';
@@ -34,7 +33,6 @@ export class HeaderParser {
                                 size,
                                 style,
                                 backgroundImageSrc,
-                                backgroundImageStyle,
                                 header,
                                 headerSlug,
                                 subheader,

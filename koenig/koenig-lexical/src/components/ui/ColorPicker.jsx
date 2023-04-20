@@ -9,7 +9,7 @@ export function ColorPicker({buttons = [], selectedName, onClick}) {
                     name !== 'image' ?
                         <ColorButton
                             key={`${name}-${label}`}
-                            colorClass={color}
+                            color={color}
                             label={label}
                             name={name}
                             selectedName={selectedName}
@@ -28,7 +28,7 @@ export function ColorPicker({buttons = [], selectedName, onClick}) {
     );
 }
 
-export function ColorButton({onClick, label, name, colorClass, selectedName}) {
+export function ColorButton({onClick, label, name, color, selectedName}) {
     const isActive = name === selectedName;
     return (
         <li>
@@ -40,7 +40,7 @@ export function ColorButton({onClick, label, name, colorClass, selectedName}) {
                 onClick={() => onClick(name)}
             >
                 <span
-                    className={`bg-${colorClass} h-6 w-6 rounded-full border-2 border-black/5`}
+                    className={`${color} h-6 w-6 rounded-full border-2 border-black/5`}
                 ></span>
             </button>
         </li>
