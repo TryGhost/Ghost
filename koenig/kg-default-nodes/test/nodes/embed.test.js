@@ -120,6 +120,9 @@ describe('EmbedNode', function () {
             embedNode.isEmpty().should.be.false;
             embedNode.setUrl('');
             embedNode.isEmpty().should.be.true;
+            embedNode.setUrl(dataset.url);
+            embedNode.setHtml('');
+            embedNode.isEmpty().should.be.true;
         }));
     });
 

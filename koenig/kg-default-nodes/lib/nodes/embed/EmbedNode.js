@@ -164,7 +164,7 @@ export class EmbedNode extends KoenigDecoratorNode {
     }
 
     isEmpty() {
-        return !this.__url;
+        return !this.__url && !this.__html;
     }
 }
 
