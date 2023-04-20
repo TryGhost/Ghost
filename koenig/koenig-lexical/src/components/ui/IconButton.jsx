@@ -4,7 +4,7 @@ export function IconButton({onClick, label, dataTestId, Icon}) {
     return (
         <button
             aria-label={label}
-            className="flex h-8 w-9 cursor-pointer items-center justify-center rounded bg-white/90 transition-all hover:bg-white"
+            className="pointer-events-auto flex h-8 w-9 cursor-pointer items-center justify-center rounded bg-white/90 transition-all hover:bg-white"
             data-testid={dataTestId}
             type="button"
             onClick={onClick}
