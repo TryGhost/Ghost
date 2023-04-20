@@ -4,37 +4,12 @@
 
 @layer components {
    /* Header card – Header */
-  .kg-header-header-placeholder {
-    @apply !truncate opacity-50 whitespace-normal tracking-tight text-center w-full leading-tight font-bold
-  }
-
   .kg-header-header-text strong {
     @apply !font-extrabold
   }
 
-  .kg-header-header-text {
-    @apply relative w-full whitespace-normal text-center font-bold leading-tight tracking-tight
-  }
-
-  .kg-header-header-text {
-    @apply !whitespace-normal
-  }
-
   .kg-header-header-text a {
     @apply underline underline-offset-8
-  }
-
-  /* Header card – Subheader */
-  .kg-header-subheader-placeholder {
-    @apply !truncate opacity-50 w-full whitespace-normal text-center leading-tight font-normal
-  }
-
-  .kg-header-subheader-text {
-    @apply relative w-full whitespace-normal text-center font-medium leading-tight
-  }
-
-  .kg-header-subheader-text {
-    @apply !whitespace-normal
   }
 
   .kg-header-subheader-text a {

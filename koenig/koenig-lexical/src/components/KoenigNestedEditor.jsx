@@ -20,7 +20,6 @@ const KoenigNestedEditor = ({
     autoFocus = false,
     focusNext = null,
     singleParagraph = false,
-    disableKoenigStyles = false,
     hasSettingsPanel = false
 }) => {
     const initialNodes = nodes === 'minimal' ? MINIMAL_NODES : BASIC_NODES;
@@ -34,7 +33,7 @@ const KoenigNestedEditor = ({
         >
             <KoenigComposableEditor
                 className={textClassName}
-                disableKoenigStyles={disableKoenigStyles}
+                inheritStyles={true}
                 isDragEnabled={false}
                 markdownTransformers={markdownTransformers}
                 placeholder={<Placeholder className={placeholderClassName} text={placeholderText} />}

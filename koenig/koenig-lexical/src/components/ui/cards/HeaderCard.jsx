@@ -11,7 +11,7 @@ import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 export const HEADER_COLORS = {
     dark: 'bg-black',
     light: 'bg-grey-100',
-    accent: 'bg-pink',
+    accent: 'bg-accent',
     image: 'bg-grey-300 dark:bg-grey-950 bg-gradient-to-t from-black/0 via-black/5 to-black/30'
 };
 
@@ -146,7 +146,7 @@ export function HeaderCard({isEditing,
         {
             label: 'Accent',
             name: 'accent',
-            color: 'bg-pink'
+            color: 'bg-accent'
         },
         {
             label: 'Background Image', // technically not a color, but it could have some styles associated with it when a background image is added.
@@ -178,10 +178,10 @@ export function HeaderCard({isEditing,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`kg-header-header-placeholder ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            placeholderClassName={`truncate opacity-50 tracking-tight text-center w-full leading-tight font-bold ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-header-text ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            textClassName={`kg-header-header-text w-full whitespace-normal text-center font-bold leading-tight tracking-tight ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                         />
                     )
                 }
@@ -195,10 +195,10 @@ export function HeaderCard({isEditing,
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`kg-header-subheader-placeholder ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            placeholderClassName={`truncate opacity-50 w-full text-center leading-tight font-normal ${(size === 'small') ? 'text-xl' : (size === 'medium') ? 'text-2xl' : 'text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-subheader-text ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            textClassName={`kg-header-subheader-text relative w-full whitespace-normal text-center font-medium leading-tight ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                         />
                     )
                 }

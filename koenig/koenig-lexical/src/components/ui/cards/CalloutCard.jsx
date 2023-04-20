@@ -1,6 +1,6 @@
 import EmojiPickerPortal from '../EmojiPickerPortal';
-import KoenigCalloutEditor from '../../KoenigCalloutEditor';
 import KoenigComposerContext from '../../../context/KoenigComposerContext.jsx';
+import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {ColorPickerSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
@@ -13,7 +13,23 @@ export const CALLOUT_COLORS = {
     yellow: 'bg-yellow/10 border-transparent',
     red: 'bg-red/10 border-transparent',
     pink: 'bg-pink/10 border-transparent',
-    purple: 'bg-purple/10 border-transparent'
+    purple: 'bg-purple/10 border-transparent',
+    accent: 'bg-accent border-transparent'
+};
+
+const TEXT_BLACK = 'text-black dark:text-grey-300 caret-black dark:caret-grey-300';
+const TEXT_WHITE = 'text-white caret-white';
+
+export const CALLOUT_TEXT_COLORS = {
+    grey: TEXT_BLACK,
+    white: TEXT_BLACK,
+    blue: TEXT_BLACK,
+    green: TEXT_BLACK,
+    yellow: TEXT_BLACK,
+    red: TEXT_BLACK,
+    pink: TEXT_BLACK,
+    purple: TEXT_BLACK,
+    accent: TEXT_WHITE
 };
 
 export const calloutColorPicker = [
@@ -60,7 +76,7 @@ export const calloutColorPicker = [
     {
         label: 'Accent',
         name: 'accent',
-        color: 'bg-pink' //todo - this should be the theme colour
+        color: 'bg-accent'
     }
 ];
 
@@ -113,12 +129,15 @@ export function CalloutCard({
                         }
                     </>}
                 </div>
-                <KoenigCalloutEditor
-                    className="my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal text-black dark:text-grey-300"
-                    nodeKey={nodeKey}
+                <KoenigNestedEditor
+                    autoFocus={true}
+                    disableKoenigStyles={true}
+                    initialEditor={textEditor}
+                    initialEditorState={textEditorInitialState}
+                    nodes='minimal'
+                    placeholderClassName={`font-serif text-xl font-normal tracking-wide text-grey-500`}
                     placeholderText={'Callout text...'}
-                    textEditor={textEditor}
-                    textEditorInitialState={textEditorInitialState}
+                    textClassName={`my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal ${CALLOUT_TEXT_COLORS[color]}`}
                 />
             </div>
             {
