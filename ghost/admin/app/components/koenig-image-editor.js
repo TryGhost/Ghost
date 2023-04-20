@@ -139,11 +139,17 @@ export default class KoenigImageEditor extends Component {
                     'crop',
                     'filter',
                     'finetune',
-                    'redact'
+                    'redact',
+                    'annotate',
+                    'trim',
+                    'frame',
+                    'sticker'
                 ],
                 locale: {
                     labelButtonExport: 'Save and close'
-                }
+                },
+                cropEnableButtonToggleCropLimit: true,
+                cropSelectPresetFilter: true
             });
 
             editor.on('loaderror', () => {
