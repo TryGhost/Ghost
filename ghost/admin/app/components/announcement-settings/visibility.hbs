@@ -1,10 +1,43 @@
 <div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
     <div class="flex-grow-1">
         <label class="gh-setting-title gh-theme-setting-title" for="announcement-visibility">
-            Announcement visibility
+            Visibility
         </label>
 
-        <span class="gh-select">
+        <div class="form-group mt3 mb0 for-checkbox">
+            <label class="checkbox" for="logged-out">
+                <input
+                    type="checkbox"
+                    id="logged-out"
+                    name="logged-out"
+                    class="gh-input"
+                >
+                <span class="input-toggle-component"></span>
+                <p>Logged out visitors</p>
+            </label>
+            <label class="checkbox" for="free">
+                <input
+                    type="checkbox"
+                    id="free"
+                    name="free"
+                    class="gh-input"
+                >
+                <span class="input-toggle-component"></span>
+                <p>Free members</p>
+            </label>
+            <label class="checkbox" for="paid">
+                <input
+                    type="checkbox"
+                    id="paid"
+                    name="paid"
+                    class="gh-input"
+                >
+                <span class="input-toggle-component"></span>
+                <p>Paid members</p>
+            </label>
+        </div>
+
+        {{!-- <span class="gh-select">
             <select class="ember-select" name="announcement-visibility" id="announcement-visibility" {{on "change" this.setVisibility}}>
                 {{#each this.options as |settingOption|}}
                     <option value={{settingOption.value}} selected={{eq settingOption.value this.background}}>
@@ -13,6 +46,6 @@
                 {{/each}}
             </select>
             {{svg-jar "arrow-down-small"}}
-        </span>
+        </span> --}}
     </div>
 </div>

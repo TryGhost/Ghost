@@ -49,6 +49,16 @@
                     <p>Manage authors, editor and collaborators</p>
                 </div>
             </LinkTo>
+
+            {{#if (feature 'announcementBar')}}
+            <LinkTo class="gh-setting-group" @route="settings.announcement-bar" data-test-nav="announcement-bar">
+                <span class="yellow">{{svg-jar "confetti"}}</span>
+                <div>
+                    <h4>Announcement bar</h4>
+                    <p>Highlight breaking news, special offers, or important updates</p>
+                </div>
+            </LinkTo>
+            {{/if}}
         </div>
 
         <div class="gh-setting-header">Members</div>
