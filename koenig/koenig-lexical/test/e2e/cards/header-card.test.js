@@ -102,110 +102,9 @@ describe('Header card', async () => {
     test('can edit header', async function () {
         await createHeaderCard({page});
 
-        // await page.click('[data-kg-card="header"] [data-kg-card-input="header"]');
-
         await page.keyboard.type('Hello world');
-
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-            <div
-                data-kg-card-editing="true"
-                data-kg-card-selected="true"
-                data-kg-card="header">
-                <div>
-                <div>
-                    <div data-kg="editor">
-                    <div
-                        contenteditable="true"
-                        spellcheck="true"
-                        data-lexical-editor="true"
-                        role="textbox">
-                        <p dir="ltr"><span data-lexical-text="true">Hello world</span></p>
-                    </div>
-                    </div>
-                </div>
-                <div>
-                    <div data-kg="editor">
-                    <div
-                        contenteditable="true"
-                        spellcheck="true"
-                        data-lexical-editor="true"
-                        role="textbox">
-                        <p><br /></p>
-                    </div>
-                    </div>
-                    <div>Enter subheading text</div>
-                </div>
-                </div>
-                <div>
-                <div draggable="true">
-                    <div>
-                    <div>Size</div>
-                    <div>
-                        <div>
-                        <ul>
-                            <li><button aria-label="S" type="button">S</button></li>
-                            <li><button aria-label="M" type="button">M</button></li>
-                            <li><button aria-label="L" type="button">L</button></li>
-                        </ul>
-                        </div>
-                    </div>
-                    </div>
-                    <div>
-                    <div>Style</div>
-                    <div>
-                        <div>
-                        <ul>
-                            <li>
-                            <button
-                                aria-label="Dark"
-                                data-test-id="color-picker-dark"
-                                type="button">
-                                <span></span>
-                            </button>
-                            </li>
-                            <li>
-                            <button
-                                aria-label="Light"
-                                data-test-id="color-picker-light"
-                                type="button">
-                                <span></span>
-                            </button>
-                            </li>
-                            <li>
-                            <button
-                                aria-label="Accent"
-                                data-test-id="color-picker-accent"
-                                type="button">
-                                <span></span>
-                            </button>
-                            </li>
-                            <li type="button">
-                            <span><svg></svg></span>
-                            </li>
-                        </ul>
-                        </div>
-                    </div>
-                    </div>
-                    <form>
-                    <input accept="image/*" hidden="" name="image-input" type="file" />
-                    </form>
-                    <hr />
-                    <div>
-                    <div><div>Button</div></div>
-                    <div>
-                        <label id="header-button-toggle">
-                        <input type="checkbox" />
-                        <div></div>
-                        </label>
-                    </div>
-                    </div>
-                </div>
-                </div>
-            </div>
-            </div>
-            <p><br /></p>
-        `, {});
+        const firstEditor = page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0);
+        await expect(firstEditor).toHaveText('Hello world');
     });
 
     test('can edit sub header', async function () {
@@ -216,107 +115,30 @@ describe('Header card', async () => {
         await page.keyboard.press('Enter');
         await page.keyboard.type('Hello subheader');
 
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div
-                    data-kg-card-editing="true"
-                    data-kg-card-selected="true"
-                    data-kg-card="header">
-                    <div>
-                    <div>
-                        <div data-kg="editor">
-                        <div
-                            contenteditable="true"
-                            spellcheck="true"
-                            data-lexical-editor="true"
-                            role="textbox">
-                            <p dir="ltr"><span data-lexical-text="true">Hello world</span></p>
-                        </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div data-kg="editor">
-                        <div
-                            contenteditable="true"
-                            spellcheck="true"
-                            data-lexical-editor="true"
-                            role="textbox">
-                            <p dir="ltr">
-                            <span data-lexical-text="true">Hello subheader</span>
-                            </p>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                    <div>
-                    <div draggable="true">
-                        <div>
-                        <div>Size</div>
-                        <div>
-                            <div>
-                            <ul>
-                                <li><button aria-label="S" type="button">S</button></li>
-                                <li><button aria-label="M" type="button">M</button></li>
-                                <li><button aria-label="L" type="button">L</button></li>
-                            </ul>
-                            </div>
-                        </div>
-                        </div>
-                        <div>
-                        <div>Style</div>
-                        <div>
-                            <div>
-                            <ul>
-                                <li>
-                                <button
-                                    aria-label="Dark"
-                                    data-test-id="color-picker-dark"
-                                    type="button">
-                                    <span></span>
-                                </button>
-                                </li>
-                                <li>
-                                <button
-                                    aria-label="Light"
-                                    data-test-id="color-picker-light"
-                                    type="button">
-                                    <span></span>
-                                </button>
-                                </li>
-                                <li>
-                                <button
-                                    aria-label="Accent"
-                                    data-test-id="color-picker-accent"
-                                    type="button">
-                                    <span></span>
-                                </button>
-                                </li>
-                                <li type="button">
-                                <span><svg></svg></span>
-                                </li>
-                            </ul>
-                            </div>
-                        </div>
-                        </div>
-                        <form>
-                        <input accept="image/*" hidden="" name="image-input" type="file" />
-                        </form>
-                        <hr />
-                        <div>
-                        <div><div>Button</div></div>
-                        <div>
-                            <label id="header-button-toggle">
-                            <input type="checkbox" />
-                            <div></div>
-                            </label>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                </div>
-                <p><br /></p>
-         `, {});
+        const firstEditor = page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0);
+        const secondEditor = page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(1);
+
+        await expect(firstEditor).toHaveText('Hello world');
+        await expect(secondEditor).toHaveText('Hello subheader');
+    });
+
+    test('can edit sub header via arrow keys', async function () {
+        await createHeaderCard({page});
+
+        await page.keyboard.type('Hello');
+
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.type('blah blah blah something very long');
+
+        // Go back up again and add an extra word
+        await page.keyboard.press('ArrowUp');
+        await page.keyboard.type(' world');
+
+        const firstEditor = page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0);
+        const secondEditor = page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(1);
+
+        await expect(firstEditor).toHaveText('Hello world');
+        await expect(secondEditor).toHaveText('blah blah blah something very long');
     });
 
     test('can add and remove button', async function () {
