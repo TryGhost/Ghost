@@ -28,7 +28,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const {isSelected, isEditing} = React.useContext(CardContext);
+    const {isSelected} = React.useContext(CardContext);
     const [urlInputValue, setUrlInputValue] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
@@ -115,7 +115,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
 
             <ActionToolbar
                 data-kg-card-toolbar="embed"
-                isVisible={html && isSelected && !isEditing && !showSnippetToolbar && cardConfig.createSnippet}
+                isVisible={html && isSelected && !showSnippetToolbar && cardConfig.createSnippet}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem

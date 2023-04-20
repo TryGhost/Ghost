@@ -22,7 +22,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const {isSelected, isEditing} = React.useContext(CardContext);
+    const {isSelected} = React.useContext(CardContext);
     const [urlInputValue, setUrlInputValue] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
@@ -116,7 +116,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
 
             <ActionToolbar
                 data-kg-card-toolbar="bookmark"
-                isVisible={title && isSelected && !isEditing && !showSnippetToolbar && cardConfig.createSnippet}
+                isVisible={title && isSelected && !showSnippetToolbar && cardConfig.createSnippet}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem
