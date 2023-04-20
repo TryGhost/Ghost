@@ -140,7 +140,8 @@ describe('Drag Drop Reorder Plugin', async function () {
         await page.keyboard.type('/divider');
         await page.keyboard.press('Enter');
 
-        await page.keyboard.type('This is some text');
+        await page.keyboard.type('This is some text', {delay: 100}); // type slower to imitate user
+        await expect(await page.getByText('This is some text')).toBeVisible();
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
