@@ -2,6 +2,7 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import useDragAndDrop from '../hooks/useDragAndDrop';
+import useGalleryReorder from '../hooks/useGalleryReorder';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {GalleryCard} from '../components/ui/cards/GalleryCard';
@@ -28,7 +29,6 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
     const [editor] = useLexicalComposerContext();
     const {selectedCardKey} = useKoenigSelectedCardContext();
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
-    const cardContext = React.useContext(CardContext);
 
     const fileInputRef = React.useRef();
     const [errorMessage, setErrorMessage] = React.useState(null);
@@ -41,19 +41,26 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         return existingImages;
     });
 
+    const isSelected = selectedCardKey === nodeKey;
+
+    const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected});
     const imageUploader = fileUploader.useFileUpload('image');
     const imageFilesDropper = useDragAndDrop({handleDrop: handleImageFilesDrop});
 
-    const isSelected = selectedCardKey === nodeKey;
+    function reorderImages(newImages) {
+        recalculateImageRows(newImages);
+        setImages(newImages);
+        setNodeImages(newImages);
+    }
 
-    const setNodeImages = (newImages) => {
+    function setNodeImages(newImages) {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             const datasetImages = newImages.map(image => pick(image, ALLOWED_IMAGE_PROPS));
             recalculateImageRows(datasetImages);
             node.setImages(datasetImages);
         });
-    };
+    }
 
     const deleteImage = (imageToDelete) => {
         const newImages = images.filter(image => image.fileName !== imageToDelete.fileName);
@@ -140,6 +147,12 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         setErrorMessage(null);
     };
 
+    const hideToolbar =
+        !isSelected ||
+        imageFilesDropper.isDraggedOver ||
+        galleryReorder.isDraggedOver ||
+        images.length <= 0;
+
     return (
         <>
             <GalleryCard
@@ -153,6 +166,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
                 imageMimeTypes={fileUploader.fileTypes.image.mimeTypes}
                 images={images}
                 isSelected={isSelected}
+                reorderHandler={galleryReorder}
                 uploader={imageUploader}
                 onFileChange={onFileChange}
             />
@@ -166,7 +180,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
 
             <ActionToolbar
                 data-kg-card-toolbar="gallery"
-                isVisible={images.length > 0 && cardContext.isSelected && !showSnippetToolbar}
+                isVisible={!hideToolbar}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="add-gallery-image" icon="add" isActive={false} label="Add images" onClick={handleToolbarAdd} />

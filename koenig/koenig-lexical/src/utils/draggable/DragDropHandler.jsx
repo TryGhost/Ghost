@@ -500,7 +500,7 @@ export class DragDropHandler {
             } else {
                 dropIndicator.style.opacity = 0;
 
-                this._dropIndicatorTimeout = setTimeout(this, function () {
+                this._dropIndicatorTimeout = setTimeout(function () {
                     dropIndicator.style.width = '4px';
                     dropIndicator.style.height = `${newHeight}px`;
                     dropIndicator.style.left = `${newLeft}px`;

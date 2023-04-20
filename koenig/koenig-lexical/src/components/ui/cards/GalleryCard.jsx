@@ -7,14 +7,15 @@ import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
 // import {IconButton} from '../IconButton';
 
-function GalleryRow({index, images, deleteImage}) {
+function GalleryRow({index, images, deleteImage, isDragging}) {
     const GalleryImages = images.map((image, idx) => {
         const position =
             images.length === 1 ? 'single' :
                 idx === 0 ? 'first' :
                     idx === images.length - 1 ? 'last' :
                         'middle';
-        return <GalleryImage key={image.fileName} deleteImage={deleteImage} image={image} position={position} />;
+
+        return <GalleryImage key={image.fileName} deleteImage={deleteImage} image={image} isDragging={isDragging} position={position} />;
     });
 
     return (
@@ -24,7 +25,7 @@ function GalleryRow({index, images, deleteImage}) {
     );
 }
 
-function GalleryImage({image, deleteImage, position}) {
+function GalleryImage({image, deleteImage, position, isDragging}) {
     const aspectRatio = (image.width || 1) / (image.height || 1);
     const style = {
         flex: `${aspectRatio} 1 0%`
@@ -54,6 +55,7 @@ function GalleryImage({image, deleteImage, position}) {
             className={`group relative ${classes.join(' ')}`}
             data-testid="gallery-image"
             style={style}
+            data-image
         >
             <img
                 alt={image.alt}
@@ -63,16 +65,18 @@ function GalleryImage({image, deleteImage, position}) {
                 width={image.width}
             />
 
-            <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:visible group-hover:opacity-100 ${overlayClasses.join(' ')}`}>
-                <div className="flex flex-row-reverse">
-                    <IconButton Icon={DeleteIcon} onClick={() => deleteImage(image)} />
+            {isDragging ? null : (
+                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:visible group-hover:opacity-100 ${overlayClasses.join(' ')}`}>
+                    <div className="flex flex-row-reverse">
+                        <IconButton Icon={DeleteIcon} onClick={() => deleteImage(image)} />
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }
 
-function PopulatedGalleryCard({filesDropper, images, deleteImage}) {
+function PopulatedGalleryCard({filesDropper, images, deleteImage, reorderHandler, isDragging}) {
     const rows = [];
     const noOfImages = images.length;
 
@@ -99,11 +103,11 @@ function PopulatedGalleryCard({filesDropper, images, deleteImage}) {
 
     const GalleryRows = rows.map((rowImages, idx) => {
         // eslint-disable-next-line react/no-array-index-key
-        return <GalleryRow key={idx} deleteImage={deleteImage} images={rowImages} index={idx} />;
+        return <GalleryRow key={idx} deleteImage={deleteImage} images={rowImages} index={idx} isDragging={isDragging} />;
     });
 
     return (
-        <div className="not-kg-prose flex flex-col" data-gallery>
+        <div ref={reorderHandler.setContainerRef} className="not-kg-prose flex flex-col" data-gallery>
             {GalleryRows}
         </div>
     );
@@ -156,27 +160,30 @@ export function GalleryCard({
     images = [],
     isSelected,
     onFileChange,
-    uploader = {}
+    uploader = {},
+    reorderHandler = {}
 }) {
     const openFilePicker = () => {
         fileInputRef.current.click();
     };
 
     const {isLoading, progress} = uploader;
-    const {isDraggedOver} = filesDropper;
+    const {isDraggedOver: filesDraggedOver} = filesDropper;
+    const {isDraggedOver: reorderDraggedOver} = reorderHandler;
+    const isDragging = filesDraggedOver || reorderDraggedOver;
 
     return (
         <figure className="not-kg-prose">
             <div ref={filesDropper.setRef} className="relative" data-testid="gallery-container">
                 {images.length
-                    ? <PopulatedGalleryCard deleteImage={deleteImage} filesDropper={filesDropper} images={images} />
+                    ? <PopulatedGalleryCard deleteImage={deleteImage} filesDropper={filesDropper} images={images} isDragging={isDragging} reorderHandler={reorderHandler} />
                     : <EmptyGalleryCard filesDropper={filesDropper} openFilePicker={openFilePicker} />
                 }
 
                 {isLoading ? <UploadOverlay progress={progress} /> : null}
-                {images.length && isDraggedOver ? <FileDragOverlay /> : null}
+                {images.length && filesDraggedOver ? <FileDragOverlay /> : null}
 
-                {errorMessage && !isDraggedOver ? (
+                {errorMessage && !isDragging ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60" data-testid="gallery-error">
                         <span className="center sans-serif f7 block bg-red px-2 font-bold text-white">
                             {errorMessage}.
