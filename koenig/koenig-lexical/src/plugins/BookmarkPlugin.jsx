@@ -28,7 +28,6 @@ export const BookmarkPlugin = () => {
                     }
 
                     const focusNode = selection.focus.getNode();
-
                     if (focusNode !== null) {
                         const bookmarkNode = $createBookmarkNode({...dataset, _openInEditMode: true});
                         $insertAndSelectNode({selectedNode: focusNode, newNode: bookmarkNode});

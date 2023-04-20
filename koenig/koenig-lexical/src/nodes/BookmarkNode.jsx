@@ -1,6 +1,6 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
-import React from 'react';
+import React, {useCallback} from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import generateEditorState from '../utils/generateEditorState';
 import {$createLinkNode} from '@lexical/link';
@@ -18,12 +18,12 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_BOOKMARK_COMMAND} from '@tryghost/kg-default-nodes';
 
-function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, publisher, thumbnail, captionEditor, captionEditorInitialState}) {
+function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, publisher, thumbnail, captionEditor, captionEditorInitialState, createdWithUrl}) {
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected} = React.useContext(CardContext);
-    const [urlInputValue, setUrlInputValue] = React.useState('');
+    const [urlInputValue, setUrlInputValue] = React.useState(url);
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -42,7 +42,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
         setUrlError(false);
     };
 
-    const handlePasteAsLink = () => {
+    const handlePasteAsLink = useCallback(() => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             const paragraph = $createParagraphNode()
@@ -51,7 +51,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
             node.replace(paragraph);
             paragraph.selectEnd();
         });
-    };
+    }, [editor, nodeKey, urlInputValue]);
 
     const handleClose = () => {
         editor.update(() => {
@@ -60,7 +60,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
         });
     };
 
-    async function fetchMetadata(href) {
+    const fetchMetadata = async (href) => {
         setLoading(true);
         let response;
         try {
@@ -82,7 +82,51 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
             node.setThumbnail(response.metadata.thumbnail);
         });
         setLoading(false);
-    }
+    };
+
+    const fetchMetadataEffect = useCallback(async () => {
+        setLoading(true);
+        let response;
+        try {
+            // set the test data return values in fetchEmbed.js
+            response = await cardConfig.fetchEmbed(url, {type: 'bookmark'});
+        } catch (e) {
+            setLoading(false);
+            setUrlError(true);
+            return;
+        }
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setUrl(response.url);
+            node.setAuthor(response.metadata.author);
+            node.setIcon(response.metadata.icon);
+            node.setTitle(response.metadata.title);
+            node.setDescription(response.metadata.description);
+            node.setPublisher(response.metadata.publisher);
+            node.setThumbnail(response.metadata.thumbnail);
+        });
+        setLoading(false);
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // TODO: this needs to be a custom hook
+    // if we create the node with a url
+    //  fetch the metadata
+    //  if it fails, paste as a link
+    React.useEffect(() => {
+        // only run this once
+        if (createdWithUrl) {
+            setUrlInputValue(url);
+            try {
+                fetchMetadataEffect(url);
+            } catch {
+                handlePasteAsLink(url);
+            }
+        }
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <>
@@ -136,13 +180,15 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
 export class BookmarkNode extends BaseBookmarkNode {
     __captionEditor;
     __captionEditorInitialState;
+    __createdWithUrl;
 
     static kgMenu = [{
         label: 'Bookmark',
         desc: 'Embed a link as a visual bookmark',
         Icon: BookmarkCardIcon,
         insertCommand: INSERT_BOOKMARK_COMMAND,
-        matches: ['bookmark']
+        matches: ['bookmark'],
+        queryParams: ['url']
     }];
 
     getIcon() {
@@ -151,6 +197,8 @@ export class BookmarkNode extends BaseBookmarkNode {
 
     constructor(dataset = {}, key) {
         super(dataset, key);
+
+        this.__createdWithUrl = !!dataset.url;
 
         // set up and populate nested editors from the serialized HTML
         this.__captionEditor = dataset.captionEditor || createEditor({nodes: MINIMAL_NODES});
@@ -213,6 +261,7 @@ export class BookmarkNode extends BaseBookmarkNode {
                     author={this.__author}
                     captionEditor={this.__captionEditor}
                     captionEditorInitialState={this.__captionEditorInitialState}
+                    createdWithUrl={this.__createdWithUrl}
                     description={this.__description}
                     icon={this.__icon}
                     nodeKey={this.getKey()}

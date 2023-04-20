@@ -1,4 +1,5 @@
 import React from 'react';
+import {$createEmbedNode} from '../nodes/EmbedNode';
 import {$createLinkNode} from '@lexical/link';
 import {
     $createNodeSelection,
@@ -885,6 +886,13 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             linkNode.append(linkTextNode);
                             textNode.replace(linkNode);
                         }
+                        return true;
+                    }
+                    // if a link is pasted in a blank text node, insert an embed card (may turn into bookmark)
+                    if (linkMatch && !selectionContent.length > 0) {
+                        const url = linkMatch[1];
+                        const embedNode = $createEmbedNode({url});
+                        editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode: embedNode, createdWithUrl: true});
                         return true;
                     }
                 },

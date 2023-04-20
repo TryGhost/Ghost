@@ -3,10 +3,9 @@ export async function fetchEmbed(url, {type}) {
     if (!urlObject) {
         throw new Error('No URL specified.');
     }
+    await delay(1500);
+    // let html = await (await fetch(url)).text();
     try {
-        await delay(1500);
-        // let html = await (await fetch(url)).text();
-
         if (type === 'bookmark') {
             let returnData = {
                 url: 'https://www.ghost.org/',
@@ -292,12 +291,8 @@ export async function fetchEmbed(url, {type}) {
             //     }
             // };
             let returnData = {
-                html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
-                thumbnail_width: 480,
-                width: 480,
+                html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/b52pBaObiY0?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" title="BOM at the Historic Rally Festival 2021" style="width: 100%; height: 418.1px; max-width: 100%;"></iframe>',
                 author_url: 'https://www.youtube.com/user/gorillaz',
-                height: 270,
-                thumbnail_height: 360,
                 provider_name: 'YouTube',
                 title: 'Gorillaz - Humility (Official Video)',
                 provider_url: 'https://www.youtube.com/',

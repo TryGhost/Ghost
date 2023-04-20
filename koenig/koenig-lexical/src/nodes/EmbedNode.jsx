@@ -3,6 +3,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import generateEditorState from '../utils/generateEditorState';
+import {$createBookmarkNode} from './BookmarkNode';
 import {$createLinkNode} from '@lexical/link';
 import {$createParagraphNode, $createTextNode, $getNodeByKey, createEditor} from 'lexical';
 import {$generateHtmlFromNodes} from '@lexical/html';
@@ -19,12 +20,13 @@ import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
 import {ReactComponent as TwitterIcon} from '../assets/icons/kg-card-type-twitter.svg';
 import {ReactComponent as VimeoIcon} from '../assets/icons/kg-card-type-vimeo.svg';
 import {ReactComponent as YouTubeIcon} from '../assets/icons/kg-card-type-youtube.svg';
+import {useCallback} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_EMBED_COMMAND} from '@tryghost/kg-default-nodes';
 
-function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEditor, captionEditorInitialState}) {
+function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, metadata, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
@@ -48,7 +50,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
         setUrlError(false);
     };
 
-    const handlePasteAsLink = () => {
+    const handlePasteAsLink = useCallback(() => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             const paragraph = $createParagraphNode()
@@ -57,7 +59,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
             node.replace(paragraph);
             paragraph.selectEnd();
         });
-    };
+    }, [editor, nodeKey, urlInputValue]);
 
     const handleClose = () => {
         editor.update(() => {
@@ -66,12 +68,22 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
         });
     };
 
-    async function fetchMetadata(href) {
+    const fetchMetadata = async (href) => {
         setLoading(true);
         let response;
+        const type = createdWithUrl ? '' : 'embed';
         try {
             // set the test data return values in fetchEmbed.js
-            response = await cardConfig.fetchEmbed(href, {type: 'embed'});
+            response = await cardConfig.fetchEmbed(href, {type});
+            // we may end up with a bookmark return if the url is valid but doesn't return an embed
+            if (response.type === 'bookmark') {
+                editor.update(() => {
+                    const node = $getNodeByKey(nodeKey);
+                    const bookmarkNode = $createBookmarkNode({url: response.url});
+                    node.replace(bookmarkNode);
+                });
+                return;
+            }
         } catch (e) {
             setLoading(false);
             setUrlError(true);
@@ -79,13 +91,29 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
         }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setUrl(href);
+            node.setUrl(response.url);
+            node.setMetadata(response);
             node.setEmbedType(response.type);
             node.setHtml(response.html);
-            node.setMetadata(response);
         });
         setLoading(false);
-    }
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    };
+
+    React.useEffect(() => {
+        if (createdWithUrl) {
+            // keep value in sync in case the user goes to retry to paste as link
+            setUrlInputValue(url);
+            try {
+                fetchMetadata(url);
+            } catch {
+                handlePasteAsLink(url);
+            }
+        }
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <>
@@ -135,6 +163,7 @@ function EmbedNodeComponent({nodeKey, url, html, embedType, metadata, captionEdi
 export class EmbedNode extends BaseEmbedNode {
     __captionEditor;
     __captionEditorInitialState;
+    __createdWithUrl;
 
     static kgMenu = [{
         section: 'Embed',
@@ -142,7 +171,8 @@ export class EmbedNode extends BaseEmbedNode {
         desc: 'Embed a link as a visual embed',
         Icon: EmbedCardIcon,
         insertCommand: INSERT_EMBED_COMMAND,
-        matches: ['embed']
+        matches: ['embed'],
+        queryParams: ['url']
     },
     {
         section: 'Embed',
@@ -150,7 +180,7 @@ export class EmbedNode extends BaseEmbedNode {
         desc: '/twitter [tweet url]',
         Icon: TwitterIcon,
         insertCommand: INSERT_EMBED_COMMAND,
-        params: ['url'],
+        queryParams: ['url'],
         matches: ['twitter']
     },
     {
@@ -159,7 +189,7 @@ export class EmbedNode extends BaseEmbedNode {
         desc: '/youtube [video url]',
         Icon: YouTubeIcon,
         insertCommand: INSERT_EMBED_COMMAND,
-        params: ['url'],
+        queryParams: ['url'],
         matches: ['youtube']
     },
     {
@@ -168,7 +198,7 @@ export class EmbedNode extends BaseEmbedNode {
         desc: '/vimeo [video url]',
         Icon: VimeoIcon,
         insertCommand: INSERT_EMBED_COMMAND,
-        params: ['url'],
+        queryParams: ['url'],
         matches: ['vimeo']
     },
     {
@@ -177,7 +207,7 @@ export class EmbedNode extends BaseEmbedNode {
         desc: '/codepen [pen url]',
         Icon: CodePenIcon,
         insertCommand: INSERT_EMBED_COMMAND,
-        params: ['url'],
+        queryParams: ['url'],
         matches: ['codepen']
     },
     {
@@ -186,7 +216,7 @@ export class EmbedNode extends BaseEmbedNode {
         desc: '/spotify [track or playlist url]',
         Icon: SpotifyIcon,
         insertCommand: INSERT_EMBED_COMMAND,
-        params: ['url'],
+        queryParams: ['url'],
         matches: ['spotify']
     },
     {
@@ -195,7 +225,7 @@ export class EmbedNode extends BaseEmbedNode {
         desc: '/soundcloud [track or playlist url]',
         Icon: SoundCloudIcon,
         insertCommand: INSERT_EMBED_COMMAND,
-        params: ['url'],
+        queryParams: ['url'],
         matches: ['soundcloud']
     }];
 
@@ -205,6 +235,8 @@ export class EmbedNode extends BaseEmbedNode {
 
     constructor(dataset = {}, key) {
         super(dataset, key);
+
+        this.__createdWithUrl = !!dataset.url;
 
         // set up and populate nested editors from the serialized HTML
         this.__captionEditor = dataset.captionEditor || createEditor({nodes: MINIMAL_NODES});
@@ -266,6 +298,7 @@ export class EmbedNode extends BaseEmbedNode {
                 <EmbedNodeComponent
                     captionEditor={this.__captionEditor}
                     captionEditorInitialState={this.__captionEditorInitialState}
+                    createdWithUrl={this.__createdWithUrl}
                     embedType={this.__embedType}
                     html={this.__html}
                     metadata={this.__metadata}

@@ -24,7 +24,7 @@ export function BookmarkCard({
     isLoading,
     urlError
 }) {
-    if (url) {
+    if (url && !urlError && title) {
         return (
             <>
                 <div className="flex min-h-[120px] w-full rounded border border-grey/40 bg-transparent font-sans dark:border-grey/20" data-testid="bookmark-container">

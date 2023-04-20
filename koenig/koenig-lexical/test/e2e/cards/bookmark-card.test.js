@@ -77,13 +77,13 @@ describe.skip('Bookmark card', async () => {
     });
 
     describe('Valid URL handling', async () => {
-        test('shows loading wheel', async function () {
+        test.only('shows loading wheel', async function () {
             await focusEditor(page);
             await insertCard(page, {cardName: 'bookmark'});
 
             const urlInput = await page.getByTestId('bookmark-url');
             await urlInput.fill('https://ghost.org/');
-            await urlInput.press('Tab');
+            await urlInput.press('Enter');
 
             await expect(await page.getByTestId('bookmark-url-loading-container')).toBeVisible();
             await expect(await page.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
@@ -95,7 +95,7 @@ describe.skip('Bookmark card', async () => {
 
             const urlInput = await page.getByTestId('bookmark-url');
             await urlInput.fill('https://ghost.org/');
-            await urlInput.press('Tab');
+            await urlInput.press('Enter');
 
             await expect(await page.getByTestId('bookmark-title')).toHaveText('Ghost: The Creator Economy Platform');
             await expect(await page.getByTestId('bookmark-description')).toContainText('The former of the two songs addresses the issue of negative rumors in a relationship, while the latter, with a more upbeat pulse, is a classic club track; the single is highlighted by a hyped bridge.');
@@ -109,7 +109,7 @@ describe.skip('Bookmark card', async () => {
 
             const urlInput = await page.getByTestId('bookmark-url');
             await urlInput.fill('https://ghost.org/');
-            await urlInput.press('Tab');
+            await urlInput.press('Enter');
 
             const captionInput = await page.getByTestId('bookmark-caption');
             await expect(captionInput).toContainText('Type caption for bookmark (optional)');
@@ -124,7 +124,7 @@ describe.skip('Bookmark card', async () => {
             const urlInput = await page.getByTestId('bookmark-url');
             await urlInput.fill('badurl');
             await expect(urlInput).toHaveValue('badurl');
-            await urlInput.press('Tab');
+            await urlInput.press('Enter');
 
             await expect(await page.getByTestId('bookmark-url-error-message')).toContainText('There was an error when parsing the URL.');
         });
@@ -138,7 +138,7 @@ describe.skip('Bookmark card', async () => {
 
             await urlInput.fill('badurl');
             await expect(urlInput).toHaveValue('badurl');
-            await urlInput.press('Tab');
+            await urlInput.press('Enter');
 
             const retryButton = await page.getByTestId('bookmark-url-error-retry');
             await retryButton.click();
@@ -157,7 +157,7 @@ describe.skip('Bookmark card', async () => {
 
             await urlInput.fill('badurl');
             await expect(urlInput).toHaveValue('badurl');
-            await urlInput.press('Tab');
+            await urlInput.press('Enter');
 
             const retryButton = await page.getByTestId('bookmark-url-error-pasteAsLink');
             await retryButton.click();
@@ -179,7 +179,7 @@ describe.skip('Bookmark card', async () => {
 
             await urlInput.fill('badurl');
             await expect(urlInput).toHaveValue('badurl');
-            await urlInput.press('Tab');
+            await urlInput.press('Enter');
 
             const retryButton = await page.getByTestId('bookmark-url-error-close');
             await retryButton.click();
@@ -194,7 +194,7 @@ describe.skip('Bookmark card', async () => {
 
         const urlInput = await page.getByTestId('bookmark-url');
         await urlInput.fill('https://ghost.org/');
-        await urlInput.press('Tab');
+        await urlInput.press('Enter');
         await expect(await page.getByTestId('bookmark-description')).toBeVisible();
 
         // create snippet
