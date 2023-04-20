@@ -126,6 +126,11 @@ export default ModalComponent.extend({
         const result = diff(previousHTML, currentHTML);
         const div = document.createElement('div');
         div.innerHTML = result;
+        this.diffCards(div);
+        return div.innerHTML;
+    },
+
+    diffCards(div) {
         const cards = div.querySelectorAll('div[data-kg-card]');
         for (const card of cards) {
             const hasChanges = !!card.querySelectorAll('del').length || !!card.querySelectorAll('ins').length;
@@ -159,7 +164,6 @@ export default ModalComponent.extend({
                 card.remove();
             }
         }
-        return div.innerHTML;
     },
 
     updateDiff() {
