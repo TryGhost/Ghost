@@ -908,6 +908,7 @@ Post = ghostBookshelf.Model.extend({
                         max_revisions: POST_REVISIONS_COUNT
                     }
                 });
+                // test commit
                 const authorId = this.contextUser(options);
                 ops.push(async function updateRevisions() {
                     const revisionModels = await ghostBookshelf.model('PostRevision')
