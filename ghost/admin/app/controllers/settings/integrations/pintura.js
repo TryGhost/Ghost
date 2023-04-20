@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import config from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -13,6 +14,9 @@ export default class PinturaController extends Controller {
     @service notifications;
     @service settings;
     @service utils;
+
+    @inject config;
+
     @tracked jsSuccess;
     @tracked jsFailure;
     @tracked cssSuccess;

@@ -68,100 +68,102 @@
                             </div>
                         </div>
                     </div>
-                    {{#liquid-if this.settings.pintura class=""}}
-                    <div class="gh-setting-last gh-setting-firstpromoter-liquid">
-                        <GhUploader
-                            @extensions={{this.jsExtension}}
-                            @uploadUrl="/files/upload/"
-                            @resourceName="files"
-                            @onComplete={{fn this.fileUploadCompleted 'js'}}
-                            as |uploader|
-                        >
-                            <div class="gh-expandable-header">
-                                <div>
-                                    <h4 class="gh-expandable-title">Add Pintura JS</h4>
-                                    <p class="gh-expandable-description">Upload the pintura JS</p>
-                                </div>
-                                <div class="gh-setting-action flex flex-column items-end">
-                                    {{#if uploader.isUploading}}
-                                        {{uploader.progressBar}}
-                                    {{else}}
-                                        <button
-                                            type="button"
-                                            class="gh-btn gh-btn-icon {{if this.jsSuccess "gh-btn-green"}} {{if this.jsFailure "gh-btn-red"}}"
-                                            onclick={{this.triggerFileDialog}}
-                                            data-test-button="upload-pintura-js"
-                                        >
-                                            <span>
-                                                {{#if this.jsSuccess}}
-                                                    {{svg-jar "check-circle"}} Uploaded
-                                                {{else if this.jsFailure}}
-                                                    {{svg-jar "retry"}} Upload Failed
-                                                {{else}}
-                                                    Upload
-                                                {{/if}}
-                                            </span>
-                                        </button>
-                                    {{/if}}
+                    {{#if (not this.config.pintura)}}
+                        {{#liquid-if this.settings.pintura class=""}}
+                        <div class="gh-setting-last gh-setting-firstpromoter-liquid">
+                            <GhUploader
+                                @extensions={{this.jsExtension}}
+                                @uploadUrl="/files/upload/"
+                                @resourceName="files"
+                                @onComplete={{fn this.fileUploadCompleted 'js'}}
+                                as |uploader|
+                            >
+                                <div class="gh-expandable-header">
+                                    <div>
+                                        <h4 class="gh-expandable-title">Upload Pintura script</h4>
+                                        <p class="gh-expandable-description">Upload pintura-umd.js file from pintura package</p>
+                                    </div>
+                                    <div class="gh-setting-action flex flex-column items-end">
+                                        {{#if uploader.isUploading}}
+                                            {{uploader.progressBar}}
+                                        {{else}}
+                                            <button
+                                                type="button"
+                                                class="gh-btn gh-btn-icon {{if this.jsSuccess "gh-btn-green"}} {{if this.jsFailure "gh-btn-red"}}"
+                                                onclick={{this.triggerFileDialog}}
+                                                data-test-button="upload-pintura-js"
+                                            >
+                                                <span>
+                                                    {{#if this.jsSuccess}}
+                                                        {{svg-jar "check-circle"}} Uploaded
+                                                    {{else if this.jsFailure}}
+                                                        {{svg-jar "retry"}} Upload Failed
+                                                    {{else}}
+                                                        Upload
+                                                    {{/if}}
+                                                </span>
+                                            </button>
+                                        {{/if}}
 
-                                    {{#each uploader.errors as |error|}}
-                                        <div class="gh-setting-error" data-test-error="pintura">{{or error.context error.message}}</div>
-                                    {{/each}}
+                                        {{#each uploader.errors as |error|}}
+                                            <div class="gh-setting-error" data-test-error="pintura">{{or error.context error.message}}</div>
+                                        {{/each}}
 
-                                    <div style="display:none">
-                                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.jsAccept}} data-test-file-input="pintura" />
+                                        <div style="display:none">
+                                            <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.jsAccept}} data-test-file-input="pintura" />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </GhUploader>
-                    </div>
-                    <div class="gh-setting-last gh-setting-firstpromoter-liquid">
-                        <GhUploader
-                            @extensions={{this.cssExtension}}
-                            @uploadUrl="/files/upload/"
-                            @resourceName="files"
-                            @onComplete={{fn this.fileUploadCompleted 'css'}}
-                            as |uploader|
-                        >
-                            <div class="gh-expandable-header">
-                                <div>
-                                    <h4 class="gh-expandable-title">Add Pintura CSS</h4>
-                                    <p class="gh-expandable-description">Upload the pintura CSS</p>
-                                </div>
-                                <div class="gh-setting-action flex flex-column items-end">
-                                    {{#if uploader.isUploading}}
-                                        {{uploader.progressBar}}
-                                    {{else}}
-                                        <button
-                                            type="button"
-                                            class="gh-btn gh-btn-icon {{if this.cssSuccess "gh-btn-green"}} {{if this.cssFailure "gh-btn-red"}}"
-                                            onclick={{this.triggerFileDialog}}
-                                            data-test-button="upload-pintura-css"
-                                        >
-                                            <span>
-                                                {{#if this.cssSuccess}}
-                                                    {{svg-jar "check-circle"}} Uploaded
-                                                {{else if this.cssFailure}}
-                                                    {{svg-jar "retry"}} Upload Failed
-                                                {{else}}
-                                                    Upload
-                                                {{/if}}
-                                            </span>
-                                        </button>
-                                    {{/if}}
+                            </GhUploader>
+                        </div>
+                        <div class="gh-setting-last gh-setting-firstpromoter-liquid">
+                            <GhUploader
+                                @extensions={{this.cssExtension}}
+                                @uploadUrl="/files/upload/"
+                                @resourceName="files"
+                                @onComplete={{fn this.fileUploadCompleted 'css'}}
+                                as |uploader|
+                            >
+                                <div class="gh-expandable-header">
+                                    <div>
+                                        <h4 class="gh-expandable-title">Upload CSS file</h4>
+                                        <p class="gh-expandable-description">Upload pintura.css file from pintura package</p>
+                                    </div>
+                                    <div class="gh-setting-action flex flex-column items-end">
+                                        {{#if uploader.isUploading}}
+                                            {{uploader.progressBar}}
+                                        {{else}}
+                                            <button
+                                                type="button"
+                                                class="gh-btn gh-btn-icon {{if this.cssSuccess "gh-btn-green"}} {{if this.cssFailure "gh-btn-red"}}"
+                                                onclick={{this.triggerFileDialog}}
+                                                data-test-button="upload-pintura-css"
+                                            >
+                                                <span>
+                                                    {{#if this.cssSuccess}}
+                                                        {{svg-jar "check-circle"}} Uploaded
+                                                    {{else if this.cssFailure}}
+                                                        {{svg-jar "retry"}} Upload Failed
+                                                    {{else}}
+                                                        Upload
+                                                    {{/if}}
+                                                </span>
+                                            </button>
+                                        {{/if}}
 
-                                    {{#each uploader.errors as |error|}}
-                                        <div class="gh-setting-error" data-test-error="routes">{{or error.context error.message}}</div>
-                                    {{/each}}
+                                        {{#each uploader.errors as |error|}}
+                                            <div class="gh-setting-error" data-test-error="routes">{{or error.context error.message}}</div>
+                                        {{/each}}
 
-                                    <div style="display:none">
-                                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.cssAccept}} data-test-file-input="pintura" />
+                                        <div style="display:none">
+                                            <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.cssAccept}} data-test-file-input="pintura" />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </GhUploader>
-                    </div>
-                    {{/liquid-if}}
+                            </GhUploader>
+                        </div>
+                        {{/liquid-if}}
+                    {{/if}}
                 </div>
             </div>
         </section>
