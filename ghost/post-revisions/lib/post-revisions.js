@@ -43,17 +43,18 @@ class PostRevisions {
         if (revisions.length === 0) {
             return true;
         }
-        // If the user has explicitly requested a revision (cmd+s), we should always save a revision
-        if (options.forceRevision) {
+        const isPublished = options && options.isPublished;
+        if (isPublished) {
             return true;
         }
 
+        const forceRevision = options && options.forceRevision;
         const htmlHasChanged = previous.html !== current.html;
         const titleHasChanged = previous.title !== current.title;
-        const forceRevision = options.forceRevision;
         if ((htmlHasChanged || titleHasChanged) && forceRevision) {
             return true;
         }
+        return false;
     }
 
     /**

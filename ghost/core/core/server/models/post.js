@@ -932,12 +932,12 @@ Post = ghostBookshelf.Model.extend({
                         title: model.get('title')
                     };
 
-                    // CASE: Always save a new revision when a post is published or 'updated'
-                    if (newStatus === 'published') {
-                        options.save_revision = true;
-                    }
-
-                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions, {forceRevision: options.save_revision});
+                    // This can be refactored once we have the status stored in each revision
+                    const revisionOptions = {
+                        forceRevision: options.save_revision,
+                        isPublished: newStatus === 'published'
+                    };
+                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions, revisionOptions);
                     model.set('post_revisions', newRevisions);
                 });
             }
