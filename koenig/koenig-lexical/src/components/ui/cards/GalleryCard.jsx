@@ -9,7 +9,11 @@ import {ProgressBar} from '../ProgressBar';
 
 function GalleryRow({index, images, deleteImage}) {
     const GalleryImages = images.map((image, idx) => {
-        const position = idx === 0 ? 'first' : idx === images.length - 1 ? 'last' : 'middle';
+        const position =
+            images.length === 1 ? 'single' :
+                idx === 0 ? 'first' :
+                    idx === images.length - 1 ? 'last' :
+                        'middle';
         return <GalleryImage key={image.fileName} deleteImage={deleteImage} image={image} position={position} />;
     });
 
@@ -172,7 +176,7 @@ export function GalleryCard({
                 {isLoading ? <UploadOverlay progress={progress} /> : null}
                 {images.length && isDraggedOver ? <FileDragOverlay /> : null}
 
-                {errorMessage && (
+                {errorMessage && !isDraggedOver ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60" data-testid="gallery-error">
                         <span className="center sans-serif f7 block bg-red px-2 font-bold text-white">
                             {errorMessage}.
@@ -181,7 +185,7 @@ export function GalleryCard({
                             </button>
                         </span>
                     </div>
-                )}
+                ) : null}
 
                 <form onChange={onFileChange}>
                     <input
