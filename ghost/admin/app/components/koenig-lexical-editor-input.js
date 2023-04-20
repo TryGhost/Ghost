@@ -128,7 +128,8 @@ export default class KoenigLexicalEditorInput extends Component {
                         >
                             <KoenigComposableEditor
                                 darkMode={this.feature.nightShift}
-                                onChange={this.args.onChange}
+                                onChange={props.onChange}
+                                onBlur={props.onBlur}
                                 isSnippetsEnabled={false}
                                 singleParagraph={true}
                                 className="koenig-lexical-editor-input"
