@@ -228,7 +228,7 @@ describe('Header card', async () => {
         await accentButton.click();
 
         // Check that the background color has changed
-        await expect(page.locator('[data-kg-card="header"] > div:first-child')).toHaveClass(/ bg-pink /);
+        await expect(page.locator('[data-kg-card="header"] > div:first-child')).toHaveClass(/ bg-accent /);
     });
 
     test('can add and remove background image', async function () {
