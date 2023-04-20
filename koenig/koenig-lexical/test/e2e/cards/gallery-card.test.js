@@ -66,7 +66,7 @@ describe('Gallery card', async () => {
                         <div>
                             <div data-gallery="true">
                                 <div data-row="0">
-                                    <div>
+                                    <div data-image="true">
                                         <img
                                             alt="Alt 1"
                                             height="2160"
@@ -78,7 +78,7 @@ describe('Gallery card', async () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
+                                    <div data-image="true">
                                         <img
                                             alt="Alt 2"
                                             height="2160"
@@ -172,7 +172,7 @@ describe('Gallery card', async () => {
                         <div>
                             <div data-gallery="true">
                                 <div data-row="0">
-                                    <div>
+                                    <div data-image="true">
                                         <img
                                             height="248"
                                             src="blob:..."
