@@ -71,7 +71,7 @@ function ImagePicker({onFileChange,
                                                         <TrashIcon className="h-5 w-5 fill-grey-900 stroke-[3px] transition-all ease-linear group-hover:scale-105" />
                                                     </button>
                                                 </div>
-                                                <img alt='backgroundHeaderImage' src={backgroundImageSrc} />
+                                                <img alt='backgroundHeaderImage' data-testid="image-picker-background" src={backgroundImageSrc} />
                                             </div>
                                         </>
                                         :
