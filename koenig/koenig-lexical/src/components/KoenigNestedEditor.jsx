@@ -34,6 +34,7 @@ const KoenigNestedEditor = ({
             <KoenigComposableEditor
                 className={textClassName}
                 disableKoenigStyles={disableKoenigStyles}
+                isDragEnabled={false}
                 markdownTransformers={markdownTransformers}
                 placeholder={<Placeholder className={placeholderClassName} text={placeholderText} />}
             >

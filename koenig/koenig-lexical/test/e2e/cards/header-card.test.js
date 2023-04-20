@@ -251,4 +251,62 @@ describe('Header card', async () => {
         // Check if it is also set as an image in the panel
         await expect(page.getByTestId('image-picker-background')).toHaveAttribute('src', /blob:/);
     });
+
+    test('can select the text by dragging and replace it', async function () {
+        await createHeaderCard({page});
+
+        await page.keyboard.type('HelloHello');
+
+        // Get locator to 'Hello Hello' span
+        const helloSpan = page.locator('[data-kg-card="header"] [data-kg="editor"] span').nth(0);
+
+        // Get the bounding box of the span
+        const box = await helloSpan.boundingBox();
+        const y = box.y + box.height / 2;
+        const startX = box.x + box.width / 2;
+        const endX = box.x + box.width;
+
+        await page.mouse.move(startX, y);
+        await page.mouse.down();
+        await page.mouse.move(endX, y);
+        await page.mouse.up();
+
+        await page.keyboard.type(' world');
+        await expect(page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0)).toHaveText('Hello world');
+    });
+
+    test('can select the text by dragging and bold it', async function () {
+        await createHeaderCard({page});
+
+        await page.keyboard.type('HelloHello');
+
+        // Get locator to 'Hello Hello' span
+        const helloSpan = page.locator('[data-kg-card="header"] [data-kg="editor"] span').nth(0);
+
+        // Get the bounding box of the span
+        const box = await helloSpan.boundingBox();
+        const y = box.y + box.height / 2;
+        const startX = box.x + box.width / 2;
+        const endX = box.x + box.width;
+
+        await page.mouse.move(startX, y);
+        await page.mouse.down();
+        await page.mouse.move(endX, y);
+        await page.mouse.up();
+
+        // click data-kg-toolbar-button="bold"
+        await page.locator('[data-kg-toolbar-button="bold"]').click();
+
+        // check it is now bold
+        const boldSpan = page.locator('[data-kg-card="header"] [data-kg="editor"] strong').nth(0);
+        await expect(boldSpan).toHaveText('Hello');
+        await expect(helloSpan).toHaveText('Hello');
+
+        // check if text is still selected by continuing typing
+        await page.keyboard.type(' world');
+
+        // check the typed text is still bold
+        await expect(boldSpan).toHaveText(' world');
+        await expect(helloSpan).toHaveText('Hello');
+    });
 });
