@@ -202,6 +202,35 @@ describe('Header card', async () => {
         expect(height3).toBeGreaterThan(height2);
     });
 
+    test('can change the background color', async function () {
+        await createHeaderCard({page});
+
+        const lightButton = page.locator('[aria-label="Light"]');
+        const darkButton = page.locator('[aria-label="Dark"]');
+        const accentButton = page.locator('[aria-label="Accent"]');
+
+        // Default class should be 'bg-black' on the card
+        await expect(page.locator('[data-kg-card="header"] > div:first-child')).toHaveClass(/ bg-black /);
+
+        // Switch to light
+        await lightButton.click();
+
+        // Check that the background color has changed
+        await expect(page.locator('[data-kg-card="header"] > div:first-child')).toHaveClass(/ bg-grey-100 /);
+
+        // Switch back to dark
+        await darkButton.click();
+
+        // Check that the background color has changed
+        await expect(page.locator('[data-kg-card="header"] > div:first-child')).toHaveClass(/ bg-black /);
+
+        // Switch to accent
+        await accentButton.click();
+
+        // Check that the background color has changed
+        await expect(page.locator('[data-kg-card="header"] > div:first-child')).toHaveClass(/ bg-pink /);
+    });
+
     test('can add and remove background image', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
 
