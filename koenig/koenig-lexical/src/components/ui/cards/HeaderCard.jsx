@@ -178,10 +178,10 @@ export function HeaderCard({isEditing,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 tracking-tight text-center w-full leading-tight font-bold ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            placeholderClassName={`kg-header-header-placeholder ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-header-text w-full whitespace-normal text-center font-bold leading-tight tracking-tight ${(size === 'small') ? 'text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            textClassName={`kg-header-header-text ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'kg-header-medium text-7xl' : 'kg-header-large text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                         />
                     )
                 }
@@ -195,10 +195,10 @@ export function HeaderCard({isEditing,
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 w-full text-center leading-tight font-normal ${(size === 'small') ? 'text-xl' : (size === 'medium') ? 'text-2xl' : 'text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            placeholderClassName={`kg-header-subheader-placeholder ${(size === 'small') ? 'text-xl' : (size === 'medium') ? 'text-2xl' : 'text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-subheader-text relative w-full whitespace-normal text-center font-medium leading-tight ${(size === 'small') ? 'mt-2 text-xl' : (size === 'medium') ? 'mt-3 text-2xl' : 'mt-3 text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            textClassName={`kg-header-subheader-text ${(size === 'small') ? 'kg-subheader-small mt-2 text-xl' : (size === 'medium') ? 'kg-subheader-medium mt-3 text-2xl' : 'kg-subheader-large mt-3 text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
                         />
                     )
                 }
