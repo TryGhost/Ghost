@@ -320,8 +320,10 @@ describe('Slash menu', async () => {
         it('can insert card at beginning of document before text', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('ArrowUp');
+            // todo: flaky test, added delay for slower typing to imitate user behaviour
+            // need to add retry instead of delay after migration to playwright if the problem persists
+            await page.keyboard.type('Testing',{delay: 100});
+            await page.keyboard.press('ArrowUp', {delay: 100});
             await insertCard(page, {cardName: 'callout'});
 
             await assertHTML(page, html`

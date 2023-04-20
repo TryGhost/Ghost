@@ -695,7 +695,7 @@ describe('Header card', async () => {
                 data-kg-card-editing="true"
                 data-kg-card-selected="true"
                 data-kg-card="header">
-                <div style='background-image: url("blob:...'>
+                <div>
                 <div>
                     <div data-kg="editor">
                     <div
@@ -733,8 +733,7 @@ describe('Header card', async () => {
                 </div>
                 <div>
                 <div
-                    draggable="true"
-                    style="position: fixed; top: 318.047px; left: 660px">
+                    draggable="true">
                     <div>
                     <div>Size</div>
                     <div>
@@ -814,6 +813,6 @@ describe('Header card', async () => {
             </div>
             </div>
             <p><br /></p>
-        `, {ignoreCardToolbarContents: true, ignoreInlineStyles: false});
+        `, {ignoreCardToolbarContents: true, ignoreInlineStyles: true}); // need to ignore styles as for settings used dynamic position and styles every time different
     });
 });

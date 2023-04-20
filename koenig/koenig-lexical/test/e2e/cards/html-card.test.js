@@ -71,8 +71,11 @@ describe('Html card', async () => {
         await page.keyboard.press('Enter');
 
         // fill card
-        await expect(await page.locator('[data-kg-card="html"]')).toBeVisible();
-        await page.keyboard.type('snippet');
+        await expect(await page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
+        // waiting for html editor
+        await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+        await page.keyboard.type('text in html card', {delay: 100});
+        await expect(await page.getByText('text in html card')).toBeVisible();
         await page.keyboard.press('Escape');
 
         // create snippet
