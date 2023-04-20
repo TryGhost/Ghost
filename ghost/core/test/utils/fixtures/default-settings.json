@@ -518,28 +518,6 @@
             "flags": "PUBLIC"
         }
     },
-    "pintura": {
-        "pintura": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [
-                    [
-                        "true",
-                        "false"
-                    ]
-                ]
-            },
-            "type": "boolean"
-        },
-        "pintura_js_url": {
-            "defaultValue": null,
-            "type": "string"
-        },
-        "pintura_css_url": {
-            "defaultValue": null,
-            "type": "string"
-        }
-    },
     "comments": {
         "comments_enabled": {
             "type": "string",
