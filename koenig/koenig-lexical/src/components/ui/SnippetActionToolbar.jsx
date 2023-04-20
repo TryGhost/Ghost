@@ -17,20 +17,20 @@ export function SnippetActionToolbar({onClose}) {
         setValue(event.target.value);
     };
 
-    const handleSnippetCreation = () => {
+    const handleSnippetCreation = (snippetName) => {
         editor.update(() => {
             if (selectedCardKey) {
                 const nodeSelection = $createNodeSelection();
                 nodeSelection.add(selectedCardKey);
 
                 const nodeJson = $generateJSONFromSelectedNodes(editor, nodeSelection);
-                createSnippet({name: value, value: JSON.stringify(nodeJson)});
+                createSnippet({name: snippetName, value: JSON.stringify(nodeJson)});
                 editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
             } else {
                 const selection = $getSelection();
 
                 const nodeJson = $generateJSONFromSelectedNodes(editor, selection);
-                createSnippet({name: value, value: JSON.stringify(nodeJson)});
+                createSnippet({name: snippetName, value: JSON.stringify(nodeJson)});
             }
 
             onClose?.();
@@ -43,7 +43,8 @@ export function SnippetActionToolbar({onClose}) {
             value={value}
             onChange={handleChange}
             onClose={onClose}
-            onCreateSnippet={handleSnippetCreation}
+            onCreateSnippet={() => handleSnippetCreation(value)}
+            onUpdateSnippet={name => handleSnippetCreation(name)}
         />
     );
 }

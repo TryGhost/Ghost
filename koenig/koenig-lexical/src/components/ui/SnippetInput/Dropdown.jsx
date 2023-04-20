@@ -2,7 +2,15 @@ import React from 'react';
 import {ReactComponent as PlusIcon} from '../../../assets/icons/plus.svg';
 import {ReactComponent as ReplaceIcon} from '../../../assets/icons/kg-sync.svg';
 
-export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive, onKeyDown, activeMenuItem}) => {
+export const Dropdown = ({
+    snippets,
+    onCreateSnippet,
+    onUpdateSnippet,
+    value,
+    isCreateButtonActive,
+    onKeyDown,
+    activeMenuItem
+}) => {
     const buttonRef = React.useRef(null);
 
     React.useEffect(() => {
@@ -36,7 +44,7 @@ export const Dropdown = ({snippets, onCreateSnippet, value, isCreateButtonActive
                 <DropdownSection
                     activeMenuItem={activeMenuItem}
                     list={snippets}
-                    onClick={onCreateSnippet}
+                    onClick={onUpdateSnippet}
                 />
             )}
         </ul>
@@ -50,9 +58,13 @@ const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
             <ul role="menu">
                 {
                     list.map((item, index) => (
-                        <DropdownItem key={item.name} active={activeMenuItem} index={index} onClick={onClick}>
-                            {item.name}
-                        </DropdownItem>
+                        <DropdownItem
+                            key={item.name}
+                            active={activeMenuItem}
+                            index={index}
+                            name={item.name}
+                            onClick={onClick}
+                        />
                     ))
                 }
             </ul>
@@ -60,7 +72,7 @@ const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
     );
 };
 
-const DropdownItem = ({onClick, children, active, index}) => {
+const DropdownItem = ({onClick, name, active, index}) => {
     const buttonRef = React.useRef(null);
 
     React.useEffect(() => {
@@ -78,9 +90,9 @@ const DropdownItem = ({onClick, children, active, index}) => {
                 ref={buttonRef}
                 className="flex w-full cursor-pointer items-center justify-between py-2 px-3 text-left text-sm hover:bg-grey-100 focus:bg-grey-100 dark:hover:bg-black dark:focus:bg-black"
                 type="button"
-                onClick={onClick}
+                onClick={() => onClick(name)}
             >
-                <span>{children}</span>
+                <span>{name}</span>
                 <div className="h-5 w-5 fill-grey-900">
                     <ReplaceIcon className="h-4 w-4 fill-grey-900 dark:fill-grey-600" />
                 </div>

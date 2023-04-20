@@ -7,6 +7,7 @@ export function SnippetInput({
     value,
     onChange,
     onCreateSnippet,
+    onUpdateSnippet,
     onClose,
     darkMode,
     snippets = []
@@ -107,6 +108,7 @@ export function SnippetInput({
                         value={value}
                         onCreateSnippet={onCreateSnippet}
                         onKeyDown={handleDropdownKeyDown}
+                        onUpdateSnippet={onUpdateSnippet}
                     />
                 )
             }
