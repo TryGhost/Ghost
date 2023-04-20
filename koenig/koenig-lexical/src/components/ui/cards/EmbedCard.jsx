@@ -58,6 +58,7 @@ function EmbedIframe({dataTestId, html}) {
                     const newHeight = iframeRef.current.offsetWidth / ratio;
                     firstElement.style.height = `${newHeight}px`;
                     iframeRef.current.style.height = `${newHeight}px`;
+                    firstElement.style.width = '100%';
                     return;
                 }
             }
