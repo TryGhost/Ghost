@@ -169,6 +169,39 @@ describe('Header card', async () => {
         await expect(page.getByTestId('header-card-button')).toHaveCount(0);
     });
 
+    test('can change the size', async function () {
+        await createHeaderCard({page});
+
+        // Check that the default size is small
+        await expect(page.getByLabel('S')).toHaveClass(/ bg-white /);
+        await expect(page.getByLabel('M')).not.toHaveClass(/ bg-white /);
+
+        // Get height of the card
+        const box = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();
+        const height = box.height;
+
+        // Click on the medium button
+        await page.getByLabel('M').click();
+        await expect(page.getByLabel('M')).toHaveClass(/ bg-white /);
+
+        // Check that the height has changed
+        const box2 = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();
+        const height2 = box2.height;
+
+        expect(height2).toBeGreaterThan(height);
+
+        // Switch to large
+        const largeButton = page.locator('[aria-label="L"]');
+        await largeButton.click();
+        await expect(largeButton).toHaveClass(/ bg-white /);
+
+        // Check that the height has changed
+        const box3 = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();
+        const height3 = box3.height;
+
+        expect(height3).toBeGreaterThan(height2);
+    });
+
     test('can add and remove background image', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
 
