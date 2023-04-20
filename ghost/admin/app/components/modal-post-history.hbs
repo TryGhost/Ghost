@@ -35,13 +35,13 @@
         <div class="settings-menu settings-menu-pane settings-menu-pane-main">
             <div class="settings-menu-header-wrapper">
                 <div class="settings-menu-header subview">
-                    <button 
-                        aria-label="Close meta data panel" 
-                        class="back settings-menu-header-action" 
-                        data-test-button="close-psm-subview" 
+                    <button
+                        aria-label="Close meta data panel"
+                        class="back settings-menu-header-action"
+                        data-test-button="close-psm-subview"
                         type="button" {{action "closeModal"}}
                         {{on "mousedown" (optional this.noop)}}
-                    >   
+                    >
                         {{svg-jar "arrow-left"}}
                         <span class="hidden">Back</span>
                     </button>
@@ -71,11 +71,15 @@
                                 {{#if revision.latest}}
                                     <span class="gh-post-history-version-current">Latest</span>
                                 {{/if}}
-                            </div> 
+                            </div>
                             <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
                         </button>
                         {{#if (and revision.selected (not revision.latest))}}
-                            <button type="button" class="gh-post-history-version-restore">
+                            <button
+                                type="button"
+                                class="gh-post-history-version-restore"
+                                {{on "click" (fn this.restoreRevision index)}}
+                            >
                                 <span>Restore</span>
                             </button>
                         {{/if}}
