@@ -1,4 +1,4 @@
-import KoenigProductEditor from '../../KoenigProductEditor';
+import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
@@ -170,7 +170,7 @@ export function HeaderCard({isEditing,
                 {/* Header */}
                 {
                     (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
-                        <KoenigProductEditor
+                        <KoenigNestedEditor
                             autoFocus={true}
                             disableKoenigStyles={true}
                             focusNext={subheaderTextEditor}
@@ -188,7 +188,7 @@ export function HeaderCard({isEditing,
                 {/* Subheader */}
                 {
                     (isEditing || !!subheader || !isEditorEmpty(subheaderTextEditor)) && (
-                        <KoenigProductEditor
+                        <KoenigNestedEditor
                             disableKoenigStyles={true}
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}

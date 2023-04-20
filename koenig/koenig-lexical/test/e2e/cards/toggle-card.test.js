@@ -203,10 +203,13 @@ describe('Toggle card', async () => {
         // add some content to avoid auto-removal when leaving empty
         await page.keyboard.type('Header');
 
-        // Shift focus from header to content
+        // Shift focus away from header field
         await page.keyboard.press('ArrowDown');
 
-        // Shift focus from content to editor
+        // Shift focus away from content field
+        await page.keyboard.press('ArrowDown');
+
+        // Shift focus away from toggle card
         await page.keyboard.press('ArrowDown');
 
         const toggleCard = page.locator('[data-kg-card="toggle"]');
@@ -220,14 +223,8 @@ describe('Toggle card', async () => {
         // Add some content to avoid auto-removal
         await page.keyboard.type('Header');
 
-        // Shift focus from header to content
-        await page.keyboard.press('ArrowDown');
-
-        // Shift focus from content to editor
-        await page.keyboard.press('ArrowDown');
-
-        // Shift focus back to toggle card
-        await page.keyboard.press('ArrowUp');
+        // Shift focus away from toggle card
+        await page.keyboard.press('Escape');
 
         const editButton = page.locator('[data-kg-card-toolbar="toggle"]');
         await expect(editButton).toBeVisible();
@@ -237,10 +234,13 @@ describe('Toggle card', async () => {
         await focusEditor(page);
         await insertToggleCard(page);
 
-        // Shift focus from header to content
+        // Shift focus away from header field
         await page.keyboard.press('ArrowDown');
 
-        // Shift focus from content to editor
+        // Shift focus away from content field
+        await page.keyboard.press('ArrowDown');
+
+        // Shift focus away from toggle card
         await page.keyboard.press('ArrowDown');
 
         const toggleCard = page.locator('[data-kg-card="toggle"]');

@@ -1,10 +1,19 @@
 import React from 'react';
-import {COMMAND_PRIORITY_LOW, KEY_ENTER_COMMAND} from 'lexical';
+import {
+    $createNodeSelection,
+    $getSelection,
+    $setSelection,
+    BLUR_COMMAND,
+    COMMAND_PRIORITY_LOW,
+    KEY_ENTER_COMMAND
+} from 'lexical';
 import {mergeRegister} from '@lexical/utils';
+import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
 function KoenigNestedEditorPlugin({autoFocus, focusNext}) {
     const [editor] = useLexicalComposerContext();
+    const {selectedCardKey} = useKoenigSelectedCardContext();
 
     // using state here because this component can get re-rendered after the
     // editor's editable state changes so we need to re-focus on re-render
@@ -37,7 +46,7 @@ function KoenigNestedEditorPlugin({autoFocus, focusNext}) {
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
-                    // let the parent editor handle the edit mode toggle
+                    // let the parent editor handle the edit mode product
                     if (event.metaKey || event.ctrlKey) {
                         event._fromNested = true;
                         editor._parentEditor?.dispatchCommand(KEY_ENTER_COMMAND, event);
@@ -56,9 +65,32 @@ function KoenigNestedEditorPlugin({autoFocus, focusNext}) {
                     return false;
                 },
                 COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                BLUR_COMMAND,
+                () => {
+                    // when the nested editor is selected, the parent editor loose selection
+                    // return selection to the card when nested editor blurred
+                    if (editor._parentEditor) {
+                        editor._parentEditor.getEditorState().read(() => {
+                            if (!$getSelection()) {
+                                editor._parentEditor.update(() => {
+                                    const selection = $createNodeSelection();
+                                    selection.add(selectedCardKey);
+                                    $setSelection(selection);
+                                });
+                            }
+                        });
+
+                        return true;
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_LOW
             )
         );
-    }, [editor, autoFocus, focusNext]);
+    }, [editor, autoFocus, focusNext, selectedCardKey]);
 
     return null;
 }

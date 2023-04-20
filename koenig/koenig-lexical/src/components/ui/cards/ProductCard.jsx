@@ -1,4 +1,4 @@
-import KoenigProductEditor from '../../KoenigProductEditor';
+import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
@@ -51,7 +51,7 @@ export function ProductCard({
                     {
                         (isEditing || !!title || !isEditorEmpty(titleEditor)) && (
                             <div className="mr-2 flex-1">
-                                <KoenigProductEditor
+                                <KoenigNestedEditor
                                     autoFocus={true}
                                     focusNext={descriptionEditor}
                                     initialEditor={titleEditor}
@@ -74,7 +74,7 @@ export function ProductCard({
                 {
                     (isEditing || !!description || !isEditorEmpty(descriptionEditor)) && (
                         <div className="mt-2">
-                            <KoenigProductEditor
+                            <KoenigNestedEditor
                                 initialEditor={descriptionEditor}
                                 initialEditorState={descriptionEditorInitialState}
                                 placeholderClassName="text-[1.6rem] font-normal leading-snug text-grey-700 opacity-50"

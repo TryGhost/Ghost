@@ -1,4 +1,4 @@
-import KoenigProductEditor from '../../KoenigProductEditor';
+import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
@@ -60,7 +60,7 @@ export function EmailCtaCard({
                 {showDividers && <hr className="-mt-4 mb-12 block border-t-grey-300 dark:border-t-grey-900" data-testid="top-divider" />}
 
                 {/* HTML content */}
-                <KoenigProductEditor
+                <KoenigNestedEditor
                     autoFocus={true}
                     initialEditor={htmlEditor}
                     initialEditorState={htmlEditorInitialState}
