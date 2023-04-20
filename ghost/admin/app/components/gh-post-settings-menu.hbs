@@ -450,7 +450,10 @@
             {{#if this.showPostHistory}}
                 <GhFullscreenModal
                     @modal="post-history"
-                    @model={{this.post}}
+                    @model={{hash
+                        post=this.post
+                        editorAPI=this.editorAPI
+                    }}
                     @close={{this.closePostHistory}}
                     @modifier="total-overlay post-history" />
             {{/if}}
