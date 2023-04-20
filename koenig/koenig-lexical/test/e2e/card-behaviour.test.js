@@ -515,6 +515,7 @@ describe('Card behaviour', async () => {
         test('moving through paragraph to card', async function () {
             await focusEditor(page);
             await page.keyboard.type('--- ');
+            await expect(await page.locator('[data-kg-card="horizontalrule"]')).toBeVisible();
             // three lines of text - paste it because keyboard.type is slow for long text
             const text = 'Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.';
             await pasteText(page, text);
@@ -522,11 +523,8 @@ describe('Card behaviour', async () => {
             await expect(await page.getByText(text)).toBeVisible();
 
             // place cursor at beginning of third line
-            const pHandle = await page.$('[data-lexical-editor] > p');
-            const pRect = await page.evaluate((el) => {
-                const {x, y, height} = el.getBoundingClientRect();
-                return {x, y, height};
-            }, pHandle);
+            const textLocator = await page.locator('[data-lexical-editor] > p');
+            const pRect = await textLocator.boundingBox();
             await page.mouse.click(pRect.x + 1, pRect.y + pRect.height - 5);
 
             await assertSelection(page, {
