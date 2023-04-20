@@ -1,3 +1,4 @@
+import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import useDragAndDrop from '../hooks/useDragAndDrop';
@@ -5,6 +6,7 @@ import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {GalleryCard} from '../components/ui/cards/GalleryCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {pick} from 'lodash-es';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
@@ -25,7 +27,8 @@ function recalculateImageRows(images) {
 export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
     const {selectedCardKey} = useKoenigSelectedCardContext();
-    const {fileUploader} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
+    const cardContext = React.useContext(CardContext);
 
     const fileInputRef = React.useRef();
     const [errorMessage, setErrorMessage] = React.useState(null);
@@ -128,6 +131,11 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         await handleImageUploads(files);
     }
 
+    function handleToolbarAdd(event) {
+        event.preventDefault();
+        fileInputRef.current.click();
+    }
+
     const clearErrorMessage = () => {
         setErrorMessage(null);
     };
@@ -150,10 +158,28 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
             />
 
             <ActionToolbar
-                data-kg-card-toolbar="image"
+                data-kg-card-toolbar="gallery"
                 isVisible={showSnippetToolbar}
             >
                 <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="gallery"
+                isVisible={images.length > 0 && cardContext.isSelected && !showSnippetToolbar}
+            >
+                <ToolbarMenu>
+                    <ToolbarMenuItem dataTestId="add-gallery-image" icon="add" isActive={false} label="Add images" onClick={handleToolbarAdd} />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
+                    <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
+                </ToolbarMenu>
             </ActionToolbar>
         </>
     );

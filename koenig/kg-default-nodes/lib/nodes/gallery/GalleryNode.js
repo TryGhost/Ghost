@@ -109,6 +109,10 @@ export class GalleryNode extends KoenigDecoratorNode {
     decorate() {
         return '';
     }
+
+    hasEditMode() {
+        return false;
+    }
 }
 
 export const $createGalleryNode = (dataset) => {

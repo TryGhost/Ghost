@@ -207,10 +207,11 @@ describe('Gallery card', async () => {
                             </div>
                         </figcaption>
                     </figure>
+                    <div data-kg-card-toolbar="gallery"></div>
                 </div>
             </div>
             <p><br /></p>
-        `);
+        `, {ignoreCardToolbarContents: true});
     });
 
     it('can drop images when empty', async function () {
@@ -288,5 +289,28 @@ describe('Gallery card', async () => {
         await page.getByTestId('clear-gallery-error').click();
 
         await expect(page.getByTestId('gallery-error')).not.toBeVisible();
+    });
+
+    it('can add images via toolbar', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'gallery'});
+
+        const firstImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
+        const dataTransfer = await createDataTransfer(page, [
+            {filePath: firstImagePath, fileName: 'first-dropped.jpg', fileType: 'image/jpeg'}
+        ]);
+        await page.getByTestId('gallery-container').dispatchEvent('dragover', {dataTransfer});
+        await page.getByTestId('gallery-container').dispatchEvent('drop', {dataTransfer});
+
+        await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(1);
+        await expect(page.locator('[data-kg-card-toolbar="gallery"]')).toBeVisible();
+
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-1.png');
+        await page.click('[data-kg-card-toolbar="gallery"] [data-testid="add-gallery-image"]');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+
+        await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(2);
     });
 });
