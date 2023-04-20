@@ -11,36 +11,18 @@
 
 /* Sidebar */
 
-.gh-post-history .settings-menu-header-wrapper {
-    position: fixed;
-    width: 100%;
-    max-width: 420px;
-    z-index: 3;
-    background: var(--white);
-    box-shadow: rgba(0, 0, 0, 0.04) 0px 0px 0px 1px, rgba(0, 0, 0, 0.15) 0px 12px 16px -16px;
-}
-
 .gh-post-history .settings-menu-header.subview {
-    position: relative;
     max-width: 420px;
-}
-
-.settings-menu-header-wrapper .nav-list {
-    margin: 0;
-}
-
-.nav-list-item.compare-versions:hover {
-    background: var(--white);
-}
-
-.gh-post-history .settings-menu-header-wrapper .gh-toggle-featured {
-    position: relative;
-    width: 34px;
-    height: 20px;
+    padding: 3.6rem 2.4rem;
+    border-bottom: 1px solid var(--whitegrey);
 }
 
 .gh-post-history .settings-menu-content {
-    padding: 144px 0 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 96px 0 0;
 }
 
 .gh-post-history .nav-list-item.active {
@@ -76,9 +58,75 @@
 }
 
 .nav-list-item .gh-post-history-version-restore span {
-    color: var(--red);
+    color: var(--midgrey);
     font-size: 1.35rem;
     font-weight: 500;
+}
+
+.gh-post-history-footer {
+    position: sticky;
+    -webkit-position: sticky;
+    bottom: -24px;
+    z-index: 9997;
+    height: 104px;
+    -webkit-backface-visibility: hidden;
+}
+
+.gh-post-history-footer::before,
+.gh-post-history-footer::after {
+  content: "";
+  position: sticky;
+  -webkit-position: sticky;
+  display: block;
+  height: 24px;
+}
+
+.gh-post-history-footer::before {
+    z-index: 9998;
+    bottom: 0;
+    background: var(--white);
+}
+
+.gh-post-history-footer::after {
+    bottom: 64px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 -8px 16px -3px rgba(0,0,0,.15);
+}
+
+.gh-post-history-footer .gh-toggle-featured {
+    position: relative;
+    width: 34px;
+    height: 20px;
+}
+
+.gh-post-history-footer-inner {
+    position: sticky;
+    -webkit-position: sticky;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    height: 80px;
+    margin-bottom: -24px;
+    padding: var(--main-layout-area-padding);
+    background: var(--white);
+}
+
+.gh-post-history-footer .for-switch.x-small {
+    width: 100%;
+}
+
+.gh-post-history-footer-inner .switch {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0;
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+.gh-post-history-footer .for-switch.x-small label {
+    width: inherit !important;
+    height: inherit !important;
 }
 
 /* Main content */
@@ -95,19 +143,23 @@
     max-width: 740px;
     margin-left: auto;
     margin-right: auto;
+    color: var(--black);
+}
+
+.gh-post-history .show-diff .gh-editor-title {
+    opacity: .4;
+}
+
+.gh-post-history-main .show-diff .koenig-lexical h1,
+.gh-post-history-main .show-diff .koenig-lexical h2,
+.gh-post-history-main .show-diff .koenig-lexical h3,
+.gh-post-history-main .show-diff .koenig-lexical h4,
+.gh-post-history-main .show-diff .koenig-lexical h5,
+.gh-post-history-main .show-diff .koenig-lexical p {
     color: rgba(21, 23, 26, 0.4);
 }
 
-.gh-post-history-main .koenig-lexical h1,
-.gh-post-history-main .koenig-lexical h2,
-.gh-post-history-main .koenig-lexical h3,
-.gh-post-history-main .koenig-lexical h4,
-.gh-post-history-main .koenig-lexical h5,
-.gh-post-history-main .koenig-lexical p {
-    color: rgba(21, 23, 26, 0.4);
-}
-
-.gh-post-history-main .koenig-lexical a:not(.gh-post-history-main .koenig-lexical del a):not(.gh-post-history-main .koenig-lexical ins a) {
+.gh-post-history-main .show-diff .koenig-lexical a:not(.gh-post-history-main .koenig-lexical del a):not(.gh-post-history-main .koenig-lexical ins a) {
     opacity: .4;
 }
 
