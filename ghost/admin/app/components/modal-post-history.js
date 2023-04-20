@@ -6,7 +6,6 @@ import {tracked} from '@glimmer/tracking';
 
 function checkFinishedRendering(element, done) {
     let last = element.innerHTML;
-
     function check() {
         let html = element.innerHTML;
         if (html === last) {
@@ -27,7 +26,7 @@ export default class ModalPostHistory extends Component {
       this.post = this.args.model.post;
       this.editorAPI = this.args.model.editorAPI;
   }
-  @tracked selectedHTML;
+  @tracked selectedHTML = `<h1>loading...</h1>`;
   @tracked diffHtml = null;
   @tracked showDifferences = true;
   @tracked selectedRevisionIndex = 0;
@@ -63,8 +62,8 @@ export default class ModalPostHistory extends Component {
       });
   }
 
-  didInsert() {
-      super.didInsert(...arguments);
+  @action
+  onInsert() {
       this.updateDiff();
   }
 

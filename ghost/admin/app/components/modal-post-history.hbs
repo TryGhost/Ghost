@@ -1,5 +1,5 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
-<div class="gh-post-history">
+<div class="gh-post-history" {{did-insert this.onInsert}}>
     <div class="gh-post-history-main">
         <div class="gh-koenig-editor-pane flex flex-column mih-100">
             <div class="gh-editor-feature-image-container">
@@ -92,5 +92,4 @@
         </div>
     </div>
 </div>
-  {{did-insert}}
-  
+{{this.didInsert}}
