@@ -78,10 +78,13 @@ export default ModalComponent.extend({
         registerComparisonEditorApi(api) {
             this.comparisonEditor = api;
         }
+    },
 
-        // toggleDifferences() {
-        //     this.toggleProperty('showDifferences');
-        // }
+    stripInitialPlaceholder(html) {
+        //TODO: we should probably add a data attribute to Koenig and grab that instead
+        const regex = /<div\b[^>]*>(\s*Begin writing your post\.\.\.\s*)<\/div>/i;
+        const strippedHtml = html.replace(regex, '');
+        return strippedHtml;
     },
 
     toggleDifferences: action(function () {
@@ -151,8 +154,8 @@ export default ModalComponent.extend({
 
         let updateIfBothDone = () => {
             if (previousDone && currentDone) {
-                this.set('diffHtml', this.calculateHTMLDiff(previous.innerHTML, current.innerHTML));
-                this.set('selectedHTML', current.innerHTML);
+                this.set('diffHtml', this.calculateHTMLDiff(this.stripInitialPlaceholder(previous.innerHTML), this.stripInitialPlaceholder(current.innerHTML)));
+                this.set('selectedHTML', this.stripInitialPlaceholder(current.innerHTML));
             }
         };
 
