@@ -88,6 +88,9 @@ function getSearchHelper(frontendKey) {
 }
 
 function getAnnouncementBarHelper(frontendKey) {
+    if (!settingsCache.get('announcement_content')) {
+        return '';
+    }
     const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
     const {scriptUrl} = getFrontendAppConfig('announcementBar');
     const attrs = {
