@@ -47,6 +47,7 @@
                     </button>
                     <h4>Post history</h4>
                 </div>
+                {{#if (feature 'postDiffing')}}
                 <ul class="nav-list">
                     <li class="nav-list-item compare-versions">
                         <div class="for-switch x-small">
@@ -60,6 +61,7 @@
                         </div>
                     </li>
                 </ul>
+                {{/if}}
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">

@@ -41,6 +41,7 @@ const ALPHA_FEATURES = [
     'stripeAutomaticTax',
     'makingItRain',
     'postHistory',
+    'postDiffing',
     'announcementBar',
     'imageEditor'
 ];
