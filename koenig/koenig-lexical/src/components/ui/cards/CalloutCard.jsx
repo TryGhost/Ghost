@@ -29,7 +29,8 @@ export const CALLOUT_TEXT_COLORS = {
     red: TEXT_BLACK,
     pink: TEXT_BLACK,
     purple: TEXT_BLACK,
-    accent: TEXT_WHITE
+    // .kg-callout-accent makes sure links are not in accent color anymore
+    accent: TEXT_WHITE + ' kg-callout-accent'
 };
 
 export const calloutColorPicker = [
@@ -131,7 +132,6 @@ export function CalloutCard({
                 </div>
                 <KoenigNestedEditor
                     autoFocus={true}
-                    disableKoenigStyles={true}
                     initialEditor={textEditor}
                     initialEditorState={textEditorInitialState}
                     nodes='minimal'

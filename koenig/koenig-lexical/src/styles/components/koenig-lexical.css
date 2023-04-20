@@ -38,10 +38,12 @@
 
 /* Dark mode */
 .koenig-lexical > .dark, .koenig-lexical.dark, .dark .koenig-lexical {
-    background-color: var(--black);
+    &:not(.kg-inherit-styles) {
+        background-color: var(--black);
 
-    > * {
-        color: var(--grey-300);
+        > * {
+            color: var(--grey-300);
+        }
     }
 }
 

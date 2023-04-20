@@ -3,73 +3,88 @@
 @tailwind utilities;
 
 @layer components {
-   /* Header card – Header */
-  .kg-header-header-placeholder {
-    @apply !truncate opacity-50 whitespace-normal tracking-tight text-center w-full !leading-tight font-bold
-  }
 
-  .kg-header-header-text strong {
-    @apply !font-extrabold
-  }
+    /* Header card – Header */
+    .kg-header-header-placeholder {
+        @apply !truncate opacity-50 whitespace-normal tracking-tight text-center w-full !leading-tight font-bold
+    }
 
-  .kg-header-header-text {
-    @apply relative w-full whitespace-normal text-center font-bold !leading-tight tracking-tight
-  }
+    .kg-header-header-text strong {
+        @apply !font-extrabold
+    }
 
-  .kg-header-header-text.kg-header-small {
-    @apply text-center
-  }
+    .kg-header-header-text {
+        @apply relative w-full whitespace-normal text-center font-bold !leading-tight tracking-tight
+    }
 
-  .kg-header-header-text.kg-header-small:has(br) {
-    @apply text-left pl-[calc(50%_-_254px)]
-  }
+    .kg-header-header-text.kg-header-small {
+        @apply text-center
+    }
 
-  .kg-header-header-text.kg-header-medium:has(br) {
-    @apply text-left pl-[calc(50%_-_304px)]
-  }
+    .kg-header-header-text.kg-header-small:has(br) {
+        @apply text-left pl-[calc(50%_-_254px)]
+    }
 
-  .kg-header-header-text.kg-header-large:has(br) {
-    @apply text-left pl-[calc(50%_-_404px)]
-  }
+    .kg-header-header-text.kg-header-medium:has(br) {
+        @apply text-left pl-[calc(50%_-_304px)]
+    }
 
-  .kg-header-header-text {
-    @apply text-center
-  }
+    .kg-header-header-text.kg-header-large:has(br) {
+        @apply text-left pl-[calc(50%_-_404px)]
+    }
 
-  .kg-header-header-text {
-    @apply !whitespace-normal
-  }
+    .kg-header-header-text {
+        @apply text-center
+    }
 
-  .kg-header-header-text a {
-    @apply underline underline-offset-8
-  }
+    .kg-header-header-text {
+        @apply !whitespace-normal
+    }
 
-  /* Header card – Subheader */
-  .kg-header-subheader-placeholder {
-    @apply !truncate opacity-50 w-full whitespace-normal text-center leading-tight font-normal
-  }
+    .kg-header-header-text a {
+        @apply underline underline-offset-8
+    }
 
-  .kg-header-subheader-text {
-    @apply relative w-full whitespace-normal text-center font-medium leading-tight
-  }
+    /* Header card – Subheader */
+    .kg-header-subheader-placeholder {
+        @apply !truncate opacity-50 w-full whitespace-normal text-center leading-tight font-normal
+    }
 
-  .kg-header-subheader-text.kg-subheader-small:has(br) {
-    @apply text-left pl-[calc(50%_-_105px)]
-  }
+    .kg-header-subheader-text {
+        @apply relative w-full whitespace-normal text-center font-medium leading-tight
+    }
 
-  .kg-header-subheader-text.kg-subheader-medium:has(br) {
-    @apply text-left pl-[calc(50%_-_124px)]
-  }
+    .kg-header-subheader-text.kg-subheader-small:has(br) {
+        @apply text-left pl-[calc(50%_-_105px)]
+    }
 
-  .kg-header-subheader-text.kg-subheader-large:has(br) {
-    @apply text-left pl-[calc(50%_-_156px)]
-  }
+    .kg-header-subheader-text.kg-subheader-medium:has(br) {
+        @apply text-left pl-[calc(50%_-_124px)]
+    }
 
-  .kg-header-subheader-text {
-    @apply !whitespace-normal text-center
-  }
+    .kg-header-subheader-text.kg-subheader-large:has(br) {
+        @apply text-left pl-[calc(50%_-_156px)]
+    }
 
-  .kg-header-subheader-text a {
-    @apply underline underline-offset-4
-  }
+    .kg-header-subheader-text {
+        @apply !whitespace-normal text-center
+    }
+
+    .kg-header-subheader-text a {
+        @apply underline underline-offset-4
+    }
+
+    .kg-header-header-text a {
+        @apply underline underline-offset-8
+    }
+
+    .kg-header-header-text a,
+    .kg-header-subheader-text a {
+        color: var(--kg-accent-color, #ff0095);
+    }
+
+    /* When the header has a background color of accent, we need to show all links in white */
+    .kg-header-accent {
+        --kg-accent-color: #fff;
+    }
 }

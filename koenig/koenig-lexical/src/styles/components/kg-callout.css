@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    /* When the callout has a background color of accent, we need to show all links in white */
+    .kg-callout-accent {
+        --kg-accent-color: #fff;
+    }
+}

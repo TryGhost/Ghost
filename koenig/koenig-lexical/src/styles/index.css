@@ -11,6 +11,7 @@
 @import './components/kg-product';
 @import './components/kg-email';
 @import './components/kg-header';
+@import './components/kg-callout';
 
 /* Global Koenig content styles
 /* -------------------------------------------------------------------- */

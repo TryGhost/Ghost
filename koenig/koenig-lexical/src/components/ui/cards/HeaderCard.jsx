@@ -15,6 +15,14 @@ export const HEADER_COLORS = {
     image: 'bg-grey-300 dark:bg-grey-950 bg-gradient-to-t from-black/0 via-black/5 to-black/30'
 };
 
+export const HEADER_TEXT_COLORS = {
+    dark: 'text-white caret-white',
+    light: 'text-black caret-black',
+    // kg-header-accent fixes the link color
+    accent: 'text-white caret-white kg-header-accent',
+    image: 'text-white caret-white'
+};
+
 function FileUploading({progress}) {
     const progressStyle = {
         width: `${progress?.toFixed(0)}%`
@@ -172,16 +180,15 @@ export function HeaderCard({isEditing,
                     (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
                         <KoenigNestedEditor
                             autoFocus={true}
-                            disableKoenigStyles={true}
                             focusNext={subheaderTextEditor}
                             hasSettingsPanel={true}
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`kg-header-header-placeholder ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            placeholderClassName={`kg-header-header-placeholder ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${HEADER_TEXT_COLORS[style]}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-header-text ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'kg-header-medium text-7xl' : 'kg-header-large text-8xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            textClassName={`kg-header-header-text ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'kg-header-medium text-7xl' : 'kg-header-large text-8xl'} ${HEADER_TEXT_COLORS[style]}`}
                         />
                     )
                 }
@@ -190,15 +197,14 @@ export function HeaderCard({isEditing,
                 {
                     (isEditing || !!subheader || !isEditorEmpty(subheaderTextEditor)) && (
                         <KoenigNestedEditor
-                            disableKoenigStyles={true}
                             hasSettingsPanel={true}
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`kg-header-subheader-placeholder ${(size === 'small') ? 'text-xl' : (size === 'medium') ? 'text-2xl' : 'text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            placeholderClassName={`kg-header-subheader-placeholder ${(size === 'small') ? 'text-xl' : (size === 'medium') ? 'text-2xl' : 'text-3xl'} ${HEADER_TEXT_COLORS[style]}`}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-subheader-text ${(size === 'small') ? 'kg-subheader-small mt-2 text-xl' : (size === 'medium') ? 'kg-subheader-medium mt-3 text-2xl' : 'kg-subheader-large mt-3 text-3xl'} ${(style === 'light') ? 'text-black caret-black' : 'text-white caret-white'}`}
+                            textClassName={`kg-header-subheader-text ${(size === 'small') ? 'kg-subheader-small mt-2 text-xl' : (size === 'medium') ? 'kg-subheader-medium mt-3 text-2xl' : 'kg-subheader-large mt-3 text-3xl'} ${HEADER_TEXT_COLORS[style]}`}
                         />
                     )
                 }
