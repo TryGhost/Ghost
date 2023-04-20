@@ -43,7 +43,7 @@ describe('PostRevisions', function () {
             assert.equal(actual, expected);
         });
 
-        it('should return true if the current and previous html values are different and forceRevision is true', function () {
+        it('should return true if forceRevision is true and the lexical has changed since the latest revision', function () {
             const postRevisions = new PostRevisions({config});
 
             const expected = true;
@@ -55,6 +55,8 @@ describe('PostRevisions', function () {
                 html: 'blah2'
             }, [{
                 lexical: 'blah'
+            }, {
+                lexical: 'blah2'
             }], {
                 forceRevision: true
             });

@@ -36,6 +36,7 @@ class PostRevisions {
      * @returns {boolean}
      */
     shouldGenerateRevision(previous, current, revisions, options) {
+        const latestRevision = revisions[revisions.length - 1];
         if (!previous) {
             return false;
         }
@@ -49,9 +50,9 @@ class PostRevisions {
         }
 
         const forceRevision = options && options.forceRevision;
-        const htmlHasChanged = previous.html !== current.html;
+        const lexicalHasChangedSinceLatestRevision = latestRevision.lexical !== current.lexical;
         const titleHasChanged = previous.title !== current.title;
-        if ((htmlHasChanged || titleHasChanged) && forceRevision) {
+        if ((lexicalHasChangedSinceLatestRevision || titleHasChanged) && forceRevision) {
             return true;
         }
         return false;
