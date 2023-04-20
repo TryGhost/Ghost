@@ -8,6 +8,7 @@
                 @placeholderText="Breaking news, a big story, a special offer, or any other message"
                 @html={{this.content}}
                 @onChangeHtml={{this.setContent}}
+                @onBlur={{@onChange}}
             />
         </div>
     </div>
