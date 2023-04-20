@@ -11,7 +11,13 @@ import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
-function KoenigNestedEditorPlugin({autoFocus, focusNext, hasSettingsPanel}) {
+function KoenigNestedEditorPlugin({
+    autoFocus,
+    focusNext,
+    hasSettingsPanel,
+    // Enter will focus the next card if this is true
+    defaultKoenigEnterBehaviour = false
+}) {
     const [editor] = useLexicalComposerContext();
     const {selectedCardKey} = useKoenigSelectedCardContext();
 
@@ -59,6 +65,22 @@ function KoenigNestedEditorPlugin({autoFocus, focusNext, hasSettingsPanel}) {
                         focusNext.focus(() => {
                             focusNext.getRootElement().focus({preventScroll: true});
                         });
+                        return true;
+                    }
+
+                    if (defaultKoenigEnterBehaviour) {
+                        // allow shift+enter to create a line break
+                        if (event.shiftKey) {
+                            return false;
+                        }
+
+                        // otherwise, let the parent editor handle the enter key
+                        // - with ctrl/cmd+enter toggles edit mode
+                        // - or creates paragraph after card and moves cursor
+                        event._fromNested = true;
+                        editor._parentEditor.dispatchCommand(KEY_ENTER_COMMAND, event);
+
+                        // prevent normal/KoenigBehaviourPlugin enter key behaviour
                         return true;
                     }
 

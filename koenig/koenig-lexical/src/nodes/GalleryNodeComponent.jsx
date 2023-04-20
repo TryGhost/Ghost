@@ -1,4 +1,3 @@
-import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import useDragAndDrop from '../hooks/useDragAndDrop';
