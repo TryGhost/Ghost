@@ -116,9 +116,6 @@ describe('Email card', async () => {
         // Shift focus away from email card
         await page.keyboard.press('ArrowDown');
 
-        // Shift focus to the main editor
-        await page.keyboard.press('ArrowDown');
-
         const emailCard = page.locator('[data-kg-card="email"]');
         await expect(emailCard).toHaveAttribute('data-kg-card-editing', 'false');
     });
@@ -144,9 +141,6 @@ describe('Email card', async () => {
         }
 
         // Shift focus away from email card
-        await page.keyboard.press('ArrowDown');
-
-        // Shift focus to the main editor
         await page.keyboard.press('ArrowDown');
 
         const emailCard = page.locator('[data-kg-card="email"]');

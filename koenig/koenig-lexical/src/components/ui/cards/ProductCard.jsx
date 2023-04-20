@@ -54,6 +54,7 @@ export function ProductCard({
                                 <KoenigNestedEditor
                                     autoFocus={true}
                                     focusNext={descriptionEditor}
+                                    hasSettingsPanel={true}
                                     initialEditor={titleEditor}
                                     initialEditorState={titleEditorInitialState}
                                     nodes='minimal'
@@ -75,6 +76,7 @@ export function ProductCard({
                     (isEditing || !!description || !isEditorEmpty(descriptionEditor)) && (
                         <div className="mt-2">
                             <KoenigNestedEditor
+                                hasSettingsPanel={true}
                                 initialEditor={descriptionEditor}
                                 initialEditorState={descriptionEditorInitialState}
                                 placeholderClassName="text-[1.6rem] font-normal leading-snug text-grey-700 opacity-50"

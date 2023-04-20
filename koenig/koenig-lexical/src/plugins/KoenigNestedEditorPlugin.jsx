@@ -11,7 +11,7 @@ import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
-function KoenigNestedEditorPlugin({autoFocus, focusNext}) {
+function KoenigNestedEditorPlugin({autoFocus, focusNext, hasSettingsPanel}) {
     const [editor] = useLexicalComposerContext();
     const {selectedCardKey} = useKoenigSelectedCardContext();
 
@@ -71,7 +71,7 @@ function KoenigNestedEditorPlugin({autoFocus, focusNext}) {
                 () => {
                     // when the nested editor is selected, the parent editor loose selection
                     // return selection to the card when nested editor blurred
-                    if (editor._parentEditor) {
+                    if (hasSettingsPanel && editor._parentEditor) {
                         editor._parentEditor.getEditorState().read(() => {
                             if (!$getSelection()) {
                                 editor._parentEditor.update(() => {
@@ -90,7 +90,7 @@ function KoenigNestedEditorPlugin({autoFocus, focusNext}) {
                 COMMAND_PRIORITY_LOW
             )
         );
-    }, [editor, autoFocus, focusNext, selectedCardKey]);
+    }, [editor, autoFocus, focusNext, selectedCardKey, hasSettingsPanel]);
 
     return null;
 }

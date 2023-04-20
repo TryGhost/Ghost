@@ -189,6 +189,8 @@ describe('Toggle card', async () => {
         await focusEditor(page);
         await insertToggleCard(page);
 
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.type('Content');
         await page.keyboard.press('ArrowUp');
         await page.keyboard.type('Header');
 
@@ -207,9 +209,6 @@ describe('Toggle card', async () => {
         await page.keyboard.press('ArrowDown');
 
         // Shift focus away from content field
-        await page.keyboard.press('ArrowDown');
-
-        // Shift focus away from toggle card
         await page.keyboard.press('ArrowDown');
 
         const toggleCard = page.locator('[data-kg-card="toggle"]');
@@ -238,9 +237,6 @@ describe('Toggle card', async () => {
         await page.keyboard.press('ArrowDown');
 
         // Shift focus away from content field
-        await page.keyboard.press('ArrowDown');
-
-        // Shift focus away from toggle card
         await page.keyboard.press('ArrowDown');
 
         const toggleCard = page.locator('[data-kg-card="toggle"]');

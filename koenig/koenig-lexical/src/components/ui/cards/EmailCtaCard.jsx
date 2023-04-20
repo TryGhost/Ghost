@@ -62,6 +62,7 @@ export function EmailCtaCard({
                 {/* HTML content */}
                 <KoenigNestedEditor
                     autoFocus={true}
+                    hasSettingsPanel={true}
                     initialEditor={htmlEditor}
                     initialEditorState={htmlEditorInitialState}
                     nodes='basic'

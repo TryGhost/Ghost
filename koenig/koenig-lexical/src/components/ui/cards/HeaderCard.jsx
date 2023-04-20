@@ -174,6 +174,7 @@ export function HeaderCard({isEditing,
                             autoFocus={true}
                             disableKoenigStyles={true}
                             focusNext={subheaderTextEditor}
+                            hasSettingsPanel={true}
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
@@ -190,6 +191,7 @@ export function HeaderCard({isEditing,
                     (isEditing || !!subheader || !isEditorEmpty(subheaderTextEditor)) && (
                         <KoenigNestedEditor
                             disableKoenigStyles={true}
+                            hasSettingsPanel={true}
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"

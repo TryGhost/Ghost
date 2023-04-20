@@ -20,7 +20,8 @@ const KoenigNestedEditor = ({
     autoFocus = false,
     focusNext = null,
     singleParagraph = false,
-    disableKoenigStyles = false
+    disableKoenigStyles = false,
+    hasSettingsPanel = false
 }) => {
     const initialNodes = nodes === 'minimal' ? MINIMAL_NODES : BASIC_NODES;
     const markdownTransformers = nodes === 'minimal' ? MINIMAL_TRANSFORMERS : BASIC_TRANSFORMERS;
@@ -39,7 +40,7 @@ const KoenigNestedEditor = ({
                 placeholder={<Placeholder className={placeholderClassName} text={placeholderText} />}
             >
                 {singleParagraph && <RestrictContentPlugin paragraphs={1} />}
-                <KoenigNestedEditorPlugin autoFocus={autoFocus} focusNext={focusNext} />
+                <KoenigNestedEditorPlugin autoFocus={autoFocus} focusNext={focusNext} hasSettingsPanel={hasSettingsPanel} />
             </KoenigComposableEditor>
         </KoenigNestedComposer>
     );
