@@ -19,10 +19,16 @@ export default class KoenigImageEditor extends Component {
     }
 
     get pinturaJsUrl() {
+        if (!this.settings.pintura) {
+            return null;
+        }
         return this.config.pintura?.js || this.settings.pinturaJsUrl;
     }
 
     get pinturaCSSUrl() {
+        if (!this.settings.pintura) {
+            return null;
+        }
         return this.config.pintura?.css || this.settings.pinturaCssUrl;
     }
 
@@ -145,11 +151,46 @@ export default class KoenigImageEditor extends Component {
                     'frame',
                     'sticker'
                 ],
+                stickerStickToImage: true,
+                frameOptions: [
+                    // No frame
+                    [undefined, locale => locale.labelNone],
+
+                    // Sharp edge frame
+                    ['solidSharp', locale => locale.frameLabelMatSharp],
+
+                    // Rounded edge frame
+                    ['solidRound', locale => locale.frameLabelMatRound],
+
+                    // A single line frame
+                    ['lineSingle', locale => locale.frameLabelLineSingle],
+
+                    // A frame with cornenr hooks
+                    ['hook', locale => locale.frameLabelCornerHooks],
+
+                    // A polaroid frame
+                    ['polaroid', locale => locale.frameLabelPolaroid]
+                ],
+                cropSelectPresetFilter: 'landscape',
+                cropSelectPresetOptions: [
+                    [undefined, 'Custom'],
+                    [1, 'Square'],
+                    // shown when cropSelectPresetFilter is set to 'landscape'
+                    [2 / 1, '2:1'],
+                    [3 / 2, '3:2'],
+                    [4 / 3, '4:3'],
+                    [16 / 10, '16:10'],
+                    [16 / 9, '16:9'],
+                    // shown when cropSelectPresetFilter is set to 'portrait'
+                    [1 / 2, '1:2'],
+                    [2 / 3, '2:3'],
+                    [3 / 4, '3:4'],
+                    [10 / 16, '10:16'],
+                    [9 / 16, '9:16']
+                ],
                 locale: {
                     labelButtonExport: 'Save and close'
-                },
-                cropEnableButtonToggleCropLimit: true,
-                cropSelectPresetFilter: true
+                }
             });
 
             editor.on('loaderror', () => {
