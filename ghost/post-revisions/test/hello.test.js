@@ -8,20 +8,11 @@ const config = {
 
 describe('PostRevisions', function () {
     describe('shouldGenerateRevision', function () {
-        it('should return false if there is no previous', function () {
-            const postRevisions = new PostRevisions({config});
-
-            const expected = {value: false};
-            const actual = postRevisions.shouldGenerateRevision(null, {}, []);
-
-            assert.deepEqual(actual, expected);
-        });
-
         it('should return true if there are no revisions', function () {
             const postRevisions = new PostRevisions({config});
 
             const expected = {value: true, reason: 'initial_revision'};
-            const actual = postRevisions.shouldGenerateRevision({}, {}, []);
+            const actual = postRevisions.shouldGenerateRevision({}, []);
 
             assert.deepEqual(actual, expected);
         });
@@ -31,9 +22,6 @@ describe('PostRevisions', function () {
 
             const expected = {value: false};
             const actual = postRevisions.shouldGenerateRevision({
-                lexical: 'previous',
-                html: 'blah'
-            }, {
                 lexical: 'current',
                 html: 'blah'
             }, [{
@@ -48,9 +36,6 @@ describe('PostRevisions', function () {
 
             const expected = {value: true, reason: 'explicit_save'};
             const actual = postRevisions.shouldGenerateRevision({
-                lexical: 'blah',
-                html: 'blah'
-            }, {
                 lexical: 'blah',
                 html: 'blah2'
             }, [{
@@ -71,13 +56,30 @@ describe('PostRevisions', function () {
             const actual = postRevisions.shouldGenerateRevision({
                 lexical: 'blah',
                 html: 'blah',
-                title: 'blah'
-            }, {
-                lexical: 'blah',
-                html: 'blah',
                 title: 'blah2'
             }, [{
                 lexical: 'blah'
+            }], {
+                forceRevision: true
+            });
+
+            assert.deepEqual(actual, expected);
+        });
+
+        it('should return true if the current and previous feature_image values are different and forceRevision is true', function () {
+            const postRevisions = new PostRevisions({config});
+
+            const expected = {value: true, reason: 'explicit_save'};
+            const actual = postRevisions.shouldGenerateRevision({
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah',
+                feature_image: 'new'
+            }, [{
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah',
+                feature_image: null
             }], {
                 forceRevision: true
             });
@@ -90,10 +92,6 @@ describe('PostRevisions', function () {
 
             const expected = {value: true, reason: 'published'};
             const actual = postRevisions.shouldGenerateRevision({
-                lexical: 'blah',
-                html: 'blah',
-                title: 'blah'
-            }, {
                 lexical: 'blah',
                 html: 'blah',
                 title: 'blah2'
@@ -114,7 +112,7 @@ describe('PostRevisions', function () {
             const expected = [{
                 lexical: 'blah'
             }];
-            const actual = await postRevisions.getRevisions(null, {}, [{
+            const actual = await postRevisions.getRevisions({}, [{
                 lexical: 'blah'
             }]);
 
@@ -130,9 +128,6 @@ describe('PostRevisions', function () {
             const actual = await postRevisions.getRevisions({
                 lexical: 'blah',
                 html: 'blah'
-            }, {
-                lexical: 'blah',
-                html: 'blah'
             }, [{
                 lexical: 'revision'
             }]);
@@ -144,12 +139,6 @@ describe('PostRevisions', function () {
             const postRevisions = new PostRevisions({config});
 
             const actual = await postRevisions.getRevisions({
-                id: '1',
-                lexical: 'previous',
-                html: 'previous',
-                author_id: '123',
-                title: 'foo bar baz'
-            }, {
                 id: '1',
                 lexical: 'current',
                 html: 'current',
@@ -172,19 +161,11 @@ describe('PostRevisions', function () {
 
             const revisions = await postRevisions.getRevisions({
                 id: '1',
-                lexical: 'previous',
-                html: 'previous'
-            }, {
-                id: '1',
                 lexical: 'current',
                 html: 'current'
             }, []);
 
             const actual = await postRevisions.getRevisions({
-                id: '1',
-                lexical: 'old',
-                html: 'old'
-            }, {
                 id: '1',
                 lexical: 'new',
                 html: 'new'
@@ -204,19 +185,11 @@ describe('PostRevisions', function () {
 
             const revisions = await postRevisions.getRevisions({
                 id: '1',
-                lexical: 'previous',
-                html: 'previous'
-            }, {
-                id: '1',
                 lexical: 'current',
                 html: 'current'
             }, []);
 
             const actual = await postRevisions.getRevisions({
-                id: '1',
-                lexical: 'old',
-                html: 'old'
-            }, {
                 id: '1',
                 lexical: 'new',
                 html: 'new'
