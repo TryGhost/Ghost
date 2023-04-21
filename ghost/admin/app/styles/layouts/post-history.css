@@ -36,17 +36,25 @@
     font-weight: 400;
 }
 
-.nav-list-item .gh-post-history-version-current {
+.nav-list-item .gh-post-history-version-tag {
     margin-left: .8rem;
-    padding: 0 4px;
-    background: var(--lightgrey-l2);
-    color: var(--darkgrey);
+    padding: 0 5px;
     font-size: 1.1rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: inherit;
     text-transform: uppercase;
     letter-spacing: .2px;
     border-radius: var(--border-radius);
+}
+
+.nav-list-item .gh-post-history-version-tag.current {
+    background: var(--lightgrey-l2);
+    color: var(--darkgrey);
+}
+
+.nav-list-item .gh-post-history-version-tag.published {
+    background: var(--green-d1);
+    color: var(--white);
 }
 
 .nav-list-item .gh-post-history-version-restore {

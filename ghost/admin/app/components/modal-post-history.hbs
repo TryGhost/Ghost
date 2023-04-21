@@ -41,7 +41,10 @@
                             <div class="flex items-center">
                                 <span class="gh-post-history-version">{{gh-format-post-time revision.createdAt format="D MMM YYYY, HH:mm"}}{{this.timezone}}</span>
                                 {{#if revision.latest}}
-                                    <span class="gh-post-history-version-current">Latest</span>
+                                    <span class="gh-post-history-version-tag current">Latest</span>
+                                {{/if}}
+                                {{#if revision.published}}
+                                    <span class="gh-post-history-version-tag published">Publised</span>
                                 {{/if}}
                             </div>
                             <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
