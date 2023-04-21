@@ -176,6 +176,7 @@ module.exports = {
             'email_segment',
             'newsletter',
             'force_rerender',
+            'save_revision',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'

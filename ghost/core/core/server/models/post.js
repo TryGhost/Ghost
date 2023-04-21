@@ -913,7 +913,7 @@ Post = ghostBookshelf.Model.extend({
                     const revisionModels = await ghostBookshelf.model('PostRevision')
                         .findAll(Object.assign({
                             filter: `post_id:${model.id}`,
-                            columns: ['id']
+                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title']
                         }, _.pick(options, 'transacting')));
 
                     const revisions = revisionModels.toJSON();
@@ -932,7 +932,12 @@ Post = ghostBookshelf.Model.extend({
                         title: model.get('title')
                     };
 
-                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions);
+                    // This can be refactored once we have the status stored in each revision
+                    const revisionOptions = {
+                        forceRevision: options.save_revision,
+                        isPublished: newStatus === 'published'
+                    };
+                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions, revisionOptions);
                     model.set('post_revisions', newRevisions);
                 });
             }
@@ -1170,7 +1175,7 @@ Post = ghostBookshelf.Model.extend({
             findPage: ['status'],
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision']
         };
 
         // The post model additionally supports having a formats option
