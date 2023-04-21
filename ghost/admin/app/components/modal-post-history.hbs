@@ -9,10 +9,16 @@
                     {{{this.selectedHTML}}}
                 {{/if}}
             <div class="gh-post-history-hidden-lexical previous">
+                <div class="gh-editor-feature-image">
+                    <img src="{{this.comparisonRevision.feature_image}}">
+                </div>
                 <div class="gh-editor-title">{{this.previousTitle}}</div>
                 <KoenigLexicalEditor @lexical={{this.comparisonRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerComparisonEditorApi"}}/>
             </div>
             <div class="gh-post-history-hidden-lexical current">
+                <div class="gh-editor-feature-image">
+                    <img src="{{this.selectedRevision.feature_image}}">
+                </div>
                 <div class="gh-editor-title">{{this.currentTitle}}</div>
                 <KoenigLexicalEditor @lexical={{this.selectedRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerSelectedEditorApi"}}/>
             </div>
