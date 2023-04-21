@@ -60,13 +60,10 @@ describe('Code Block card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test.only('renders code block card node 2', async function () {
+    test('renders code block card node 2', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript');
         await page.keyboard.press('Enter');
-        await page.keyboard.type('Here are some words');
-
-        // await page.pause(1000);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
