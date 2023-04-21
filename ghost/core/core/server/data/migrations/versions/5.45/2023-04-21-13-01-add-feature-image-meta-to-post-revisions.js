@@ -2,7 +2,7 @@ const {combineNonTransactionalMigrations,createAddColumnMigration} = require('..
 
 module.exports = combineNonTransactionalMigrations(
     createAddColumnMigration('post_revisions', 'feature_image_caption', {
-        type: 'string',
+        type: 'text',
         maxlength: 65535,
         nullable: true
     }),
