@@ -130,3 +130,7 @@ Caddyfile
 /ghost/sodo-search/public/main.css
 /ghost/sodo-search/umd
 /ghost/sodo-search/build
+
+# Announcement-Bar
+/ghost/announcement-bar/umd
+/ghost/announcement-bar/build

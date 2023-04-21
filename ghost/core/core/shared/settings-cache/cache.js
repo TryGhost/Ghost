@@ -135,7 +135,7 @@ class CacheManager {
     }
 
     /**
-     * Get all the publically accessible cache entries with their correct names
+     * Get all the publicly accessible cache entries with their correct names
      * Uses clone to prevent modifications from being reflected
      * @return {object} cache
      */

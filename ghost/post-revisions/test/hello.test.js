@@ -1,81 +1,125 @@
 const assert = require('assert');
-const PostRevisions = require('../');
+const sinon = require('sinon');
+const PostRevisions = require('..');
 
 const config = {
-    max_revisions: 10
+    max_revisions: 10,
+    revision_interval_ms: 1000
 };
 
 describe('PostRevisions', function () {
     describe('shouldGenerateRevision', function () {
-        it('should return false if there is no previous', function () {
-            const postRevisions = new PostRevisions({config});
-
-            const expected = false;
-            const actual = postRevisions.shouldGenerateRevision(null, {}, []);
-
-            assert.equal(actual, expected);
-        });
-
         it('should return true if there are no revisions', function () {
             const postRevisions = new PostRevisions({config});
 
-            const expected = true;
-            const actual = postRevisions.shouldGenerateRevision({}, {}, []);
+            const expected = {value: true, reason: 'initial_revision'};
+            const actual = postRevisions.shouldGenerateRevision({}, []);
 
-            assert.equal(actual, expected);
+            assert.deepEqual(actual, expected);
         });
 
         it('should return false if the current and previous html values are the same', function () {
             const postRevisions = new PostRevisions({config});
 
-            const expected = false;
+            const expected = {value: false};
             const actual = postRevisions.shouldGenerateRevision({
-                lexical: 'previous',
-                html: 'blah'
-            }, {
                 lexical: 'current',
                 html: 'blah'
             }, [{
                 lexical: 'blah'
             }]);
 
-            assert.equal(actual, expected);
+            assert.deepEqual(actual, expected);
         });
 
-        it('should return true if the current and previous html values are different', function () {
+        it('should return true if forceRevision is true and the lexical has changed since the latest revision', function () {
             const postRevisions = new PostRevisions({config});
 
-            const expected = true;
+            const expected = {value: true, reason: 'explicit_save'};
             const actual = postRevisions.shouldGenerateRevision({
-                lexical: 'blah',
-                html: 'blah'
-            }, {
                 lexical: 'blah',
                 html: 'blah2'
             }, [{
                 lexical: 'blah'
-            }]);
+            }, {
+                lexical: 'blah2'
+            }], {
+                forceRevision: true
+            });
 
-            assert.equal(actual, expected);
+            assert.deepEqual(actual, expected);
         });
 
-        it('should return true if the current and previous title values are different', function () {
+        it('should return true if the current and previous title values are different and forceRevision is true', function () {
             const postRevisions = new PostRevisions({config});
 
-            const expected = true;
+            const expected = {value: true, reason: 'explicit_save'};
             const actual = postRevisions.shouldGenerateRevision({
                 lexical: 'blah',
                 html: 'blah',
-                title: 'blah'
-            }, {
+                title: 'blah2'
+            }, [{
+                lexical: 'blah',
+                title: 'not blah'
+            }], {
+                forceRevision: true
+            });
+
+            assert.deepEqual(actual, expected);
+        });
+
+        it('should return true if the current and previous feature_image values are different and forceRevision is true', function () {
+            const postRevisions = new PostRevisions({config});
+
+            const expected = {value: true, reason: 'explicit_save'};
+            const actual = postRevisions.shouldGenerateRevision({
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah',
+                feature_image: 'new'
+            }, [{
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah',
+                feature_image: null
+            }], {
+                forceRevision: true
+            });
+
+            assert.deepEqual(actual, expected);
+        });
+
+        it('should always return true if isPublished is true', function () {
+            const postRevisions = new PostRevisions({config});
+
+            const expected = {value: true, reason: 'published'};
+            const actual = postRevisions.shouldGenerateRevision({
                 lexical: 'blah',
                 html: 'blah',
                 title: 'blah2'
             }, [{
                 lexical: 'blah'
-            }]);
+            }], {
+                isPublished: true
+            });
 
-            assert.equal(actual, expected);
+            assert.deepEqual(actual, expected);
+        });
+
+        it('should return true if the latest revision was more than the interval', function () {
+            const postRevisions = new PostRevisions({config});
+
+            const expected = {value: true, reason: 'background_save'};
+            const actual = postRevisions.shouldGenerateRevision({
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah'
+            }, [{
+                lexical: 'blah',
+                created_at_ts: Date.now() - 2000
+            }], {});
+
+            assert.deepEqual(actual, expected);
         });
     });
 
@@ -86,7 +130,7 @@ describe('PostRevisions', function () {
             const expected = [{
                 lexical: 'blah'
             }];
-            const actual = await postRevisions.getRevisions(null, {}, [{
+            const actual = await postRevisions.getRevisions({}, [{
                 lexical: 'blah'
             }]);
 
@@ -102,9 +146,6 @@ describe('PostRevisions', function () {
             const actual = await postRevisions.getRevisions({
                 lexical: 'blah',
                 html: 'blah'
-            }, {
-                lexical: 'blah',
-                html: 'blah'
             }, [{
                 lexical: 'revision'
             }]);
@@ -116,12 +157,6 @@ describe('PostRevisions', function () {
             const postRevisions = new PostRevisions({config});
 
             const actual = await postRevisions.getRevisions({
-                id: '1',
-                lexical: 'previous',
-                html: 'previous',
-                author_id: '123',
-                title: 'foo bar baz'
-            }, {
                 id: '1',
                 lexical: 'current',
                 html: 'current',
@@ -135,7 +170,7 @@ describe('PostRevisions', function () {
             assert.equal(actual[0].title, 'foo bar baz');
         });
 
-        it('limits the number of revisions to the max_revisions count', async function () {
+        it('does not limit the number of revisions if under the max_revisions count', async function () {
             const postRevisions = new PostRevisions({
                 config: {
                     max_revisions: 2
@@ -144,9 +179,29 @@ describe('PostRevisions', function () {
 
             const revisions = await postRevisions.getRevisions({
                 id: '1',
-                lexical: 'previous',
-                html: 'previous'
-            }, {
+                lexical: 'current',
+                html: 'current'
+            }, []);
+
+            const actual = await postRevisions.getRevisions({
+                id: '1',
+                lexical: 'new',
+                html: 'new'
+            }, revisions, {
+                forceRevision: true
+            });
+
+            assert.equal(actual.length, 2);
+        });
+
+        it('limits the number of revisions to the max_revisions count', async function () {
+            const postRevisions = new PostRevisions({
+                config: {
+                    max_revisions: 1
+                }
+            });
+
+            const revisions = await postRevisions.getRevisions({
                 id: '1',
                 lexical: 'current',
                 html: 'current'
@@ -154,15 +209,83 @@ describe('PostRevisions', function () {
 
             const actual = await postRevisions.getRevisions({
                 id: '1',
-                lexical: 'old',
-                html: 'old'
-            }, {
-                id: '1',
                 lexical: 'new',
                 html: 'new'
-            }, revisions);
+            }, revisions, {
+                forceRevision: true
+            });
 
-            assert.equal(actual.length, 2);
+            assert.equal(actual.length, 1);
+        });
+    });
+
+    describe('removeAuthor', function () {
+        it('removes the provided author from post revisions', async function () {
+            const authorId = 'abc123';
+            const options = {
+                transacting: {}
+            };
+            const revisions = [
+                {
+                    id: 'revision123',
+                    post_id: 'post123',
+                    author_id: 'author123'
+                },
+                {
+                    id: 'revision456',
+                    post_id: 'post123',
+                    author_id: 'author123'
+                },
+                {
+                    id: 'revision789',
+                    post_id: 'post123',
+                    author_id: 'author456'
+                }
+            ];
+            const modelStub = {
+                findAll: sinon.stub().resolves({
+                    toJSON: () => revisions
+                }),
+                bulkEdit: sinon.stub().resolves()
+            };
+            const postRevisions = new PostRevisions({
+                model: modelStub
+            });
+
+            await postRevisions.removeAuthorFromRevisions(authorId, options);
+
+            assert.equal(modelStub.bulkEdit.calledOnce, true);
+
+            const bulkEditArgs = modelStub.bulkEdit.getCall(0).args;
+
+            assert.deepEqual(bulkEditArgs[0], ['revision123', 'revision456', 'revision789']);
+            assert.equal(bulkEditArgs[1], 'post_revisions');
+            assert.deepEqual(bulkEditArgs[2], {
+                data: {
+                    author_id: null
+                },
+                column: 'id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+        });
+
+        it('does nothing if there are no post revisions by the provided author', async function () {
+            const modelStub = {
+                findAll: sinon.stub().resolves({
+                    toJSON: () => []
+                }),
+                bulkEdit: sinon.stub().resolves()
+            };
+            const postRevisions = new PostRevisions({
+                model: modelStub
+            });
+
+            await postRevisions.removeAuthorFromRevisions('abc123', {
+                transacting: {}
+            });
+
+            assert.equal(modelStub.bulkEdit.calledOnce, false);
         });
     });
 });

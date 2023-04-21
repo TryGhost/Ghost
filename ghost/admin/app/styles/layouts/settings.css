@@ -2062,6 +2062,18 @@ p.theme-validation-details {
     margin: 0;
 }
 
+.gh-nav-design .for-checkbox .input-toggle-component {
+    background-color: var(--white);
+}
+
+.gh-nav-design .kg-settings-panel-control-input {
+    margin-right: -4px;
+}
+
+.gh-nav-design .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-light {
+    border-color: color-mod(var(--lightgrey) l(-5%) s(-10%));
+}
+
 .gh-theme-setting-title {
     margin-bottom: 1rem;
 }
@@ -3701,6 +3713,11 @@ p.theme-validation-details {
     font-family: var(--font-family) !important;
     font-size: 1.4rem !important;
     line-height: 1.5em !important;
+}
+
+.gh-announcement-editor .koenig-lexical p,
+.gh-announcement-editor .koenig-lexical .kg-prose {
+    height: 108px;
 }
 
 .gh-announcement-editor .koenig-lexical a {

@@ -7,7 +7,9 @@ const tpl = require('@tryghost/tpl');
 const messages = {
     invalidEmailReceived: 'Please send a valid email',
     invalidEmailValueReceived: 'Please enter a valid email address.',
-    invalidEmailTypeReceived: 'Invalid email type received'
+    invalidEmailTypeReceived: 'Invalid email type received',
+    invalidAnnouncementVisibilityValueReceived: 'Please enter a valid announcement visibility value',
+    invalidAnnouncementBackgroundValueReceived: 'Please enter a valid announcement background value'
 };
 
 module.exports = {
@@ -20,7 +22,8 @@ module.exports = {
             const arrayTypeSettings = [
                 'notifications',
                 'navigation',
-                'secondary_navigation'
+                'secondary_navigation',
+                'announcement_visibility'
             ];
 
             const emailTypeSettings = [
@@ -58,6 +61,42 @@ module.exports = {
                         property: setting.key
                     });
                     errors.push(typeError);
+                }
+            }
+
+            if (setting.key === 'announcement_visibility') {
+                // NOTE: safe to parse because of array validation up top
+                const visibilityValues = JSON.parse(setting.value);
+
+                // NOTE: combination of 'free_members' & 'paid_members' makes just a 'members' filter
+                const validVisibilityValues = [
+                    'visitors', // Logged out visitors
+                    'free_members', // Free members
+                    'paid_members' // Paid members
+                ];
+
+                if (visibilityValues.length) {
+                    visibilityValues.forEach((visibilityValue) => {
+                        if (!validVisibilityValues.includes(visibilityValue)) {
+                            const visibilityError = new ValidationError({
+                                message: tpl(messages.invalidAnnouncementVisibilityValueReceived),
+                                property: setting.key
+                            });
+                            errors.push(visibilityError);
+                        }
+                    });
+                }
+            }
+
+            if (setting.key === 'announcement_background') {
+                const announcementBackgroundValue = setting.value;
+
+                if (!['accent', 'dark', 'light'].includes(announcementBackgroundValue)) {
+                    const visibilityError = new ValidationError({
+                        message: tpl(messages.invalidAnnouncementBackgroundValueReceived),
+                        property: setting.key
+                    });
+                    errors.push(visibilityError);
                 }
             }
         });

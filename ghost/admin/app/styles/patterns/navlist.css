@@ -18,6 +18,10 @@
     cursor: pointer;
 }
 
+.nav-list-item.selected {
+    background: var(--whitegrey-l2);
+}
+
 .nav-list-item:first-of-type {
     border-top: 1px solid var(--whitegrey-d1);
 }
@@ -42,8 +46,8 @@
 
 li.nav-list-item svg {
     margin: 0 1rem 0 0;
-    height: 1.4rem;
-    width: 1.4rem;
+    height: 1.6rem;
+    width: 1.6rem;
 }
 
 li.nav-list-item svg path:not(li.nav-list-item .history path) {
@@ -51,8 +55,12 @@ li.nav-list-item svg path:not(li.nav-list-item .history path) {
 }
 
 li.nav-list-item .history {
-    width: 1.6rem;
-    height: 1.6rem;
+    width: 1.8rem;
+    height: 1.8rem;
+}
+
+li.nav-list-item.delete {
+    color: var(--red);
 }
 
 li.nav-list-item .arrow-right {

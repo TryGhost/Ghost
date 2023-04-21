@@ -310,32 +310,55 @@
     font-weight: 500;
 }
 
+li.nav-list-item .switch {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    width: 100% !important;
+    padding: 2rem 2.4rem;
+}
+
+li.nav-list-item .for-switch.x-small label {
+    width: initial;
+    height: initial !important;
+}
+
+.settings-menu-content .gh-toggle-featured {
+    position: relative;
+    width: 34px;
+    height: 20px;
+}
+
 .settings-menu-delete-button {
-    background: transparent;
-    box-shadow: none;
-    border: none;
+    margin: 3.2rem 2.4rem 2.4rem;
+}
+
+.settings-menu-delete-button button,
+.settings-menu-delete-button button:hover,
+.settings-menu-delete-button button:active,
+.settings-menu-delete-button button:focus {
+    border: 1px solid var(--red);
+}
+
+.settings-menu-delete-button button span {
+    height: 40px;
+    line-height: 40px;
     color: var(--red);
 }
 
-.settings-menu-delete-button:hover {
-    box-shadow: none;
-    background: none;
-    color: color-mod(var(--red) lightness(-10%));
-}
-
-.settings-menu-delete-button span {
-    display: flex;
-    align-items: center;
-    font-size: inherit;
-    padding: 0;
-    font-size: 1.3rem;
-    font-weight: 500;
+.settings-menu-delete-button button:hover span {
+    color: var(--red-d1);
 }
 
 .settings-menu-delete-button svg {
     width: 1.6rem;
     height: 1.6rem;
     margin: 0 .8rem 2px 0;
+    color: var(--red);
+}
+
+.settings-menu-delete-button button:hover svg {
+    color: var(--red-d1);
 }
 
 .post-setting-custom-excerpt {

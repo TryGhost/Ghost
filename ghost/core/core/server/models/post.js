@@ -37,6 +37,7 @@ const messages = {
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
 const POST_REVISIONS_COUNT = 10;
+const POST_REVISIONS_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
 
 let Post;
@@ -905,7 +906,8 @@ Post = ghostBookshelf.Model.extend({
             if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
                 const postRevisions = new PostRevisions({
                     config: {
-                        max_revisions: POST_REVISIONS_COUNT
+                        max_revisions: POST_REVISIONS_COUNT,
+                        revision_interval_ms: POST_REVISIONS_INTERVAL_MS
                     }
                 });
                 const authorId = this.contextUser(options);
@@ -913,26 +915,29 @@ Post = ghostBookshelf.Model.extend({
                     const revisionModels = await ghostBookshelf.model('PostRevision')
                         .findAll(Object.assign({
                             filter: `post_id:${model.id}`,
-                            columns: ['id']
+                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts']
                         }, _.pick(options, 'transacting')));
 
                     const revisions = revisionModels.toJSON();
-                    const previous = {
-                        id: model.id,
-                        lexical: model.previous('lexical'),
-                        html: model.previous('html'),
-                        author_id: model.previous('updated_by'),
-                        title: model.previous('title')
-                    };
+
                     const current = {
                         id: model.id,
                         lexical: model.get('lexical'),
                         html: model.get('html'),
                         author_id: authorId,
-                        title: model.get('title')
+                        feature_image: model.get('feature_image'),
+                        feature_image_alt: model.get('posts_meta')?.feature_image_alt,
+                        feature_image_caption: model.get('posts_meta')?.feature_image_caption,
+                        title: model.get('title'),
+                        post_status: model.get('status')
                     };
 
-                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions);
+                    // This can be refactored once we have the status stored in each revision
+                    const revisionOptions = {
+                        forceRevision: options.save_revision,
+                        isPublished: newStatus === 'published'
+                    };
+                    const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
                     model.set('post_revisions', newRevisions);
                 });
             }
@@ -1170,7 +1175,7 @@ Post = ghostBookshelf.Model.extend({
             findPage: ['status'],
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision']
         };
 
         // The post model additionally supports having a formats option
@@ -1193,7 +1198,7 @@ Post = ghostBookshelf.Model.extend({
      */
     defaultRelations: function defaultRelations(methodName, options) {
         if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
-            options.withRelated = _.union(['authors', 'tags', 'post_revisions'], options.withRelated || []);
+            options.withRelated = _.union(['authors', 'tags', 'post_revisions', 'post_revisions.author'], options.withRelated || []);
         }
 
         const META_ATTRIBUTES = _.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id');

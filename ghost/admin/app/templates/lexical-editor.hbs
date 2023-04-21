@@ -90,6 +90,7 @@
                     createSnippet=(if this.canManageSnippets this.createSnippet)
                 }}
                 @postType={{this.post.displayName}}
+                @registerAPI={{this.registerEditorAPI}}
             />
 
             <div class="gh-editor-wordcount-container">
@@ -108,6 +109,8 @@
                 @deletePost={{this.openDeletePostModal}}
                 @updateSlugTask={{this.updateSlugTask}}
                 @savePostTask={{this.savePostTask}}
+                @editorAPI={{this.editorAPI}}
+                @toggleSettingsMenu={{this.toggleSettingsMenu}}
             />
         {{/if}}
     </div>

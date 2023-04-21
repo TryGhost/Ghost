@@ -4,6 +4,11 @@ export default class PostRevisionModel extends Model {
   @belongsTo('post') post;
   @attr('string') lexical;
   @attr('string') title;
+  @attr('string') featureImage;
+  @attr('string') featureImageAlt;
+  @attr('string') featureImageCaption;
+  @attr('string') reason;
   @attr('moment-utc') createdAt;
   @belongsTo('user') author;
+  @attr('string') postStatus;
 }

@@ -413,7 +413,7 @@
     display: block;
     width: 100%;
     max-width: 740px;
-    min-height: auto;
+    min-height: 60px;
     margin: -56px auto 0;
     padding-bottom: 3.6rem;
 }
@@ -460,11 +460,11 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     height: 4px;
 }
 
-.gh-editor-feature-image .image-delete {
+.gh-editor-feature-image .image-action {
     opacity: 0;
 }
 
-.gh-editor-feature-image:hover .image-delete {
+.gh-editor-feature-image:hover .image-action {
     opacity: 1;
 }
 

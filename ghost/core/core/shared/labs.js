@@ -41,7 +41,9 @@ const ALPHA_FEATURES = [
     'stripeAutomaticTax',
     'makingItRain',
     'postHistory',
-    'announcementBar'
+    'postDiffing',
+    'announcementBar',
+    'imageEditor'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

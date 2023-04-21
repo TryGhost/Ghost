@@ -322,6 +322,20 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
+                            <h4 class="gh-expandable-title">Revision Diffing</h4>
+                            <p class="gh-expandable-description">
+                                Enables showing post history differences within the editor
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="postDiffing" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
                             <h4 class="gh-expandable-title">Announcement bar</h4>
                             <p class="gh-expandable-description">
                                 Allows publishers to set a banner at the top of their site
@@ -329,6 +343,19 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="announcementBar" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Image Editor</h4>
+                            <p class="gh-expandable-description">
+                                Allows publishers to edit images in the lexical editor
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="imageEditor" />
                         </div>
                     </div>
                 </div>
