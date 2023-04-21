@@ -20,7 +20,7 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
 
         // enable dropping when an image is dragged in from outside of this card
         const isImageDrag = draggableInfo.type === 'image' || draggableInfo.cardName === 'image';
-        if (isImageDrag && draggableInfo.payload.src && images.length !== maxImages) {
+        if (isImageDrag && draggableInfo.dataset.src && images.length !== maxImages) {
             dragDropContainer.current.enableDrag();
         }
 
@@ -63,22 +63,22 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
         if (isDropAllowed(draggableIndex, insertIndex)) {
             if (draggableIndex === -1) {
                 // external image being added
-                const {payload} = draggableInfo;
-                const img = draggableInfo.element.querySelector(`img[src="${payload.src}"]`);
+                const {dataset} = draggableInfo;
+                const img = draggableInfo.element.querySelector(`img[src="${dataset.src}"]`);
 
-                // image card payloads may not have all of the details we need but we can fill them in
-                payload.width = payload.width || img.naturalWidth;
-                payload.height = payload.height || img.naturalHeight;
-                if (!payload.fileName) {
-                    const url = new URL(payload.src || img.src);
+                // image card datasets may not have all of the details we need but we can fill them in
+                dataset.width = dataset.width || img.naturalWidth;
+                dataset.height = dataset.height || img.naturalHeight;
+                if (!dataset.fileName) {
+                    const url = new URL(dataset.src || img.src);
                     const fileName = url.pathname.match(/\/([^/]*)$/)[1];
-                    payload.fileName = fileName;
+                    dataset.fileName = fileName;
                 }
 
-                updatedImages.splice(insertIndex, 0, payload);
+                updatedImages.splice(insertIndex, 0, dataset);
             } else {
                 // internal image being re-ordered
-                const draggedImage = updatedImages.find(i => i.src === draggableInfo.payload.src);
+                const draggedImage = updatedImages.find(i => i.src === draggableInfo.dataset.src);
                 const accountForRemoval = draggableIndex < insertIndex && insertIndex ? -1 : 0;
                 updatedImages = updatedImages.filter(i => i !== draggedImage);
                 updatedImages.splice(insertIndex + accountForRemoval, 0, draggedImage);
@@ -101,7 +101,7 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
             return;
         }
 
-        const image = images.find(i => i.src === draggableInfo.payload.src);
+        const image = images.find(i => i.src === draggableInfo.dataset.src);
         if (image) {
             const updatedImages = images.filter(i => i !== image);
             updateImages(updatedImages);
@@ -112,12 +112,12 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
     const getDraggableInfo = (draggableElement) => {
         let src = draggableElement.querySelector('img').getAttribute('src');
         let image = images.find(i => i.src === src) || images.find(i => i.previewSrc === src);
-        let payload = image && pick(image, ['fileName', 'src', 'row', 'width', 'height', 'caption']);
+        let dataset = image && pick(image, ['fileName', 'src', 'row', 'width', 'height', 'caption']);
 
         if (image) {
             return {
                 type: 'image',
-                payload
+                dataset
             };
         }
 
