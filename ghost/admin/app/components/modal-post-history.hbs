@@ -47,7 +47,7 @@
                                     <span class="gh-post-history-version-tag published">Publised</span>
                                 {{/if}}
                             </div>
-                            <span class="gh-post-history-version-meta">{{revision.author.name}}</span>
+                            <span class="gh-post-history-version-meta {{if (eq revision.author.name "Anonymous") "anonymous-author"}}">{{revision.author.name}}</span>
                         </button>
                         {{#if (and revision.selected (not revision.latest))}}
                             <button
