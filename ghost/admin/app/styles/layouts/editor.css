@@ -412,9 +412,8 @@
     position: relative;
     display: block;
     width: 100%;
-    height: 60px;
     max-width: 740px;
-    min-height: auto;
+    min-height: 60px;
     margin: -56px auto 0;
     padding-bottom: 3.6rem;
 }
