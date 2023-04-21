@@ -7,4 +7,6 @@ export default class PostRevisionModel extends Model {
   @attr('string') featureImage;
   @attr('moment-utc') createdAt;
   @belongsTo('user') author;
+  @attr('string') postStatus;
+  @attr('string') reason;
 }
