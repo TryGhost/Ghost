@@ -9,5 +9,4 @@ export default class PostRevisionModel extends Model {
   @attr('moment-utc') createdAt;
   @belongsTo('user') author;
   @attr('string') postStatus;
-  @attr('string') reason;
 }
