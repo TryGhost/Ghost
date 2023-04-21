@@ -45,5 +45,6 @@ export default class AnnouncementSettingsVisibilityComponent extends Component {
 
         this.settings.announcementVisibility = updatedVisibilityOptions;
         this.settings.save();
+        this.args.onChange?.();
     }
 }
