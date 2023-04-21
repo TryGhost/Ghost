@@ -4,6 +4,7 @@
  * @property {string} lexical
  * @property {string} html
  * @property {string} author_id
+ * @property {string} feature_image
  * @property {string} title
  */
 
@@ -13,6 +14,7 @@
  * @property {string} lexical
  * @property {number} created_at_ts
  * @property {string} author_id
+ * @property {string} feature_image
  * @property {string} title
  */
 
@@ -91,6 +93,7 @@ class PostRevisions {
             lexical: input.lexical,
             created_at_ts: Date.now() - offset,
             author_id: input.author_id,
+            feature_image: input.feature_image,
             title: input.title
         };
     }

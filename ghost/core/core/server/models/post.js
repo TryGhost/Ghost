@@ -922,6 +922,7 @@ Post = ghostBookshelf.Model.extend({
                         lexical: model.previous('lexical'),
                         html: model.previous('html'),
                         author_id: model.previous('updated_by'),
+                        feature_image: model.previous('feature_image'),
                         title: model.previous('title')
                     };
                     const current = {
@@ -929,6 +930,7 @@ Post = ghostBookshelf.Model.extend({
                         lexical: model.get('lexical'),
                         html: model.get('html'),
                         author_id: authorId,
+                        feature_image: model.get('feature_image'),
                         title: model.get('title')
                     };
 
