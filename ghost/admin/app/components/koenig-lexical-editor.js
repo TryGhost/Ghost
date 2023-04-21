@@ -129,9 +129,64 @@ export default class KoenigLexicalEditor extends Component {
     @service ghostPaths;
     @service session;
     @service store;
+    @service settings;
 
     @inject config;
     offers = null;
+
+    get pinturaJsUrl() {
+        if (!this.settings.pintura) {
+            return null;
+        }
+        return this.config.pintura?.js || this.settings.pinturaJsUrl;
+    }
+
+    get pinturaCSSUrl() {
+        if (!this.settings.pintura) {
+            return null;
+        }
+        return this.config.pintura?.css || this.settings.pinturaCssUrl;
+    }
+
+    get pinturaConfig() {
+        const jsUrl = this.getImageEditorJSUrl();
+        const cssUrl = this.getImageEditorCSSUrl();
+        if (!this.feature.imageEditor || !jsUrl || !cssUrl) {
+            return null;
+        }
+        return {
+            jsUrl,
+            cssUrl
+        };
+    }
+
+    getImageEditorJSUrl() {
+        let importUrl = this.pinturaJsUrl;
+
+        if (!importUrl) {
+            return null;
+        }
+
+        // load the script from admin root if relative
+        if (importUrl.startsWith('/')) {
+            importUrl = window.location.origin + this.ghostPaths.adminRoot.replace(/\/$/, '') + importUrl;
+        }
+        return importUrl;
+    }
+
+    getImageEditorCSSUrl() {
+        let cssImportUrl = this.pinturaCSSUrl;
+
+        if (!cssImportUrl) {
+            return null;
+        }
+
+        // load the css from admin root if relative
+        if (cssImportUrl.startsWith('/')) {
+            cssImportUrl = window.location.origin + this.ghostPaths.adminRoot.replace(/\/$/, '') + cssImportUrl;
+        }
+        return cssImportUrl;
+    }
 
     @action
     onError(error) {
@@ -198,7 +253,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchEmbed: fetchEmbed,
             fetchAutocompleteLinks
         };
-        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig);
+        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
         const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
