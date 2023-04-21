@@ -36,6 +36,10 @@
     font-weight: 400;
 }
 
+.nav-list-item .gh-post-history-version-meta.anonymous-author {
+    color: var(--lightgrey);
+}
+
 .nav-list-item .gh-post-history-version-tag {
     margin-left: .8rem;
     padding: 0 5px;
