@@ -23,6 +23,8 @@ export function ProductCard({
     onImgChange,
     imgMimeTypes,
     imgUploader,
+    isPinturaEnabled,
+    openImageEditor,
     onRemoveImage,
     title,
     titleEditor,
@@ -43,6 +45,8 @@ export function ProductCard({
                     imgSrc={imgSrc}
                     imgUploader={imgUploader}
                     isEditing={isEditing}
+                    isPinturaEnabled={isPinturaEnabled}
+                    openImageEditor={openImageEditor}
                     onImgChange={onImgChange}
                     onRemoveImage={onRemoveImage}
                 />

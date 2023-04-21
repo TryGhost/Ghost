@@ -1,5 +1,6 @@
 import React from 'react';
 import {ReactComponent as DeleteIcon} from '../../../../assets/icons/kg-trash.svg';
+import {ReactComponent as EditIcon} from '../../../../assets/icons/kg-edit.svg';
 import {IconButton} from '../../IconButton.jsx';
 import {MediaPlaceholder} from '../../MediaPlaceholder.jsx';
 import {ProgressBar} from '../../ProgressBar.jsx';
@@ -12,6 +13,8 @@ export function ProductCardImage({
     onImgChange,
     imgMimeTypes,
     onRemoveImage,
+    isPinturaEnabled,
+    openImageEditor,
     isEditing
 }) {
     const fileInputRef = React.useRef(null);
@@ -61,8 +64,34 @@ export function ProductCardImage({
                                 isEditing && (
                                     <>
                                         <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
+                                    </>
+                                )
+                            }
+
+                            {
+                                isEditing && (
+                                    <>
                                         <div className="absolute top-5 right-5 flex opacity-0 transition-all group-hover:opacity-100">
                                             <IconButton dataTestId="replace-product-image" Icon={DeleteIcon} onClick={onRemove} />
+                                        </div>
+                                    </>
+                                )
+                            }
+
+                            {
+                                isEditing && isPinturaEnabled && (
+                                    <>
+                                        <div className="absolute top-5 right-16 flex opacity-0 transition-all group-hover:opacity-100">
+                                            <IconButton dataTestId="replace-product-image" Icon={EditIcon} onClick={() => openImageEditor({
+                                                image: imgSrc,
+                                                handleSave: (editedImage) => {
+                                                    onImgChange({
+                                                        target: {
+                                                            files: [editedImage]
+                                                        }
+                                                    });
+                                                }
+                                            })} />
                                         </div>
                                     </>
                                 )
