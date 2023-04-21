@@ -1,7 +1,7 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
-import useDragAndDrop from '../hooks/useDragAndDrop';
+import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {FileCard} from '../components/ui/cards/FileCard';
@@ -32,7 +32,7 @@ function FileNodeComponent({
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const uploader = fileUploader.useFileUpload('file');
-    const fileDragHandler = useDragAndDrop({handleDrop: handleFileDrop});
+    const fileDragHandler = useFileDragAndDrop({handleDrop: handleFileDrop});
 
     React.useEffect(() => {
         const uploadInitialFile = async (file) => {

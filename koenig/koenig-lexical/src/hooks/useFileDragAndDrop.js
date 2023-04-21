@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 
-export default function useDragAndDrop({handleDrop, disabled = false}) {
+export default function useFileDragAndDrop({handleDrop, disabled = false}) {
     const [ref, setRef] = useState(null);
     const [isDraggedOver, setDraggedOver] = useState(false);
 

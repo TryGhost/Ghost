@@ -2,7 +2,7 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React, {useState} from 'react';
 import extractVideoMetadata from '../utils/extractVideoMetadata';
-import useDragAndDrop from '../hooks/useDragAndDrop';
+import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
@@ -32,8 +32,8 @@ export function VideoNodeComponent({
     const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
     const customThumbnailUploader = fileUploader.useFileUpload('image');
 
-    const videoDragHandler = useDragAndDrop({handleDrop: handleVideoDrop});
-    const thumbnailDragHandler = useDragAndDrop({handleDrop: handleThumbnailDrop});
+    const videoDragHandler = useFileDragAndDrop({handleDrop: handleVideoDrop});
+    const thumbnailDragHandler = useFileDragAndDrop({handleDrop: handleThumbnailDrop});
     const [metadataExtractionErrors, setMetadataExtractionErrors] = useState([]);
     const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
 

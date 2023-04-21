@@ -1,7 +1,7 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
-import useDragAndDrop from '../hooks/useDragAndDrop';
+import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import usePinturaEditor from '../hooks/usePinturaEditor';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
@@ -31,8 +31,8 @@ export function ProductNodeComponent({
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const imgMimeTypes = fileUploader.fileTypes.image?.mimeTypes || ['image/*'];
-    const imgDragHandler = useDragAndDrop({handleDrop: handleImgDrop, disabled: !isEditing});
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
+    const imgDragHandler = useFileDragAndDrop({handleDrop: handleImgDrop, disabled: !isEditing});
     const imgUploader = fileUploader.useFileUpload('image');
     const [imgPreview, setImgPreview] = React.useState('');
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);

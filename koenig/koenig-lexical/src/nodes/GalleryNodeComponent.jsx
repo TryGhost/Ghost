@@ -1,6 +1,6 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
-import useDragAndDrop from '../hooks/useDragAndDrop';
+import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import useGalleryReorder from '../hooks/useGalleryReorder';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
@@ -44,7 +44,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
 
     const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected});
     const imageUploader = fileUploader.useFileUpload('image');
-    const imageFilesDropper = useDragAndDrop({handleDrop: handleImageFilesDrop});
+    const imageFilesDropper = useFileDragAndDrop({handleDrop: handleImageFilesDrop});
 
     function reorderImages(newImages) {
         recalculateImageRows(newImages);

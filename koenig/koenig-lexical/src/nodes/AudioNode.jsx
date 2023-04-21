@@ -2,7 +2,7 @@ import CardContext from '../context/CardContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
-import useDragAndDrop from '../hooks/useDragAndDrop';
+import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {AudioCard} from '../components/ui/cards/AudioCard';
@@ -29,8 +29,8 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
 
     const audioUploader = fileUploader.useFileUpload('audio');
     const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
-    const audioDragHandler = useDragAndDrop({handleDrop: handleAudioDrop});
-    const thumbnailDragHandler = useDragAndDrop({handleDrop: handleThumbnailDrop, disabled: !isEditing});
+    const audioDragHandler = useFileDragAndDrop({handleDrop: handleAudioDrop});
+    const thumbnailDragHandler = useFileDragAndDrop({handleDrop: handleThumbnailDrop, disabled: !isEditing});
 
     React.useEffect(() => {
         const uploadInitialFiles = async (file) => {

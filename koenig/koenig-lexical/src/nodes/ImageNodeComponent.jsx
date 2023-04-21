@@ -1,7 +1,7 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
-import useDragAndDrop from '../hooks/useDragAndDrop';
+import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import usePinturaEditor from '../hooks/usePinturaEditor';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
@@ -25,7 +25,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const imageUploader = fileUploader.useFileUpload('image');
-    const imageDragHandler = useDragAndDrop({handleDrop: handleImageDrop});
+    const imageDragHandler = useFileDragAndDrop({handleDrop: handleImageDrop});
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
 
     React.useEffect(() => {
