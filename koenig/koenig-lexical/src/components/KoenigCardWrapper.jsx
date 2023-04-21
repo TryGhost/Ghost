@@ -38,7 +38,14 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 CLICK_COMMAND,
                 (event) => {
                     if (containerRef.current.contains(event.target)) {
-                        if (isSelected && !isEditing) {
+                        const cardNode = $getNodeByKey(nodeKey);
+
+                        if (!cardNode) {
+                            // click is in a different editor
+                            return;
+                        }
+
+                        if (isSelected && (cardNode.hasEditMode?.() && !isEditing)) {
                             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
                         } else if (!isSelected) {
                             editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey});
