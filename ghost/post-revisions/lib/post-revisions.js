@@ -7,6 +7,7 @@
  * @property {string} feature_image
  * @property {string} title
  * @property {string} reason
+ * @property {string} post_status
  */
 
 /**
@@ -18,6 +19,7 @@
  * @property {string} feature_image
  * @property {string} title
  * @property {string} reason
+ * @property {string} post_status
  */
 
 class PostRevisions {
@@ -104,7 +106,8 @@ class PostRevisions {
             created_at_ts: Date.now() - offset,
             author_id: input.author_id,
             feature_image: input.feature_image,
-            title: input.title
+            title: input.title,
+            post_status: input.post_status
         };
     }
 
