@@ -1,6 +1,6 @@
 const assert = require('assert');
 const sinon = require('sinon');
-const PostRevisions = require('../');
+const PostRevisions = require('..');
 
 const config = {
     max_revisions: 10
@@ -43,7 +43,7 @@ describe('PostRevisions', function () {
             assert.equal(actual, expected);
         });
 
-        it('should return true if the current and previous html values are different', function () {
+        it('should return true if forceRevision is true and the lexical has changed since the latest revision', function () {
             const postRevisions = new PostRevisions({config});
 
             const expected = true;
@@ -55,12 +55,16 @@ describe('PostRevisions', function () {
                 html: 'blah2'
             }, [{
                 lexical: 'blah'
-            }]);
+            }, {
+                lexical: 'blah2'
+            }], {
+                forceRevision: true
+            });
 
             assert.equal(actual, expected);
         });
 
-        it('should return true if the current and previous title values are different', function () {
+        it('should return true if the current and previous title values are different and forceRevision is true', function () {
             const postRevisions = new PostRevisions({config});
 
             const expected = true;
@@ -74,7 +78,30 @@ describe('PostRevisions', function () {
                 title: 'blah2'
             }, [{
                 lexical: 'blah'
-            }]);
+            }], {
+                forceRevision: true
+            });
+
+            assert.equal(actual, expected);
+        });
+
+        it('should always return true if isPublished is true', function () {
+            const postRevisions = new PostRevisions({config});
+
+            const expected = true;
+            const actual = postRevisions.shouldGenerateRevision({
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah'
+            }, {
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah2'
+            }, [{
+                lexical: 'blah'
+            }], {
+                isPublished: true
+            });
 
             assert.equal(actual, expected);
         });
@@ -161,7 +188,9 @@ describe('PostRevisions', function () {
                 id: '1',
                 lexical: 'new',
                 html: 'new'
-            }, revisions);
+            }, revisions, {
+                forceRevision: true
+            });
 
             assert.equal(actual.length, 2);
         });
