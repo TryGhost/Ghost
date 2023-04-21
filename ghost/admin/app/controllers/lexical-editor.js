@@ -427,7 +427,7 @@ export default class LexicalEditorController extends Controller {
 
         this.cancelAutosave();
 
-        if (options.backgroundSave && !this.hasDirtyAttributes) {
+        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor) {
             return;
         }
 
@@ -833,6 +833,11 @@ export default class LexicalEditorController extends Controller {
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
+        // Get the postRevisions from the post as an array
+        let postRevisions = post.get('postRevisions').toArray();
+        let latestRevision = postRevisions[postRevisions.length - 1];
+        let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
+
         let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
             && transition.targetName === 'lexical-editor.edit'
             && transition.intent.contexts
@@ -841,6 +846,17 @@ export default class LexicalEditorController extends Controller {
 
         let deletedWithoutChanges = state.isDeleted
             && (state.isSaving || !state.hasDirtyAttributes);
+
+        // If leaving the editor and the post has changed since we last saved a revision, always save a new revision
+        if (hasChangedSinceLastRevision) {
+            transition.abort();
+            if (this._autosaveRunning) {
+                this.cancelAutosave();
+                this.autosaveTask.cancelAll();
+            }
+            await this.autosaveTask.perform({leavingEditor: true});
+            return transition.retry();
+        }
 
         // controller is dirty and we aren't in a new->edit or delete->index
         // transition so show our "are you sure you want to leave?" modal
