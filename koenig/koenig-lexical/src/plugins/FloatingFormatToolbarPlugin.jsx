@@ -74,7 +74,8 @@ function FloatingFormatToolbar({
     isSnippetsEnabled,
     toolbarItemType,
     setToolbarItemType,
-    setIsText
+    setIsText,
+    href
 }) {
     const [stickyToolbar, setStickyToolbar] = React.useState(false);
     const toolbarRef = React.useRef(null);
@@ -245,7 +246,7 @@ function FloatingFormatToolbar({
         <div ref={toolbarRef} className="not-kg-prose fixed z-[10000]" style={{opacity: 0}} data-kg-floating-toolbar>
             {isSnippetVisible && <SnippetActionToolbar onClose={handleActionToolbarClose}/>}
 
-            {isLinkVisible && <LinkActionToolbar isLink={isLink} onClose={handleActionToolbarClose}/>}
+            {isLinkVisible && <LinkActionToolbar href={href} onClose={handleActionToolbarClose}/>}
 
             <ToolbarMenu hide={toolbarItemType}>
                 <ToolbarMenuItem data-kg-toolbar-button="bold" icon="bold" isActive={isBold} label="Format text as bold" onClick={() => {
@@ -297,6 +298,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
     const [isBold, setIsBold] = React.useState(false);
     const [isItalic, setIsItalic] = React.useState(false);
     const [isLink, setIsLink] = React.useState(false);
+    const [href, setHref] = React.useState('');
     const [blockType, setBlockType] = React.useState('paragraph');
     const [toolbarItemType, setToolbarItemType] = React.useState(null);
 
@@ -338,8 +340,13 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
             setIsItalic(selection.hasFormat('italic'));
 
             const parent = anchorNode.getParent();
-            if ($isLinkNode(parent) || $isLinkNode(anchorNode)) {
+
+            if ($isLinkNode(parent)) {
                 setIsLink(true);
+                setHref(parent.getURL());
+            } else if ($isLinkNode(anchorNode)) {
+                setIsLink(true);
+                setHref(anchorNode.getURL());
             } else {
                 setIsLink(false);
             }
@@ -393,6 +400,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
                 anchorElem={anchorElem}
                 blockType={blockType}
                 editor={editor}
+                href={href}
                 isBold={isBold}
                 isItalic={isItalic}
                 isLink={isLink}
