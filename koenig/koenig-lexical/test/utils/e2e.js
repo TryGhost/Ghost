@@ -341,7 +341,7 @@ export async function createSnippet(page) {
 }
 
 export async function getScrollPosition(page) {
-    await page.evaluate(() => {
+    return await page.evaluate(() => {
         return document.querySelector('.h-full.overflow-auto').scrollTop;
     });
 }
@@ -350,7 +350,7 @@ export async function enterUntilScrolled(page) {
     let scrollPosition = 0;
 
     while (scrollPosition === 0) {
-        await page.keyboard.type('hello');
+        await page.keyboard.type('hello\nhello\nhello\nhello\nhello\nhello');
         await page.keyboard.press('Enter');
 
         // Get scroll position
