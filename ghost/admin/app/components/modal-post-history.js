@@ -30,7 +30,7 @@ export default class ModalPostHistory extends Component {
       this.editorAPI = this.args.model.editorAPI;
       this.toggleSettingsMenu = this.args.model.toggleSettingsMenu;
   }
-  @tracked selectedHTML = `<h1>loading...</h1>`;
+  @tracked selectedHTML = null;
   @tracked diffHtml = null;
   @tracked showDifferences = this.feature.get('postDiffing'); // should default to true in future
   @tracked selectedRevisionIndex = 0;
