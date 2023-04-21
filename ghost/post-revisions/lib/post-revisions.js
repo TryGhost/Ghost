@@ -6,6 +6,7 @@
  * @property {string} author_id
  * @property {string} feature_image
  * @property {string} title
+ * @property {string} reason
  */
 
 /**
@@ -16,6 +17,7 @@
  * @property {string} author_id
  * @property {string} feature_image
  * @property {string} title
+ * @property {string} reason
  */
 
 class PostRevisions {
@@ -35,29 +37,29 @@ class PostRevisions {
      * @param {PostLike} current
      * @param {Revision[]} revisions
      * @param {object} options
-     * @returns {boolean}
+     * @returns {object}
      */
     shouldGenerateRevision(previous, current, revisions, options) {
         const latestRevision = revisions[revisions.length - 1];
         if (!previous) {
-            return false;
+            return {value: false};
         }
         // If there's no revisions for this post, we should always save a revision
         if (revisions.length === 0) {
-            return true;
+            return {value: true, reason: 'initial_revision'};
         }
         const isPublished = options && options.isPublished;
         if (isPublished) {
-            return true;
+            return {value: true, reason: 'published'};
         }
 
         const forceRevision = options && options.forceRevision;
         const lexicalHasChangedSinceLatestRevision = latestRevision.lexical !== current.lexical;
         const titleHasChanged = previous.title !== current.title;
         if ((lexicalHasChangedSinceLatestRevision || titleHasChanged) && forceRevision) {
-            return true;
+            return {value: true, reason: 'explicit_save'};
         }
-        return false;
+        return {value: false};
     }
 
     /**
@@ -68,11 +70,13 @@ class PostRevisions {
      * @returns {Promise<Revision[]>}
      */
     async getRevisions(previous, current, revisions, options) {
-        if (!this.shouldGenerateRevision(previous, current, revisions, options)) {
+        const shouldGenerateRevision = this.shouldGenerateRevision(previous, current, revisions, options);
+        if (!shouldGenerateRevision.value) {
             return revisions;
         }
 
         const currentRevision = this.convertPostLikeToRevision(current);
+        currentRevision.reason = shouldGenerateRevision.reason;
 
         if (revisions.length === 0) {
             return [
@@ -82,7 +86,11 @@ class PostRevisions {
 
         // Grab the most recent revisions, limited by max_revisions
         const updatedRevisions = [...revisions, currentRevision];
-        return updatedRevisions.slice(updatedRevisions.length - this.config.max_revisions, updatedRevisions.length);
+        if (updatedRevisions.length > this.config.max_revisions) {
+            return updatedRevisions.slice(updatedRevisions.length - this.config.max_revisions, updatedRevisions.length);
+        } else {
+            return updatedRevisions;
+        }
     }
 
     /**
