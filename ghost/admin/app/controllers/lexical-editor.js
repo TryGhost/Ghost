@@ -833,7 +833,7 @@ export default class LexicalEditorController extends Controller {
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
-        // Get the postRevisions from the post as an array
+        // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
         let latestRevision = postRevisions[postRevisions.length - 1];
         let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
