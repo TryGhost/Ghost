@@ -4,24 +4,46 @@ import {inject as service} from '@ember/service';
 
 export default class AnnouncementSettingsVisibilityComponent extends Component {
     @service settings;
+    @service membersUtils;
 
-    get visibility() {
+    visibilityOptions = {
+        freeMembers: 'free_members',
+        paidMembers: 'paid_members',
+        visitors: 'visitors'
+    };
+
+    get visibilitySettings() {
         return this.settings.announcementVisibility;
     }
 
-    get options() {
-        return [
-            {value: 'public', label: 'Public'},
-            {value: 'visitors', label: 'Visitors'},
-            {value: 'members', label: 'Members'},
-            {value: 'paid', label: 'Paid'}
-        ];
+    get isPaidAvailable() {
+        return this.membersUtils.isStripeEnabled;
+    }
+
+    get isFreeMembersChecked() {
+        return this.visibilitySettings.includes(this.visibilityOptions.freeMembers);
+    }
+
+    get isPaidMembersChecked() {
+        return this.visibilitySettings.includes(this.visibilityOptions.paidMembers);
+    }
+
+    get isVisitorsChecked() {
+        return this.visibilitySettings.includes(this.visibilityOptions.visitors);
     }
 
     @action
-    setVisibility(event) {
-        this.settings.announcementVisibility = event.target.value;
+    updateVisibility(event) {
+        let updatedVisibilityOptions = [...this.visibilitySettings];
+        const value = event.target.value;
+
+        if (event.target.checked) {
+            updatedVisibilityOptions.push(value);
+        } else {
+            updatedVisibilityOptions = updatedVisibilityOptions.filter(item => item !== value);
+        }
+
+        this.settings.announcementVisibility = updatedVisibilityOptions;
         this.settings.save();
-        this.args.onChange?.();
     }
 }

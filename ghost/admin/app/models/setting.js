@@ -52,7 +52,7 @@ export default Model.extend(ValidationEngine, {
     sharedViews: attr('string'),
     announcementContent: attr('string'),
     announcementBackground: attr('string'),
-    announcementVisibility: attr('string'),
+    announcementVisibility: attr('json-string'),
     /**
      * Analytics settings
      */
