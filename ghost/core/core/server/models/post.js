@@ -917,21 +917,15 @@ Post = ghostBookshelf.Model.extend({
                         }, _.pick(options, 'transacting')));
 
                     const revisions = revisionModels.toJSON();
-                    const previous = {
-                        id: model.id,
-                        lexical: model.previous('lexical'),
-                        html: model.previous('html'),
-                        author_id: model.previous('updated_by'),
-                        feature_image: model.previous('feature_image'),
-                        title: model.previous('title'),
-                        post_status: model.previous('status')
-                    };
+
                     const current = {
                         id: model.id,
                         lexical: model.get('lexical'),
                         html: model.get('html'),
                         author_id: authorId,
                         feature_image: model.get('feature_image'),
+                        feature_image_alt: model.get('posts_meta')?.feature_image_alt,
+                        feature_image_caption: model.get('posts_meta')?.feature_image_caption,
                         title: model.get('title'),
                         post_status: model.get('status')
                     };
@@ -941,7 +935,7 @@ Post = ghostBookshelf.Model.extend({
                         forceRevision: options.save_revision,
                         isPublished: newStatus === 'published'
                     };
-                    const newRevisions = await postRevisions.getRevisions(previous, current, revisions, revisionOptions);
+                    const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
                     model.set('post_revisions', newRevisions);
                 });
             }

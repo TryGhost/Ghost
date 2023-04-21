@@ -9,9 +9,11 @@ export default class PostRevisionSerializer extends ApplicationSerializer.extend
         lexical: {key: 'lexical'},
         title: {key: 'title'},
         createdAt: {key: 'created_at'},
-        postIdLocal: {key: 'post_id'},
         postStatus: {key: 'post_status'},
         reason: {key: 'reason'},
-        featureImage: {key: 'feature_image'}
+        featureImage: {key: 'feature_image'},
+        featureImageAlt: {key: 'feature_image_alt'},
+        featureImageCaption: {key: 'feature_image_caption'},
+        postIdLocal: {key: 'post_id'}
     };
 }
