@@ -23,6 +23,8 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
         if (isImageDrag && draggableInfo.payload.src && images.length !== maxImages) {
             dragDropContainer.current.enableDrag();
         }
+
+        setIsDraggedOver(true);
     };
 
     const onDragEnd = () => {
