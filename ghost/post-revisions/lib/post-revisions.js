@@ -5,6 +5,8 @@
  * @property {string} html
  * @property {string} author_id
  * @property {string} feature_image
+ * @property {string} feature_image_alt
+ * @property {string} feature_image_caption
  * @property {string} title
  * @property {string} reason
  * @property {string} post_status
@@ -17,6 +19,8 @@
  * @property {number} created_at_ts
  * @property {string} author_id
  * @property {string} feature_image
+ * @property {string} feature_image_alt
+ * @property {string} feature_image_caption
  * @property {string} title
  * @property {string} reason
  * @property {string} post_status
@@ -41,11 +45,8 @@ class PostRevisions {
      * @param {object} options
      * @returns {object}
      */
-    shouldGenerateRevision(previous, current, revisions, options) {
+    shouldGenerateRevision(current, revisions, options) {
         const latestRevision = revisions[revisions.length - 1];
-        if (!previous) {
-            return {value: false};
-        }
         // If there's no revisions for this post, we should always save a revision
         if (revisions.length === 0) {
             return {value: true, reason: 'initial_revision'};
@@ -57,8 +58,9 @@ class PostRevisions {
 
         const forceRevision = options && options.forceRevision;
         const lexicalHasChangedSinceLatestRevision = latestRevision.lexical !== current.lexical;
-        const titleHasChanged = previous.title !== current.title;
-        if ((lexicalHasChangedSinceLatestRevision || titleHasChanged) && forceRevision) {
+        const titleHasChanged = latestRevision.title !== current.title;
+        const featuredImagedHasChanged = latestRevision.feature_image !== current.feature_image;
+        if ((lexicalHasChangedSinceLatestRevision || titleHasChanged || featuredImagedHasChanged) && forceRevision) {
             return {value: true, reason: 'explicit_save'};
         }
         return {value: false};
@@ -71,8 +73,8 @@ class PostRevisions {
      * @param {object} options
      * @returns {Promise<Revision[]>}
      */
-    async getRevisions(previous, current, revisions, options) {
-        const shouldGenerateRevision = this.shouldGenerateRevision(previous, current, revisions, options);
+    async getRevisions(current, revisions, options) {
+        const shouldGenerateRevision = this.shouldGenerateRevision(current, revisions, options);
         if (!shouldGenerateRevision.value) {
             return revisions;
         }
@@ -106,6 +108,8 @@ class PostRevisions {
             created_at_ts: Date.now() - offset,
             author_id: input.author_id,
             feature_image: input.feature_image,
+            feature_image_alt: input.feature_image_alt,
+            feature_image_caption: input.feature_image_caption,
             title: input.title,
             post_status: input.post_status
         };
