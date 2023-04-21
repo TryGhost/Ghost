@@ -2,6 +2,7 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import useDragAndDrop from '../hooks/useDragAndDrop';
+import usePinturaEditor from '../hooks/usePinturaEditor';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ImageCard} from '../components/ui/cards/ImageCard';
@@ -25,6 +26,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
 
     const imageUploader = fileUploader.useFileUpload('image');
     const imageDragHandler = useDragAndDrop({handleDrop: handleImageDrop});
+    const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
 
     React.useEffect(() => {
         const uploadInitialFile = async (file) => {
@@ -201,6 +203,23 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                         isActive={false}
                         label="Snippet"
                         onClick={() => setShowSnippetToolbar(true)}
+                    />
+                    <ToolbarMenuSeparator hide={!isPinturaEnabled} />
+                    <ToolbarMenuItem
+                        hide={!isPinturaEnabled}
+                        icon="edit"
+                        isActive={false}
+                        label="Edit"
+                        onClick={() => openImageEditor({
+                            image: src,
+                            handleSave: (editedImage) => {
+                                onFileChange({
+                                    target: {
+                                        files: [editedImage]
+                                    }
+                                });
+                            }
+                        })}
                     />
                 </ToolbarMenu>
             </ActionToolbar>
