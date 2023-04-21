@@ -11,7 +11,7 @@ module.exports = combineNonTransactionalMigrations(
     }),
     createAddColumnMigration('post_revisions', 'title', {
         type: 'string',
-        maxlength: 24,
+        maxlength: 2000,
         nullable: true,
         validations: {
             isLength: {
