@@ -1,20 +1,18 @@
 .gh-announcement-bar {
     position: relative;
+    z-index: 90;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 48px;
+    padding: 12px 48px;
+    min-height: 48px;
     font-size: 1.5rem;
-}
-
-.gh-announcement-bar a {
-    color: inherit !important;
+    text-align: center;
 }
 
 .gh-announcement-bar.light {
     background-color: #f0f0f0;
     color: #15171a;
-    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.1);
 }
 
 .gh-announcement-bar.accent {
@@ -59,6 +57,6 @@
 }
 
 .gh-announcement-bar svg {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
 }
