@@ -7,22 +7,16 @@
 
             <div class="kg-settings-panel-control-input">
                 <div class="gh-btn-group kg-settings-headerstyle-btn-group">
-                    <button class="gh-btn kg-headerstyle-btn-dark gh-btn-group-selected" type="button"></button>
-                    <button class="gh-btn kg-headerstyle-btn-light" type="button"></button>
-                    <button class="gh-btn kg-headerstyle-btn-accent" type="button"></button>
+                    {{#each this.options as |settingOption|}}
+                        <button
+                            class="gh-btn {{settingOption.className}} {{if (eq this.background settingOption.value) "gh-btn-group-selected"}}"
+                            type="button"
+                            title={{settingOption.label}}
+                            {{on "click" (fn this.setBackground settingOption.value)}}
+                        ></button>
+                    {{/each}}
                 </div>
             </div>
-
-            {{!-- <span class="gh-select">
-                <select class="ember-select" name="announcement-background" id="announcement-background" {{on "change" this.setBackground}}>
-                    {{#each this.options as |settingOption|}}
-                        <option value={{settingOption.value}} selected={{eq settingOption.value this.background}}>
-                            {{settingOption.label}}
-                        </option>
-                    {{/each}}
-                </select>
-                {{svg-jar "arrow-down-small"}}
-            </span> --}}
         </div>
     </div>
 </div>
