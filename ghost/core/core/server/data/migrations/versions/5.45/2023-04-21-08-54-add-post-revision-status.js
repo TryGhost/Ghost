@@ -6,7 +6,7 @@ module.exports = combineNonTransactionalMigrations(
     createAddColumnMigration('post_revisions', 'post_status', {
         type: 'string',
         maxlength: 50,
-        nullable: false,
+        nullable: true
         defaultTo: 'draft',
         validations: {
             isIn: [['published', 'draft', 'scheduled', 'sent']]
