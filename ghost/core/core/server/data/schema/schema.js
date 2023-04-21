@@ -407,7 +407,9 @@ module.exports = {
         title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 255}}},
         post_status: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['draft', 'published', 'scheduled', 'sent']]}},
         reason: {type: 'string', maxlength: 50, nullable: true},
-        feature_image: {type: 'string', maxlength: 2000, nullable: true}
+        feature_image: {type: 'string', maxlength: 2000, nullable: true},
+        feature_image_alt: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 125}}},
+        feature_image_caption: {type: 'text', maxlength: 65535, nullable: true}
     },
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
