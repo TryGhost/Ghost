@@ -913,7 +913,7 @@ Post = ghostBookshelf.Model.extend({
                     const revisionModels = await ghostBookshelf.model('PostRevision')
                         .findAll(Object.assign({
                             filter: `post_id:${model.id}`,
-                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason']
+                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status']
                         }, _.pick(options, 'transacting')));
 
                     const revisions = revisionModels.toJSON();
@@ -923,7 +923,8 @@ Post = ghostBookshelf.Model.extend({
                         html: model.previous('html'),
                         author_id: model.previous('updated_by'),
                         feature_image: model.previous('feature_image'),
-                        title: model.previous('title')
+                        title: model.previous('title'),
+                        post_status: model.previous('status')
                     };
                     const current = {
                         id: model.id,
@@ -931,7 +932,8 @@ Post = ghostBookshelf.Model.extend({
                         html: model.get('html'),
                         author_id: authorId,
                         feature_image: model.get('feature_image'),
-                        title: model.get('title')
+                        title: model.get('title'),
+                        post_status: model.get('status')
                     };
 
                     // This can be refactored once we have the status stored in each revision
