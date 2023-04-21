@@ -35,7 +35,7 @@ export default class RestoreRevisionModal extends Component {
             post.lexical = revision.lexical;
             post.title = revision.title;
 
-            yield post.save();
+            yield post.save({adapterOptions: {saveRevision: true}});
 
             updateTitle();
             updateEditor();
