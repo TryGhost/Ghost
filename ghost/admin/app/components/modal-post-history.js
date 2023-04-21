@@ -59,6 +59,7 @@ export default class ModalPostHistory extends Component {
               latest: index === 0,
               createdAt: revision.get('createdAt'),
               title: revision.get('title'),
+              feature_image: revision.get('featureImage'),
               author: {
                   name: revision.get('author.name')
               }
