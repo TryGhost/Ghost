@@ -1,4 +1,5 @@
 import React from 'react';
+import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
 import {$createLinkNode} from '@lexical/link';
 import {
@@ -320,6 +321,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
+                    console.log(`pressed enter`);
                     // toggle edit mode if a card is selected and ctrl/cmd+enter is pressed
                     if (selectedCardKey && (event.metaKey || event.ctrlKey)) {
                         const cardNode = $getNodeByKey(selectedCardKey);
@@ -374,6 +376,24 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
                         paragraphNode.select();
                         return true;
+                    }
+
+                    if (!isNested) {
+                        const selection = $getSelection();
+                        const currentNode = selection.getNodes()[0];
+                        const textContent = currentNode.getTextContent();
+                        if (textContent.match(/^```(\w{1,10})/)) {
+                            event.preventDefault();
+                            const language = textContent.replace(/^```/,'');
+                            const replacementNode = currentNode.getTopLevelElement().insertAfter($createCodeBlockNode({language, _openInEditMode: true}));
+                            currentNode.getTopLevelElement().remove();
+
+                            // select node when replacing so it immediately renders in editing mode
+                            const replacementSelection = $createNodeSelection();
+                            replacementSelection.add(replacementNode.getKey());
+                            $setSelection(replacementSelection);
+                            return true;
+                        }
                     }
                 },
                 COMMAND_PRIORITY_LOW

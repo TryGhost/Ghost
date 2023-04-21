@@ -60,6 +60,22 @@ describe('Code Block card', async () => {
         `, {ignoreCardContents: true});
     });
 
+    test.only('renders code block card node 2', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('```javascript');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('Here are some words');
+
+        // await page.pause(1000);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+                </div>
+            </div>
+        `, {ignoreCardContents: true});
+    });
+
     test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
