@@ -3,26 +3,36 @@ import React from 'react';
 import './AnnouncementBar.css';
 import {ReactComponent as CloseIcon} from '../icons/clear.svg';
 
-export function AnnouncementBar({settings}) {
-    const [visible, setVisible] = React.useState(isBarVisible());
+export function AnnouncementBar({settings = {}}) {
+    const [visible, setVisible] = React.useState(shouldShowBar(settings.announcement));
+
+    React.useEffect(() => {
+        if (!settings.announcement) {
+            return;
+        }
+
+        if (shouldShowBar(settings.announcement)) {
+            setVisible(true);
+        }
+    }, [settings.announcement]);
 
     const handleButtonClick = () => {
-        setBarVisibility();
         setVisible(false);
+        setBarVisibility(false);
     };
 
     if (!visible) {
         return null;
     }
 
-    if (!settings?.announcement) {
+    if (!settings.announcement) {
         return null;
     }
 
-    let className = 'gh-announcement-bar ' + settings?.announcement_background;
+    let className = 'gh-announcement-bar ' + settings.announcement_background;
     return (
         <div className={className}>
-            <div className="gh-announcement-bar-content" dangerouslySetInnerHTML={{__html: settings?.announcement}}></div>
+            <div className="gh-announcement-bar-content" dangerouslySetInnerHTML={{__html: settings.announcement}}></div>
             <button onClick={handleButtonClick}>
                 <CloseIcon />
             </button>
@@ -30,11 +40,43 @@ export function AnnouncementBar({settings}) {
     );
 }
 
-const BAR_STORAGE_KEY = 'isAnnouncementBarVisible';
-function setBarVisibility(state = 'true') {
-    sessionStorage.setItem(BAR_STORAGE_KEY, state);
+const BAR_VISIBILITY_STORAGE_KEY = 'isAnnouncementBarVisible';
+const BAR_CONTENT_STORAGE_KEY = 'announcementBarContent';
+
+function shouldShowBar(content) {
+    const contentChanged = isContentChanged(content);
+
+    if (contentChanged) {
+        setBarVisibility(true);
+        setContent(content);
+
+        return true;
+    }
+
+    const isBarVisible = getBarVisibility();
+    return !!isBarVisible;
 }
 
-function isBarVisible() {
-    return !sessionStorage.getItem(BAR_STORAGE_KEY);
+function setContent(content) {
+    sessionStorage.setItem(BAR_CONTENT_STORAGE_KEY, content);
+}
+
+function isContentChanged(content) {
+    if (!content) {
+        return false;
+    }
+    const prevContent = sessionStorage.getItem(BAR_CONTENT_STORAGE_KEY);
+
+    return content !== prevContent;
+}
+function setBarVisibility(state) {
+    if (state) {
+        sessionStorage.setItem(BAR_VISIBILITY_STORAGE_KEY, state);
+    } else {
+        sessionStorage.removeItem(BAR_VISIBILITY_STORAGE_KEY);
+    }
+}
+
+function getBarVisibility() {
+    return sessionStorage.getItem(BAR_VISIBILITY_STORAGE_KEY);
 }
