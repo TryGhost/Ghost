@@ -3,18 +3,11 @@
     <div class="gh-post-history-main">
         <div class="gh-koenig-editor-pane flex flex-column mih-100 {{if this.showDifferences "show-diff" ""}}">
             <div class="gh-editor-feature-image-container"></div>
-            {{#if this.diffHtml}}
-                {{#if this.showDifferences}}
-                {{{this.diffHtml}}}
+                {{#if (and this.diffHtml this.showDifferences (feature 'postDiffing'))}}
+                    {{{this.diffHtml}}}
+                {{else if this.selectedHTML}}
+                    {{{this.selectedHTML}}}
                 {{/if}}
-            {{/if}}
-
-            {{#unless this.showDifferences}}
-                {{#if this.selectedHTML}}
-                {{{this.selectedHTML}}}
-                {{/if}}
-            {{/unless}}
-
             <div class="gh-post-history-hidden-lexical previous">
                 <div class="gh-editor-title">{{this.previousTitle}}</div>
                 <KoenigLexicalEditor @lexical={{this.comparisonRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerComparisonEditorApi"}}/>
