@@ -51,10 +51,11 @@
                                 <span class="gh-post-history-version">{{gh-format-post-time revision.createdAt format="D MMM YYYY, HH:mm"}}{{this.timezone}}</span>
                                 {{#if revision.latest}}
                                     <span class="gh-post-history-version-tag current">Latest</span>
+                                    {{#if (eq revision.postStatus "published")}}
+                                    <span class="gh-post-history-version-tag published">{{{revision.postStatus}}}</span>
+                                    {{/if}}
                                 {{/if}}
-                                {{#if revision.published}}
-                                    <span class="gh-post-history-version-tag published">Published</span>
-                                {{/if}}
+                                
                             </div>
                             <span class="gh-post-history-version-meta {{if (eq revision.author.name "Deleted staff user") "deleted-user"}}">{{revision.author.name}}</span>
                         </button>
