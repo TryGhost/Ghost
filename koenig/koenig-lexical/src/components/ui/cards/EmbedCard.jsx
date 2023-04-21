@@ -102,6 +102,7 @@ function EmbedIframe({dataTestId, html}) {
             className="bn miw-100 w-full"
             data-testid={dataTestId}
             srcDoc={html}
+            tabIndex={-1}
             title="embed-card-iframe"
             onLoad={handleLoad}>
         </iframe>
