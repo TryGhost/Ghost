@@ -53,7 +53,7 @@ describe('AnnouncementBarSettings', function () {
             });
         });
 
-        it('returns announcement if visibility is set to free members and member is free', function () {
+        it('returns announcement if visibility is set to free_members and member is free', function () {
             testVisibility({
                 announcement: 'Hello world',
                 announcement_visibility: ['free_members'],
@@ -66,7 +66,7 @@ describe('AnnouncementBarSettings', function () {
             });
         });
 
-        it('returns announcement if visibility is set to paid members and member is paid', function () {
+        it('returns announcement if visibility is set to paid_members and member is paid', function () {
             testVisibility({
                 announcement: 'Hello world',
                 announcement_visibility: ['paid_members'],
@@ -79,7 +79,7 @@ describe('AnnouncementBarSettings', function () {
             });
         });
 
-        it('returns announcement if visibility is set to paid and paid members and member is comped', function () {
+        it('returns announcement if visibility is set to paid and paid_members and member is comped', function () {
             testVisibility({
                 announcement: 'Hello world',
                 announcement_visibility: ['paid_members'],
@@ -90,6 +90,45 @@ describe('AnnouncementBarSettings', function () {
                 announcement: 'Hello world',
                 announcement_background: 'dark'
             });
+        });
+
+        it('returns announcement if visibility is set to paid_members and member is comped', function () {
+            testVisibility({
+                announcement: 'Hello world',
+                announcement_visibility: ['paid_members'],
+                announcement_background: 'dark'
+            }, {
+                status: 'comped'
+            }, {
+                announcement: 'Hello world',
+                announcement_background: 'dark'
+            });
+        });
+
+        it('does not return announcement if visibility is set to paid_members and there is no members', function () {
+            testVisibility({
+                announcement: 'Hello world',
+                announcement_visibility: ['paid_members'],
+                announcement_background: 'dark'
+            }, undefined, undefined);
+        });
+
+        it('does not return announcement if visibility is set to paid_members and member is free', function () {
+            testVisibility({
+                announcement: 'Hello world',
+                announcement_visibility: ['paid_members'],
+                announcement_background: 'dark'
+            }, {
+                status: 'free'
+            }, undefined);
+        });
+
+        it('does not return announcement if visibility is set to free_members && paid_member and there is no member', function () {
+            testVisibility({
+                announcement: 'Hello world',
+                announcement_visibility: ['free_members', 'paid_members'],
+                announcement_background: 'dark'
+            }, undefined, undefined);
         });
     });
 });

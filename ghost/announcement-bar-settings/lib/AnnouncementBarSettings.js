@@ -36,7 +36,7 @@ class AnnouncementBarSettings {
                     announcement = announcementContent;
                 } else if (visibilities.includes('free_members') && (member?.status === 'free')) {
                     announcement = announcementContent;
-                } else if (visibilities.includes('paid_members') && (member?.status !== 'free')) {
+                } else if (visibilities.includes('paid_members') && (member && member.status !== 'free')) {
                     announcement = announcementContent;
                 }
             }
