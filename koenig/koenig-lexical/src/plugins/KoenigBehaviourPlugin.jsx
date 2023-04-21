@@ -321,7 +321,6 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
-                    console.log(`pressed enter`);
                     // toggle edit mode if a card is selected and ctrl/cmd+enter is pressed
                     if (selectedCardKey && (event.metaKey || event.ctrlKey)) {
                         const cardNode = $getNodeByKey(selectedCardKey);
