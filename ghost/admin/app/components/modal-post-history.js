@@ -62,7 +62,9 @@ export default class ModalPostHistory extends Component {
               feature_image: revision.get('featureImage'),
               author: {
                   name: revision.get('author.name') || 'Anonymous'
-              }
+              },
+              postStatus: revision.get('postStatus'),
+              reason: revision.get('reason')
           };
       });
   }
