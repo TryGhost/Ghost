@@ -1,18 +1,28 @@
 <div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
     <div class="flex-grow-1">
-        <label class="gh-setting-title gh-theme-setting-title" for="announcement-background">
-            Announcement background
-        </label>
+        <div class="flex justify-between items-center relative">
+            <label class="gh-setting-title" for="announcement-background">
+                Background color
+            </label>
 
-        <span class="gh-select">
-            <select class="ember-select" name="announcement-background" id="announcement-background" {{on "change" this.setBackground}}>
-                {{#each this.options as |settingOption|}}
-                    <option value={{settingOption.value}} selected={{eq settingOption.value this.background}}>
-                        {{settingOption.label}}
-                    </option>
-                {{/each}}
-            </select>
-            {{svg-jar "arrow-down-small"}}
-        </span>
+            <div class="kg-settings-panel-control-input">
+                <div class="gh-btn-group kg-settings-headerstyle-btn-group">
+                    <button class="gh-btn kg-headerstyle-btn-dark gh-btn-group-selected" type="button"></button>
+                    <button class="gh-btn kg-headerstyle-btn-light" type="button"></button>
+                    <button class="gh-btn kg-headerstyle-btn-accent" type="button"></button>
+                </div>
+            </div>
+
+            {{!-- <span class="gh-select">
+                <select class="ember-select" name="announcement-background" id="announcement-background" {{on "change" this.setBackground}}>
+                    {{#each this.options as |settingOption|}}
+                        <option value={{settingOption.value}} selected={{eq settingOption.value this.background}}>
+                            {{settingOption.label}}
+                        </option>
+                    {{/each}}
+                </select>
+                {{svg-jar "arrow-down-small"}}
+            </span> --}}
+        </div>
     </div>
 </div>

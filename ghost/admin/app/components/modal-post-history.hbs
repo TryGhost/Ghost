@@ -1,26 +1,13 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div class="gh-post-history" {{did-insert this.onInsert}}>
     <div class="gh-post-history-main">
-        <div class="gh-koenig-editor-pane flex flex-column mih-100">
-            <div class="gh-editor-feature-image-container">
-                <div class="gh-editor-feature-image-dropzone"></div>
-                <div class="flex flex-row items-center invisible">
-                    <button type="button" class="gh-editor-feature-image-add-button">{{svg-jar "plus"}}<span>Add feature image</span></button>
-                    <button type="button" class="gh-editor-feature-image-unsplash">{{svg-jar "unsplash"}}</button>
-                </div>
-            </div>
-            {{#if this.diffHtml}}
-                {{#if this.showDifferences}}
-                {{{this.diffHtml}}}
+        <div class="gh-koenig-editor-pane flex flex-column mih-100 {{if this.showDifferences "show-diff" ""}}">
+            <div class="gh-editor-feature-image-container"></div>
+                {{#if (and this.diffHtml this.showDifferences (feature 'postDiffing'))}}
+                    {{{this.diffHtml}}}
+                {{else if this.selectedHTML}}
+                    {{{this.selectedHTML}}}
                 {{/if}}
-            {{/if}}
-
-            {{#unless this.showDifferences}}
-                {{#if this.selectedHTML}}
-                {{{this.selectedHTML}}}
-                {{/if}}
-            {{/unless}}
-
             <div class="gh-post-history-hidden-lexical previous">
                 <div class="gh-editor-title">{{this.previousTitle}}</div>
                 <KoenigLexicalEditor @lexical={{this.comparisonRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerComparisonEditorApi"}}/>
@@ -33,35 +20,18 @@
     </div>
     <div class="settings-menu-container">
         <div class="settings-menu settings-menu-pane settings-menu-pane-main">
-            <div class="settings-menu-header-wrapper">
-                <div class="settings-menu-header subview">
-                    <button
-                        aria-label="Close meta data panel"
-                        class="back settings-menu-header-action"
-                        data-test-button="close-psm-subview"
-                        type="button" {{action "closeModal"}}
-                        {{on "mousedown" (optional this.noop)}}
-                    >
-                        {{svg-jar "arrow-left"}}
-                        <span class="hidden">Back</span>
-                    </button>
-                    <h4>Post history</h4>
-                </div>
-                {{#if (feature 'postDiffing')}}
-                <ul class="nav-list">
-                    <li class="nav-list-item compare-versions">
-                        <div class="for-switch x-small">
-                            <label class="switch">
-                                <span>Compare with previous version</span>
-                                <span class="gh-toggle-featured">
-                                    <input {{on "click" (fn this.toggleDifferences '')}} type="checkbox" checked={{this.showDifferences}}>
-                                    <span class="input-toggle-component"></span>
-                                </span>
-                            </label>
-                        </div>
-                    </li>
-                </ul>
-                {{/if}}
+            <div class="settings-menu-header subview">
+                <button
+                    aria-label="Close meta data panel"
+                    class="back settings-menu-header-action"
+                    data-test-button="close-psm-subview"
+                    type="button" {{action "closeModal"}}
+                    {{on "mousedown" (optional this.noop)}}
+                >
+                    {{svg-jar "arrow-left"}}
+                    <span class="hidden">Back</span>
+                </button>
+                <h4>Post history</h4>
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">
@@ -88,6 +58,21 @@
                     </li>
                     {{/each}}
                 </ul>
+                {{#if (feature 'postDiffing')}}
+                    <div class="gh-post-history-footer">
+                        <div class="gh-post-history-footer-inner">
+                            <div class="for-switch x-small">
+                                <label class="switch">
+                                    <span>Compare to previous version</span>
+                                    <span class="gh-toggle-featured">
+                                        <input {{on "click" (fn this.toggleDifferences '')}} type="checkbox" checked={{this.showDifferences}}>
+                                        <span class="input-toggle-component"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                {{/if}}
             </div>
         </div>
     </div>

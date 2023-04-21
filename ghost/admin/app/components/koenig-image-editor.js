@@ -7,6 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class KoenigImageEditor extends Component {
     @service ajax;
     @service feature;
+    @service settings;
     @service ghostPaths;
     @tracked scriptLoaded = false;
     @tracked cssLoaded = false;
@@ -17,11 +18,26 @@ export default class KoenigImageEditor extends Component {
         return this.scriptLoaded && this.cssLoaded;
     }
 
-    getImageEditorJSUrl() {
-        if (!this.config.pintura?.js) {
+    get pinturaJsUrl() {
+        if (!this.settings.pintura) {
             return null;
         }
-        let importUrl = this.config.pintura.js;
+        return this.config.pintura?.js || this.settings.pinturaJsUrl;
+    }
+
+    get pinturaCSSUrl() {
+        if (!this.settings.pintura) {
+            return null;
+        }
+        return this.config.pintura?.css || this.settings.pinturaCssUrl;
+    }
+
+    getImageEditorJSUrl() {
+        let importUrl = this.pinturaJsUrl;
+
+        if (!importUrl) {
+            return null;
+        }
 
         // load the script from admin root if relative
         if (importUrl.startsWith('/')) {
@@ -31,10 +47,11 @@ export default class KoenigImageEditor extends Component {
     }
 
     getImageEditorCSSUrl() {
-        if (!this.config.pintura?.css) {
+        let cssImportUrl = this.pinturaCSSUrl;
+
+        if (!cssImportUrl) {
             return null;
         }
-        let cssImportUrl = this.config.pintura.css;
 
         // load the css from admin root if relative
         if (cssImportUrl.startsWith('/')) {
@@ -112,8 +129,15 @@ export default class KoenigImageEditor extends Component {
 
     @action
     async handleClick() {
-        if (window.pintura) {
-            const imageSrc = `${this.args.imageSrc}?v=${Date.now()}`;
+        if (this.isEditorEnabled && this.args.imageSrc) {
+            // add a timestamp to the image src to bypass cache
+            // avoids cors issues with cached images
+            const imageUrl = new URL(this.args.imageSrc);
+            if (!imageUrl.searchParams.has('v')) {
+                imageUrl.searchParams.set('v', Date.now());
+            }
+
+            const imageSrc = imageUrl.href;
             const editor = window.pintura.openDefaultEditor({
                 src: imageSrc,
                 util: 'crop',
@@ -121,7 +145,48 @@ export default class KoenigImageEditor extends Component {
                     'crop',
                     'filter',
                     'finetune',
-                    'redact'
+                    'redact',
+                    'annotate',
+                    'trim',
+                    'frame',
+                    'sticker'
+                ],
+                stickerStickToImage: true,
+                frameOptions: [
+                    // No frame
+                    [undefined, locale => locale.labelNone],
+
+                    // Sharp edge frame
+                    ['solidSharp', locale => locale.frameLabelMatSharp],
+
+                    // Rounded edge frame
+                    ['solidRound', locale => locale.frameLabelMatRound],
+
+                    // A single line frame
+                    ['lineSingle', locale => locale.frameLabelLineSingle],
+
+                    // A frame with cornenr hooks
+                    ['hook', locale => locale.frameLabelCornerHooks],
+
+                    // A polaroid frame
+                    ['polaroid', locale => locale.frameLabelPolaroid]
+                ],
+                cropSelectPresetFilter: 'landscape',
+                cropSelectPresetOptions: [
+                    [undefined, 'Custom'],
+                    [1, 'Square'],
+                    // shown when cropSelectPresetFilter is set to 'landscape'
+                    [2 / 1, '2:1'],
+                    [3 / 2, '3:2'],
+                    [4 / 3, '4:3'],
+                    [16 / 10, '16:10'],
+                    [16 / 9, '16:9'],
+                    // shown when cropSelectPresetFilter is set to 'portrait'
+                    [1 / 2, '1:2'],
+                    [2 / 3, '2:3'],
+                    [3 / 4, '3:4'],
+                    [10 / 16, '10:16'],
+                    [9 / 16, '9:16']
                 ],
                 locale: {
                     labelButtonExport: 'Save and close'

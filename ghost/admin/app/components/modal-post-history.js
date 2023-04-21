@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import RestoreRevisionModal from '../components/modals/restore-revision';
 import diff from 'node-htmldiff';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -25,11 +26,13 @@ export default class ModalPostHistory extends Component {
       super(...arguments);
       this.post = this.args.model.post;
       this.editorAPI = this.args.model.editorAPI;
+      this.toggleSettingsMenu = this.args.toggleSettingsMenu;
   }
   @tracked selectedHTML = `<h1>loading...</h1>`;
   @tracked diffHtml = null;
   @tracked showDifferences = true;
   @tracked selectedRevisionIndex = 0;
+  @service modals;
 
   get selectedRevision() {
       return this.revisionList[this.selectedRevisionIndex];
@@ -95,26 +98,23 @@ export default class ModalPostHistory extends Component {
       return strippedHtml;
   }
 
-  @action
-  async restoreRevision(index) {
+  restoreRevision(index) {
       const revision = this.revisionList[index];
-
-      // Persist model
-      this.post.lexical = revision.lexical;
-      this.post.title = revision.title;
-      await this.post.save();
-
-      // @TODO: error handling
-
-      // Update editor title
-      this.post.titleScratch = this.post.title;
-
-      // Update editor content
-      const state = this.editorAPI.editorInstance.parseEditorState(this.post.lexical);
-      this.editorAPI.editorInstance.setEditorState(state);
-
-      this.closeModal();
-      this.notifications.showNotification('Revision successfully restored.', {type: 'success'});
+      this.modals.open(RestoreRevisionModal, {
+          post: this.post,
+          revision,
+          updateTitle: () => {
+              this.post.titleScratch = revision.title;
+          },
+          updateEditor: () => {
+              const state = this.editorAPI.editorInstance.parseEditorState(revision.lexical);
+              this.editorAPI.editorInstance.setEditorState(state);
+          },
+          closePostHistoryModal: () => {
+              this.closeModal();
+              this.toggleSettingsMenu();
+          }
+      });
   }
 
   @action
@@ -132,17 +132,21 @@ export default class ModalPostHistory extends Component {
       const result = diff(previousHTML, currentHTML);
       const div = document.createElement('div');
       div.innerHTML = result;
-      const cards = div.querySelectorAll('div[data-kg-card]');
+      this.diffCards(div);
+      return div.innerHTML;
+  }
 
+  diffCards(div) {
+      const cards = div.querySelectorAll('div[data-kg-card]');
       for (const card of cards) {
           const hasChanges = !!card.querySelectorAll('del').length || !!card.querySelectorAll('ins').length;
           if (hasChanges) {
               const delCard = card.cloneNode(true);
               const insCard = card.cloneNode(true);
-      
+
               const ins = document.createElement('ins');
               const del = document.createElement('del');
-      
+
               delCard.querySelectorAll('ins').forEach((el) => {
                   el.remove();
               });
@@ -157,38 +161,39 @@ export default class ModalPostHistory extends Component {
                   el.parentNode.appendChild(el.firstChild);
                   el.remove();
               });
-      
+
               ins.appendChild(insCard);
               del.appendChild(delCard);
-      
+
               card.parentNode.appendChild(del);
               card.parentNode.appendChild(ins);
               card.remove();
           }
       }
-      return div.innerHTML;
   }
 
   updateDiff() {
       if (this.comparisonEditor && this.selectedEditor) {
           let comparisonState = this.comparisonEditor.editorInstance.parseEditorState(this.comparisonRevision.lexical);
           let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
+
           this.comparisonEditor.editorInstance.setEditorState(comparisonState);
           this.selectedEditor.editorInstance.setEditorState(selectedState);
       }
+
       let previous = document.querySelector('.gh-post-history-hidden-lexical.previous');
       let current = document.querySelector('.gh-post-history-hidden-lexical.current');
-      
+
       let previousDone = false;
       let currentDone = false;
-      
+
       let updateIfBothDone = () => {
           if (previousDone && currentDone) {
               this.diffHtml = this.calculateHTMLDiff(this.stripInitialPlaceholder(previous.innerHTML), this.stripInitialPlaceholder(current.innerHTML));
               this.selectedHTML = this.stripInitialPlaceholder(current.innerHTML);
           }
       };
-      
+
       checkFinishedRendering(previous, () => {
           previous.querySelectorAll('[contenteditable]').forEach((el) => {
               el.setAttribute('contenteditable', false);
@@ -196,7 +201,7 @@ export default class ModalPostHistory extends Component {
           previousDone = true;
           updateIfBothDone();
       });
-      
+
       checkFinishedRendering(current, () => {
           current.querySelectorAll('[contenteditable]').forEach((el) => {
               el.setAttribute('contenteditable', false);
