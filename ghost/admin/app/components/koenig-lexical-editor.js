@@ -151,7 +151,7 @@ export default class KoenigLexicalEditor extends Component {
     get pinturaConfig() {
         const jsUrl = this.getImageEditorJSUrl();
         const cssUrl = this.getImageEditorCSSUrl();
-        if (!jsUrl || !cssUrl) {
+        if (!this.feature.imageEditor || !jsUrl || !cssUrl) {
             return null;
         }
         return {
