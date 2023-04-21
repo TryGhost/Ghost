@@ -913,7 +913,7 @@ Post = ghostBookshelf.Model.extend({
                     const revisionModels = await ghostBookshelf.model('PostRevision')
                         .findAll(Object.assign({
                             filter: `post_id:${model.id}`,
-                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title']
+                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason']
                         }, _.pick(options, 'transacting')));
 
                     const revisions = revisionModels.toJSON();
