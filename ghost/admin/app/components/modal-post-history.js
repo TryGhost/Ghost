@@ -61,7 +61,7 @@ export default class ModalPostHistory extends Component {
               title: revision.get('title'),
               feature_image: revision.get('featureImage'),
               author: {
-                  name: revision.get('author.name') || 'Anonymous'
+                  name: revision.get('author.name') || 'Deleted staff user'
               },
               postStatus: revision.get('postStatus'),
               reason: revision.get('reason')
