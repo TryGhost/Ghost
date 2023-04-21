@@ -158,6 +158,22 @@
     color: var(--black);
 }
 
+.gh-post-history .show-diff .gh-editor-feature-image img {
+    opacity: .5;
+}
+
+.gh-post-history .show-diff .gh-editor-feature-image del img {
+    opacity: 1;
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 2px var(--red);
+}
+
+.gh-post-history .show-diff .gh-editor-feature-image ins img {
+    opacity: 1;
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 2px var(--green);
+}
+
 .gh-post-history .show-diff .gh-editor-title {
     opacity: .4;
 }
