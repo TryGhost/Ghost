@@ -6,6 +6,10 @@ import {App} from './App';
 const ROOT_DIV_ID = 'announcement-bar-root';
 
 function addRootDiv() {
+    if (document.getElementById(ROOT_DIV_ID)) {
+        return;
+    }
+
     const elem = document.createElement('div');
     elem.id = ROOT_DIV_ID;
     document.body.prepend(elem);
