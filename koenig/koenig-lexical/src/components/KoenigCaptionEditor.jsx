@@ -1,6 +1,6 @@
 import CardContext from '../context/CardContext.jsx';
 import React, {useCallback, useContext} from 'react';
-import {$createParagraphNode, $getNodeByKey, $setSelection, BLUR_COMMAND, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {$createParagraphNode, $getNodeByKey, BLUR_COMMAND, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
 import {KoenigComposableEditor, KoenigNestedComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -58,9 +58,6 @@ function CaptionPlugin({parentEditor}) {
                     BLUR_COMMAND,
                     () => {
                         setCaptionHasFocus(false);
-                        editor.update(() => {
-                            $setSelection(null);
-                        });
                         return false;
                     },
                     COMMAND_PRIORITY_LOW

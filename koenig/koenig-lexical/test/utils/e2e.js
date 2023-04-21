@@ -339,3 +339,28 @@ export async function createSnippet(page) {
     await page.getByTestId('snippet-name').fill('snippet');
     await page.keyboard.press('Enter');
 }
+
+export async function getScrollPosition(page) {
+    await page.evaluate(() => {
+        return document.querySelector('.h-full.overflow-auto').scrollTop;
+    });
+}
+
+export async function enterUntilScrolled(page) {
+    let scrollPosition = 0;
+
+    while (scrollPosition === 0) {
+        await page.keyboard.type('hello');
+        await page.keyboard.press('Enter');
+
+        // Get scroll position
+        scrollPosition = await getScrollPosition(page);
+    }
+}
+
+export async function expectUnchangedScrollPosition(page, wrapper) {
+    const start = await getScrollPosition(page);
+    await wrapper();
+    const end = await getScrollPosition(page);
+    expect(start).toEqual(end);
+}

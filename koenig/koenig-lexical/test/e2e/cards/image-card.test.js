@@ -1,7 +1,7 @@
 import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, pasteText, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, enterUntilScrolled, expectUnchangedScrollPosition, focusEditor, html, initialize, pasteText, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 describe('Image card', async () => {
@@ -767,6 +767,92 @@ describe('Image card', async () => {
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="image"]')).toHaveCount(2);
+    });
+
+    test('can select caption text without scrolling', async function () {
+        // Type in some text, so that we can scroll
+        await focusEditor(page);
+        await enterUntilScrolled(page);
+        await insertImage(page);
+
+        const paragraphCount = await page.locator('[data-kg="editor"] > div > p').count();
+
+        await expectUnchangedScrollPosition(page, async () => {
+            await page.keyboard.type('Captiontest--Captiontest');
+
+            const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
+
+            // Check contains text
+            await expect(captionEditor).toHaveText('Captiontest--Captiontest');
+
+            // Select the text
+            // Get the bounding box of the span
+            const box = await captionEditor.boundingBox();
+            const y = box.y + box.height / 2;
+            const startX = box.x + box.width / 2;
+            const endX = box.x + box.width;
+
+            await page.mouse.move(startX, y);
+            await page.mouse.down();
+            await page.mouse.move(endX, y);
+            await page.mouse.up();
+
+            await page.keyboard.type('world');
+
+            // Check contains text
+            await expect(captionEditor).toHaveText('Captiontest-world');
+
+            // Press the enter key
+            await page.keyboard.press('Enter');
+
+            // Check if the image card is now deselected
+            await expect(page.locator('[data-kg-card="image"]')).toHaveAttribute('data-kg-card-selected', 'false');
+
+            // Check total paragraph count increased
+            await expect(page.locator('[data-kg="editor"] > div > p')).toHaveCount(paragraphCount + 1);
+
+            // Add some text
+            await page.keyboard.type('last one');
+
+            // Check contains text
+            await expect(page.locator('[data-kg="editor"] > div > p:last-child').nth(1)).toHaveText('last one');
+        });
+    });
+
+    test('can select caption text and make it italic', async function () {
+        // Type in some text, so that we can scroll
+        await focusEditor(page);
+        await enterUntilScrolled(page);
+        await insertImage(page);
+
+        await expectUnchangedScrollPosition(page, async () => {
+            await page.keyboard.type('Captiontest--Captiontest');
+
+            const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
+
+            // Check contains text
+            await expect(captionEditor).toHaveText('Captiontest--Captiontest');
+
+            // Select the left side of the text (deliberately a test in the other direction)
+            // Get the bounding box of the span
+            const box = await captionEditor.boundingBox();
+            const y = box.y + box.height / 2;
+            const startX = box.x + box.width / 2;
+            const endX = box.x;
+
+            await page.mouse.move(startX, y);
+            await page.mouse.down();
+            await page.mouse.move(endX, y);
+            await page.mouse.up();
+
+            // Click italic button
+            await page.locator('[data-kg-toolbar-button="italic"]').click();
+
+            // Check contains text
+            await expect(captionEditor).toHaveText('-Captiontest');
+            const italicSpan = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p em').nth(0);
+            await expect(italicSpan).toHaveText('Captiontest-');
+        });
     });
 });
 
