@@ -815,7 +815,7 @@ describe('Image card', async () => {
             await page.keyboard.type('last one');
 
             // Check contains text
-            // await expect(page.locator('[data-kg="editor"] > div > p:last-child').nth(1)).toHaveText('last one');
+            await expect(page.locator('[data-kg="editor"] > div > p:last-child').nth(1)).toHaveText('last one');
         });
     });
 
@@ -852,6 +852,64 @@ describe('Image card', async () => {
             await expect(captionEditor).toHaveText('-Captiontest');
             const italicSpan = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p em').nth(0);
             await expect(italicSpan).toHaveText('Captiontest-');
+        });
+    });
+
+    test('does not remove text when pressing ENTER in the middle of a caption', async function () {
+        // Type in some text, so that we can scroll
+        await focusEditor(page);
+        await enterUntilScrolled(page);
+        await insertImage(page);
+
+        const paragraphCount = await page.locator('[data-kg="editor"] > div > p').count();
+
+        await expectUnchangedScrollPosition(page, async () => {
+            await page.keyboard.type('Captiontest--Captiontest');
+
+            const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
+
+            // Check contains text
+            await expect(captionEditor).toHaveText('Captiontest--Captiontest');
+
+            // Select the left side of the text (deliberately a test in the other direction)
+            // Get the bounding box of the span
+            const box = await captionEditor.boundingBox();
+            const y = box.y + box.height / 2;
+            const x = box.x + box.width / 2;
+
+            await page.mouse.move(x, y);
+            await page.mouse.down();
+            await page.mouse.up();
+            await page.keyboard.type('**'); // To test the cursor is at the middle, otherwise were not testing anything
+            await expect(captionEditor).toHaveText('Captiontest-**-Captiontest');
+
+            // Press the enter key
+            await page.keyboard.press('Enter');
+            await expect(captionEditor).toHaveText('Captiontest-**-Captiontest');
+
+            // Check if the image card is now deselected
+            await expect(page.locator('[data-kg-card="image"]')).toHaveAttribute('data-kg-card-selected', 'false');
+
+            // Check total paragraph count increased
+            await expect(page.locator('[data-kg="editor"] > div > p')).toHaveCount(paragraphCount + 1);
+
+            // Add some text
+            await page.keyboard.type('last one');
+
+            // Check contains text
+            await expect(page.locator('[data-kg="editor"] > div > p:last-child').nth(1)).toHaveText('last one');
+
+            // Caption still ok?
+            await expect(captionEditor).toHaveText('Captiontest-**-Captiontest');
+
+            // Select the caption again
+            // we need to do this again, because previously this caused a bug only if you selected the caption again
+            await page.mouse.click(x, y);
+            await page.keyboard.type('_'); // To test the cursor is at the middle, otherwise were not testing anything
+
+            // Press the enter key
+            await page.keyboard.press('Enter');
+            await expect(captionEditor).toHaveText('Captiontest-*_*-Captiontest');
         });
     });
 });

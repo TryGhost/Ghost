@@ -58,7 +58,7 @@ function getTopLevelNativeElement(node) {
     return node.closest(selector);
 }
 
-function $selectCard(editor, nodeKey) {
+function $selectCard(editor, nodeKey, focusEditor = true) {
     const selection = $createNodeSelection();
     selection.add(nodeKey);
     $setSelection(selection);
@@ -66,7 +66,9 @@ function $selectCard(editor, nodeKey) {
     // selecting a decorator node does not change the
     // window selection (there's no caret) so we need
     // to manually move focus to the editor element
-    editor.getRootElement().focus();
+    if (focusEditor) {
+        editor.getRootElement().focus();
+    }
 }
 
 // remove empty cards when they are deselected
@@ -224,7 +226,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             ),
             editor.registerCommand(
                 SELECT_CARD_COMMAND,
-                ({cardKey}) => {
+                ({cardKey, focusEditor}) => {
                     // already selected, delete if empty as we're exiting edit mode
                     if (selectedCardKey === cardKey && isEditingCard) {
                         const cardNode = $getNodeByKey(cardKey);
@@ -238,7 +240,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         $deselectCard(editor, selectedCardKey);
                     }
 
-                    $selectCard(editor, cardKey);
+                    $selectCard(editor, cardKey, focusEditor);
 
                     setSelectedCardKey(cardKey);
                     setIsEditingCard(false);
@@ -320,11 +322,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 (event) => {
                     // toggle edit mode if a card is selected and ctrl/cmd+enter is pressed
                     if (selectedCardKey && (event.metaKey || event.ctrlKey)) {
-                        event.preventDefault();
-
                         const cardNode = $getNodeByKey(selectedCardKey);
 
                         if (cardNode.hasEditMode?.()) {
+                            event.preventDefault();
+
                             // when leaving edit mode, ensure focus moves back to the editor
                             // otherwise focus can be left on removed elements preventing further key events
                             if (isEditingCard) {
@@ -352,9 +354,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             } else {
                                 setIsEditingCard(true);
                             }
-                        }
 
-                        return true;
+                            return true;
+                        }
                     }
 
                     // avoid processing card behaviours when an inner card element has focus

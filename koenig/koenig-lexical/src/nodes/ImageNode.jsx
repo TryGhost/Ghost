@@ -138,7 +138,7 @@ export class ImageNode extends BaseImageNode {
         if (this.__captionEditor) {
             this.__captionEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__captionEditor, null);
-                const cleanedHtml = cleanBasicHtml(html);
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
                 json.caption = cleanedHtml;
             });
         }

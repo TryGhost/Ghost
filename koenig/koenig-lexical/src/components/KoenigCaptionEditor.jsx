@@ -1,6 +1,6 @@
 import CardContext from '../context/CardContext.jsx';
 import React, {useCallback, useContext} from 'react';
-import {$createParagraphNode, $getNodeByKey, BLUR_COMMAND, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {BLUR_COMMAND, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
 import {KoenigComposableEditor, KoenigNestedComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -64,14 +64,20 @@ function CaptionPlugin({parentEditor}) {
                 ),
                 editor.registerCommand(
                     KEY_ENTER_COMMAND,
-                    () => {
-                        parentEditor.update(() => {
-                            const cardNode = $getNodeByKey(nodeKey);
-                            const paragraphNode = $createParagraphNode();
-                            cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
-                            paragraphNode.selectStart();
-                        });
-                        return false;
+                    (event) => {
+                        // allow shift+enter to create a line break
+                        if (event.shiftKey) {
+                            return false;
+                        }
+
+                        // otherwise, let the parent editor handle the enter key
+                        // - with ctrl/cmd+enter toggles edit mode
+                        // - or creates paragraph after card and moves cursor
+                        event._fromNested = true;
+                        editor._parentEditor.dispatchCommand(KEY_ENTER_COMMAND, event);
+
+                        // prevent normal/KoenigBehaviourPlugin enter key behaviour
+                        return true;
                     },
                     COMMAND_PRIORITY_LOW
                 )
