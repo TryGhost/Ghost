@@ -36,8 +36,8 @@
     font-weight: 400;
 }
 
-.nav-list-item .gh-post-history-version-meta.anonymous-author {
-    color: var(--lightgrey);
+.nav-list-item .gh-post-history-version-meta.deleted-user {
+    color: var(--lightgrey-d2);
 }
 
 .nav-list-item .gh-post-history-version-tag {
@@ -167,7 +167,10 @@
 .gh-post-history-main .show-diff .koenig-lexical h3,
 .gh-post-history-main .show-diff .koenig-lexical h4,
 .gh-post-history-main .show-diff .koenig-lexical h5,
-.gh-post-history-main .show-diff .koenig-lexical p {
+.gh-post-history-main .show-diff .koenig-lexical h6,
+.gh-post-history-main .show-diff .koenig-lexical p,
+.gh-post-history-main .show-diff .koenig-lexical blockquote,
+.gh-post-history-main .show-diff .koenig-lexical aside {
     color: rgba(21, 23, 26, 0.4);
 }
 
