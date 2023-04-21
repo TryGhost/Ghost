@@ -11,15 +11,15 @@ export default class AnnouncementSettingsBackgroundComponent extends Component {
 
     get options() {
         return [
-            {value: 'accent', label: 'Accent'},
-            {value: 'dark', label: 'Dark'},
-            {value: 'light', label: 'Light'}
+            {value: 'dark', label: 'Dark', className: 'kg-headerstyle-btn-dark'},
+            {value: 'light', label: 'Light', className: 'kg-headerstyle-btn-light'},
+            {value: 'accent', label: 'Accent', className: 'kg-headerstyle-btn-accent'}
         ];
     }
 
     @action
-    setBackground(event) {
-        this.settings.announcementBackground = event.target.value;
+    setBackground(value) {
+        this.settings.announcementBackground = value;
         this.settings.save();
         this.args.onChange?.();
     }
