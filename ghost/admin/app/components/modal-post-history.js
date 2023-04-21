@@ -22,6 +22,8 @@ function checkFinishedRendering(element, done) {
 
 export default class ModalPostHistory extends Component {
   @service notifications;
+  @service modals;
+  @service feature;
   constructor() {
       super(...arguments);
       this.post = this.args.model.post;
@@ -30,9 +32,8 @@ export default class ModalPostHistory extends Component {
   }
   @tracked selectedHTML = `<h1>loading...</h1>`;
   @tracked diffHtml = null;
-  @tracked showDifferences = true;
+  @tracked showDifferences = this.feature.get('postDiffing'); // should default to true in future
   @tracked selectedRevisionIndex = 0;
-  @service modals;
 
   get selectedRevision() {
       return this.revisionList[this.selectedRevisionIndex];
@@ -98,6 +99,7 @@ export default class ModalPostHistory extends Component {
       return strippedHtml;
   }
 
+  @action
   restoreRevision(index) {
       const revision = this.revisionList[index];
       this.modals.open(RestoreRevisionModal, {
