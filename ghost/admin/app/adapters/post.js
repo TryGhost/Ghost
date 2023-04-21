@@ -20,6 +20,10 @@ export default class Post extends ApplicationAdapter {
             }
         }
 
+        if (snapshot?.adapterOptions?.saveRevision) {
+            const saveRevision = snapshot.adapterOptions.saveRevision;
+            parsedUrl.searchParams.append('save_revision', saveRevision);
+        }
         return parsedUrl.toString();
     }
 

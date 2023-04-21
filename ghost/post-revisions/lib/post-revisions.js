@@ -32,26 +32,41 @@ class PostRevisions {
      * @param {PostLike} previous
      * @param {PostLike} current
      * @param {Revision[]} revisions
+     * @param {object} options
      * @returns {boolean}
      */
-    shouldGenerateRevision(previous, current, revisions) {
+    shouldGenerateRevision(previous, current, revisions, options) {
+        const latestRevision = revisions[revisions.length - 1];
         if (!previous) {
             return false;
         }
+        // If there's no revisions for this post, we should always save a revision
         if (revisions.length === 0) {
             return true;
         }
-        return previous.html !== current.html || previous.title !== current.title;
+        const isPublished = options && options.isPublished;
+        if (isPublished) {
+            return true;
+        }
+
+        const forceRevision = options && options.forceRevision;
+        const lexicalHasChangedSinceLatestRevision = latestRevision.lexical !== current.lexical;
+        const titleHasChanged = previous.title !== current.title;
+        if ((lexicalHasChangedSinceLatestRevision || titleHasChanged) && forceRevision) {
+            return true;
+        }
+        return false;
     }
 
     /**
      * @param {PostLike} previous
      * @param {PostLike} current
      * @param {Revision[]} revisions
+     * @param {object} options
      * @returns {Promise<Revision[]>}
      */
-    async getRevisions(previous, current, revisions) {
-        if (!this.shouldGenerateRevision(previous, current, revisions)) {
+    async getRevisions(previous, current, revisions, options) {
+        if (!this.shouldGenerateRevision(previous, current, revisions, options)) {
             return revisions;
         }
 
