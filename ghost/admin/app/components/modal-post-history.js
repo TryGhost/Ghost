@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import RestoreRevisionModal from '../components/modals/restore-revision';
 import diff from 'node-htmldiff';
-import {action} from '@ember/object';
+import {action, set} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -28,7 +28,7 @@ export default class ModalPostHistory extends Component {
       super(...arguments);
       this.post = this.args.model.post;
       this.editorAPI = this.args.model.editorAPI;
-      this.toggleSettingsMenu = this.args.toggleSettingsMenu;
+      this.toggleSettingsMenu = this.args.model.toggleSettingsMenu;
   }
   @tracked selectedHTML = `<h1>loading...</h1>`;
   @tracked diffHtml = null;
@@ -106,7 +106,7 @@ export default class ModalPostHistory extends Component {
           post: this.post,
           revision,
           updateTitle: () => {
-              this.post.titleScratch = revision.title;
+              set(this.post, 'titleScratch', revision.title);
           },
           updateEditor: () => {
               const state = this.editorAPI.editorInstance.parseEditorState(revision.lexical);
