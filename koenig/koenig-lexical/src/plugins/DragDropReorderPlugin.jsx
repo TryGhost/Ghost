@@ -5,6 +5,7 @@ import {$createNodeSelection, $getNearestNodeFromDOMNode, $getNodeByKey, $setSel
 import {DragDropHandler} from '../utils/draggable/DragDropHandler.jsx';
 import {isCardDropAllowed} from '../utils/draggable/draggable-utils.js';
 import {renderToString} from 'react-dom/server';
+import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function preventDefault(event) {
@@ -13,6 +14,7 @@ function preventDefault(event) {
 
 function useDragDropReorder(editor, isEditable) {
     const koenig = React.useContext(KoenigComposerContext);
+    const {setIsDragging} = useKoenigSelectedCardContext();
 
     const cardContainer = React.useRef(null);
     const skipOnDropEnd = React.useRef(false);
@@ -20,6 +22,11 @@ function useDragDropReorder(editor, isEditable) {
     // useRef because we need stable function references to pass into the drag drop container instance
     const onDragStart = React.useRef(() => {
         cardContainer.current.refresh();
+        setIsDragging(true);
+    });
+
+    const onDragEnd = React.useRef(() => {
+        setIsDragging(false);
     });
 
     const getDraggableInfo = React.useRef((draggableElement) => {
@@ -192,6 +199,7 @@ function useDragDropReorder(editor, isEditable) {
             draggableSelector: ':scope > div', // cards
             droppableSelector: ':scope > *', // all block elements
             onDragStart: onDragStart.current,
+            onDragEnd: onDragEnd.current,
             getDraggableInfo: getDraggableInfo.current,
             createGhostElement: createCardDragElement.current,
             getIndicatorPosition: getDropIndicatorPosition.current,

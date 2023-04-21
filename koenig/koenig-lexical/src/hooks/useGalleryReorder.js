@@ -2,11 +2,6 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {pick} from 'lodash-es';
 
-const SELECTED_CLASSES = [
-    'shadow-[0_0_0_2px]',
-    'shadow-green'
-];
-
 export default function useGalleryReorder({images, updateImages, isSelected = false, maxImages = 9, disabled = false}) {
     const koenig = React.useContext(KoenigComposerContext);
 
@@ -16,8 +11,6 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
     const skipOnDragEndRef = React.useRef(false);
 
     const onDragStart = (draggableInfo) => {
-        containerRef.closest('[data-kg-card]').classList.remove(...SELECTED_CLASSES);
-
         // enable dropping when an image is dragged in from outside of this card
         const isImageDrag = draggableInfo.type === 'image' || draggableInfo.cardName === 'image';
         if (isImageDrag && draggableInfo.dataset.src && images.length !== maxImages) {
@@ -28,12 +21,6 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
     };
 
     const onDragEnd = () => {
-        if (isSelected) {
-            containerRef.closest('[data-kg-card]').classList.add(...SELECTED_CLASSES);
-        } else {
-            dragDropContainer.current.disableDrag();
-        }
-
         setIsDraggedOver(false);
     };
 
@@ -209,9 +196,17 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
     };
 
     React.useEffect(() => {
+        if (isSelected) {
+            dragDropContainer.current?.enableDrag();
+        } else {
+            dragDropContainer.current?.disableDrag();
+        }
+    }, [isSelected, containerRef]);
+
+    React.useEffect(() => {
         const galleryElem = containerRef;
 
-        if (!galleryElem || !isSelected) {
+        if (!galleryElem) {
             return;
         }
 
@@ -242,7 +237,7 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
         // we want to be specific about when we want the drag/drop handler to
         // be set up or refreshed so we disable the exhaustive-deps rule here
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [containerRef, images, isSelected]);
+    }, [containerRef, images]);
 
     return {setContainerRef, isDraggedOver};
 }

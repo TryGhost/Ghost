@@ -14,7 +14,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const [cardWidth, setCardWidth] = React.useState(width || 'regular');
     const containerRef = React.useRef(null);
 
-    const {selectedCardKey, isEditingCard} = useKoenigSelectedCardContext();
+    const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
@@ -80,6 +80,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 cardType={cardType}
                 cardWidth={cardWidth}
                 IndicatorIcon={IndicatorIcon}
+                isDragging={isDragging}
                 isEditing={isEditing}
                 isSelected={isSelected}
                 wrapperStyle={wrapperStyle}
