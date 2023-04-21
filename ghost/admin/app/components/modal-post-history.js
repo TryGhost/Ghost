@@ -74,6 +74,20 @@ export default class ModalPostHistory extends Component {
   @action
   onInsert() {
       this.updateDiff();
+      window.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  @action
+  willDestroy() {
+      super.willDestroy(...arguments);
+      window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  @action
+  handleKeyDown(event) {
+      if (event.key === 'Escape') {
+          this.args.closeModal();
+      }
   }
 
   @action
