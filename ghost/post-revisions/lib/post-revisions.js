@@ -78,7 +78,9 @@ class PostRevisions {
             ];
         }
 
-        return [currentRevision, ...revisions].slice(0, this.config.max_revisions);
+        // Grab the most recent revisions, limited by max_revisions
+        const updatedRevisions = [...revisions, currentRevision];
+        return updatedRevisions.slice(updatedRevisions.length - this.config.max_revisions, updatedRevisions.length);
     }
 
     /**
