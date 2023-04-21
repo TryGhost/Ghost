@@ -31,6 +31,7 @@ class PostRevisions {
      * @param {object} deps
      * @param {object} deps.config
      * @param {number} deps.config.max_revisions
+     * @param {number} deps.config.revision_interval_ms
      * @param {object} deps.model
      */
     constructor(deps) {
@@ -57,11 +58,19 @@ class PostRevisions {
         }
 
         const forceRevision = options && options.forceRevision;
-        const lexicalHasChangedSinceLatestRevision = latestRevision.lexical !== current.lexical;
-        const titleHasChanged = latestRevision.title !== current.title;
         const featuredImagedHasChanged = latestRevision.feature_image !== current.feature_image;
-        if ((lexicalHasChangedSinceLatestRevision || titleHasChanged || featuredImagedHasChanged) && forceRevision) {
-            return {value: true, reason: 'explicit_save'};
+        const lexicalHasChanged = latestRevision.lexical !== current.lexical;
+        const titleHasChanged = latestRevision.title !== current.title;
+        // CASE: we only want to save a revision if something has changed since the previous revision
+        if (lexicalHasChanged || titleHasChanged || featuredImagedHasChanged) {
+            // CASE: user has explicitly requested a revision by hitting cmd+s or leaving the editor
+            if (forceRevision) {
+                return {value: true, reason: 'explicit_save'};
+            }
+            // CASE: it's been X mins since the last revision, so we should save a new one
+            if ((Date.now() - latestRevision.created_at_ts) > this.config.revision_interval_ms) {
+                return {value: true, reason: 'background_save'};
+            }
         }
         return {value: false};
     }

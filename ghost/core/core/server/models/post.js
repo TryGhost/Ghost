@@ -37,6 +37,7 @@ const messages = {
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
 const POST_REVISIONS_COUNT = 10;
+const POST_REVISIONS_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
 
 let Post;
@@ -905,7 +906,8 @@ Post = ghostBookshelf.Model.extend({
             if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
                 const postRevisions = new PostRevisions({
                     config: {
-                        max_revisions: POST_REVISIONS_COUNT
+                        max_revisions: POST_REVISIONS_COUNT,
+                        revision_interval_ms: POST_REVISIONS_INTERVAL_MS
                     }
                 });
                 const authorId = this.contextUser(options);
@@ -913,7 +915,7 @@ Post = ghostBookshelf.Model.extend({
                     const revisionModels = await ghostBookshelf.model('PostRevision')
                         .findAll(Object.assign({
                             filter: `post_id:${model.id}`,
-                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status']
+                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts']
                         }, _.pick(options, 'transacting')));
 
                     const revisions = revisionModels.toJSON();

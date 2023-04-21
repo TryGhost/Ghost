@@ -3,7 +3,8 @@ const sinon = require('sinon');
 const PostRevisions = require('..');
 
 const config = {
-    max_revisions: 10
+    max_revisions: 10,
+    revision_interval_ms: 1000
 };
 
 describe('PostRevisions', function () {
@@ -58,7 +59,8 @@ describe('PostRevisions', function () {
                 html: 'blah',
                 title: 'blah2'
             }, [{
-                lexical: 'blah'
+                lexical: 'blah',
+                title: 'not blah'
             }], {
                 forceRevision: true
             });
@@ -100,6 +102,22 @@ describe('PostRevisions', function () {
             }], {
                 isPublished: true
             });
+
+            assert.deepEqual(actual, expected);
+        });
+
+        it('should return true if the latest revision was more than the interval', function () {
+            const postRevisions = new PostRevisions({config});
+
+            const expected = {value: true, reason: 'background_save'};
+            const actual = postRevisions.shouldGenerateRevision({
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah'
+            }, [{
+                lexical: 'blah',
+                created_at_ts: Date.now() - 2000
+            }], {});
 
             assert.deepEqual(actual, expected);
         });
