@@ -64,7 +64,7 @@ export default (function viteConfig() {
             environment: 'jsdom',
             setupFiles: './test/test-setup.js',
             globalSetup: './test/e2e-setup.js',
-            testTimeout: 10000,
+            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
                 minThreads: 1,
                 maxThreads: 2
