@@ -405,7 +405,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         author_id: {type: 'string', maxlength: 24, nullable: true, references: 'users.id', cascadeDelete: false, constraintName: 'post_revs_author_id_foreign'},
         title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 255}}},
-        post_status: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['draft', 'published', 'scheduled']]}}
+        post_status: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['draft', 'published', 'scheduled']]}},
+        reason: {type: 'string', maxlength: 50, nullable: true}
     },
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
