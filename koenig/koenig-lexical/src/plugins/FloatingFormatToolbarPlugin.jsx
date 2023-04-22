@@ -70,7 +70,6 @@ function FloatingFormatToolbar({
     blockType,
     isBold,
     isItalic,
-    isLink,
     isSnippetsEnabled,
     toolbarItemType,
     setToolbarItemType,
@@ -274,7 +273,7 @@ function FloatingFormatToolbar({
                 <ToolbarMenuItem
                     data-kg-toolbar-button="link"
                     icon="link"
-                    isActive={isLink}
+                    isActive={!!href}
                     label="Link"
                     onClick={() => handleActionItemClick(toolbarItemTypes.link)}
                 />
@@ -342,13 +341,11 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
             const parent = anchorNode.getParent();
 
             if ($isLinkNode(parent)) {
-                setIsLink(true);
                 setHref(parent.getURL());
             } else if ($isLinkNode(anchorNode)) {
-                setIsLink(true);
                 setHref(anchorNode.getURL());
             } else {
-                setIsLink(false);
+                setHref('');
             }
 
             if (elementDOM !== null) {
@@ -403,7 +400,6 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
                 href={href}
                 isBold={isBold}
                 isItalic={isItalic}
-                isLink={isLink}
                 isSnippetsEnabled={isSnippetsEnabled}
                 isText={isText}
                 setIsText={setIsText}
