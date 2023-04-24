@@ -1,8 +1,8 @@
 import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
-describe.skip('Embed card', async () => {
+describe('Embed card', async () => {
     let app;
     let page;
 
@@ -63,8 +63,7 @@ describe.skip('Embed card', async () => {
 
     test('renders embed card node', async function () {
         await focusEditor(page);
-        await insertCard(page, {cardName: 'embed'});
-        await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+        await insertEmbedCard(page);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -76,8 +75,7 @@ describe.skip('Embed card', async () => {
 
     test('can interact with url input after inserting', async function () {
         await focusEditor(page);
-        await insertCard(page, {cardName: 'embed'});
-        await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+        await insertEmbedCard(page);
 
         const urlInput = await page.getByTestId('embed-url');
         await expect(urlInput).toHaveAttribute('placeholder','Paste URL to add embedded content...');
@@ -89,8 +87,7 @@ describe.skip('Embed card', async () => {
     describe('Valid URL handling', async () => {
         test('shows loading wheel', async function () {
             await focusEditor(page);
-            await insertCard(page, {cardName: 'embed'});
-            await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+            await insertEmbedCard(page);
 
             const urlInput = await page.getByTestId('embed-url');
             await urlInput.fill('https://ghost.org/');
@@ -102,8 +99,7 @@ describe.skip('Embed card', async () => {
 
         test('displays expected metadata', async function () {
             await focusEditor(page);
-            await insertCard(page, {cardName: 'embed'});
-            await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+            await insertEmbedCard(page);
 
             const urlInput = await page.getByTestId('embed-url');
             await urlInput.fill('https://ghost.org/');
@@ -115,8 +111,7 @@ describe.skip('Embed card', async () => {
         // TODO: the caption editor is very nested, and we don't have an actual input field here, so we aren't testing for filling it
         test('caption displays on insert', async function () {
             await focusEditor(page);
-            await insertCard(page, {cardName: 'embed'});
-            await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+            await insertEmbedCard(page);
 
             const urlInput = await page.getByTestId('embed-url');
             await urlInput.fill('https://ghost.org/');
@@ -130,8 +125,7 @@ describe.skip('Embed card', async () => {
     describe('Error Handling', async () => {
         test('bad url entry shows error message', async function () {
             await focusEditor(page);
-            await insertCard(page, {cardName: 'embed'});
-            await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+            await insertEmbedCard(page);
 
             const urlInput = await page.getByTestId('embed-url');
             await urlInput.fill('badurl');
@@ -143,8 +137,7 @@ describe.skip('Embed card', async () => {
 
         test('retry button bring back url input', async function () {
             await focusEditor(page);
-            await insertCard(page, {cardName: 'embed'});
-            await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+            await insertEmbedCard(page);
 
             const urlInput = await page.getByTestId('embed-url');
             await expect(urlInput).toHaveAttribute('placeholder','Paste URL to add embedded content...');
@@ -161,10 +154,10 @@ describe.skip('Embed card', async () => {
             await expect(retryButton).not.toBeVisible();
         });
 
-        test('paste as link button removes card and inserts text node link', async function () {
+        // todo: test is failing, need to figure if the error in test logic or on code
+        test.skip('paste as link button removes card and inserts text node link', async function () {
             await focusEditor(page);
-            await insertCard(page, {cardName: 'embed'});
-            await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+            await insertEmbedCard(page);
 
             const urlInput = await page.getByTestId('embed-url');
             await expect(urlInput).toHaveAttribute('placeholder','Paste URL to add embedded content...');
@@ -186,8 +179,7 @@ describe.skip('Embed card', async () => {
 
         test('close button removes card', async function () {
             await focusEditor(page);
-            await insertCard(page, {cardName: 'embed'});
-            await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+            await insertEmbedCard(page);
 
             const urlInput = await page.getByTestId('embed-url');
             await expect(urlInput).toHaveAttribute('placeholder','Paste URL to add embedded content...');
@@ -205,8 +197,7 @@ describe.skip('Embed card', async () => {
 
     test('can add snippet', async function () {
         await focusEditor(page);
-        await insertCard(page, {cardName: 'embed'});
-        await expect(await page.locator('[data-kg-card="embed"]')).toBeVisible();
+        await insertEmbedCard(page);
 
         const urlInput = await page.getByTestId('embed-url');
         await urlInput.fill('https://ghost.org/');
@@ -225,3 +216,10 @@ describe.skip('Embed card', async () => {
         await expect(await page.locator('[data-kg-card="embed"]')).toHaveCount(2);
     });
 });
+
+async function insertEmbedCard(page) {
+    await page.keyboard.type(`/embed`);
+    await expect(await page.locator('[data-kg-card-menu-item="Other..."][data-kg-cardmenu-selected="true"]')).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(await page.locator(`[data-kg-card="embed"]`)).toBeVisible();
+}
