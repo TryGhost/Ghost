@@ -1181,14 +1181,13 @@ describe('Card behaviour', async () => {
             await page.keyboard.type('--- ');
             await page.click('hr');
 
-            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
+            await expect(await page.locator('[data-kg-card-selected="true"]')).not.toBeNull();
 
             await page.keyboard.press('Meta+Enter');
 
             // card does not enter edit mode
-            expect(await page.$('[data-kg-card-selected="true"]')).not.toBeNull();
-            expect(await page.$('[data-kg-card-editing="true"]')).toBeNull();
-            expect(await page.$('[data-kg-card-editing="false"]')).not.toBeNull();
+            await expect(await page.locator('[data-kg-card-selected="true"]')).not.toBeNull();
+            await expect(await page.locator('[data-kg-card-editing="false"]')).not.toBeNull();
         });
 
         test('with an edit-mode card selected', async function () {
