@@ -32,14 +32,21 @@ export const TOOLBAR_ICONS = {
     snippet: SnippetIcon
 };
 
-export function ToolbarMenu({children, hide, ...props}) {
+export function ToolbarMenu({children, hide, arrowStyles, ...props}) {
     if (hide) {
         return null;
     }
 
     return (
-        <ul className="relative m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent after:border-t-black" {...props}>
+        <ul className="relative m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white" {...props}>
             {children}
+
+            {/* Arrow block. Used div instead of pseudo-element. Arrow requires dynamic values for position,
+             and Tailwind can't handle this. They recommended CSS-in-JS or style attr for such cases (https://v2.tailwindcss.com/docs/just-in-time-mode) */}
+            <li
+                className="absolute top-[36px] left-[calc(50%-8px)] w-0 border-x-8 border-t-8 border-x-transparent border-t-black"
+                style={arrowStyles}
+            ></li>
         </ul>
     );
 }

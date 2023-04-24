@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, {useEffect, useRef} from 'react';
 import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 
-export function LinkInput({href, update, cancel}) {
+export function LinkInput({href, update, cancel, arrowStyles}) {
     const [_href, setHref] = React.useState(href);
 
     // add refs for input and container
@@ -49,7 +49,7 @@ export function LinkInput({href, update, cancel}) {
     }, [onEscape]);
 
     return (
-        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black py-0 font-sans text-md font-medium after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-x-8 after:border-t-8 after:border-x-transparent after:border-t-black">
+        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black py-0 font-sans text-md font-medium">
             <input
                 ref={inputRef}
                 className="mb-[1px] h-auto w-full rounded bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40"
@@ -80,6 +80,13 @@ export function LinkInput({href, update, cancel}) {
                     </button>
                 )
             }
+
+            {/* Arrow block. Used div instead of pseudo-element. Arrow requires dynamic values for position,
+             and Tailwind can't handle this. They recommended CSS-in-JS or style attr for such cases (https://v2.tailwindcss.com/docs/just-in-time-mode) */}
+            <div
+                className="absolute top-[36px] left-[calc(50%-8px)] w-0 border-x-8 border-t-8 border-x-transparent border-t-black"
+                style={arrowStyles}
+            ></div>
         </div>
     );
 }

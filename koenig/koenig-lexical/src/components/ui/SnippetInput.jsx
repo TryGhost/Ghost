@@ -10,7 +10,8 @@ export function SnippetInput({
     onUpdateSnippet,
     onClose,
     darkMode,
-    snippets = []
+    snippets = [],
+    arrowStyles
 }) {
     const snippetRef = useRef(null);
     const [isCreateButtonActive, setIsCreateButtonActive] = useState(false);
@@ -97,7 +98,7 @@ export function SnippetInput({
             onClick={e => e.stopPropagation()} // prevents card from losing selected state
         >
             <form onSubmit={handleSubmit}>
-                <Input value={value} onChange={onChange} onClear={onClose} onKeyDown={handleInputKeyDown} />
+                <Input arrowStyles={arrowStyles} value={value} onChange={onChange} onClear={onClose} onKeyDown={handleInputKeyDown} />
             </form>
             {
                 !!value && (

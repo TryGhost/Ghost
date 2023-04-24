@@ -3,7 +3,7 @@ import {LinkInput} from './LinkInput.jsx';
 import {TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function LinkActionToolbar({href, onClose}) {
+export function LinkActionToolbar({href, onClose, ...props}) {
     const [editor] = useLexicalComposerContext();
     return (
         <LinkInput
@@ -13,6 +13,7 @@ export function LinkActionToolbar({href, onClose}) {
                 editor.dispatchCommand(TOGGLE_LINK_COMMAND, _href || null);
                 onClose();
             }}
+            {...props}
         />
     );
 }
