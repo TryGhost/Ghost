@@ -296,7 +296,6 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
     const [isText, setIsText] = React.useState(false);
     const [isBold, setIsBold] = React.useState(false);
     const [isItalic, setIsItalic] = React.useState(false);
-    const [isLink, setIsLink] = React.useState(false);
     const [href, setHref] = React.useState('');
     const [blockType, setBlockType] = React.useState('paragraph');
     const [toolbarItemType, setToolbarItemType] = React.useState(null);
