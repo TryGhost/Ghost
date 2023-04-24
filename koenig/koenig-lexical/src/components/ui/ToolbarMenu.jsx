@@ -38,13 +38,13 @@ export function ToolbarMenu({children, hide, arrowStyles, ...props}) {
     }
 
     return (
-        <ul className="relative m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white" {...props}>
+        <ul className="relative m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white dark:bg-grey-950" {...props}>
             {children}
 
             {/* Arrow block. Used div instead of pseudo-element. Arrow requires dynamic values for position,
              and Tailwind can't handle this. They recommended CSS-in-JS or style attr for such cases (https://v2.tailwindcss.com/docs/just-in-time-mode) */}
             <li
-                className="absolute top-[36px] left-[calc(50%-8px)] w-0 border-x-8 border-t-8 border-x-transparent border-t-black"
+                className="absolute top-[36px] left-[calc(50%-8px)] w-0 border-x-8 border-t-8 border-x-transparent border-t-black dark:border-t-grey-950"
                 style={arrowStyles}
             ></li>
         </ul>
@@ -62,7 +62,7 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, dataTestId, hid
         <li className="m-0 flex p-0 first:m-0" {...props}>
             <button
                 aria-label={label}
-                className="flex h-9 w-9 cursor-pointer items-center justify-center"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center transition-opacity hover:opacity-75"
                 data-kg-active={isActive}
                 data-testid={dataTestId}
                 type="button"
