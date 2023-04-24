@@ -2,7 +2,7 @@ import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
-describe.skip('Bookmark card', async () => {
+describe('Bookmark card', async () => {
     let app;
     let page;
 
@@ -148,6 +148,7 @@ describe.skip('Bookmark card', async () => {
             await expect(retryButton).not.toBeVisible();
         });
 
+        // todo: test is failing, need to figure if the error in test logic or on code
         test('paste as link button removes card and inserts text node link', async function () {
             await focusEditor(page);
             await insertCard(page, {cardName: 'bookmark'});
