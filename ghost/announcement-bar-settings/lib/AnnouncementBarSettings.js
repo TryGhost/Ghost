@@ -1,5 +1,9 @@
+const AnnouncementVisibilityValues = require('./AnnouncementVisibilityValues');
+
 class AnnouncementBarSettings {
     #getAnnouncementSettings;
+
+    static VisibilityValues = AnnouncementVisibilityValues;
 
     /**
      *
@@ -25,18 +29,14 @@ class AnnouncementBarSettings {
             const visibilities = announcementSettings.announcement_visibility;
             const announcementContent = announcementSettings.announcement;
 
-            // Available visibilities:
-            // 'visitors',      // Logged out visitors
-            // 'free_members',  // Free members
-            // 'paid_members'   // Paid members (aka non-free members)
             if (visibilities.length === 0) {
                 announcement = undefined;
             } else {
-                if (visibilities.includes('visitors') && !member) {
+                if (visibilities.includes(AnnouncementVisibilityValues.VISITORS) && !member) {
                     announcement = announcementContent;
-                } else if (visibilities.includes('free_members') && (member?.status === 'free')) {
+                } else if (visibilities.includes(AnnouncementVisibilityValues.FREE_MEMBERS) && (member?.status === 'free')) {
                     announcement = announcementContent;
-                } else if (visibilities.includes('paid_members') && (member && member.status !== 'free')) {
+                } else if (visibilities.includes(AnnouncementVisibilityValues.PAID_MEMBERS) && (member && member.status !== 'free')) {
                     announcement = announcementContent;
                 }
             }

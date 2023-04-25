@@ -3,6 +3,7 @@ const _ = require('lodash');
 const {ValidationError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
+const AnnouncementBarSettings = require('@tryghost/announcement-bar-settings');
 
 const messages = {
     invalidEmailReceived: 'Please send a valid email',
@@ -68,11 +69,10 @@ module.exports = {
                 // NOTE: safe to parse because of array validation up top
                 const visibilityValues = JSON.parse(setting.value);
 
-                // NOTE: combination of 'free_members' & 'paid_members' makes just a 'members' filter
                 const validVisibilityValues = [
-                    'visitors', // Logged out visitors
-                    'free_members', // Free members
-                    'paid_members' // Paid members
+                    AnnouncementBarSettings.VisibilityValues.VISITORS,
+                    AnnouncementBarSettings.VisibilityValues.FREE_MEMBERS,
+                    AnnouncementBarSettings.VisibilityValues.PAID_MEMBERS
                 ];
 
                 if (visibilityValues.length) {
