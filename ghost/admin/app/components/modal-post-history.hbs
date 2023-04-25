@@ -10,7 +10,12 @@
             <div class="gh-post-history-hidden-lexical previous">
                 <div class="gh-editor-feature-image-container">
                     <div class="gh-editor-feature-image">
-                        <img src="{{this.comparisonRevision.feature_image}}">
+                        {{#if this.comparisonRevision.feature_image}}
+                            <img src="{{this.comparisonRevision.feature_image}}">
+                        {{/if}}
+                        {{#if this.comparisonRevision.feature_image_caption}}
+                            <p>{{{this.comparisonRevision.feature_image_caption}}}"</p>
+                        {{/if}}
                     </div>
                 </div>
                 <div class="gh-editor-title">{{this.previousTitle}}</div>
@@ -19,7 +24,12 @@
             <div class="gh-post-history-hidden-lexical current">
                 <div class="gh-editor-feature-image-container">
                     <div class="gh-editor-feature-image">
-                        <img src="{{this.selectedRevision.feature_image}}">
+                        {{#if this.selectedRevision.feature_image}}
+                            <img src="{{this.selectedRevision.feature_image}}">
+                        {{/if}}
+                        {{#if this.selectedRevision.feature_image_caption}}
+                            <p>{{{this.selectedRevision.feature_image_caption}}}</p>
+                        {{/if}}
                     </div>
                 </div>
                 <div class="gh-editor-title">{{this.currentTitle}}</div>
