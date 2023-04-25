@@ -14,6 +14,15 @@ describe('AnnouncementBarSettings', function () {
         assert.ok(announcementBarSettings);
     });
 
+    describe('AnnouncementVisibilityValues', function () {
+        it('has static VisibilityValues property', function () {
+            assert.ok(AnnouncementBarSettings.VisibilityValues);
+            assert.equal(AnnouncementBarSettings.VisibilityValues.VISITORS, 'visitors');
+            assert.equal(AnnouncementBarSettings.VisibilityValues.FREE_MEMBERS, 'free_members');
+            assert.equal(AnnouncementBarSettings.VisibilityValues.PAID_MEMBERS, 'paid_members');
+        });
+    });
+
     describe('getAnnouncementSettings', function () {
         const testVisibility = (announcementSettings, member, expected) => {
             const announcementBarSettings = new AnnouncementBarSettings({
