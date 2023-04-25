@@ -25,7 +25,7 @@
     "c8": "7.13.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.3"
+    "sinon": "15.0.4"
   },
   "dependencies": {
     "@tryghost/kg-utils": "^1.0.14",
