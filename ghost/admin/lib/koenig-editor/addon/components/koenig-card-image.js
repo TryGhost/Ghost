@@ -5,12 +5,37 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {action, computed, set, setProperties} from '@ember/object';
+import {fetch} from 'fetch';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 const {countWords} = ghostHelperUtils;
+
+async function dataSrcToFile(src, fileName) {
+    if (!src.startsWith('data:')) {
+        return;
+    }
+
+    const mimeType = src.split(',')[0].split(':')[1].split(';')[0];
+
+    if (!fileName) {
+        let uuid;
+        try {
+            uuid = window.crypto.randomUUID();
+        } catch (e) {
+            uuid = Math.random().toString(36).substring(2, 15);
+        }
+        const extension = mimeType.split('/')[1];
+        fileName = `data-src-image-${uuid}.${extension}`;
+    }
+
+    const blob = await fetch(src).then(it => it.blob());
+    const file = new File([blob], fileName, {type: mimeType, lastModified: new Date()});
+
+    return file;
+}
 
 @classic
 export default class KoenigCardImage extends Component {
@@ -159,11 +184,21 @@ export default class KoenigCardImage extends Component {
     didReceiveAttrs() {
         super.didReceiveAttrs(...arguments);
 
-        // `payload.files` can be set if we have an externaly set image that
+        // if payload.src is a data attribute something has gone wrong and we're
+        // storing binary data in the payload. Grab the data and upload it to
+        // convert to a proper ULR
+        if (this.payload.src?.startsWith('data:')) {
+            const file = dataSrcToFile(this.payload.src, this.payload.fileName, this.payload.mimeType);
+            this.payload.files = [file];
+        }
+
+        // `payload.files` can be set if we have an externally set image that
         // should be uploaded. Typical example would be from a paste or drag/drop
         if (!isEmpty(this.payload.files)) {
-            run.schedule('afterRender', this, function () {
-                this.set('files', this.payload.files);
+            run.schedule('afterRender', this, async function () {
+                // files can be a promise if converted from data:
+                const files = await Promise.all(this.payload.files);
+                this.set('files', files);
 
                 // we don't want to  persist any file data in the document
                 delete this.payload.files;
