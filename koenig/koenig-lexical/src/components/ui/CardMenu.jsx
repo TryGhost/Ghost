@@ -21,7 +21,7 @@ export const CardMenuItem = ({label, desc, isSelected, onClick, Icon, ...props})
     };
 
     return (
-        <li role="presentation">
+        <li className="mb-0" role="presentation">
             <button
                 className={`flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-left text-grey-800 hover:bg-grey-100 dark:hover:bg-grey-900  ${isSelected ? 'bg-grey-100 dark:bg-grey-900' : ''}`}
                 data-kg-card-menu-item={label}
