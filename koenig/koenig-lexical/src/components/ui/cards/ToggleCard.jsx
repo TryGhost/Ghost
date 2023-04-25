@@ -23,10 +23,10 @@ export function ToggleCard({
                             initialEditor={headerEditor}
                             initialEditorState={headerEditorInitialState}
                             nodes='minimal'
-                            placeholderClassName={'kg-toggle-header-placeholder'}
+                            placeholderClassName={'font-sans text-[2.2rem] font-bold leading-snug tracking-tight text-black dark:text-grey-50 opacity-40'}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={'kg-toggle-header-text'}
+                            textClassName={'koenig-lexical-toggle-header whitespace-normal text-black dark:text-grey-50 opacity-100'}
                         />
                     </div>
                     <div className='z-20 ml-auto mt-[-1px] flex h-8 w-8 shrink-0 items-center justify-center'>
@@ -37,9 +37,9 @@ export function ToggleCard({
                     <KoenigNestedEditor
                         initialEditor={contentEditor}
                         initialEditorState={contentEditorInitialState}
-                        placeholderClassName={'kg-toggle-content-placeholder'}
+                        placeholderClassName={'font-serif text-xl font-normal leading-normal text-grey-900 dark:text-grey-100 opacity-40'}
                         placeholderText={contentPlaceholder}
-                        textClassName={'kg-toggle-content-text'}
+                        textClassName={'koenig-lexical-toggle-description whitespace-normal font-serif text-xl font-normal leading-normal text-grey-900 dark:text-grey-100 opacity-100'}
                     />
                 </div>
             </div>

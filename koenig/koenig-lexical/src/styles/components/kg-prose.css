@@ -783,18 +783,56 @@
         }
     }
 
-    .koenig-lexical-product-description {
-            .kg-prose {
-                :where(
-                            p,
-                            blockquote,
-                            aside,
-                            ul,
-                            ol
-                        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-                    font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-                    line-height: 1.375;
-                    font-size: 1.6rem;
-                }
+.koenig-lexical-product-description {
+        .kg-prose {
+            :where(
+                        p,
+                        blockquote,
+                        aside,
+                        ul,
+                        ol
+                    ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+                font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+                line-height: 1.375;
+                font-size: 1.6rem;
             }
         }
+    }
+
+.koenig-lexical-toggle-header {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+            line-height: 1.375;
+            font-size: 2.2rem !important;
+            font-weight: bold;
+            letter-spacing: -0.025em;
+        }
+        :where(
+                    strong
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-weight: 800;
+        }
+    }
+}
+
+.koenig-lexical-toggle-description {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-family: georgia,serif;
+            line-height: 1.5;
+        }
+    }
+}
