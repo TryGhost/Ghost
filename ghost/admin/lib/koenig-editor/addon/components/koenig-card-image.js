@@ -13,10 +13,6 @@ import {inject as service} from '@ember/service';
 
 const {countWords} = ghostHelperUtils;
 
-// when converting data: URIs to files we need to give them unique names so
-// we don't run into server-side race condition issues with filename deduplication
-let dataImgCount = 1;
-
 async function dataSrcToFile(src, fileName) {
     if (!src.startsWith('data:')) {
         return;
@@ -25,9 +21,14 @@ async function dataSrcToFile(src, fileName) {
     const mimeType = src.split(',')[0].split(':')[1].split(';')[0];
 
     if (!fileName) {
+        let uuid;
+        try {
+            uuid = window.crypto.randomUUID();
+        } catch (e) {
+            uuid = Math.random().toString(36).substring(2, 15);
+        }
         const extension = mimeType.split('/')[1];
-        fileName = `data-src-image-${dataImgCount}.${extension}`;
-        dataImgCount + 1;
+        fileName = `data-src-image-${uuid}.${extension}`;
     }
 
     const blob = await fetch(src).then(it => it.blob());
