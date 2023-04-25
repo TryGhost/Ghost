@@ -62,10 +62,10 @@ export function ProductCard({
                                     initialEditor={titleEditor}
                                     initialEditorState={titleEditorInitialState}
                                     nodes='minimal'
-                                    placeholderClassName="text-[22px] font-bold leading-snug text-black opacity-40 dark:text-white tracking-tight"
+                                    placeholderClassName="whitespace-normal text-[22px] font-bold leading-snug text-black opacity-40 dark:text-white tracking-tight"
                                     placeholderText="Product title"
                                     singleParagraph={true}
-                                    textClassName="kg-product-title leading-snug text-[22px] dark:text-grey-100"
+                                    textClassName="koenig-lexical-product-title whitespace-normal"
                                 />
                             </div>
                         )
@@ -85,7 +85,7 @@ export function ProductCard({
                                 initialEditorState={descriptionEditorInitialState}
                                 placeholderClassName="text-[1.6rem] font-normal leading-snug text-grey-700 opacity-50"
                                 placeholderText="Description"
-                                textClassName="kg-product-description"
+                                textClassName="koenig-lexical-product-description whitespace-normal text-grey-700"
                             />
                         </div>
                     )

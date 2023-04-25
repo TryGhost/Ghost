@@ -750,11 +750,6 @@
 }
 
 .koenig-lexical-caption {
-/* Content Styles
-/*
-/* We use only margin-top to set the vertical spacings. The styles below
-/* set up the margin for content pairs (e.g. paragraph preceded by a heading).
-/* -------------------------------------------------------------------- */
     .kg-prose {
         :where(
                     p,
@@ -769,3 +764,37 @@
         }
     }
 }
+
+.koenig-lexical-product-title {
+        .kg-prose {
+            :where(
+                        p,
+                        blockquote,
+                        aside,
+                        ul,
+                        ol
+                    ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+                font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+                line-height: 1.375;
+                font-size: 2.2rem;
+                font-weight: bold;
+                letter-spacing: -0.025em;
+            }
+        }
+    }
+
+    .koenig-lexical-product-description {
+            .kg-prose {
+                :where(
+                            p,
+                            blockquote,
+                            aside,
+                            ul,
+                            ol
+                        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+                    font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+                    line-height: 1.375;
+                    font-size: 1.6rem;
+                }
+            }
+        }
