@@ -16,9 +16,14 @@
                     {{on "click" this.updateVisibility}}
                 >
                 <span class="input-toggle-component"></span>
+            {{#if this.isMembersEnabled}}
                 <span>Logged out visitors</span>
+            {{else}}
+                <span>Show the announcement</span>
+            {{/if}}
             </label>
 
+            {{#if this.isMembersEnabled}}
             {{#if this.isPaidAvailable}}
                 <label class="checkbox" for="free">
                     <input
@@ -59,6 +64,7 @@
                     <span class="input-toggle-component"></span>
                     <span>Members</span>
                 </label>
+            {{/if}}
             {{/if}}
         </div>
     </div>
