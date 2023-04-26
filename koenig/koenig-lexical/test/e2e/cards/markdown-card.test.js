@@ -105,13 +105,13 @@ describe('Markdown card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('should open unsplash dialog on Cmd-Alt-U', async function () {
+    test('should open unsplash dialog on Cmd-Alt-O', async function () {
         await focusEditor(page);
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await page.click('[data-kg-card="markdown"]');
 
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+U`);
+        await page.keyboard.press(`${ctrlOrCmd}+Alt+O`);
         await page.waitForSelector('[data-kg-modal="unsplash"]');
     });
 
@@ -336,6 +336,66 @@ describe('Markdown card', async () => {
                 type: 'markdown',
                 version: 1,
                 markdown: '*italic*'
+            },
+            {
+                children: [],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1
+            }
+        ]));
+    });
+
+    test('can insert strikethrough text', async function () {
+        await focusEditor(page);
+
+        await page.keyboard.type('/');
+        await page.click('[data-kg-card-menu-item="Markdown"]');
+        await page.click('[data-kg-card="markdown"]');
+        await page.keyboard.press(`${ctrlOrCmd}+Alt+U`);
+        await page.keyboard.type('text');
+
+        await assertRootChildren(page, JSON.stringify([
+            {
+                type: 'markdown',
+                version: 1,
+                markdown: '~~text~~'
+            },
+            {
+                children: [],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1
+            }
+        ]));
+    });
+
+    test('can convert text to strikethrough', async function () {
+        await focusEditor(page);
+
+        await page.keyboard.type('/');
+        await page.click('[data-kg-card-menu-item="Markdown"]');
+        await page.click('[data-kg-card="markdown"]');
+        await page.keyboard.type('text');
+        // select the text
+        await page.keyboard.down('Shift');
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.up('Shift');
+        // make it italic
+        await page.keyboard.press(`${ctrlOrCmd}+Alt+U`);
+
+        await assertRootChildren(page, JSON.stringify([
+            {
+                type: 'markdown',
+                version: 1,
+                markdown: '~~text~~'
             },
             {
                 children: [],
