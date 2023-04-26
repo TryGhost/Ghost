@@ -25,7 +25,7 @@ const defaultTheme = {
         overflowed: undefined,
         hashtag: undefined,
         underline: undefined,
-        strikethrough: undefined,
+        strikethrough: 'line-through',
         underlinestrikethrough: undefined,
         code: undefined
     },
