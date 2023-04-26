@@ -3716,6 +3716,10 @@ p.theme-validation-details {
     word-break: break-word;
 }
 
+.gh-announcement-editor.dark {
+    background: #15171A;
+}
+
 .gh-announcement-editor .koenig-lexical *,
 .gh-announcement-editor .koenig-lexical-editor-input-placeholder {
     font-family: var(--font-family) !important;
