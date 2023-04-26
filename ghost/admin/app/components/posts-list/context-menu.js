@@ -247,13 +247,37 @@ export default class PostsContextMenu extends Component {
     updateFilteredPosts() {
         const updatedModels = this.selectionList.availableModels;
         const filter = this.selectionList.allFilter;
-        const filterNql = nql(filter);
+        const filterNql = nql(filter, {
+            expansions: [
+                {
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    expansion: 'posts_tags.sort_order:0+tags.visibility:public'
+                }, {
+                    key: 'primary_author',
+                    replacement: 'authors.slug',
+                    expansion: 'posts_authors.sort_order:0+authors.visibility:public'
+                }, {
+                    key: 'authors',
+                    replacement: 'authors.slug'
+                }, {
+                    key: 'author',
+                    replacement: 'authors.slug'
+                }, {
+                    key: 'tag',
+                    replacement: 'tags.slug'
+                }, {
+                    key: 'tags',
+                    replacement: 'tags.slug'
+                }
+            ]
+        });
 
         const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
             if (!updatedModels.find(u => u.id === model.id)) {
                 return true;
             }
-            return filterNql.queryJSON(model);
+            return filterNql.queryJSON(model.serialize({includeId: true}));
         });
         // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
         this.infinity.replace(this.selectionList.infinityModel, remainingModels);
