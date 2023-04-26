@@ -3726,6 +3726,9 @@ p.theme-validation-details {
 .gh-announcement-editor .koenig-lexical p,
 .gh-announcement-editor .koenig-lexical .kg-prose {
     height: 108px;
+    color: var(--darkgrey);
+    font-size: 1.4rem !important;
+    line-height: 1.5em !important;
 }
 
 .gh-announcement-editor .koenig-lexical a {
