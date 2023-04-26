@@ -49,7 +49,7 @@ export function LinkInput({href, update, cancel, arrowStyles}) {
     }, [onEscape]);
 
     return (
-        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black py-0 font-sans text-md font-medium">
+        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black py-0 font-sans text-sm font-medium">
             <input
                 ref={inputRef}
                 className="mb-[1px] h-auto w-full rounded bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40"

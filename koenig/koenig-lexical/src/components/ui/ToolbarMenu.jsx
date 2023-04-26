@@ -13,6 +13,7 @@ import {ReactComponent as QuoteIcon} from '../../assets/icons/kg-quote.svg';
 import {ReactComponent as QuoteOneIcon} from '../../assets/icons/kg-quote-1.svg';
 import {ReactComponent as QuoteTwoIcon} from '../../assets/icons/kg-quote-2.svg';
 import {ReactComponent as SnippetIcon} from '../../assets/icons/kg-snippet.svg';
+import {ReactComponent as TrashIcon} from '../../assets/icons/kg-trash.svg';
 
 export const TOOLBAR_ICONS = {
     bold: BoldIcon,
@@ -29,7 +30,8 @@ export const TOOLBAR_ICONS = {
     imageReplace: ImageReplaceIcon,
     add: AddIcon,
     edit: EditIcon,
-    snippet: SnippetIcon
+    snippet: SnippetIcon,
+    remove: TrashIcon
 };
 
 export function ToolbarMenu({children, hide, arrowStyles, ...props}) {
