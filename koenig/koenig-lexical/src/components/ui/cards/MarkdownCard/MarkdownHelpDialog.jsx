@@ -6,10 +6,33 @@ function Th({value}) {
     );
 }
 
+function superSub(value) {
+    switch (value) {
+    case 'Super':
+        return (
+            <span>
+                {value}
+                <sup>text</sup>
+            </span>
+        );
+    case 'Sub':
+        return (
+            <span>
+                {value}
+                <sub>text</sub>
+            </span>
+        );
+    default:
+        return value;
+    }
+}
+
 export function Td({value}) {
     return (
         <td className={`p-2 font-normal ${(value === 'Bold' ? '!font-bold' : (value === 'Emphasize') ? 'italic' : (value === 'Strike-through') ? 'line-through' : (value === 'Link') ? 'cursor-pointer text-green' : '')}`}>
-            <span className={` ${(value === 'Inline code') ? 'rounded-sm border border-grey-300 bg-grey-100 p-[.2rem] font-mono text-xs' : (value === 'Highlight') ? 'bg-[#ff0]' : ''}`}>{value}</span>
+            <span className={` ${(value === 'Inline code') ? 'rounded-sm border border-grey-300 bg-grey-100 p-[.2rem] font-mono text-xs' : (value === 'Highlight') ? 'bg-[#ff0]' : ''}`}>
+                {superSub(value)}
+            </span>
         </td>
     );
 }
@@ -47,6 +70,16 @@ export default function MarkdownHelpDialog(props) {
                             <tr>
                                 <Td value='~~text~~' />
                                 <Td value='Strike-through' />
+                                <Td value='Ctrl/⌘ + Alt + U' />
+                            </tr>
+                            <tr>
+                                <Td value='^text^' />
+                                <Td value='Super' />
+                                <Td value='' />
+                            </tr>
+                            <tr>
+                                <Td value='~text~' />
+                                <Td value='Sub' />
                                 <Td value='' />
                             </tr>
                             <tr>

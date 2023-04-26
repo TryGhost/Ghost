@@ -33,7 +33,7 @@ export default function MarkdownEditor({
     const shortcuts = {
         openImageDialog: `${ctrlOrCmd}-Alt-I`,
         toggleSpellcheck: `${ctrlOrCmd}-Alt-S`,
-        openUnsplashDialog: `${ctrlOrCmd}-Alt-U`
+        openUnsplashDialog: `${ctrlOrCmd}-Alt-O`
     };
 
     // init editor on component mount
@@ -51,7 +51,10 @@ export default function MarkdownEditor({
                 toggleFullScreen: null,
                 togglePreview: null,
                 toggleSideBySide: null,
-                drawImage: null
+                drawImage: null,
+
+                // Enable strikethrough with CMD + Alt + U
+                toggleStrikethrough: `${ctrlOrCmd}-Alt-U`
             },
             hideIcons: getListOfHiddenIcons(),
             // hide status bar
