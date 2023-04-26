@@ -32,6 +32,10 @@ export default class AnnouncementSettingsVisibilityComponent extends Component {
         return this.visibilitySettings.includes(this.visibilityOptions.visitors);
     }
 
+    get isMembersEnabled() {
+        return this.settings.membersEnabled;
+    }
+
     @action
     updateVisibility(event) {
         let updatedVisibilityOptions = [...this.visibilitySettings];
