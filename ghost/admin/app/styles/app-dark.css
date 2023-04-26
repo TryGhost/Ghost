@@ -277,7 +277,7 @@ input:focus,
     background: var(--whitegrey-l2);
 }
 
-.gh-btn-group .gh-btn:first-of-type {
+.gh-btn-group:not(.kg-settings-headerstyle-btn-group) .gh-btn:first-of-type {
     border-right: none !important;
 }
 
