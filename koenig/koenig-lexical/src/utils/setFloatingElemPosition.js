@@ -13,13 +13,7 @@ export function setFloatingElemPosition(
 
     const scrollerElem = anchorElem.parentElement;
 
-    if (targetRect === null || !scrollerElem) {
-        if (options.controlOpacity) {
-            floatingElem.style.opacity = '0';
-        }
-        floatingElem.style.top = '-10000px';
-        floatingElem.style.left = '-10000px';
-
+    if (!targetRect || !scrollerElem || !floatingElem) {
         return;
     }
 

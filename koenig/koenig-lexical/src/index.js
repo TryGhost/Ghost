@@ -14,7 +14,7 @@ import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
 import ExternalControlPlugin from './plugins/ExternalControlPlugin';
 import FilePlugin from './plugins/FilePlugin';
-import FloatingFormatToolbarPlugin from './plugins/FloatingFormatToolbarPlugin';
+import FloatingToolbarPlugin from './plugins/FloatingToolbarPlugin';
 import GalleryPlugin from './plugins/GalleryPlugin';
 import HeaderPlugin from './plugins/HeaderPlugin';
 import HorizontalRulePlugin from './plugins/HorizontalRulePlugin';
@@ -65,7 +65,7 @@ export {
     DragDropReorderPlugin,
     ExternalControlPlugin,
     FilePlugin,
-    FloatingFormatToolbarPlugin,
+    FloatingToolbarPlugin,
     GalleryPlugin,
     HorizontalRulePlugin,
     HtmlOutputPlugin,

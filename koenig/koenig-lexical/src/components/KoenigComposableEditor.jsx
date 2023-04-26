@@ -1,7 +1,7 @@
 import '../styles/index.css';
 import DragDropPastePlugin from '../plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from '../plugins/DragDropReorderPlugin';
-import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
+import FloatingToolbarPlugin from '../plugins/FloatingToolbarPlugin';
 import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import KoenigErrorBoundary from './KoenigErrorBoundary';
@@ -96,7 +96,7 @@ const KoenigComposableEditor = ({
             {!isCollabActive && <HistoryPlugin externalHistoryState={historyState} />} {/* adds undo/redo, in multiplayer that's handled by yjs */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} isNested={isNested} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
-            {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} isSnippetsEnabled={isSnippetsEnabled} />)}
+            {floatingAnchorElem && (<FloatingToolbarPlugin anchorElem={floatingAnchorElem} isSnippetsEnabled={isSnippetsEnabled} />)}
             <DragDropPastePlugin />
             {registerAPI ? <ExternalControlPlugin registerAPI={registerAPI} /> : null}
             {isDragReorderEnabled && <DragDropReorderPlugin containerElem={editorContainerRef} />}
