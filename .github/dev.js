@@ -40,7 +40,7 @@ if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_ADMIN];
 }
 
-if (DASH_DASH_ARGS.includes('portal')) {
+if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'yarn dev',
@@ -51,7 +51,7 @@ if (DASH_DASH_ARGS.includes('portal')) {
     COMMAND_GHOST.env['portal__url'] = 'http://localhost:5368/umd/portal.min.js';
 }
 
-if (DASH_DASH_ARGS.includes('search')) {
+if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'search',
         command: 'yarn dev',
@@ -63,8 +63,11 @@ if (DASH_DASH_ARGS.includes('search')) {
     COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:5370/umd/main.css';
 }
 
-(async () => {
-    if (DASH_DASH_ARGS.includes('stripe')) {
+async function handleStripe() {
+    if (DASH_DASH_ARGS.includes('stripe') || DASH_DASH_ARGS.includes('all')) {
+        if (DASH_DASH_ARGS.includes('offline')) {
+            return;
+        }
         console.log('Fetching Stripe secret token..');
 
         let stripeSecret;
@@ -88,6 +91,10 @@ if (DASH_DASH_ARGS.includes('search')) {
             env: {}
         });
     }
+}
+
+(async () => {
+    await handleStripe();
 
     if (!commands.length) {
         console.log(`No commands provided`);
