@@ -167,7 +167,7 @@ export function HeaderCard({isEditing,
 
     return (
         <>
-            <div className={`not-kg-prose flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[style]} `}
+            <div className={`flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[style]} `}
                 style={backgroundImageSrc && style === 'image' ? {
                     backgroundImage: `url(${backgroundImageSrc})`,
                     backgroundSize: 'cover',
@@ -175,7 +175,7 @@ export function HeaderCard({isEditing,
                     backgroundColor: 'bg-grey-950'
                 } : null}>
 
-                {/* Header */}
+                {/* Heading */}
                 {
                     (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
                         <KoenigNestedEditor
@@ -185,15 +185,15 @@ export function HeaderCard({isEditing,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`kg-header-header-placeholder ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${HEADER_TEXT_COLORS[style]}`}
+                            placeholderClassName={`truncate opacity-50 whitespace-normal tracking-tight text-center w-full leading-tight font-bold ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'text-7xl' : 'text-8xl'} ${HEADER_TEXT_COLORS[style]}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-header-text ${(size === 'small') ? 'kg-header-small text-6xl' : (size === 'medium') ? 'kg-header-medium text-7xl' : 'kg-header-large text-8xl'} ${HEADER_TEXT_COLORS[style]}`}
+                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'} ${HEADER_TEXT_COLORS[style]}`}
                         />
                     )
                 }
 
-                {/* Subheader */}
+                {/* Subheading */}
                 {
                     (isEditing || !!subheader || !isEditorEmpty(subheaderTextEditor)) && (
                         <KoenigNestedEditor
@@ -201,10 +201,10 @@ export function HeaderCard({isEditing,
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`kg-header-subheader-placeholder ${(size === 'small') ? 'text-xl' : (size === 'medium') ? 'text-2xl' : 'text-3xl'} ${HEADER_TEXT_COLORS[style]}`}
+                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal text-center leading-tight font-normal ${(size === 'small') ? 'text-xl' : (size === 'medium') ? 'text-2xl' : 'text-3xl'} ${HEADER_TEXT_COLORS[style]}`}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`kg-header-subheader-text ${(size === 'small') ? 'kg-subheader-small mt-2 text-xl' : (size === 'medium') ? 'kg-subheader-medium mt-3 text-2xl' : 'kg-subheader-large mt-3 text-3xl'} ${HEADER_TEXT_COLORS[style]}`}
+                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_105px)] mt-2' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_124px)] mt-3' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_156px)] mt-3'} ${HEADER_TEXT_COLORS[style]}`}
                         />
                     )
                 }

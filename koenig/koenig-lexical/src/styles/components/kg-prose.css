@@ -836,3 +836,136 @@
         }
     }
 }
+
+.koenig-lexical-header-heading {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+            line-height: 1.25 !important;
+            font-weight: bold;
+            letter-spacing: -0.025em;
+        }
+        :where(
+                    strong
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-weight: 800;
+        }
+    }
+}
+
+.koenig-lexical-header-heading.koenig-lexical-header-small {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-size: 6rem !important;
+        }
+    }
+}
+
+.koenig-lexical-header-heading.koenig-lexical-header-medium {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-size: 7.2rem !important;
+        }
+    }
+}
+
+.koenig-lexical-header-heading.koenig-lexical-header-large {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-size: 9.6rem !important;
+        }
+    }
+}
+
+.koenig-lexical-header-subheading {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+            line-height: 1.25 !important;
+            font-weight: 500;
+            letter-spacing: -0.025em;
+        }
+        :where(
+                    strong
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-weight: 800;
+        }
+    }
+}
+
+.koenig-lexical-header-subheading.koenig-lexical-header-small {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-size: 2rem !important;
+        }
+    }
+}
+
+.koenig-lexical-header-subheading.koenig-lexical-header-medium {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-size: 2.4rem !important;
+        }
+    }
+}
+
+.koenig-lexical-header-subheading.koenig-lexical-header-large {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-size: 3rem !important;
+        }
+    }
+}
+
+/* When the header has a background color of accent, we need to show all links in white */
+.kg-header-accent {
+    --kg-accent-color: #fff;
+}
