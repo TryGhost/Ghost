@@ -965,7 +965,7 @@
     }
 }
 
-/* When the header has a background color of accent, we need to show all links in white */
-.kg-header-accent {
+/* When the header or the callout have a background color of accent, we need to show all links in white */
+.kg-header-accent, .kg-callout-accent {
     --kg-accent-color: #fff;
 }
