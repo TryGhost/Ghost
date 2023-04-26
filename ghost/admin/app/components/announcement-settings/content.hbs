@@ -3,7 +3,7 @@
         <label class="gh-setting-title gh-theme-setting-title" for={{this.selectId}}>
             Announcement
         </label>
-        <div class="gh-announcement-editor">
+        <div class="gh-announcement-editor {{if this.feature.nightShift "dark"}}">
             <KoenigLexicalEditorInput
                 @placeholderText="Highlight breaking news, special offers, or important updates"
                 @html={{this.content}}
