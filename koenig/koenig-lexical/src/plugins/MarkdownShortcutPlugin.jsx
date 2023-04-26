@@ -85,6 +85,18 @@ export const IMAGE = {
     type: 'element'
 };
 
+export const SUBSCRIPT = {
+    format: ['subscript'],
+    tag: '~',
+    type: 'text-format'
+};
+
+export const SUPERSCRIPT = {
+    format: ['superscript'],
+    tag: '^',
+    type: 'text-format'
+};
+
 export const ELEMENT_TRANSFORMERS = [
     HEADING,
     QUOTE,
@@ -95,14 +107,21 @@ export const ELEMENT_TRANSFORMERS = [
     IMAGE
 ];
 
+export const CUSTOM_TEXT_FORMAT_TRANSFORMERS = [
+    SUBSCRIPT,
+    SUPERSCRIPT
+];
+
 export const DEFAULT_TRANSFORMERS = [
     ...ELEMENT_TRANSFORMERS,
     ...TEXT_FORMAT_TRANSFORMERS,
+    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
 export const MINIMAL_TRANSFORMERS = [
     ...TEXT_FORMAT_TRANSFORMERS,
+    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
@@ -110,6 +129,7 @@ export const BASIC_TRANSFORMERS = [
     UNORDERED_LIST,
     ORDERED_LIST,
     ...TEXT_FORMAT_TRANSFORMERS,
+    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
