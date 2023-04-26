@@ -131,6 +131,12 @@ em-emoji-picker {
     fill: var(--grey-700);
 }
 
+/* Toolbar */
+[data-kg-floating-toolbar=true] .fill-white g, 
+[data-kg-floating-toolbar=true] .fill-white path {
+    fill: #fff;
+}
+
 /* tailwind `hidden` class conflicts with ghost styles */
 .kg-cardmenu-card-hover button {
     display: none;
