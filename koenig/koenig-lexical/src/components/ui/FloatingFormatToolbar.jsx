@@ -59,11 +59,6 @@ export function FloatingFormatToolbar({
         setToolbarItemType(null);
     };
 
-    const handleLinkUpdate = () => {
-        setToolbarItemType(toolbarItemTypes.text);
-        toggleVisibility();
-    };
-
     const isSnippetToolbar = toolbarItemTypes.snippet === toolbarItemType;
     const isLinkToolbar = toolbarItemTypes.link === toolbarItemType;
     const isTextToolbar = toolbarItemTypes.text === toolbarItemType;
@@ -92,7 +87,6 @@ export function FloatingFormatToolbar({
                     arrowStyles={arrowStyles}
                     href={href}
                     onClose={handleActionToolbarClose}
-                    onUpdate={handleLinkUpdate}
                 />
             )}
             {isTextToolbar && (

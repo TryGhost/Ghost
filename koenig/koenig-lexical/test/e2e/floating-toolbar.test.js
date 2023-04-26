@@ -220,7 +220,12 @@ describe('Floating format toolbar', async () => {
                 </p>
             `);
 
-            await page.keyboard.press('Shift');
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('ArrowRight');
+            await page.keyboard.press('ArrowRight');
+            await page.keyboard.press('ArrowRight');
+            await page.keyboard.press('ArrowRight');
+            await page.keyboard.up('Shift');
             await page.click(buttonSelector);
             await page.waitForSelector('[data-testid="link-input"]');
             await page.getByTestId('link-input').fill('');

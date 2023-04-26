@@ -1,19 +1,29 @@
 import React from 'react';
+import {$createRangeSelection, $getSelection, $setSelection} from 'lexical';
 import {LinkInput} from './LinkInput.jsx';
 import {TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function LinkActionToolbar({href, onClose, onUpdate, ...props}) {
+export function LinkActionToolbar({href, onClose, ...props}) {
     const [editor] = useLexicalComposerContext();
+
+    const onLinkUpdate = (updatedHref) => {
+        editor.update(() => {
+            editor.dispatchCommand(TOGGLE_LINK_COMMAND, updatedHref || null);
+            // remove selection to avoid format menu popup
+            const selection = $getSelection();
+            const focusNode = selection.focus.getNode();
+            const rangeSelection = $createRangeSelection();
+            rangeSelection.setTextNodeRange(focusNode, 0, focusNode, 0);
+            $setSelection(rangeSelection);
+            onClose();
+        });
+    };
     return (
         <LinkInput
             cancel={onClose}
             href={href}
-            update={(_href) => {
-                editor.dispatchCommand(TOGGLE_LINK_COMMAND, _href || null);
-                onClose?.();
-                onUpdate?.();
-            }}
+            update={onLinkUpdate}
             {...props}
         />
     );
