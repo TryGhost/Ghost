@@ -1,6 +1,5 @@
 import {ElementNode} from 'lexical';
 import {AsideParser} from './AsideParser';
-import {renderAsideToDOM} from './AsideRenderer';
 
 export class AsideNode extends ElementNode {
     static getType() {
@@ -42,11 +41,6 @@ export class AsideNode extends ElementNode {
     static importDOM() {
         const parser = new AsideParser(this);
         return parser.DOMConversionMap;
-    }
-
-    exportDOM(options = {}) {
-        const element = renderAsideToDOM(this, options);
-        return {element};
     }
 
     /* c8 ignore start */

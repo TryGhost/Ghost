@@ -1,4 +1,4 @@
-const {$isAsideNode} = require('../../nodes/AsideNode');
+const {$isAsideNode} = require('@tryghost/kg-default-nodes');
 
 module.exports = {
     export(node, options, exportChildren) {
@@ -6,6 +6,6 @@ module.exports = {
             return null;
         }
 
-        return `<aside>${exportChildren(node)}</aside>`;
+        return `<blockquote class='kg-blockquote-alt'>${exportChildren(node)}</blockquote>`;
     }
 };

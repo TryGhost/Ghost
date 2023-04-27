@@ -10,7 +10,6 @@ const editorNodes = [AsideNode];
 describe('AsideNode', function () {
     let editor;
     let dataset;
-    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -30,12 +29,6 @@ describe('AsideNode', function () {
         editor = createHeadlessEditor({nodes: editorNodes});
 
         dataset = {};
-
-        exportOptions = {
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
-        };
     });
 
     it('matches node with $isAsideNode', editorTest(function () {
@@ -43,21 +36,10 @@ describe('AsideNode', function () {
         $isAsideNode(asideNode).should.be.true;
     }));
 
-    describe('exportDOM', function () {
-        it('creates aside element', editorTest(function () {
-            const asideNode = $createAsideNode();
-            const {element} = asideNode.exportDOM(exportOptions);
-
-            element.outerHTML.should.prettifyTo(html`
-                <aside></aside>
-            `);
-        }));
-    });
-
     describe('importDOM', function () {
         it('parses an aside element', editorTest(function () {
             const dom = (new JSDOM(html`
-                <aside />
+                <blockquote class="kg-blockquote-alt">Hello</blockquote>
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
 
