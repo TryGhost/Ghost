@@ -2,8 +2,8 @@ import React from 'react';
 import {AnnouncementBar} from './components/AnnouncementBar';
 import setupGhostApi from './utils/api';
 
-export function App({apiUrl, apiKey}) {
-    const api = React.useRef(setupGhostApi({apiKey, apiUrl}));
+export function App({apiUrl}) {
+    const api = React.useRef(setupGhostApi({apiUrl}));
     const [siteSettings, setSiteSettings] = React.useState();
 
     React.useEffect(() => {
@@ -11,8 +11,9 @@ export function App({apiUrl, apiKey}) {
             return;
         }
         const getSiteSettings = async () => {
-            const {settingsData} = await api.current.init();
-            setSiteSettings(settingsData.settings);
+            const announcement = await api.current.init();
+
+            setSiteSettings(announcement);
         };
 
         getSiteSettings();
