@@ -14,7 +14,7 @@ export function LinkActionToolbar({href, onClose, ...props}) {
             const selection = $getSelection();
             const focusNode = selection.focus.getNode();
             const rangeSelection = $createRangeSelection();
-            rangeSelection.setTextNodeRange(focusNode, 0, focusNode, 0);
+            rangeSelection.setTextNodeRange(focusNode, focusNode.getTextContentSize(), focusNode, focusNode.getTextContentSize());
             $setSelection(rangeSelection);
             onClose();
         });
