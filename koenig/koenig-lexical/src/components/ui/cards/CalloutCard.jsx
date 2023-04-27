@@ -136,10 +136,10 @@ export function CalloutCard({
                     initialEditor={textEditor}
                     initialEditorState={textEditorInitialState}
                     nodes='minimal'
-                    placeholderClassName={`font-serif text-xl font-normal tracking-wide text-grey-500`}
+                    placeholderClassName={`font-serif text-xl font-normal tracking-wide text-grey-500 opacity-30`}
                     placeholderText={'Callout text...'}
                     singleParagraph={true}
-                    textClassName={`my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal ${CALLOUT_TEXT_COLORS[color]}`}
+                    textClassName={`!my-0 w-full whitespace-normal bg-transparent font-serif text-xl font-normal ${CALLOUT_TEXT_COLORS[color]}`}
                 />
             </div>
             {
