@@ -23,17 +23,17 @@ export function ToggleCard({
                             initialEditor={headerEditor}
                             initialEditorState={headerEditorInitialState}
                             nodes='minimal'
-                            placeholderClassName={'font-sans text-[2.2rem] font-bold leading-snug tracking-tight text-black dark:text-grey-50 opacity-40'}
+                            placeholderClassName={'!font-sans !text-[2.2rem] !font-bold !leading-snug !tracking-tight text-black dark:text-grey-50 opacity-40'}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
                             textClassName={'koenig-lexical-toggle-header whitespace-normal text-black dark:text-grey-50 opacity-100'}
                         />
                     </div>
-                    <div className='z-20 ml-auto mt-[-1px] flex h-8 w-8 shrink-0 items-center justify-center'>
+                    <div className='z-20 ml-auto !mt-[-1px] flex h-8 w-8 shrink-0 items-center justify-center'>
                         <ArrowDownIcon className={'h-4 w-4 stroke-2 text-grey-400 dark:text-grey/30'} />
                     </div>
                 </div>
-                <div className={'mt-2 w-full'}>
+                <div className={'!mt-2 w-full'}>
                     <KoenigNestedEditor
                         initialEditor={contentEditor}
                         initialEditorState={contentEditorInitialState}
