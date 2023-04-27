@@ -194,7 +194,7 @@
     },
     "editor": {
         "url": "https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
-        "version": "0.0"
+        "version": "0.1"
     },
     "tenor": {
         "googleApiKey": null,
