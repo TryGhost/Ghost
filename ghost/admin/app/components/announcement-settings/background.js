@@ -20,7 +20,6 @@ export default class AnnouncementSettingsBackgroundComponent extends Component {
     @action
     setBackground(value) {
         this.settings.announcementBackground = value;
-        this.settings.save();
         this.args.onChange?.();
     }
 }
