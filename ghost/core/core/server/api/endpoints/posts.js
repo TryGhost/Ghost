@@ -15,7 +15,9 @@ const allowedIncludes = [
     'count.clicks',
     'sentiment',
     'count.positive_feedback',
-    'count.negative_feedback'
+    'count.negative_feedback',
+    'post_revisions',
+    'post_revisions.author'
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
@@ -174,6 +176,7 @@ module.exports = {
             'email_segment',
             'newsletter',
             'force_rerender',
+            'save_revision',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'
@@ -205,7 +208,9 @@ module.exports = {
 
     bulkEdit: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'filter'
         ],
@@ -216,8 +221,7 @@ module.exports = {
         validation: {
             data: {
                 action: {
-                    required: true,
-                    values: ['feature', 'unfeature']
+                    required: true
                 }
             },
             options: {
@@ -236,7 +240,9 @@ module.exports = {
 
     bulkDestroy: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'filter'
         ],

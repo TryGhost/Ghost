@@ -5,6 +5,7 @@ const SUPPORTED_LOCALES = [
     'bg',
     'ca',
     'cs',
+    'da',
     'de',
     'en',
     'eo',
@@ -16,10 +17,13 @@ const SUPPORTED_LOCALES = [
     'nl',
     'pl',
     'pt-br',
+    'si',
     'sl',
     'sv',
     'tr',
-    'vi'
+    'uk',
+    'vi',
+    'zh'
 ];
 
 /**

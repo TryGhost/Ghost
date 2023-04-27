@@ -87,6 +87,41 @@ function getSearchHelper(frontendKey) {
     return helper;
 }
 
+function getAnnouncementBarHelper(data) {
+    const preview = data?.site?._preview;
+
+    if (!settingsCache.get('announcement_content') && !preview) {
+        return '';
+    }
+
+    const {scriptUrl} = getFrontendAppConfig('announcementBar');
+    const siteUrl = urlUtils.getSiteUrl();
+    const announcementUrl = new URL('members/api/announcement/', siteUrl);
+    const attrs = {
+        'announcement-bar': siteUrl,
+        'api-url': announcementUrl
+    };
+
+    if (preview) {
+        const searchParam = new URLSearchParams(preview);
+        const announcement = searchParam.get('announcement');
+        const announcementBackground = searchParam.has('announcement_bg') ? searchParam.get('announcement_bg') : '';
+        const announcementVisibility = searchParam.has('announcement_vis');
+
+        if (!announcement || !announcementVisibility) {
+            return;
+        }
+        attrs.announcement = escapeExpression(announcement);
+        attrs['announcement-background'] = escapeExpression(announcementBackground);
+        attrs.preview = true;
+    }
+
+    const dataAttrs = getDataAttributes(attrs);
+    let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+
+    return helper;
+}
+
 function getWebmentionDiscoveryLink() {
     try {
         const siteUrl = urlUtils.getSiteUrl();
@@ -230,6 +265,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey));
             head.push(getSearchHelper(frontendKey));
+            head.push(getAnnouncementBarHelper(options.data));
             try {
                 head.push(getWebmentionDiscoveryLink());
             } catch (err) {

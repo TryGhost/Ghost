@@ -50,7 +50,6 @@
                     <section class="flex items-center pe-auto h-100">
                         {{#unless this.post.isNew}}
                             <Editor::PublishButtons @publishManagement={{publishManagement}} />
-
                             {{#unless this.showSettingsMenu}}
                                 <div class="settings-menu-toggle-spacer"></div>
                             {{/unless}}
@@ -77,10 +76,6 @@
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
                 @onEditorCreated={{this.setKoenigEditor}}
                 @onWordCountChange={{this.updateWordCount}}
-                @snippets={{this.snippets}}
-                @saveSnippet={{if this.canManageSnippets this.saveSnippet}}
-                @updateSnippet={{if this.canManageSnippets this.confirmUpdateSnippet}}
-                @deleteSnippet={{if this.canManageSnippets this.confirmDeleteSnippet}}
                 @featureImage={{this.post.featureImage}}
                 @featureImageAlt={{this.post.featureImageAlt}}
                 @featureImageCaption={{this.post.featureImageCaption}}
@@ -90,8 +85,12 @@
                 @clearFeatureImage={{this.clearFeatureImage}}
                 @cardOptions={{hash
                     post=this.post
+                    snippets=this.snippets
+                    deleteSnippet=(if this.canManageSnippets this.confirmDeleteSnippet)
+                    createSnippet=(if this.canManageSnippets this.createSnippet)
                 }}
                 @postType={{this.post.displayName}}
+                @registerAPI={{this.registerEditorAPI}}
             />
 
             <div class="gh-editor-wordcount-container">
@@ -110,6 +109,8 @@
                 @deletePost={{this.openDeletePostModal}}
                 @updateSlugTask={{this.updateSlugTask}}
                 @savePostTask={{this.savePostTask}}
+                @editorAPI={{this.editorAPI}}
+                @toggleSettingsMenu={{this.toggleSettingsMenu}}
             />
         {{/if}}
     </div>
@@ -126,6 +127,15 @@
         <GhFullscreenModal @modal="re-authenticate"
             @close={{this.toggleReAuthenticateModal}}
             @modifier="action wide" />
+    {{/if}}
+    {{#if (feature 'postHistory')}}
+        {{#if this.showPostHistory}}
+            <GhFullscreenModal
+                @modal="post-history"
+                @model={{this.post}}
+                @close={{this.closePostHistory}}
+                @modifier="total-overlay post-history" />
+        {{/if}}
     {{/if}}
 {{/if}}
 

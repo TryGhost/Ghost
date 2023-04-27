@@ -39,7 +39,11 @@ const ALPHA_FEATURES = [
     'lexicalMultiplayer',
     'websockets',
     'stripeAutomaticTax',
-    'makingItRain'
+    'makingItRain',
+    'postHistory',
+    'postDiffing',
+    'announcementBar',
+    'imageEditor'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

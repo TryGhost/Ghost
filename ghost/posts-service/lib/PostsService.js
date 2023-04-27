@@ -8,6 +8,7 @@ const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
     invalidVisibility: 'Invalid visibility value.',
     invalidTiers: 'Invalid tiers value.',
+    invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action'
 };
@@ -69,7 +70,7 @@ class PostsService {
 
     async bulkEdit(data, options) {
         if (data.action === 'unpublish') {
-            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:[published,sent]', options.filter)});
+            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter)});
         }
         if (data.action === 'feature') {
             return await this.#updatePosts({featured: true}, {filter: options.filter});
@@ -94,9 +95,78 @@ class PostsService {
             }
             return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter});
         }
+        if (data.action === 'addTag') {
+            if (!Array.isArray(data.meta.tags)) {
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.invalidTags)
+                });
+            }
+            for (const tag of data.meta.tags) {
+                if (typeof tag !== 'object') {
+                    throw new errors.IncorrectUsageError({
+                        message: tpl(messages.invalidTags)
+                    });
+                }
+                if (!tag.id && !tag.name) {
+                    throw new errors.IncorrectUsageError({
+                        message: tpl(messages.invalidTags)
+                    });
+                }
+            }
+            return await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter});
+        }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
         });
+    }
+
+    /**
+     * @param {object} data
+     * @param {string[]} data.tags - Array of tag ids to add to the post
+     * @param {object} options
+     * @param {string} options.filter - An NQL Filter
+     */
+    async #bulkAddTags(data, options) {
+        if (!options.transacting) {
+            return await this.models.Post.transaction(async (transacting) => {
+                return await this.#bulkAddTags(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        // Create tags that don't exist
+        for (const tag of data.tags) {
+            if (!tag.id) {
+                const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting});
+                tag.id = createdTag.id;
+            }
+        }
+
+        const postRows = await this.models.Post.getFilteredCollectionQuery({
+            filter: options.filter,
+            status: 'all',
+            transacting: options.transacting
+        }).select('posts.id');
+
+        const postTags = data.tags.reduce((pt, tag) => {
+            return pt.concat(postRows.map((post) => {
+                return {
+                    id: (new ObjectId()).toHexString(),
+                    post_id: post.id,
+                    tag_id: tag.id,
+                    sort_order: 0
+                };
+            }));
+        }, []);
+
+        await options.transacting('posts_tags').insert(postTags);
+
+        return {
+            successful: postRows.length,
+            unsuccessful: 0
+        };
     }
 
     async bulkDestroy(options) {

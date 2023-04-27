@@ -110,6 +110,7 @@ export default class GhKoenigEditorReactComponent extends Component {
     @action
     registerEditorAPI(API) {
         this.editorAPI = API;
+        this.args.registerAPI(API);
     }
 
     // @action

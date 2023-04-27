@@ -78,7 +78,6 @@
                 <p class="gh-content-entry-status">
                     {{#if @post.isScheduled}}
                         <span class="scheduled">
-                            <span class="status-dot"></span>
                             Scheduled
                             {{#if this.isHovered}}
                                 <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>
@@ -95,7 +94,6 @@
 
                     {{#if @post.isDraft}}
                         <span class="draft">
-                            <span class="status-dot"></span>
                             Draft
                         </span>
                     {{/if}}

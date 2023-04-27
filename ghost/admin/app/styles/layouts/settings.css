@@ -1770,6 +1770,14 @@ p.theme-validation-details {
     letter-spacing: .2px;
 }
 
+.gh-nav-header.no-accordion {
+    padding-bottom: 32px;
+}
+
+.gh-nav-header.no-accordion + .gh-nav-body .gh-nav-top:first-of-type .gh-nav-design-settings {
+    margin-top: 4px;
+}
+
 .gh-nav-menu-back-button {
     display: flex;
     align-items: center;
@@ -2060,6 +2068,18 @@ p.theme-validation-details {
     width: 34px !important;
     height: 22px !important;
     margin: 0;
+}
+
+.gh-nav-design .for-checkbox .input-toggle-component {
+    background-color: var(--white);
+}
+
+.gh-nav-design .kg-settings-panel-control-input {
+    margin-right: -4px;
+}
+
+.gh-nav-design .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-light {
+    border-color: color-mod(var(--lightgrey) l(-5%) s(-10%));
 }
 
 .gh-theme-setting-title {
@@ -3683,4 +3703,41 @@ p.theme-validation-details {
     margin-top: 3px;
     margin-left: 8px;
     background: var(--whitegrey);
+}
+
+/* Announcement bar */
+
+.gh-announcement-editor {
+    min-height: 120px;
+    overflow: auto;
+    padding: 6px 12px 6px 12px;
+    border: 1px solid var(--whitegrey-d1);
+    background: var(--white);
+    border-radius: 4px;
+    word-break: break-word;
+}
+
+.gh-announcement-editor.dark {
+    background: #15171A;
+}
+
+.gh-announcement-editor .koenig-lexical *,
+.gh-announcement-editor .koenig-lexical-editor-input-placeholder {
+    font-family: var(--font-family) !important;
+    font-size: 1.4rem !important;
+    line-height: 1.5em !important;
+}
+
+.gh-announcement-editor .koenig-lexical p,
+.gh-announcement-editor .koenig-lexical .kg-prose {
+    height: 108px;
+    color: var(--darkgrey);
+    font-size: 1.4rem !important;
+    line-height: 1.5em !important;
+}
+
+.gh-announcement-editor .koenig-lexical a {
+    display: inline;
+    padding: 0;
+    height: auto;
 }

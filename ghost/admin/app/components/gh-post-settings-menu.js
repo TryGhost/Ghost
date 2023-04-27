@@ -7,6 +7,7 @@ import {alias, or} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
+import {tracked} from '@glimmer/tracking';
 
 @classic
 @tagName('')
@@ -22,6 +23,8 @@ export default class GhPostSettingsMenu extends Component {
     @service ui;
 
     @inject config;
+
+    @tracked showPostHistory = false;
 
     post = null;
     isViewingSubview = false;
@@ -187,6 +190,16 @@ export default class GhPostSettingsMenu extends Component {
             this.showError(error);
             this.post.rollbackAttributes();
         });
+    }
+
+    @action
+    openPostHistory() {
+        this.showPostHistory = true;
+    }
+
+    @action
+    closePostHistory() {
+        this.showPostHistory = false;
     }
 
     /**

@@ -5,3 +5,4 @@ env:
 jobs:
   canary:
     uses: tryghost/actions/.github/workflows/canary.yml@main
+    secrets: inherit
