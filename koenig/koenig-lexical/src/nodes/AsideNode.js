@@ -19,7 +19,7 @@ export class AsideNode extends BaseAsideNode {
         const newBlock = $createParagraphNode();
         const direction = this.getDirection();
         newBlock.setDirection(direction);
-        this.insertNewAfter(newBlock);
+        this.insertAfter(newBlock);
         return newBlock;
     }
 
