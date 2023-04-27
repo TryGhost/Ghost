@@ -255,6 +255,30 @@ describe('Posts Bulk API', function () {
                 assert(tags.find(t => t.id === newTagModel.id), `Expect post ${post.id} to have new tag ${newTagModel.id}`);
             }
         });
+
+        it('Can unpublish posts', async function () {
+            const filter = 'status:[published]';
+            const changedPosts = await models.Post.findPage({filter, limit: 1, status: 'all'});
+            const amount = changedPosts.meta.pagination.total;
+
+            assert(amount > 0, 'Expect at least one post to be affected for this test to work');
+
+            const response = await agent
+                .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                .body({
+                    bulk: {
+                        action: 'unpublish'
+                    }
+                })
+                .expectStatus(200)
+                .matchBodySnapshot();
+
+            assert.equal(response.body.bulk.meta.stats.successful, amount, `Expect all matching posts (${amount}) to be unpublished, got ${response.body.bulk.meta.stats.successful} instead`);
+
+            // Fetch all posts and check if they are unpublished
+            const posts = await models.Post.findAll({filter, status: 'all'});
+            assert.equal(posts.length, 0, `Expect all matching posts (${amount}) to be unpublished`);
+        });
     });
 
     describe('Delete', function () {
