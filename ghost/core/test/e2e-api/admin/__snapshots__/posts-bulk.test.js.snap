@@ -113,3 +113,18 @@ Object {
   },
 }
 `;
+
+exports[`Posts Bulk API Edit Can unpublish posts 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 11,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
