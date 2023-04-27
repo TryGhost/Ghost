@@ -163,7 +163,10 @@ class PostsService {
 
         await options.transacting('posts_tags').insert(postTags);
 
-        return true;
+        return {
+            successful: postRows.length,
+            unsuccessful: 0
+        };
     }
 
     /**

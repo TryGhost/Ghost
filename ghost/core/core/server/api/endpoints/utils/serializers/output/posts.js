@@ -56,6 +56,16 @@ module.exports = {
     },
 
     bulkDestroy(bulkActionResult, _apiConfig, frame) {
-        frame.response = bulkActionResult;
+        frame.response = {
+            bulk: {
+                meta: {
+                    stats: {
+                        successful: bulkActionResult.successful,
+                        unsuccessful: bulkActionResult.unsuccessful
+                    },
+                    errors: bulkActionResult.errors
+                }
+            }
+        };
     }
 };
