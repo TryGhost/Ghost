@@ -193,7 +193,7 @@
         "version": "0.12"
     },
     "editor": {
-        "url": "https://unpkg.com/@tryghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
+        "url": "https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
         "version": "0.0"
     },
     "tenor": {
