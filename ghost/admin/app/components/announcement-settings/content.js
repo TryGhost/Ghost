@@ -13,6 +13,5 @@ export default class AnnouncementSettingsContentComponent extends Component {
     @action
     setContent(html) {
         this.settings.announcementContent = html;
-        this.settings.save();
     }
 }
