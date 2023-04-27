@@ -87,17 +87,19 @@ function getSearchHelper(frontendKey) {
     return helper;
 }
 
-function getAnnouncementBarHelper(frontendKey) {
+function getAnnouncementBarHelper() {
     if (!settingsCache.get('announcement_content')) {
         return '';
     }
-    const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
+
     const {scriptUrl} = getFrontendAppConfig('announcementBar');
+    const siteUrl = urlUtils.getSiteUrl();
+    const announcementUrl = new URL('members/api/announcement/', siteUrl);
     const attrs = {
-        key: frontendKey,
-        'announcement-bar': adminUrl,
-        api: urlUtils.urlFor('api', {type: 'content'}, true)
+        'announcement-bar': siteUrl,
+        'api-url': announcementUrl
     };
+
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
@@ -247,7 +249,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey));
             head.push(getSearchHelper(frontendKey));
-            head.push(getAnnouncementBarHelper(frontendKey));
+            head.push(getAnnouncementBarHelper());
             try {
                 head.push(getWebmentionDiscoveryLink());
             } catch (err) {
