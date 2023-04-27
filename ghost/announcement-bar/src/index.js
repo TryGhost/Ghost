@@ -22,9 +22,20 @@ function getSiteData() {
     const scriptTag = document.querySelector('script[data-announcement-bar]');
     if (scriptTag) {
         const apiUrl = scriptTag.dataset.apiUrl;
-        return {apiUrl};
+        return {apiUrl, previewData: getPreviewData(scriptTag)};
     }
     return {};
+}
+
+function getPreviewData(scriptTag) {
+    if (scriptTag.dataset.preview) {
+        const announcement = scriptTag.dataset.announcement;
+        const announcementBackground = scriptTag.dataset.announcementBackground;
+
+        return {announcement, announcement_background: announcementBackground};
+    }
+
+    return null;
 }
 
 function setup() {
@@ -32,12 +43,13 @@ function setup() {
 }
 
 function init() {
-    const {apiUrl} = getSiteData();
+    const {apiUrl, previewData} = getSiteData();
     setup();
     ReactDOM.render(
         <React.StrictMode>
             <App
                 apiUrl={apiUrl}
+                previewData={previewData}
             />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)

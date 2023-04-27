@@ -222,6 +222,14 @@ export default class ThemeManagementService extends Service {
         params.append('logo', this.settings.logo);
         params.append('cover', this.settings.coverImage);
 
+        if (this.settings.announcementContent) {
+            params.append('announcement', this.settings.announcementContent);
+        }
+        params.append('announcement_bg', this.settings.announcementBackground);
+        if (this.settings.announcementVisibility.length) {
+            params.append('announcement_vis', this.settings.announcementVisibility);
+        }
+
         params.append('custom', JSON.stringify(this.customThemeSettings.keyValueObject));
 
         return params.toString();

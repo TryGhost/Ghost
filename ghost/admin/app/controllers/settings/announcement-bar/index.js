@@ -42,8 +42,7 @@ export default class SettingsAnnouncementBarIndexController extends Controller {
             }
 
             yield Promise.all([
-                this.settings.save(),
-                this.customThemeSettings.save()
+                this.settings.save()
             ]);
 
             // ensure task button switches to success state
