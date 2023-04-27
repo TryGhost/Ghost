@@ -1,11 +1,4 @@
-function setupGhostApi({apiUrl, apiKey}) {
-    function contentEndpointFor({resource, keys, params = ''}) {
-        if (apiUrl && apiKey) {
-            return `${apiUrl.replace(/\/$/, '')}/${resource}/?key=${apiKey}&keys=${keys.join(',')}${params}`;
-        }
-        return '';
-    }
-
+function setupGhostApi({apiUrl}) {
     function makeRequest({url, method = 'GET', headers = {}, credentials = undefined, body = undefined}) {
         const options = {
             method,
@@ -17,12 +10,9 @@ function setupGhostApi({apiUrl, apiKey}) {
     }
     const api = {};
 
-    api.site = {
-        settings() {
-            const url = contentEndpointFor({
-                resource: 'settings',
-                keys: ['announcement', 'announcement_background']
-            });
+    api.announcementSettings = {
+        browse() {
+            const url = apiUrl;
             return makeRequest({
                 url,
                 method: 'GET',
@@ -40,11 +30,8 @@ function setupGhostApi({apiUrl, apiKey}) {
     };
 
     api.init = async () => {
-        let [settingsData] = await Promise.all([
-            api.site.settings()
-        ]);
-
-        return {settingsData};
+        let {announcement} = await api.announcementSettings.browse();
+        return announcement[0];
     };
 
     return api;

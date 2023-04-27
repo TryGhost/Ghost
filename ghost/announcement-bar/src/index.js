@@ -21,10 +21,8 @@ function getSiteData() {
      */
     const scriptTag = document.querySelector('script[data-announcement-bar]');
     if (scriptTag) {
-        const adminUrl = scriptTag.dataset.announcementBar;
-        const apiKey = scriptTag.dataset.key;
-        const apiUrl = scriptTag.dataset.api;
-        return {adminUrl, apiKey, apiUrl};
+        const apiUrl = scriptTag.dataset.apiUrl;
+        return {apiUrl};
     }
     return {};
 }
@@ -34,14 +32,11 @@ function setup() {
 }
 
 function init() {
-    const {adminUrl, apiKey, apiUrl} = getSiteData();
-    const adminBaseUrl = (adminUrl || window.location.origin)?.replace(/\/+$/, '');
+    const {apiUrl} = getSiteData();
     setup();
     ReactDOM.render(
         <React.StrictMode>
             <App
-                adminUrl={adminBaseUrl}
-                apiKey={apiKey}
                 apiUrl={apiUrl}
             />
         </React.StrictMode>,
