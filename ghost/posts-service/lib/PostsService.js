@@ -169,33 +169,6 @@ class PostsService {
         };
     }
 
-    /**
-     * @param {object} data
-     * @param {string[]} data.tags - Array of tag ids to add to the post
-     * @param {object} options
-     * @param {string} options.filter - An NQL Filter
-     */
-    async #bulkRemoveTags(data, options) {
-        if (!options.transacting) {
-            return await this.models.Post.transaction(async (transacting) => {
-                return await this.#bulkRemoveTags(data, {
-                    ...options,
-                    transacting
-                });
-            });
-        }
-
-        const postRows = await this.models.Post.getFilteredCollectionQuery({
-            filter: options.filter,
-            status: 'all',
-            transacting: options.transacting
-        }).select('posts.id');
-
-        await options.transacting('posts_tags').whereIn('post_id', postRows.map(post => post.id)).whereIn('tag_id', data.tags).del();
-
-        return true;
-    }
-
     async bulkDestroy(options) {
         if (!options.transacting) {
             return await this.models.Post.transaction(async (transacting) => {
