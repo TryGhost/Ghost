@@ -183,14 +183,18 @@
         "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
         "version": "1.1"
     },
+    "announcementBar": {
+        "url": "https://cdn.jsdelivr.net/ghost/announcement-bar@~{version}/umd/announcement-bar.min.js",
+        "version": "1.1"
+    },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
         "styles": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/main.css",
         "version": "0.12"
     },
     "editor": {
-        "url": "https://unpkg.com/@tryghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
-        "version": "0.0"
+        "url": "https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
+        "version": "0.1"
     },
     "tenor": {
         "googleApiKey": null,

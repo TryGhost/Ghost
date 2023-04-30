@@ -19,6 +19,8 @@ const urlUtils = require('../../shared/url-utils');
 const {Tag} = require('./tag');
 const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
+const PostRevisions = require('@tryghost/post-revisions');
+const labs = require('../../shared/labs');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -35,6 +37,7 @@ const messages = {
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
 const POST_REVISIONS_COUNT = 10;
+const POST_REVISIONS_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
 
 let Post;
@@ -340,6 +343,11 @@ Post = ghostBookshelf.Model.extend({
             posts_meta: {
                 tableName: 'posts_meta',
                 type: 'oneToOne',
+                joinFrom: 'post_id'
+            },
+            post_revisions: {
+                tableName: 'post_revisions',
+                type: 'oneToMany',
                 joinFrom: 'post_id'
             }
         };
@@ -862,37 +870,77 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        // CASE: Handle post backups/revisions. This is a pure database feature.
-        if (model.hasChanged('lexical') && !model.get('mobiledoc') && !options.importing && !options.migrating) {
-            ops.push(function updateRevisions() {
-                return ghostBookshelf.model('PostRevision')
-                    .findAll(Object.assign({
-                        filter: `post_id:${model.id}`,
-                        columns: ['id']
-                    }, _.pick(options, 'transacting')))
-                    .then((revisions) => {
-                        // Store previous + latest lexical content
-                        if (!revisions.length && options.method !== 'insert') {
-                            model.set('post_revisions', [{
-                                post_id: model.id,
-                                lexical: model.previous('lexical'),
-                                created_at_ts: Date.now() - 1
-                            }, {
-                                post_id: model.id,
-                                lexical: model.get('lexical'),
-                                created_at_ts: Date.now()
-                            }]);
-                        } else {
-                            const revisionsJSON = revisions.toJSON().slice(0, POST_REVISIONS_COUNT - 1);
+        if (!labs.isSet('postHistory')) {
+            if (model.hasChanged('lexical') && !model.get('mobiledoc') && !options.importing && !options.migrating) {
+                ops.push(function updateRevisions() {
+                    return ghostBookshelf.model('PostRevision')
+                        .findAll(Object.assign({
+                            filter: `post_id:${model.id}`,
+                            columns: ['id']
+                        }, _.pick(options, 'transacting')))
+                        .then((revisions) => {
+                            // Store previous + latest lexical content
+                            if (!revisions.length && options.method !== 'insert') {
+                                model.set('post_revisions', [{
+                                    post_id: model.id,
+                                    lexical: model.previous('lexical'),
+                                    created_at_ts: Date.now() - 1
+                                }, {
+                                    post_id: model.id,
+                                    lexical: model.get('lexical'),
+                                    created_at_ts: Date.now()
+                                }]);
+                            } else {
+                                const revisionsJSON = revisions.toJSON().slice(0, POST_REVISIONS_COUNT - 1);
 
-                            model.set('post_revisions', revisionsJSON.concat([{
-                                post_id: model.id,
-                                lexical: model.get('lexical'),
-                                created_at_ts: Date.now()
-                            }]));
-                        }
-                    });
-            });
+                                model.set('post_revisions', revisionsJSON.concat([{
+                                    post_id: model.id,
+                                    lexical: model.get('lexical'),
+                                    created_at_ts: Date.now()
+                                }]));
+                            }
+                        });
+                });
+            }
+        } else {
+            if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
+                const postRevisions = new PostRevisions({
+                    config: {
+                        max_revisions: POST_REVISIONS_COUNT,
+                        revision_interval_ms: POST_REVISIONS_INTERVAL_MS
+                    }
+                });
+                const authorId = this.contextUser(options);
+                ops.push(async function updateRevisions() {
+                    const revisionModels = await ghostBookshelf.model('PostRevision')
+                        .findAll(Object.assign({
+                            filter: `post_id:${model.id}`,
+                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts']
+                        }, _.pick(options, 'transacting')));
+
+                    const revisions = revisionModels.toJSON();
+
+                    const current = {
+                        id: model.id,
+                        lexical: model.get('lexical'),
+                        html: model.get('html'),
+                        author_id: authorId,
+                        feature_image: model.get('feature_image'),
+                        feature_image_alt: model.get('posts_meta')?.feature_image_alt,
+                        feature_image_caption: model.get('posts_meta')?.feature_image_caption,
+                        title: model.get('title'),
+                        post_status: model.get('status')
+                    };
+
+                    // This can be refactored once we have the status stored in each revision
+                    const revisionOptions = {
+                        forceRevision: options.save_revision,
+                        isPublished: newStatus === 'published'
+                    };
+                    const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
+                    model.set('post_revisions', newRevisions);
+                });
+            }
         }
 
         if (this.get('tiers')) {
@@ -1004,9 +1052,8 @@ Post = ghostBookshelf.Model.extend({
 
         attrs = this.formatsToJSON(attrs, options);
 
-        // CASE: never expose the revisions
+        // CASE: never expose the mobiledoc revisions
         delete attrs.mobiledoc_revisions;
-        delete attrs.post_revisions;
 
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
@@ -1128,7 +1175,7 @@ Post = ghostBookshelf.Model.extend({
             findPage: ['status'],
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision']
         };
 
         // The post model additionally supports having a formats option
@@ -1151,7 +1198,7 @@ Post = ghostBookshelf.Model.extend({
      */
     defaultRelations: function defaultRelations(methodName, options) {
         if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
-            options.withRelated = _.union(['authors', 'tags'], options.withRelated || []);
+            options.withRelated = _.union(['authors', 'tags', 'post_revisions', 'post_revisions.author'], options.withRelated || []);
         }
 
         const META_ATTRIBUTES = _.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id');

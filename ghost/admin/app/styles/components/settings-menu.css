@@ -46,7 +46,7 @@
 .settings-menu-container {
     z-index: 999;
     height: 100vh;
-    min-width: 380px;
+    min-width: 420px;
     overflow-x: visible;
     overflow-y: auto;
     border-left: 1px solid var(--whitegrey-d1);
@@ -82,7 +82,7 @@
     right: 0;
     bottom: 0;
     width: 100%;
-    max-width: 380px;
+    max-width: 420px;
     overflow: auto;
     background-color: var(--white);
     opacity: 1;
@@ -193,7 +193,11 @@
 }
 
 .settings-menu-content {
-    padding: 92px 24px 33px;
+    padding: 92px 0 0;
+}
+
+.gh-post-settings {
+    padding: 0 24px;
 }
 
 @media (max-width: 1024px) {
@@ -262,7 +266,7 @@
 }
 
 .settings-menu-content .nav-list {
-    margin-top: 3rem;
+    margin: 0;
 }
 
 .settings-menu-content .word-count {
@@ -277,28 +281,84 @@
     white-space: nowrap;
 }
 
+.settings-menu-post-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3.2rem;
+    padding: .4rem 0;
+}
+
+.settings-menu-content .for-checkbox .input-toggle-component {
+    margin-right: .8rem;
+}
+
+.settings-menu-content .for-checkbox {
+    margin: 0;
+    width: initial;
+}
+
+.settings-menu-content .for-checkbox label {
+    margin: 0;
+    padding: 0;
+}
+
+.settings-menu-content .for-checkbox label p {
+    margin: 0;
+    color: var(--black);
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+li.nav-list-item .switch {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    width: 100% !important;
+    padding: 2rem 2.4rem;
+}
+
+li.nav-list-item .for-switch.x-small label {
+    width: initial;
+    height: initial !important;
+}
+
+.settings-menu-content .gh-toggle-featured {
+    position: relative;
+    width: 34px;
+    height: 20px;
+}
+
 .settings-menu-delete-button {
-    background: transparent;
-    box-shadow: none;
+    margin: 3.2rem 2.4rem 2.4rem;
+}
+
+.settings-menu-delete-button button,
+.settings-menu-delete-button button:hover,
+.settings-menu-delete-button button:active,
+.settings-menu-delete-button button:focus {
+    border: 1px solid var(--red);
+}
+
+.settings-menu-delete-button button span {
+    height: 40px;
+    line-height: 40px;
     color: var(--red);
-    border: none;
 }
 
-.settings-menu-delete-button:hover {
-    box-shadow: none;
-    background: none;
-    color: color-mod(var(--red) lightness(-10%));
-}
-
-.settings-menu-delete-button span {
-    font-size: inherit;
-    padding: 6px 0;
+.settings-menu-delete-button button:hover span {
+    color: var(--red-d1);
 }
 
 .settings-menu-delete-button svg {
     width: 1.6rem;
     height: 1.6rem;
-    margin-right: .8rem;
+    margin: 0 .8rem 2px 0;
+    color: var(--red);
+}
+
+.settings-menu-delete-button button:hover svg {
+    color: var(--red-d1);
 }
 
 .post-setting-custom-excerpt {

@@ -566,3 +566,15 @@ add|ember-template-lint|no-invalid-interactive|1|103|1|103|f5a46b2538fbf79a40f26
 add|ember-template-lint|no-invalid-interactive|5|53|5|53|9647ef6afba919b2af04fe551b0fdf0fb63be849|1680652800000|1691020800000|1696204800000|app/components/gh-context-menu.hbs
 remove|ember-template-lint|no-invalid-interactive|1|103|1|103|f5a46b2538fbf79a40f2683ff1151ca60e0fa0ca|1680652800000|1691020800000|1696204800000|app/components/gh-context-menu.hbs
 add|ember-template-lint|no-invalid-interactive|1|103|1|103|534029ab0ba1b74eff4a2f31c8b4dd9f1460316a|1681430400000|1691798400000|1696982400000|app/components/gh-context-menu.hbs
+add|ember-template-lint|no-action|7|49|7|49|141d456b03124abca146e58e4ae15825fdd040bb|1681689600000|1692057600000|1697241600000|app/components/modal-post-history.hbs
+add|ember-template-lint|no-invalid-interactive|3|4|3|4|8e05ced79d8f5f5e13cd43033670b3b1e14db3ab|1681776000000|1692144000000|1697328000000|app/components/gh-editor-feature-image.hbs
+remove|ember-template-lint|no-invalid-interactive|3|4|3|4|66accf6cbc192fd9273063ef67798572309ff1bb|1675296000000|1685660400000|1690844400000|app/components/gh-editor-feature-image.hbs
+add|ember-template-lint|link-href-attributes|4|8|4|8|2078c6e43d1e5548ae745b7ac8cb736f7d2aaf68|1681776000000|1692144000000|1697328000000|app/components/gh-image-uploader-with-preview.hbs
+add|ember-template-lint|no-invalid-interactive|4|60|4|60|2078c6e43d1e5548ae745b7ac8cb736f7d2aaf68|1681776000000|1692144000000|1697328000000|app/components/gh-image-uploader-with-preview.hbs
+remove|ember-template-lint|link-href-attributes|4|8|4|8|a9119f612d27ee1fc92e9bb2c77b6fd30cab622a|1675296000000|1685660400000|1690844400000|app/components/gh-image-uploader-with-preview.hbs
+remove|ember-template-lint|no-invalid-interactive|4|47|4|47|a9119f612d27ee1fc92e9bb2c77b6fd30cab622a|1675296000000|1685660400000|1690844400000|app/components/gh-image-uploader-with-preview.hbs
+add|ember-template-lint|no-action|21|127|21|127|7233183d00299a45a813392b99c8442210cdaeb3|1681862400000|1692230400000|1697414400000|app/components/modal-post-history.hbs
+add|ember-template-lint|no-action|25|125|25|125|ba0f8b6ba2697f1b071200d1a3dae9c34fcb2882|1681862400000|1692230400000|1697414400000|app/components/modal-post-history.hbs
+add|ember-template-lint|no-action|48|46|48|46|2f3118270fbb1ff6e5da6b0d482ccd21e69df3b5|1681862400000|1692230400000|1697414400000|app/components/modal-post-history.hbs
+add|ember-template-lint|require-valid-alt-text|13|20|13|20|41dff435a7aba8088be689c6d9b1e76bef081d17|1682035200000|1692403200000|1697587200000|app/components/modal-post-history.hbs
+add|ember-template-lint|require-valid-alt-text|20|20|20|20|bc0bb4f51567cea7289bfcb30d02932f0f57d0d9|1682035200000|1692403200000|1697587200000|app/components/modal-post-history.hbs

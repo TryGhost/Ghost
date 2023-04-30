@@ -93,9 +93,10 @@ export default class LimitsService extends Service {
     }
 
     async getMembersCount() {
-        const counts = await this.membersStats.fetchCounts();
+        const members = await this.store.query('member', {limit: 1});
+        const total = members.meta.pagination.total;
 
-        return counts.total;
+        return total;
     }
 
     async getNewslettersCount() {

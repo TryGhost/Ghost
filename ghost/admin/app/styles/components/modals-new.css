@@ -255,7 +255,7 @@
 .modal-footer {
     display: flex;
     justify-content: flex-end;
-    margin-top: 20px;
+    margin-top: 3.2rem;
 }
 
 .modal-footer-spread {

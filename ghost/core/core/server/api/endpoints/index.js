@@ -77,6 +77,10 @@ module.exports = {
         return apiFramework.pipeline(require('./settings'), localUtils);
     },
 
+    get announcements() {
+        return apiFramework.pipeline(require('./announcements'), localUtils);
+    },
+
     get membersStripeConnect() {
         return apiFramework.pipeline(require('./members-stripe-connect'), localUtils);
     },
@@ -239,5 +243,5 @@ module.exports = {
 
     get feedbackMembers() {
         return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
-    }   
+    }
 };

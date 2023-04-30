@@ -56,6 +56,7 @@ Router.map(function () {
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.history', {path: '/settings/history'});
     this.route('settings.analytics', {path: '/settings/analytics'});
+    this.route('settings.announcement-bar', {path: '/settings/announcement-bar'}, function () {});
 
     // testing websockets
     this.route('websockets');
@@ -103,6 +104,7 @@ Router.map(function () {
     this.route('settings.integrations.slack', {path: '/settings/integrations/slack'});
     this.route('settings.integrations.amp', {path: '/settings/integrations/amp'});
     this.route('settings.integrations.firstpromoter', {path: '/settings/integrations/firstpromoter'});
+    this.route('settings.integrations.pintura', {path: '/settings/integrations/pintura'});
     this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
     this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 

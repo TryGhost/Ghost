@@ -14,6 +14,7 @@ const {http} = require('@tryghost/api-framework');
 const api = require('../../api').endpoints;
 
 const commentRouter = require('../comments');
+const announcementRouter = require('../announcement');
 
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
@@ -77,6 +78,14 @@ module.exports = function setupMembersApp() {
         middleware.loadMemberSession,
         middleware.authMemberByUuid,
         http(api.feedbackMembers.add)
+    );
+
+    // Announcement
+    membersApp.use(
+        '/api/announcement',
+        labs.enabledMiddleware('announcementBar'),
+        middleware.loadMemberSession,
+        announcementRouter()
     );
 
     // API error handling

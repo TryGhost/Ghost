@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.44.0",
+  "version": "5.46.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -62,7 +62,8 @@
     "@tryghost/adapter-base-cache": "0.1.5",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
-    "@tryghost/admin-api-schema": "4.2.3",
+    "@tryghost/admin-api-schema": "4.3.0",
+    "@tryghost/announcement-bar-settings": "0.0.0",
     "@tryghost/api-framework": "0.0.0",
     "@tryghost/api-version-compatibility-service": "0.0.0",
     "@tryghost/audience-feedback": "0.0.0",
@@ -98,8 +99,8 @@
     "@tryghost/kg-card-factory": "4.0.6",
     "@tryghost/kg-default-atoms": "4.0.1",
     "@tryghost/kg-default-cards": "9.0.0",
-    "@tryghost/kg-default-nodes": "0.0.30",
-    "@tryghost/kg-lexical-html-renderer": "0.1.26",
+    "@tryghost/kg-default-nodes": "0.0.36",
+    "@tryghost/kg-lexical-html-renderer": "0.1.32",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.6",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/link-redirects": "0.0.0",
@@ -131,6 +132,7 @@
     "@tryghost/nql": "0.11.0",
     "@tryghost/oembed-service": "0.0.0",
     "@tryghost/package-json": "0.0.0",
+    "@tryghost/post-revisions": "0.0.0",
     "@tryghost/posts-service": "0.0.0",
     "@tryghost/pretty-cli": "1.2.36",
     "@tryghost/promise": "0.3.4",
@@ -205,7 +207,7 @@
     "probe-image-size": "7.2.3",
     "rss": "1.2.2",
     "sanitize-html": "2.10.0",
-    "semver": "7.4.0",
+    "semver": "7.5.0",
     "socket.io": "4.6.1",
     "stoppable": "1.1.0",
     "uuid": "9.0.0",
@@ -215,7 +217,7 @@
     "yjs": "13.5.50"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "2.0.13",
+    "@tryghost/html-to-mobiledoc": "2.0.14",
     "sqlite3": "5.1.6"
   },
   "devDependencies": {

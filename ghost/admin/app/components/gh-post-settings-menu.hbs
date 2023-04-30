@@ -10,170 +10,186 @@
             </div>
             <div class="settings-menu-content">
                 <form aria-label="Post settings">
-                <div class="form-group">
-                    <label for="url">{{capitalize this.post.displayName}} URL</label>
-                    {{!-- new posts don't have a preview link --}}
-                    {{#unless this.post.isNew}}
-                        {{#if (or this.post.isPublished this.post.isSent)}}
-                        <a class="post-view-link" target="_blank" href="{{this.post.url}}" rel="noopener noreferrer">
-                            View {{this.post.displayName}} {{svg-jar "external"}}
-                        </a>
-                        {{else if this.post.isScheduled}}
-                        <a class="post-view-link" target="_blank" href="{{this.post.previewUrl}}" rel="noopener noreferrer">
-                            Preview {{svg-jar "external"}}
-                        </a>
-                        {{/if}}
-                    {{/unless}}
+                    <section class="gh-post-settings">
+                        <div class="form-group">
+                            <label for="url">{{capitalize this.post.displayName}} URL</label>
+                            {{!-- new posts don't have a preview link --}}
+                            {{#unless this.post.isNew}}
+                                {{#if (or this.post.isPublished this.post.isSent)}}
+                                <a class="post-view-link" target="_blank" href="{{this.post.url}}" rel="noopener noreferrer">
+                                    View {{this.post.displayName}} {{svg-jar "external"}}
+                                </a>
+                                {{else if this.post.isScheduled}}
+                                <a class="post-view-link" target="_blank" href="{{this.post.previewUrl}}" rel="noopener noreferrer">
+                                    Preview {{svg-jar "external"}}
+                                </a>
+                                {{/if}}
+                            {{/unless}}
 
-                    <div class="gh-input-icon gh-icon-link">
-                        {{svg-jar "link"}}
-                        <GhTextInput
-                            @class="post-setting-slug"
-                            @id="url"
-                            @name="post-setting-slug"
-                            @value={{readonly this.slugValue}}
-                            @input={{action (mut this.slugValue) value="target.value"}}
-                            @focus-out={{action "updateSlug" this.slugValue}}
-                            @stopEnterKeyDownPropagation={{true}} />
-                    </div>
-                    {{#if this.post.isSent}}
-                        <GhUrlPreview @prefix="email" @slug={{this.uuidValue}} @tagName="p" @classNames="description" />
-                    {{else}}
-                        <GhUrlPreview @slug={{this.slugValue}} @tagName="p" @classNames="description" />
-                    {{/if}}
-                </div>
+                            <div class="gh-input-icon gh-icon-link">
+                                {{svg-jar "link"}}
+                                <GhTextInput
+                                    @class="post-setting-slug"
+                                    @id="url"
+                                    @name="post-setting-slug"
+                                    @value={{readonly this.slugValue}}
+                                    @input={{action (mut this.slugValue) value="target.value"}}
+                                    @focus-out={{action "updateSlug" this.slugValue}}
+                                    @stopEnterKeyDownPropagation={{true}} />
+                            </div>
+                            {{#if this.post.isSent}}
+                                <GhUrlPreview @prefix="email" @slug={{this.uuidValue}} @tagName="p" @classNames="description" />
+                            {{else}}
+                                <GhUrlPreview @slug={{this.slugValue}} @tagName="p" @classNames="description" />
+                            {{/if}}
+                        </div>
 
-                <div class="form-group">
-                    {{#if (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
-                        <label>Publish date</label>
-                    {{else}}
-                        <label>Scheduled date</label>
-                    {{/if}}
-                    <GhDateTimePicker
-                        @date={{this.post.publishedAtBlogDate}}
-                        @time={{this.post.publishedAtBlogTime}}
-                        @setDate={{action "setPublishedAtBlogDate"}}
-                        @setTime={{action "setPublishedAtBlogTime"}}
-                        @errors={{this.post.errors}}
-                        @dateErrorProperty="publishedAtBlogDate"
-                        @timeErrorProperty="publishedAtBlogTime"
-                        @maxDate="now"
-                        @disabled={{this.post.isScheduled}}
-                        @isActive={{not this.isViewingSubview}}
-                    />
-                    {{#unless (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
-                    <p>Use the publish menu to re-schedule</p>
-                    {{/unless}}
-                </div>
-
-                {{#unless this.session.user.isContributor}}
-                <div class="form-group">
-                    <label for="tag-input">Tags</label>
-                    <GhPsmTagsInput @post={{this.post}} @triggerId="tag-input" />
-                </div>
-                {{/unless}}
-
-                {{#if this.showVisibilityInput}}
-                    <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
-                        <label for="visibility-input">{{capitalize @post.displayName}} access</label>
-                        <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
-                    </GhFormGroup>
-
-                    {{#if (eq this.post.visibility "tiers")}}
-                        <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" class="nt3" data-test-visibility-segment-select>
-                            <GhPostSettingsMenu::VisibilitySegmentSelect
-                                @tiers={{this.post.tiers}}
-                                @onChange={{action "setVisibility"}}
-                                @renderInPlace={{true}}
-                                @hideOptionsWhenAllSelected={{true}}
+                        <div class="form-group">
+                            {{#if (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
+                                <label>Publish date</label>
+                            {{else}}
+                                <label>Scheduled date</label>
+                            {{/if}}
+                            <GhDateTimePicker
+                                @date={{this.post.publishedAtBlogDate}}
+                                @time={{this.post.publishedAtBlogTime}}
+                                @setDate={{action "setPublishedAtBlogDate"}}
+                                @setTime={{action "setPublishedAtBlogTime"}}
+                                @errors={{this.post.errors}}
+                                @dateErrorProperty="publishedAtBlogDate"
+                                @timeErrorProperty="publishedAtBlogTime"
+                                @maxDate="now"
+                                @disabled={{this.post.isScheduled}}
+                                @isActive={{not this.isViewingSubview}}
                             />
-                            <GhErrorMessage @errors={{this.post.errors}} @property="tiers" data-test-error="tiers" />
+                            {{#unless (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
+                            <p>Use the publish menu to re-schedule</p>
+                            {{/unless}}
+                        </div>
+
+                        {{#unless this.session.user.isContributor}}
+                        <div class="form-group">
+                            <label for="tag-input">Tags</label>
+                            <GhPsmTagsInput @post={{this.post}} @triggerId="tag-input" />
+                        </div>
+                        {{/unless}}
+
+                        {{#if this.showVisibilityInput}}
+                            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
+                                <label for="visibility-input">{{capitalize @post.displayName}} access</label>
+                                <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
+                            </GhFormGroup>
+
+                            {{#if (eq this.post.visibility "tiers")}}
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" class="nt3" data-test-visibility-segment-select>
+                                    <GhPostSettingsMenu::VisibilitySegmentSelect
+                                        @tiers={{this.post.tiers}}
+                                        @onChange={{action "setVisibility"}}
+                                        @renderInPlace={{true}}
+                                        @hideOptionsWhenAllSelected={{true}}
+                                    />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="tiers" data-test-error="tiers" />
+                                </GhFormGroup>
+                            {{/if}}
+                        {{/if}}
+
+
+                        <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
+                            <label for="custom-excerpt">Excerpt</label>
+                            <GhTextarea
+                                @class="post-setting-custom-excerpt"
+                                @id="custom-excerpt"
+                                @name="post-setting-custom-excerpt"
+                                @value={{readonly this.customExcerptScratch}}
+                                @input={{action (mut this.customExcerptScratch) value="target.value"}}
+                                @focus-out={{action "setCustomExcerpt" this.customExcerptScratch}}
+                                @stopEnterKeyDownPropagation="true"
+                                data-test-field="custom-excerpt"
+                            />
+                            <GhErrorMessage @errors={{this.post.errors}} @property="customExcerpt" data-test-error="custom-excerpt" />
                         </GhFormGroup>
-                    {{/if}}
-                {{/if}}
 
+                        {{#unless this.session.user.isAuthorOrContributor}}
+                            <GhFormGroup class="for-select mb8" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
+                                <label for="author-list">Authors</label>
+                                <GhPsmAuthorsInput @selectedAuthors={{this.post.authors}} @updateAuthors={{action "changeAuthors"}} @triggerId="author-list" />
+                                <GhErrorMessage @errors={{this.post.errors}} @property="authors" data-test-error="authors" />
+                            </GhFormGroup>
+                        {{/unless}}
 
-                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
-                    <label for="custom-excerpt">Excerpt</label>
-                    <GhTextarea
-                        @class="post-setting-custom-excerpt"
-                        @id="custom-excerpt"
-                        @name="post-setting-custom-excerpt"
-                        @value={{readonly this.customExcerptScratch}}
-                        @input={{action (mut this.customExcerptScratch) value="target.value"}}
-                        @focus-out={{action "setCustomExcerpt" this.customExcerptScratch}}
-                        @stopEnterKeyDownPropagation="true"
-                        data-test-field="custom-excerpt"
-                    />
-                    <GhErrorMessage @errors={{this.post.errors}} @property="customExcerpt" data-test-error="custom-excerpt" />
-                </GhFormGroup>
+                        <GhPsmTemplateSelect
+                            @post={{this.post}}
+                            @onTemplateSelect={{action (mut this.post.customTemplate)}} />
+                    </section>
 
-                {{#unless this.session.user.isAuthorOrContributor}}
-                    <GhFormGroup class="for-select" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
-                        <label for="author-list">Authors</label>
-                        <GhPsmAuthorsInput @selectedAuthors={{this.post.authors}} @updateAuthors={{action "changeAuthors"}} @triggerId="author-list" />
-                        <GhErrorMessage @errors={{this.post.errors}} @property="authors" data-test-error="authors" />
-                    </GhFormGroup>
-                {{/unless}}
-
-                <ul class="nav-list nav-list-block">
-                    <li class="nav-list-item">
-                        <button type="button" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
-                            <b>Meta data</b>
-                            <span>Extra content for search engines</span>
-                        </button>
-                        {{svg-jar "arrow-right"}}
-                    </li>
-                    <li class="nav-list-item">
-                        <button type="button"  {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
-                            <b>Twitter card</b>
-                            <span>Customize structured data for Twitter</span>
-                        </button>
-                        {{svg-jar "arrow-right"}}
-                    </li>
-                    <li class="nav-list-item">
-                        <button type="button" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
-                            <b>Facebook card</b>
-                            <span>Customize Open Graph data</span>
-                        </button>
-                        {{svg-jar "arrow-right"}}
-                    </li>
-                    <li class="nav-list-item">
-                        <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
-                            <b>Code injection</b>
-                            <span>Add styles/scripts to the header &amp; footer</span>
-                        </button>
-                        {{svg-jar "arrow-right"}}
-                    </li>
-                </ul>
-
-                {{#unless this.session.user.isAuthorOrContributor}}
-                <div class="form-group for-checkbox">
-                    <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
-                        <input
-                            type="checkbox"
-                            checked={{this.post.featured}}
-                            class="gh-input post-settings-featured"
-                            onclick={{action (mut this.post.featured) value="target.checked"}}
-                            data-test-checkbox="featured"
-                        >
-                        <span class="input-toggle-component"></span>
-                        <p>Feature this {{this.post.displayName}}</p>
-                    </label>
-                </div>
-                {{/unless}}
-
-                <GhPsmTemplateSelect
-                    @post={{this.post}}
-                    @onTemplateSelect={{action (mut this.post.customTemplate)}} />
-
-                {{#unless this.post.isNew}}
-                    <button type="button" class="gh-btn gh-btn-hover-red gh-btn-icon settings-menu-delete-button" {{action "deletePostInternal"}}>
-                        <span>{{svg-jar "trash"}} Delete {{this.post.displayName}}</span>
-                    </button>
-                {{/unless}}
-
+                    <ul class="nav-list">
+                        {{#unless this.session.user.isAuthorOrContributor}}
+                            <li class="nav-list-item">
+                                <div class="for-switch x-small">
+                                    <label class="switch" for="featured" {{action "toggleFeatured" bubbles="false"}}>
+                                        <span>
+                                            {{#if this.post.featured}}
+                                                {{svg-jar "star-fill" class="feature"}}
+                                            {{else}}
+                                                {{svg-jar "star" class="feature"}}
+                                            {{/if}}
+                                            Feature this {{this.post.displayName}}
+                                        </span>
+                                        <span class="gh-toggle-featured">
+                                            <input
+                                                type="checkbox"
+                                                checked={{this.post.featured}}
+                                                class="gh-input post-settings-featured"
+                                                onclick={{action (mut this.post.featured) value="target.checked"}}
+                                                data-test-checkbox="featured"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </li>
+                        {{/unless}}
+                        {{#if (and (feature 'postHistory') this.post.lexical)}}
+                            <li class="nav-list-item">
+                                <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
+                                    <span>{{svg-jar "history" class="history"}} Post history</span>
+                                </button>
+                                {{svg-jar "arrow-right" class="arrow-right"}}
+                            </li>
+                        {{/if}}
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
+                                <span>{{svg-jar "brackets"}} Code injection</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
+                                <span>{{svg-jar "google-icon"}} Meta data</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                        <li class="nav-list-item">
+                            <button type="button"  {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
+                                <span>{{svg-jar "twitter-logo"}} Twitter card</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
+                                <span>{{svg-jar "social-facebook"}} Facebook card</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                    </ul>
                 </form>
+                {{#unless this.post.isNew}}
+                    <div class="settings-menu-delete-button">
+                        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon gh-btn-fullwidth" {{action "deletePostInternal"}}>
+                            <span>{{svg-jar "trash"}} Delete {{this.post.displayName}}</span>
+                        </button>
+                    </div>
+                {{/unless}}
             </div>{{! .settings-menu-content }}
         </div>{{! .post-settings-menu }}
 
@@ -188,7 +204,7 @@
                         </div>
 
                         <div class="settings-menu-content">
-                            <form {{action "discardEnter" on="submit"}} aria-label="Meta data settings">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Meta data settings">
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaTitle">
                                     <label for="meta-title">Meta title</label>
                                     <GhTextInput
@@ -262,7 +278,7 @@
 
                         <div class="settings-menu-content">
 
-                            <form {{action "discardEnter" on="submit"}} aria-label="Twitter card settings">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Twitter card settings">
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.twitterImage}}
                                     @text="Add Twitter image"
@@ -329,7 +345,7 @@
                         </div>
 
                         <div class="settings-menu-content">
-                            <form {{action "discardEnter" on="submit"}} aria-label="Facebook card settings">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Facebook card settings">
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.ogImage}}
                                     @text="Add Facebook image"
@@ -397,7 +413,7 @@
                         </div>
 
                         <div class="settings-menu-content settings-menu-content-codeinjection">
-                            <form {{action "discardEnter" on="submit"}} aria-label="Code injection settings">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Code injection settings">
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="codeinjectionHead">
                                     <label for="codeinjection-head">{{capitalize this.post.displayName}} header <code>\{{ghost_head}}</code></label>
                                     <GhCmEditor @value={{this.codeinjectionHeadScratch}}
@@ -428,6 +444,20 @@
                     {{/if}}
             </div>
         </div>
+        {{/if}}
+
+        {{#if (feature 'postHistory')}}
+            {{#if this.showPostHistory}}
+                <GhFullscreenModal
+                    @modal="post-history"
+                    @model={{hash
+                        post=this.post
+                        editorAPI=this.editorAPI
+                        toggleSettingsMenu=this.toggleSettingsMenu
+                    }}
+                    @close={{this.closePostHistory}}
+                    @modifier="total-overlay post-history" />
+            {{/if}}
         {{/if}}
     </div>
 </div>

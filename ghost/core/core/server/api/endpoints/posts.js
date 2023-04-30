@@ -15,7 +15,9 @@ const allowedIncludes = [
     'count.clicks',
     'sentiment',
     'count.positive_feedback',
-    'count.negative_feedback'
+    'count.negative_feedback',
+    'post_revisions',
+    'post_revisions.author'
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
@@ -174,6 +176,7 @@ module.exports = {
             'email_segment',
             'newsletter',
             'force_rerender',
+            'save_revision',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'

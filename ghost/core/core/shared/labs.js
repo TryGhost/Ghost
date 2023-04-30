@@ -21,7 +21,8 @@ const GA_FEATURES = [
     'audienceFeedback',
     'themeErrorsNotification',
     'emailErrors',
-    'outboundLinkTagging'
+    'outboundLinkTagging',
+    'announcementBar'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -39,7 +40,10 @@ const ALPHA_FEATURES = [
     'lexicalMultiplayer',
     'websockets',
     'stripeAutomaticTax',
-    'makingItRain'
+    'makingItRain',
+    'postHistory',
+    'postDiffing',
+    'imageEditor'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

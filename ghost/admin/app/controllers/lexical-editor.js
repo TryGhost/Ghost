@@ -170,9 +170,15 @@ export default class LexicalEditorController extends Controller {
 
     @computed('_snippets.@each.{name,isNew}')
     get snippets() {
-        return this._snippets
+        const snippets = this._snippets
             .reject(snippet => snippet.get('isNew'))
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .filter(item => item.lexical !== null);
+        return snippets.map((item) => {
+            item.value = item.lexical;
+
+            return item;
+        });
     }
 
     @computed('session.user.{isAdmin,isEditor}')
@@ -303,6 +309,11 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    registerEditorAPI(API) {
+        this.editorAPI = API;
+    }
+
+    @action
     clearFeatureImage() {
         this.post.set('featureImage', null);
         this.post.set('featureImageAlt', null);
@@ -343,7 +354,8 @@ export default class LexicalEditorController extends Controller {
 
     @action
     saveSnippet(snippet) {
-        let snippetRecord = this.store.createRecord('snippet', snippet);
+        const snippetData = {name: snippet.name, lexical: snippet.value, mobiledoc: '{}'};
+        let snippetRecord = this.store.createRecord('snippet', snippetData);
         return snippetRecord.save().then(() => {
             this.notifications.closeAlerts('snippet.save');
             this.notifications.showNotification(
@@ -361,6 +373,18 @@ export default class LexicalEditorController extends Controller {
             snippetRecord.rollbackAttributes();
             throw error;
         });
+    }
+
+    @action
+    async createSnippet(data) {
+        const snippetNameLC = data.name.trim().toLowerCase();
+        const existingSnippet = this.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
+
+        if (existingSnippet) {
+            await this.confirmUpdateSnippet(existingSnippet, {lexical: data.value, mobiledoc: '{}'});
+        } else {
+            await this.saveSnippet(data);
+        }
     }
 
     @action
@@ -382,11 +406,12 @@ export default class LexicalEditorController extends Controller {
 
     // separate task for autosave so that it doesn't override a manual save
     @dropTask
-    *autosaveTask() {
+    *autosaveTask(options) {
         if (!this.get('saveTask.isRunning')) {
             return yield this.saveTask.perform({
                 silent: true,
-                backgroundSave: true
+                backgroundSave: true,
+                ...options
             });
         }
     }
@@ -398,10 +423,11 @@ export default class LexicalEditorController extends Controller {
         let prevStatus = this.get('post.status');
         let isNew = this.get('post.isNew');
         let status;
+        const adapterOptions = {};
 
         this.cancelAutosave();
 
-        if (options.backgroundSave && !this.hasDirtyAttributes) {
+        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor) {
             return;
         }
 
@@ -428,10 +454,15 @@ export default class LexicalEditorController extends Controller {
         // new publishing flow sets the post status manually on publish
         this.set('post.status', status);
 
+        const explicitSave = !options.backgroundSave;
+        const leavingEditor = options.leavingEditor;
+        if (explicitSave || leavingEditor) {
+            adapterOptions.saveRevision = 1;
+        }
         yield this.beforeSaveTask.perform(options);
 
         try {
-            let post = yield this._savePostTask.perform(options);
+            let post = yield this._savePostTask.perform({...options, adapterOptions});
 
             post.set('statusScratch', null);
 
@@ -802,6 +833,11 @@ export default class LexicalEditorController extends Controller {
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
+        // Check if anything has changed since the last revision
+        let postRevisions = post.get('postRevisions').toArray();
+        let latestRevision = postRevisions[postRevisions.length - 1];
+        let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
+
         let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
             && transition.targetName === 'lexical-editor.edit'
             && transition.intent.contexts
@@ -810,6 +846,17 @@ export default class LexicalEditorController extends Controller {
 
         let deletedWithoutChanges = state.isDeleted
             && (state.isSaving || !state.hasDirtyAttributes);
+
+        // If leaving the editor and the post has changed since we last saved a revision, always save a new revision
+        if (hasChangedSinceLastRevision) {
+            transition.abort();
+            if (this._autosaveRunning) {
+                this.cancelAutosave();
+                this.autosaveTask.cancelAll();
+            }
+            await this.autosaveTask.perform({leavingEditor: true});
+            return transition.retry();
+        }
 
         // controller is dirty and we aren't in a new->edit or delete->index
         // transition so show our "are you sure you want to leave?" modal
@@ -827,7 +874,8 @@ export default class LexicalEditorController extends Controller {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
 
-                await this.autosaveTask.perform();
+                // If leaving the editor, always save a revision
+                await this.autosaveTask.perform({leavingEditor: true});
                 return transition.retry();
             }
 
