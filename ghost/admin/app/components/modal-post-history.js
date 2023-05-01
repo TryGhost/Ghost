@@ -52,7 +52,12 @@ export default class ModalPostHistory extends Component {
   }
 
   get revisionList() {
-      return this.post.get('postRevisions').toArray().reverse().map((revision, index) => {
+      const revisions = this.post.get('postRevisions').toArray().reverse();
+      const latestPublishedIndex = revisions.findIndex(
+          revision => revision.get('postStatus') === 'published' && revision.get('reason') === 'published'
+      );
+  
+      return revisions.map((revision, index) => {
           return {
               lexical: revision.get('lexical'),
               selected: index === this.selectedRevisionIndex,
@@ -66,7 +71,8 @@ export default class ModalPostHistory extends Component {
                   name: revision.get('author.name') || 'Deleted staff user'
               },
               postStatus: revision.get('postStatus'),
-              reason: revision.get('reason')
+              reason: revision.get('reason'),
+              published_latest: latestPublishedIndex !== -1 && latestPublishedIndex === index
           };
       });
   }
