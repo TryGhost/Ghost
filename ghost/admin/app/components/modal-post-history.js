@@ -52,9 +52,14 @@ export default class ModalPostHistory extends Component {
   }
 
   get revisionList() {
-      const revisions = this.post.get('postRevisions').toArray().reverse();
-      const latestPublishedIndex = revisions.findIndex(
-          revision => revision.get('postStatus') === 'published' && revision.get('reason') === 'published'
+      // sort revisions by createdAt date
+      const revisions = this.post.get('postRevisions').toArray().sort((a, b) => b.get('createdAt') - a.get('createdAt'));
+      // finds the initial published version
+      const publishedIndex = revisions.findIndex(
+          (revision, index, arr) => (
+              revision.get('postStatus') === 'published' && 
+        arr[index + 1]?.get('postStatus') === 'draft'
+          )
       );
   
       return revisions.map((revision, index) => {
@@ -72,7 +77,7 @@ export default class ModalPostHistory extends Component {
               },
               postStatus: revision.get('postStatus'),
               reason: revision.get('reason'),
-              published_latest: latestPublishedIndex !== -1 && latestPublishedIndex === index
+              initial_publish: publishedIndex !== -1 && index === publishedIndex
           };
       });
   }
