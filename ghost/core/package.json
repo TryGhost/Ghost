@@ -54,7 +54,7 @@
     "prepack": "yarn workspace ghost-admin run build:prod && yarn build:css && npx --yes daniellockyer/monobundle"
   },
   "engines": {
-    "node": "^14.18.0 || ^16.13.0 || ^18.12.1",
+    "node": "^16.13.0 || ^18.12.1",
     "cli": "^1.17.0"
   },
   "dependencies": {
