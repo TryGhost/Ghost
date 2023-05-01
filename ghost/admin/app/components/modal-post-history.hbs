@@ -61,9 +61,10 @@
                                 <span class="gh-post-history-version">{{gh-format-post-time revision.createdAt format="D MMM YYYY, HH:mm"}}{{this.timezone}}</span>
                                 {{#if revision.latest}}
                                     <span class="gh-post-history-version-tag current">Latest</span>
-                                    {{#if (eq revision.postStatus "published")}}
-                                    <span class="gh-post-history-version-tag published">{{{revision.postStatus}}}</span>
-                                    {{/if}}
+                                {{/if}}
+
+                                {{#if (eq revision.initial_publish true)}}
+                                    <span class="gh-post-history-version-tag published">Published</span>
                                 {{/if}}
                                 
                             </div>
