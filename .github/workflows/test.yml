@@ -145,7 +145,7 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
-        node: [ '14.18.0', '16.13.0', '18.12.1' ]
+        node: [ '16.13.0', '18.12.1' ]
     name: Unit Tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v3
@@ -180,7 +180,7 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
-        node: [ '14.18.0', '16.13.0', '18.12.1' ]
+        node: [ '16.13.0', '18.12.1' ]
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
