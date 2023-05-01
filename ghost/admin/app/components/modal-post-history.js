@@ -21,225 +21,225 @@ function checkFinishedRendering(element, done) {
 }
 
 export default class ModalPostHistory extends Component {
-  @service notifications;
-  @service modals;
-  @service feature;
-  constructor() {
-      super(...arguments);
-      this.post = this.args.model.post;
-      this.editorAPI = this.args.model.editorAPI;
-      this.toggleSettingsMenu = this.args.model.toggleSettingsMenu;
-  }
-  @tracked selectedHTML = null;
-  @tracked diffHtml = null;
-  @tracked showDifferences = this.feature.get('postDiffing'); // should default to true in future
-  @tracked selectedRevisionIndex = 0;
+    @service notifications;
+    @service modals;
+    @service feature;
+    constructor() {
+        super(...arguments);
+        this.post = this.args.model.post;
+        this.editorAPI = this.args.model.editorAPI;
+        this.toggleSettingsMenu = this.args.model.toggleSettingsMenu;
+    }
+    @tracked selectedHTML = null;
+    @tracked diffHtml = null;
+    @tracked showDifferences = this.feature.get('postDiffing'); // should default to true in future
+    @tracked selectedRevisionIndex = 0;
 
-  get selectedRevision() {
-      return this.revisionList[this.selectedRevisionIndex];
-  }
+    get selectedRevision() {
+        return this.revisionList[this.selectedRevisionIndex];
+    }
 
-  get comparisonRevision() {
-      return this.revisionList[this.selectedRevisionIndex + 1] || this.selectedRevision;
-  }
+    get comparisonRevision() {
+        return this.revisionList[this.selectedRevisionIndex + 1] || this.selectedRevision;
+    }
 
-  get previousTitle() {
-      return this.comparisonRevision.title || this.post.get('title');
-  }
+    get previousTitle() {
+        return this.comparisonRevision.title || this.post.get('title');
+    }
 
-  get currentTitle() {
-      return this.selectedRevision.title || this.post.get('title');
-  }
+    get currentTitle() {
+        return this.selectedRevision.title || this.post.get('title');
+    }
 
-  get revisionList() {
-      // sort revisions by createdAt date
-      const revisions = this.post.get('postRevisions').toArray().sort((a, b) => b.get('createdAt') - a.get('createdAt'));
-      // finds the initial published version
-      const publishedIndex = revisions.findIndex(
-          (revision, index, arr) => (
-              revision.get('postStatus') === 'published' && 
-        arr[index + 1]?.get('postStatus') === 'draft'
-          )
-      );
-  
-      return revisions.map((revision, index) => {
-          return {
-              lexical: revision.get('lexical'),
-              selected: index === this.selectedRevisionIndex,
-              latest: index === 0,
-              createdAt: revision.get('createdAt'),
-              title: revision.get('title'),
-              feature_image: revision.get('featureImage'),
-              feature_image_alt: revision.get('featureImageAlt'),
-              feature_image_caption: revision.get('featureImageCaption'),
-              author: {
-                  name: revision.get('author.name') || 'Deleted staff user'
-              },
-              postStatus: revision.get('postStatus'),
-              reason: revision.get('reason'),
-              initial_publish: publishedIndex !== -1 && index === publishedIndex
-          };
-      });
-  }
+    get revisionList() {
+        // sort revisions by createdAt date
+        const revisions = this.post.get('postRevisions').toArray().sort((a, b) => b.get('createdAt') - a.get('createdAt'));
+        // finds the initial published version
+        const publishedIndex = revisions.findIndex(
+            (revision, index, arr) => (
+                revision.get('postStatus') === 'published' &&
+                arr[index + 1]?.get('postStatus') === 'draft'
+            )
+        );
 
-  @action
-  onInsert() {
-      this.updateDiff();
-      window.addEventListener('keydown', this.handleKeyDown);
-  }
+        return revisions.map((revision, index) => {
+            return {
+                lexical: revision.get('lexical'),
+                selected: index === this.selectedRevisionIndex,
+                latest: index === 0,
+                createdAt: revision.get('createdAt'),
+                title: revision.get('title'),
+                feature_image: revision.get('featureImage'),
+                feature_image_alt: revision.get('featureImageAlt'),
+                feature_image_caption: revision.get('featureImageCaption'),
+                author: {
+                    name: revision.get('author.name') || 'Deleted staff user'
+                },
+                postStatus: revision.get('postStatus'),
+                reason: revision.get('reason'),
+                initial_publish: publishedIndex !== -1 && index === publishedIndex
+            };
+        });
+    }
 
-  @action
-  willDestroy() {
-      super.willDestroy(...arguments);
-      window.removeEventListener('keydown', this.handleKeyDown);
-  }
+    @action
+    onInsert() {
+        this.updateDiff();
+        window.addEventListener('keydown', this.handleKeyDown);
+    }
 
-  @action
-  handleKeyDown(event) {
-      if (event.key === 'Escape') {
-          this.args.closeModal();
-      }
-  }
+    @action
+    willDestroy() {
+        super.willDestroy(...arguments);
+        window.removeEventListener('keydown', this.handleKeyDown);
+    }
 
-  @action
-  handleClick(index) {
-      this.selectedRevisionIndex = index;
-      this.updateDiff();
-  }
+    @action
+    handleKeyDown(event) {
+        if (event.key === 'Escape') {
+            this.args.closeModal();
+        }
+    }
 
-  @action
-  registerSelectedEditorApi(api) {
-      this.selectedEditor = api;
-  }
+    @action
+    handleClick(index) {
+        this.selectedRevisionIndex = index;
+        this.updateDiff();
+    }
 
-  @action
-  registerComparisonEditorApi(api) {
-      this.comparisonEditor = api;
-  }
+    @action
+    registerSelectedEditorApi(api) {
+        this.selectedEditor = api;
+    }
 
-  @action
-  closeModal() {
-      this.args.closeModal();
-  }
+    @action
+    registerComparisonEditorApi(api) {
+        this.comparisonEditor = api;
+    }
 
-  stripInitialPlaceholder(html) {
-      //TODO: we should probably add a data attribute to Koenig and grab that instead
-      const regex = /<div\b[^>]*>(\s*Begin writing your post\.\.\.\s*)<\/div>/i;
-      const strippedHtml = html.replace(regex, '');
-      return strippedHtml;
-  }
+    @action
+    closeModal() {
+        this.args.closeModal();
+    }
 
-  @action
-  restoreRevision(index) {
-      const revision = this.revisionList[index];
-      this.modals.open(RestoreRevisionModal, {
-          post: this.post,
-          revision,
-          updateTitle: () => {
-              set(this.post, 'titleScratch', revision.title);
-          },
-          updateEditor: () => {
-              const state = this.editorAPI.editorInstance.parseEditorState(revision.lexical);
-              this.editorAPI.editorInstance.setEditorState(state);
-          },
-          closePostHistoryModal: () => {
-              this.closeModal();
-              this.toggleSettingsMenu();
-          }
-      });
-  }
+    stripInitialPlaceholder(html) {
+        //TODO: we should probably add a data attribute to Koenig and grab that instead
+        const regex = /<div\b[^>]*>(\s*Begin writing your post\.\.\.\s*)<\/div>/i;
+        const strippedHtml = html.replace(regex, '');
+        return strippedHtml;
+    }
 
-  @action
-  toggleDifferences() {
-      this.showDifferences = !this.showDifferences;
-  }
+    @action
+    restoreRevision(index) {
+        const revision = this.revisionList[index];
+        this.modals.open(RestoreRevisionModal, {
+            post: this.post,
+            revision,
+            updateTitle: () => {
+                set(this.post, 'titleScratch', revision.title);
+            },
+            updateEditor: () => {
+                const state = this.editorAPI.editorInstance.parseEditorState(revision.lexical);
+                this.editorAPI.editorInstance.setEditorState(state);
+            },
+            closePostHistoryModal: () => {
+                this.closeModal();
+                this.toggleSettingsMenu();
+            }
+        });
+    }
 
-  get cardConfig() {
-      return {
-          post: this.args.model
-      };
-  }
+    @action
+    toggleDifferences() {
+        this.showDifferences = !this.showDifferences;
+    }
 
-  calculateHTMLDiff(previousHTML, currentHTML) {
-      const result = diff(previousHTML, currentHTML);
-      const div = document.createElement('div');
-      div.innerHTML = result;
-      this.diffCards(div);
-      return div.innerHTML;
-  }
+    get cardConfig() {
+        return {
+            post: this.args.model
+        };
+    }
 
-  diffCards(div) {
-      const cards = div.querySelectorAll('div[data-kg-card]');
-      for (const card of cards) {
-          const hasChanges = !!card.querySelectorAll('del').length || !!card.querySelectorAll('ins').length;
-          if (hasChanges) {
-              const delCard = card.cloneNode(true);
-              const insCard = card.cloneNode(true);
+    calculateHTMLDiff(previousHTML, currentHTML) {
+        const result = diff(previousHTML, currentHTML);
+        const div = document.createElement('div');
+        div.innerHTML = result;
+        this.diffCards(div);
+        return div.innerHTML;
+    }
 
-              const ins = document.createElement('ins');
-              const del = document.createElement('del');
+    diffCards(div) {
+        const cards = div.querySelectorAll('div[data-kg-card]');
+        for (const card of cards) {
+            const hasChanges = !!card.querySelectorAll('del').length || !!card.querySelectorAll('ins').length;
+            if (hasChanges) {
+                const delCard = card.cloneNode(true);
+                const insCard = card.cloneNode(true);
 
-              delCard.querySelectorAll('ins').forEach((el) => {
-                  el.remove();
-              });
-              insCard.querySelectorAll('del').forEach((el) => {
-                  el.remove();
-              });
-              delCard.querySelectorAll('del').forEach((el) => {
-                  el.parentNode.appendChild(el.firstChild);
-                  el.remove();
-              });
-              insCard.querySelectorAll('ins').forEach((el) => {
-                  el.parentNode.appendChild(el.firstChild);
-                  el.remove();
-              });
+                const ins = document.createElement('ins');
+                const del = document.createElement('del');
 
-              ins.appendChild(insCard);
-              del.appendChild(delCard);
+                delCard.querySelectorAll('ins').forEach((el) => {
+                    el.remove();
+                });
+                insCard.querySelectorAll('del').forEach((el) => {
+                    el.remove();
+                });
+                delCard.querySelectorAll('del').forEach((el) => {
+                    el.parentNode.appendChild(el.firstChild);
+                    el.remove();
+                });
+                insCard.querySelectorAll('ins').forEach((el) => {
+                    el.parentNode.appendChild(el.firstChild);
+                    el.remove();
+                });
 
-              card.parentNode.appendChild(del);
-              card.parentNode.appendChild(ins);
-              card.remove();
-          }
-      }
-  }
+                ins.appendChild(insCard);
+                del.appendChild(delCard);
 
-  updateDiff() {
-      if (this.comparisonEditor && this.selectedEditor) {
-          let comparisonState = this.comparisonEditor.editorInstance.parseEditorState(this.comparisonRevision.lexical);
-          let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
+                card.parentNode.appendChild(del);
+                card.parentNode.appendChild(ins);
+                card.remove();
+            }
+        }
+    }
 
-          this.comparisonEditor.editorInstance.setEditorState(comparisonState);
-          this.selectedEditor.editorInstance.setEditorState(selectedState);
-      }
+    updateDiff() {
+        if (this.comparisonEditor && this.selectedEditor) {
+            let comparisonState = this.comparisonEditor.editorInstance.parseEditorState(this.comparisonRevision.lexical);
+            let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
 
-      let previous = document.querySelector('.gh-post-history-hidden-lexical.previous');
-      let current = document.querySelector('.gh-post-history-hidden-lexical.current');
+            this.comparisonEditor.editorInstance.setEditorState(comparisonState);
+            this.selectedEditor.editorInstance.setEditorState(selectedState);
+        }
 
-      let previousDone = false;
-      let currentDone = false;
+        let previous = document.querySelector('.gh-post-history-hidden-lexical.previous');
+        let current = document.querySelector('.gh-post-history-hidden-lexical.current');
 
-      let updateIfBothDone = () => {
-          if (previousDone && currentDone) {
-              this.diffHtml = this.calculateHTMLDiff(this.stripInitialPlaceholder(previous.innerHTML), this.stripInitialPlaceholder(current.innerHTML));
-              this.selectedHTML = this.stripInitialPlaceholder(current.innerHTML);
-          }
-      };
+        let previousDone = false;
+        let currentDone = false;
 
-      checkFinishedRendering(previous, () => {
-          previous.querySelectorAll('[contenteditable]').forEach((el) => {
-              el.setAttribute('contenteditable', false);
-          });
-          previousDone = true;
-          updateIfBothDone();
-      });
+        let updateIfBothDone = () => {
+            if (previousDone && currentDone) {
+                this.diffHtml = this.calculateHTMLDiff(this.stripInitialPlaceholder(previous.innerHTML), this.stripInitialPlaceholder(current.innerHTML));
+                this.selectedHTML = this.stripInitialPlaceholder(current.innerHTML);
+            }
+        };
 
-      checkFinishedRendering(current, () => {
-          current.querySelectorAll('[contenteditable]').forEach((el) => {
-              el.setAttribute('contenteditable', false);
-          });
-          currentDone = true;
-          updateIfBothDone();
-      });
-  }
+        checkFinishedRendering(previous, () => {
+            previous.querySelectorAll('[contenteditable]').forEach((el) => {
+                el.setAttribute('contenteditable', false);
+            });
+            previousDone = true;
+            updateIfBothDone();
+        });
+
+        checkFinishedRendering(current, () => {
+            current.querySelectorAll('[contenteditable]').forEach((el) => {
+                el.setAttribute('contenteditable', false);
+            });
+            currentDone = true;
+            updateIfBothDone();
+        });
+    }
 }
