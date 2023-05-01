@@ -30,13 +30,26 @@ export default class ThemeManagementService extends Service {
 
     allPosts = this.store.peekAll('post');
 
-    availablePreviewTypes = [{
-        name: 'homepage',
-        label: 'Homepage'
-    }, {
-        name: 'post',
-        label: 'Post'
-    }];
+    get availablePreviewTypes() {
+        const previewTypes = [{
+            name: 'homepage',
+            label: 'Homepage'
+        }];
+
+        // in case we haven't loaded any posts so far
+        if (!this.latestPublishedPost) {
+            this.loadLastPostTask.perform();
+        }
+
+        if (this.latestPublishedPost) {
+            previewTypes.push({
+                name: 'post',
+                label: 'Post'
+            });
+        }
+
+        return previewTypes;
+    }
 
     get latestPublishedPost() {
         return this.allPosts.toArray().filterBy('status', 'published').sort((a, b) => {
@@ -171,6 +184,11 @@ export default class ThemeManagementService extends Service {
     }
 
     @task
+    *loadLastPostTask() {
+        yield this.store.query('post', {filter: 'status:published', order: 'published_at DESC', limit: 1});
+    }
+
+    @task
     *updatePreviewHtmlTask() {
         // skip during testing because we don't have mocks for the front-end
         if (config.environment === 'test') {
@@ -182,10 +200,10 @@ export default class ThemeManagementService extends Service {
         if (this.previewType === 'post') {
             // in case we haven't loaded any posts so far
             if (!this.latestPublishedPost) {
-                yield this.store.query('post', {filter: 'status:published', order: 'published_at DESC', limit: 1});
+                this.loadLastPostTask.perform();
             }
 
-            frontendUrl = this.latestPublishedPost.url;
+            frontendUrl = this.latestPublishedPost?.url || '';
         }
 
         const previewResponse = yield this.frontend.fetch(frontendUrl, {
