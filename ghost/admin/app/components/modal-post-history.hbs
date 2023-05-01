@@ -66,18 +66,16 @@
                                 {{#if (eq revision.initial_publish true)}}
                                     <span class="gh-post-history-version-tag published">Published</span>
                                 {{/if}}
-                                
+
                             </div>
                             <span class="gh-post-history-version-meta {{if (eq revision.author.name "Deleted staff user") "deleted-user"}}">{{revision.author.name}}</span>
                         </button>
-                        {{#if (and revision.selected (not revision.latest))}}
-                            <button
-                                type="button"
-                                class="gh-post-history-version-restore"
-                                {{on "click" (fn this.restoreRevision index)}}
-                            >
+                        {{#if this.canRestore}}
+                            {{#if (and revision.selected (not revision.latest))}}
+                            <button type="button" class="gh-post-history-version-restore" {{on "click" (fn this.restoreRevision index)}}>
                                 <span>Restore</span>
                             </button>
+                            {{/if}}
                         {{/if}}
                     </li>
                     {{/each}}
