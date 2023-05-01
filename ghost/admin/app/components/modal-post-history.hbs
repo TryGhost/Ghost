@@ -63,9 +63,12 @@
                                     <span class="gh-post-history-version-tag current">Latest</span>
                                 {{/if}}
 
-                                {{#if (eq revision.initial_publish true)}}
+                                {{#if (eq revision.new_publish true)}}
                                     <span class="gh-post-history-version-tag published">Published</span>
                                 {{/if}}
+                                {{!-- {{#if (eq revision.new_unpublish true)}}
+                                    <span class="gh-post-history-version-tag current">Unpublished</span>
+                                {{/if}} --}}
                                 
                             </div>
                             <span class="gh-post-history-version-meta {{if (eq revision.author.name "Deleted staff user") "deleted-user"}}">{{revision.author.name}}</span>
