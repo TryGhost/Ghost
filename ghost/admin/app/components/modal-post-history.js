@@ -24,6 +24,7 @@ export default class ModalPostHistory extends Component {
     @service notifications;
     @service modals;
     @service feature;
+    @service ghostPaths;
     constructor() {
         super(...arguments);
         this.post = this.args.model.post;
@@ -73,7 +74,8 @@ export default class ModalPostHistory extends Component {
                 feature_image_alt: revision.get('featureImageAlt'),
                 feature_image_caption: revision.get('featureImageCaption'),
                 author: {
-                    name: revision.get('author.name') || 'Deleted staff user'
+                    name: revision.get('author.name') || 'Deleted staff user',
+                    profile_image_url: revision.get('author.profileImage') || this.ghostPaths.assetRoot.replace(/\/$/, '') + '/img/user-image.png'
                 },
                 postStatus: revision.get('postStatus'),
                 reason: revision.get('reason'),
