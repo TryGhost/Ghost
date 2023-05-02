@@ -144,6 +144,18 @@ export default class GhPostSettingsMenu extends Component {
         return urlParts.join(' › ');
     }
 
+    get canViewPostHistory() {
+        let showPostHistory = this.feature.postHistory === true
+            && this.post.lexical !== null
+            && this.post.emailOnly === false;
+
+        if (this.post.isPublished === true) {
+            showPostHistory = this.post.hasEmail === false;
+        }
+
+        return showPostHistory;
+    }
+
     willDestroyElement() {
         super.willDestroyElement(...arguments);
 
