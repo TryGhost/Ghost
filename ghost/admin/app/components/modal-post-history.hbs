@@ -63,8 +63,11 @@
                                     <span class="gh-post-history-version-tag current">Latest</span>
                                 {{/if}}
 
-                                {{#if (eq revision.initial_publish true)}}
+                                {{#if revision.new_publish}}
                                     <span class="gh-post-history-version-tag published">Published</span>
+                                {{/if}}
+                                {{#if revision.new_unpublish}}
+                                    <span class="gh-post-history-version-tag unpublished">Unpublished</span>
                                 {{/if}}
                                 
                             </div>
