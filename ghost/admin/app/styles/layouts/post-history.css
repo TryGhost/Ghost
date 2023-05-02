@@ -60,12 +60,17 @@
 
 .nav-list-item .gh-post-history-version-tag.current {
     background: var(--lightgrey-l2);
-    color: var(--darkgrey);
+    color: var(--middarkgrey);
 }
 
 .nav-list-item .gh-post-history-version-tag.published {
-    background: var(--green-d1);
-    color: var(--white);
+    background: color-mod(var(--green) a(20%));
+    color: var(--green-d2);
+}
+
+.nav-list-item .gh-post-history-version-tag.unpublished {
+    background: color-mod(var(--pink) a(15%));
+    color: var(--pink-d1);
 }
 
 .nav-list-item .gh-post-history-version-restore {

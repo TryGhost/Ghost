@@ -25,16 +25,17 @@ export default class ModalPostHistory extends Component {
     @service modals;
     @service feature;
     @service ghostPaths;
+    @tracked selectedHTML = null;
+    @tracked diffHtml = null;
+    @tracked showDifferences = this.feature.get('postDiffing'); // should default to true in future
+    @tracked selectedRevisionIndex = 0;
+
     constructor() {
         super(...arguments);
         this.post = this.args.model.post;
         this.editorAPI = this.args.model.editorAPI;
         this.toggleSettingsMenu = this.args.model.toggleSettingsMenu;
     }
-    @tracked selectedHTML = null;
-    @tracked diffHtml = null;
-    @tracked showDifferences = this.feature.get('postDiffing'); // should default to true in future
-    @tracked selectedRevisionIndex = 0;
 
     get selectedRevision() {
         return this.revisionList[this.selectedRevisionIndex];
@@ -53,16 +54,7 @@ export default class ModalPostHistory extends Component {
     }
 
     get revisionList() {
-        // sort revisions by createdAt date
-        const revisions = this.post.get('postRevisions').toArray().sort((a, b) => b.get('createdAt') - a.get('createdAt'));
-        // finds the initial published version
-        const publishedIndex = revisions.findIndex(
-            (revision, index, arr) => (
-                revision.get('postStatus') === 'published' &&
-                arr[index + 1]?.get('postStatus') === 'draft'
-            )
-        );
-
+        const revisions = this.post.get('postRevisions').toArray().sort((a, b) => b.get('createdAt') - a.get('createdAt'));  
         return revisions.map((revision, index) => {
             return {
                 lexical: revision.get('lexical'),
@@ -77,9 +69,11 @@ export default class ModalPostHistory extends Component {
                     name: revision.get('author.name') || 'Deleted staff user',
                     profile_image_url: revision.get('author.profileImage') || this.ghostPaths.assetRoot.replace(/\/$/, '') + '/img/user-image.png'
                 },
+
                 postStatus: revision.get('postStatus'),
                 reason: revision.get('reason'),
-                initial_publish: publishedIndex !== -1 && index === publishedIndex
+                new_publish: revision.get('postStatus') === 'published' && revisions[index + 1]?.get('postStatus') === 'draft',
+                new_unpublish: revision.get('postStatus') === 'draft' && revisions[index + 1]?.get('postStatus') === 'published'
             };
         });
     }
