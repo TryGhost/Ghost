@@ -82,7 +82,7 @@ export function EmailCtaCard({
                 {showDividers && <hr className="mt-12 mb-0 block border-t-grey-300 dark:border-t-grey-900" data-testid="bottom-divider" />}
 
                 {/* Read-only overlay */}
-                {!isEditing && <div className="absolute top-0 z-10 m-0 h-full w-full cursor-default p-0"></div>}
+                {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
             </div>
 
             {isEditing && (

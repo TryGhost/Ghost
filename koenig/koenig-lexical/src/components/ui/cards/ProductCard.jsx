@@ -51,7 +51,7 @@ export function ProductCard({
                     onRemoveImage={onRemoveImage}
                 />
 
-                <div className="m-0 flex items-start justify-between">
+                <div className="!m-0 flex items-start justify-between">
                     {
                         (isEditing || !!title || !isEditorEmpty(titleEditor)) && (
                             <div className="mr-2 flex-1">
@@ -62,7 +62,7 @@ export function ProductCard({
                                     initialEditor={titleEditor}
                                     initialEditorState={titleEditorInitialState}
                                     nodes='minimal'
-                                    placeholderClassName="whitespace-normal text-[22px] font-bold leading-snug text-black opacity-40 dark:text-white tracking-tight"
+                                    placeholderClassName="whitespace-normal !text-[22px] !font-bold !leading-snug text-black opacity-40 dark:text-white !tracking-tight"
                                     placeholderText="Product title"
                                     singleParagraph={true}
                                     textClassName="koenig-lexical-product-title whitespace-normal"
@@ -78,12 +78,12 @@ export function ProductCard({
 
                 {
                     (isEditing || !!description || !isEditorEmpty(descriptionEditor)) && (
-                        <div className="mt-2">
+                        <div className="!mt-2">
                             <KoenigNestedEditor
                                 hasSettingsPanel={true}
                                 initialEditor={descriptionEditor}
                                 initialEditorState={descriptionEditorInitialState}
-                                placeholderClassName="text-[1.6rem] font-normal leading-snug text-grey-700 opacity-50"
+                                placeholderClassName="!text-[1.6rem] !font-normal !leading-snug text-grey-700 opacity-50"
                                 placeholderText="Description"
                                 textClassName="koenig-lexical-product-description whitespace-normal text-grey-700"
                             />
@@ -133,7 +133,8 @@ export function ProductCard({
                 </SettingsPanel>
             )}
 
-            {!isEditing && <div className="absolute top-0 z-10 m-0 h-full w-full cursor-default p-0"></div>}
+            {/* Read-only overlay */}
+            {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
         </>
     );
 }

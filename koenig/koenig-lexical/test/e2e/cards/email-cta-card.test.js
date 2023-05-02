@@ -156,7 +156,7 @@ describe('Email card', async () => {
                                 </div>
                             </div>
                         </div>
-                        <div class="absolute top-0 z-10 m-0 h-full w-full cursor-default p-0"></div>
+                        <div class="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>
                     </div>
                 </div>
             </div>
