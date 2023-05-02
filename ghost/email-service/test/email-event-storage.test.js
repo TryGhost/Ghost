@@ -1,4 +1,4 @@
-const EmailEventStorage = require('../lib/email-event-storage');
+const EmailEventStorage = require('../lib/EmailEventStorage');
 const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, EmailTemporaryBouncedEvent, EmailUnsubscribedEvent, SpamComplaintEvent} = require('@tryghost/email-events');
 const sinon = require('sinon');
 const assert = require('assert');

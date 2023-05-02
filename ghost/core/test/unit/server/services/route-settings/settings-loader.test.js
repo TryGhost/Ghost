@@ -4,7 +4,7 @@ const rewire = require('rewire');
 const fs = require('fs-extra');
 const path = require('path');
 const errors = require('@tryghost/errors');
-const SettingsLoader = rewire('../../../../../core/server/services/route-settings/settings-loader');
+const SettingsLoader = rewire('../../../../../core/server/services/route-settings/SettingsLoader');
 
 describe('UNIT > SettingsLoader:', function () {
     afterEach(function () {

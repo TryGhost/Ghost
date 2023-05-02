@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const models = require('../../../../../core/server/models');
 
-const FrontendDataService = require('../../../../../core/server/services/frontend-data-service/frontend-data-service');
+const FrontendDataService = require('../../../../../core/server/services/frontend-data-service/FrontendDataService');
 
 const logging = require('@tryghost/logging');
 
