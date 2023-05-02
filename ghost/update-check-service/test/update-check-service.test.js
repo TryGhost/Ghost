@@ -6,7 +6,7 @@ const uuid = require('uuid');
 const assert = require('assert');
 
 const logging = require('@tryghost/logging');
-const UpdateCheckService = require('../lib/update-check-service');
+const UpdateCheckService = require('../lib/UpdateCheckService');
 
 describe('Update Check', function () {
     const internal = {context: {internal: true}};

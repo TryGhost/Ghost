@@ -1,4 +1,4 @@
-const CardAssetService = require('./service');
+const CardAssetService = require('./CardAssetService');
 let cardAssetService = new CardAssetService();
 
 module.exports = cardAssetService;

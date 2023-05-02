@@ -1,5 +1,5 @@
 const assert = require('assert');
-const EmailEventProcessor = require('../lib/email-event-processor');
+const EmailEventProcessor = require('../lib/EmailEventProcessor');
 const {createDb} = require('./utils');
 const sinon = require('sinon');
 

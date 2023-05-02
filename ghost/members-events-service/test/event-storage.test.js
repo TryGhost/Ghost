@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
-const EventStorage = require('../lib/event-storage');
+const EventStorage = require('../lib/EventStorage');
 
 describe('EventStorage', function () {
     describe('Constructor', function () {

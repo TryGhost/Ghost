@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/i18n');
+const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/I18n');
 
 const logging = require('@tryghost/logging');
 

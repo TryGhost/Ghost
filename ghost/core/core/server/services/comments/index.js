@@ -1,8 +1,8 @@
 class CommentsServiceWrapper {
     init() {
-        const CommentsService = require('./service');
-        const CommentsController = require('./controller');
-        const CommentsStats = require('./stats');
+        const CommentsService = require('./CommentsService');
+        const CommentsController = require('./CommentsController');
+        const CommentsStats = require('./CommentsStatsService');
 
         const config = require('../../../shared/config');
         const logging = require('@tryghost/logging');
