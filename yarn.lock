@@ -30219,10 +30219,10 @@ vite-plugin-svgr@2.4.0:
     "@rollup/pluginutils" "^5.0.2"
     "@svgr/core" "^6.5.1"
 
-vite@4.3.3, "vite@^3.0.0 || ^4.0.0":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-4.3.3.tgz#26adb4aa01439fc4546c480ea547674d87289396"
-  integrity sha512-MwFlLBO4udZXd+VBcezo3u8mC77YQk+ik+fbc0GZWGgzfbPP+8Kf0fldhARqvSYmtIWoAJ5BXPClUbMTlqFxrA==
+vite@4.3.4, "vite@^3.0.0 || ^4.0.0":
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-4.3.4.tgz#1c518d763d5a700d890c3a19ab59220f06e7a7d5"
+  integrity sha512-f90aqGBoxSFxWph2b39ae2uHAxm5jFBBdnfueNxZAT1FTpM13ccFQExCaKbR2xFW5atowjleRniQ7onjJ22QEg==
   dependencies:
     esbuild "^0.17.5"
     postcss "^8.4.23"
