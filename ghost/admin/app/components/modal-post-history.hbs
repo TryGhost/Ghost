@@ -68,10 +68,12 @@
                                 {{/if}}
                                 
                             </div>
-                            <span class="gh-post-history-version-meta {{if (eq revision.author.name "Deleted staff user") "deleted-user"}}">{{revision.author.name}}</span>
-                            <span class="user-list-item-figure" style={{background-image-style revision.author.profile_image_url}}>
-                                <span class="hidden">Photo of {{revisions.author.name}}</span>
-                            </span>
+                            <div class="flex items-center mt2">
+                                <span class="user-list-item-figure" style={{background-image-style revision.author.profile_image_url}}>
+                                    <span class="hidden">Photo of {{revisions.author.name}}</span>
+                                </span>
+                                <span class="gh-post-history-version-meta {{if (eq revision.author.name "Deleted staff user") "deleted-user"}}">{{revision.author.name}}</span>
+                            </div>
                         </button>
                         {{#if (and revision.selected (not revision.latest))}}
                             <button
