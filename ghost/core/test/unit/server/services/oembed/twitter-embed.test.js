@@ -1,5 +1,5 @@
 const assert = require('assert');
-const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-embed');
+const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/TwitterOEmbedProvider');
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const nock = require('nock');
 const {mockManager} = require('../../../../utils/e2e-framework');

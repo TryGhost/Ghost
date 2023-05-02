@@ -10,7 +10,7 @@ const invitations = require('../../services/invitations');
 const dbBackup = require('../../data/db/backup');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const UsersService = require('../../services/users');
+const UsersService = require('../../services/Users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const {deleteAllSessions} = require('../../services/auth/session');
 
