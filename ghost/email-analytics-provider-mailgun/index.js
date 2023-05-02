@@ -1,1 +1,1 @@
-module.exports = require('./lib/provider-mailgun');
+module.exports = require('./lib/EmailAnalyticsProviderMailgun');

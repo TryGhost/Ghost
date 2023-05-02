@@ -1,3 +1,4 @@
+/* eslint-disable ghost/filenames/match-regex */
 const config = require('./core/shared/config');
 const ghostVersion = require('@tryghost/version');
 

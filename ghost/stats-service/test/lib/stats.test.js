@@ -1,4 +1,4 @@
-const StatsService = require('../../lib/stats');
+const StatsService = require('../../lib/StatsService');
 const knex = require('knex').default;
 const assert = require('assert');
 

@@ -1,5 +1,5 @@
 const assert = require('assert');
-const ProductsImporter = require('../../../../../../../core/server/data/importer/importers/data/products');
+const ProductsImporter = require('../../../../../../../core/server/data/importer/importers/data/ProductsImporter');
 
 const fakeProducts = [{
     id: 'product_1',

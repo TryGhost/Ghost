@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const UrlHistory = require('../lib/history');
+const UrlHistory = require('../lib/UrlHistory');
 
 describe('UrlHistory', function () {
     it('sets history to empty array if invalid', function () {

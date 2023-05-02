@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const ghostVersion = require('@tryghost/version');
 const moment = require('moment');
-const Notifications = require('../../../../../core/server/services/notifications/notifications');
+const Notifications = require('../../../../../core/server/services/notifications/Notifications');
 const {owner} = require('../../../../utils/fixtures/context');
 
 describe('Notifications Service', function () {

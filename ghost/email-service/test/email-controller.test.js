@@ -1,5 +1,5 @@
 const assert = require('assert');
-const EmailController = require('../lib/email-controller');
+const EmailController = require('../lib/EmailController');
 const {createModel, createModelClass} = require('./utils');
 
 describe('Email Controller', function () {

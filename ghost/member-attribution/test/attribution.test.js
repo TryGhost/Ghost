@@ -1,8 +1,8 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const UrlHistory = require('../lib/history');
-const AttributionBuilder = require('../lib/attribution');
+const UrlHistory = require('../lib/UrlHistory');
+const AttributionBuilder = require('../lib/AttributionBuilder');
 
 describe('AttributionBuilder', function () {
     let attributionBuilder;

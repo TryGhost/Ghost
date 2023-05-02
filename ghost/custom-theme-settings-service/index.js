@@ -1,4 +1,4 @@
 module.exports = {
-    Service: require('./lib/service'),
-    Cache: require('./lib/cache')
+    Service: require('./lib/CustomThemeSettingsService'),
+    Cache: require('./lib/CustomThemeSettingsCache')
 };

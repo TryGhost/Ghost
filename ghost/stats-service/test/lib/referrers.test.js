@@ -1,6 +1,6 @@
 const knex = require('knex').default;
 const assert = require('assert');
-const ReferrersStatsService = require('../../lib/referrers');
+const ReferrersStatsService = require('../../lib/ReferrersStatsService');
 
 describe('ReferrersStatsService', function () {
     describe('getReferrerHistory', function () {

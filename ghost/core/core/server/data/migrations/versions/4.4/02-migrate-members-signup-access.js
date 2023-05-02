@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
-const MembersConfigProvider = require('../../../../services/members/config');
+const MembersConfigProvider = require('../../../../services/members/MembersConfigProvider');
 const settingsCache = require('../../../../../shared/settings-cache');
 const config = require('../../../../../shared/config');
 

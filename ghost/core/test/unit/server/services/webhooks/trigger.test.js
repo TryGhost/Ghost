@@ -1,7 +1,7 @@
 const assert = require('assert');
 const sinon = require('sinon');
 
-const WebhookTrigger = require('../../../../../core/server/services/webhooks/trigger');
+const WebhookTrigger = require('../../../../../core/server/services/webhooks/WebhookTrigger');
 
 describe('Webhook Service', function () {
     const models = {

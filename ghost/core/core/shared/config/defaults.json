@@ -22,10 +22,10 @@
     },
     "adapters": {
         "sso": {
-            "active": "Default"
+            "active": "DefaultSSOAdapter"
         },
         "cache": {
-            "active": "Memory",
+            "active": "MemoryCache",
             "settings": {},
             "imageSizes": {},
             "gscan": {}
@@ -39,7 +39,7 @@
         "LocalFilesStorage": {}
     },
     "scheduling": {
-        "active": "SchedulingDefault"
+        "active": "scheduling-default"
     },
     "members": {
         "contentApiAccess": [],

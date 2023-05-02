@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const RouterController = require('../../../../lib/controllers/router');
+const RouterController = require('../../../../lib/controllers/RouterController');
 
 describe('RouterController', function () {
     describe('createCheckoutSession', function (){

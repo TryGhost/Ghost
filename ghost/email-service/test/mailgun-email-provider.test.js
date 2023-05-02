@@ -1,4 +1,4 @@
-const MailgunEmailProvider = require('../lib/mailgun-email-provider');
+const MailgunEmailProvider = require('../lib/MailgunEmailProvider');
 const sinon = require('sinon');
 const should = require('should');
 const assert = require('assert');

@@ -1,1 +1,1 @@
-module.exports = require('./lib/adapter-cache-memory-ttl');
+module.exports = require('./lib/AdapterCacheMemoryTTL');

@@ -1,7 +1,7 @@
 const assert = require('assert');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
-const MemberRepository = require('../../../../lib/repositories/member');
+const MemberRepository = require('../../../../lib/repositories/MemberRepository');
 const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 const mockOfferRedemption = {

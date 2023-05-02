@@ -1,6 +1,6 @@
 const WebhookManager = require('./WebhookManager');
 const StripeAPI = require('./StripeAPI');
-const StripeMigrations = require('./Migrations');
+const StripeMigrations = require('./StripeMigrations');
 const WebhookController = require('./WebhookController');
 
 module.exports = class StripeService {

@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "./lib/update-check-service.js",
-  "exports": "./lib/update-check-service.js",
+  "main": "./lib/UpdateCheckService.js",
+  "exports": "./lib/UpdateCheckService.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",

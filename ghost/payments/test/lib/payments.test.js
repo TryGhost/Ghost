@@ -2,7 +2,7 @@ const assert = require('assert');
 const sinon = require('sinon');
 const knex = require('knex');
 const {Tier} = require('@tryghost/tiers');
-const PaymentsService = require('../../lib/payments');
+const PaymentsService = require('../../lib/PaymentsService');
 
 describe('PaymentsService', function () {
     let Bookshelf;

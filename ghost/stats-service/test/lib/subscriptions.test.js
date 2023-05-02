@@ -1,6 +1,6 @@
 const knex = require('knex').default;
 const assert = require('assert');
-const SubscriptionStatsService = require('../../lib/subscriptions');
+const SubscriptionStatsService = require('../../lib/SubscriptionStatsService');
 
 describe('SubscriptionStatsService', function () {
     describe('getSubscriptionHistory', function () {

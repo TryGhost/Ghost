@@ -1,6 +1,6 @@
 const should = require('should');
 const find = require('lodash/find');
-const PostsImporter = require('../../../../../../../core/server/data/importer/importers/data/posts');
+const PostsImporter = require('../../../../../../../core/server/data/importer/importers/data/PostsImporter');
 
 describe('PostsImporter', function () {
     describe('#beforeImport', function () {

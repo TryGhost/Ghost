@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const UrlTranslator = require('../lib/url-translator');
+const UrlTranslator = require('../lib/UrlTranslator');
 
 const models = {
     Post: {

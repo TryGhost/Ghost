@@ -1,1 +1,1 @@
-module.exports = require('./lib/importer');
+module.exports = require('./lib/MembersCSVImporter');

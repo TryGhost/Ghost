@@ -9,7 +9,7 @@ const mail = require('../../../../../core/server/services/mail');
 const urlUtils = require('../../../../utils/urlUtils');
 const {mockManager} = require('../../../../utils/e2e-framework');
 
-const NewslettersService = require('../../../../../core/server/services/newsletters/service');
+const NewslettersService = require('../../../../../core/server/services/newsletters/NewslettersService');
 
 class TestTokenProvider {
     async create(data) {
@@ -263,7 +263,7 @@ describe('NewslettersService', function () {
                 ]
             });
             sinon.assert.calledOnceWithExactly(editStub, {name: 'hello world'}, options);
-            
+
             sinon.assert.calledTwice(findOneStub);
             sinon.assert.calledWithExactly(findOneStub.firstCall, {id: 'test'}, {require: true});
             sinon.assert.calledWithExactly(findOneStub.secondCall, {id: 'test'}, {...options, require: true});

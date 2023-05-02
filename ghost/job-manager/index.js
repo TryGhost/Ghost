@@ -1,1 +1,1 @@
-module.exports = require('./lib/job-manager');
+module.exports = require('./lib/JobManager');

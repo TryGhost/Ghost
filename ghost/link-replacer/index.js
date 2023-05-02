@@ -1,1 +1,1 @@
-module.exports = require('./lib/LinkReplacer');
+module.exports = require('./lib/link-replacer');

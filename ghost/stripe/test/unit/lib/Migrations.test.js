@@ -1,6 +1,6 @@
 const assert = require('assert');
 const sinon = require('sinon');
-const Migrations = require('../../../lib/Migrations');
+const Migrations = require('../../../lib/StripeMigrations');
 
 describe('Migrations', function () {
     describe('updateStripeProductNamesFromDefaultProduct', function () {

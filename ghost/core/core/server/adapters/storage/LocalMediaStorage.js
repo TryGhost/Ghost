@@ -10,7 +10,7 @@ const messages = {
     cannotRead: 'Could not read media file: {file}'
 };
 
-class LocalMediaStore extends LocalStorageBase {
+class LocalMediaStorage extends LocalStorageBase {
     constructor() {
         super({
             storagePath: config.getContentPath('media'),
@@ -21,4 +21,4 @@ class LocalMediaStore extends LocalStorageBase {
     }
 }
 
-module.exports = LocalMediaStore;
+module.exports = LocalMediaStorage;

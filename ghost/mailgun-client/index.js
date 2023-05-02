@@ -1,1 +1,1 @@
-module.exports = require('./lib/mailgun-client');
+module.exports = require('./lib/MailgunClient');

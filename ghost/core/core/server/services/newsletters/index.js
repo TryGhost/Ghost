@@ -1,4 +1,4 @@
-const NewslettersService = require('./service.js');
+const NewslettersService = require('./NewslettersService.js');
 const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
 const mail = require('../mail');
 const models = require('../../models');
