@@ -99,6 +99,7 @@ module.exports = {
 
     teardownDb: dbUtils.teardown,
     truncate: dbUtils.truncate,
+    knex: dbUtils.knex,
     setup: setup,
     createUser: createUser,
     createPost: createPost,
