@@ -23,15 +23,15 @@ const {
     MembersLoginEventsImporter,
     MembersStatusEventsImporter,
     MembersSubscribeEventsImporter,
-    MembersSubscriptionCreatedEventsImporter,
     MembersStripeCustomersImporter,
-    MembersStripeCustomersSubscriptionsImporter,
     MembersPaidSubscriptionEventsImporter,
     EmailBatchesImporter,
     EmailRecipientsImporter,
     RedirectsImporter,
     MembersClickEventsImporter,
     OffersImporter,
+    MembersStripeCustomersSubscriptionsImporter,
+    MembersSubscriptionCreatedEventsImporter,
     LabelsImporter,
     MembersLabelsImporter,
     RolesUsersImporter,
@@ -314,7 +314,7 @@ class DataGenerator {
             amount: 3
         });
 
-        const membersCreatedEventsImporter = new MembersCreatedEventsImporter(transaction, {baseUrl: this.baseUrl, posts});
+        const membersCreatedEventsImporter = new MembersCreatedEventsImporter(transaction, {posts});
         await membersCreatedEventsImporter.importForEach(members, {amount: 1});
 
         const membersLoginEventsImporter = new MembersLoginEventsImporter(transaction);
