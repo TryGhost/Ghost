@@ -66,6 +66,7 @@ typings/
 *.iml
 *.sublime-*
 .vscode/*
+!.vscode/launch.json
 
 # OSX
 .DS_Store
