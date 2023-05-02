@@ -93,7 +93,7 @@ export function emailCardTemplate({data}) {
                 <tr>
                     <td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
                         <div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;">
-                            <a href="${data.buttonUrl}" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;">${data.buttonText}</a>
+                            <a href="${data.buttonUrl}" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 0;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;"><span style="display: block;padding: 12px 25px;">${data.buttonText}</span></a>
                         </div>
                     </td>
                 </tr>
