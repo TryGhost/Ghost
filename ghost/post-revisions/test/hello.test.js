@@ -89,6 +89,27 @@ describe('PostRevisions', function () {
             assert.deepEqual(actual, expected);
         });
 
+        it('should return true if post is unpublished and forceRevision is true', function () {
+            const postRevisions = new PostRevisions({config});
+
+            const expected = {value: true, reason: 'unpublished'};
+
+            const actual = postRevisions.shouldGenerateRevision({
+                lexical: 'blah',
+                html: 'blah',
+                title: 'blah2'
+            }, [{
+                lexical: 'blah'
+            }], {
+                isPublished: false,
+                forceRevision: true,
+                newStatus: 'draft',
+                olderStatus: 'published'
+            });
+
+            assert.deepEqual(actual, expected);
+        });
+
         it('should always return true if isPublished is true', function () {
             const postRevisions = new PostRevisions({config});
 
