@@ -44,12 +44,12 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
                         { (isEditing || title) && <input className="h-[30px] bg-transparent text-lg font-bold leading-none tracking-tight text-black dark:text-grey-200" data-kg-file-card="fileTitle" maxLength="80" placeholder={titlePlaceholder} value={title} onChange={handleFileTitle} />}
                         { (isEditing || desc) && <input className="h-[26px] bg-transparent pb-1 text-[1.6rem] font-normal leading-none text-grey-700 placeholder:text-grey-500 dark:text-grey-300 dark:placeholder:text-grey-800" data-kg-file-card="fileDescription" maxLength="100" placeholder={descPlaceholder} value={desc} onChange={handleFileDesc} />}
                     </div>}
-                    <div className="mt-0 py-1 text-sm font-medium text-grey-900 dark:text-grey-200" data-kg-file-card="dataset">
+                    <div className="!mt-0 py-1 text-sm font-medium text-grey-900 dark:text-grey-200" data-kg-file-card="dataset">
                         {name}
                         <span className="text-grey-700"> • {size}</span>
                     </div>
                 </div>
-                <div className={`mt-0 flex w-full max-w-[96px] items-center justify-center rounded bg-grey-200 dark:bg-grey-900 ${((title && desc) || isEditing) ? 'h-[96px]' : (title || desc) ? 'h-[64px]' : 'h-[40px]'}`}>
+                <div className={`!mt-0 flex w-full max-w-[96px] items-center justify-center rounded bg-grey-200 dark:bg-grey-900 ${((title && desc) || isEditing) ? 'h-[96px]' : (title || desc) ? 'h-[64px]' : 'h-[40px]'}`}>
                     <FileUploadIcon className={`text-green transition-all duration-75 ease-in ${((title || desc) || isEditing) ? 'h-6 w-6' : 'h-5 w-5'}`} />
                 </div>
             </div>
