@@ -135,3 +135,6 @@ Caddyfile
 # Announcement-Bar
 /ghost/announcement-bar/umd
 /ghost/announcement-bar/build
+
+/ghost/post-revisions/build
+/ghost/post-revisions/tsconfig.tsbuildinfo
