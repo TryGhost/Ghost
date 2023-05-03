@@ -71,8 +71,7 @@ export default class ModalPostHistory extends Component {
                 },
                 postStatus: revision.get('postStatus'),
                 reason: revision.get('reason'),
-                new_publish: revision.get('postStatus') === 'published' && revisions[index + 1]?.get('postStatus') === 'draft',
-                new_unpublish: revision.get('postStatus') === 'draft' && revisions[index + 1]?.get('postStatus') === 'published'
+                new_publish: revision.get('postStatus') === 'published' && revisions[index + 1]?.get('postStatus') === 'draft'
             };
         });
     }
