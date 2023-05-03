@@ -52,6 +52,12 @@ class PostRevisions {
         if (revisions.length === 0) {
             return {value: true, reason: 'initial_revision'};
         }
+        // check if the post has been unpublished
+        const isUnpublished = options && options.newStatus === 'draft' && options.olderStatus === 'published';
+        if (isUnpublished) {
+            return {value: true, reason: 'unpublished'};
+        }
+        // check if the post has been published
         const isPublished = options && options.isPublished;
         if (isPublished) {
             return {value: true, reason: 'published'};

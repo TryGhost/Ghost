@@ -935,7 +935,9 @@ Post = ghostBookshelf.Model.extend({
                     // This can be refactored once we have the status stored in each revision
                     const revisionOptions = {
                         forceRevision: options.save_revision,
-                        isPublished: newStatus === 'published'
+                        isPublished: newStatus === 'published',
+                        newStatus,
+                        olderStatus
                     };
                     const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
                     model.set('post_revisions', newRevisions);
