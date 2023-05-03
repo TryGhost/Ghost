@@ -30,6 +30,8 @@ const DEFAULT_TITLE = '(Untitled)';
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
+// time in ms to force a save even if the post is already saved so we trigger a new revision on the server
+const REVISIONSAVE_TIMEOUT = 1000 * 60 * 10; // 10 minutes
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
@@ -190,12 +192,13 @@ export default class LexicalEditorController extends Controller {
         return false;
     }
 
-    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning')
+    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning', '_revisionSaveTask.isRunning')
     get _autosaveRunning() {
         let autosave = this.get('_autosaveTask.isRunning');
         let timedsave = this.get('_timedSaveTask.isRunning');
+        let revisionsave = this.get('_revisionSaveTask.isRunning');
 
-        return autosave || timedsave;
+        return autosave || timedsave || revisionsave;
     }
 
     @computed('post.isDraft')
@@ -211,6 +214,8 @@ export default class LexicalEditorController extends Controller {
         this._autosaveTask.perform();
         // force save at 60 seconds
         this._timedSaveTask.perform();
+        // force save at 10 minutes to trigger revision
+        this._revisionSaveTask.perform();
     }
 
     @action
@@ -245,6 +250,7 @@ export default class LexicalEditorController extends Controller {
     cancelAutosave() {
         this._autosaveTask.cancelAll();
         this._timedSaveTask.cancelAll();
+        this._revisionSaveTask.cancelAll();
     }
 
     // called by the "are you sure?" modal
@@ -427,7 +433,7 @@ export default class LexicalEditorController extends Controller {
 
         this.cancelAutosave();
 
-        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor) {
+        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor && !options.saveRevision) {
             return;
         }
 
@@ -480,6 +486,9 @@ export default class LexicalEditorController extends Controller {
                 }
                 return true;
             }
+
+            // Even if we've just saved and nothing else has changed, we want to save in 10 minutes to force a revision
+            this._revisionSaveTask.perform();
 
             return post;
         } catch (error) {
@@ -967,6 +976,19 @@ export default class LexicalEditorController extends Controller {
         }
     }).drop())
         _timedSaveTask;
+
+    // save at 10 minutes even if the post is already saved
+    @(task(function* () {
+        if (!this._canAutosave) {
+            return;
+        }
+
+        while (config.environment !== 'test' && true) {
+            yield timeout(REVISIONSAVE_TIMEOUT);
+            this.autosaveTask.perform({saveRevision: true});
+        }
+    }).drop())
+        _revisionSaveTask;
 
     /* Private methods -------------------------------------------------------*/
 
