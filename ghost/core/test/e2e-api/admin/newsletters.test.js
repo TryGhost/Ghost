@@ -727,8 +727,14 @@ describe('Newsletters API', function () {
         emailMockReceiver
             .assertSentEmailCount(1)
             .matchHTMLSnapshot()
-            .matchPlaintextSnapshot()
-            .matchMetadataSnapshot();
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
     });
 
     it(`Can't edit multiple newsletters to existing name`, async function () {
