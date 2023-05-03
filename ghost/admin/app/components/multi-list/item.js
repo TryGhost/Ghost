@@ -35,6 +35,12 @@ export default class ItemComponent extends Component {
         if (!this.selectionList.enabled) {
             return;
         }
+
+        // If event target has data-ignore-select or one of its partens, then ignore the event
+        if (event.target.closest('[data-ignore-select]')) {
+            return;
+        }
+
         const shiftKey = event.shiftKey;
         const ctrlKey = event.ctrlKey || event.metaKey;
 
@@ -61,6 +67,12 @@ export default class ItemComponent extends Component {
         if (!this.selectionList.enabled) {
             return;
         }
+
+        // If event target has data-ignore-select or one of its partens, then ignore the event
+        if (event.target.closest('[data-ignore-select]')) {
+            return;
+        }
+
         const shiftKey = event.shiftKey;
         const ctrlKey = event.ctrlKey || event.metaKey;
 
@@ -78,6 +90,12 @@ export default class ItemComponent extends Component {
         if (!this.selectionList.enabled) {
             return;
         }
+
+        // If event target has data-ignore-select or one of its partens, then ignore the event
+        if (event.target.closest('[data-ignore-select]')) {
+            return;
+        }
+
         let x = event.clientX;
         let y = event.clientY;
 

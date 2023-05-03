@@ -179,6 +179,11 @@
     pointer-events: none;
 }
 
+.posts-list[data-ctrl] .gh-posts-list-item-group * [data-ignore-select]{
+    pointer-events: all;
+    cursor: pointer !important;
+}
+
 .posts-list .gh-posts-list-item-group:hover {
     background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
 }
