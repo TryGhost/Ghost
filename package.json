@@ -19,7 +19,7 @@
     "**/node_modules/**"
   ],
   "scripts": {
-    "build": "yarn workspace ghost run build",
+    "build": "lerna run build",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/dev.js --admin",
     "dev:ghost": "node .github/dev.js --ghost",
@@ -33,7 +33,7 @@
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\"",
-    "prepare": "husky install .github/hooks"
+    "prepare": "husky install .github/hooks && lerna run prepare"
   },
   "resolutions": {
     "@elastic/elasticsearch": "8.5.0",
