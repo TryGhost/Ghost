@@ -1,52 +1,54 @@
-/**
- * @typedef {object} PostLike
- * @property {string} id
- * @property {string} lexical
- * @property {string} html
- * @property {string} author_id
- * @property {string} feature_image
- * @property {string} feature_image_alt
- * @property {string} feature_image_caption
- * @property {string} title
- * @property {string} reason
- * @property {string} post_status
- */
+type PostLike = {
+    id: string;
+    lexical: string;
+    html: string;
+    author_id: string;
+    feature_image: string | null;
+    feature_image_alt: string | null;
+    feature_image_caption: string | null;
+    title: string;
+    reason: string;
+    post_status: string;
+}
 
-/**
- * @typedef {object} Revision
- * @property {string} post_id
- * @property {string} lexical
- * @property {number} created_at_ts
- * @property {string} author_id
- * @property {string} feature_image
- * @property {string} feature_image_alt
- * @property {string} feature_image_caption
- * @property {string} title
- * @property {string} reason
- * @property {string} post_status
- */
+type Revision = {
+    post_id: string;
+    lexical: string;
+    author_id: string;
+    feature_image: string | null;
+    feature_image_alt: string | null;
+    feature_image_caption: string | null;
+    title: string;
+    post_status: string;
+    reason: string;
+    created_at_ts: number;
+}
 
-class PostRevisions {
-    /**
-     * @param {object} deps
-     * @param {object} deps.config
-     * @param {number} deps.config.max_revisions
-     * @param {number} deps.config.revision_interval_ms
-     * @param {object} deps.model
-     */
-    constructor(deps) {
+type PostRevisionsDeps = {
+    config: {
+        max_revisions: number;
+        revision_interval_ms: number;
+    },
+    model: any
+}
+
+type RevisionResult = {
+    value: true;
+    reason: string;
+} | {
+    value: false
+}
+
+export class PostRevisions {
+    config: PostRevisionsDeps['config'];
+    model: any;
+
+    constructor(deps: PostRevisionsDeps) {
         this.config = deps.config;
         this.model = deps.model;
     }
 
-    /**
-     * @param {PostLike} previous
-     * @param {PostLike} current
-     * @param {Revision[]} revisions
-     * @param {object} options
-     * @returns {object}
-     */
-    shouldGenerateRevision(current, revisions, options) {
+    shouldGenerateRevision(current: PostLike, revisions: Revision[], options?: { isPublished?: boolean; forceRevision?: boolean; newStatus?: string; olderStatus?: string; }): RevisionResult {
         const latestRevision = revisions[revisions.length - 1];
         // If there's no revisions for this post, we should always save a revision
         if (revisions.length === 0) {
@@ -81,14 +83,7 @@ class PostRevisions {
         return {value: false};
     }
 
-    /**
-     * @param {PostLike} previous
-     * @param {PostLike} current
-     * @param {Revision[]} revisions
-     * @param {object} options
-     * @returns {Promise<Revision[]>}
-     */
-    async getRevisions(current, revisions, options) {
+    async getRevisions(current: PostLike, revisions: Revision[], options?: { isPublished?: boolean; forceRevision?: boolean; newStatus?: string; olderStatus?: string; }): Promise<Revision[]> {
         const shouldGenerateRevision = this.shouldGenerateRevision(current, revisions, options);
         if (!shouldGenerateRevision.value) {
             return revisions;
@@ -112,11 +107,7 @@ class PostRevisions {
         }
     }
 
-    /**
-     * @param {PostLike} input
-     * @returns {Revision}
-     */
-    convertPostLikeToRevision(input, offset = 0) {
+    convertPostLikeToRevision(input: PostLike, offset = 0): Revision {
         return {
             post_id: input.id,
             lexical: input.lexical,
@@ -126,16 +117,12 @@ class PostRevisions {
             feature_image_alt: input.feature_image_alt,
             feature_image_caption: input.feature_image_caption,
             title: input.title,
+            reason: input.reason,
             post_status: input.post_status
         };
     }
 
-    /**
-     * @param {string} authorId
-     * @param {object} options
-     * @param {object} options.transacting
-     */
-    async removeAuthorFromRevisions(authorId, options) {
+    async removeAuthorFromRevisions(authorId: string, options: any): Promise<void> {
         const revisions = await this.model.findAll({
             filter: `author_id:${authorId}`,
             columns: ['id'],
@@ -143,7 +130,7 @@ class PostRevisions {
         });
 
         const revisionIds = revisions.toJSON()
-            .map(({id}) => id);
+            .map(({id}: {id: string}) => id);
 
         if (revisionIds.length === 0) {
             return;
@@ -159,5 +146,3 @@ class PostRevisions {
         });
     }
 }
-
-module.exports = PostRevisions;

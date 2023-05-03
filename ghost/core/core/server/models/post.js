@@ -19,7 +19,7 @@ const urlUtils = require('../../shared/url-utils');
 const {Tag} = require('./tag');
 const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
-const PostRevisions = require('@tryghost/post-revisions');
+const {PostRevisions} = require('@tryghost/post-revisions');
 const labs = require('../../shared/labs');
 
 const messages = {
