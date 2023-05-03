@@ -918,6 +918,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     const linkMatch = clipboardDataset?.match(/^(https?:\/\/[^\s]+)$/); // replace with better regex to include more protocols like mailto, ftp, etc
                     const selection = $getSelection();
                     const selectionContent = selection.getTextContent();
+                    const node = selection.anchor.getNode();
+                    const nodeContent = node.getTextContent();
                     if (linkMatch && selectionContent.length > 0) {
                         const link = linkMatch[1];
                         if ($isRangeSelection(selection)) {
@@ -931,7 +933,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
                     // if a link is pasted in a blank text node, insert an embed card (may turn into bookmark)
-                    if (linkMatch && !selectionContent.length > 0) {
+                    if (linkMatch && !selectionContent.length > 0 && !nodeContent.length > 0) {
                         const url = linkMatch[1];
                         const embedNode = $createEmbedNode({url});
                         editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode: embedNode, createdWithUrl: true});
