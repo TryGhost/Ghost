@@ -127,6 +127,7 @@
     "eslint-plugin-ghost": "2.16.0",
     "husky": "8.0.3",
     "lerna": "6.6.1",
-    "lint-staged": "13.1.2"
+    "lint-staged": "13.1.2",
+    "ts-node": "10.9.1"
   }
 }

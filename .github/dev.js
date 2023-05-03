@@ -40,6 +40,16 @@ if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_ADMIN];
 }
 
+if (DASH_DASH_ARGS.includes('revisions') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'post-revisions',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/post-revisions'),
+        prefixColor: 'green',
+        env: {}
+    });
+}
+
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
