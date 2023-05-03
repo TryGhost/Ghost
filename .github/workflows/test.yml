@@ -78,9 +78,6 @@ jobs:
 
   migrations:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ghost/core
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -129,7 +126,10 @@ jobs:
           echo "database__connection__database=ghost_testing" >> $GITHUB_ENV
 
       - run: yarn --prefer-offline
-      - run: |
+
+      - name: Run Ghost and then kill it
+        working-directory: ghost/core
+        run: |
           node index.js &
           sleep 20 && { kill $! && wait $!; } 2>/dev/null
 
@@ -174,9 +174,6 @@ jobs:
 
   database-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ghost/core
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -227,6 +224,7 @@ jobs:
         run: echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Run tests
+        working-directory: ghost/core
         run: yarn test:ci
 
       # Get runtime in seconds for test suite

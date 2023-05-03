@@ -22,7 +22,8 @@
   "scripts": {
     "start": "node index",
     "setup": "knex-migrator init",
-    "build": "npm pack --pack-destination ../..",
+    "build": "yarn build:css",
+    "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "test": "yarn test:unit",
     "test:single": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js --timeout=60000",
     "test:all": "yarn test:unit && yarn test:integration && yarn test:e2e && yarn lint",
@@ -50,8 +51,7 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
-    "prepack": "yarn workspace ghost-admin run build:prod && yarn build:css && npx --yes daniellockyer/monobundle"
+    "prepack": "lerna run build && monobundle"
   },
   "engines": {
     "node": "^16.13.0 || ^18.12.1",
@@ -236,6 +236,7 @@
     "mocha": "10.2.0",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192",
+    "monobundle": "TryGhost/monobundle#2aca618f8880250fb99ad48d61f0ca7251f1e648",
     "nock": "13.3.0",
     "papaparse": "5.3.2",
     "postcss": "8.4.23",
