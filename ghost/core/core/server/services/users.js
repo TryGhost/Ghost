@@ -4,7 +4,7 @@ const path = require('path');
 /**
  * @TODO: pass these in as dependencies
  */
-const PostRevisions = require('@tryghost/post-revisions');
+const {PostRevisions} = require('@tryghost/post-revisions');
 const labs = require('../../shared/labs');
 
 /**
