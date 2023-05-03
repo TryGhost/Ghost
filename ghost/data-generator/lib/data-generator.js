@@ -99,6 +99,8 @@ class DataGenerator {
 
             // List of tables ordered to avoid dependencies when deleting
             const tableNames = Object.values(tables).map(importer => importer.table).reverse();
+            // We don't currently generate posts_meta, but we need to clear it to ensure posts can be removed
+            tableNames.unshift('posts_meta');
             for (const table of tableNames) {
                 this.logger.debug(`Clearing table ${table}`);
                 if (table === 'roles_users') {
