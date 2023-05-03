@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import AppContext from '../../AppContext';
 import {ReactComponent as LeftArrowIcon} from '../../images/icons/arrow-left.svg';
 
 export const BackButtonStyles = `
@@ -40,9 +41,15 @@ export const BackButtonStyles = `
     }
 `;
 
-function ActionButton({label = 'Back', brandColor = '#3eb0ef', hidden = false, onClick}) {
+function ActionButton({label = null, brandColor = '#3eb0ef', hidden = false, onClick}) {
+    const {t} = useContext(AppContext);
+
     if (hidden) {
         return null;
+    }
+
+    if (label === null) {
+        label = t('Back');
     }
 
     return (

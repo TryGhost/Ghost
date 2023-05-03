@@ -149,7 +149,7 @@
                                 </div>
                             </li>
                         {{/unless}}
-                        {{#if (and (feature 'postHistory') this.post.lexical)}}
+                        {{#if this.canViewPostHistory}}
                             <li class="nav-list-item">
                                 <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
                                     <span>{{svg-jar "history" class="history"}} Post history</span>
