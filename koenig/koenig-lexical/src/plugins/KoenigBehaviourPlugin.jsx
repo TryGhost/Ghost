@@ -17,6 +17,7 @@ import {
     $isTextNode,
     $setSelection,
     COMMAND_PRIORITY_LOW,
+    DELETE_LINE_COMMAND,
     INSERT_PARAGRAPH_COMMAND,
     KEY_ARROW_DOWN_COMMAND,
     KEY_ARROW_LEFT_COMMAND,
@@ -34,7 +35,9 @@ import {
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
 import {
     $isAtStartOfDocument,
-    $selectDecoratorNode
+    $isAtTopOfNode,
+    $selectDecoratorNode,
+    getTopLevelNativeElement
 } from '../utils/';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
@@ -49,15 +52,6 @@ export const EDIT_CARD_COMMAND = createCommand('EDIT_CARD_COMMAND');
 export const DELETE_CARD_COMMAND = createCommand('DELETE_CARD_COMMAND');
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
-
-function getTopLevelNativeElement(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-        node = node.parentNode;
-    }
-
-    const selector = '[data-lexical-editor] > *';
-    return node.closest(selector);
-}
 
 function $selectCard(editor, nodeKey, focusEditor = true) {
     const selection = $createNodeSelection();
@@ -460,25 +454,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                     return true;
                                 }
                             } else {
-                                const range = nativeSelection.getRangeAt(0).cloneRange();
-                                const rects = range.getClientRects();
-
-                                if (rects.length > 0) {
-                                    // try second rect first because when the caret is at the beginning
-                                    // of a line the first rect will be positioned on line above breaking
-                                    // the top position check
-                                    const rangeRect = rects[1] || rects[0];
-                                    const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection.anchorNode);
-                                    const elemRect = nativeTopLevelElement.getBoundingClientRect();
-
-                                    const atTopOfNode = Math.abs(rangeRect.top - elemRect.top) <= RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX;
-
-                                    if (atTopOfNode) {
-                                        const previousSibling = topLevelElement.getPreviousSibling();
-                                        if ($isDecoratorNode(previousSibling)) {
-                                            $selectDecoratorNode(previousSibling);
-                                            return true;
-                                        }
+                                const atTopOfNode = $isAtTopOfNode(nativeSelection, RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX);
+                                if (atTopOfNode) {
+                                    const previousSibling = topLevelElement.getPreviousSibling();
+                                    if ($isDecoratorNode(previousSibling)) {
+                                        $selectDecoratorNode(previousSibling);
+                                        return true;
                                     }
                                 }
                             }
@@ -824,6 +805,46 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 // delete the card, keeping selection in place
                                 event.preventDefault();
                                 nextSibling.remove();
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                DELETE_LINE_COMMAND,
+                (isBackward) => {
+                    // delete selected card if it's not a nested editor
+                    if (selectedCardKey && document.activeElement === editor.getRootElement() && !isNested) {
+                        editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey: selectedCardKey, direction: isBackward ? 'backward' : 'forward'});
+                        return true;
+                    }
+
+                    // Avoid deleting a card accidentally:
+                    // If a paragraph contains only one line and is next to a card, then by default CMD + Backspace deletes the line + the sibling card
+                    // In that case, we avoid using the default `selection.deleteLine()` from Lexical
+                    // Instead, we remove the topLevelElement and put the selection on the sibling card
+                    const selection = $getSelection();
+                    if ($isRangeSelection(selection)) {
+                        if (selection.isCollapsed) {
+                            const anchor = selection.anchor;
+                            const anchorNode = anchor.getNode();
+                            const topLevelElement = anchorNode.getTopLevelElement();
+                            const previousSibling = topLevelElement.getPreviousSibling();
+                            const nextSibling = topLevelElement.getNextSibling();
+                            const sibling = isBackward ? previousSibling : nextSibling;
+
+                            // Find out if the paragraph contains only one line
+                            const nativeSelection = window.getSelection();
+                            const isFirstLine = $isAtTopOfNode(nativeSelection, RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX);
+
+                            if ($isDecoratorNode(sibling) && isFirstLine) {
+                                topLevelElement.remove();
+                                $selectDecoratorNode(sibling);
+
                                 return true;
                             }
                         }
