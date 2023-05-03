@@ -726,6 +726,7 @@ describe('Newsletters API', function () {
 
         emailMockReceiver
             .assertSentEmailCount(1)
+            .matchMetadataSnapshot()
             .matchHTMLSnapshot([{
                 pattern: queryStringToken('verifyEmail'),
                 replacement: 'verifyEmail=REPLACED_TOKEN'
