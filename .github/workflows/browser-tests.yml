@@ -31,9 +31,6 @@ jobs:
     environment: ${{ github.event.inputs.environment || 'browser-tests-local' }}
     env:
       ENVIRONMENT: ${{ github.event.inputs.environment || 'browser-tests-local' }}
-    defaults:
-      run:
-        working-directory: ghost/core
     steps:
     - uses: actions/checkout@v3
       with:
@@ -56,9 +53,11 @@ jobs:
       run: yarn
 
     - name: Run migrations
+      working-directory: ghost/core
       run: yarn setup
 
     - name: Install Playwright
+      working-directory: ghost/core
       run: npx playwright install --with-deps
 
     - name: Build Admin
@@ -68,6 +67,7 @@ jobs:
 
     - name: Run Playwright tests on a remote site
       if: env.ENVIRONMENT == 'browser-tests-staging'
+      working-directory: ghost/core
       run: yarn test:browser
       env:
         TEST_URL: ${{ github.event.inputs.site_url || secrets.TEST_URL }}
@@ -76,6 +76,7 @@ jobs:
 
     - name: Run Playwright tests locally
       if: env.ENVIRONMENT == 'browser-tests-local'
+      working-directory: ghost/core
       run: yarn test:browser
       env:
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
