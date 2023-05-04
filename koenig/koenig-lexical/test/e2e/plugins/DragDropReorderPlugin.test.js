@@ -154,7 +154,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
             height: paragraphBBox.height
         };
 
-        await dragMouse(page, imageBBox, toBBox, 'start', 'start', true, 100, 100);
+        await dragMouse(page, imageBBox, toBBox, 'start', 'start', true, 1000, 100);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
