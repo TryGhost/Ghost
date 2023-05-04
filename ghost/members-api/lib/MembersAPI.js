@@ -351,9 +351,6 @@ module.exports = function MembersAPI({
     bus.emit('ready');
 
     DomainEvents.subscribe(EmailSuppressedEvent, async function (event) {
-        if (!labsService.isSet('suppressionList')) {
-            return;
-        }
         const member = await memberRepository.get({email: event.data.emailAddress});
         if (!member) {
             return;
