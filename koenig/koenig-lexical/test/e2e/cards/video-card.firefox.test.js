@@ -5,6 +5,9 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Video card is tested in firefox
+// Need to get video thumbnail before uploading on the server; for this purpose, convert video to blob https://github.com/TryGhost/Koenig/blob/a04c59c2d81ddc783869c47653aa9d7adf093629/packages/koenig-lexical/src/utils/extractVideoMetadata.js#L45
+// The problem is that Chromium can't read video src as blob
 test.describe('Video card', async () => {
     test.beforeEach(async ({page}) => {
         await initialize({page});
