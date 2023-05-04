@@ -578,3 +578,6 @@ add|ember-template-lint|no-action|25|125|25|125|ba0f8b6ba2697f1b071200d1a3dae9c3
 add|ember-template-lint|no-action|48|46|48|46|2f3118270fbb1ff6e5da6b0d482ccd21e69df3b5|1681862400000|1692230400000|1697414400000|app/components/modal-post-history.hbs
 add|ember-template-lint|require-valid-alt-text|13|20|13|20|41dff435a7aba8088be689c6d9b1e76bef081d17|1682035200000|1692403200000|1697587200000|app/components/modal-post-history.hbs
 add|ember-template-lint|require-valid-alt-text|20|20|20|20|bc0bb4f51567cea7289bfcb30d02932f0f57d0d9|1682035200000|1692403200000|1697587200000|app/components/modal-post-history.hbs
+add|ember-template-lint|no-action|55|71|55|71|76726a13a086d82dab219df12e86db1773a9de32|1678147200000|1688511600000|1693695600000|lib/koenig-editor/addon/components/koenig-card-embed.hbs
+add|ember-template-lint|no-action|56|85|56|85|bb78ad59bc384ea0de5e9459da9d85f1735ce141|1678147200000|1688511600000|1693695600000|lib/koenig-editor/addon/components/koenig-card-embed.hbs
+add|ember-template-lint|no-action|57|38|57|38|3ad187464ff78253a0ea4dd17dcfcf0423f66864|1678147200000|1688511600000|1693695600000|lib/koenig-editor/addon/components/koenig-card-embed.hbs

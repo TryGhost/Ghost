@@ -1,4 +1,4 @@
-const {extract} = require('oembed-parser');
+const {extract} = require('@extractus/oembed-extractor');
 const logging = require('@tryghost/logging');
 
 /**
